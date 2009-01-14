@@ -1,0 +1,16 @@
+#!/bin/sh
+
+MIDIR=`defaults read /Library/Preferences/ManagedInstalls managed_install_dir`
+IHOOK="/Applications/Utilities/radmind/iHook.app/Contents/MacOS/iHook"
+SCRIPT="/Users/gneagle/Documents/managedinstalls/code/client/ManagedInstaller"
+ARGS="-i"
+
+if [ "$MIDIR" != "" ]; then
+    CACHEDIR="$MIDIR/Cache"
+    if [ -d "$CACHEDIR" ]; then
+        CACHECOUNT=`ls -1 "$CACHEDIR" | wc -l`
+            if [ $CACHECOUNT -gt 0 ]; then
+                "$IHOOK" --script="$SCRIPT" "$ARGS"
+            fi
+    fi
+fi

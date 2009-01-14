@@ -1,0 +1,135 @@
+You'll have to do a fair amount of manual setup work to try any of this out.  The hardest part will be setting up the web server. 
+
+Somewhere in the webserver's document root you'll need a set of directories like this: 
+
+repo_root/  (this name can be changed, but the subdirectories cannot)
+	catalogitems/
+		all/
+		development/
+		testing/
+		production/
+	catalogs/
+	pkgs/
+	
+
+When populated, they'll look something like:
+
+repo_root/
+	catalogitems/
+		all/
+			Firefox3.0.3
+			Office2008v12.1.12
+			Office2008v12.1.14
+			PhotoshopCS3
+			PhotoshopCS4
+			ServerAdminTools10.5.5
+			TextWrangler2.3
+		development/
+		production/
+			Firefox -> ../all/Firefox3.0.3		
+			Office2008 -> ../all/Office2008v12.1.12
+			PhotoshopCS3 -> ../all/PhotoshopCS3
+			ServerAdminTools -> ../all/ServerAdminTools10.5.5
+			TextWrangler -> ../all/TextWrangler2.3
+		testing/
+			Firefox -> ../all/Firefox3.1b1
+			Office2008 -> ../all/Office2008v12.1.14
+			PhotoshopCS4 -> ../all/PhotoshopCS4
+	catalogs/
+		artlab_leopard
+		greg_neagle
+		production_leopard
+		testing_leopard
+	pkgs/
+		Firefox3.0.3.dmg
+		Firefox3.1b1.dmg
+		TextWrangler2.3.pkg.dmg
+		ServerAdminToold1055.dmg
+		adobe/
+			AdobePhotoshopCS3.dmg
+			AdobePhotoshopCS4.dmg
+		disney/
+			DAPasswordChanger.dmg
+			DisneyAnimationSetupAssistant4.6.dmg
+		microsoft/
+			Office2008.dmg
+			Office2008SP1.dmg
+			Office2008v12.1.12update.dmg
+			Office2008v12.1.13update.dmg
+			Office2008v12.1.14update.dmg
+		other_vendor/
+			someflatpackage.pkg
+
+To serve up the manifests/catalogs, you have two choices. The easiest to get started is to just create a repo_root/catalogs directory and put your catalogs there, then set the manifest_url in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/catalogs/
+and set the client_identifier in /Library/Preferences/ManagedInstalls.plist to the name of a catalog 
+so the final url is 
+http:/yourwebserver/repo_root/catalogs/name_of_catalog
+The other choice is implementing the CGI in the code/server folder in this distribution.  Ask if you want more info on that.
+
+
+Bootstrapping:
+Put some installer items (flat packages or dmgs) in repo_root/pkgs
+I've included one for TextWrangler that matches one of the catalogitem examples; you can download ServerAdminToold1055.dmg from Apple for the other one.
+Edit the two example catalogitems if you didn't put their installer items at the root of repo_root/pkgs
+Copy the manifest example (manifest.plist) to repo_root/catalogs/.  Rename if you'd like.
+
+You're done with the webserver.
+On a client:
+
+Edit ManagedInstalls.plist (from the Preferences folder in this distribution):
+Change the managed_install_dir key to point to your desired directory. My eventual intention is /Library/Managed Installs, but for testing I've been using /Users/Shared/Managed Installs
+Change the manifest_url in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/catalogs/
+Change the client_identifier to the name of the actual catalog file on the webserver (perhaps simply manifest.plist for now...)
+Change the sw_repo_url to the url to repo_root.
+Copy this file to /Library/Preferences.
+
+Now, from the code/client directory:
+
+Run catalogcheck.py.  You should get a copy of the MainCatalog.plist in your managed_install_dir/catalogs/. It should get more info on the items in the catalog (putting them in managed_install_dir/catalogitems/) and decide if they need to be installed.  If so, the installer items will be copied to managed_install_dir/Cache/
+Finally: as root, run installAtLogout.py, and the items in managed_install_dir/Cache should be installed.  Logs from this process go in managed_install_dir/Logs
+
+
+More notes:
+
+In the code/client directory:
+Tool: catalogcheck.py:
+Client asks for a main catalog.  It's retrieved.  Main catalog contains some metadata and a list of managed installs. On the client, it's named MainCatalog.plist, though on the server it may have any name.
+getcatalog.py requests a catalog via one of three values:
+1) if you pass --id=arbitrarystring at the command line, it uses 'arbitrarystring' as the request:
+http://webserver/repo/catalogs/arbitrarystring
+2) If no --id option is passed, it looks for a client_identifier value in /Library/Preferences/ManagedInstalls.plist and uses that.
+3) If no client_identifier is available, it uses the fully-qualified hostname of the machine:
+http://webserver/repo/catalogs/hostname.mycompany.com
+Note that if the manifest_url takes the form of a CGI invocation (http://webserver/cgi-bin/getmanifest?), the final URLs look like
+http://webserver/cgi-bin/getmanifest?arbitrarystring
+The CGI approach will open the possibility for pattern matching and more logic in the client-to-catalog mapping...
+
+Next, the client asks for more detail on each managed install (In future: we cache these,  we only ask for them if they are not in the cache or our cached mod date is older).
+As we get more detail on each managed install, we may discover some dependancies, so we request more info on these as well.
+We then check the items to see if they are already installed.
+For items that are not installed, or have an older version, we download installer items and put them in a staging folder.
+(any items previously staged that have no corresponding catalog item are removed from the staging folder - this covers the case where an item is erroneously added to a manifest and then removed before it is actually installed)
+Using the dependency info and the catalog items, we build a list of items to be installed and their order. (InstallInfo.plist)
+
+
+Tool to be written:
+Notify the user that there are updates to be installed, and ask them to log out to have them installed, or notify them that they will be installed at next logout.
+
+
+Tool: installAtLogout.py
+At next logout, a process uses the InstallInfo.plist file generated by proccesscatalog.py (to determine install order) and the staged installer items and installs everything, removing the cached installer items as they are installed.  If a reboot is required, the machine is rebooted after all installs are complete.
+
+
+Tool: makecatalogitem.py
+Creates a managed install catalog item plist given an Installer item:
+a .pkg, a .mpkg, or a .dmg containing a .pkg or .mpkg
+at the root of the mounted disk image.
+
+You may also pass additional items that are installed by the package. These
+are added to the 'installs' key of the catalog item plist and are used when 
+processing the catalog to check if the package needs to be installed or 
+reinstalled.
+
+The generated plist is printed to STDOUT.
+
+Usage: makecatalogitem /path/to/package_or_dmg [-f /path/to/item/it/installs ...]

@@ -1,0 +1,9 @@
+The actual tools are:
+
+catalogcheck.py - gets the catalog for the client and processes it to determine what, if anything, needs to be installed.
+installAtLogout.py - meant to be run as part of a logout hook.  Does the actual installs.
+makecatalogitem.py: Helper tool to help create catalogitem plists for each installer item.
+
+
+Supporting library:
+managedinstalls.py

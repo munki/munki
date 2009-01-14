@@ -1,0 +1,66 @@
+Still debating whether to call these manifests or catalogs or something else.
+
+Essentially just a simple list of the items to install or verify their installation.
+
+The optional key 'default_branch' defines where to look for items referred to by relative path. I envision this as a way to quickly move a configuration from unstable to stable or vice-versa.
+
+Items can have a relative path, or an "absolute" path.  If they have an "absolute" path, the default_branch is ignored and the item is retrieved from the full path relative to the repo_root/pkgs/:
+
+<dict>
+	<key>default_branch</key>
+	<string>testing</string>
+	<key>managed_installs</key>
+	<array>
+		<string>ServerAdminTools</string>
+		<string>/production/TextWrangler</string>
+		<string>subfolder/AnotherItem</string>
+	</array>
+</dict>
+
+ServerAdminTools is requested from: http://webserver/reporoot/catalogitems/testing/ServerAdminTools
+
+TextWrangler is requested from
+http://webserver/reporoot/catalogitems/production/TextWrangler
+
+AnotherItem is requested from
+http://webserver/reporoot/catalogitems/testing/subfolder/AnotherItem
+
+Subfolders are organizational only and do not provide additional namespace, since the storage on the client is flat:
+
+<dict>
+	<key>default_branch</key>
+	<string>production</string>
+	<key>managed_installs</key>
+	<array>
+		<string>TextWrangler</string>
+		<string>subfolder/TextWrangler</string>
+	</array>
+</dict>
+
+would result in the catalogitem "subfolder/TextWrangler" replacing "TextWrangler" on the client, as both would be downloaded to the same path on the client.  This might be considered a misfeature...
+
+Catalogs now support references to other catalogs (nested catalogs):
+
+<dict>
+	<key>default_branch</key>
+	<string>production</string>
+	<key>managed_installs</key>
+	<array>
+		<string>/catalogs/leopard_standard_apps</string>
+		<string>TextWrangler</string>
+	</array>
+</dict>
+
+Where there is a file at 
+http://swrepo_root/catalogs/leopard_standard_apps:
+
+<dict>
+	<key>default_branch</key>
+	<string>production</string>
+	<key>managed_installs</key>
+	<array>
+		<string>MicrosoftOffice2008</string>
+		<string>Firefox</string>
+		<string>Thunderbird</string>
+	</array>
+</dict>

@@ -1,0 +1,10 @@
+The tools get their configuration from /Library/Preferences/ManagedInstalls.plist
+
+Currently only three values are defined, and if the file is missing managedinstalls.py uses these defaults:
+
+prefs['managed_install_dir'] = "/Library/Managed Installs"
+prefs['manifest_url'] = "http:/managedinstalls/cgi-bin/getmanifest"
+prefs['sw_repo_url'] = "http://managedinstalls/swrepo"
+
+
+You'll want to edit for your own use.

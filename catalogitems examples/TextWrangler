@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>name</key>
+	<string>TextWrangler</string>
+	<key>version</key>
+	<string>2.3</string>
+	<key>description</key>
+	<string>Text editor from the makers of BBEdit.</string>
+	<key>installer_item_location</key>
+	<string>TextWrangler2.3.pkg.dmg</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>type</key>
+			<string>application</string>
+			<key>CFBundleIdentifier</key>
+			<string>com.barebones.textwrangler</string>
+			<key>CFBundleName</key>
+			<string>TextWrangler</string>
+			<key>CFBundleShortVersionString</key>
+			<string>2.3</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4</string>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>packageid</key>
+			<string>com.poleposition-sw.lanrev_installease_TextWrangler2.3.pkg</string>
+			<key>version</key>
+			<string>1.0.0.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>
+
+

@@ -1,0 +1,49 @@
+These examples don't show all the supported keys.  Here's a few more:
+
+'installs' key supports applications, bundles, info-style plists (ususally Info.plist or version.plist) and simple file existence:
+
+<key>installs</key>
+	<array>
+		<dict>
+			<key>type</key>
+			<string>application</string>
+			<key>CFBundleName</key>
+			<string>Workgroup Manager</string>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.WorkgroupManager</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.5.5</string>
+		</dict>
+		<dict>
+			<key>type</key>
+			<string>bundle</string>
+			<key>path</key>
+			<string>/Applications/Server/Server Assistant.app/Contents/Plug-ins/BackupServer.bundle</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.5.1</string>
+		</dict>
+		<dict>
+			<key>type</key>
+			<string>plist</string>
+			<key>path</key>
+			<string>/Applications/Server/Server Admin.app/Contents/Info.plist</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.5.3</string>
+		</dict>
+		<dict>
+			<key>type</key>
+			<string>file</string>
+			<key>path</key>
+			<string>/Applications/Server/Server Monitor.app/Contents/MacOS/Server Monitor</string>
+		</dict>
+	</array>
+	
+There is also a 'dependencies' key:
+
+<key>dependencies</key>
+<array>
+	<string>TextWrangler</string>
+</array>
+
+The format for dependencies is identical to the managed_installs key in the manifest/catalog. 
+No checking is done for circular dependencies - so don't make any.

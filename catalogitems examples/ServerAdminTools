@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>name</key>
+	<string>Server Admin Tools</string>
+	<key>version</key>
+	<string>10.5.5</string>
+	<key>description</key>
+	<string>Administration tools for OS X Server</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>type</key>
+			<string>application</string>
+			<key>CFBundleName</key>
+			<string>Workgroup Manager</string>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.WorkgroupManager</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.5.5</string>
+		</dict>
+		<dict>
+			<key>type</key>
+			<string>application</string>
+			<key>CFBundleName</key>
+			<string>System Image Utility</string>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.server.SystemImageUtility</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.5.5</string>
+		</dict>
+	</array>
+	<key>receipts</key>
+	<array>
+		<dict>
+      <key>packageid</key>
+      <string>com.apple.pkg.ServerAdminTools</string>
+      <key>version</key>
+      <string>10.5.3.0</string>
+		</dict>
+		<dict>
+      <key>packageid</key>
+      <string>com.apple.pkg.ServerSetup</string>
+      <key>version</key>
+      <string>10.5.3.0</string>
+		</dict>
+  </array>
+	<key>minimum_os_vers</key>
+	<string>10.5.0</string>
+	<key>installer_item_location</key>
+	<string>ServerAdminToold1055.dmg</string>
+</dict>
+</plist>
+
