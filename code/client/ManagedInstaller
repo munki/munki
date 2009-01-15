@@ -15,8 +15,21 @@ import optparse
 import managedinstalls
 
 
+def createDirsIfNeeded(dirlist):
+    for dir in dirlist:
+        if not os.path.exists(dir):
+            try:
+                os.mkdir(dir)
+            except:
+                print >>sys.stderr, "Could not create %s" % dir
+                return False
+                
+    return True
+
+
 def log(message):
     global logdir
+    createDirsIfNeeded([logdir])
     logfile = os.path.join(logdir,'autoinstall.log')
     f = open(logfile, mode='a', buffering=1)
     if f:
