@@ -39,14 +39,17 @@ Subfolders are organizational only and do not provide additional namespace, sinc
 
 would result in the catalogitem "subfolder/TextWrangler" replacing "TextWrangler" on the client, as both would be downloaded to the same path on the client.  This might be considered a misfeature...
 
-Catalogs now support references to other catalogs (nested catalogs):
+Catalogs support references to other catalogs (nested catalogs):
 
 <dict>
 	<key>default_branch</key>
 	<string>production</string>
+	<key>included_catalogs</key>
+	<array>
+		<string>leopard_standard_apps</string>
+	</array>
 	<key>managed_installs</key>
 	<array>
-		<string>/catalogs/leopard_standard_apps</string>
 		<string>TextWrangler</string>
 	</array>
 </dict>
