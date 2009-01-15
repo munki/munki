@@ -4,7 +4,6 @@
 managedinstallslib.py
 
 Created by Greg Neagle on 2008-11-18.
-Copyright (c) 2008 Walt Disney Animation Studios. All rights reserved.
 
 Common functions used by the managedinstalls tools.
 """

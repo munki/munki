@@ -223,8 +223,10 @@ def processRemovals(removalList):
             if uninstallmethod[0] == "removepackages":
                 if 'packages' in item:
                     if options.ihookoutput:
-                        print "%TITLE Removing " + name + "..."
-                        #print "%%%s Item %s of %s" % (0, currentinstallable, installablecount) 
+                        print "%TITLE Removing %s.." % name
+                        #print "%%%s Item %s of %s" % (0, currentinstallable, installablecount)
+                    else:
+                        print "Removing %s..." % name
                     cmd = ['/Users/Shared/bin/removepackages', '-f']
                     if options.ihookoutput:
                         cmd.append('-i')

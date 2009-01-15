@@ -29,9 +29,9 @@
 	<array>
 		<dict>
 			<key>packageid</key>
-			<string>com.poleposition-sw.lanrev_installease_TextWrangler2.3.pkg</string>
+			<string>com.myorganization.TextWrangler2.3.pkg</string>
 			<key>version</key>
-			<string>1.0.0.0</string>
+			<string>2.3.0</string>
 		</dict>
 	</array>
 </dict>
