@@ -67,3 +67,14 @@ http://swrepo_root/catalogs/leopard_standard_apps:
 		<string>Thunderbird</string>
 	</array>
 </dict>
+
+Uninstalls:
+You may include a "managed_uninstalls" key:
+
+        <key>managed_uninstalls</key>
+        <array>
+                <string>ServerAdminTools</string>
+                <string>TextWrangler</string>
+                <string>Silverlight</string>
+        </array>
+These items will be checked to see if they're installed, and removed if possible.
