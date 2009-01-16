@@ -25,6 +25,7 @@ import optparse
 from distutils import version
 import plistlib
 import subprocess
+import hashlib
 
 import managedinstalls
 
@@ -147,6 +148,21 @@ def getBundleInfo(path):
     return None
 
 
+def getmd5hash(filename):
+    if not os.path.isfile(filename):
+        return "NOT A FILE"
+
+    f = open(filename, 'rb')
+    m = hashlib.md5()
+    while 1:
+        chunk = f.read(2**16)
+        if not chunk:
+            break
+        m.update(chunk)
+    f.close()
+    return m.hexdigest()
+
+
 def getiteminfo(itempath):
     infodict = {}
     if itempath.endswith('.app'):
@@ -181,6 +197,8 @@ def getiteminfo(itempath):
     if not 'CFBundleShortVersionString' in infodict:
         infodict['type'] = 'file'
         infodict['path'] = itempath
+        if os.path.isfile(itempath):
+            infodict['md5checksum'] = getmd5hash(itempath)
     return infodict
         
 

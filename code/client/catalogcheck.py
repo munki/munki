@@ -6,6 +6,7 @@ catalogcheck.py
 Created by Greg Neagle on 2008-11-13.
 """
 
+#standard libs
 import sys
 import os
 import plistlib
@@ -14,7 +15,9 @@ import subprocess
 from distutils import version
 import urlparse
 import optparse
+import hashlib
 
+#our lib
 import managedinstalls
 
 # appdict is a global so we don't call system_profiler more than once per session
@@ -200,6 +203,21 @@ def comparePlistVersion(item):
         return 0
 
 
+def getmd5hash(filename):
+    if not os.path.isfile(filename):
+        return "NOT A FILE"
+        
+    f = open(filename, 'rb')
+    m = hashlib.md5()
+    while 1:
+        chunk = f.read(2**16)
+        if not chunk:
+            break
+        m.update(chunk)
+    f.close()
+    return m.hexdigest()
+
+
 def filesystemItemExists(item):
     """
     Checks to see if a filesystem item exists
@@ -210,6 +228,16 @@ def filesystemItemExists(item):
         print "Checking existence of %s..." % filepath
         if os.path.exists(filepath):
             print "\tExists."
+            if 'md5checksum' in item:
+                storedchecksum = item['md5checksum']
+                ondiskchecksum = getmd5hash(filepath)
+                print "Comparing checksums..."
+                if storedchecksum == ondiskchecksum:
+                    print "Checksums match."
+                    return 1
+                else:
+                    print "Checksums differ: expected %s, got %s" % (storedchecksum, ondiskchecksum)
+                    return 0
             return 1
         else:
             print "\tDoes not exist."
