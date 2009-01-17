@@ -84,11 +84,15 @@ def nameAndVersion(s):
 
 
 def getCatalogInfo(pkgitem):
+    installedsize = 0
     info = managedinstalls.getPkgInfo(pkgitem)
     highestpkgversion = "0.0"
     for infoitem in info:
         if version.LooseVersion(infoitem['version']) > version.LooseVersion(highestpkgversion):
             highestpkgversion = infoitem['version']
+        if "installed_size" in infoitem:
+            # note this is in KBytes
+            installedsize += infoitem['installed_size']
     
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
@@ -101,6 +105,8 @@ def getCatalogInfo(pkgitem):
     cataloginfo['version'] = metaversion
     cataloginfo['description'] = ""
     cataloginfo['receipts'] = []
+    if installedsize > 0:
+        cataloginfo['installed_size'] = installedsize
     for infoitem in info: 
         pkginfo = {}
         pkginfo['packageid'] = infoitem['id']
@@ -218,6 +224,18 @@ def main():
         
     item = arguments[0].rstrip("/")
     if os.path.exists(item):
+        # get size of installer item
+        itemsize = 0 
+        if os.path.isfile(item):
+            itemsize = int(os.path.getsize(item))
+        if os.path.isdir(item):
+            # need to walk the dir and add it all up
+            for (path, dirs, files) in os.walk(item):
+                for f in files:
+                    filename = os.path.join(path, f)
+                    # use os.lstat so we don't follow symlinks
+                    itemsize += int(os.lstat(filename).st_size)
+        
         if item.endswith('.dmg'):
             catinfo = getCatalogInfoFromDmg(item)
         elif item.endswith('.pkg') or item.endswith('.mpkg'):
@@ -227,6 +245,7 @@ def main():
             exit(-1)
         
         if catinfo:
+            catinfo['installer_item_size'] = itemsize
             minosversion = ""
             if options.file:
                 installs = []           

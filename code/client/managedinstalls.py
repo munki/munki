@@ -113,6 +113,8 @@ def parsePkgRefs(filename):
                 pkginfo = {}
                 pkginfo['id'] = ref.attributes['id'].value.encode('UTF-8')
                 pkginfo['version'] = normalizeVersion(ref.attributes['version'].value.encode('UTF-8'))
+                if 'installKBytes' in keys:
+                    pkginfo['installed_size'] = int(ref.attributes['installKBytes'].value.encode('UTF-8'))
                 if not pkginfo in info:
                     info.append(pkginfo)
     else:
@@ -170,16 +172,22 @@ def getBundlePackageInfo(pkgpath):
             if debug:
                 for key in pl:
                     print key, "=>", pl[key]
+                    
             if "CFBundleIdentifier" in pl:
-                pkginfo['id'] = pl["CFBundleIdentifier"];
-                if "CFBundleShortVersionString" in pl:
-                    majorVersion = pl["CFBundleShortVersionString"]
-                    minorVersion = "0"
-                    if "IFMinorVersion" in pl:
-                        minorVersion = str(pl["IFMinorVersion"])
-                    pkginfo['version'] = normalizeVersion(majorVersion, minorVersion)
-                    infoarray.append(pkginfo)
-                    return infoarray
+                pkginfo['id'] = pl["CFBundleIdentifier"]
+                
+            if "CFBundleShortVersionString" in pl:
+                majorVersion = pl["CFBundleShortVersionString"]
+                minorVersion = "0"
+                if "IFMinorVersion" in pl:
+                    minorVersion = str(pl["IFMinorVersion"])
+                pkginfo['version'] = normalizeVersion(majorVersion, minorVersion)
+                    
+            if "IFPkgFlagInstalledSize" in pl:
+                pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
+                
+            infoarray.append(pkginfo)
+            return infoarray
 
     bundlecontents = os.path.join(pkgpath, "Contents")
     if os.path.exists(bundlecontents):
