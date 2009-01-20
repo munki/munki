@@ -245,7 +245,7 @@ def main():
             exit(-1)
         
         if catinfo:
-            catinfo['installer_item_size'] = itemsize
+            catinfo['installer_item_size'] = int(itemsize/1024)
             minosversion = ""
             if options.file:
                 installs = []           
@@ -271,6 +271,8 @@ def main():
                 catinfo['minimum_os_version'] = "10.4.0"
             
             # and now, what we've all been waiting for...
+            print catinfo
+            print
             print plistlib.writePlistToString(catinfo)
 
 
