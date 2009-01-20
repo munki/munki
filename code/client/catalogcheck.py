@@ -367,6 +367,24 @@ def getCatalogItemDetail(item, defaultbranch=''):
         return ""
 
 
+def enoughDiskSpace(catalogitem_pl):
+    # fudgefactor is set to 100MB
+    fudgefactor = 100000
+    installeritemsize = 0
+    installedsize = 0
+    if 'installer_item_size' in catalogitem_pl:
+        installeritemsize = catalogitem_pl['installer_item_size']
+    if 'installed_size' in catalogitem_pl:
+        installedsize = catalogitem_pl['installed_size']
+    diskspaceneeded = installeritemsize + installedsize + fudgefactor
+    availablediskspace = managedinstalls.getAvailableDiskSpace()
+    if availablediskspace > diskspaceneeded:
+        return True
+    else:
+        print "There is insufficient disk space to download and install. %sMB needed; %sMB available" % (int(diskspaceneeded/1024), int(availablediskspace/1024))
+        return False
+
+
 def processInstalls(catalogitem, defaultbranch, installlist):
     """
     Processes a catalog item. Determines if it needs to be
@@ -397,6 +415,11 @@ def processInstalls(catalogitem, defaultbranch, installlist):
     except:
         print >>sys.stderr, "%s is not a valid plist!" % catalogitem
         return False
+        
+    # check to see if item is already in the installlist:
+    if isItemInInstallList(pl, installlist):
+        print "%s is already scheduled to be installed." % catalogitemname
+        return True
     
     # check dependencies
     dependenciesMet = True
@@ -412,11 +435,6 @@ def processInstalls(catalogitem, defaultbranch, installlist):
         print "Didn't attempt to install %s because could not resolve all dependencies." % catalogitemname
         return False
         
-    # check to see if item is already in the installlist:
-    if isItemInInstallList(pl, installlist):
-        print "%s is already scheduled to be installed." % catalogitemname
-        return True
-    
     needToInstall = False 
     if 'installs' in pl:
         installitems = pl['installs']
@@ -478,7 +496,11 @@ def processInstalls(catalogitem, defaultbranch, installlist):
     iteminfo["catalogitem"] = catalogitemname
     iteminfo["description"] = description
                
-    if needToInstall:        
+    if needToInstall:
+        # check to see if there is enough free space to download and install
+        if not enoughDiskSpace(pl):
+            return False
+        
         if 'installer_item_location' in pl:
             location = pl['installer_item_location']
             url = downloadbaseurl + location

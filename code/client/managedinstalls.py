@@ -176,18 +176,18 @@ def getBundlePackageInfo(pkgpath):
             if "CFBundleIdentifier" in pl:
                 pkginfo['id'] = pl["CFBundleIdentifier"]
                 
-            if "CFBundleShortVersionString" in pl:
-                majorVersion = pl["CFBundleShortVersionString"]
-                minorVersion = "0"
-                if "IFMinorVersion" in pl:
-                    minorVersion = str(pl["IFMinorVersion"])
-                pkginfo['version'] = normalizeVersion(majorVersion, minorVersion)
+                if "CFBundleShortVersionString" in pl:
+                    majorVersion = pl["CFBundleShortVersionString"]
+                    minorVersion = "0"
+                    if "IFMinorVersion" in pl:
+                        minorVersion = str(pl["IFMinorVersion"])
+                    pkginfo['version'] = normalizeVersion(majorVersion, minorVersion)
                     
-            if "IFPkgFlagInstalledSize" in pl:
-                pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
+                if "IFPkgFlagInstalledSize" in pl:
+                    pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
                 
-            infoarray.append(pkginfo)
-            return infoarray
+                infoarray.append(pkginfo)
+                return infoarray
 
     bundlecontents = os.path.join(pkgpath, "Contents")
     if os.path.exists(bundlecontents):
@@ -272,7 +272,7 @@ def getInstalledPackageVersion(pkgid):
         pl = plistlib.readPlistFromString(out)
 
         if "pkgid" in pl:
-            foundbundleid = pl["pkgid"];
+            foundbundleid = pl["pkgid"]
         if "pkg-version" in pl:
             foundvers = pl["pkg-version"]
         if pkgid == foundbundleid:
@@ -280,6 +280,25 @@ def getInstalledPackageVersion(pkgid):
 
     # This package does not appear to be currently installed
     return ""
+    
+    
+# some utility functions
+
+def getAvailableDiskSpace(volumepath="/"):
+    # returns available diskspace in KBytes.
+    p = subprocess.Popen(["/usr/sbin/diskutil", "info", "-plist", volumepath], bufsize=1,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    if out:
+        pl = plistlib.readPlistFromString(out)
+
+        if "FreeSpace" in pl:
+            freespace = pl["FreeSpace"]
+        return int(freespace/1024)
+
+    # Yikes
+    return 0
+    
     
 #
 #    Handles http downloads for the managed installer tools.
