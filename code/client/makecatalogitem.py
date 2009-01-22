@@ -84,6 +84,22 @@ def nameAndVersion(s):
 
 
 def getCatalogInfo(pkgitem):
+    """
+    The core function here. Queries an installer item (.pkg, .mpkg)
+    and gets metadata. There are a lot of valid Apple package formats
+    and this function may not deal with them all equally well.
+    Standard bundle packages are probably the best understood and documented,
+    so this code deals with those pretty well.
+    
+    metadata items include:
+    installer_item_size:  size of the installer item (.dmg, .pkg, etc)
+    installed_size: size of items that will be installed
+    RestartAction: will a restart be needed after installation?
+    name
+    version
+    description
+    receipts: an array of packageids that may be installed (some may be optional)
+    """
     installedsize = 0
     installerinfo = managedinstalls.getInstallerPkgInfo(pkgitem)
     info = managedinstalls.getPkgInfo(pkgitem)
@@ -127,6 +143,13 @@ def getCatalogInfo(pkgitem):
     
 
 def getCatalogInfoFromDmg(dmgpath):
+    """
+    * Mounts a disk image 
+    * Gets catalog info for the first installer item found at the root level.
+    * Unmounts the disk image
+    
+    To-do: handle multiple installer items on a disk image
+    """
     cataloginfo = None
     mountpoints = mountdmg(dmgpath)
     for mountpoint in mountpoints:
@@ -166,6 +189,9 @@ def getBundleInfo(path):
 
 
 def getmd5hash(filename):
+    """
+    Returns hex of MD5 checksum of a file
+    """
     if not os.path.isfile(filename):
         return "NOT A FILE"
 
@@ -181,6 +207,12 @@ def getmd5hash(filename):
 
 
 def getiteminfo(itempath):
+    """
+    Gets info for filesystem items passed to makecatalog item, to be used for
+    the "installs" key.
+    Determines if the item is an application, bundle, Info.plist, or a file or directory
+    and gets additional metadata for later comparison.
+    """
     infodict = {}
     if itempath.endswith('.app'):
         infodict['type'] = 'application'
@@ -282,7 +314,6 @@ def main():
                 catinfo['minimum_os_version'] = "10.4.0"
             
             # and now, what we've all been waiting for...
-            print
             print plistlib.writePlistToString(catinfo)
 
 

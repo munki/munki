@@ -29,7 +29,8 @@ def getAppData():
     """
     global appdict
     if appdict == {}:
-        print "Getting info on currently installed applications..."
+        if options.verbose:
+            print "Getting info on currently installed applications..."
         cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
         p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -68,22 +69,30 @@ def compareVersions(thisvers, thatvers):
     Returns 2 if thisvers is newer than thatvers
     """
     if version.LooseVersion(thisvers) < version.LooseVersion(thatvers):
-        print "\tInstalled version is older (%s)." % thisvers
+        if options.verbose:
+            print "\tInstalled version is older (%s)." % thisvers
         return -1
     elif version.LooseVersion(thisvers) == version.LooseVersion(thatvers):
-        print "\tThis version is currently installed."
+        if options.verbose:
+            print "\tThis version is currently installed."
         return 1
     else:
-        print "\tA newer version is currently installed (%s)." % thisvers
+        if options.verbose:
+            print "\tA newer version is currently installed (%s)." % thisvers
         return 2
 
 
 def isSameOrNewerApplicationInstalled(app):
+    return compareApplicationVersion(app, newer_ok=True)
+
+
+def compareApplicationVersion(app, newer_ok=False):
     """
     app is a dict with application
     bundle info
     uses system profiler data to look for
-    an app that is the same or newer version
+    an app that is the same version
+    (or newer version if newer_ok is True)
     """
     
     name = bundleid = ''
@@ -96,11 +105,12 @@ def isSameOrNewerApplicationInstalled(app):
         versionstring = app['CFBundleShortVersionString']
         
     if name == '' and bundleid == '':
-        print "No application name or bundleid was specified!"
+        print >>sys.stderr,"No application name or bundleid was specified!"
         # return True so we don't install
         return True
     
-    print "Looking for application %s with bundleid: %s, version %s..." % (name, bundleid, versionstring)
+    if options.verbose:
+        print "Looking for application %s with bundleid: %s, version %s..." % (name, bundleid, versionstring)
     appinfo = []
     appdata = getAppData()
     if appdata:
@@ -116,17 +126,25 @@ def isSameOrNewerApplicationInstalled(app):
     
     for item in appinfo:
         if '_name' in item:
-            print "\tName: \t %s" % item['_name'].encode("UTF-8")
+            if options.verbose:
+                print "\tName: \t %s" % item['_name'].encode("UTF-8")
         if 'path' in item:
-            print "\tPath: \t %s" % item['path'].encode("UTF-8")
-            print "\tCFBundleIdentifier: \t %s" % getAppBundleID(item['path'])
+            if options.verbose:
+                print "\tPath: \t %s" % item['path'].encode("UTF-8")
+                print "\tCFBundleIdentifier: \t %s" % getAppBundleID(item['path'])
         if 'version' in item:
-            print "\tVersion: \t %s" % item['version'].encode("UTF-8")
-            if compareVersions(item['version'], versionstring) > 0:
+            if options.verbose:
+                print "\tVersion: \t %s" % item['version'].encode("UTF-8")
+            if compareVersions(item['version'], versionstring) == 1:
+                # version is the same
+                return True
+            if newer_ok and compareVersions(item['version'], versionstring) == 2:
+                # version is newer
                 return True
                 
     # if we got this far, we didn't find the same or newer
-    print "Did not find the same or newer application on the startup disk."
+    if options.verbose:
+        print "Did not find the same or newer application on the startup disk."
     return False
 
 
@@ -145,25 +163,29 @@ def compareBundleVersion(item):
         filepath = os.path.join(item['path'], 'Contents', 'Info.plist')
         vers = item['CFBundleShortVersionString']
     else:
-        print "Missing bundle path or version!"
+        print >>sys.stderr, "Missing bundle path or version!"
         return -2
 
-    print "Checking %s for version %s..." % (filepath, vers)
+    if options.verbose:
+        print "Checking %s for version %s..." % (filepath, vers)
     if not os.path.exists(filepath):
-        print "\tNo Info.plist found at %s" % filepath
+        if options.verbose:
+            print "\tNo Info.plist found at %s" % filepath
         return 0
 
     try:
         pl = plistlib.readPlist(filepath) 
     except:
-        print "\t%s may not be a plist!" % filepath
+        if options.verbose:
+            print "\t%s may not be a plist!" % filepath
         return 0
 
     if 'CFBundleShortVersionString' in pl:
         installedvers = pl['CFBundleShortVersionString']
         return compareVersions(installedvers, vers)
     else:
-        print "\tNo version info in %s." % filepath
+        if options.verbose:
+            print "\tNo version info in %s." % filepath
         return 0
 
 
@@ -181,25 +203,29 @@ def comparePlistVersion(item):
         filepath = item['path']
         vers = item['CFBundleShortVersionString']
     else:
-        print "Missing plist path or version!"
+        print >>sys.stderr, "Missing plist path or version!"
         return -2
     
-    print "Checking %s for version %s..." % (filepath, vers)
+    if options.verbose:
+        print "Checking %s for version %s..." % (filepath, vers)
     if not os.path.exists(filepath):
-        print "\tNo plist found at %s" % filepath
+        if options.verbose:
+            print "\tNo plist found at %s" % filepath
         return 0
         
     try:
         pl = plistlib.readPlist(filepath) 
     except:
-        print "\t%s may not be a plist!" % filepath
+        if options.verbose:
+            print "\t%s may not be a plist!" % filepath
         return 0
     
     if 'CFBundleShortVersionString' in pl:
         installedvers = pl['CFBundleShortVersionString']
         return compareVersions(installedvers, vers)
     else:
-        print "\tNo version info in %s." % filepath
+        if options.verbose:
+            print "\tNo version info in %s." % filepath
         return 0
 
 
@@ -225,25 +251,31 @@ def filesystemItemExists(item):
     """
     if 'path' in item:
         filepath = item['path']
-        print "Checking existence of %s..." % filepath
+        if options.verbose:
+            print "Checking existence of %s..." % filepath
         if os.path.exists(filepath):
-            print "\tExists."
+            if options.verbose:
+                print "\tExists."
             if 'md5checksum' in item:
                 storedchecksum = item['md5checksum']
                 ondiskchecksum = getmd5hash(filepath)
-                print "Comparing checksums..."
+                if options.verbose:
+                    print "Comparing checksums..."
                 if storedchecksum == ondiskchecksum:
-                    print "Checksums match."
+                    if options.verbose:
+                        print "Checksums match."
                     return 1
                 else:
-                    print "Checksums differ: expected %s, got %s" % (storedchecksum, ondiskchecksum)
+                    if options.verbose:
+                        print "Checksums differ: expected %s, got %s" % (storedchecksum, ondiskchecksum)
                     return 0
             return 1
         else:
-            print "\tDoes not exist."
+            if options.verbose:
+                print "\tDoes not exist."
             return 0
     else:
-        print "No path specified!"
+        print >>sys.stderr, "No path specified!"
         return -2
 
 
@@ -264,16 +296,21 @@ def compareReceiptVersion(item):
         print "Missing packageid or version info!"
         return -2
         
-    print "Looking for package %s, version %s" % (pkgid, vers)
+    if options.verbose:
+        print "Looking for package %s, version %s" % (pkgid, vers)
     installedvers = managedinstalls.getInstalledPackageVersion(pkgid)
     if installedvers:
         return compareVersions(installedvers, vers)
     else:
-        print "\tThis package is not currently installed." 
+        if options.verbose:
+            print "\tThis package is not currently installed." 
         return 0
 
 
 def download_installeritem(pkgurl):
+    """
+    Downloads a installer item from pkgurl.
+    """
     global mytmpdir
     
     managed_install_dir = managedinstalls.managed_install_dir()
@@ -321,7 +358,9 @@ def isItemInInstallList(catalogitem_pl, thelist):
 
 
 def getCatalogItemDetail(item, defaultbranch=''):
-    
+    """
+    Retrieves detailed info for a catalogitem
+    """
     managedinstallprefs = managedinstalls.prefs()
     sw_repo_baseurl = managedinstallprefs['sw_repo_url']
     managed_install_dir = managedinstallprefs['managed_install_dir']
@@ -347,13 +386,15 @@ def getCatalogItemDetail(item, defaultbranch=''):
         itemurl = catalogbaseurl + "/" + defaultbranch + "/" + item
     
     tempfilepath = os.path.join(mytmpdir, itemname)
-    print "Getting detail for %s from %s..." % (item, itemurl)
+    if options.verbose:
+        print "Getting detail for %s from %s..." % (item, itemurl)
     result = managedinstalls.getfilefromhttpurl(itemurl, tempfilepath, showprogress=True, ifmodifiedsince=itemmodtime)
     if result == 0:
         os.rename(tempfilepath, itempath)
     elif result == 304:
         # not modified, just return existing item
-        print "Item %s in local cache is up-to-date." % item
+        if options.verbose:
+            print "Item %s in local cache is up-to-date." % item
         return itempath
     else:
         print >>sys.stderr, "Error code: %s" % result
@@ -368,6 +409,10 @@ def getCatalogItemDetail(item, defaultbranch=''):
 
 
 def enoughDiskSpace(catalogitem_pl):
+    """
+    Used to determine if there is enough disk space
+    to be able to download and install the catalogitem
+    """
     # fudgefactor is set to 100MB
     fudgefactor = 100000
     installeritemsize = 0
@@ -442,7 +487,6 @@ def processInstalls(catalogitem, defaultbranch, installlist):
             if 'type' in item:
                 if item['type'] == 'application':
                     if not isSameOrNewerApplicationInstalled(item):
-                        print "Need to install %s" % catalogitemname
                         needToInstall = True
                         # once we know we need to install this one,
                         # no need to keep checking
@@ -451,7 +495,6 @@ def processInstalls(catalogitem, defaultbranch, installlist):
                     comparisonResult = compareBundleVersion(item)
                     if comparisonResult == -1 or comparisonResult == 0 :
                         # not there or older
-                        print "Need to install %s" % catalogitemname
                         needToInstall = True
                         # once we know we need to install this one,
                         # no need to keep checking
@@ -460,15 +503,13 @@ def processInstalls(catalogitem, defaultbranch, installlist):
                     comparisonResult = comparePlistVersion(item)
                     if comparisonResult == -1 or comparisonResult == 0 :
                         # not there or older
-                        print "Need to install %s" % catalogitemname
                         needToInstall = True
                         # once we know we need to install this one,
                         # no need to keep checking
                         break
                 if item['type'] == 'file':
                     if filesystemItemExists(item) == 0 :
-                        # not there
-                        print "Need to install %s" % catalogitemname
+                        # not there, or wrong checksum
                         needToInstall = True
                         # once we know we need to install this one,
                         # no need to keep checking
@@ -479,7 +520,6 @@ def processInstalls(catalogitem, defaultbranch, installlist):
             comparisonResult = compareReceiptVersion(item)
             if comparisonResult == -1 or comparisonResult == 0 :
                 # not there or older
-                print "Need to install %s" % catalogitemname
                 needToInstall = True
                 # once we know we need to install this one,
                 # no need to keep checking
@@ -497,8 +537,11 @@ def processInstalls(catalogitem, defaultbranch, installlist):
     iteminfo["description"] = description
                
     if needToInstall:
+        print "Need to install %s" % catalogitemname
         # check to see if there is enough free space to download and install
         if not enoughDiskSpace(pl):
+            iteminfo["installed"] = False
+            installlist.append(iteminfo)
             return False
         
         if 'installer_item_location' in pl:
@@ -551,12 +594,12 @@ def processCatalogForInstalls(catalogpath, listofinstalls=[]):
 def processRemovals(catalogitem, defaultbranch, removallist):
     """
     Processes a catalog item. Determines if it needs to be
-    removed, {{and if so, if any items dependent on it need to 
-    be removed first.}}  Items to be removed are added to the
+    removed, (and if so, if any items dependent on it need to 
+    be removed first.)  Items to be removed are added to the
     removallist
-    {{Calls itself recursively as it processes dependencies.
+    Calls itself recursively as it processes dependencies.
     Returns a boolean; when processing dependencies, a false return
-    will stop the installation of a dependent item}}
+    will stop the removal of a dependent item.
     """
 
     managedinstallprefs = managedinstalls.prefs()
@@ -622,8 +665,8 @@ def processRemovals(catalogitem, defaultbranch, removallist):
         for item in installitems:
             if 'type' in item:
                 if item['type'] == 'application':
-                    if isSameOrNewerApplicationInstalled(item):
-                        print "Need to remove %s" % catalogitemname
+                    if compareApplicationVersion(item, newer_ok=False):
+                        # exact version found
                         needToRemove = True
                         # once we know we need to remove this one,
                         # no need to keep checking
@@ -632,7 +675,6 @@ def processRemovals(catalogitem, defaultbranch, removallist):
                     comparisonResult = compareBundleVersion(item)
                     if comparisonResult == 1:
                         # same version is installed
-                        print "Need to remove %s" % catalogitemname
                         needToRemove = True
                         # once we know we need to remove this one,
                         # no need to keep checking
@@ -641,25 +683,22 @@ def processRemovals(catalogitem, defaultbranch, removallist):
                     comparisonResult = comparePlistVersion(item)
                     if comparisonResult == 1:
                         # same version is installed
-                        print "Need to remove %s" % catalogitemname
                         needToRemove = True
                         # once we know we need to remove this one,
                         # no need to keep checking
                         break
                 if item['type'] == 'file':
                     if filesystemItemExists(item) == 1:
-                        print "Need to remove %s" % catalogitemname
                         needToRemove = True
                         # once we know we need to remove this one,
                         # no need to keep checking
                         break
-    elif 'receipts' in pl:
+    if 'receipts' in pl:
         receipts = pl['receipts']
         for item in receipts:
             comparisonResult = compareReceiptVersion(item) 
             if comparisonResult == 1:
                 # same version is installed
-                print "Need to remove %s" % catalogitemname
                 needToRemove = True
                 # once we know we need to remove this one,
                 # no need to keep checking
@@ -677,11 +716,13 @@ def processRemovals(catalogitem, defaultbranch, removallist):
     iteminfo["description"] = description
 
     if needToRemove:
+        print "Need to remove %s" % catalogitemname
         uninstallmethod = pl['uninstall_method']
         
         if uninstallmethod == 'removepackages':
             # build list of packages based on receipts
-            print "Building list of packages to remove"
+            if options.verbose:
+                print "Building list of packages to remove"
             packages = []
             if 'receipts' in pl:
                 for item in pl['receipts']:
@@ -816,16 +857,17 @@ def getMainCatalog(alternate_id):
          
     return getcatalog(manifesturl)
 
+# some globals
+mytmpdir = tempfile.mkdtemp()
+p = optparse.OptionParser()
+p.add_option('--id', '-i', default='',
+                help='Alternate identifier for catalog retreival')
+p.add_option('--verbose', '-v', action='store_true',
+                help='More verbose output.')    
+options, arguments = p.parse_args()      
 
-mytmpdir = ""      
 def main():
-    global mytmpdir
-    mytmpdir = tempfile.mkdtemp()
-    
-    p = optparse.OptionParser()
-    p.add_option('--id', '-i', default='',
-                    help='Alternate identifier for catalog retreival')
-    options, arguments = p.parse_args()
+    global mytmpdir, options
     
     managedinstallprefs = managedinstalls.prefs()
     managed_install_dir = managedinstallprefs['managed_install_dir']
@@ -855,7 +897,8 @@ def main():
         
     for item in os.listdir(cachedir):
         if item not in installer_item_list:
-            print "Removing %s from cache" % item
+            if options.verbose:
+                print "Removing %s from cache" % item
             os.unlink(os.path.join(cachedir, item))
             
     # now generate a list of items to be uninstalled
