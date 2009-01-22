@@ -84,6 +84,25 @@ def prefs():
 # Apple package utilities
 #####################################################
 
+def getInstallerPkgInfo(filename):
+    installerinfo = {}
+    p = subprocess.Popen(["/usr/sbin/installer", "-pkginfo", "-verbose", "-plist", "-pkg", filename], bufsize=1, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+
+    if out:
+        pl = plistlib.readPlistFromString(out)
+        if 'Size' in pl:
+            installerinfo['installed_size'] = int(pl['Size'])
+        if 'Description' in pl:
+            installerinfo['description'] = pl['Description']
+        if 'Will Restart' in pl:
+            if pl['Will Restart'] == "YES":
+                installerinfo['RestartAction'] = "RequireRestart"
+                
+    return installerinfo
+    
+
 
 def normalizeVersion(majorVersion, minorVersion="0"):
     majorVersionParts = majorVersion.split(".")

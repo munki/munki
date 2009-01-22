@@ -85,7 +85,9 @@ def nameAndVersion(s):
 
 def getCatalogInfo(pkgitem):
     installedsize = 0
+    installerinfo = managedinstalls.getInstallerPkgInfo(pkgitem)
     info = managedinstalls.getPkgInfo(pkgitem)
+    
     highestpkgversion = "0.0"
     for infoitem in info:
         if version.LooseVersion(infoitem['version']) > version.LooseVersion(highestpkgversion):
@@ -100,13 +102,22 @@ def getCatalogInfo(pkgitem):
     if not len(metaversion):
         metaversion = highestpkgversion
         
+    if 'installed_size' in installerinfo:
+        if installerinfo['installed_size'] > 0:
+            installedsize = installerinfo['installed_size']
+           
     cataloginfo = {}
     cataloginfo['name'] = nameAndVersion(shortname)[0]
     cataloginfo['version'] = metaversion
+    if 'RestartAction' in installerinfo:
+        cataloginfo['RestartAction'] = installerinfo['RestartAction']
     cataloginfo['description'] = ""
-    cataloginfo['receipts'] = []
+    if 'description' in installerinfo:
+        cataloginfo['description'] = installerinfo['description']
     if installedsize > 0:
         cataloginfo['installed_size'] = installedsize
+    
+    cataloginfo['receipts'] = []        
     for infoitem in info: 
         pkginfo = {}
         pkginfo['packageid'] = infoitem['id']
@@ -271,7 +282,6 @@ def main():
                 catinfo['minimum_os_version'] = "10.4.0"
             
             # and now, what we've all been waiting for...
-            print catinfo
             print
             print plistlib.writePlistToString(catinfo)
 
