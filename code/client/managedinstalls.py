@@ -117,18 +117,42 @@ def getInstallerPkgInfo(filename):
     return installerinfo
     
 
+def padVersionString(versString,tupleCount):
+    if versString == None:
+        versString = "0"
+    components = versString.split(".")
+    if len(components) > tupleCount :
+        components = components[0:tupleCount]
+    else:
+        while len(components) < tupleCount :
+            components.append("0")
+    return ".".join(components)
+    
 
-def normalizeVersion(majorVersion, minorVersion="0"):
-    majorVersionParts = majorVersion.split(".")
-    if len(majorVersionParts)  == 5 and minorVersion == "0":
-        minorVersion = majorVersionParts[4]
-
-    while len(majorVersionParts) < 3:
-        majorVersionParts.append("0")
-
-    version = majorVersionParts[0:3]
-    version.append(str(minorVersion))
-    return ".".join(version)
+def getExtendedVersion(bundlepath):
+    """
+    Returns five-part version number like Apple uses in package DB
+    """
+    versionPlist = os.path.join(bundlepath,"Contents","version.plist")
+    infoPlist = os.path.join(bundlepath,"Contents","Info.plist")
+    pl = {}
+    if os.path.exists(versionPlist):
+        pl = plistlib.readPlist(versionPlist)
+    elif os.path.exists(infoPlist):
+        pl = plistlib.readPlist(infoPlist)
+    if pl:
+        shortVers = "0.0.0"
+        sourceVers = "0"
+        buildVers = "0"
+        if "CFBundleShortVersionString" in pl:
+            shortVers = padVersionString(pl["CFBundleShortVersionString"],3)
+        if "SourceVersion" in pl:
+            sourceVers = padVersionString(pl["SourceVersion"],1)
+        if "BuildVersion" in pl:
+            buildVers = padVersionString(pl["BuildVersion"],1)
+        return shortVers + "." + sourceVers + "." + buildVers
+    else:
+        return "0.0.0.0.0"
 
 
 def parsePkgRefs(filename):
@@ -145,7 +169,7 @@ def parsePkgRefs(filename):
 
                 pkginfo = {}
                 pkginfo['id'] = ref.attributes['id'].value.encode('UTF-8')
-                pkginfo['version'] = normalizeVersion(ref.attributes['version'].value.encode('UTF-8'))
+                pkginfo['version'] = padVersionString(ref.attributes['version'].value.encode('UTF-8'),5)
                 if 'installKBytes' in keys:
                     pkginfo['installed_size'] = int(ref.attributes['installKBytes'].value.encode('UTF-8'))
                 if not pkginfo in info:
@@ -162,7 +186,7 @@ def parsePkgRefs(filename):
 
                     pkginfo = {}
                     pkginfo['id'] = ref.attributes['identifier'].value.encode('UTF-8')
-                    pkginfo['version'] = normalizeVersion(ref.attributes['version'].value.encode('UTF-8'))
+                    pkginfo['version'] = padVersionString(ref.attributes['version'].value.encode('UTF-8'),5)
                     if not pkginfo in info:
                         info.append(pkginfo)
     return info
@@ -209,16 +233,10 @@ def getBundlePackageInfo(pkgpath):
             if "CFBundleIdentifier" in pl:
                 pkginfo['id'] = pl["CFBundleIdentifier"]
                 
-                if "CFBundleShortVersionString" in pl:
-                    majorVersion = pl["CFBundleShortVersionString"]
-                    minorVersion = "0"
-                    if "IFMinorVersion" in pl:
-                        minorVersion = str(pl["IFMinorVersion"])
-                    pkginfo['version'] = normalizeVersion(majorVersion, minorVersion)
-                    
                 if "IFPkgFlagInstalledSize" in pl:
                     pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
                 
+                pkginfo['version'] = getExtendedVersion(pkgpath)
                 infoarray.append(pkginfo)
                 return infoarray
 
@@ -309,7 +327,7 @@ def getInstalledPackageVersion(pkgid):
         if "pkg-version" in pl:
             foundvers = pl["pkg-version"]
         if pkgid == foundbundleid:
-            return normalizeVersion(foundvers)
+            return padVersionString(foundvers,5)
 
     # This package does not appear to be currently installed
     return ""

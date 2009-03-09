@@ -110,7 +110,6 @@ def compareApplicationVersion(app, newer_ok=False):
     """
     
     name = bundleid = ''
-    versionstring = '0.0.0'
     if 'CFBundleName' in app:
         name = app['CFBundleName']
     if 'CFBundleIdentifier' in app:
@@ -164,8 +163,6 @@ def compareApplicationVersion(app, newer_ok=False):
 
 def compareBundleVersion(item):
     """
-    Gets the CFBundleShortVersionString from the Info.plist
-    in bundlepath/Contents and compares versions.
     Returns  0 if the bundle isn't installed
                 or doesn't have valid Info.plist
             -1 if it's older
