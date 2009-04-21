@@ -20,6 +20,7 @@ files unique to the packages given at the command line. No attempt
 is made to revert to older versions of a file when uninstalling;
 only file removals are done.
 """
+#TO-DO: refactor this so it can be called as a library as well as a command-line script
 
 import optparse
 import os
@@ -28,6 +29,7 @@ import sys
 import plistlib
 import sqlite3
 import time
+import munkistatus
 #import applereceiptutils
 
 ##################################################################
@@ -88,6 +90,14 @@ import time
 #                          perms INTEGER )
 #################################################################
 
+def stopRequested():
+    if options.munkistatusoutput:
+        if munkistatus.getStopButtonState() == 1:
+            return True
+            
+    return False
+    
+
 def getsteps(num_of_steps, limit):
     """
     Helper function for display_percent_done
@@ -106,18 +116,17 @@ def getsteps(num_of_steps, limit):
 def display_percent_done(current,maximum):
     """
     Mimics the command-line progress meter seen in some
-    of Apple's tools (like softwareupdate), or prints
-    percent-done output in iHook directive format.
+    of Apple's tools (like softwareupdate), or tells
+    MunkiStatus to display percent done via progress bar.
     """
-    if options.ihookoutput:
+    if options.munkistatusoutput:
         step = getsteps(101, maximum)
         if current in step:
             if current == maximum:
                 percentdone = 100
             else:
                 percentdone = step.index(current)
-            print "%%%s %s of %s" % (str(percentdone), current, maximum)
-            sys.stdout.flush()
+            munkistatus.percent(str(percentdone))
     elif not options.verbose:
         step = getsteps(16, maximum)
         output = ''
@@ -136,8 +145,8 @@ def display_status(msg):
     Displays major status messages, formatting as needed
     for verbose/non-verbose and iHook-style output.
     """
-    if options.ihookoutput:
-        print "STATUS: %s" % msg
+    if options.munkistatusoutput:
+        munkistatus.detail(msg)
     elif options.verbose:
         print "%s..." % msg
     else:
@@ -150,9 +159,9 @@ def display_info(msg):
     Displays minor info messages, formatting as needed
     for verbose/non-verbose and iHook-style output.
     """
-    if options.ihookoutput:
-        #iHook puts stderr in the drawer
-        print >>sys.stderr, "INFO: %s" % msg
+    if options.munkistatusoutput:
+        #munkistatus.detail(msg)
+        pass
     elif options.verbose:
         print msg
 
@@ -162,8 +171,7 @@ def display_error(msg):
     Prints msg to stderr and eventually to the log
     """
     print >>sys.stderr, "ERROR: %s" % msg
-    if options.ihookoutput:
-        sys.stderr.flush()
+    
 
 
 def shouldRebuildDB(pkgdbpath):
@@ -443,6 +451,14 @@ def initDatabase(packagedb,forcerebuild=False):
     if os.path.exists(receiptsdir):
         receiptlist = os.listdir(receiptsdir)
         for item in receiptlist:
+            if stopRequested():
+                c.close()
+                conn.close()
+                #our package db isn't valid, so we should delete it
+                os.remove(packagedb)
+                cleanup()
+                exit()
+                
             if item.endswith(".pkg"):
                 receiptpath = os.path.join(receiptsdir, item)
                 display_info("Importing %s..." % receiptpath)
@@ -453,6 +469,14 @@ def initDatabase(packagedb,forcerebuild=False):
     if os.path.exists(bomsdir):
         bomslist = os.listdir(bomsdir)
         for item in bomslist:
+            if stopRequested():
+                c.close()
+                conn.close()
+                #our package db isn't valid, so we should delete it
+                os.remove(packagedb)
+                cleanup()
+                exit()
+            
             if item.endswith(".bom"):
                 bompath = os.path.join(bomsdir, item)
                 display_info("Importing %s..." % bompath)
@@ -528,9 +552,8 @@ def getpathstoremove(pkgkeylist):
     combined_query = "select path from paths where (path_key in (%s) and path_key not in (%s))" % (in_selected_packages, not_in_other_packages)
     
     display_status('Determining which filesystem items to remove')
-    if options.ihookoutput:
-        print '%BEGINPOLE'
-        sys.stdout.flush()
+    if options.munkistatusoutput:
+        munkistatus.percent(-1)
     
     c.execute(combined_query)
     results = c.fetchall()
@@ -710,6 +733,11 @@ def removeFilesystemItems(removalpaths):
                             display_error("ERROR: couldn't remove bundle %s" % pathtoremove)
                     else:
                         display_error("WARNING: Did not remove %s because it is not empty." % pathtoremove)
+                        
+                #we'll update the progress bar only on directories because we're too slow
+                #otherwise
+                display_percent_done(itemindex, itemcount)
+               
             else:
                 # not a directory, just unlink it
                 # we're using rm instead of Python because I don't trust
@@ -717,9 +745,14 @@ def removeFilesystemItems(removalpaths):
                 retcode = subprocess.call(['/bin/rm', pathtoremove])
                 if retcode:
                     display_error("ERROR: couldn't remove item %s" % pathtoremove)
-                    
-        display_percent_done(itemindex, itemcount)
+        
+    # this should be 100%
+    display_percent_done(itemindex, itemcount)
 
+def cleanup():
+    if options.munkistatusoutput:
+        if not options.dontquitmunkistatus:
+            munkistatus.quit()
 
 ######################################################
 # Main
@@ -741,8 +774,10 @@ p.add_option('--noremovereceipts', action='store_true',
                 help='Do not remove receipts and boms from /Library/Receipts and update internal package database.')
 p.add_option('--noupdateapplepkgdb', action='store_true',
                 help='Do not update Apple\'s package database. If --noremovereceipts is also given, this is implied')
-p.add_option('--ihookoutput', '-i', action='store_true',
-                help='Output is formatted for use with iHook.')
+p.add_option('--munkistatusoutput', '-m', action='store_true',
+                help='Output is formatted for use with MunkiStatus.')
+p.add_option('--dontquitmunkistatus', '-d', action='store_true',
+                help="Don't quit MunkiStatus on exit. (For example, when called by ManagedInstaller.)")
 p.add_option('--verbose', '-v', action='store_true',
                 help='More verbose output.')
 # Get our options and our package names
@@ -751,21 +786,33 @@ options, pkgnames = p.parse_args()
 # check to see if we're root
 if os.geteuid() != 0:
     display_error("You must run this as root!")
+    cleanup()
     exit(1)
 
 if pkgnames == []:
     display_error("You must specify at least one package to remove!")
+    cleanup()
     exit(1)
 
 if not initDatabase(packagedb,options.rebuildpkgdb):
     display_error("Could not initialize receipt database.")
+    cleanup()
     exit(-1)
 
 pkgkeyslist = getpkgkeys(pkgnames)
 if len(pkgkeyslist) == 0:
+    cleanup()
     exit(1)
-
+    
+if stopRequested():
+    cleanup()
+    exit()
 removalpaths = getpathstoremove(pkgkeyslist)
+if stopRequested():
+    cleanup()
+    exit()
+
+    
 if removalpaths:
     if options.listfiles:
         removalpaths.sort()
@@ -775,14 +822,17 @@ if removalpaths:
         removeFilesystemItems(removalpaths)
         if not options.noremovereceipts:
             removeReceipts(pkgkeyslist)
-    if options.ihookoutput:
+    if options.munkistatusoutput:
         display_status('Package removal complete.')
         time.sleep(2)
 
 else:
     display_status('Nothing to remove.')
-    if options.ihookoutput:
+    if options.munkistatusoutput:
         time.sleep(2)
+        
+#cleanup
+cleanup()
     
 
   

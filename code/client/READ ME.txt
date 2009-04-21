@@ -5,6 +5,7 @@ ManagedInstaller - meant to be run as part of a logout hook.  Does the actual in
 makecatalogitem.py: Helper tool to help create catalogitem plists for each installer item.
 removepackages: used by ManagedInstaller to do package removals.
 
-Supporting library:
-managedinstalls.py
+Supporting libraries:
+managedinstalls.py - shared functions
+munkistatus.py - functions to display status using MunkiStatus.app
 

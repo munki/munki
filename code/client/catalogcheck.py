@@ -914,8 +914,7 @@ def main():
             
     # now generate a list of items to be uninstalled
     removallist = processCatalogForRemovals(maincatalogpath)
-            
-            
+    
     # need to write out install list so the autoinstaller
     # can use it to install things in the right order
     pldict = {}

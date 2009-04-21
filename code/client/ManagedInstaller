@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-installomatic
+ManagedInstaller
 Tool to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder. Intended
 to be run as part of a logout hook, but can be run manually
@@ -27,13 +27,29 @@ import time
 import plistlib
 import optparse
 import managedinstalls
+import munkistatus
+
+pathtoremovepackages = "/Users/Shared/munki/munki/code/client/removepackages"
+
+
+def stopRequested():
+    if options.munkistatusoutput:
+        if munkistatus.getStopButtonState() == 1:
+            log("### User stopped session ###")
+            return True
+    return False
+
+
+def cleanup():
+    if options.munkistatusoutput:
+        munkistatus.quit()
 
 
 def createDirsIfNeeded(dirlist):
     for dir in dirlist:
         if not os.path.exists(dir):
             try:
-                os.mkdir(dir)
+                os.makedirs(dir, mode=0755)
             except:
                 print >>sys.stderr, "Could not create %s" % dir
                 return False
@@ -53,8 +69,7 @@ def log(message):
 
 def countinstallcandidates(dirpath):
     """
-    Counts the number of pkgs, mpkgs, and dmgs
-    in dirpath
+    Get the count of items to be installed
     """
     candidatecount = 0
     items = os.listdir(dirpath)
@@ -70,11 +85,8 @@ def install(pkgpath):
     at pkgpath. Prints status messages to STDOUT.
     Returns the installer return code and true if a restart is needed.
     """
-    global installablecount
-    global currentinstallable
     global options
     
-    currentinstallable += 1
     restartneeded = False
     installeroutput = []
 
@@ -84,9 +96,11 @@ def install(pkgpath):
     (output, err) = p.communicate()
     packagename = output.splitlines()[0]
     print >>sys.stderr, "Package name is", packagename
-    if options.ihookoutput:
-        print "%TITLE Installing " + packagename + "..."
-        print "%%%s Item %s of %s" % (0, currentinstallable, installablecount)
+    if options.munkistatusoutput:
+        munkistatus.message("Installing %s..." % packagename)
+        # clear indeterminate progress bar 
+        munkistatus.percent(0)
+        
     log("Installing %s from %s" % (packagename, os.path.basename(pkgpath)))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
@@ -95,8 +109,11 @@ def install(pkgpath):
     restartaction = output.rstrip("\n")
     if restartaction == "RequireRestart":
         message = "%s requires a restart after installation." % packagename
-        print message
-        sys.stdout.flush()
+        if options.munkistatusoutput:
+            munkistatus.detail(message)
+        else:
+            print message
+            sys.stdout.flush()
         log(message)
         restartneeded = True
 
@@ -114,31 +131,35 @@ def install(pkgpath):
             if msg.startswith("PHASE:"):
                 phase = msg[6:]
                 if phase:
-                    print phase
-                    sys.stdout.flush()
+                    if options.munkistatusoutput:
+                        munkistatus.detail(phase)
+                    else:
+                        print phase
+                        sys.stdout.flush()
             elif msg.startswith("STATUS:"):
                 status = msg[7:]
                 if status:
-                    print status 
-                    sys.stdout.flush()
+                    if options.munkistatusoutput:
+                        munkistatus.detail(status)
+                    else:
+                        print status 
+                        sys.stdout.flush()
             elif msg.startswith("%"):
-                if options.ihookoutput:
+                if options.munkistatusoutput:
                     percent = float(msg[1:])
                     percent = int(percent * 100)
-                    print "%%%s Item %s of %s" % (percent, currentinstallable, installablecount)
-                    if percent == 100:
-                        overallpercentage = min(100,int(currentinstallable/installablecount * 100))
-                        print "%%%s Item %s of %s" % (overallpercentage, currentinstallable, installablecount)
-                    sys.stdout.flush()
+                    munkistatus.percent(percent)
             elif msg.startswith(" Error"):
-                print msg
-                sys.stdout.flush()
-                print >>sys.stderr, msg
+                if options.munkistatusoutput:
+                    munkistatus.detail(msg)
+                else:
+                    print >>sys.stderr, msg
                 log(msg)
             elif msg.startswith(" Cannot install"):
-                print msg
-                sys.stdout.flush()
-                print >>sys.stderr, msg
+                if options.munkistatusoutput:
+                    munkistatus.detail(msg)
+                else:
+                    print >>sys.stderr, msg
                 log(msg)
             else:
                 print >>sys.stderr, msg
@@ -146,6 +167,8 @@ def install(pkgpath):
     retcode = p.poll()
     if retcode:
         message = "Install of %s failed." % packagename
+        if options.munkistatusoutput:
+            munkistatus.detail(message)
         print >>sys.stderr, message
         log(message)
         message = "-------------------------------------------------"
@@ -160,7 +183,9 @@ def install(pkgpath):
         restartneeded = False
     else:
         log("Install of %s was successful." % packagename)
-
+        if options.munkistatusoutput:
+            munkistatus.percent(100)
+            
     return (retcode, restartneeded)
 
 
@@ -173,6 +198,8 @@ def installall(dirpath):
     restartflag = False
     installitems = os.listdir(dirpath)
     for item in installitems:
+        if stopRequested():
+            return restartflag
         itempath = os.path.join(dirpath, item)
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
             (retcode, needsrestart) = install(itempath)
@@ -180,6 +207,10 @@ def installall(dirpath):
                 restartflag = True
         if item.endswith(".dmg"):
             mountpoints = mountdmg(itempath)
+            if stopRequested():
+                for mountpoint in mountpoints:
+                    unmountdmg(mountpoint)
+                return restartflag
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
@@ -190,6 +221,15 @@ def installall(dirpath):
                 
     return restartflag
     
+
+def getInstallCount(installList):
+    count = 0
+    for item in installList:
+        if 'installed' in item:
+            if not item['installed']:
+                count +=1
+    return count
+
     
 def installWithInfo(dirpath, installlist):
     """
@@ -198,17 +238,23 @@ def installWithInfo(dirpath, installlist):
     """
     restartflag = False
     for item in installlist:
+        if stopRequested():
+            return restartflag
         if "installer_item" in item:
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
                 #can't install, so we should stop
-                return restartFlag
+                return restartflag
             if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
                 (retcode, needsrestart) = install(itempath)
                 if needsrestart:
                     restartflag = True
             if itempath.endswith(".dmg"):
                 mountpoints = mountdmg(itempath)
+                if stopRequested():
+                    for mountpoint in mountpoints:
+                        unmountdmg(mountpoint)
+                    return restartflag
                 for mountpoint in mountpoints:
                     # install all the pkgs and mpkgs at the root
                     # of the mountpoint -- call us recursively!
@@ -224,115 +270,133 @@ def installWithInfo(dirpath, installlist):
     return restartflag
 
 
+def getRemovalCount(removalList):
+    count = 0
+    for item in removalList:
+        if 'installed' in item:
+            if item['installed']:
+                count +=1
+    return count
+
 def processRemovals(removalList):
     restartFlag = False
     for item in removalList:
-        name = ""
-        if 'name' in item:
-            name = item['name']
-        elif 'catalogitem' in item:
-            name = item['catalogitem']
-        if 'uninstall_method' in item:
-            uninstallmethod = item['uninstall_method'].split(' ')
-            if uninstallmethod[0] == "removepackages":
-                if 'packages' in item:
-                    if options.ihookoutput:
-                        print "%TITLE Removing %s.." % name
-                        #print "%%%s Item %s of %s" % (0, currentinstallable, installablecount)
-                    else:
-                        print "Removing %s..." % name
-                    cmd = ['/Users/Shared/bin/removepackages', '-f']
-                    if options.ihookoutput:
-                        cmd.append('-i')
-                    for package in item['packages']:
-                        cmd.append(package)
-                    uninstalleroutput = []
-                    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if stopRequested():
+            return restartFlag
+        if 'installed' in item:
+            if item['installed']:
+                name = ""
+                if 'name' in item:
+                    name = item['name']
+                elif 'catalogitem' in item:
+                    name = item['catalogitem']
+                if 'uninstall_method' in item:
+                    uninstallmethod = item['uninstall_method'].split(' ')
+                    if uninstallmethod[0] == "removepackages":
+                        if 'packages' in item:
+                            if options.munkistatusoutput:
+                                munkistatus.message("Removing %s..." % name)
+                                # clear indeterminate progress bar 
+                                munkistatus.percent(0)                               
+                            else:
+                                print "Removing %s..." % name
+                            cmd = [pathtoremovepackages, '-f']
+                            if options.munkistatusoutput:
+                                cmd.append('-m')
+                                cmd.append('-d')
+                            for package in item['packages']:
+                                cmd.append(package)
+                            uninstalleroutput = []
+                            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-                    while (p.poll() == None): 
-                        msg =  p.stdout.readline()                       
-                        # save all uninstaller output in case there is
-                        # an error so we can dump it to the log
-                        uninstalleroutput.append(msg)
-                        msg = msg.rstrip("\n")
-                        if msg.startswith("STATUS: "):
-                            status = msg[8:]
-                            if status:
-                                print status
-                                sys.stdout.flush()
-                        elif msg.startswith("INFO: "):
-                            info = msg[6:]
-                            if info:
-                                print >>sys.stderr, info
-                        elif msg.startswith("ERROR: "):
-                            error = msg[7:]
-                            if error:
-                                print >>sys.stderr, error
+                            while (p.poll() == None): 
+                                msg =  p.stdout.readline()                       
+                                # save all uninstaller output in case there is
+                                # an error so we can dump it to the log
+                                uninstalleroutput.append(msg)
+                                msg = msg.rstrip("\n")
+                                if msg.startswith("STATUS: "):
+                                    status = msg[8:]
+                                    if status:
+                                        print status
+                                        sys.stdout.flush()
+                                elif msg.startswith("INFO: "):
+                                    info = msg[6:]
+                                    if info:
+                                        print >>sys.stderr, info
+                                elif msg.startswith("ERROR: "):
+                                    error = msg[7:]
+                                    if error:
+                                        print >>sys.stderr, error
+                                else:
+                                    print msg
+                                    sys.stdout.flush()
+                        
+                            retcode = p.poll()
+                            if retcode:
+                                message = "Uninstall of %s failed." % name
+                                print >>sys.stderr, message
+                                log(message)
+                                message = "-------------------------------------------------"
+                                print >>sys.stderr, message
+                                log(message)
+                                for line in uninstalleroutput:
+                                    print >>sys.stderr, "     ", line.rstrip("\n")
+                                    log(line.rstrip("\n"))
+                                message = "-------------------------------------------------"
+                                print >>sys.stderr, message
+                                log(message)
+                            else:
+                                log("Uninstall of %s was successful." % name)
+                        
+                    elif os.path.exists(uninstallmethod[0]) and os.access(uninstallmethod[0], os.X_OK):
+                        # it's a script or program to uninstall
+                        if options.munkistatusoutput:
+                            munkistatus.message("Running uninstall script for %s..." % name)
+                            # set indeterminate progress bar 
+                            munkistatus.percent(-1)
+                    
+                        cmd = uninstallmethod
+                        uninstalleroutput = []
+                        p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+                        while (p.poll() == None): 
+                            msg =  p.stdout.readline()
+                            # save all uninstaller output in case there is
+                            # an error so we can dump it to the log
+                            uninstalleroutput.append(msg)
+                            msg = msg.rstrip("\n")
+                            if options.munkistatusoutput:
+                                # do nothing with the output
+                                pass
+                            else:
+                                print msg
+                    
+                        retcode = p.poll()
+                        if retcode:
+                            message = "Uninstall of %s failed." % name
+                            print >>sys.stderr, message
+                            log(message)
+                            message = "-------------------------------------------------"
+                            print >>sys.stderr, message
+                            log(message)
+                            for line in uninstalleroutput:
+                                print >>sys.stderr, "     ", line.rstrip("\n")
+                                log(line.rstrip("\n"))
+                            message = "-------------------------------------------------"
+                            print >>sys.stderr, message
+                            log(message)
                         else:
-                            print msg
-                            sys.stdout.flush()
-                        
-                    retcode = p.poll()
-                    if retcode:
-                        message = "Uninstall of %s failed." % name
-                        print >>sys.stderr, message
-                        log(message)
-                        message = "-------------------------------------------------"
-                        print >>sys.stderr, message
-                        log(message)
-                        for line in uninstalleroutput:
-                            print >>sys.stderr, "     ", line.rstrip("\n")
-                            log(line.rstrip("\n"))
-                        message = "-------------------------------------------------"
-                        print >>sys.stderr, message
-                        log(message)
+                            log("Uninstall of %s was successful." % name)
+                            
+                        if options.munkstatusoutput:
+                            # clear indeterminate progress bar 
+                            munkistatus.percent(0)
+           
                     else:
-                        log("Uninstall of %s was successful." % name)
-                        
-            elif os.path.exists(uninstallmethod[0]) and os.access(uninstallmethod[0], os.X_OK):
-                # it's a script or program to uninstall
-                if options.ihookoutput:
-                    print "%TITLE Running uninstall script for " + name + "..."
-                    print "%BEGINPOLE"
-                    sys.stdout.flush()
-                    
-                cmd = uninstallmethod
-                uninstalleroutput = []
-                p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                while (p.poll() == None): 
-                    msg =  p.stdout.readline()
-                    # save all uninstaller output in case there is
-                    # an error so we can dump it to the log
-                    uninstalleroutput.append(msg)
-                    msg = msg.rstrip("\n")
-                    if options.ihookoutput:
-                        # redirect output to the iHook drawer
-                        print >>sys.stderr, msg
-                    else:
-                        print msg
-                    
-                retcode = p.poll()
-                if retcode:
-                    message = "Uninstall of %s failed." % name
-                    print >>sys.stderr, message
-                    log(message)
-                    message = "-------------------------------------------------"
-                    print >>sys.stderr, message
-                    log(message)
-                    for line in uninstalleroutput:
-                        print >>sys.stderr, "     ", line.rstrip("\n")
-                        log(line.rstrip("\n"))
-                    message = "-------------------------------------------------"
-                    print >>sys.stderr, message
-                    log(message)
-                else:
-                    log("Uninstall of %s was successful." % name)
-            
-            else:
-                log("Uninstall of %s failed because there was no valid uninstall method." % name)
+                        log("Uninstall of %s failed because there was no valid uninstall method." % name)
                                     
     return restartFlag
                     
@@ -377,30 +441,17 @@ def unmountdmg(mountpoint):
 managedinstallbase = managedinstalls.managed_install_dir()
 installdir = os.path.join(managedinstallbase , 'Cache')
 logdir = os.path.join(managedinstallbase, 'Logs')
-installablecount = 0
-currentinstallable = 0
 
 p = optparse.OptionParser()
-p.add_option('--ihookoutput', '-i', action='store_true')
+p.add_option('--munkistatusoutput', '-m', action='store_true')
 options, arguments = p.parse_args()
 
 
 def main():
     global installdir
-    global installablecount
-
-    if options.ihookoutput:
-        print '%WINDOWSIZE 512 232'
-        print '%BACKGROUND /Users/Shared/Installer.png'
-        print '%BECOMEKEY'
-        print '%BEGINPOLE'
-        sys.stdout.flush()
     
     needtorestart = False
 
-    #installablecount = countinstallcandidates(installdir)
-    #if installablecount:
-    installablecount = 5
     log("### Beginning automated install session ###")
     if os.path.exists(installdir):
         installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
@@ -410,30 +461,62 @@ def main():
             except:
                 print >>sys.stderr, "Invalid %s" % installinfo
                 exit(-1)
+                
+            # remove the install info file
+            # it's no longer valid once we start running
+            os.unlink(installinfo)
+            
             if "removals" in pl:
-                log("Processing removals")
-                needtorestart = processRemovals(pl['removals'])
+                removalcount = getRemovalCount(pl['removals'])
+                if removalcount:
+                    if options.munkistatusoutput:
+                        if removalcount == 1:
+                            munkistatus.message("Removing 1 item...")
+                        else:
+                            munkistatus.message("Removing %i items..." % removalcount)
+                        # set indeterminate progress bar 
+                        munkistatus.percent(-1)
+                    log("Processing removals")
+                    needtorestart = processRemovals(pl['removals'])
             if "managed_installs" in pl:
-                log("Processing installs")
-                needtorestart = installWithInfo(installdir, pl['managed_installs'])
-                # remove the install info
-                os.unlink(installinfo)
+                if not stopRequested():
+                    installcount = getInstallCount(pl['managed_installs'])
+                    if installcount:
+                        if options.munkistatusoutput:
+                            if installcount == 1:
+                                munkistatus.message("Installing 1 item...")
+                            else:
+                                munkistatus.message("Installing %i items..." % installcount)
+                            # set indeterminate progress bar 
+                            munkistatus.percent(-1)                        
+                        log("Processing installs")
+                        needtorestart = installWithInfo(installdir, pl['managed_installs'])
+                                            
         else:
             log("No %s found." % installinfo)
-            log("Installing everything in the cache.")
+            #log("Installing everything in the cache.")
             # install all pkgs and mpkgs
-            needtorestart = installall(installdir)
+            #needtorestart = installall(installdir)
         
         if needtorestart:
-            print "Software installed requires a restart."
-            log("Software installed requires a restart.")
-            sys.stdout.flush()
+            log("Software installed or removed requires a restart.")
+            if options.munkistatusoutput:
+                munkistatus.message("Software installed or removed requires a restart.")
+                munkistatus.detail("")
+                munkistatus.percent(-1)
+            else:
+                print "Software installed or removed requires a restart."
+                sys.stdout.flush()
+            
     
     log("### End automated install session ###")
     if needtorestart:
         time.sleep(5)
+        cleanup()
         # uncomment this when testing is done so it will restart.
-        #retcode = subprocess.call(["/sbin/shutdown", "-r", "now"]) 
+        #retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
+    else:
+        cleanup()
 
 
 if __name__ == '__main__':

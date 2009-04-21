@@ -1,0 +1,389 @@
+// !$*UTF8*$!
+{
+	089C165DFE840E0CC02AAC07 /* English */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1303, 690}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 113}";
+			sepNavWindowFrame = "{{15, 55}, {1362, 818}}";
+		};
+	};
+	257572C2072881A4000BE9CA /* MunkiStatus */ = {
+		activeExec = 0;
+		executables = (
+			25D9445407B1533600FF306F /* MunkiStatus */,
+		);
+	};
+	257572D5072881A4000BE9CA /* Info.plist */ = {
+		uiCtxt = {
+			sepNavWindowFrame = "{{131, 60}, {1362, 818}}";
+		};
+	};
+	25D9445407B1533600FF306F /* MunkiStatus */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+			"PBXLSLaunchAction-1" = {
+				PBXLSLaunchAction = 1;
+				PBXLSLaunchStartAction = 1;
+				PBXLSLaunchStdioStyle = 2;
+				PBXLSLaunchStyle = 0;
+				class = ASKDebuggerLaunchConfig;
+				displayName = "AppleScript Debugger";
+				identifier = com.apple.AppleScriptStudio.ASKDebugLaunchConfig;
+				remoteHostInfo = "";
+				startActionInfo = "";
+			};
+		};
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = ASKDebugger;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+			{
+				active = NO;
+				name = AEDebug;
+				value = 1;
+			},
+			{
+				active = NO;
+				name = AEDebugSends;
+				value = 1;
+			},
+			{
+				active = NO;
+				name = AEDebugReceives;
+				value = 1;
+			},
+			{
+				active = NO;
+				name = AEDebugVerbose;
+				value = 1;
+			},
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = MunkiStatus;
+		sourceDirectories = (
+		);
+	};
+	25D9445A07B1533700FF306F /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+		};
+		scmType = "";
+	};
+	25D9445B07B1533700FF306F /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Release;
+		activeExecutable = 25D9445407B1533600FF306F /* MunkiStatus */;
+		activeTarget = 257572C2072881A4000BE9CA /* MunkiStatus */;
+		addToTargets = (
+			257572C2072881A4000BE9CA /* MunkiStatus */,
+		);
+		codeSenseManager = 25D9445B07B1533700FF306F /* Code sense */;
+		executables = (
+			25D9445407B1533600FF306F /* MunkiStatus */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					631,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 262042784;
+			PBXWorkspaceStateSaveDate = 262042784;
+		};
+		perUserProjectItems = {
+			C05FFDD00F9E742400A56C5C /* PBXTextBookmark */ = C05FFDD00F9E742400A56C5C /* PBXTextBookmark */;
+			C05FFDD10F9E742400A56C5C /* PBXTextBookmark */ = C05FFDD10F9E742400A56C5C /* PBXTextBookmark */;
+			C05FFDD30F9E742400A56C5C /* PBXBookmark */ = C05FFDD30F9E742400A56C5C /* PBXBookmark */;
+			C05FFDD50F9E742400A56C5C /* PBXTextBookmark */ = C05FFDD50F9E742400A56C5C /* PBXTextBookmark */;
+			C0C84DB50F99218900B6518D /* PBXBookmark */ = C0C84DB50F99218900B6518D /* PBXBookmark */;
+			C0C84DB60F99218900B6518D /* PBXBookmark */ = C0C84DB60F99218900B6518D /* PBXBookmark */;
+			C0C84DBA0F99218900B6518D /* PBXTextBookmark */ = C0C84DBA0F99218900B6518D /* PBXTextBookmark */;
+			C0C84DBC0F99218900B6518D /* PBXTextBookmark */ = C0C84DBC0F99218900B6518D /* PBXTextBookmark */;
+			C0C84DBF0F99218900B6518D /* PBXBookmark */ = C0C84DBF0F99218900B6518D /* PBXBookmark */;
+			C0C84DC00F99218900B6518D /* PBXBookmark */ = C0C84DC00F99218900B6518D /* PBXBookmark */;
+			C0C84DC10F99218900B6518D /* PBXTextBookmark */ = C0C84DC10F99218900B6518D /* PBXTextBookmark */;
+			C0C84DC20F99218900B6518D /* PBXTextBookmark */ = C0C84DC20F99218900B6518D /* PBXTextBookmark */;
+			C0C84DC30F99218900B6518D /* PBXBookmark */ = C0C84DC30F99218900B6518D /* PBXBookmark */;
+			C0C84DC50F99218900B6518D /* PlistBookmark */ = C0C84DC50F99218900B6518D /* PlistBookmark */;
+			C0C84DC70F99218900B6518D /* PBXTextBookmark */ = C0C84DC70F99218900B6518D /* PBXTextBookmark */;
+			C0C84DC90F99218900B6518D /* PBXTextBookmark */ = C0C84DC90F99218900B6518D /* PBXTextBookmark */;
+			C0E765950F9E74B200E9F8C1 /* PlistBookmark */ = C0E765950F9E74B200E9F8C1 /* PlistBookmark */;
+			C0E765960F9E74B200E9F8C1 /* PBXTextBookmark */ = C0E765960F9E74B200E9F8C1 /* PBXTextBookmark */;
+			C0E765970F9E74B200E9F8C1 /* PlistBookmark */ = C0E765970F9E74B200E9F8C1 /* PlistBookmark */;
+			C0E765980F9E74B200E9F8C1 /* PBXTextBookmark */ = C0E765980F9E74B200E9F8C1 /* PBXTextBookmark */;
+			C0E7659D0F9E750300E9F8C1 /* PBXTextBookmark */ = C0E7659D0F9E750300E9F8C1 /* PBXTextBookmark */;
+		};
+		sourceControlManager = 25D9445A07B1533700FF306F /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	29B97316FDCFA39411CA2CEA /* main.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {809, 443}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 197}";
+		};
+	};
+	C05FFDD00F9E742400A56C5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = DA206CF3015C4E8B03C91932 /* MunkiStatus.applescript */;
+		name = "MunkiStatus.applescript: 41";
+		rLen = 0;
+		rLoc = 1780;
+		rType = 0;
+		vrLen = 904;
+		vrLoc = 0;
+	};
+	C05FFDD10F9E742400A56C5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = C05FFDD20F9E742400A56C5C /* ChemDraw.h */;
+		name = "ChemDraw.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1296;
+		vrLoc = 19136;
+	};
+	C05FFDD20F9E742400A56C5C /* ChemDraw.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = ChemDraw.h;
+		path = /Users/gneagle/Downloads/ChemDraw.h;
+		sourceTree = "<absolute>";
+	};
+	C05FFDD30F9E742400A56C5C /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = 65359356078DD41800E8BB2F /* AppleScriptKit.sdef */;
+	};
+	C05FFDD50F9E742400A56C5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = C05FFDD60F9E742400A56C5C /* ChemDraw.h */;
+		name = "ChemDraw.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1296;
+		vrLoc = 19136;
+	};
+	C05FFDD60F9E742400A56C5C /* ChemDraw.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = ChemDraw.h;
+		path = /Users/gneagle/Downloads/ChemDraw.h;
+		sourceTree = "<absolute>";
+	};
+	C0C84DB50F99218900B6518D /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = C0C84CCE0F98FF7800B6518D /* Installer.tiff */;
+	};
+	C0C84DB60F99218900B6518D /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = C0C84CD00F98FF8400B6518D /* package.tiff */;
+	};
+	C0C84DBA0F99218900B6518D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = C0C84DBB0F99218900B6518D /* ASKPluginObject.h */;
+		name = "ASKPluginObject.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 193;
+		vrLoc = 0;
+	};
+	C0C84DBB0F99218900B6518D /* ASKPluginObject.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = ASKPluginObject.h;
+		path = /System/Library/Frameworks/AppleScriptKit.framework/Headers/ASKPluginObject.h;
+		sourceTree = "<absolute>";
+	};
+	C0C84DBC0F99218900B6518D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = C0C84DBD0F99218900B6518D /* NSWindow.h */;
+		name = "NSWindow.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 823;
+		vrLoc = 0;
+	};
+	C0C84DBD0F99218900B6518D /* NSWindow.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = NSWindow.h;
+		path = /System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h;
+		sourceTree = "<absolute>";
+	};
+	C0C84DBF0F99218900B6518D /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = C0C84CCE0F98FF7800B6518D /* Installer.tiff */;
+	};
+	C0C84DC00F99218900B6518D /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = C0C84CD00F98FF8400B6518D /* package.tiff */;
+	};
+	C0C84DC10F99218900B6518D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = DA206CF3015C4E8B03C91932 /* MunkiStatus.applescript */;
+		name = "MunkiStatus.applescript: 5";
+		rLen = 0;
+		rLoc = 26;
+		rType = 0;
+		vrLen = 293;
+		vrLoc = 0;
+	};
+	C0C84DC20F99218900B6518D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 29B97316FDCFA39411CA2CEA /* main.m */;
+		name = "main.m: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 197;
+		vrLoc = 0;
+	};
+	C0C84DC30F99218900B6518D /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = 65359356078DD41800E8BB2F /* AppleScriptKit.sdef */;
+	};
+	C0C84DC50F99218900B6518D /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 257572D5072881A4000BE9CA /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+			LSUIElement,
+		);
+		name = /Users/gneagle/Documents/MunkiStatus/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	C0C84DC70F99218900B6518D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = C0C84DC80F99218900B6518D /* ASKPluginObject.h */;
+		name = "ASKPluginObject.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 193;
+		vrLoc = 0;
+	};
+	C0C84DC80F99218900B6518D /* ASKPluginObject.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = ASKPluginObject.h;
+		path = /System/Library/Frameworks/AppleScriptKit.framework/Headers/ASKPluginObject.h;
+		sourceTree = "<absolute>";
+	};
+	C0C84DC90F99218900B6518D /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = C0C84DCA0F99218900B6518D /* NSWindow.h */;
+		name = "NSWindow.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 823;
+		vrLoc = 0;
+	};
+	C0C84DCA0F99218900B6518D /* NSWindow.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = NSWindow.h;
+		path = /System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h;
+		sourceTree = "<absolute>";
+	};
+	C0E765950F9E74B200E9F8C1 /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 257572D5072881A4000BE9CA /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+			LSUIElement,
+		);
+		name = /Users/gneagle/Documents/MunkiStatus/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	C0E765960F9E74B200E9F8C1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 29B97316FDCFA39411CA2CEA /* main.m */;
+		name = "main.m: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 197;
+		vrLoc = 0;
+	};
+	C0E765970F9E74B200E9F8C1 /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 257572D5072881A4000BE9CA /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+			LSUIElement,
+		);
+		name = /Users/gneagle/Documents/MunkiStatus/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	C0E765980F9E74B200E9F8C1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 29B97316FDCFA39411CA2CEA /* main.m */;
+		name = "main.m: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 197;
+		vrLoc = 0;
+	};
+	C0E7659D0F9E750300E9F8C1 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = DA206CF3015C4E8B03C91932 /* MunkiStatus.applescript */;
+		name = "MunkiStatus.applescript: 57";
+		rLen = 0;
+		rLoc = 1780;
+		rType = 0;
+		vrLen = 903;
+		vrLoc = 0;
+	};
+	DA206CF3015C4E8B03C91932 /* MunkiStatus.applescript */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {809, 894}}";
+			sepNavSelRange = "{1780, 0}";
+			sepNavVisRange = "{0, 903}";
+		};
+	};
+}
