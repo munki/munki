@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>managed_install_dir</key>
-  <string>/Users/Shared/Managed Installs</string>
+  <string>/Library/Managed Installs</string>
   <key>manifest_url</key>
   <string>http://webserver/swrepo/catalogs/</string>
   <key>client_identifier</key>

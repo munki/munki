@@ -1,49 +1,27 @@
+Use 'makepkginfo' to create pkginfo files - it does the hard work so you don't have to!
+
 These examples don't show all the supported keys.  Here's a few more:
-
-'installs' key supports applications, bundles, info-style plists (ususally Info.plist or version.plist) and simple file existence:
-
-<key>installs</key>
-	<array>
-		<dict>
-			<key>type</key>
-			<string>application</string>
-			<key>CFBundleName</key>
-			<string>Workgroup Manager</string>
-			<key>CFBundleIdentifier</key>
-			<string>com.apple.WorkgroupManager</string>
-			<key>CFBundleShortVersionString</key>
-			<string>10.5.5</string>
-		</dict>
-		<dict>
-			<key>type</key>
-			<string>bundle</string>
-			<key>path</key>
-			<string>/Applications/Server/Server Assistant.app/Contents/Plug-ins/BackupServer.bundle</string>
-			<key>CFBundleShortVersionString</key>
-			<string>10.5.1</string>
-		</dict>
-		<dict>
-			<key>type</key>
-			<string>plist</string>
-			<key>path</key>
-			<string>/Applications/Server/Server Admin.app/Contents/Info.plist</string>
-			<key>CFBundleShortVersionString</key>
-			<string>10.5.3</string>
-		</dict>
-		<dict>
-			<key>type</key>
-			<string>file</string>
-			<key>path</key>
-			<string>/Applications/Server/Server Monitor.app/Contents/MacOS/Server Monitor</string>
-		</dict>
-	</array>
 	
-There is also a 'dependencies' key:
+There are two kinds of dependency keys.
 
-<key>dependencies</key>
+'requires' are prerequisites: package A requires package B be installed first.
+if package A is removed, package B is unaffected.
+
+'modifies' are packages the current package modifies on install; generally these
+are updaters.  For example, 'Office2008' might resolve to Office2008--12.1.7 which modifies 
+Office2008--12.1.0 which modifies Office2008--12.0.0. (Office2008--12.1.7 and 
+Office2008--12.1.0 are updater packages, Office2008--12.0.0 is the original installer.)
+If you later remove Office2008, you want to remove everything installed by all three packages.
+'modifies' provides a method to theoretically figure it all out.  
+'modifies' is a superset of 'requires'.
+
+when processing installs, the two dependencies are basically equivalent;
+the real difference comes when processing removals.
+
+<key>requires</key>
 <array>
 	<string>TextWrangler</string>
 </array>
 
-The format for dependencies is identical to the managed_installs key in the manifest/catalog. 
+The format for dependencies is identical to the managed_installs key in the manifest. 
 No checking is done for circular dependencies - so don't make any.

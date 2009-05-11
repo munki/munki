@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>display_name</key>
+	<string>Microsoft® Silverlight™ Browser Plug-In</string>
+	<key>description</key>
+	<string>Microsoft browser plugin for rich Internet applications</string>
+	<key>installed_size</key>
+	<integer>18944</integer>
+	<key>installer_item_location</key>
+	<string>internet/Silverlight.2.0.40115.0.dmg</string>
+	<key>installer_item_size</key>
+	<integer>7567</integer>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>Silverlight</string>
+	<key>aliases</key>
+	<array>
+		<string>MicrosoftSilverlight</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+		<string>testing</string>
+	</array>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>packageid</key>
+			<string>com.microsoft.installSilverlightPlugin</string>
+			<key>version</key>
+			<string>2.0.40115.0.0</string>
+		</dict>
+	</array>
+	<key>version</key>
+	<string>2.0.40115.0.0</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+</dict>
+</plist>
