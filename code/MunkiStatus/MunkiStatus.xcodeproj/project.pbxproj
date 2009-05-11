@@ -26,6 +26,9 @@
 		257572CC072881A4000BE9CA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		257572CD072881A4000BE9CA /* AppleScriptKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */; };
 		60A014C40DBD2AA20071D9A8 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 60A014C20DBD2AA20071D9A8 /* MainMenu.xib */; };
+		C001935C0FA117A800AC90B0 /* SystemConfigurationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = C001935B0FA117A800AC90B0 /* SystemConfigurationInterface.h */; };
+		C001935E0FA118A400AC90B0 /* SystemConfigurationInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = C001935D0FA118A400AC90B0 /* SystemConfigurationInterface.m */; };
+		C00193920FA11D5C00AC90B0 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00193910FA11D5C00AC90B0 /* SystemConfiguration.framework */; };
 		C0C84CCF0F98FF7800B6518D /* Installer.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0C84CCE0F98FF7800B6518D /* Installer.tiff */; };
 		C0C84CD10F98FF8400B6518D /* package.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0C84CD00F98FF8400B6518D /* package.tiff */; };
 /* End PBXBuildFile section */
@@ -40,6 +43,9 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		60A014C30DBD2AA20071D9A8 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		65359356078DD41800E8BB2F /* AppleScriptKit.sdef */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.sdef; name = AppleScriptKit.sdef; path = /System/Library/Frameworks/AppleScriptKit.framework/Versions/A/Resources/AppleScriptKit.sdef; sourceTree = "<absolute>"; };
+		C001935B0FA117A800AC90B0 /* SystemConfigurationInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemConfigurationInterface.h; sourceTree = "<group>"; };
+		C001935D0FA118A400AC90B0 /* SystemConfigurationInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemConfigurationInterface.m; sourceTree = "<group>"; };
+		C00193910FA11D5C00AC90B0 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
 		C0C84CCE0F98FF7800B6518D /* Installer.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Installer.tiff; sourceTree = "<group>"; };
 		C0C84CD00F98FF8400B6518D /* package.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = package.tiff; sourceTree = "<group>"; };
 		DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppleScriptKit.framework; path = /System/Library/Frameworks/AppleScriptKit.framework; sourceTree = "<absolute>"; };
@@ -53,6 +59,7 @@
 			files = (
 				257572CC072881A4000BE9CA /* Cocoa.framework in Frameworks */,
 				257572CD072881A4000BE9CA /* AppleScriptKit.framework in Frameworks */,
+				C00193920FA11D5C00AC90B0 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +77,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C00193910FA11D5C00AC90B0 /* SystemConfiguration.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */,
 			);
@@ -110,6 +118,8 @@
 			isa = PBXGroup;
 			children = (
 				29B97316FDCFA39411CA2CEA /* main.m */,
+				C001935B0FA117A800AC90B0 /* SystemConfigurationInterface.h */,
+				C001935D0FA118A400AC90B0 /* SystemConfigurationInterface.m */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -142,6 +152,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C001935C0FA117A800AC90B0 /* SystemConfigurationInterface.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +216,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				257572CA072881A4000BE9CA /* main.m in Sources */,
+				C001935E0FA118A400AC90B0 /* SystemConfigurationInterface.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -40,16 +40,12 @@ on awake from nib theObject
 		call method "setCanBecomeVisibleWithoutLogin:" of theObject with parameter 1
 		
 		--if we are in the loginwindow context, we need to set the window level so
-		--we'll show above the loginwindow
-		set myScript to "/usr/bin/who | /usr/bin/grep console"
-		try
-			copy (do shell script myScript) to result
-		on error
-			--grep throws an error if no match
-			--no-one is logged in. We must be at the loginwindow.
+		--it displays above the loginwindow
+		copy "" to cfuser
+		copy (call method "consoleUser") to cfuser
+		if cfuser is "" then
 			call method "setLevel:" of theObject with parameter (kCGScreenSaverWindowLevel - 1)
-		end try
-		
+		end if
 		set visible of theObject to true
 		activate
 	end if
