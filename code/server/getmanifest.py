@@ -51,7 +51,7 @@ if hostname == "":
         
 # the manifestdir is a local path to wherever you keep the master catalogs;
 # must be readable by the webserver process
-manifestdir = "/Library/WebServer/Documents/repo/catalogs"
+manifestdir = "/Library/WebServer/Documents/repo/manifests"
 
 manifest = os.path.join(manifestdir, hostname)
 if os.path.exists(manifest):
