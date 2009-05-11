@@ -1,0 +1,91 @@
+// !$*UTF8*$!
+{
+	257572C2072881A4000BE9CA = {
+		activeExec = 0;
+		executables = (
+			25D9445407B1533600FF306F,
+		);
+	};
+	25D9445407B1533600FF306F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+			"PBXLSLaunchAction-1" = {
+				PBXLSLaunchAction = 1;
+				PBXLSLaunchStartAction = 1;
+				PBXLSLaunchStdioStyle = 2;
+				PBXLSLaunchStyle = 0;
+				class = ASKDebuggerLaunchConfig;
+				displayName = "AppleScript Debugger";
+				identifier = com.apple.AppleScriptStudio.ASKDebugLaunchConfig;
+				remoteHostInfo = "";
+				startActionInfo = "";
+			};
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = ASKDebugger;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+			{
+				active = NO;
+				name = AEDebug;
+				value = 1;
+			},
+			{
+				active = NO;
+				name = AEDebugSends;
+				value = 1;
+			},
+			{
+				active = NO;
+				name = AEDebugReceives;
+				value = 1;
+			},
+			{
+				active = NO;
+				name = AEDebugVerbose;
+				value = 1;
+			},
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = "ManagedSoftwareUpdate";
+		shlibInfoDictList = (
+		);
+		sourceDirectories = (
+		);
+	};
+	25D9445A07B1533700FF306F = {
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		isa = PBXSourceControlManager;
+		scmConfiguration = {
+		};
+		scmType = "";
+	};
+	25D9445B07B1533700FF306F = {
+		indexTemplatePath = "";
+		isa = PBXCodeSenseManager;
+	};
+	29B97313FDCFA39411CA2CEA = {
+		activeBuildStyle = 4A9504CCFFE6A4B311CA0CBA;
+		activeExecutable = 25D9445407B1533600FF306F;
+		activeTarget = 257572C2072881A4000BE9CA;
+		codeSenseManager = 25D9445B07B1533700FF306F;
+		executables = (
+			25D9445407B1533600FF306F,
+		);
+		sourceControlManager = 25D9445A07B1533700FF306F;
+		userBuildSettings = {
+		};
+	};
+}
