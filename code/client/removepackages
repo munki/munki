@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-removePackages - a tool to analyze installed packages and remove
+removepackages - a tool to analyze installed packages and remove
 files unique to the packages given at the command line. No attempt
 is made to revert to older versions of a file when uninstalling;
 only file removals are done.
@@ -30,7 +30,7 @@ import plistlib
 import sqlite3
 import time
 import munkistatus
-#import applereceiptutils
+
 
 ##################################################################
 # Schema of /Library/Receipts/db/a.receiptsdb:
@@ -143,8 +143,9 @@ def display_percent_done(current,maximum):
 def display_status(msg):
     """
     Displays major status messages, formatting as needed
-    for verbose/non-verbose and iHook-style output.
+    for verbose/non-verbose and munkistatus-style output.
     """
+    log(msg)
     if options.munkistatusoutput:
         munkistatus.detail(msg)
     elif options.verbose:
@@ -157,7 +158,7 @@ def display_status(msg):
 def display_info(msg):
     """
     Displays minor info messages, formatting as needed
-    for verbose/non-verbose and iHook-style output.
+    for verbose/non-verbose and munkistatus-style output.
     """
     if options.munkistatusoutput:
         #munkistatus.detail(msg)
@@ -168,10 +169,20 @@ def display_info(msg):
 
 def display_error(msg):
     """
-    Prints msg to stderr and eventually to the log
+    Prints msg to stderr and the log
     """
-    print >>sys.stderr, "ERROR: %s" % msg
+    print >>sys.stderr, msg
+    log(msg)
     
+
+
+def log(msg):
+    try:
+        f = open(options.logfile, mode='a', buffering=1)
+        print >>f, time.ctime(), msg
+        f.close()
+    except:
+        pass
 
 
 def shouldRebuildDB(pkgdbpath):
@@ -599,6 +610,7 @@ def removeReceipts(pkgkeylist):
                 receiptpath = os.path.join('/Library/Receipts/boms', pkgname)
             if os.path.exists(receiptpath):
                 display_info("Removing %s..." % receiptpath)
+                log("Removing %s..." % receiptpath)
                 retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
         
         # remove pkg info from our database
@@ -709,6 +721,7 @@ def removeFilesystemItems(removalpaths):
         # use os.path.lexists so broken links return true so we can remove them
         if os.path.lexists(pathtoremove):
             display_info("Removing: " + pathtoremove.encode("UTF-8"))
+            log("Removing: " + pathtoremove.encode("UTF-8"))
             if (os.path.isdir(pathtoremove) and not os.path.islink(pathtoremove)):
                 diritems = os.listdir(pathtoremove)
                 if diritems == ['.DS_Store']:
@@ -780,6 +793,8 @@ p.add_option('--dontquitmunkistatus', '-d', action='store_true',
                 help="Don't quit MunkiStatus on exit. (For example, when called by ManagedInstaller.)")
 p.add_option('--verbose', '-v', action='store_true',
                 help='More verbose output.')
+p.add_option('--logfile', default='',
+                help="Path to a log file.")
 # Get our options and our package names
 options, pkgnames = p.parse_args()
 
@@ -812,7 +827,6 @@ if stopRequested():
     cleanup()
     exit()
 
-    
 if removalpaths:
     if options.listfiles:
         removalpaths.sort()

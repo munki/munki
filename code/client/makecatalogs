@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# Copyright 2009 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+makecatalogs
+
+Created by Greg Neagle on 2009-03-30.
+Copyright (c) 2009 Walt Disney Animation Studios. All rights reserved.
+
+Recursively scans a directory, looking for installer item info files.  Builds a repo catalog from these files.
+
+TO-DOs:
+Maybe generate a checksum so we can verify the installer item is the right one
+"""
+
+import sys
+import os
+import optparse
+import plistlib
+import subprocess
+
+def validPlist(path):
+    cmd = ['/usr/bin/plutil', '-lint', '-s' , path]
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    if p.returncode == 0:
+        return True
+    else:
+        return False
+        
+def makeCatalogs(repopath):
+    pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
+    if not os.path.exists(pkgsinfopath):
+        print >>sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
+        exit(-1)
+    
+    catalogs = {}
+    catalogs['all'] = []    
+    for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
+        subdir = dirpath[len(pkgsinfopath):]
+        for name in filenames:
+            filepath = os.path.join(dirpath,name)
+            if validPlist(filepath):
+                #if it's a valid plist, assume it's a pkginfo file
+                pkginfo = plistlib.readPlist(filepath)
+                #simple sanity checking
+                if 'installer_item_location' in pkginfo:
+                    installeritempath = os.path.join(repopath, "pkgs", pkginfo['installer_item_location'])
+                    if os.path.exists(installeritempath):
+                        catalogs['all'].append(pkginfo)
+                        for catalogname in pkginfo.get("catalogs",[]):
+                            if not catalogname in catalogs:
+                                catalogs[catalogname] = []
+                            catalogs[catalogname].append(pkginfo)
+                    else:
+                        print >>sys.stderr, "WARNING: Info file %s refers to missing installer item: %s" % (filepath[len(pkgsinfopath)+1:], pkginfo['installer_item_location'])
+                    
+    # clear out old catalogs
+    path = os.path.join(repopath, "catalogs")
+    for item in os.listdir(path):
+        itempath = os.path.join(path,item)
+        if os.path.isfile(itempath):
+            os.remove(itempath)
+    
+    # write the new catalogs
+    for key in catalogs.keys():
+        catalogpath = os.path.join(repopath, "catalogs", key)
+        plistlib.writePlist(catalogs[key], catalogpath)
+        
+
+def main():
+    usage = "usage: %prog [options] /path/to/repo_root"
+    p = optparse.OptionParser(usage=usage)
+    options, arguments = p.parse_args()
+    if len(arguments) == 0:
+        print >>sys.stderr, "Need to specify a path to the repo root!"
+        exit(-1)
+        
+    repopath = arguments[0].rstrip("/")
+    if not os.path.exists(repopath):
+        print >>sys.stderr, "Repo root path %s doesn't exist!" % repopath
+        exit(-1)
+            
+    makeCatalogs(repopath)
+
+if __name__ == '__main__':
+    main()
+

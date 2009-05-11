@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-managedinstallslib.py
+managedinstalls
 
 Created by Greg Neagle on 2008-11-18.
 
@@ -47,6 +47,7 @@ def getManagedInstallsPrefs():
     prefs['manifest_url'] = "http:/managedinstalls/cgi-bin/getmanifest"
     prefs['sw_repo_url'] = "http://managedinstalls/swrepo"
     prefs['client_identifier'] = ""
+    prefs['logging_level'] = 1
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
     
     if os.path.exists(prefsfile):
@@ -63,6 +64,9 @@ def getManagedInstallsPrefs():
                 prefs['sw_repo_url'] = pl['sw_repo_url']
             if 'client_identifier' in pl:
                 prefs['client_identifier'] = pl['client_identifier']
+            if 'logging_level' in pl:
+                prefs['logging_level'] = pl['logging_level']
+                
                 
     return prefs
 
@@ -113,6 +117,8 @@ def getInstallerPkgInfo(filename):
         if 'Will Restart' in pl:
             if pl['Will Restart'] == "YES":
                 installerinfo['RestartAction'] = "RequireRestart"
+        if "Title" in pl:
+            installerinfo['display_name'] = pl['Title']
                 
     return installerinfo
     
@@ -398,11 +404,13 @@ def display_percent_done(current,maximum):
         sys.stdout.flush()
 
 
-def httpDownload(url, filename, headers={}, postData=None, reporthook=None):
+def httpDownload(url, filename, headers={}, postData=None, reporthook=None, message=None):
     reqObj = urllib2.Request(url, postData, headers)
     fp = urllib2.urlopen(reqObj)
     headers = fp.info()
     
+    if message: print message
+        
     #read & write fileObj to filename
     tfp = open(filename, 'wb')
     result = filename, headers
@@ -438,7 +446,7 @@ def httpDownload(url, filename, headers={}, postData=None, reporthook=None):
 
 
 
-def getfilefromhttpurl(url,filepath,showprogress=False,ifmodifiedsince=None):
+def getfilefromhttpurl(url,filepath,showprogress=False,ifmodifiedsince=None, message=None):
     """
     gets a file from a url.
     If 'ifmodifiedsince' is specified, this header is set
@@ -455,7 +463,7 @@ def getfilefromhttpurl(url,filepath,showprogress=False,ifmodifiedsince=None):
         if ifmodifiedsince:
             modtimestr = time.strftime("%a, %d %b %Y %H:%M:%S GMT",time.gmtime(ifmodifiedsince))
             request_headers["If-Modified-Since"] = modtimestr
-        (f,headers) = httpDownload(url, filename=filepath, headers=request_headers, reporthook=reporthook)
+        (f,headers) = httpDownload(url, filename=filepath, headers=request_headers, reporthook=reporthook, message=message)
         if 'last-modified' in headers:
             # set the modtime of the downloaded file to the modtime of the
             # file on the server
@@ -472,8 +480,40 @@ def getfilefromhttpurl(url,filepath,showprogress=False,ifmodifiedsince=None):
         return (-1, "Unexpected error")
     
     return 0
-    
+
+
+def getHTTPfileIfNewerAtomically(url,destinationpath,showprogress=False, message=None):
+    """
+    Gets file from HTTP URL, only if newer on web server.
+    Replaces pre-existing file only on success. (thus 'Atomically')
+    """
+    mytmpdir = tempfile.mkdtemp()
+    mytemppath = os.path.join(mytmpdir,"TempDownload")
+    if os.path.exists(destinationpath):
+        modtime = os.stat(destinationpath).st_mtime
+    else:
+        modtime = None
+    result = getfilefromhttpurl(url, mytemppath, showprogress=True, ifmodifiedsince=modtime, message=message)
+    if result == 0:
+        try:
+            os.rename(mytemppath, destinationpath)
+            return destinationpath
+        except:
+            print >>sys.stderr, "Could not write to %s" % destinationpath
+            destinationpath = None
+    elif result == 304:
+        # not modified, return existing file
+        return destinationpath
+    else:
+        print >>sys.stderr, "Error code: %s retreiving %s" % (result, url)
+        destinationpath = None
         
+    if os.path.exists(mytemppath):
+        os.remove(mytemppath)
+    os.rmdir(mytmpdir)
+    return destinationpath
+    
+    
 debug = False
 def main():
     pass

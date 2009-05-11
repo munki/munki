@@ -59,24 +59,13 @@ def createDirsIfNeeded(dirlist):
 
 def log(message):
     global logdir
-    createDirsIfNeeded([logdir])
-    logfile = os.path.join(logdir,'autoinstall.log')
-    f = open(logfile, mode='a', buffering=1)
-    if f:
+    logfile = os.path.join(logdir,'ManagedInstaller.log')
+    try:
+        f = open(logfile, mode='a', buffering=1)
         print >>f, time.ctime(), message
         f.close()
-
-
-def countinstallcandidates(dirpath):
-    """
-    Get the count of items to be installed
-    """
-    candidatecount = 0
-    items = os.listdir(dirpath)
-    for item in items:
-        if (item.endswith(".pkg") or item.endswith(".mpkg") or item.endswith(".dmg")):
-            candidatecount += 1
-    return candidatecount
+    except:
+        pass
 
 
 def install(pkgpath):
@@ -95,9 +84,10 @@ def install(pkgpath):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
     packagename = output.splitlines()[0]
-    print >>sys.stderr, "Package name is", packagename
+    
     if options.munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
+        munkistatus.detail("")
         # clear indeterminate progress bar 
         munkistatus.percent(0)
         
@@ -162,7 +152,7 @@ def install(pkgpath):
                     print >>sys.stderr, msg
                 log(msg)
             else:
-                print >>sys.stderr, msg
+                log(msg)
 
     retcode = p.poll()
     if retcode:
@@ -278,29 +268,32 @@ def getRemovalCount(removalList):
                 count +=1
     return count
 
+
 def processRemovals(removalList):
+    global logdir
     restartFlag = False
     for item in removalList:
         if stopRequested():
             return restartFlag
         if 'installed' in item:
             if item['installed']:
-                name = ""
-                if 'name' in item:
-                    name = item['name']
-                elif 'catalogitem' in item:
-                    name = item['catalogitem']
+                name = item.get('name','')
                 if 'uninstall_method' in item:
                     uninstallmethod = item['uninstall_method'].split(' ')
                     if uninstallmethod[0] == "removepackages":
                         if 'packages' in item:
+                            if item.get('RestartAction') == "RequireRestart":
+                                restartFlag = True
                             if options.munkistatusoutput:
                                 munkistatus.message("Removing %s..." % name)
+                                munkistatus.detail("")
                                 # clear indeterminate progress bar 
                                 munkistatus.percent(0)                               
                             else:
                                 print "Removing %s..." % name
-                            cmd = [pathtoremovepackages, '-f']
+                            
+                            log("Removing %s..." % name)
+                            cmd = [pathtoremovepackages, '-f', '--logfile', os.path.join(logdir,'ManagedInstaller.log')]
                             if options.munkistatusoutput:
                                 cmd.append('-m')
                                 cmd.append('-d')
@@ -354,9 +347,13 @@ def processRemovals(removalList):
                         # it's a script or program to uninstall
                         if options.munkistatusoutput:
                             munkistatus.message("Running uninstall script for %s..." % name)
+                            munkistatus.detail("")
                             # set indeterminate progress bar 
                             munkistatus.percent(-1)
-                    
+                        
+                        if item.get('RestartAction') == "RequireRestart":
+                            restartFlag = True
+                        
                         cmd = uninstallmethod
                         uninstalleroutput = []
                         p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
@@ -391,7 +388,7 @@ def processRemovals(removalList):
                         else:
                             log("Uninstall of %s was successful." % name)
                             
-                        if options.munkstatusoutput:
+                        if options.munkistatusoutput:
                             # clear indeterminate progress bar 
                             munkistatus.percent(0)
            
@@ -409,7 +406,8 @@ def mountdmg(dmgpath):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
-    print "Mounting disk image %s" % dmgname
+    if not options.munkistatusoutput:
+        print "Mounting disk image %s" % dmgname
     log("Mounting disk image %s" % dmgname)
     p = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath, '-mountRandom', '/tmp', '-nobrowse', '-plist'],
             bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -451,65 +449,61 @@ def main():
     global installdir
     
     needtorestart = False
-
-    log("### Beginning automated install session ###")
-    if os.path.exists(installdir):
-        installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
-        if os.path.exists(installinfo):
-            try:
-                pl = plistlib.readPlist(installinfo)
-            except:
-                print >>sys.stderr, "Invalid %s" % installinfo
-                exit(-1)
-                
-            # remove the install info file
-            # it's no longer valid once we start running
-            os.unlink(installinfo)
-            
-            if "removals" in pl:
-                removalcount = getRemovalCount(pl['removals'])
-                if removalcount:
-                    if options.munkistatusoutput:
-                        if removalcount == 1:
-                            munkistatus.message("Removing 1 item...")
-                        else:
-                            munkistatus.message("Removing %i items..." % removalcount)
-                        # set indeterminate progress bar 
-                        munkistatus.percent(-1)
-                    log("Processing removals")
-                    needtorestart = processRemovals(pl['removals'])
-            if "managed_installs" in pl:
-                if not stopRequested():
-                    installcount = getInstallCount(pl['managed_installs'])
-                    if installcount:
-                        if options.munkistatusoutput:
-                            if installcount == 1:
-                                munkistatus.message("Installing 1 item...")
-                            else:
-                                munkistatus.message("Installing %i items..." % installcount)
-                            # set indeterminate progress bar 
-                            munkistatus.percent(-1)                        
-                        log("Processing installs")
-                        needtorestart = installWithInfo(installdir, pl['managed_installs'])
-                                            
-        else:
-            log("No %s found." % installinfo)
-            #log("Installing everything in the cache.")
-            # install all pkgs and mpkgs
-            #needtorestart = installall(installdir)
+    createDirsIfNeeded([logdir])
+    log("### Beginning managed installer session ###")
+    installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
+    if os.path.exists(installinfo):
+        try:
+            pl = plistlib.readPlist(installinfo)
+        except:
+            print >>sys.stderr, "Invalid %s" % installinfo
+            exit(-1)
         
-        if needtorestart:
-            log("Software installed or removed requires a restart.")
-            if options.munkistatusoutput:
-                munkistatus.message("Software installed or removed requires a restart.")
-                munkistatus.detail("")
-                munkistatus.percent(-1)
-            else:
-                print "Software installed or removed requires a restart."
-                sys.stdout.flush()
-            
+        # remove the install info file
+        # it's no longer valid once we start running
+        os.unlink(installinfo)
     
-    log("### End automated install session ###")
+        if "removals" in pl:
+            removalcount = getRemovalCount(pl['removals'])
+            if removalcount:
+                if options.munkistatusoutput:
+                    if removalcount == 1:
+                        munkistatus.message("Removing 1 item...")
+                    else:
+                        munkistatus.message("Removing %i items..." % removalcount)
+                    # set indeterminate progress bar 
+                    munkistatus.percent(-1)
+                log("Processing removals")
+                needtorestart = processRemovals(pl['removals'])
+        if "managed_installs" in pl:
+            if not stopRequested():
+                installcount = getInstallCount(pl['managed_installs'])
+                if installcount:
+                    if options.munkistatusoutput:
+                        if installcount == 1:
+                            munkistatus.message("Installing 1 item...")
+                        else:
+                            munkistatus.message("Installing %i items..." % installcount)
+                        # set indeterminate progress bar 
+                        munkistatus.percent(-1)                        
+                    log("Processing installs")
+                    needtorestart = installWithInfo(installdir, pl['managed_installs'])
+                                    
+    else:
+        log("No %s found." % installinfo)
+
+    if needtorestart:
+        log("Software installed or removed requires a restart.")
+        if options.munkistatusoutput:
+            munkistatus.message("Software installed or removed requires a restart.")
+            munkistatus.detail("")
+            munkistatus.percent(-1)
+        else:
+            print "Software installed or removed requires a restart."
+            sys.stdout.flush()
+           
+    log("###    End managed installer session    ###")
+    
     if needtorestart:
         time.sleep(5)
         cleanup()

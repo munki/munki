@@ -15,10 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-makecatalogitem.py
+makepkginfo
 
 Created by Greg Neagle on 2008-11-25.
-Creates a managed install catalog item plist given an Installer item:
+Creates a managed install pkg info plist given an Installer item:
 a .pkg, a .mpkg, or a .dmg containing a .pkg or .mpkg
 at the root of the mounted disk image.
 
@@ -29,7 +29,7 @@ reinstalled.
 
 The generated plist is printed to STDOUT.
 
-Usage: makecatalogitem /path/to/package_or_dmg [-f /path/to/item/it/installs ...]
+Usage: makepkginfo /path/to/package_or_dmg [-f /path/to/item/it/installs ...]
 """
 
 import sys
@@ -131,6 +131,9 @@ def getCatalogInfo(pkgitem):
     metaversion = nameAndVersion(shortname)[1]
     if not len(metaversion):
         metaversion = highestpkgversion
+    elif highestpkgversion.startswith(metaversion):
+        #for example, highestpkgversion is 2.0.3124.0, version in filename is 2.0
+        metaversion = highestpkgversion
         
     if 'installed_size' in installerinfo:
         if installerinfo['installed_size'] > 0:
@@ -139,11 +142,10 @@ def getCatalogInfo(pkgitem):
     cataloginfo = {}
     cataloginfo['name'] = nameAndVersion(shortname)[0]
     cataloginfo['version'] = metaversion
-    if 'RestartAction' in installerinfo:
-        cataloginfo['RestartAction'] = installerinfo['RestartAction']
-    cataloginfo['description'] = ""
-    if 'description' in installerinfo:
-        cataloginfo['description'] = installerinfo['description']
+    for key in ('display_name', 'RestartAction', 'description'):
+        if key in installerinfo:
+            cataloginfo[key] = installerinfo[key]
+    
     if installedsize > 0:
         cataloginfo['installed_size'] = installedsize
     
@@ -230,6 +232,7 @@ def getiteminfo(itempath):
     infodict = {}
     if itempath.endswith('.app'):
         infodict['type'] = 'application'
+        infodict['path'] = itempath
         pl = getBundleInfo(itempath)
         if 'CFBundleName' in pl:
             infodict['CFBundleName'] = pl['CFBundleName']
@@ -241,12 +244,14 @@ def getiteminfo(itempath):
             infodict['minosversion'] = pl['LSMinimumSystemVersion']
         elif 'SystemVersionCheck:MinimumSystemVersion' in pl:
             infodict['minosversion'] = pl['SystemVersionCheck:MinimumSystemVersion']
+            
     elif os.path.exists(os.path.join(itempath,'Contents','Info.plist')) or os.path.exists(os.path.join(itempath,'Resources','Info.plist')):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
         pl = getBundleInfo(itempath)
         if 'CFBundleShortVersionString' in pl:
             infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+            
     elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
         infodict['path'] = itempath
@@ -307,6 +312,12 @@ def main():
             if options.file:
                 installs = []           
                 for fitem in options.file:
+                    # no trailing slashes, please.
+                    fitem = fitem.rstrip('/')
+                    if fitem.startswith('/Library/Receipts'):
+                        # no receipts, please!
+                        print >>sys.stderr, "Item %s appears to be a receipt. Skipping." % fitem
+                        continue
                     if os.path.exists(fitem):
                         iteminfodict = getiteminfo(fitem)
                         if 'minosversion' in iteminfodict:

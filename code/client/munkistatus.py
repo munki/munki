@@ -150,8 +150,8 @@ def main():
                     help='Disable the stop button.')
     p.add_option('--enableStopButton', action='store_true',
                     help='Enable the stop button.')
-   
-                                        
+    
+    
     options, arguments = p.parse_args()
     
     if options.quit:
