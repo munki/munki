@@ -37,6 +37,7 @@ import urlparse
 import optparse
 import hashlib
 import time
+import socket
 
 #our lib
 import managedinstalls
@@ -52,9 +53,12 @@ def log(message):
         
         
 def logerror(message):
+    global errors
     print >>sys.stderr, message
     message = "ERROR: %s" % message
     log(message)
+    # collect the errors for later reporting
+    errors = errors + message + '\n'
 
 
 def printandlog(message, verbositylevel=0):
@@ -62,6 +66,24 @@ def printandlog(message, verbositylevel=0):
         print message
     if logginglevel >= verbositylevel:
         log(message)
+
+
+def reporterrors():
+    # just a placeholder right now;
+    # this needs to be expanded to support error reporting
+    # via email and HTTP CGI.
+    global options
+    managedinstallprefs = managedinstalls.prefs()
+    clientidentifier = managedinstallprefs.get('client_identifier','')
+    alternate_id = options.id
+    hostname = os.uname()[1]
+    
+    print "installcheck errors %s:" % time.ctime()
+    print "Hostname:           %s" % hostname
+    print "Client identifier:  %s" % clientidentifier
+    print "Alternate ID:       %s" % alternate_id
+    print "-----------------------------------------"
+    print errors
 
 
 # appdict is a global so we don't call system_profiler more than once per session
@@ -1048,6 +1070,8 @@ def getCatalogs(cataloglist):
         elif not options.verbose:
             message = "Retreiving catalog '%s'..." % catalog
         newcatalog = managedinstalls.getHTTPfileIfNewerAtomically(catalogurl,catalogpath,showprogress=not(options.quiet), message=message)
+        if not newcatalog:
+            logerror("Could not retreive catalog %s from server." % catalog)
         
 
 def getmanifest(partialurl):
@@ -1075,8 +1099,11 @@ def getmanifest(partialurl):
     elif not options.verbose:
         message = "Retreiving list of software for this machine..."
         
-    return managedinstalls.getHTTPfileIfNewerAtomically(manifesturl,manifestpath,showprogress=not(options.quiet), message=message)
-
+    newmanifest = managedinstalls.getHTTPfileIfNewerAtomically(manifesturl,manifestpath,showprogress=not(options.quiet), message=message)
+    if not newmanifest:
+        logerror("Could not retreive manifest %s from the server." % partialurl)
+        
+    return newmanifest
 
 def getPrimaryManifest(alternate_id):
     """
@@ -1084,7 +1111,7 @@ def getPrimaryManifest(alternate_id):
     """
     managedinstallprefs = managedinstalls.prefs()
     manifesturl = managedinstallprefs['manifest_url']
-    clientidentifier = managedinstallprefs['client_identifier']
+    clientidentifier = managedinstallprefs.get('client_identifier','')
 
     if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
         manifesturl = manifesturl + "/"
@@ -1119,10 +1146,39 @@ def getRemovalCount(installinfo):
     return count
 
 
+def checkServer():
+    managedinstallprefs = managedinstalls.prefs()
+    manifesturl = managedinstallprefs['manifest_url']
+    # deconstruct URL so we can check availability
+    port = 80
+    (scheme, netloc, path, query, fragment) = urlparse.urlsplit(manifesturl)
+    # get rid of any embedded username/password
+    netlocparts = netloc.split("@")
+    netloc = netlocparts[-1]
+    # split into host and port if present
+    netlocparts = netloc.split(":")
+    host = netlocparts[0]
+    if len(netlocparts) == 2:
+        port = netlocparts[1]
+        
+    s = socket.socket()
+    #try:
+    s.connect((host, port))
+    s.close
+    return True
+    #except:
+        #return False
+        
+    
+        
+    
+
+
 # some globals
 logdir = ''
 logginglevel = 1
 mytmpdir = tempfile.mkdtemp()
+errors = ''
 p = optparse.OptionParser()
 p.add_option('--id', '-i', default='',
                 help='Alternate identifier for catalog retreival')
@@ -1134,7 +1190,7 @@ options, arguments = p.parse_args()
 
 
 def main():
-    global mytmpdir, options, logdir
+    global mytmpdir, options, logdir, errors
     
     if not options.quiet: print "Managed Software Check\n"
     
@@ -1146,14 +1202,21 @@ def main():
     logdir = os.path.join(managed_install_dir, "Logs")
     
     if not createDirsIfNeeded([managed_install_dir, manifestsdir, cachedir, logdir]):
-        # can't use logerror function since logdir might not exist
-        print >>sys.stderr, "No write access to managed install directory: %s" % managed_install_dir
+        # can't use logerror function since logdir might not exist yet
+        errormessage = "No write access to managed install directory: %s" % managed_install_dir
+        print >>sys.stderr, errormessage
+        errors = errormessage
+        reporterrors()
         exit(-1)
     log("### Beginning managed software check ###")
     
     mainmanifestpath = getPrimaryManifest(options.id)
     if not mainmanifestpath:
         logerror("Could not retreive managed install primary manifest.")
+        # we can't continue.
+        # we need a way to notify the admin of this problem --
+        # logging to a local file isn't really sufficient.
+        reporterrors()
         exit(-1)
         
     # initialize our installinfo record
@@ -1208,8 +1271,9 @@ def main():
     
     if installinfochanged and not options.quiet:
         if installcount or removalcount:
+            # here's where we could trigger the ManagedInstaller or ManagedSoftwareUpdate tools
+            # print "Managed software updates are available."
             pass
-            #print "Managed software updates are available."
             
     if installcount:
         printandlog("The following items will be installed or upgraded:")
@@ -1227,6 +1291,9 @@ def main():
                 printandlog("    - %s" % item.get('name'))
                 if item.get('RestartAction') == 'RequireRestart':
                     printandlog("       *Restart required")
+    
+    if errors:
+        reporterrors()
                    
     if installcount == 0 and removalcount == 0:
         printandlog("No changes to managed software scheduled.")

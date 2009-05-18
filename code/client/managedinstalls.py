@@ -474,6 +474,8 @@ def getfilefromhttpurl(url,filepath,showprogress=False,ifmodifiedsince=None, mes
             
     except urllib2.HTTPError, err:
         return err.code
+    #except urllib2.URLError, err:
+    #    return err   
     except IOError, err:
         return err
     except:

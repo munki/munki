@@ -28,6 +28,7 @@ import plistlib
 import optparse
 import managedinstalls
 import munkistatus
+import cfconsoleuser
 
 pathtoremovepackages = "/Users/Shared/munki/munki/code/client/removepackages"
 
@@ -462,7 +463,7 @@ def main():
         # remove the install info file
         # it's no longer valid once we start running
         os.unlink(installinfo)
-    
+        
         if "removals" in pl:
             removalcount = getRemovalCount(pl['removals'])
             if removalcount:
@@ -495,6 +496,7 @@ def main():
     if needtorestart:
         log("Software installed or removed requires a restart.")
         if options.munkistatusoutput:
+            munkistatus.hideStopButton()
             munkistatus.message("Software installed or removed requires a restart.")
             munkistatus.detail("")
             munkistatus.percent(-1)
@@ -505,10 +507,16 @@ def main():
     log("###    End managed installer session    ###")
     
     if needtorestart:
-        time.sleep(5)
-        cleanup()
-        # uncomment this when testing is done so it will restart.
-        #retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
+        if cfconsoleuser.getConsoleUser() == None or not options.munkistatusoutput:
+            time.sleep(5)
+            cleanup()
+            retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
+        else:
+            # someone is logged in and we're using MunkiStatus
+            munkistatus.activate()
+            munkistatus.osascript('tell application "MunkiStatus" to display alert "Restart Required" message "Software installed requires a restart. You will have a chance to save open documents." as critical default button "Restart"')
+            cleanup()
+            munkistatus.osascript('tell application "System Events" to restart')
     else:
         cleanup()
 
