@@ -137,11 +137,8 @@ end selection changed
 
 on alert ended theObject with reply withReply
 	if button returned of withReply is "Log out and install" then
-		-- trigger ManagedInstaller
-		-- we just tell the OS to restart; the logout hook
-		-- should kick in for the install
 		tell application "System Events"
-			restart
+			log out
 		end tell
 		quit
 	end if
