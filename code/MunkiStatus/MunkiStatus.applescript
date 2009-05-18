@@ -35,6 +35,29 @@ property kCGStatusWindowLevel : 25
 property kCGScreenSaverWindowLevel : 1000
 
 on awake from nib theObject
+	if name of theObject is "backdropWindow" then
+		copy "" to cfuser
+		copy (call method "consoleUser") to cfuser
+		if cfuser is "" then
+			call method "setCanBecomeVisibleWithoutLogin:" of theObject with parameter 1
+			call method "setLevel:" of theObject with parameter (kCGStatusWindowLevel)
+			copy (call method "mainScreenRect") to screenRect
+			call method "setFrame:display:" of theObject with parameters {screenRect, true}
+			try
+				tell application "System Events"
+					set DesktopPicture to value of property list item "DesktopPicture" of property list file "/Library/Preferences/com.apple.loginwindow.plist"
+					if exists (POSIX file DesktopPicture as file) then
+						--do nothing; just trying to trigger an error
+					end if
+				end tell
+			on error
+				set DesktopPicture to "/Library/Desktop Pictures/Aqua Blue.jpg"
+			end try
+			set bgPicture to load image DesktopPicture
+			set contents of image view "imageFld" of theObject to bgPicture
+			show theObject
+		end if
+	end if
 	if name of theObject is "mainWindow" then
 		-- Leopard is picky about what we can display over the loginwindow
 		call method "setCanBecomeVisibleWithoutLogin:" of theObject with parameter 1
@@ -50,3 +73,14 @@ on awake from nib theObject
 		activate
 	end if
 end awake from nib
+
+on resigned active theObject
+	copy "" to cfuser
+	copy (call method "consoleUser") to cfuser
+	if cfuser is "" then
+		tell me to activate
+	end if
+end resigned active
+
+
+

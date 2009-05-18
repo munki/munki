@@ -29,6 +29,9 @@
 		C001935C0FA117A800AC90B0 /* SystemConfigurationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = C001935B0FA117A800AC90B0 /* SystemConfigurationInterface.h */; };
 		C001935E0FA118A400AC90B0 /* SystemConfigurationInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = C001935D0FA118A400AC90B0 /* SystemConfigurationInterface.m */; };
 		C00193920FA11D5C00AC90B0 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00193910FA11D5C00AC90B0 /* SystemConfiguration.framework */; };
+		C00B239E0FC096670016293D /* MunkiStatus.icns in Resources */ = {isa = PBXBuildFile; fileRef = C00B239D0FC096670016293D /* MunkiStatus.icns */; };
+		C01D090F0FBF7216001ED249 /* BorderlessWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = C01D090D0FBF7216001ED249 /* BorderlessWindow.h */; };
+		C01D09100FBF7216001ED249 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C01D090E0FBF7216001ED249 /* BorderlessWindow.m */; };
 		C0C84CCF0F98FF7800B6518D /* Installer.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0C84CCE0F98FF7800B6518D /* Installer.tiff */; };
 		C0C84CD10F98FF8400B6518D /* package.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0C84CD00F98FF8400B6518D /* package.tiff */; };
 /* End PBXBuildFile section */
@@ -46,6 +49,9 @@
 		C001935B0FA117A800AC90B0 /* SystemConfigurationInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemConfigurationInterface.h; sourceTree = "<group>"; };
 		C001935D0FA118A400AC90B0 /* SystemConfigurationInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemConfigurationInterface.m; sourceTree = "<group>"; };
 		C00193910FA11D5C00AC90B0 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
+		C00B239D0FC096670016293D /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
+		C01D090D0FBF7216001ED249 /* BorderlessWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BorderlessWindow.h; sourceTree = "<group>"; };
+		C01D090E0FBF7216001ED249 /* BorderlessWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BorderlessWindow.m; sourceTree = "<group>"; };
 		C0C84CCE0F98FF7800B6518D /* Installer.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Installer.tiff; sourceTree = "<group>"; };
 		C0C84CD00F98FF8400B6518D /* package.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = package.tiff; sourceTree = "<group>"; };
 		DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppleScriptKit.framework; path = /System/Library/Frameworks/AppleScriptKit.framework; sourceTree = "<absolute>"; };
@@ -117,6 +123,8 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				C01D090D0FBF7216001ED249 /* BorderlessWindow.h */,
+				C01D090E0FBF7216001ED249 /* BorderlessWindow.m */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 				C001935B0FA117A800AC90B0 /* SystemConfigurationInterface.h */,
 				C001935D0FA118A400AC90B0 /* SystemConfigurationInterface.m */,
@@ -127,6 +135,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C00B239D0FC096670016293D /* MunkiStatus.icns */,
 				C0C84CD00F98FF8400B6518D /* package.tiff */,
 				C0C84CCE0F98FF7800B6518D /* Installer.tiff */,
 				60A014C20DBD2AA20071D9A8 /* MainMenu.xib */,
@@ -153,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C001935C0FA117A800AC90B0 /* SystemConfigurationInterface.h in Headers */,
+				C01D090F0FBF7216001ED249 /* BorderlessWindow.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +215,7 @@
 				60A014C40DBD2AA20071D9A8 /* MainMenu.xib in Resources */,
 				C0C84CCF0F98FF7800B6518D /* Installer.tiff in Resources */,
 				C0C84CD10F98FF8400B6518D /* package.tiff in Resources */,
+				C00B239E0FC096670016293D /* MunkiStatus.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,6 +228,7 @@
 			files = (
 				257572CA072881A4000BE9CA /* main.m in Sources */,
 				C001935E0FA118A400AC90B0 /* SystemConfigurationInterface.m in Sources */,
+				C01D09100FBF7216001ED249 /* BorderlessWindow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

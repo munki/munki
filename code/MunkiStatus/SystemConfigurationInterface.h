@@ -27,5 +27,6 @@
 @interface NSApplication (ASKAMultiLanguage) 
 
 - (NSString *)consoleUser;
+- (NSRect)mainScreenRect;
 
 @end

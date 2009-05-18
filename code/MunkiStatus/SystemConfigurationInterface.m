@@ -21,6 +21,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import <Cocoa/Cocoa.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import "SystemConfigurationInterface.h"
 
@@ -40,6 +41,13 @@
 		username = @"";
 	}
 	return username;
+}
+
+- (NSRect)mainScreenRect
+{
+	NSRect	screenRect;
+	screenRect = [[NSScreen mainScreen] frame];
+	return screenRect;
 }
 
 @end
