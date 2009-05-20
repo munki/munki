@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.disneyanimation.MunkiStatus</string>
+	<string>com.googlecode.munki.munkistatus</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>

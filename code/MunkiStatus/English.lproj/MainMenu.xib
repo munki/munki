@@ -168,6 +168,7 @@
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">BorderlessWindow</string>
 				<nil key="NSViewClass"/>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="934017884">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -282,7 +283,7 @@
 								<int key="NSCellFlags2">33554432</int>
 								<object class="NSCustomResource" key="NSContents">
 									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">Installer</string>
+									<string key="NSResourceName">MunkiStatus</string>
 								</object>
 								<int key="NSAlign">0</int>
 								<int key="NSScale">0</int>
@@ -704,7 +705,6 @@
 					<string>440.IBPluginDependency</string>
 					<string>452.IBAttributePlaceholdersKey</string>
 					<string>452.IBEditorWindowLastContentRect</string>
-					<string>452.IBPluginDependency</string>
 					<string>452.IBWindowTemplateEditedContentRect</string>
 					<string>452.NSWindowTemplate.visibleAtLaunch</string>
 					<string>453.IBPluginDependency</string>
@@ -878,7 +878,6 @@
 						</object>
 					</object>
 					<string>{{33, 287}, {640, 480}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{33, 287}, {640, 480}}</string>
 					<reference ref="6"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -957,6 +956,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSWindow</string>
+					<string key="superclassName">NSResponder</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
