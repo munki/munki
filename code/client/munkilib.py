@@ -15,11 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-managedinstalls
+munkilib
 
 Created by Greg Neagle on 2008-11-18.
 
-Common functions used by the managedinstalls tools.
+Common functions used by the munki tools.
 """
 
 import sys
@@ -34,6 +34,13 @@ import tempfile
 import shutil
 from xml.dom import minidom
 
+from SystemConfiguration import *
+
+
+def getconsoleuser():
+    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+    return cfuser[0]
+
 
 #####################################################
 # managed installs preferences/metadata
@@ -44,8 +51,8 @@ def getManagedInstallsPrefs():
     # define default values
     prefs = {}
     prefs['managed_install_dir'] = "/Library/Managed Installs"
-    prefs['manifest_url'] = "http:/managedinstalls/cgi-bin/getmanifest"
-    prefs['sw_repo_url'] = "http://managedinstalls/swrepo"
+    prefs['manifest_url'] = "http:/munki/repo/manifests/"
+    prefs['sw_repo_url'] = "http:/munki/repo"
     prefs['client_identifier'] = ""
     prefs['logging_level'] = 1
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
@@ -518,7 +525,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath,showprogress=False, message
     
 debug = False
 def main():
-    pass
+    print "This is a library of support tools for the Munki Suite."
 
 
 if __name__ == '__main__':

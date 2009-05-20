@@ -41,7 +41,7 @@ import plistlib
 import subprocess
 import hashlib
 
-import managedinstalls
+import munkilib
 
 
 def mountdmg(dmgpath):
@@ -115,8 +115,8 @@ def getCatalogInfo(pkgitem):
     receipts: an array of packageids that may be installed (some may be optional)
     """
     installedsize = 0
-    installerinfo = managedinstalls.getInstallerPkgInfo(pkgitem)
-    info = managedinstalls.getPkgInfo(pkgitem)
+    installerinfo = munkilib.getInstallerPkgInfo(pkgitem)
+    info = munkilib.getPkgInfo(pkgitem)
     
     highestpkgversion = "0.0"
     for infoitem in info:

@@ -15,12 +15,16 @@
 # limitations under the License.
 
 """
-removepackages - a tool to analyze installed packages and remove
+removepackages.py 
+
+a tool to analyze installed packages and remove
 files unique to the packages given at the command line. No attempt
 is made to revert to older versions of a file when uninstalling;
 only file removals are done.
+
+Callable directly from the command-line and as a python module.
 """
-#TO-DO: refactor this so it can be called as a library as well as a command-line script
+
 
 import optparse
 import os
@@ -30,6 +34,7 @@ import plistlib
 import sqlite3
 import time
 import munkistatus
+import munkilib
 
 
 ##################################################################
@@ -71,7 +76,7 @@ import munkistatus
 #                      taint VARCHAR NOT NULL);
 #################################################################
 #################################################################
-# our db schema
+# our package db schema -- a subset of Apple's
 #
 # CREATE TABLE paths (path_key INTEGER PRIMARY KEY AUTOINCREMENT,
 #                     path VARCHAR NOT NULL UNIQUE )
@@ -91,7 +96,7 @@ import munkistatus
 #################################################################
 
 def stopRequested():
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         if munkistatus.getStopButtonState() == 1:
             return True
             
@@ -119,15 +124,15 @@ def display_percent_done(current,maximum):
     of Apple's tools (like softwareupdate), or tells
     MunkiStatus to display percent done via progress bar.
     """
-    if options.munkistatusoutput:
-        step = getsteps(101, maximum)
+    if munkistatusoutput:
+        step = getsteps(21, maximum)
         if current in step:
             if current == maximum:
                 percentdone = 100
             else:
-                percentdone = step.index(current)
+                percentdone = int(float(current)/float(maximum)*100)
             munkistatus.percent(str(percentdone))
-    elif not options.verbose:
+    elif not verbose:
         step = getsteps(16, maximum)
         output = ''
         indicator = ['\t0','.','.','20','.','.','40','.','.',
@@ -146,9 +151,9 @@ def display_status(msg):
     for verbose/non-verbose and munkistatus-style output.
     """
     log(msg)
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         munkistatus.detail(msg)
-    elif options.verbose:
+    elif verbose:
         print "%s..." % msg
     else:
         print "%s: " % msg
@@ -160,10 +165,10 @@ def display_info(msg):
     Displays minor info messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         #munkistatus.detail(msg)
         pass
-    elif options.verbose:
+    elif verbose:
         print msg
 
 
@@ -178,7 +183,7 @@ def display_error(msg):
 
 def log(msg):
     try:
-        f = open(options.logfile, mode='a', buffering=1)
+        f = open(logfile, mode='a', buffering=1)
         print >>f, time.ctime(), msg
         f.close()
     except:
@@ -383,15 +388,6 @@ def ImportBom(bompath, c):
     c.execute('INSERT INTO pkgs (timestamp, owner, pkgid, vers, ppath, pkgname) values (?, ?, ?, ?, ?, ?)', t)
     pkgkey = c.lastrowid
 
-    #pkgdict = {}
-    #pkgdict['timestamp'] = timestamp
-    #pkgdict['owner'] = owner
-    #pkgdict['pkgid'] = pkgid
-    #pkgdict['vers'] = vers
-    #pkgdict['ppath'] = ppath
-    #pkgdict['pkgname'] = pkgname
-    #pkgdbarray.append(pkgdict)
-
     cmd = ["/usr/bin/lsbom", bompath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -467,8 +463,8 @@ def initDatabase(packagedb,forcerebuild=False):
                 conn.close()
                 #our package db isn't valid, so we should delete it
                 os.remove(packagedb)
-                cleanup()
-                exit()
+                
+                return False
                 
             if item.endswith(".pkg"):
                 receiptpath = os.path.join(receiptsdir, item)
@@ -485,8 +481,8 @@ def initDatabase(packagedb,forcerebuild=False):
                 conn.close()
                 #our package db isn't valid, so we should delete it
                 os.remove(packagedb)
-                cleanup()
-                exit()
+                
+                return False
             
             if item.endswith(".bom"):
                 bompath = os.path.join(bomsdir, item)
@@ -503,12 +499,6 @@ def initDatabase(packagedb,forcerebuild=False):
     conn.commit()
     c.close()
     conn.close()
-
-    # create a plist with the installed packages
-    #pl = {}
-    #pl['packages'] = pkgdbarray
-    #plistlib.writePlist(pl,'/Users/Shared/InstalledPackages.plist')
-
     return True
 
 
@@ -546,7 +536,7 @@ def getpathstoremove(pkgkeylist):
     """
     Queries our database for paths to remove.
     """
-    pkgkeys = tuple(pkgkeyslist)
+    pkgkeys = tuple(pkgkeylist)
     
     # open connection and cursor to our database
     conn = sqlite3.connect(packagedb)
@@ -563,7 +553,7 @@ def getpathstoremove(pkgkeylist):
     combined_query = "select path from paths where (path_key in (%s) and path_key not in (%s))" % (in_selected_packages, not_in_other_packages)
     
     display_status('Determining which filesystem items to remove')
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         munkistatus.percent(-1)
     
     c.execute(combined_query)
@@ -577,7 +567,7 @@ def getpathstoremove(pkgkeylist):
     return removalpaths
 
 
-def removeReceipts(pkgkeylist):
+def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     """
     Removes receipt data from /Library/Receipts,
     /Library/Receipts/boms, our internal package database,
@@ -590,11 +580,11 @@ def removeReceipts(pkgkeylist):
     c = conn.cursor()
     
     applepkgdb = '/Library/Receipts/db/a.receiptdb'
-    if not options.noupdateapplepkgdb:
+    if not noupdateapplepkgdb:
         aconn = sqlite3.connect(applepkgdb)
         ac = aconn.cursor()
     
-    if not options.verbose:
+    if not verbose:
         display_percent_done(1,4)
     
     for pkgkey in pkgkeylist:
@@ -614,18 +604,18 @@ def removeReceipts(pkgkeylist):
                 retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
         
         # remove pkg info from our database
-        if options.verbose:
+        if verbose:
             print "Removing package data from internal database..."
         c.execute('DELETE FROM pkgs_paths where pkg_key = ?', t)
         c.execute('DELETE FROM pkgs where pkg_key = ?', t)
         
         # then remove pkg info from Apple's database unless option is passed
-        if not options.noupdateapplepkgdb:
+        if not noupdateapplepkgdb:
             if pkgid:
                 t = (pkgid, )
                 row = ac.execute('SELECT pkg_key FROM pkgs where pkgid = ?', t).fetchone()
                 if row:
-                    if options.verbose:
+                    if verbose:
                         print "Removing package data from Apple package database..."
                     apple_pkg_key = row[0]
                     t = (apple_pkg_key, )
@@ -641,7 +631,7 @@ def removeReceipts(pkgkeylist):
     
     # now remove orphaned paths from paths table
     # first, Apple's database if option is passed
-    if not options.noupdateapplepkgdb:
+    if not noupdateapplepkgdb:
         display_info("Removing unused paths from Apple package database...")
         ac.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
         aconn.commit()
@@ -701,7 +691,7 @@ def isBundle(pathname):
     else:
         return False
 
-def removeFilesystemItems(removalpaths):
+def removeFilesystemItems(removalpaths, forcedeletebundles):
     """
     Attempts to remove all the paths in the array removalpaths
     """
@@ -740,17 +730,13 @@ def removeFilesystemItems(removalpaths):
                     # if so directed, if it's a bundle (like .app), we should
                     # remove it anyway - no use having a broken bundle hanging
                     # around
-                    if (options.forcedeletebundles and isBundle(pathtoremove)):
+                    if (forcedeletebundles and isBundle(pathtoremove)):
                         retcode = subprocess.call(['/bin/rm', '-rf', pathtoremove])
                         if retcode:
                             display_error("ERROR: couldn't remove bundle %s" % pathtoremove)
                     else:
                         display_error("WARNING: Did not remove %s because it is not empty." % pathtoremove)
                         
-                #we'll update the progress bar only on directories because we're too slow
-                #otherwise
-                display_percent_done(itemindex, itemcount)
-               
             else:
                 # not a directory, just unlink it
                 # we're using rm instead of Python because I don't trust
@@ -758,95 +744,103 @@ def removeFilesystemItems(removalpaths):
                 retcode = subprocess.call(['/bin/rm', pathtoremove])
                 if retcode:
                     display_error("ERROR: couldn't remove item %s" % pathtoremove)
-        
-    # this should be 100%
-    display_percent_done(itemindex, itemcount)
+                    
+        display_percent_done(itemindex, itemcount)        
 
-def cleanup():
-    if options.munkistatusoutput:
-        if not options.dontquitmunkistatus:
-            munkistatus.quit()
 
-######################################################
-# Main
-######################################################
-
-# location of our internal pkg db
-packagedb = "/Users/Shared/b.receiptdb"
-pkgdbarray = []
-
-# command-line options
-p = optparse.OptionParser()
-p.add_option('--forcedeletebundles', '-f', action='store_true',
-                help='Delete bundles even if they aren\'t empty.')
-p.add_option('--listfiles', '-l', action='store_true',
-                help='List the filesystem objects to be removed, but do not actually remove them.')
-p.add_option('--rebuildpkgdb', action='store_true',
-                help='Force a rebuild of the internal package database.')
-p.add_option('--noremovereceipts', action='store_true',
-                help='Do not remove receipts and boms from /Library/Receipts and update internal package database.')
-p.add_option('--noupdateapplepkgdb', action='store_true',
-                help='Do not update Apple\'s package database. If --noremovereceipts is also given, this is implied')
-p.add_option('--munkistatusoutput', '-m', action='store_true',
-                help='Output is formatted for use with MunkiStatus.')
-p.add_option('--dontquitmunkistatus', '-d', action='store_true',
-                help="Don't quit MunkiStatus on exit. (For example, when called by ManagedInstaller.)")
-p.add_option('--verbose', '-v', action='store_true',
-                help='More verbose output.')
-p.add_option('--logfile', default='',
-                help="Path to a log file.")
-# Get our options and our package names
-options, pkgnames = p.parse_args()
-
-# check to see if we're root
-if os.geteuid() != 0:
-    display_error("You must run this as root!")
-    cleanup()
-    exit(1)
-
-if pkgnames == []:
-    display_error("You must specify at least one package to remove!")
-    cleanup()
-    exit(1)
-
-if not initDatabase(packagedb,options.rebuildpkgdb):
-    display_error("Could not initialize receipt database.")
-    cleanup()
-    exit(-1)
-
-pkgkeyslist = getpkgkeys(pkgnames)
-if len(pkgkeyslist) == 0:
-    cleanup()
-    exit(1)
+def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
+                    rebuildpkgdb=False, noremovereceipts=False,
+                    noupdateapplepkgdb=False, **kwargs):
     
-if stopRequested():
-    cleanup()
-    exit()
-removalpaths = getpathstoremove(pkgkeyslist)
-if stopRequested():
-    cleanup()
-    exit()
+    # we get the following arguments from the kwargs dictionary
+    # so we can assign them to the globals without a name conflict
+    global munkistatusoutput, verbose, verbose
+    munkistatusoutput = kwargs.get('munkistatusoutput', False)
+    verbose = kwargs.get('verbose', False)
+    verbose = kwargs.get('verbose', '')
+    
+    # check to see if we're root
+    if os.geteuid() != 0:
+        display_error("You must run this as root!")       
+        return -1
 
-if removalpaths:
-    if options.listfiles:
-        removalpaths.sort()
-        for item in removalpaths:
-            print "/" + item.encode("UTF-8")
+    if pkgnames == []:
+        display_error("You must specify at least one package to remove!")
+        return -2
+
+    if not initDatabase(packagedb,rebuildpkgdb):
+        display_error("Could not initialize receipt database.")
+        return -3
+
+    pkgkeyslist = getpkgkeys(pkgnames)
+    if len(pkgkeyslist) == 0:
+        return -4
+    
+    if stopRequested():
+        return -128
+    removalpaths = getpathstoremove(pkgkeyslist)
+    if stopRequested():
+        return -128
+
+    if removalpaths:
+        if listfiles:
+            removalpaths.sort()
+            for item in removalpaths:
+                print "/" + item.encode("UTF-8")
+        else:
+            removeFilesystemItems(removalpaths, forcedeletebundles)
+            if not noremovereceipts:
+                removeReceipts(pkgkeyslist, noupdateapplepkgdb)
+        if munkistatusoutput:
+            display_status('Package removal complete.')
+            time.sleep(2)
+
     else:
-        removeFilesystemItems(removalpaths)
-        if not options.noremovereceipts:
-            removeReceipts(pkgkeyslist)
-    if options.munkistatusoutput:
-        display_status('Package removal complete.')
-        time.sleep(2)
+        display_status('Nothing to remove.')
+        if munkistatusoutput:
+            time.sleep(2)
+           
+    return 0
 
-else:
-    display_status('Nothing to remove.')
-    if options.munkistatusoutput:
-        time.sleep(2)
-        
-#cleanup
-cleanup()
+
+# some globals
+packagedb = os.path.join(munkilib.managed_install_dir(), "b.receiptdb")
+munkistatusoutput = False
+verbose = False
+logfile = ''
+
+
+def main():
+    # command-line options
+    p = optparse.OptionParser()
+    p.add_option('--forcedeletebundles', '-f', action='store_true',
+                    help='Delete bundles even if they aren\'t empty.')
+    p.add_option('--listfiles', '-l', action='store_true',
+                    help='List the filesystem objects to be removed, but do not actually remove them.')
+    p.add_option('--rebuildpkgdb', action='store_true',
+                    help='Force a rebuild of the internal package database.')
+    p.add_option('--noremovereceipts', action='store_true',
+                    help='Do not remove receipts and boms from /Library/Receipts and update internal package database.')
+    p.add_option('--noupdateapplepkgdb', action='store_true',
+                    help='Do not update Apple\'s package database. If --noremovereceipts is also given, this is implied')
+    p.add_option('--munkistatusoutput', '-m', action='store_true',
+                    help='Output is formatted for use with MunkiStatus.')
+    p.add_option('--verbose', '-v', action='store_true',
+                    help='More verbose output.')
+    p.add_option('--logfile', default='',
+                    help="Path to a log file.")
+    # Get our options and our package names
+    options, pkgnames = p.parse_args()
+    retcode = removePackages(pkgnames, forcedeletebundles=options.forcedeletebundles, listfiles=options.listfiles, 
+                    rebuildpkgdb=options.rebuildpkgdb, noremovereceipts=options.noremovereceipts,
+                    noupdateapplepkgdb=options.noupdateapplepkgdb, munkistatusoutput=options.munkistatusoutput,
+                    verbose=options.verbose, logfile=options.logfile)
+    if munkistatusoutput:
+        munkistatus.quit()
+    exit(retcode)
     
+    
+if __name__ == '__main__':
+	main()
 
   

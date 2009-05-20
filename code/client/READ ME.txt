@@ -6,10 +6,10 @@ ManagedSoftwareUpdate.app - user notification tool.
 MunkiStatus - used by ManagedInstaller to provide user feedback on the installation and removal process.
 makepkginfo: Helper tool to help create info files for each installer item.
 makecatalogs: Creates the software catalogs from the pkginfo files.
-removepackages: used by ManagedInstaller to do package removals.
+
 
 
 Supporting libraries:
 managedinstalls.py - shared functions
-munkistatus.py - functions to display status using MunkiStatus.app
-
+munkistatus.py - functions to display status using MunkiStatus.app. Can also be called directly as a command-line tool.
+removepackages.py: used by ManagedInstaller to do package removals. Can also be called directly as a command-line tool.

@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-ManagedInstaller
+managedinstaller
 Tool to automatically install pkgs, mpkgs, and dmgs
-(containing pkgs and mpkgs) from a defined folder. Intended
-to be run as part of a logout hook, but can be run manually
+(containing pkgs and mpkgs) from a defined folder.
 """
 
 import os
@@ -26,12 +25,9 @@ import sys
 import time
 import plistlib
 import optparse
-import managedinstalls
+import munkilib
 import munkistatus
-import cfconsoleuser
-
-pathtoremovepackages = "/Users/Shared/munki/munki/code/client/removepackages"
-
+from removepackages import removepackages
 
 def stopRequested():
     if options.munkistatusoutput:
@@ -59,7 +55,6 @@ def createDirsIfNeeded(dirlist):
 
 
 def log(message):
-    global logdir
     logfile = os.path.join(logdir,'ManagedInstaller.log')
     try:
         f = open(logfile, mode='a', buffering=1)
@@ -75,7 +70,6 @@ def install(pkgpath):
     at pkgpath. Prints status messages to STDOUT.
     Returns the installer return code and true if a restart is needed.
     """
-    global options
     
     restartneeded = False
     installeroutput = []
@@ -271,7 +265,6 @@ def getRemovalCount(removalList):
 
 
 def processRemovals(removalList):
-    global logdir
     restartFlag = False
     for item in removalList:
         if stopRequested():
@@ -294,51 +287,15 @@ def processRemovals(removalList):
                                 print "Removing %s..." % name
                             
                             log("Removing %s..." % name)
-                            cmd = [pathtoremovepackages, '-f', '--logfile', os.path.join(logdir,'ManagedInstaller.log')]
-                            if options.munkistatusoutput:
-                                cmd.append('-m')
-                                cmd.append('-d')
-                            for package in item['packages']:
-                                cmd.append(package)
-                            uninstalleroutput = []
-                            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                            while (p.poll() == None): 
-                                msg =  p.stdout.readline()                       
-                                # save all uninstaller output in case there is
-                                # an error so we can dump it to the log
-                                uninstalleroutput.append(msg)
-                                msg = msg.rstrip("\n")
-                                if msg.startswith("STATUS: "):
-                                    status = msg[8:]
-                                    if status:
-                                        print status
-                                        sys.stdout.flush()
-                                elif msg.startswith("INFO: "):
-                                    info = msg[6:]
-                                    if info:
-                                        print >>sys.stderr, info
-                                elif msg.startswith("ERROR: "):
-                                    error = msg[7:]
-                                    if error:
-                                        print >>sys.stderr, error
-                                else:
-                                    print msg
-                                    sys.stdout.flush()
-                        
-                            retcode = p.poll()
+                            retcode = removepackages(item['packages'], 
+                                            munkistatusoutput=options.munkistatusoutput,
+                                            forcedeletebundles=True,
+                                            logfile=os.path.join(logdir,'ManagedInstaller.log'))
                             if retcode:
-                                message = "Uninstall of %s failed." % name
-                                print >>sys.stderr, message
-                                log(message)
-                                message = "-------------------------------------------------"
-                                print >>sys.stderr, message
-                                log(message)
-                                for line in uninstalleroutput:
-                                    print >>sys.stderr, "     ", line.rstrip("\n")
-                                    log(line.rstrip("\n"))
-                                message = "-------------------------------------------------"
+                                if retcode == -128:
+                                    message = "Uninstall of %s was cancelled." % name
+                                else:
+                                    message = "Uninstall of %s failed." % name
                                 print >>sys.stderr, message
                                 log(message)
                             else:
@@ -437,17 +394,19 @@ def unmountdmg(mountpoint):
         
         
 # module (global) variables
-managedinstallbase = managedinstalls.managed_install_dir()
-installdir = os.path.join(managedinstallbase , 'Cache')
-logdir = os.path.join(managedinstallbase, 'Logs')
-
-p = optparse.OptionParser()
-p.add_option('--munkistatusoutput', '-m', action='store_true')
-options, arguments = p.parse_args()
+logdir = None
+options = None
 
 
 def main():
-    global installdir
+    global logdir, options
+    managedinstallbase = munkilib.managed_install_dir()
+    installdir = os.path.join(managedinstallbase , 'Cache')
+    logdir = os.path.join(managedinstallbase, 'Logs')
+    
+    p = optparse.OptionParser()
+    p.add_option('--munkistatusoutput', '-m', action='store_true')
+    options, arguments = p.parse_args()
     
     needtorestart = False
     createDirsIfNeeded([logdir])
@@ -507,20 +466,22 @@ def main():
     log("###    End managed installer session    ###")
     
     if needtorestart:
-        if cfconsoleuser.getConsoleUser() == None or not options.munkistatusoutput:
+        if munkilib.getconsoleuser() == None:
             time.sleep(5)
             cleanup()
             retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
         else:
-            # someone is logged in and we're using MunkiStatus
-            munkistatus.activate()
-            munkistatus.osascript('tell application "MunkiStatus" to display alert "Restart Required" message "Software installed requires a restart. You will have a chance to save open documents." as critical default button "Restart"')
-            cleanup()
-            munkistatus.osascript('tell application "System Events" to restart')
+            if options.munkistatusoutput:
+                # someone is logged in and we're using MunkiStatus
+                munkistatus.activate()
+                munkistatus.osascript('tell application "MunkiStatus" to display alert "Restart Required" message "Software installed requires a restart. You will have a chance to save open documents." as critical default button "Restart"')
+                cleanup()
+                munkistatus.osascript('tell application "System Events" to restart')
+            else:
+                print "Please restart immediately."
     else:
         cleanup()
 
 
 if __name__ == '__main__':
     main()
-

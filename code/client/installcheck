@@ -40,7 +40,7 @@ import time
 import socket
 
 #our lib
-import managedinstalls
+import munkilib
 
 
 def log(message):
@@ -73,7 +73,7 @@ def reporterrors():
     # this needs to be expanded to support error reporting
     # via email and HTTP CGI.
     global options
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     clientidentifier = managedinstallprefs.get('client_identifier','')
     alternate_id = options.id
     hostname = os.uname()[1]
@@ -133,8 +133,8 @@ def compareVersions(thisvers, thatvers):
     Returns 1 if thisvers is the same as thatvers
     Returns 2 if thisvers is newer than thatvers
     """
-    thisvers = managedinstalls.padVersionString(thisvers,5)
-    thatvers = managedinstalls.padVersionString(thatvers,5)
+    thisvers = munkilib.padVersionString(thisvers,5)
+    thatvers = munkilib.padVersionString(thatvers,5)
     if version.LooseVersion(thisvers) < version.LooseVersion(thatvers):
         return -1
     elif version.LooseVersion(thisvers) == version.LooseVersion(thatvers):
@@ -352,7 +352,7 @@ def compareReceiptVersion(item):
         return -2
         
     printandlog("Looking for package %s, version %s" % (pkgid, vers), 2)
-    installedvers = managedinstalls.getInstalledPackageVersion(pkgid)
+    installedvers = munkilib.getInstalledPackageVersion(pkgid)
     if installedvers:
         return compareVersions(installedvers, vers)
     else:
@@ -368,7 +368,7 @@ def getInstalledVersion(pl):
     if 'receipts' in pl:
         if len(pl['receipts']) == 1:
             pkgid = pl['receipts'][0]['packageid']
-            installedvers = managedinstalls.getInstalledPackageVersion(pkgid)
+            installedvers = munkilib.getInstalledPackageVersion(pkgid)
             if installedvers:
                 return installedvers
                 
@@ -419,7 +419,7 @@ def download_installeritem(pkgurl):
     """
     global mytmpdir
     
-    managed_install_dir = managedinstalls.managed_install_dir()
+    managed_install_dir = munkilib.managed_install_dir()
     mycachedir = os.path.join(managed_install_dir, "Cache")    
     pkgname = os.path.basename(urlparse.urlsplit(pkgurl)[2])
     destinationpath = os.path.join(mycachedir, pkgname)
@@ -437,7 +437,7 @@ def download_installeritem(pkgurl):
     elif not options.verbose:
         dl_message = "Downloading %s" % pkgname
         
-    result = managedinstalls.getfilefromhttpurl(pkgurl, tempfilepath, showprogress=not(options.quiet), ifmodifiedsince=itemmodtime, message=dl_message)
+    result = munkilib.getfilefromhttpurl(pkgurl, tempfilepath, showprogress=not(options.quiet), ifmodifiedsince=itemmodtime, message=dl_message)
     if result == 0:
         os.rename(tempfilepath, destinationpath)
         return True
@@ -511,7 +511,7 @@ def getAllMatchingItems(name,cataloglist):
     itemlist = []
     # we'll throw away any included version info
     (name, includedversion) = nameAndVersion(name)
-    managedinstalldir = managedinstalls.managed_install_dir()
+    managedinstalldir = munkilib.managed_install_dir()
     catalogsdir = os.path.join(managedinstalldir, 'catalogs')
     printandlog("Looking for all items matching: %s..." % name, 1)
     for catalogname in cataloglist:
@@ -545,7 +545,7 @@ def getManifestItemDetail(name, cataloglist, version=''):
             version = includedversion
         else:
             version = 'latest'
-    managedinstalldir = managedinstalls.managed_install_dir()
+    managedinstalldir = munkilib.managed_install_dir()
     catalogsdir = os.path.join(managedinstalldir, 'catalogs')
     printandlog("Looking for detail for: %s, version %s..." % (name, version), 1)
     for catalogname in cataloglist:
@@ -592,7 +592,7 @@ def enoughDiskSpace(manifestitem_pl):
     if 'installed_size' in manifestitem_pl:
         installedsize = manifestitem_pl['installed_size']
     diskspaceneeded = (installeritemsize + installedsize + fudgefactor)/1024
-    availablediskspace = managedinstalls.getAvailableDiskSpace()/1024
+    availablediskspace = munkilib.getAvailableDiskSpace()/1024
     if availablediskspace > diskspaceneeded:
         return True
     else:
@@ -700,7 +700,7 @@ def processInstalls(manifestitem, cataloglist, installinfo):
     will stop the installation of a dependent item
     """
     
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     sw_repo_baseurl = managedinstallprefs['sw_repo_url']
     managed_install_dir = managedinstallprefs['managed_install_dir']
     
@@ -952,7 +952,7 @@ def processRemovals(manifestitem, cataloglist, installinfo):
     # and we're supposed to remove SomePackage--1.0.1.0.0... what do we do?
     #
     dependentitemsremoved = True
-    managed_install_dir = managedinstalls.managed_install_dir()
+    managed_install_dir = munkilib.managed_install_dir()
     catalogsdir = os.path.join(managed_install_dir, 'catalogs')
     
     processednamesandaliases = []
@@ -1056,7 +1056,7 @@ def getCatalogs(cataloglist):
     """
     Retreives the catalogs from the server
     """
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     sw_repo_baseurl = managedinstallprefs['sw_repo_url']
     catalog_dir = os.path.join(managedinstallprefs['managed_install_dir'], "catalogs")
     
@@ -1069,7 +1069,7 @@ def getCatalogs(cataloglist):
             message = None
         elif not options.verbose:
             message = "Retreiving catalog '%s'..." % catalog
-        newcatalog = managedinstalls.getHTTPfileIfNewerAtomically(catalogurl,catalogpath,showprogress=not(options.quiet), message=message)
+        newcatalog = munkilib.getHTTPfileIfNewerAtomically(catalogurl,catalogpath,showprogress=not(options.quiet), message=message)
         if not newcatalog:
             logerror("Could not retreive catalog %s from server." % catalog)
         
@@ -1078,7 +1078,7 @@ def getmanifest(partialurl):
     """
     Gets a manifest from the server
     """
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     sw_repo_baseurl = managedinstallprefs['sw_repo_url']
     manifest_dir = os.path.join(managedinstallprefs['managed_install_dir'], "manifests")
         
@@ -1099,7 +1099,7 @@ def getmanifest(partialurl):
     elif not options.verbose:
         message = "Retreiving list of software for this machine..."
         
-    newmanifest = managedinstalls.getHTTPfileIfNewerAtomically(manifesturl,manifestpath,showprogress=not(options.quiet), message=message)
+    newmanifest = munkilib.getHTTPfileIfNewerAtomically(manifesturl,manifestpath,showprogress=not(options.quiet), message=message)
     if not newmanifest:
         logerror("Could not retreive manifest %s from the server." % partialurl)
         
@@ -1109,7 +1109,7 @@ def getPrimaryManifest(alternate_id):
     """
     Gets the client manifest from the server
     """
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     manifesturl = managedinstallprefs['manifest_url']
     clientidentifier = managedinstallprefs.get('client_identifier','')
 
@@ -1147,7 +1147,7 @@ def getRemovalCount(installinfo):
 
 
 def checkServer():
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     manifesturl = managedinstallprefs['manifest_url']
     # deconstruct URL so we can check availability
     port = 80
@@ -1194,7 +1194,7 @@ def main():
     
     if not options.quiet: print "Managed Software Check\n"
     
-    managedinstallprefs = managedinstalls.prefs()
+    managedinstallprefs = munkilib.prefs()
     managed_install_dir = managedinstallprefs['managed_install_dir']
     logginglevel = managedinstallprefs.get('logging_level', 1)
     manifestsdir = os.path.join(managed_install_dir, "manifests")
