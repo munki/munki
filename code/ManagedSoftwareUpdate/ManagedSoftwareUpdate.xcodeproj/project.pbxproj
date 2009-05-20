@@ -27,7 +27,7 @@
 		257572CD072881A4000BE9CA /* AppleScriptKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */; };
 		60A014C40DBD2AA20071D9A8 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 60A014C20DBD2AA20071D9A8 /* MainMenu.xib */; };
 		C09152A20FB51AE1006BC8DE /* Empty.png in Resources */ = {isa = PBXBuildFile; fileRef = C09152A10FB51AE1006BC8DE /* Empty.png */; };
-		C09153060FB64FD1006BC8DE /* ManagedSoftwareUpdate.icns in Resources */ = {isa = PBXBuildFile; fileRef = C09153050FB64FD1006BC8DE /* ManagedSoftwareUpdate.icns */; };
+		C09153060FB64FD1006BC8DE /* Managed Software Update.icns in Resources */ = {isa = PBXBuildFile; fileRef = C09153050FB64FD1006BC8DE /* Managed Software Update.icns */; };
 		C0ACDAA70FB4A387006D30B3 /* Installer.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDA9A0FB4A386006D30B3 /* Installer.tiff */; };
 		C0ACDAAC0FB4A387006D30B3 /* package.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDA9F0FB4A386006D30B3 /* package.tiff */; };
 		C0ACDAAD0FB4A387006D30B3 /* Restart.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDAA00FB4A386006D30B3 /* Restart.tif */; };
@@ -38,14 +38,14 @@
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		257572D5072881A4000BE9CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		257572D6072881A4000BE9CA /* ManagedSoftwareUpdate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ManagedSoftwareUpdate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		257572D6072881A4000BE9CA /* Managed Software Update.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Update.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		60A014C30DBD2AA20071D9A8 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		65359356078DD41800E8BB2F /* AppleScriptKit.sdef */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.sdef; name = AppleScriptKit.sdef; path = /System/Library/Frameworks/AppleScriptKit.framework/Versions/A/Resources/AppleScriptKit.sdef; sourceTree = "<absolute>"; };
 		C09152A10FB51AE1006BC8DE /* Empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Empty.png; sourceTree = "<group>"; };
-		C09153050FB64FD1006BC8DE /* ManagedSoftwareUpdate.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ManagedSoftwareUpdate.icns; sourceTree = "<group>"; };
+		C09153050FB64FD1006BC8DE /* Managed Software Update.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Update.icns"; sourceTree = "<group>"; };
 		C0ACDA9A0FB4A386006D30B3 /* Installer.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Installer.tiff; sourceTree = "<group>"; };
 		C0ACDA9F0FB4A386006D30B3 /* package.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = package.tiff; sourceTree = "<group>"; };
 		C0ACDAA00FB4A386006D30B3 /* Restart.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Restart.tif; sourceTree = "<group>"; };
@@ -96,7 +96,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				257572D6072881A4000BE9CA /* ManagedSoftwareUpdate.app */,
+				257572D6072881A4000BE9CA /* Managed Software Update.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,7 +125,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				C09153050FB64FD1006BC8DE /* ManagedSoftwareUpdate.icns */,
+				C09153050FB64FD1006BC8DE /* Managed Software Update.icns */,
 				C09152A10FB51AE1006BC8DE /* Empty.png */,
 				C0ACDA9A0FB4A386006D30B3 /* Installer.tiff */,
 				C0ACDA9F0FB4A386006D30B3 /* package.tiff */,
@@ -177,7 +177,7 @@
 			name = ManagedSoftwareUpdate;
 			productInstallPath = "$(HOME)/Applications";
 			productName = ManagedSoftwareUpdate;
-			productReference = 257572D6072881A4000BE9CA /* ManagedSoftwareUpdate.app */;
+			productReference = 257572D6072881A4000BE9CA /* Managed Software Update.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -209,7 +209,7 @@
 				C0ACDAAD0FB4A387006D30B3 /* Restart.tif in Resources */,
 				C0ACDAB00FB4A387006D30B3 /* RestartReq.tif in Resources */,
 				C09152A20FB51AE1006BC8DE /* Empty.png in Resources */,
-				C09153060FB64FD1006BC8DE /* ManagedSoftwareUpdate.icns in Resources */,
+				C09153060FB64FD1006BC8DE /* Managed Software Update.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,7 +256,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				PRODUCT_NAME = ManagedSoftwareUpdate;
+				PRODUCT_NAME = "Managed Software Update";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -269,7 +269,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_OSAFLAGS = "-x";
-				PRODUCT_NAME = ManagedSoftwareUpdate;
+				PRODUCT_NAME = "Managed Software Update";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

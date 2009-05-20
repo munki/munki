@@ -108,9 +108,9 @@ on clicked theObject
 				"A restart is required after installation. Log out and install now?" alternate button "Cancel" default button ¬
 				"Log out and install" as warning attached to window 1
 		else
-			--trigger ManagedInstaller
-			do shell script "/usr/bin/touch /var/spool/ManagedInstaller"
-			quit
+			display alert "Logout Recommeded" message ¬
+				"A logout is recommeded before installation. Log out and install now?" alternate button "Install without logging out" default button ¬
+				"Log out and install" as warning attached to window 1
 		end if
 	end if
 end clicked
@@ -140,6 +140,10 @@ on alert ended theObject with reply withReply
 		tell application "System Events"
 			log out
 		end tell
+		quit
+	end if
+	if button returned of withReply is "Install without logging out" then
+		--trigger managedinstaller somehow
 		quit
 	end if
 	if button returned of withReply is "OK" then

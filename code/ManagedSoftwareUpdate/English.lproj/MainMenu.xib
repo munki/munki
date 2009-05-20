@@ -2,13 +2,14 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9G55</string>
+		<string key="IBDocument.SystemVersion">9J61</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.43</string>
+		<string key="IBDocument.AppKitVersion">949.46</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="21"/>
+			<integer value="2"/>
+			<integer value="293"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -502,7 +503,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 								<int key="NSCellFlags2">33554432</int>
 								<object class="NSCustomResource" key="NSContents">
 									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">Installer</string>
+									<string key="NSResourceName">Managed Software Update</string>
 								</object>
 								<reference key="NSSupport" ref="86217858"/>
 								<int key="NSAlign">0</int>
@@ -545,7 +546,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="402782179">
 									<reference key="NSMenu" ref="43653270"/>
-									<string key="NSTitle">About ManagedSoftwareUpdate</string>
+									<string key="NSTitle">About Managed Software Update</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="173048731"/>
@@ -630,7 +631,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 								</object>
 								<object class="NSMenuItem" id="781815771">
 									<reference key="NSMenu" ref="43653270"/>
-									<string key="NSTitle">Quit ManagedSoftwareUpdate</string>
+									<string key="NSTitle">Quit Managed Software Update</string>
 									<string key="NSKeyEquiv">q</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -1644,8 +1645,8 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 							<string key="appleScriptObjectName">mainWindow</string>
 						</object>
 					</object>
-					<string>{{354, 245}, {512, 562}}</string>
-					<string>{{354, 245}, {512, 562}}</string>
+					<string>{{161, 237}, {512, 562}}</string>
+					<string>{{161, 237}, {512, 562}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{616, 297}, {480, 360}}</string>
@@ -1653,7 +1654,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 					<reference ref="9"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{512, 400}</string>
-					<string>{{142, 673}, {387, 20}}</string>
+					<string>{{141, 673}, {387, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{74, 862}</string>
@@ -1680,7 +1681,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{154, 520}, {307, 153}}</string>
+					<string>{{153, 520}, {316, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{26, 652}, {245, 183}}</string>
