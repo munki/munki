@@ -32,14 +32,69 @@ import calendar
 import subprocess
 import tempfile
 import shutil
+from distutils import version
 from xml.dom import minidom
 
 from SystemConfiguration import *
 
 
+# misc functions
+
 def getconsoleuser():
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
+    
+    
+def pythonScriptRunning(scriptname):
+    cmd = ['/bin/ps', '-eo', 'command=']
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    lines = out.splitlines()
+    for line in lines:
+        # first look for Python processes
+        if line.find("MacOS/Python ") != -1:
+            if line.find(scriptname) != -1:
+                return True
+
+    return False
+
+
+# dmg helpers
+
+def mountdmg(dmgpath):
+    """
+    Attempts to mount the dmg at dmgpath
+    and returns a list of mountpoints
+    """
+    mountpoints = []
+    dmgname = os.path.basename(dmgpath)
+    p = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath, '-mountRandom', '/tmp', '-nobrowse', '-plist'],
+            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (plist, err) = p.communicate()
+    if err:
+        print >>sys.stderr, "Error %s mounting %s." % (err, dmgpath)
+    if plist:
+        pl = plistlib.readPlistFromString(plist)
+        for entity in pl['system-entities']:
+            if 'mount-point' in entity:
+                mountpoints.append(entity['mount-point'])
+
+    return mountpoints
+
+
+def unmountdmg(mountpoint):
+    """
+    Unmounts the dmg at mountpoint
+    """
+    p = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint], 
+        bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = p.communicate()
+    if err:
+        print >>sys.stderr, err
+        p = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint, '-force'], 
+            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, err) = p.communicate()
 
 
 #####################################################
@@ -55,8 +110,10 @@ def getManagedInstallsPrefs():
     prefs['sw_repo_url'] = "http:/munki/repo"
     prefs['client_identifier'] = ""
     prefs['logging_level'] = 1
+    prefs['do_apple_softwareupdate'] = False
+    prefs['softwareupdateserver_url'] = None
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
-    
+    pl = {}
     if os.path.exists(prefsfile):
         try:
             pl = plistlib.readPlist(prefsfile)
@@ -73,6 +130,10 @@ def getManagedInstallsPrefs():
                 prefs['client_identifier'] = pl['client_identifier']
             if 'logging_level' in pl:
                 prefs['logging_level'] = pl['logging_level']
+            if 'do_apple_softwareupdate' in pl:
+                prefs['do_apple_softwareupdate'] = pl['do_apple_softwareupdate']
+            if 'softwareupdateserver_url' in pl:
+                prefs['softwareupdateserver_url'] = pl['softwareupdateserver_url']
                 
                 
     return prefs
@@ -94,11 +155,7 @@ def sw_repo_url():
 
 
 def pref(prefname):
-    prefs = getManagedInstallsPrefs()
-    if prefname in prefs:
-        return prefs[prefname]
-    else:
-        return ''
+    return getManagedInstallsPrefs().get(prefname)
 
 
 def prefs():
@@ -345,6 +402,88 @@ def getInstalledPackageVersion(pkgid):
     # This package does not appear to be currently installed
     return ""
     
+    
+def nameAndVersion(s):
+    """
+    Splits a string into the name and version numbers:
+    'TextWrangler2.3b1' becomes ('TextWrangler', '2.3b1')
+    'AdobePhotoshopCS3-11.2.1' becomes ('AdobePhotoshopCS3', '11.2.1')
+    'MicrosoftOffice2008v12.2.1' becomes ('MicrosoftOffice2008', '12.2.1')
+    """
+    index = 0
+    for char in s:
+        if char in "0123456789":
+            possibleVersion = s[index:]
+            if not (" " in possibleVersion or "_" in possibleVersion or "-" in possibleVersion or "v" in possibleVersion):
+                 return (s[0:index].rstrip(" .-_v"), possibleVersion)
+        index += 1
+    # no version number found, just return original string and empty string
+    return (s, '')
+
+
+def getPackageMetaData(pkgitem):
+    """
+    Queries an installer item (.pkg, .mpkg)
+    and gets metadata. There are a lot of valid Apple package formats
+    and this function may not deal with them all equally well.
+    Standard bundle packages are probably the best understood and documented,
+    so this code deals with those pretty well.
+
+    metadata items include:
+    installer_item_size:  size of the installer item (.dmg, .pkg, etc)
+    installed_size: size of items that will be installed
+    RestartAction: will a restart be needed after installation?
+    name
+    version
+    description
+    receipts: an array of packageids that may be installed (some may be optional)
+    """
+    installedsize = 0
+    installerinfo = getInstallerPkgInfo(pkgitem)
+    info = getPkgInfo(pkgitem)
+
+    highestpkgversion = "0.0"
+    for infoitem in info:
+        if version.LooseVersion(infoitem['version']) > version.LooseVersion(highestpkgversion):
+            highestpkgversion = infoitem['version']
+        if "installed_size" in infoitem:
+            # note this is in KBytes
+            installedsize += infoitem['installed_size']
+
+    name = os.path.split(pkgitem)[1]
+    shortname = os.path.splitext(name)[0]
+    metaversion = nameAndVersion(shortname)[1]
+    if not len(metaversion):
+        # there is no version number in the filename
+        metaversion = highestpkgversion
+    elif len(info) == 1:
+        # there is only one package in this item
+        metaversion = highestpkgversion
+    elif highestpkgversion.startswith(metaversion):
+        # for example, highestpkgversion is 2.0.3124.0, version in filename is 2.0
+        metaversion = highestpkgversion
+    
+    if 'installed_size' in installerinfo:
+        if installerinfo['installed_size'] > 0:
+            installedsize = installerinfo['installed_size']
+
+    cataloginfo = {}
+    cataloginfo['name'] = nameAndVersion(shortname)[0]
+    cataloginfo['version'] = metaversion
+    for key in ('display_name', 'RestartAction', 'description'):
+        if key in installerinfo:
+            cataloginfo[key] = installerinfo[key]
+
+    if installedsize > 0:
+        cataloginfo['installed_size'] = installedsize
+
+    cataloginfo['receipts'] = []        
+    for infoitem in info: 
+        pkginfo = {}
+        pkginfo['packageid'] = infoitem['id']
+        pkginfo['version'] = infoitem['version']
+        cataloginfo['receipts'].append(pkginfo)        
+    return cataloginfo
     
 # some utility functions
 

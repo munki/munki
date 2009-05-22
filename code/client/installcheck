@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 #
 # Copyright 2009 Greg Neagle.
@@ -41,6 +41,7 @@ import socket
 
 #our lib
 import munkilib
+from munkistatus import osascript
 
 
 def log(message):
@@ -1146,6 +1147,78 @@ def getRemovalCount(installinfo):
     return count
 
 
+def doSoftwareUpdate(installinfo):
+    installinfo['apple_updates'] = []
+    if munkilib.pref('do_apple_softwareupdate'):
+        
+        # switch to our preferred Software Update Server if supplied
+        if munkilib.pref('softwareupdateserver_url'):
+            oldsuserver = ''
+            cmd = ['/usr/bin/defaults', 'read', '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
+            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (out, err) = p.communicate()
+            if p.returncode == 0:
+                oldsusserver = out.rstrip('\n')
+                
+            cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate', 
+                        'CatalogURL', munkilib.pref('softwareupdateserver_url')]
+            retcode = subprocess.call(cmd)
+            
+        swupdldir = '/var/root/Downloads'
+        runcheck = True
+        # check downloads dir and skip checking if there's
+        # anything in it
+        for item in os.listdir(swupdldir):
+            if item.endswith('.pkg') or item.endswith('.mpkg'):
+                runcheck = False
+                break
+        if runcheck:
+            cmd = ['/usr/sbin/softwareupdate', '-d', '-a']
+            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            while (p.poll() == None): 
+                swupdout =  p.stdout.readline()
+                print swupdout.rstrip("\n")
+            retcode = p.poll()
+            if retcode:
+                # some problem occurred.
+                # right now, we'll just stumble through in case some downloads
+                # succeeded
+                pass
+            
+        # now check for downloads and process
+        for item in os.listdir(swupdldir):
+            if item.endswith('.pkg') or item.endswith('.mpkg'):
+                pl = munkilib.getPackageMetaData(os.path.join(swupdldir,item))
+                if pl:
+                    # check to see if there is enough free space to install
+                    if enoughDiskSpace(pl):
+                        iteminfo = {}
+                        iteminfo["installer_item"] = item
+                        iteminfo["name"] = pl.get('name', '')
+                        iteminfo["description"] = pl.get('description', '')
+                        if iteminfo["description"] == '':
+                            iteminfo["description"] = "Updated Apple software."
+                        iteminfo["version_to_install"] = pl.get('version',"UNKNOWN")
+                        iteminfo['display_name'] = pl.get('display_name','')
+                        if 'RestartAction' in pl:
+                            iteminfo['RestartAction'] = pl['RestartAction']
+                        installinfo['apple_updates'].append(iteminfo)
+    
+        # switch back to original Software Update server
+        if munkilib.pref('softwareupdateserver_url'):
+            if oldsuserver:
+                cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate', 
+                        'CatalogURL', oldsuserver]
+            else:
+                cmd = ['/usr/bin/defaults', 'delete', '/Library/Preferences/com.apple.SoftwareUpdate']
+            retcode = subprocess.call(cmd)
+        
+    return installinfo
+
+
 def checkServer():
     managedinstallprefs = munkilib.prefs()
     manifesturl = managedinstallprefs['manifest_url']
@@ -1169,9 +1242,6 @@ def checkServer():
     #except:
         #return False
         
-    
-        
-    
 
 
 # some globals
@@ -1192,6 +1262,11 @@ options, arguments = p.parse_args()
 def main():
     global mytmpdir, options, logdir, errors
     
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print >>sys.stderr, "You must run this as root!"      
+        exit(-1)    
+    
     if not options.quiet: print "Managed Software Check\n"
     
     managedinstallprefs = munkilib.prefs()
@@ -1209,6 +1284,12 @@ def main():
         reporterrors()
         exit(-1)
     log("### Beginning managed software check ###")
+    
+    if munkilib.pythonScriptRunning("managedinstaller"):
+        # managedinstaller is running, so we should quit
+        printandlog("managedinstaller is running. Exiting.")
+        log("###    End managed software check    ###")
+        exit(0)
     
     mainmanifestpath = getPrimaryManifest(options.id)
     if not mainmanifestpath:
@@ -1247,6 +1328,9 @@ def main():
     printandlog("**Checking for removals**", 1)
     installinfo = processManifestForRemovals(mainmanifestpath, installinfo)
     
+    printandlog("**Checking for Apple Software Updates**", 1)
+    installinfo = doSoftwareUpdate(installinfo)
+    
     # need to write out install list so the autoinstaller
     # can use it to install things in the right order
     installinfochanged = True
@@ -1268,13 +1352,8 @@ def main():
     
     installcount = getInstallCount(installinfo)
     removalcount = getRemovalCount(installinfo)
+    appleupdatecount = len(installinfo.get('apple_updates',[]))
     
-    if installinfochanged and not options.quiet:
-        if installcount or removalcount:
-            # here's where we could trigger the ManagedInstaller or ManagedSoftwareUpdate tools
-            # print "Managed software updates are available."
-            pass
-            
     if installcount:
         printandlog("The following items will be installed or upgraded:")
         for item in installinfo['managed_installs']:
@@ -1291,12 +1370,26 @@ def main():
                 printandlog("    - %s" % item.get('name'))
                 if item.get('RestartAction') == 'RequireRestart':
                     printandlog("       *Restart required")
+    if appleupdatecount:
+        printandlog("The following Apple updates will be installed:")
+        for item in installinfo['apple_updates']:
+            printandlog ("    + %s-%s" % (item.get('name'), item.get('version_to_install')))
+            if item.get('description') != "Updated Apple software.":
+               printandlog("        %s" % item['description'])
+            if item.get('RestartAction') == 'RequireRestart':
+                printandlog("       *Restart required")
     
     if errors:
         reporterrors()
                    
-    if installcount == 0 and removalcount == 0:
+    if installcount == 0 and removalcount == 0 and appleupdatecount == 0:
         printandlog("No changes to managed software scheduled.")
+    else:
+        if munkilib.getconsoleuser() == None:
+            pass
+        else:
+            result = osascript('tell application "Managed Software Update" to activate')
+            
      
     log("###    End managed software check    ###")
 

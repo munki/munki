@@ -1,15 +1,15 @@
 The actual tools are:
 
 installcheck - gets the manifest for the client and processes it to determine what, if anything, needs to be installed.
-ManagedInstaller - meant to be run as part of a logout hook or as a launchd job.  Does the actual installs and removals.
+managedinstaller - meant to be run as part of a logout hook or as a launchd job.  Does the actual installs and removals.
 ManagedSoftwareUpdate.app - user notification tool.
-MunkiStatus - used by ManagedInstaller to provide user feedback on the installation and removal process.
+MunkiStatus.app - used by ManagedInstaller to provide user feedback on the installation and removal process.
 makepkginfo: Helper tool to help create info files for each installer item.
 makecatalogs: Creates the software catalogs from the pkginfo files.
 
 
 
 Supporting libraries:
-managedinstalls.py - shared functions
+munkilib.py - shared functions
 munkistatus.py - functions to display status using MunkiStatus.app. Can also be called directly as a command-line tool.
 removepackages.py: used by ManagedInstaller to do package removals. Can also be called directly as a command-line tool.

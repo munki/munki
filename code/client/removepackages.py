@@ -759,11 +759,6 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
     verbose = kwargs.get('verbose', False)
     verbose = kwargs.get('verbose', '')
     
-    # check to see if we're root
-    if os.geteuid() != 0:
-        display_error("You must run this as root!")       
-        return -1
-
     if pkgnames == []:
         display_error("You must specify at least one package to remove!")
         return -2
@@ -831,7 +826,13 @@ def main():
                     help="Path to a log file.")
     # Get our options and our package names
     options, pkgnames = p.parse_args()
-    retcode = removePackages(pkgnames, forcedeletebundles=options.forcedeletebundles, listfiles=options.listfiles, 
+    
+    # check to see if we're root
+    if os.geteuid() != 0:
+        display_error("You must run this as root!")       
+        exit(-1)
+        
+    retcode = removepackages(pkgnames, forcedeletebundles=options.forcedeletebundles, listfiles=options.listfiles, 
                     rebuildpkgdb=options.rebuildpkgdb, noremovereceipts=options.noremovereceipts,
                     noupdateapplepkgdb=options.noupdateapplepkgdb, munkistatusoutput=options.munkistatusoutput,
                     verbose=options.verbose, logfile=options.logfile)

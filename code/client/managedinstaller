@@ -191,10 +191,18 @@ def installall(dirpath):
             if needsrestart:
                 restartflag = True
         if item.endswith(".dmg"):
-            mountpoints = mountdmg(itempath)
+            if not options.munkistatusoutput:
+                print "Mounting disk image %s" % item
+            log("Mounting disk image %s" % item)
+            mountpoints = munkilib.mountdmg(itempath)
+            if mountpoints == []:
+                if not options.munkistatusoutput:
+                    print >>sys.stderr, "ERROR: No filesystems mounted from %s" % item
+                log("ERROR: No filesystems mounted from %s" % item)
+                return restartflag
             if stopRequested():
                 for mountpoint in mountpoints:
-                    unmountdmg(mountpoint)
+                    munkilib.unmountdmg(mountpoint)
                 return restartflag
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
@@ -202,8 +210,7 @@ def installall(dirpath):
                 needtorestart = installall(mountpoint)
                 if needtorestart:
                     restartflag = True
-                unmountdmg(mountpoint)
-                
+                munkilib.unmountdmg(mountpoint)
     return restartflag
     
 
@@ -229,16 +236,27 @@ def installWithInfo(dirpath, installlist):
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
                 #can't install, so we should stop
+                errmsg = "Installer item %s was not found." % item["installer_item"]
+                print >>sys.stderr, errmsg
+                log(errmsg)
                 return restartflag
             if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
                 (retcode, needsrestart) = install(itempath)
                 if needsrestart:
                     restartflag = True
             if itempath.endswith(".dmg"):
-                mountpoints = mountdmg(itempath)
+                if not options.munkistatusoutput:
+                    print "Mounting disk image %s" % item["installer_item"]
+                log("Mounting disk image %s" % item["installer_item"])
+                mountpoints = munkilib.mountdmg(itempath)
+                if mountpoints == []:
+                    if not options.munkistatusoutput:
+                        print >>sys.stderr, "ERROR: No filesystems mounted from %s" % item["installer_item"]
+                    log("ERROR: No filesystems mounted from %s" % item["installer_item"])
+                    return restartflag
                 if stopRequested():
                     for mountpoint in mountpoints:
-                        unmountdmg(mountpoint)
+                        munkilib.unmountdmg(mountpoint)
                     return restartflag
                 for mountpoint in mountpoints:
                     # install all the pkgs and mpkgs at the root
@@ -246,7 +264,7 @@ def installWithInfo(dirpath, installlist):
                     needtorestart = installall(mountpoint)
                     if needtorestart:
                         restartflag = True
-                    unmountdmg(mountpoint)
+                    munkilib.unmountdmg(mountpoint)
                 
             # now remove the item from the install cache
             # (using rm -f in case it's a bundle pkg)
@@ -354,45 +372,9 @@ def processRemovals(removalList):
                         log("Uninstall of %s failed because there was no valid uninstall method." % name)
                                     
     return restartFlag
-                    
-                    
-
-def mountdmg(dmgpath):
-    """
-    Attempts to mount the dmg at dmgpath
-    and returns a list of mountpoints
-    """
-    mountpoints = []
-    dmgname = os.path.basename(dmgpath)
-    if not options.munkistatusoutput:
-        print "Mounting disk image %s" % dmgname
-    log("Mounting disk image %s" % dmgname)
-    p = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath, '-mountRandom', '/tmp', '-nobrowse', '-plist'],
-            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (plist, err) = p.communicate()
-    if plist:
-        pl = plistlib.readPlistFromString(plist)
-        for entity in pl['system-entities']:
-            if 'mount-point' in entity:
-                mountpoints.append(entity['mount-point'])
-
-    return mountpoints
 
 
-def unmountdmg(mountpoint):
-    """
-    Unmounts the dmg at mountpoint
-    """
-    p = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint], 
-        bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
-    if err:
-        print >>sys.stderr, err
-        p = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint, '-force'], 
-            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (output, err) = p.communicate()
-        
-        
+
 # module (global) variables
 logdir = None
 options = None
@@ -400,6 +382,12 @@ options = None
 
 def main():
     global logdir, options
+    
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print >>sys.stderr, "You must run this as root!"
+        exit(-1)
+    
     managedinstallbase = munkilib.managed_install_dir()
     installdir = os.path.join(managedinstallbase , 'Cache')
     logdir = os.path.join(managedinstallbase, 'Logs')
@@ -411,6 +399,14 @@ def main():
     needtorestart = False
     createDirsIfNeeded([logdir])
     log("### Beginning managed installer session ###")
+    
+    if munkilib.pythonScriptRunning("installcheck"):
+        # installcheck is running, so we should quit
+        print "installcheck is running. Exiting."
+        log("installcheck is running. Exiting.")
+        log("###    End managed installer session    ###")
+        exit(0)
+    
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
@@ -438,6 +434,8 @@ def main():
         if "managed_installs" in pl:
             if not stopRequested():
                 installcount = getInstallCount(pl['managed_installs'])
+                if "apple_updates" in pl:
+                    installcount = installcount + len(pl['apple_updates'])
                 if installcount:
                     if options.munkistatusoutput:
                         if installcount == 1:
@@ -448,6 +446,11 @@ def main():
                         munkistatus.percent(-1)                        
                     log("Processing installs")
                     needtorestart = installWithInfo(installdir, pl['managed_installs'])
+        if "apple_updates" in pl:
+            if not stopRequested():
+                log("Installing Apple updates")
+                swupdldir = '/var/root/Downloads'
+                needtorestart = installWithInfo(swupdldir, pl['apple_updates'])
                                     
     else:
         log("No %s found." % installinfo)
