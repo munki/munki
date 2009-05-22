@@ -17,6 +17,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+property managedInstallDir : ""
+
 on itemstoinstall()
 	set installlist to {}
 	set ManagedInstallPrefs to "/Library/Preferences/ManagedInstalls.plist"
@@ -30,6 +32,12 @@ on itemstoinstall()
 					set end of installlist to (installitem as item)
 				end if
 			end repeat
+			try
+				set appleupdatelist to value of property list item "apple_updates" of property list file InstallInfo
+				repeat with installitem in appleupdatelist
+					set end of installlist to (installitem as item)
+				end repeat
+			end try
 		end tell
 	end try
 	return installlist as list
@@ -143,7 +151,9 @@ on alert ended theObject with reply withReply
 		quit
 	end if
 	if button returned of withReply is "Install without logging out" then
-		--trigger managedinstaller somehow
+		--trigger managedinstaller
+		set triggerpath to quoted form of (managedInstallDir & "/.run_managedinstaller")
+		do shell script "/usr/bin/touch " & triggerpath
 		quit
 	end if
 	if button returned of withReply is "OK" then
