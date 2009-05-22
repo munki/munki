@@ -2,18 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <key>Debug</key>
+  <true/>
   <key>Label</key>
-  <string>com.googlecode.munki-loginwindow</string>
-  <key>LimitLoadToSessionType</key>
-  <array>
-    <string>LoginWindow</string>
-  </array>
+  <string>com.googlecode.munki-managedinstaller</string>
   <key>ProgramArguments</key>
   <array>
     <string>/path/to/managedinstaller</string>
     <string>-m</string>
   </array>
-  <key>RunAtLoad</key>
+  <key>WatchPaths</key>
+  <array>
+    <string>/Library/Managed Installs/.run_managedinstaller</string>
+  </array>
+  <key>OnDemand</key>
   <true/>
 </dict>
 </plist>
