@@ -1,7 +1,10 @@
 The tools get their configuration from /Library/Preferences/ManagedInstalls.plist
-Currently only four values are defined, and if the file is missing munki uses these defaults:
+If the file is missing munki uses these defaults:
 
 prefs['managed_install_dir'] = "/Library/Managed Installs"
-prefs['manifest_url'] = "http:/managedinstalls/cgi-bin/getmanifest"
-prefs['sw_repo_url'] = "http://managedinstalls/swrepo"
+prefs['manifest_url'] = "http:/munki/repo/manifests/"
+prefs['sw_repo_url'] = "http:/munki/repo"
+prefs['logging_level'] = 1
 prefs['client_identifier'] = (fully-qualified hostname)
+prefs['do_apple_softwareupdate'] = False
+prefs['softwareupdateserver_url'] = None

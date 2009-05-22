@@ -5,10 +5,16 @@
   <key>managed_install_dir</key>
   <string>/Library/Managed Installs</string>
   <key>manifest_url</key>
-  <string>http://webserver/swrepo/catalogs/</string>
+  <string>http://webserver/repo/manifests/</string>
   <key>client_identifier</key>
   <string>arbitrary_catalog_name</string>
   <key>sw_repo_url</key>
-  <string>http://webserver/swrepo</string>
+  <string>http://webserver/repo</string>
+  <key>logging_level</key>
+  <integer>1</integer>
+  <key>do_apple_softwareupdate</key>
+  <false/>
+  <key>softwareupdateserver_url</key>
+  <string>http://xserve.myorg.com:8088/</string>
 </dict>
 </plist>
