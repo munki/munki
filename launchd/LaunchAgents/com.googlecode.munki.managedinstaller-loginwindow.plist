@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.googlecode.munki-loginwindow</string>
+  <string>com.googlecode.munki.managedinstaller-loginwindow</string>
   <key>LimitLoadToSessionType</key>
   <array>
     <string>LoginWindow</string>

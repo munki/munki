@@ -5,18 +5,17 @@
   <key>Debug</key>
   <true/>
   <key>Label</key>
-  <string>com.googlecode.munki-managedinstaller</string>
+  <string>com.googlecode.munki.installcheck</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/path/to/managedinstaller</string>
-    <string>-m</string>
+    <string>/path/to/installcheck</string>
+    <string>--randomsleep=900</string>
   </array>
-  <key>WatchPaths</key>
-  <array>
-    <string>/Library/Managed Installs/.run_managedinstaller</string>
-  </array>
-  <key>OnDemand</key>
-  <true/>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Minute</key>
+    <integer>10</integer>
+  </dict>
 </dict>
 </plist>
 
