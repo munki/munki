@@ -24,7 +24,7 @@ on itemstoinstall()
 	set ManagedInstallPrefs to "/Library/Preferences/ManagedInstalls.plist"
 	try
 		tell application "System Events"
-			set managedInstallDir to value of property list item "managed_install_dir" of property list file ManagedInstallPrefs
+			set managedInstallDir to value of property list item "ManagedInstallDir" of property list file ManagedInstallPrefs
 			set InstallInfo to managedInstallDir & "/InstallInfo.plist"
 			set managedinstalllist to value of property list item "managed_installs" of property list file InstallInfo
 			repeat with installitem in managedinstalllist

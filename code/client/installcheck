@@ -36,7 +36,10 @@ from distutils import version
 import urlparse
 import optparse
 import hashlib
+import datetime
+import dateutil.parser
 import time
+import random
 import socket
 
 #our lib
@@ -49,7 +52,7 @@ def log(message):
     logfile = os.path.join(logdir,'ManagedInstallerCheck.log')
     f = open(logfile, mode='a', buffering=1)
     if f:
-        print >>f, time.ctime(), message
+        print >>f, datetime.datetime.now().ctime(), message
         f.close()
         
         
@@ -75,11 +78,11 @@ def reporterrors():
     # via email and HTTP CGI.
     global options
     managedinstallprefs = munkilib.prefs()
-    clientidentifier = managedinstallprefs.get('client_identifier','')
+    clientidentifier = managedinstallprefs.get('ClientIdentifier','')
     alternate_id = options.id
     hostname = os.uname()[1]
     
-    print "installcheck errors %s:" % time.ctime()
+    print "installcheck errors %s:" % datetime.datetime.now().ctime()
     print "Hostname:           %s" % hostname
     print "Client identifier:  %s" % clientidentifier
     print "Alternate ID:       %s" % alternate_id
@@ -420,8 +423,8 @@ def download_installeritem(pkgurl):
     """
     global mytmpdir
     
-    managed_install_dir = munkilib.managed_install_dir()
-    mycachedir = os.path.join(managed_install_dir, "Cache")    
+    ManagedInstallDir = munkilib.ManagedInstallDir()
+    mycachedir = os.path.join(ManagedInstallDir, "Cache")    
     pkgname = os.path.basename(urlparse.urlsplit(pkgurl)[2])
     destinationpath = os.path.join(mycachedir, pkgname)
     if os.path.exists(destinationpath):
@@ -512,7 +515,7 @@ def getAllMatchingItems(name,cataloglist):
     itemlist = []
     # we'll throw away any included version info
     (name, includedversion) = nameAndVersion(name)
-    managedinstalldir = munkilib.managed_install_dir()
+    managedinstalldir = munkilib.ManagedInstallDir()
     catalogsdir = os.path.join(managedinstalldir, 'catalogs')
     printandlog("Looking for all items matching: %s..." % name, 1)
     for catalogname in cataloglist:
@@ -546,7 +549,7 @@ def getManifestItemDetail(name, cataloglist, version=''):
             version = includedversion
         else:
             version = 'latest'
-    managedinstalldir = munkilib.managed_install_dir()
+    managedinstalldir = munkilib.ManagedInstallDir()
     catalogsdir = os.path.join(managedinstalldir, 'catalogs')
     printandlog("Looking for detail for: %s, version %s..." % (name, version), 1)
     for catalogname in cataloglist:
@@ -702,8 +705,8 @@ def processInstalls(manifestitem, cataloglist, installinfo):
     """
     
     managedinstallprefs = munkilib.prefs()
-    sw_repo_baseurl = managedinstallprefs['sw_repo_url']
-    managed_install_dir = managedinstallprefs['managed_install_dir']
+    sw_repo_baseurl = managedinstallprefs['SoftwareRepoURL']
+    ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
     
     downloadbaseurl = sw_repo_baseurl + "/pkgs/"
     
@@ -953,8 +956,8 @@ def processRemovals(manifestitem, cataloglist, installinfo):
     # and we're supposed to remove SomePackage--1.0.1.0.0... what do we do?
     #
     dependentitemsremoved = True
-    managed_install_dir = munkilib.managed_install_dir()
-    catalogsdir = os.path.join(managed_install_dir, 'catalogs')
+    ManagedInstallDir = munkilib.ManagedInstallDir()
+    catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
     
     processednamesandaliases = []
     for catalogname in cataloglist:
@@ -1058,8 +1061,8 @@ def getCatalogs(cataloglist):
     Retreives the catalogs from the server
     """
     managedinstallprefs = munkilib.prefs()
-    sw_repo_baseurl = managedinstallprefs['sw_repo_url']
-    catalog_dir = os.path.join(managedinstallprefs['managed_install_dir'], "catalogs")
+    sw_repo_baseurl = managedinstallprefs['SoftwareRepoURL']
+    catalog_dir = os.path.join(managedinstallprefs['ManagedInstallDir'], "catalogs")
     
     for catalog in cataloglist:
         catalogurl = sw_repo_baseurl + "/catalogs/" + catalog
@@ -1080,8 +1083,8 @@ def getmanifest(partialurl):
     Gets a manifest from the server
     """
     managedinstallprefs = munkilib.prefs()
-    sw_repo_baseurl = managedinstallprefs['sw_repo_url']
-    manifest_dir = os.path.join(managedinstallprefs['managed_install_dir'], "manifests")
+    sw_repo_baseurl = managedinstallprefs['SoftwareRepoURL']
+    manifest_dir = os.path.join(managedinstallprefs['ManagedInstallDir'], "manifests")
         
     if partialurl.startswith("http"):
         # then it's really a request for the client's primary manifest
@@ -1111,8 +1114,8 @@ def getPrimaryManifest(alternate_id):
     Gets the client manifest from the server
     """
     managedinstallprefs = munkilib.prefs()
-    manifesturl = managedinstallprefs['manifest_url']
-    clientidentifier = managedinstallprefs.get('client_identifier','')
+    manifesturl = managedinstallprefs['ManifestURL']
+    clientidentifier = managedinstallprefs.get('ClientIdentifier','')
 
     if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
         manifesturl = manifesturl + "/"
@@ -1145,14 +1148,24 @@ def getRemovalCount(installinfo):
             if item['installed']:
                 count +=1
     return count
+    
+
+def isSUinstallItem(itempath):
+    if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
+        return True
+    if os.path.isdir(itempath):
+        for subitem in os.listdir(itempath):
+            if subitem.endswith('.dist'):
+                return True
+    return False            
 
 
 def doSoftwareUpdate(installinfo):
     installinfo['apple_updates'] = []
-    if munkilib.pref('do_apple_softwareupdate'):
+    if munkilib.pref('InstallAppleSoftwareUpdates'):
         
         # switch to our preferred Software Update Server if supplied
-        if munkilib.pref('softwareupdateserver_url'):
+        if munkilib.pref('SoftwareUpdateServerURL'):
             oldsuserver = ''
             cmd = ['/usr/bin/defaults', 'read', '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
             p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
@@ -1162,7 +1175,7 @@ def doSoftwareUpdate(installinfo):
                 oldsusserver = out.rstrip('\n')
                 
             cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate', 
-                        'CatalogURL', munkilib.pref('softwareupdateserver_url')]
+                        'CatalogURL', munkilib.pref('SoftwareUpdateServerURL')]
             retcode = subprocess.call(cmd)
             
         swupdldir = '/var/root/Downloads'
@@ -1170,7 +1183,8 @@ def doSoftwareUpdate(installinfo):
         # check downloads dir and skip checking if there's
         # anything in it
         for item in os.listdir(swupdldir):
-            if item.endswith('.pkg') or item.endswith('.mpkg'):
+            itempath = os.path.join(swupdldir,item)
+            if isSUinstallItem(itempath):
                 runcheck = False
                 break
         if runcheck:
@@ -1180,7 +1194,8 @@ def doSoftwareUpdate(installinfo):
 
             while (p.poll() == None): 
                 swupdout =  p.stdout.readline()
-                print swupdout.rstrip("\n")
+                printandlog(swupdout.rstrip("\n"))
+                sys.stdout.flush()
             retcode = p.poll()
             if retcode:
                 # some problem occurred.
@@ -1190,8 +1205,9 @@ def doSoftwareUpdate(installinfo):
             
         # now check for downloads and process
         for item in os.listdir(swupdldir):
-            if item.endswith('.pkg') or item.endswith('.mpkg'):
-                pl = munkilib.getPackageMetaData(os.path.join(swupdldir,item))
+            itempath = os.path.join(swupdldir,item)
+            if isSUinstallItem(itempath):
+                pl = munkilib.getPackageMetaData(itempath)
                 if pl:
                     # check to see if there is enough free space to install
                     if enoughDiskSpace(pl):
@@ -1208,7 +1224,7 @@ def doSoftwareUpdate(installinfo):
                         installinfo['apple_updates'].append(iteminfo)
     
         # switch back to original Software Update server
-        if munkilib.pref('softwareupdateserver_url'):
+        if munkilib.pref('SoftwareUpdateServerURL'):
             if oldsuserver:
                 cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate', 
                         'CatalogURL', oldsuserver]
@@ -1221,7 +1237,7 @@ def doSoftwareUpdate(installinfo):
 
 def checkServer():
     managedinstallprefs = munkilib.prefs()
-    manifesturl = managedinstallprefs['manifest_url']
+    manifesturl = managedinstallprefs['ManifestURL']
     # deconstruct URL so we can check availability
     port = 80
     (scheme, netloc, path, query, fragment) = urlparse.urlsplit(manifesturl)
@@ -1254,6 +1270,8 @@ p.add_option('--id', '-i', default='',
                 help='Alternate identifier for catalog retreival')
 p.add_option('--quiet', '-q', action='store_true',
                 help='Quiet mode. Logs messages, but nothing to stdout.')
+p.add_option('--randomsleep', '-r', type='int', default=0,
+                help='Randomly sleeps up to the given number of seconds before checking.')
 p.add_option('--verbose', '-v', action='count', default=0,
                 help='More verbose output. May be specified multiple times.')    
 options, arguments = p.parse_args()
@@ -1270,20 +1288,25 @@ def main():
     if not options.quiet: print "Managed Software Check\n"
     
     managedinstallprefs = munkilib.prefs()
-    managed_install_dir = managedinstallprefs['managed_install_dir']
-    logginglevel = managedinstallprefs.get('logging_level', 1)
-    manifestsdir = os.path.join(managed_install_dir, "manifests")
-    cachedir = os.path.join(managed_install_dir, "Cache")
-    logdir = os.path.join(managed_install_dir, "Logs")
+    ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
+    logginglevel = managedinstallprefs.get('LoggingLevel', 1)
+    manifestsdir = os.path.join(ManagedInstallDir, "manifests")
+    cachedir = os.path.join(ManagedInstallDir, "Cache")
+    logdir = os.path.join(ManagedInstallDir, "Logs")
     
-    if not createDirsIfNeeded([managed_install_dir, manifestsdir, cachedir, logdir]):
+    if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, cachedir, logdir]):
         # can't use logerror function since logdir might not exist yet
-        errormessage = "No write access to managed install directory: %s" % managed_install_dir
+        errormessage = "No write access to managed install directory: %s" % ManagedInstallDir
         print >>sys.stderr, errormessage
         errors = errormessage
         reporterrors()
         exit(-1)
     log("### Beginning managed software check ###")
+    
+    if options.randomsleep:
+        randomsleepseconds = random.randrange(options.randomsleep+1)
+        printandlog("Sleeping %i seconds..." % randomsleepseconds)
+        time.sleep(randomsleepseconds)
     
     if munkilib.pythonScriptRunning("managedinstaller"):
         # managedinstaller is running, so we should quit
@@ -1334,14 +1357,14 @@ def main():
     # need to write out install list so the autoinstaller
     # can use it to install things in the right order
     installinfochanged = True
-    installinfopath = os.path.join(managed_install_dir, "InstallInfo.plist")
+    installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
     if os.path.exists(installinfopath):
         oldinstallinfo = plistlib.readPlist(installinfopath)
         if oldinstallinfo == installinfo:
             installinfochanged = False
             printandlog("No change in InstallInfo.", 1)
     if installinfochanged:
-        plistlib.writePlist(installinfo, os.path.join(managed_install_dir, "InstallInfo.plist"))
+        plistlib.writePlist(installinfo, os.path.join(ManagedInstallDir, "InstallInfo.plist"))
         
     try:
         # clean up our tmp dir
@@ -1386,11 +1409,35 @@ def main():
         printandlog("No changes to managed software scheduled.")
     else:
         if munkilib.getconsoleuser() == None:
+            # eventually trigger managedinstaller here
+            # we could:
+            #   - call managedinstaller directly, but we'd have to either
+            #       hard-code its path or search a few paths for it
+            #   - call `launchctl start com.googlecode.munki-managedinstaller`, but that
+            #       relies on that launchd job being installed
+            #   - indirectly trigger `launchctl start com.googlecode.munki-managedinstaller`
+            #       by touching its watch file, just like Managed Software Update.app does
+            #
             pass
         else:
-            result = osascript('tell application "Managed Software Update" to activate')
+            # some one is logged in, and we have updates.
+            # if we haven't notified in a (admin-configurable) while, notify:
+            lastNotifiedString = munkilib.pref('LastNotifiedDate')
+            daysBetweenNotifications = munkilib.pref('DaysBetweenNotifications')
+            nowString = munkilib.NSDateNowString()
+            now = dateutil.parser.parse(nowString)
+            if lastNotifiedString:
+                lastNotifiedDate = dateutil.parser.parse(lastNotifiedString)
+                interval = datetime.timedelta(days=daysBetweenNotifications)
+                nextNotifyDate = lastNotifiedDate + interval
+                if now >= nextNotifyDate:
+                    # record current notification date
+                    cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
+                                    'LastNotifiedDate', '-date', now.ctime()]
+                    retcode = subprocess.call(cmd)
+                    # notify user of available updates
+                    result = osascript('tell application "Managed Software Update" to activate')
             
-     
     log("###    End managed software check    ###")
 
 

@@ -799,7 +799,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
 
 
 # some globals
-packagedb = os.path.join(munkilib.managed_install_dir(), "b.receiptdb")
+packagedb = os.path.join(munkilib.ManagedInstallDir(), "b.receiptdb")
 munkistatusoutput = False
 verbose = False
 logfile = ''

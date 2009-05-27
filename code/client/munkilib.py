@@ -35,10 +35,25 @@ import shutil
 from distutils import version
 from xml.dom import minidom
 
-from SystemConfiguration import *
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+from Foundation import NSDictionary, NSDate
 
 
 # misc functions
+
+def readPlist(plistfile):
+  """Read a plist, return a dict.
+  This method can deal with binary plists,
+  whereas plistlib cannot.
+
+  Args:
+    plistfile: Path to plist file to read
+
+  Returns:
+    dict of plist contents.
+  """
+  return NSDictionary.dictionaryWithContentsOfFile_(plistfile)
+
 
 def getconsoleuser():
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
@@ -102,56 +117,57 @@ def unmountdmg(mountpoint):
 #####################################################
 
 
+def NSDateNowString():
+    '''
+    Generates a NSDate-compatible 
+    '''
+    now = NSDate.new()
+    return str(now)
+
+
 def getManagedInstallsPrefs():
     # define default values
     prefs = {}
-    prefs['managed_install_dir'] = "/Library/Managed Installs"
-    prefs['manifest_url'] = "http:/munki/repo/manifests/"
-    prefs['sw_repo_url'] = "http:/munki/repo"
-    prefs['client_identifier'] = ""
-    prefs['logging_level'] = 1
-    prefs['do_apple_softwareupdate'] = False
-    prefs['softwareupdateserver_url'] = None
+    prefs['ManagedInstallDir'] = "/Library/Managed Installs"
+    prefs['ManifestURL'] = "http:/munki/repo/manifests/"
+    prefs['SoftwareRepoURL'] = "http:/munki/repo"
+    prefs['ClientIdentifier'] = ""
+    prefs['LoggingLevel'] = 1
+    prefs['InstallAppleSoftwareUpdates'] = False
+    prefs['SoftwareUpdateServerURL'] = None
+    prefs['DaysBetweenNotifications'] = 1
+    prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
+    
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
     pl = {}
     if os.path.exists(prefsfile):
         try:
-            pl = plistlib.readPlist(prefsfile)
+            pl = readPlist(prefsfile)
+            for key in pl.keys():
+                if type(pl[key]).__name__ == "__NSCFDate":
+                    # convert NSDate/CFDates to strings
+                    prefs[key] = str(pl[key])
+                else:
+                    prefs[key] = pl[key]               
         except:
             pass
-        if pl:
-            if 'managed_install_dir' in pl:
-                prefs['managed_install_dir'] = pl['managed_install_dir']
-            if 'manifest_url' in pl:
-                prefs['manifest_url'] = pl['manifest_url']
-            if 'sw_repo_url' in pl:
-                prefs['sw_repo_url'] = pl['sw_repo_url']
-            if 'client_identifier' in pl:
-                prefs['client_identifier'] = pl['client_identifier']
-            if 'logging_level' in pl:
-                prefs['logging_level'] = pl['logging_level']
-            if 'do_apple_softwareupdate' in pl:
-                prefs['do_apple_softwareupdate'] = pl['do_apple_softwareupdate']
-            if 'softwareupdateserver_url' in pl:
-                prefs['softwareupdateserver_url'] = pl['softwareupdateserver_url']
-                
                 
     return prefs
 
 
-def managed_install_dir():
+def ManagedInstallDir():
     prefs = getManagedInstallsPrefs()
-    return prefs['managed_install_dir']
+    return prefs['ManagedInstallDir']
 
 
-def manifest_url():
+def ManifestURL():
     prefs = getManagedInstallsPrefs()
-    return prefs['manifest_url']
+    return prefs['ManifestURL']
 
 
-def sw_repo_url():
+def SoftwareRepoURL():
     prefs = getManagedInstallsPrefs()
-    return prefs['sw_repo_url']
+    return prefs['SoftwareRepoURL']
 
 
 def pref(prefname):
@@ -242,8 +258,9 @@ def parsePkgRefs(filename):
                 pkginfo['version'] = padVersionString(ref.attributes['version'].value.encode('UTF-8'),5)
                 if 'installKBytes' in keys:
                     pkginfo['installed_size'] = int(ref.attributes['installKBytes'].value.encode('UTF-8'))
-                if not pkginfo in info:
-                    info.append(pkginfo)
+                if not pkginfo['id'].startswith('manual'):
+                    if not pkginfo in info:
+                        info.append(pkginfo)
     else:
         pkgrefs = dom.getElementsByTagName("pkg-info")
         if pkgrefs:
@@ -331,7 +348,9 @@ def getPkgInfo(p):
 
         if os.path.isdir(p):              # bundle-style package?
             info = getBundlePackageInfo(p)
-
+    elif p.endswith('.dist'):
+            info = parsePkgRefs(p)
+            
     return info
 
 
@@ -421,9 +440,27 @@ def nameAndVersion(s):
     return (s, '')
 
 
+def findInstallerItem(path):
+    if path.endswith('.pkg') or path.endswith('.mpkg') or path.endswith('.dmg'):
+        return path
+    else:
+        # Apple Software Updates sometimes download as
+        # directories with .dist files within. Grrr.
+        if os.path.isdir(path):
+            for item in os.listdir(path):
+                if item.endswith('.dist'):
+                    itempath = os.path.join(path,item)
+                    # usually the .dist file is a symlink to another one
+                    # in a subfolder (like Packages)
+                    if os.path.islink(itempath):
+                        itempath = os.path.realpath(itempath)
+                    return itempath
+    return ''
+
+
 def getPackageMetaData(pkgitem):
     """
-    Queries an installer item (.pkg, .mpkg)
+    Queries an installer item (.pkg, .mpkg, .dist)
     and gets metadata. There are a lot of valid Apple package formats
     and this function may not deal with them all equally well.
     Standard bundle packages are probably the best understood and documented,
@@ -438,7 +475,12 @@ def getPackageMetaData(pkgitem):
     description
     receipts: an array of packageids that may be installed (some may be optional)
     """
+    
     installedsize = 0
+    pkgitem = findInstallerItem(pkgitem)
+    if pkgitem == None:
+        return {}
+        
     installerinfo = getInstallerPkgInfo(pkgitem)
     info = getPkgInfo(pkgitem)
 
@@ -484,6 +526,7 @@ def getPackageMetaData(pkgitem):
         pkginfo['version'] = infoitem['version']
         cataloginfo['receipts'].append(pkginfo)        
     return cataloginfo
+    
     
 # some utility functions
 

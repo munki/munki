@@ -186,10 +186,6 @@ def installall(dirpath):
         if stopRequested():
             return restartflag
         itempath = os.path.join(dirpath, item)
-        if (item.endswith(".pkg") or item.endswith(".mpkg")):
-            (retcode, needsrestart) = install(itempath)
-            if needsrestart:
-                restartflag = True
         if item.endswith(".dmg"):
             if not options.munkistatusoutput:
                 print "Mounting disk image %s" % item
@@ -211,6 +207,11 @@ def installall(dirpath):
                 if needtorestart:
                     restartflag = True
                 munkilib.unmountdmg(mountpoint)
+        
+        if (item.endswith(".pkg") or item.endswith(".mpkg")):
+            (retcode, needsrestart) = install(itempath)
+            if needsrestart:
+                restartflag = True
     return restartflag
     
 
@@ -240,10 +241,7 @@ def installWithInfo(dirpath, installlist):
                 print >>sys.stderr, errmsg
                 log(errmsg)
                 return restartflag
-            if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
-                (retcode, needsrestart) = install(itempath)
-                if needsrestart:
-                    restartflag = True
+                
             if itempath.endswith(".dmg"):
                 if not options.munkistatusoutput:
                     print "Mounting disk image %s" % item["installer_item"]
@@ -265,9 +263,18 @@ def installWithInfo(dirpath, installlist):
                     if needtorestart:
                         restartflag = True
                     munkilib.unmountdmg(mountpoint)
+            else:
+                itempath = munkilib.findInstallerItem(itempath)
+                if (itempath.endswith(".pkg") or itempath.endswith(".mpkg") or itempath.endswith(".dist")):
+                    (retcode, needsrestart) = install(itempath)
+                    if needsrestart:
+                        restartflag = True
                 
             # now remove the item from the install cache
             # (using rm -f in case it's a bundle pkg)
+            # go back to original item path in case findInstallerItem
+            # descended dirs to find a .dist file
+            itempath = os.path.join(dirpath, item["installer_item"])
             retcode = subprocess.call(["/bin/rm", "-rf", itempath])
 
     return restartflag
@@ -388,7 +395,7 @@ def main():
         print >>sys.stderr, "You must run this as root!"
         exit(-1)
     
-    managedinstallbase = munkilib.managed_install_dir()
+    managedinstallbase = munkilib.ManagedInstallDir()
     installdir = os.path.join(managedinstallbase , 'Cache')
     logdir = os.path.join(managedinstallbase, 'Logs')
     
@@ -401,11 +408,15 @@ def main():
     log("### Beginning managed installer session ###")
     
     if munkilib.pythonScriptRunning("installcheck"):
-        # installcheck is running, so we should quit
-        print "installcheck is running. Exiting."
-        log("installcheck is running. Exiting.")
-        log("###    End managed installer session    ###")
-        exit(0)
+        # sleep one second and check again in case we
+        # were launched by installcheck
+        time.sleep(1)
+        if munkilib.pythonScriptRunning("installcheck"):
+            # installcheck is running, so we should quit
+            print "installcheck is running. Exiting."
+            log("installcheck is running. Exiting.")
+            log("###    End managed installer session    ###")
+            exit(0)
     
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
