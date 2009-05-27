@@ -59,8 +59,8 @@ repo_root/
 			someflatpackage
 			
 
-To serve up the manifests, you have two choices. The easiest to get started is to just create a repo_root/manifests directory and put your manifests there, then set the manifest_url in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/manifests/
-and set the client_identifier in /Library/Preferences/ManagedInstalls.plist to the name of a manifest 
+To serve up the manifests, you have two choices. The easiest to get started is to just create a repo_root/manifests directory and put your manifests there, then set the ManifestURL in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/manifests/
+and set the ClientIdentifier in /Library/Preferences/ManagedInstalls.plist to the name of a manifest 
 so the final url is 
 http:/yourwebserver/repo_root/manifests/name_of_manifest
 The other choice is implementing the CGI in the code/server folder in this distribution.  Ask if you want more info on that.
@@ -75,18 +75,18 @@ You're done with the webserver.
 On a client:
 
 Edit ManagedInstalls.plist (from the Preferences folder in this distribution):
-Change the managed_install_dir key to point to your desired directory. My eventual intention is /Library/Managed Installs, but for testing I've been using /Users/Shared/Managed Installs
-Change the manifest_url in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/manifests/
-Change the client_identifier to the name of the actual catalog file on the webserver (perhaps simply client_manifest.plist for now...)
-Change the sw_repo_url to the url to repo_root.
+Change the ManagedInstallDir key to point to your desired directory. My eventual intention is /Library/Managed Installs, but for testing I've been using /Users/Shared/Managed Installs
+Change the ManifestURL in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/manifests/
+Change the ClientIdentifier to the name of the actual catalog file on the webserver (perhaps simply client_manifest.plist for now...)
+Change the SoftwareRepoURL to the url to repo_root.
 Copy this file to /Library/Preferences/.
 
 Now, from the code/client directory:
 
-Run installcheck.  You should get a copy of the client_manifest.plist in your managed_install_dir/manifests/. It should get more info on the items in the manifest by consulting the catalog(s) and decide if they need to be installed.  If so, the installer items will be copied to managed_install_dir/Cache/
-The process logs its activities at managed_install_dir/Logs/ManagedInstallerCheck.log
+Run installcheck.  You should get a copy of the client_manifest.plist in your ManagedInstallDir/manifests/. It should get more info on the items in the manifest by consulting the catalog(s) and decide if they need to be installed.  If so, the installer items will be copied to ManagedInstallDir/Cache/
+The process logs its activities at ManagedInstallDir/Logs/ManagedInstallerCheck.log
 
-Finally: as root, run managedinstaller, and the items in managed_install_dir/Cache should be installed.  Logs from this process go in managed_install_dir/Logs/ManagedInstaller.log
+Finally: as root, run managedinstaller, and the items in ManagedInstallDir/Cache should be installed.  Logs from this process go in ManagedInstallDir/Logs/ManagedInstaller.log
 
 
 More notes:
@@ -97,10 +97,10 @@ Client asks for a main manifest.  It's retrieved.  Main manifest contains some m
 installcheck requests a manifest via one of three values:
 1) if you pass --id=arbitrarystring at the command line, it uses 'arbitrarystring' as the request:
 http://webserver/repo/manifests/arbitrarystring
-2) If no --id option is passed, it looks for a client_identifier value in /Library/Preferences/ManagedInstalls.plist and uses that.
-3) If no client_identifier is available, it uses the fully-qualified hostname of the machine:
+2) If no --id option is passed, it looks for a ClientIdentifier value in /Library/Preferences/ManagedInstalls.plist and uses that.
+3) If no ClientIdentifier is available, it uses the fully-qualified hostname of the machine:
 http://webserver/repo/manifests/hostname.mycompany.com
-Note that if the manifest_url takes the form of a CGI invocation (http://webserver/cgi-bin/getmanifest?), the final URLs look like
+Note that if the ManifestURL takes the form of a CGI invocation (http://webserver/cgi-bin/getmanifest?), the final URLs look like
 http://webserver/cgi-bin/getmanifest?arbitrarystring
 The CGI approach will open the possibility for pattern matching and more logic in the client-to-catalog mapping...
 

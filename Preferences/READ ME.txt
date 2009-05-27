@@ -1,10 +1,10 @@
 The tools get their configuration from /Library/Preferences/ManagedInstalls.plist
 If the file is missing munki uses these defaults:
 
-prefs['managed_install_dir'] = "/Library/Managed Installs"
-prefs['manifest_url'] = "http:/munki/repo/manifests/"
-prefs['sw_repo_url'] = "http:/munki/repo"
-prefs['logging_level'] = 1
-prefs['client_identifier'] = (fully-qualified hostname)
-prefs['do_apple_softwareupdate'] = False
-prefs['softwareupdateserver_url'] = None
+prefs['ManagedInstallDir'] = "/Library/Managed Installs"
+prefs['ManifestURL'] = "http:/munki/repo/manifests/"
+prefs['SoftwareRepoURL'] = "http:/munki/repo"
+prefs['LoggingLevel'] = 1
+prefs['ClientIdentifier'] = (fully-qualified hostname)
+prefs['InstallAppleSoftwareUpdates'] = False
+prefs['SoftwareUpdateServerURL'] = None

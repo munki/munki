@@ -2,19 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>managed_install_dir</key>
+  <key>ManagedInstallDir</key>
   <string>/Library/Managed Installs</string>
-  <key>manifest_url</key>
+  <key>ManifestURL</key>
   <string>http://webserver/repo/manifests/</string>
-  <key>client_identifier</key>
+  <key>ClientIdentifier</key>
   <string>arbitrary_catalog_name</string>
-  <key>sw_repo_url</key>
+  <key>SoftwareRepoURL</key>
   <string>http://webserver/repo</string>
-  <key>logging_level</key>
+  <key>LoggingLevel</key>
   <integer>1</integer>
-  <key>do_apple_softwareupdate</key>
+  <key>InstallAppleSoftwareUpdates</key>
   <false/>
-  <key>softwareupdateserver_url</key>
+  <key>SoftwareUpdateServerURL</key>
   <string>http://xserve.myorg.com:8088/</string>
+  <key>DaysBetweenNotifications</key>
+  <integer>1</integer>
 </dict>
 </plist>
