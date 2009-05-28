@@ -8,8 +8,8 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="452"/>
 			<integer value="431"/>
+			<integer value="453"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -708,6 +708,7 @@
 					<string>452.IBWindowTemplateEditedContentRect</string>
 					<string>452.NSWindowTemplate.visibleAtLaunch</string>
 					<string>453.IBPluginDependency</string>
+					<string>454.CustomClassName</string>
 					<string>454.IBAttributePlaceholdersKey</string>
 					<string>454.IBPluginDependency</string>
 					<string>455.IBAttributePlaceholdersKey</string>
@@ -881,6 +882,7 @@
 					<string>{{33, 287}, {640, 480}}</string>
 					<reference ref="6"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>ScaledImageView</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">IBAppleScriptAttributeName</string>
 						<object class="IBAppleScriptInfoAttribute" key="NS.object.0">
@@ -960,6 +962,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ScaledImageView</string>
+					<string key="superclassName">NSImageView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ScaledImageView.h</string>
 					</object>
 				</object>
 			</object>

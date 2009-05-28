@@ -69,6 +69,7 @@ on awake from nib theObject
 		if cfuser is "" then
 			call method "setLevel:" of theObject with parameter (kCGScreenSaverWindowLevel - 1)
 		end if
+		call method "center" of theObject
 		set visible of theObject to true
 		activate
 	end if
