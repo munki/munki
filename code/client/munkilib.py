@@ -129,8 +129,8 @@ def getManagedInstallsPrefs():
     # define default values
     prefs = {}
     prefs['ManagedInstallDir'] = "/Library/Managed Installs"
-    prefs['ManifestURL'] = "http:/munki/repo/manifests/"
-    prefs['SoftwareRepoURL'] = "http:/munki/repo"
+    prefs['ManifestURL'] = "http://munki/repo/manifests/"
+    prefs['SoftwareRepoURL'] = "http://munki/repo"
     prefs['ClientIdentifier'] = ""
     prefs['LoggingLevel'] = 1
     prefs['InstallAppleSoftwareUpdates'] = False

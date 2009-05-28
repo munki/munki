@@ -106,8 +106,10 @@ def install(pkgpath):
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    while (p.poll() == None): 
+    while True: 
         installinfo =  p.stdout.readline()
+        if not installinfo and (p.poll() != None):
+            break
         if installinfo.startswith("installer:"):
             # save all installer output in case there is
             # an error so we can dump it to the log

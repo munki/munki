@@ -391,8 +391,8 @@ def ImportBom(bompath, c):
     cmd = ["/usr/bin/lsbom", bompath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-    for line in p.stdout:
+    (output, err) = p.communicate()
+    for line in output:
         item = line.rstrip("\n").split("\t")
         path = item[0]
         perms = item[1]

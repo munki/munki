@@ -1192,8 +1192,11 @@ def doSoftwareUpdate(installinfo):
             p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-            while (p.poll() == None): 
+            while True: 
                 swupdout =  p.stdout.readline()
+                if not swupdout and (p.poll() != None):
+                    #process completed and we've deal with all the output
+                    break
                 printandlog(swupdout.rstrip("\n"))
                 sys.stdout.flush()
             retcode = p.poll()
@@ -1291,10 +1294,11 @@ def main():
     ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
     logginglevel = managedinstallprefs.get('LoggingLevel', 1)
     manifestsdir = os.path.join(ManagedInstallDir, "manifests")
+    catalogsdir = os.path.join(ManagedInstallDir, "catalogs")
     cachedir = os.path.join(ManagedInstallDir, "Cache")
     logdir = os.path.join(ManagedInstallDir, "Logs")
     
-    if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, cachedir, logdir]):
+    if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir, cachedir, logdir]):
         # can't use logerror function since logdir might not exist yet
         errormessage = "No write access to managed install directory: %s" % ManagedInstallDir
         print >>sys.stderr, errormessage
