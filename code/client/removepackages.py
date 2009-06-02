@@ -304,25 +304,20 @@ def ImportPackage(packagepath, c):
         ppath = pl["IFPkgRelocatedPath"]
     else:
         ppath = "./"
-
+        
     t = (timestamp, owner, pkgid, vers, ppath, pkgname)
     c.execute('INSERT INTO pkgs (timestamp, owner, pkgid, vers, ppath, pkgname) values (?, ?, ?, ?, ?, ?)', t)
     pkgkey = c.lastrowid
-
-    #pkgdict = {}
-    #pkgdict['timestamp'] = timestamp
-    #pkgdict['owner'] = owner
-    #pkgdict['pkgid'] = pkgid
-    #pkgdict['vers'] = vers
-    #pkgdict['ppath'] = ppath
-    #pkgdict['pkgname'] = pkgname
-    #pkgdbarray.append(pkgdict)
-
+    
     cmd = ["/usr/bin/lsbom", bompath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-    for line in p.stdout:
+                            
+    while True: 
+        line =  p.stdout.readline()
+        if not line and (p.poll() != None):
+            break
+        
         item = line.rstrip("\n").split("\t")
         path = item[0]
         perms = item[1]
@@ -391,8 +386,11 @@ def ImportBom(bompath, c):
     cmd = ["/usr/bin/lsbom", bompath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    (output, err) = p.communicate()
-    for line in output:
+                            
+    while True: 
+        line =  p.stdout.readline()
+        if not line and (p.poll() != None):
+            break
         item = line.rstrip("\n").split("\t")
         path = item[0]
         perms = item[1]
