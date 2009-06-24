@@ -22,9 +22,14 @@ property managedInstallDir : ""
 on itemstoinstall()
 	set installlist to {}
 	set ManagedInstallPrefs to "/Library/Preferences/ManagedInstalls.plist"
+	set managedInstallDir to "/Library/Managed Installs"
 	try
 		tell application "System Events"
 			set managedInstallDir to value of property list item "ManagedInstallDir" of property list file ManagedInstallPrefs
+		end tell
+	end try
+	try
+	    tell application "System Events"
 			set InstallInfo to managedInstallDir & "/InstallInfo.plist"
 			set managedinstalllist to value of property list item "managed_installs" of property list file InstallInfo
 			repeat with installitem in managedinstalllist
@@ -93,7 +98,17 @@ on awake from nib theObject
 			if contents of data cell "name" of theDataRow is "" then
 				set contents of data cell "name" of theDataRow to |name| of installitem
 			end if
-			set contents of data cell "version" of theDataRow to version_to_install of installitem
+			
+			set oldDelims to AppleScript's text item delimiters
+			set AppleScript's text item delimiters to "."
+			if (count of text items of version_to_install of installitem) > 3 then
+				set shortVersion to text items 1 through 3 of version_to_install of installitem as text
+			else
+				set shortVersion to version_to_install of installitem
+			end if
+			set AppleScript's text item delimiters to oldDelims
+			
+			set contents of data cell "version" of theDataRow to shortVersion
 			set contents of data cell "description" of theDataRow to |description| of installitem
 			try
 				set contents of data cell "restartaction" of theDataRow to |RestartAction| of installitem
