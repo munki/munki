@@ -8,8 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
-			<integer value="293"/>
+			<integer value="21"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1481,6 +1480,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 				<object class="NSMutableArray" key="dict.sortedKeys">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>-1.IBPluginDependency</string>
+					<string>-2.IBAttributePlaceholdersKey</string>
 					<string>-2.IBPluginDependency</string>
 					<string>-3.IBPluginDependency</string>
 					<string>2.IBPluginDependency</string>
@@ -1625,6 +1625,21 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">IBAppleScriptAttributeName</string>
+						<object class="IBAppleScriptInfoAttribute" key="NS.object.0">
+							<string key="name">IBAppleScriptAttributeName</string>
+							<reference key="object" ref="770919419"/>
+							<int key="appleScriptObjectID">0</int>
+							<int key="appleScriptScriptScope">0</int>
+							<object class="NSArray" key="appleScriptEventHandlerNames">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<string>DidBecomeActive</string>
+							</object>
+							<string key="appleScriptScriptName">ManagedSoftwareUpdate.applescript</string>
+							<string key="appleScriptObjectName">theApp</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1645,8 +1660,8 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 							<string key="appleScriptObjectName">mainWindow</string>
 						</object>
 					</object>
-					<string>{{161, 237}, {512, 562}}</string>
-					<string>{{161, 237}, {512, 562}}</string>
+					<string>{{386, 264}, {512, 562}}</string>
+					<string>{{386, 264}, {512, 562}}</string>
 					<reference ref="9"/>
 					<reference ref="9"/>
 					<string>{{616, 297}, {480, 360}}</string>

@@ -22,14 +22,15 @@ property managedInstallDir : ""
 on itemstoinstall()
 	set installlist to {}
 	set ManagedInstallPrefs to "/Library/Preferences/ManagedInstalls.plist"
-	set managedInstallDir to "/Library/Managed Installs"
 	try
 		tell application "System Events"
 			set managedInstallDir to value of property list item "ManagedInstallDir" of property list file ManagedInstallPrefs
 		end tell
+	on error
+		set managedInstallDir to "/Library/Managed Installs"
 	end try
 	try
-	    tell application "System Events"
+		tell application "System Events"
 			set InstallInfo to managedInstallDir & "/InstallInfo.plist"
 			set managedinstalllist to value of property list item "managed_installs" of property list file InstallInfo
 			repeat with installitem in managedinstalllist
@@ -72,16 +73,9 @@ on awake from nib theObject
 		make new data column at end of data columns of theDataSource with properties {name:"restartaction"}
 		
 		copy my itemstoinstall() to installitems
+		
 		set EmptyImage to load image "Empty"
 		set RestartImage to load image "RestartReq"
-		
-		if (count of installitems) is 0 then
-			display alert "Your software is up to date." message ¬
-				"There is no new software for your computer at this time." default button ¬
-				"OK" as informational attached to window 1
-			return
-		end if
-		
 		repeat with installitem in installitems
 			
 			set theDataRow to make new data row at end of data rows of theDataSource
@@ -146,13 +140,17 @@ end will close
 
 on selection changed theObject
 	if the name of theObject is "table" then
-		set theDataRow to selected data row of theObject
-		set theDescription to the contents of data cell "description" of theDataRow
-		set theRestartAction to the contents of data cell "restartaction" of theDataRow
-		if theRestartAction is "RequireRestart" then
-			set theRestartAction to "Restart required after install."
+		if selected data rows of theObject is not {} then
+			set theDataRow to selected data row of theObject
+			set theDescription to the contents of data cell "description" of theDataRow
+			set theRestartAction to the contents of data cell "restartaction" of theDataRow
+			if theRestartAction is "RequireRestart" then
+				set theRestartAction to "Restart required after install."
+			end if
+			set theText to theDescription & return & theRestartAction
+		else
+			set theText to ""
 		end if
-		set theText to theDescription & return & theRestartAction
 		set contents of text field "descriptionFld" of view "descriptionFldView" of scroll view ¬
 			"descriptionScrollView" of view "splitViewBottom" of split view "splitView" of window id 1 to theText
 	end if
@@ -176,3 +174,14 @@ on alert ended theObject with reply withReply
 		quit
 	end if
 end alert ended
+
+on activated theObject
+	--if the name of theObject is "theApp" then
+	copy my itemstoinstall() to installitems
+	if (count of installitems) is 0 then
+		display alert "Your software is up to date." message ¬
+			"There is no new software for your computer at this time." default button ¬
+			"OK" as informational attached to window 1
+	end if
+	--end if
+end activated
