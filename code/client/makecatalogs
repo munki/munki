@@ -65,9 +65,12 @@ def makeCatalogs(repopath):
                             if not catalogname in catalogs:
                                 catalogs[catalogname] = []
                             catalogs[catalogname].append(pkginfo)
+                            print "Adding %s to %s..." % (filepath[len(pkgsinfopath)+1:], catalogname)
                     else:
                         print >>sys.stderr, "WARNING: Info file %s refers to missing installer item: %s" % (filepath[len(pkgsinfopath)+1:], pkginfo['installer_item_location'])
-                    
+            else:
+                print >>sys.stderr, "WARNING: file %s is not a valid plist" % filepath
+                
     # clear out old catalogs
     path = os.path.join(repopath, "catalogs")
     for item in os.listdir(path):

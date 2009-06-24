@@ -35,7 +35,7 @@ import shutil
 from distutils import version
 from xml.dom import minidom
 
-from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+#from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 from Foundation import NSDictionary, NSDate
 
 
@@ -56,8 +56,17 @@ def readPlist(plistfile):
 
 
 def getconsoleuser():
-    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
-    return cfuser[0]
+    osvers = int(os.uname()[2].split('.')[0])
+    if osvers > 9:
+        cmd = ['/usr/bin/who | /usr/bin/grep console']
+        p = subprocess.Popen(cmd, shell=True, bufsize=1, stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, err) = p.communicate()
+        return output
+    else:
+        from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+        cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+        return cfuser[0]
     
     
 def pythonScriptRunning(scriptname):

@@ -199,6 +199,7 @@ def shouldRebuildDB(pkgdbpath):
     """
     receiptsdir = "/Library/Receipts"
     bomsdir = "/Library/Receipts/boms"
+    installhistory = "/Library/Receipts/InstallHistory.plist"
     applepkgdb = "/Library/Receipts/db/a.receiptdb"
 
     if not os.path.exists(pkgdbpath):
@@ -229,12 +230,19 @@ def shouldRebuildDB(pkgdbpath):
                 bom_modtime = os.stat(bompath).st_mtime
                 if (packagedb_modtime < bom_modtime):
                     return True
+                    
+    if os.path.exists(installhistory):
+        installhistory_modtime = os.stat(installhistory).st_mtime
+        if packagedb_modtime < installhistory_modtime:
+            return True
 
     if os.path.exists(applepkgdb):
         applepkgdb_modtime = os.stat(applepkgdb).st_mtime
         if packagedb_modtime < applepkgdb_modtime:
             return True
-
+            
+    # if we got this far, we don't need to update the db
+    return False
 
 
 def CreateTables(c):
@@ -351,12 +359,13 @@ def ImportBom(bompath, c):
     Imports package data into our internal package database
     using a combination of the bom file and data in Apple's
     package database into our internal package database.
-    If we completely trusted the accuracy of Apple's database, we wouldn't
-    need the bom files, but in my enviroment at least, the bom files are
-    a better indicator of what flat packages have actually been installed
-    on the current machine. We still need to consult Apple's package database
-    because the bom files are missing metadata about the package.
     """
+    # If we completely trusted the accuracy of Apple's database, we wouldn't
+    # need the bom files, but in my enviroment at least, the bom files are
+    # a better indicator of what flat packages have actually been installed
+    # on the current machine. We still need to consult Apple's package database
+    # because the bom files are missing metadata about the package.
+    
     applepkgdb = "/Library/Receipts/db/a.receiptdb"
     pkgname = os.path.basename(bompath)
 
@@ -416,6 +425,71 @@ def ImportBom(bompath, c):
             c.execute('INSERT INTO pkgs_paths (pkg_key, path_key, uid, gid, perms) values (?, ?, ?, ?, ?)', t)
 
 
+def ImportFromPkgutil(pkgname, c):
+    """
+    Imports package data from pkgutil into our internal package database.
+    """
+    
+    timestamp = 0
+    owner = 0
+    pkgid =  pkgname
+    vers = "1.0"
+    ppath = "./"
+
+    #get metadata from applepkgdb
+    p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
+        bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (plist, err) = p.communicate()
+    if plist:
+        pl = plistlib.readPlistFromString(plist)
+        if "install-location" in pl:
+            ppath = pl["install-location"]
+        if "pkg-version" in pl:
+            vers = pl["pkg-version"]
+        if "install-time" in pl:
+            timestamp = pl["install-time"]
+
+    t = (timestamp, owner, pkgid, vers, ppath, pkgname)
+    c.execute('INSERT INTO pkgs (timestamp, owner, pkgid, vers, ppath, pkgname) values (?, ?, ?, ?, ?, ?)', t)
+    pkgkey = c.lastrowid
+
+    cmd = ["/usr/sbin/pkgutil", "--files", pkgid]
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    while True: 
+        line =  p.stdout.readline()
+        if not line and (p.poll() != None):
+            break
+        path = line.rstrip("\n")
+        
+        # pkgutil --files pkgid only gives us path info.  We don't
+        # really need perms, uid and gid, so we'll just fake them.
+        # if we needed them, we'd have to call 
+        # pkgutil --export-plist pkgid and iterate through the
+        # plist.  That would be slower, so we'll do things this way...
+        perms = "0000"
+        uid = "0"
+        gid = "0"
+        if path != ".":
+
+            #prepend the ppath so the paths match the actual install locations
+            path = path.lstrip("./")
+            path = ppath + path
+            path = path.lstrip("./")
+
+            t = (path, )
+            row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
+            if not row:
+                c.execute('INSERT INTO paths (path) values (?)', t)
+                pathkey = c.lastrowid
+            else:
+                pathkey = row[0]
+
+            t = (pkgkey, pathkey, uid, gid, perms)
+            c.execute('INSERT INTO pkgs_paths (pkg_key, path_key, uid, gid, perms) values (?, ?, ?, ?, ?)', t)
+
+
 def initDatabase(packagedb,forcerebuild=False):
     """
     Builds or rebuilds our internal package database.
@@ -445,8 +519,22 @@ def initDatabase(packagedb,forcerebuild=False):
         for item in bomslist:
             if item.endswith(".bom"):
                 pkgcount += 1
+    else:
+        #no boms dir in some versions of OS X
+        pkglist = []
+        cmd = ['/usr/sbin/pkgutil', '--pkgs']
+        p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        while True: 
+            line =  p.stdout.readline()
+            if not line and (p.poll() != None):
+                break
+            pkglist.append(line.rstrip('\n'))
+            pkgcount += 1
 
     conn = sqlite3.connect(packagedb)
+    conn.text_factory = str
     c = conn.cursor()
     CreateTables(c)
 
@@ -488,7 +576,19 @@ def initDatabase(packagedb,forcerebuild=False):
                 ImportBom(bompath, c)
                 currentpkgindex += 1
                 display_percent_done(currentpkgindex, pkgcount)
-
+    else:
+        #no boms dir in some versions of OS X
+        for pkg in pkglist:
+            if stopRequested():
+                c.close()
+                conn.close()
+                #our package db isn't valid, so we should delete it
+                os.remove(packagedb)
+            display_info("Importing %s..." % pkg)
+            ImportFromPkgutil(pkg, c)
+            currentpkgindex += 1
+            display_percent_done(currentpkgindex, pkgcount)
+            
     # in case we didn't quite get to 100% for some reason
     if currentpkgindex < pkgcount:
         display_percent_done(pkgcount, pkgcount)
@@ -542,11 +642,17 @@ def getpathstoremove(pkgkeylist):
     
     # set up some subqueries:
     # all the paths that are referred to by the selected packages:
-    in_selected_packages = "select distinct path_key from pkgs_paths where pkg_key in %s" % str(pkgkeys)
+    if len(pkgkeys) > 1:
+        in_selected_packages = "select distinct path_key from pkgs_paths where pkg_key in %s" % str(pkgkeys)
+    else:
+        in_selected_packages = "select distinct path_key from pkgs_paths where pkg_key = %s" % str(pkgkeys[0])
     
     # all the paths that are referred to by every package except the selected packages:
-    not_in_other_packages = "select distinct path_key from pkgs_paths where pkg_key not in %s" % str(pkgkeys)
-    
+    if len(pkgkeys) > 1:
+        not_in_other_packages = "select distinct path_key from pkgs_paths where pkg_key not in %s" % str(pkgkeys)
+    else:
+        not_in_other_packages = "select distinct path_key from pkgs_paths where pkg_key != %s" % str(pkgkeys[0])
+        
     # every path that is used by the selected packages and no other packages:
     combined_query = "select path from paths where (path_key in (%s) and path_key not in (%s))" % (in_selected_packages, not_in_other_packages)
     
@@ -577,10 +683,13 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     conn = sqlite3.connect(packagedb)
     c = conn.cursor()
     
+    osvers = int(os.uname()[2].split('.')[0])
+    
     applepkgdb = '/Library/Receipts/db/a.receiptdb'
     if not noupdateapplepkgdb:
-        aconn = sqlite3.connect(applepkgdb)
-        ac = aconn.cursor()
+        if osvers < 10:
+            aconn = sqlite3.connect(applepkgdb)
+            ac = aconn.cursor()
     
     if not verbose:
         display_percent_done(1,4)
@@ -592,11 +701,12 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
         if row:
             pkgname = row[0]
             pkgid = row[1]
+            receiptpath = None
             if pkgname.endswith('.pkg'):
                 receiptpath = os.path.join('/Library/Receipts', pkgname)
             if pkgname.endswith('.bom'):
                 receiptpath = os.path.join('/Library/Receipts/boms', pkgname)
-            if os.path.exists(receiptpath):
+            if receiptpath and os.path.exists(receiptpath):
                 display_info("Removing %s..." % receiptpath)
                 log("Removing %s..." % receiptpath)
                 retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
@@ -610,31 +720,40 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
         # then remove pkg info from Apple's database unless option is passed
         if not noupdateapplepkgdb:
             if pkgid:
-                t = (pkgid, )
-                row = ac.execute('SELECT pkg_key FROM pkgs where pkgid = ?', t).fetchone()
-                if row:
+                if osvers < 10:
+                    t = (pkgid, )
+                    row = ac.execute('SELECT pkg_key FROM pkgs where pkgid = ?', t).fetchone()
+                    if row:
+                        if verbose:
+                            print "Removing package data from Apple package database..."
+                        apple_pkg_key = row[0]
+                        t = (apple_pkg_key, )
+                        ac.execute('DELETE FROM pkgs where pkg_key = ?', t)
+                        ac.execute('DELETE FROM pkgs_paths where pkg_key = ?', t)
+                        ac.execute('DELETE FROM pkgs_groups where pkg_key = ?', t)
+                        ac.execute('DELETE FROM acls where pkg_key = ?', t)
+                        ac.execute('DELETE FROM taints where pkg_key = ?', t)
+                        ac.execute('DELETE FROM sha1s where pkg_key = ?', t)
+                        ac.execute('DELETE FROM oldpkgs where pkg_key = ?', t)
+                else:
+                    cmd = ['/usr/sbin/pkgutil', '--forget', pkgid]
+                    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    (output, err) = p.communicate()
                     if verbose:
-                        print "Removing package data from Apple package database..."
-                    apple_pkg_key = row[0]
-                    t = (apple_pkg_key, )
-                    ac.execute('DELETE FROM pkgs where pkg_key = ?', t)
-                    ac.execute('DELETE FROM pkgs_paths where pkg_key = ?', t)
-                    ac.execute('DELETE FROM pkgs_groups where pkg_key = ?', t)
-                    ac.execute('DELETE FROM acls where pkg_key = ?', t)
-                    ac.execute('DELETE FROM taints where pkg_key = ?', t)
-                    ac.execute('DELETE FROM sha1s where pkg_key = ?', t)
-                    ac.execute('DELETE FROM oldpkgs where pkg_key = ?', t)
+                        if output: print output.rstrip('\n')
+                    
     
     display_percent_done(2,4)
     
     # now remove orphaned paths from paths table
     # first, Apple's database if option is passed
     if not noupdateapplepkgdb:
-        display_info("Removing unused paths from Apple package database...")
-        ac.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
-        aconn.commit()
-        ac.close()
-        aconn.close()
+        if osvers < 10:
+            display_info("Removing unused paths from Apple package database...")
+            ac.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
+            aconn.commit()
+            ac.close()
+            aconn.close()
     
     display_percent_done(3,4)
     

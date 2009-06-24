@@ -51,10 +51,10 @@ def quit():
         # it's running, send it a quit message
         result = osascript('tell application "MunkiStatus" to quit')
     
-
+    
 def activate():
     osascript('tell application "MunkiStatus" to activate')
-
+    
     
 def title(titleText):
     result = osascript('tell application "MunkiStatus" to set title of window "mainWindow" to "%s"' % titleText)
@@ -62,12 +62,14 @@ def title(titleText):
     
 def message(messageText):
     result = osascript('tell application "MunkiStatus" to set contents of text field "mainTextFld" of window "mainWindow" to "%s"' % messageText)
-
-
+    # when you change the message, the detail is no longer valid, so let's clear that
+    result = osascript('tell application "MunkiStatus" to set contents of text field "minorTextFld" of window "mainWindow" to "")
+    
+    
 def detail(detailsText):
     result = osascript('tell application "MunkiStatus" to set contents of text field "minorTextFld" of window "mainWindow" to "%s"' % detailsText)
-
-
+    
+    
 def percent(percentage):
     # Note:  this is a relatively slow operation.
     # If you are calling this on every iteration of a loop, 
@@ -104,10 +106,11 @@ def getStopButtonState():
     (out, err) = p.communicate()
     if p.returncode == 0:
         # it's running, ask it for the button state
-        result = osascript('tell application "MunkiStatus" to get the state of button "stopBtn" of window "mainWindow"')    
-        return int(result)
-    else:
-        return 0
+        result = osascript('tell application "MunkiStatus" to get the state of button "stopBtn" of window "mainWindow"')
+        if result == "1":
+            return 1
+    
+    return 0
     
     
 def hideStopButton():

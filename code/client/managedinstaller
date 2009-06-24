@@ -82,7 +82,6 @@ def install(pkgpath):
     
     if options.munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
-        munkistatus.detail("")
         # clear indeterminate progress bar 
         munkistatus.percent(0)
         
@@ -307,7 +306,6 @@ def processRemovals(removalList):
                                 restartFlag = True
                             if options.munkistatusoutput:
                                 munkistatus.message("Removing %s..." % name)
-                                munkistatus.detail("")
                                 # clear indeterminate progress bar 
                                 munkistatus.percent(0)                               
                             else:
@@ -332,7 +330,6 @@ def processRemovals(removalList):
                         # it's a script or program to uninstall
                         if options.munkistatusoutput:
                             munkistatus.message("Running uninstall script for %s..." % name)
-                            munkistatus.detail("")
                             # set indeterminate progress bar 
                             munkistatus.percent(-1)
                         
@@ -473,7 +470,6 @@ def main():
         if options.munkistatusoutput:
             munkistatus.hideStopButton()
             munkistatus.message("Software installed or removed requires a restart.")
-            munkistatus.detail("")
             munkistatus.percent(-1)
         else:
             print "Software installed or removed requires a restart."

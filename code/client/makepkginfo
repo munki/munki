@@ -223,6 +223,11 @@ def main():
                 catinfo['minimum_os_version'] = minosversion
             else:
                 catinfo['minimum_os_version'] = "10.4.0"
+                
+            # some metainfo
+            catinfo['catalogs'] = ['testing']
+            catinfo['uninstallable'] = True
+            catinfo['uninstall_method'] = "removepackages"
             
             # and now, what we've all been waiting for...
             print plistlib.writePlistToString(catinfo)
