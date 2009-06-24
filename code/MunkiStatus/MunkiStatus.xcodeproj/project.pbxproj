@@ -32,6 +32,7 @@
 		C00B239E0FC096670016293D /* MunkiStatus.icns in Resources */ = {isa = PBXBuildFile; fileRef = C00B239D0FC096670016293D /* MunkiStatus.icns */; };
 		C01D090F0FBF7216001ED249 /* BorderlessWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = C01D090D0FBF7216001ED249 /* BorderlessWindow.h */; };
 		C01D09100FBF7216001ED249 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C01D090E0FBF7216001ED249 /* BorderlessWindow.m */; };
+		C0337C0D0FD5DD5E00B1BCFC /* Solid Aqua Blue.png in Resources */ = {isa = PBXBuildFile; fileRef = C0337C0C0FD5DD5E00B1BCFC /* Solid Aqua Blue.png */; };
 		C08625730FCF033C00964AE4 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C08625710FCF033C00964AE4 /* ScaledImageView.m */; };
 		C08625740FCF033C00964AE4 /* ScaledImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = C08625720FCF033C00964AE4 /* ScaledImageView.h */; };
 		C0C84CCF0F98FF7800B6518D /* Installer.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0C84CCE0F98FF7800B6518D /* Installer.tiff */; };
@@ -54,6 +55,7 @@
 		C00B239D0FC096670016293D /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
 		C01D090D0FBF7216001ED249 /* BorderlessWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BorderlessWindow.h; sourceTree = "<group>"; };
 		C01D090E0FBF7216001ED249 /* BorderlessWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BorderlessWindow.m; sourceTree = "<group>"; };
+		C0337C0C0FD5DD5E00B1BCFC /* Solid Aqua Blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Solid Aqua Blue.png"; sourceTree = "<group>"; };
 		C08625710FCF033C00964AE4 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
 		C08625720FCF033C00964AE4 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C0C84CCE0F98FF7800B6518D /* Installer.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Installer.tiff; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C0337C0C0FD5DD5E00B1BCFC /* Solid Aqua Blue.png */,
 				C00B239D0FC096670016293D /* MunkiStatus.icns */,
 				C0C84CD00F98FF8400B6518D /* package.tiff */,
 				C0C84CCE0F98FF7800B6518D /* Installer.tiff */,
@@ -223,6 +226,7 @@
 				C0C84CCF0F98FF7800B6518D /* Installer.tiff in Resources */,
 				C0C84CD10F98FF8400B6518D /* package.tiff in Resources */,
 				C00B239E0FC096670016293D /* MunkiStatus.icns in Resources */,
+				C0337C0D0FD5DD5E00B1BCFC /* Solid Aqua Blue.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

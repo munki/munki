@@ -44,16 +44,32 @@ on awake from nib theObject
 			copy (call method "mainScreenRect") to screenRect
 			call method "setFrame:display:" of theObject with parameters {screenRect, true}
 			try
-				tell application "System Events"
-					set DesktopPicture to value of property list item "DesktopPicture" of property list file "/Library/Preferences/com.apple.loginwindow.plist"
-					if exists (POSIX file DesktopPicture as file) then
-						--do nothing; just trying to trigger an error
-					end if
-				end tell
+				--tell application "System Events"
+				--set DesktopPicture to value of property list item "DesktopPicture" of property list file "/Library/Preferences/com.apple.loginwindow.plist"
+				--end tell
+				set DesktopPicture to do shell script "/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow DesktopPicture"
 			on error
-				set DesktopPicture to "/Library/Desktop Pictures/Aqua Blue.jpg"
+				-- no DesktopPicture set for loginwindow, let's use some defaults
+				try
+					set DesktopPicture to "/System/Library/CoreServices/DefaultDesktop.jpg"
+					tell application "System Events"
+						if exists (POSIX file DesktopPicture as file) then
+							--do nothing; just trying to trigger an error
+						end if
+					end tell
+				on error
+					set DesktopPicture to "/Library/Desktop Pictures/Aqua Blue.jpg"
+				end try
 			end try
-			set bgPicture to load image DesktopPicture
+			-- now we have a DesktopPicture, try to load the image
+			try
+				do shell script "/usr/bin/logger -t MunkiStatus 'Setting background to " & DesktopPicture
+				set bgPicture to load image DesktopPicture
+			on error
+				-- failed. just use our internal solid blue background
+				do shell script "/usr/bin/logger -t MunkiStatus 'Setting background to Solid Aqua Blue'"
+				set bgPicture to load image "Solid Aqua Blue"
+			end try
 			set contents of image view "imageFld" of theObject to bgPicture
 			show theObject
 		end if
