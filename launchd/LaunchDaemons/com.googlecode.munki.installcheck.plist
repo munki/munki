@@ -8,8 +8,9 @@
   <string>com.googlecode.munki.installcheck</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/path/to/installcheck</string>
+    <string>/usr/local/munki/installcheck</string>
     <string>--randomsleep=900</string>
+    <string>-q</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>

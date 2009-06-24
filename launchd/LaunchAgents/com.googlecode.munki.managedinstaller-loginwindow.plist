@@ -10,7 +10,7 @@
   </array>
   <key>ProgramArguments</key>
   <array>
-    <string>/path/to/managedinstaller</string>
+    <string>/usr/local/munki/managedinstaller</string>
     <string>-m</string>
   </array>
   <key>RunAtLoad</key>
