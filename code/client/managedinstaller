@@ -402,7 +402,7 @@ def main():
     p.add_option('--munkistatusoutput', '-m', action='store_true')
     options, arguments = p.parse_args()
     
-    needtorestart = False
+    needtorestart = removals_need_restart = installs_need_restart = appleupdates_need_restart = False
     createDirsIfNeeded([logdir])
     log("### Beginning managed installer session ###")
     
@@ -440,7 +440,7 @@ def main():
                     # set indeterminate progress bar 
                     munkistatus.percent(-1)
                 log("Processing removals")
-                needtorestart = processRemovals(pl['removals'])
+                removals_need_restart = processRemovals(pl['removals'])
         if "managed_installs" in pl:
             if not stopRequested():
                 installcount = getInstallCount(pl['managed_installs'])
@@ -455,16 +455,17 @@ def main():
                         # set indeterminate progress bar 
                         munkistatus.percent(-1)                        
                     log("Processing installs")
-                    needtorestart = installWithInfo(installdir, pl['managed_installs'])
+                    installs_need_restart = installWithInfo(installdir, pl['managed_installs'])
         if "apple_updates" in pl:
             if not stopRequested():
                 log("Installing Apple updates")
                 swupdldir = '/var/root/Downloads'
-                needtorestart = installWithInfo(swupdldir, pl['apple_updates'])
+                appleupdates_need_restart = installWithInfo(swupdldir, pl['apple_updates']) or needtorestart
                                     
     else:
         log("No %s found." % installinfo)
-
+        
+    needtorestart = removals_need_restart or installs_need_restart or appleupdates_need_restart
     if needtorestart:
         log("Software installed or removed requires a restart.")
         if options.munkistatusoutput:
