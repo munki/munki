@@ -897,7 +897,7 @@ def processRemovals(manifestitem, cataloglist, installinfo):
         # if so, that's bad - it means it's scheduled to be installed
         # _and_ removed.  We'll warn, and do nothing with this item.
         if isItemInInstallInfo(item, installinfo['managed_installs']):
-            printandlog("Will not attempt to remove %s because it (or another version) is in the list of managed installs." % manifestitemname_withversion)
+            printandlog("Will not attempt to remove %s because it (or another version of it) is in the list of managed installs, or it is required by another managed install." % manifestitemname_withversion)
             return False
     
     for item in infoitems:
@@ -959,6 +959,11 @@ def processRemovals(manifestitem, cataloglist, installinfo):
     ManagedInstallDir = munkilib.ManagedInstallDir()
     catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
     
+    # make a list of the name and aliases of the current uninstall_item
+    uninstall_item_names = []
+    uninstall_item_names.append(uninstall_item.get('name'))
+    uninstall_item_names.extend(uninstall_item.get('aliases',[]))
+    
     processednamesandaliases = []
     for catalogname in cataloglist:
         localcatalog = os.path.join(catalogsdir,catalogname)
@@ -969,7 +974,7 @@ def processRemovals(manifestitem, cataloglist, installinfo):
             namesandaliases.extend(item_pl.get('aliases',[])) 
             if not set(namesandaliases).intersection(processednamesandaliases):
                 if 'requires' in item_pl:
-                    if set(item_pl['requires']).intersection(namesandaliases):
+                    if set(item_pl['requires']).intersection(uninstall_item_names):
                         if evidenceThisIsInstalled(item_pl):
                             printandlog("%s requires %s and must be removed as well." % (item_pl.get('name'), manifestitemname), 1)
                             success = processRemovals(item_pl.get('name'), cataloglist, installinfo)
@@ -1127,7 +1132,18 @@ def getPrimaryManifest(alternate_id):
         manifesturl = manifesturl + clientidentifier
     else:
         # no client identifier specified, so use the hostname
-         manifesturl = manifesturl + os.uname()[1]
+        hostname = os.uname()[1]
+        manifest = getmanifest(manifesturl + hostname)
+        if manifest:
+            return manifest
+        else:
+            # try the short hostname
+            manifest = getmanifest(manifesturl + hostname.split('.')[0])
+            if manifest:
+                return manifest
+            else:
+                # last resort - try for the site_default manifest
+                manifesturl = manifesturl + "site_default"
          
     return getmanifest(manifesturl)
     
