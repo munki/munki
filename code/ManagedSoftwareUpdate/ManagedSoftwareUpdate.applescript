@@ -115,7 +115,9 @@ end awake from nib
 
 on clicked theObject
 	if the name of theObject is "laterBtn" then
-		quit
+		display alert "Install at logout" message ¬
+			"These updates will be installed the next time you log out." default button ¬
+			"OK" as informational attached to window 1
 	end if
 	
 	if the name of theObject is "installBtn" then
@@ -170,7 +172,7 @@ on alert ended theObject with reply withReply
 		quit
 	end if
 	if button returned of withReply is "OK" then
-		-- acknowleged no new software available
+		-- acknowleged no new software available, or installing later
 		quit
 	end if
 end alert ended
