@@ -369,12 +369,15 @@ def getInstalledVersion(pl):
     Attempts to determine the currently installed version of the item
     described by pl
     """
+    
     if 'receipts' in pl:
-        if len(pl['receipts']) == 1:
-            pkgid = pl['receipts'][0]['packageid']
-            installedvers = munkilib.getInstalledPackageVersion(pkgid)
-            if installedvers:
-                return installedvers
+        maxversion = "0.0.0.0.0"
+        for receipt in pl['receipts']:
+            pkgvers = munkilib.getInstalledPackageVersion(receipt['packageid'])
+            if compareVersions(pkgvers, maxversion) == 2:
+                # version is higher
+                maxversion = pkgvers
+        return maxversion
                 
     if 'installs' in pl:
         for install_item in pl['installs']:
@@ -1118,6 +1121,7 @@ def getPrimaryManifest(alternate_id):
     """
     Gets the client manifest from the server
     """
+    global errors
     managedinstallprefs = munkilib.prefs()
     manifesturl = managedinstallprefs['ManifestURL']
     clientidentifier = managedinstallprefs.get('ClientIdentifier','')
@@ -1134,18 +1138,21 @@ def getPrimaryManifest(alternate_id):
         # no client identifier specified, so use the hostname
         hostname = os.uname()[1]
         manifest = getmanifest(manifesturl + hostname)
-        if manifest:
-            return manifest
-        else:
+        if not manifest:
             # try the short hostname
             manifest = getmanifest(manifesturl + hostname.split('.')[0])
-            if manifest:
-                return manifest
-            else:
+            if not manifest:
                 # last resort - try for the site_default manifest
                 manifesturl = manifesturl + "site_default"
-         
-    return getmanifest(manifesturl)
+
+    if not manifest:
+        manifest = getmanifest(manifesturl)
+    if manifest:
+        # clear out any errors we got while try to find
+        # the primary manifest
+        errors = ""
+
+    return manifest
     
     
 def getInstallCount(installinfo):
@@ -1289,8 +1296,6 @@ p.add_option('--id', '-i', default='',
                 help='Alternate identifier for catalog retreival')
 p.add_option('--quiet', '-q', action='store_true',
                 help='Quiet mode. Logs messages, but nothing to stdout.')
-p.add_option('--randomsleep', '-r', type='int', default=0,
-                help='Randomly sleeps up to the given number of seconds before checking.')
 p.add_option('--verbose', '-v', action='count', default=0,
                 help='More verbose output. May be specified multiple times.')    
 options, arguments = p.parse_args()
@@ -1323,17 +1328,20 @@ def main():
         exit(-1)
     log("### Beginning managed software check ###")
     
-    if options.randomsleep:
-        randomsleepseconds = random.randrange(options.randomsleep+1)
-        printandlog("Sleeping %i seconds..." % randomsleepseconds)
-        time.sleep(randomsleepseconds)
-    
     if munkilib.pythonScriptRunning("managedinstaller"):
         # managedinstaller is running, so we should quit
         printandlog("managedinstaller is running. Exiting.")
         log("###    End managed software check    ###")
         exit(0)
     
+    # check to see if another instance of this script is running
+    myname = os.path.basename(sys.argv[0])
+    if munkilib.pythonScriptRunning(myname):
+        # another instance of this script is running, so we should quit
+        printandlog("Another instance of %s is running. Exiting." % myname)
+        log("###    End managed software check    ###")
+        exit(0)
+        
     mainmanifestpath = getPrimaryManifest(options.id)
     if not mainmanifestpath:
         logerror("Could not retreive managed install primary manifest.")
@@ -1342,7 +1350,7 @@ def main():
         # logging to a local file isn't really sufficient.
         reporterrors()
         exit(-1)
-        
+    
     # initialize our installinfo record
     installinfo = {}
     installinfo['managed_installs'] = []

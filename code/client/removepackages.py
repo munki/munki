@@ -614,15 +614,17 @@ def getpkgkeys(pkgnames):
     pkgkeyslist = []
     for pkg in pkgnames:
         t = (pkg, )
-        pkg_key = c.execute('select pkg_key from pkgs where pkgname = ?', t).fetchone()
-        if pkg_key is None:
+        pkg_keys = c.execute('select pkg_key from pkgs where pkgname = ?', t).fetchall()
+        if not pkg_keys:
             # try pkgid
-            pkg_key = c.execute('select pkg_key from pkgs where pkgid = ?', t).fetchone()
-        if pkg_key is None:
+            pkg_keys = c.execute('select pkg_key from pkgs where pkgid = ?', t).fetchall()
+        if not pkg_keys:
             display_error("%s not found in database." % pkg)
             pkgerror = True
         else:
-            pkgkeyslist.append(pkg_key[0])
+            for row in pkg_keys:
+                # only want first column
+                pkgkeyslist.append(row[0])
     if pkgerror:
         pkgkeyslist = []
     c.close

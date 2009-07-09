@@ -217,8 +217,21 @@ def main():
                         print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
                 catinfo['installs'] = installs   
                     
-            name = os.path.split(item)[1]
-            catinfo['installer_item_location'] = name
+            # try to generate the correct item location
+            temppath = item
+            location = ""
+            while len(temppath) > 4:
+                if temppath.endswith('/pkgs'):
+                    location = item[len(temppath)+1:]
+                    break
+                else:
+                    temppath = os.path.dirname(temppath)
+                    
+            if not location:
+                #just the filename
+                location = os.path.split(item)[1]
+            catinfo['installer_item_location'] = location
+            
             if minosversion:
                 catinfo['minimum_os_version'] = minosversion
             else:

@@ -416,6 +416,15 @@ def main():
             log("installcheck is running. Exiting.")
             log("###    End managed installer session    ###")
             exit(0)
+            
+    # check to see if another instance of this script is running
+    myname = os.path.basename(sys.argv[0])
+    if munkilib.pythonScriptRunning(myname):
+        # another instance of this script is running, so we should quit
+        print "Another instance of %s is running. Exiting." % myname
+        log("Another instance of %s is running. Exiting." % myname)
+        log("###    End managed installer session    ###")
+        exit(0)   
     
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):

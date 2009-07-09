@@ -70,18 +70,21 @@ def getconsoleuser():
     
     
 def pythonScriptRunning(scriptname):
-    cmd = ['/bin/ps', '-eo', 'command=']
+    cmd = ['/bin/ps', '-eo', 'pid=,command=']
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
+    mypid = os.getpid()
     lines = out.splitlines()
     for line in lines:
+        (pid, proc) = line.split(None,1)
         # first look for Python processes
-        if line.find("MacOS/Python ") != -1:
-            if line.find(scriptname) != -1:
-                return True
+        if proc.find("MacOS/Python ") != -1:
+            if proc.find(scriptname) != -1:
+                if int(pid) != int(mypid):
+                    return pid
 
-    return False
+    return 0
 
 
 # dmg helpers
@@ -233,19 +236,22 @@ def getExtendedVersion(bundlepath):
     pl = {}
     if os.path.exists(versionPlist):
         pl = plistlib.readPlist(versionPlist)
-    elif os.path.exists(infoPlist):
+        if pl:
+            shortVers = "0.0.0"
+            sourceVers = "0"
+            buildVers = "0"
+            if "CFBundleShortVersionString" in pl:
+                shortVers = padVersionString(pl["CFBundleShortVersionString"],3)
+            if "SourceVersion" in pl:
+                sourceVers = padVersionString(pl["SourceVersion"],1)
+            if "BuildVersion" in pl:
+                buildVers = padVersionString(pl["BuildVersion"],1)
+            return shortVers + "." + sourceVers + "." + buildVers
+            
+    if os.path.exists(infoPlist):
         pl = plistlib.readPlist(infoPlist)
-    if pl:
-        shortVers = "0.0.0"
-        sourceVers = "0"
-        buildVers = "0"
         if "CFBundleShortVersionString" in pl:
-            shortVers = padVersionString(pl["CFBundleShortVersionString"],3)
-        if "SourceVersion" in pl:
-            sourceVers = padVersionString(pl["SourceVersion"],1)
-        if "BuildVersion" in pl:
-            buildVers = padVersionString(pl["BuildVersion"],1)
-        return shortVers + "." + sourceVers + "." + buildVers
+            return padVersionString(pl["CFBundleShortVersionString"],5)
     else:
         return "0.0.0.0.0"
 
@@ -314,27 +320,36 @@ def getFlatPackageInfo(pkgpath):
     return infoarray
 
 
+def getOnePackageInfo(pkgpath):
+    pkginfo = {}
+    plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
+    if os.path.exists(plistpath):
+        pkginfo['filename'] = os.path.basename(pkgpath)
+        pl = plistlib.readPlist(plistpath)
+            
+        if "CFBundleIdentifier" in pl:
+            pkginfo['id'] = pl["CFBundleIdentifier"]
+        else:
+            pkginfo['id'] = os.path.basename(pkgpath)
+            
+        if "CFBundleName" in pl:
+            pkginfo['name'] = pl["CFBundleName"]
+        
+        if "IFPkgFlagInstalledSize" in pl:
+            pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
+        
+        pkginfo['version'] = getExtendedVersion(pkgpath)    
+    return pkginfo
+    
+
 def getBundlePackageInfo(pkgpath):
     infoarray = []
-    pkginfo = {}
-
+    
     if pkgpath.endswith(".pkg"):
-        plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
-        if os.path.exists(plistpath):
-            pl = plistlib.readPlist(plistpath)
-            if debug:
-                for key in pl:
-                    print key, "=>", pl[key]
-                    
-            if "CFBundleIdentifier" in pl:
-                pkginfo['id'] = pl["CFBundleIdentifier"]
-                
-                if "IFPkgFlagInstalledSize" in pl:
-                    pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
-                
-                pkginfo['version'] = getExtendedVersion(pkgpath)
-                infoarray.append(pkginfo)
-                return infoarray
+        pkginfo = getOnePackageInfo(pkgpath)
+        if pkginfo:
+            infoarray.append(pkginfo)
+            return infoarray
 
     bundlecontents = os.path.join(pkgpath, "Contents")
     if os.path.exists(bundlecontents):
@@ -343,7 +358,27 @@ def getBundlePackageInfo(pkgpath):
                 filename = os.path.join(bundlecontents, item)
                 infoarray = parsePkgRefs(filename)
                 return infoarray
-
+                
+        # no .dist file found, look for packages in subdirs
+        dirsToSearch = []
+        plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
+        if os.path.exists(plistpath):
+            pl = plistlib.readPlist(plistpath)
+            if 'IFPkgFlagComponentDirectory' in pl:
+                dirsToSearch.append(pl['IFPkgFlagComponentDirectory'])
+                
+        if dirsToSearch == []:     
+            dirsToSearch = ['Contents', 'Contents/Packages', 'Contents/Resources', 'Contents/Resources/Packages']
+        for subdir in dirsToSearch:
+            searchdir = os.path.join(pkgpath, subdir)
+            if os.path.exists(searchdir):
+                for item in os.listdir(searchdir):
+                    itempath = os.path.join(searchdir, item)
+                    if os.path.isdir(itempath) and itempath.endswith(".pkg"):
+                        pkginfo = getOnePackageInfo(itempath)
+                        if pkginfo:
+                            infoarray.append(pkginfo)
+                            
     return infoarray
 
 
@@ -401,6 +436,7 @@ def getInstalledPackageVersion(pkgid):
     receiptsdir = "/Library/Receipts"
     if os.path.exists(receiptsdir):
         installitems = os.listdir(receiptsdir)
+        highestversion = "0"
         for item in installitems:
             if item.endswith(".pkg"):
                 info = getBundlePackageInfo(os.path.join(receiptsdir, item))
@@ -409,7 +445,11 @@ def getInstalledPackageVersion(pkgid):
                     foundbundleid = infoitem['id']
                     foundvers = infoitem['version']
                     if pkgid == foundbundleid:
-                        return foundvers
+                        if version.LooseVersion(foundvers) > version.LooseVersion(highestversion):
+                            highestversion = foundvers
+    
+        if highestversion != "0":
+            return highestversion
 
     # If we got to this point, we haven't found the pkgid yet.                        
     # Now check new (Leopard) package database
@@ -492,20 +532,22 @@ def getPackageMetaData(pkgitem):
         
     installerinfo = getInstallerPkgInfo(pkgitem)
     info = getPkgInfo(pkgitem)
+    
+    name = os.path.split(pkgitem)[1]
+    shortname = os.path.splitext(name)[0]
+    metaversion = getExtendedVersion(pkgitem)
+    if metaversion == "0.0.0.0.0":
+        metaversion = nameAndVersion(shortname)[1]
 
     highestpkgversion = "0.0"
     for infoitem in info:
         if version.LooseVersion(infoitem['version']) > version.LooseVersion(highestpkgversion):
             highestpkgversion = infoitem['version']
-        if "installed_size" in infoitem:
-            # note this is in KBytes
-            installedsize += infoitem['installed_size']
-
-    name = os.path.split(pkgitem)[1]
-    shortname = os.path.splitext(name)[0]
-    metaversion = nameAndVersion(shortname)[1]
-    if not len(metaversion):
-        # there is no version number in the filename
+            if "installed_size" in infoitem:
+                # note this is in KBytes
+                installedsize += infoitem['installed_size']
+    
+    if metaversion == "0.0.0.0.0":
         metaversion = highestpkgversion
     elif len(info) == 1:
         # there is only one package in this item
@@ -531,6 +573,8 @@ def getPackageMetaData(pkgitem):
     cataloginfo['receipts'] = []        
     for infoitem in info: 
         pkginfo = {}
+        if 'filename' in infoitem:
+            pkginfo['filename'] = infoitem['filename']
         pkginfo['packageid'] = infoitem['id']
         pkginfo['version'] = infoitem['version']
         cataloginfo['receipts'].append(pkginfo)        
