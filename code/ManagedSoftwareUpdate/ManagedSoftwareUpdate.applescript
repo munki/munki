@@ -39,7 +39,8 @@ on itemstoinstall()
 				end if
 			end repeat
 			try
-				set appleupdatelist to value of property list item "apple_updates" of property list file InstallInfo
+				set AppleUpdates to managedInstallDir & "/AppleUpdates.plist"
+				set appleupdatelist to value of property list item "AppleUpdates" of property list file AppleUpdates
 				repeat with installitem in appleupdatelist
 					set end of installlist to (installitem as item)
 				end repeat
@@ -147,13 +148,13 @@ on selection changed theObject
 			set theDescription to the contents of data cell "description" of theDataRow
 			set theRestartAction to the contents of data cell "restartaction" of theDataRow
 			if theRestartAction is "RequireRestart" then
-				set theRestartAction to "Restart required after install."
+				set theRestartAction to return & "Restart required after install."
 			end if
 			set theText to theDescription & return & theRestartAction
 		else
 			set theText to ""
 		end if
-		set contents of text field "descriptionFld" of view "descriptionFldView" of scroll view ¬
+		set contents of text view "description" of scroll view ¬
 			"descriptionScrollView" of view "splitViewBottom" of split view "splitView" of window id 1 to theText
 	end if
 end selection changed
@@ -167,7 +168,7 @@ on alert ended theObject with reply withReply
 	end if
 	if button returned of withReply is "Install without logging out" then
 		--trigger managedinstaller
-		set triggerpath to quoted form of (managedInstallDir & "/.run_managedinstaller")
+		set triggerpath to quoted form of (managedInstallDir & "/.run_managedsoftwareupdate")
 		do shell script "/usr/bin/touch " & triggerpath
 		quit
 	end if
