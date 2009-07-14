@@ -5,12 +5,10 @@
   <key>Debug</key>
   <true/>
   <key>Label</key>
-  <string>com.googlecode.munki.installcheck</string>
+  <string>com.googlecode.munki.managedsoftwareupdate-check</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/munki/installcheck</string>
-    <string>--randomsleep=900</string>
-    <string>-q</string>
+    <string>/usr/local/munki/updatecheckhelper</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>

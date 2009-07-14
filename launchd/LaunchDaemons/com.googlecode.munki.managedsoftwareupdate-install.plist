@@ -5,15 +5,16 @@
   <key>Debug</key>
   <true/>
   <key>Label</key>
-  <string>com.googlecode.munki.managedinstaller</string>
+  <string>com.googlecode.munki.managedsoftwareupdate-install</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/munki/managedinstaller</string>
-    <string>-m</string>
+    <string>/usr/local/munki/managedsoftwareupdate</string>
+    <string>--installonly</string>
+    <string>--munkistatusoutput</string>
   </array>
   <key>WatchPaths</key>
   <array>
-    <string>/Library/Managed Installs/.run_managedinstaller</string>
+    <string>/Library/Managed Installs/.run_managedsoftwareupdate</string>
   </array>
   <key>OnDemand</key>
   <true/>

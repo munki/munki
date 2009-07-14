@@ -3,15 +3,16 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.googlecode.munki.managedinstaller-loginwindow</string>
+  <string>com.googlecode.munki.managedsoftwareupdate-loginwindow</string>
   <key>LimitLoadToSessionType</key>
   <array>
     <string>LoginWindow</string>
   </array>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/munki/managedinstaller</string>
-    <string>-m</string>
+    <string>/usr/local/munki/managedsoftwareupdate</string>
+    <string>--installonly</string>
+    <string>--munkistatusoutput</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
