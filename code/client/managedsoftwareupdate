@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+#
+# Copyright 2009 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+managedsoftwareupdate
+"""
+
+import sys
+import os
+import optparse
+import datetime
+import dateutil.parser
+import subprocess
+import plistlib
+
+import munkilib.munkicommon
+import munkilib.updatecheck
+import munkilib.installer
+from munkilib.munkistatus import osascript
+
+def getIdleSeconds():
+    # stolen from Karl Kuehn -- thanks, Karl!
+    # I'd like to Python-ize it a bit better; calling awk seems unPythonic, but it works.
+    commandString = "/usr/sbin/ioreg -c IOHIDSystem -d 4 | /usr/bin/awk '/Idle/ { print $4 }'"
+    ioregProcess = subprocess.Popen([commandString], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if ioregProcess.wait() != 0:
+        return 0
+    return int(int(ioregProcess.stdout.read()) / 1000000000) # convert from Nanoseconds
+
+
+def main():
+    
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print >>sys.stderr, "You must run this as root!"
+        exit(-1)
+        
+    # check to see if another instance of this script is running
+    myname = os.path.basename(sys.argv[0])
+    if munkilib.munkicommon.pythonScriptRunning(myname):
+        # another instance of this script is running, so we should quit
+        print >>sys.stderr, "Another instance of %s is running. Exiting." % myname
+        exit(0)
+           
+    p = optparse.OptionParser()
+    p.add_option('--auto', '-a', action='store_true',
+                    help='No user feedback or intervention. All other options ignored.')
+    p.add_option('--munkistatusoutput', '-m', action='store_true',
+                    help='Uses MunkiStatus.app for progress feedback when installing.')
+    p.add_option('--id', default='',
+                    help='Alternate identifier for catalog retreival')
+    p.add_option('--quiet', '-q', action='store_true',
+                    help='Quiet mode. Logs messages, but nothing to stdout.')
+    p.add_option('--verbose', '-v', action='count', default=0,
+                    help='More verbose output. May be specified multiple times.')
+    p.add_option('--checkonly', action='store_true',
+                       help="Check for updates, but don't install them.")
+    p.add_option('--installonly', action='store_true',
+                       help='Skip checking and install any pending updates.')
+    
+    options, arguments = p.parse_args()
+    
+    if options.auto:
+        options.munkistatusoutput = True
+        options.quiet = True
+        options.verbose = 0
+        options.checkonly = False
+        options.installonly = False
+    
+    if options.checkonly and options.installonly:
+        print >>sys.stderr, "--checkonly and --installonly options are mutually exclusive!"
+        exit(-1)
+    
+    updatesavailable = False
+    if not options.installonly:
+        result = munkilib.updatecheck.check(id=options.id, verbosity=options.verbose, quiet=options.quiet)
+        
+        if result > 0:
+            updatesavailable = True
+        
+        if result == -1:
+            # there were errors checking for updates.
+            # let's check to see if there's a InstallInfo.plist with waiting updates from
+            # an earlier successful run
+            installinfo = os.path.join(munkilib.munkicommon.ManagedInstallDir(), 'InstallInfo.plist')
+            if os.path.exists(installinfo):
+                try:
+                    pl = plistlib.readPlist(installinfo)
+                    removalcount = munkilib.installer.getRemovalCount(pl.get('removals',[]))
+                    installcount = munkilib.installer.getInstallCount(pl.get('managed_installs',[]))
+                    if removalcount or installcount:
+                        updatesavailable = True
+                except:
+                    print >>sys.stderr, "Invalid %s" % installinfo
+              
+    
+    if updatesavailable or options.installonly:
+        if options.auto:
+            if munkilib.munkicommon.getconsoleuser() == None:
+                if getIdleSeconds() > 10:
+                    # no-one is logged in, and 
+                    # no keyboard or mouse movement for the past 10 seconds,
+                    # therefore no-one is in the middle of logging in (we hope!)
+                    # so just install
+                    munkilib.installer.run(options.munkistatusoutput)
+            else:
+                # someone is logged in, and we have updates.
+                # if we haven't notified in a (admin-configurable) while, notify:
+                lastNotifiedString = munkilib.munkicommon.pref('LastNotifiedDate')
+                daysBetweenNotifications = munkilib.munkicommon.pref('DaysBetweenNotifications')
+                nowString = munkilib.munkicommon.NSDateNowString()
+                now = dateutil.parser.parse(nowString)
+                if lastNotifiedString:
+                    lastNotifiedDate = dateutil.parser.parse(lastNotifiedString)
+                    interval = datetime.timedelta(days=daysBetweenNotifications)
+                    nextNotifyDate = lastNotifiedDate + interval
+                    if now >= nextNotifyDate:
+                        # record current notification date
+                        cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
+                                        'LastNotifiedDate', '-date', now.ctime()]
+                        retcode = subprocess.call(cmd)
+                        # notify user of available updates
+                        result = osascript('tell application "Managed Software Update" to activate')
+        else:
+            if options.installonly:
+                # install!
+                munkilib.installer.run(options.munkistatusoutput)
+            else:
+                print "Run %s --installonly to install the downloaded updates." % myname
+                
+        
+if __name__ == '__main__':
+    main()

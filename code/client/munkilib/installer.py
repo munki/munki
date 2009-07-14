@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-managedinstaller
-Tool to automatically install pkgs, mpkgs, and dmgs
+installer.py
+munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
 
@@ -24,13 +24,14 @@ import subprocess
 import sys
 import time
 import plistlib
-import optparse
-import munkilib
+import munkicommon
 import munkistatus
 from removepackages import removepackages
 
+global munkistatusoutput
+
 def stopRequested():
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         if munkistatus.getStopButtonState() == 1:
             log("### User stopped session ###")
             return True
@@ -38,7 +39,7 @@ def stopRequested():
 
 
 def cleanup():
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         munkistatus.quit()
 
 
@@ -55,7 +56,7 @@ def createDirsIfNeeded(dirlist):
 
 
 def log(message):
-    logfile = os.path.join(logdir,'ManagedInstaller.log')
+    logfile = os.path.join(logdir,'ManagedSoftwareUpdate.log')
     try:
         f = open(logfile, mode='a', buffering=1)
         print >>f, time.ctime(), message
@@ -80,7 +81,7 @@ def install(pkgpath):
     (output, err) = p.communicate()
     packagename = output.splitlines()[0]
     
-    if options.munkistatusoutput:
+    if munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
         # clear indeterminate progress bar 
         munkistatus.percent(0)
@@ -93,7 +94,7 @@ def install(pkgpath):
     restartaction = output.rstrip("\n")
     if restartaction == "RequireRestart":
         message = "%s requires a restart after installation." % packagename
-        if options.munkistatusoutput:
+        if munkistatusoutput:
             munkistatus.detail(message)
         else:
             print message
@@ -117,7 +118,7 @@ def install(pkgpath):
             if msg.startswith("PHASE:"):
                 phase = msg[6:]
                 if phase:
-                    if options.munkistatusoutput:
+                    if munkistatusoutput:
                         munkistatus.detail(phase)
                     else:
                         print phase
@@ -125,24 +126,24 @@ def install(pkgpath):
             elif msg.startswith("STATUS:"):
                 status = msg[7:]
                 if status:
-                    if options.munkistatusoutput:
+                    if munkistatusoutput:
                         munkistatus.detail(status)
                     else:
                         print status 
                         sys.stdout.flush()
             elif msg.startswith("%"):
-                if options.munkistatusoutput:
+                if munkistatusoutput:
                     percent = float(msg[1:])
                     percent = int(percent * 100)
                     munkistatus.percent(percent)
             elif msg.startswith(" Error"):
-                if options.munkistatusoutput:
+                if munkistatusoutput:
                     munkistatus.detail(msg)
                 else:
                     print >>sys.stderr, msg
                 log(msg)
             elif msg.startswith(" Cannot install"):
-                if options.munkistatusoutput:
+                if munkistatusoutput:
                     munkistatus.detail(msg)
                 else:
                     print >>sys.stderr, msg
@@ -153,7 +154,7 @@ def install(pkgpath):
     retcode = p.poll()
     if retcode:
         message = "Install of %s failed." % packagename
-        if options.munkistatusoutput:
+        if munkistatusoutput:
             munkistatus.detail(message)
         print >>sys.stderr, message
         log(message)
@@ -169,7 +170,7 @@ def install(pkgpath):
         restartneeded = False
     else:
         log("Install of %s was successful." % packagename)
-        if options.munkistatusoutput:
+        if munkistatusoutput:
             munkistatus.percent(100)
             
     return (retcode, restartneeded)
@@ -188,18 +189,18 @@ def installall(dirpath):
             return restartflag
         itempath = os.path.join(dirpath, item)
         if item.endswith(".dmg"):
-            if not options.munkistatusoutput:
+            if not munkistatusoutput:
                 print "Mounting disk image %s" % item
             log("Mounting disk image %s" % item)
-            mountpoints = munkilib.mountdmg(itempath)
+            mountpoints = munkicommon.mountdmg(itempath)
             if mountpoints == []:
-                if not options.munkistatusoutput:
+                if not munkistatusoutput:
                     print >>sys.stderr, "ERROR: No filesystems mounted from %s" % item
                 log("ERROR: No filesystems mounted from %s" % item)
                 return restartflag
             if stopRequested():
                 for mountpoint in mountpoints:
-                    munkilib.unmountdmg(mountpoint)
+                    munkicommon.unmountdmg(mountpoint)
                 return restartflag
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
@@ -207,7 +208,7 @@ def installall(dirpath):
                 needtorestart = installall(mountpoint)
                 if needtorestart:
                     restartflag = True
-                munkilib.unmountdmg(mountpoint)
+                munkicommon.unmountdmg(mountpoint)
         
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
             (retcode, needsrestart) = install(itempath)
@@ -244,18 +245,18 @@ def installWithInfo(dirpath, installlist):
                 return restartflag
                 
             if itempath.endswith(".dmg"):
-                if not options.munkistatusoutput:
+                if not munkistatusoutput:
                     print "Mounting disk image %s" % item["installer_item"]
                 log("Mounting disk image %s" % item["installer_item"])
-                mountpoints = munkilib.mountdmg(itempath)
+                mountpoints = munkicommon.mountdmg(itempath)
                 if mountpoints == []:
-                    if not options.munkistatusoutput:
+                    if not munkistatusoutput:
                         print >>sys.stderr, "ERROR: No filesystems mounted from %s" % item["installer_item"]
                     log("ERROR: No filesystems mounted from %s" % item["installer_item"])
                     return restartflag
                 if stopRequested():
                     for mountpoint in mountpoints:
-                        munkilib.unmountdmg(mountpoint)
+                        munkicommon.unmountdmg(mountpoint)
                     return restartflag
                 for mountpoint in mountpoints:
                     # install all the pkgs and mpkgs at the root
@@ -263,9 +264,9 @@ def installWithInfo(dirpath, installlist):
                     needtorestart = installall(mountpoint)
                     if needtorestart:
                         restartflag = True
-                    munkilib.unmountdmg(mountpoint)
+                    munkicommon.unmountdmg(mountpoint)
             else:
-                itempath = munkilib.findInstallerItem(itempath)
+                itempath = munkicommon.findInstallerItem(itempath)
                 if (itempath.endswith(".pkg") or itempath.endswith(".mpkg") or itempath.endswith(".dist")):
                     (retcode, needsrestart) = install(itempath)
                     if needsrestart:
@@ -304,7 +305,7 @@ def processRemovals(removalList):
                         if 'packages' in item:
                             if item.get('RestartAction') == "RequireRestart":
                                 restartFlag = True
-                            if options.munkistatusoutput:
+                            if munkistatusoutput:
                                 munkistatus.message("Removing %s..." % name)
                                 # clear indeterminate progress bar 
                                 munkistatus.percent(0)                               
@@ -313,9 +314,9 @@ def processRemovals(removalList):
                             
                             log("Removing %s..." % name)
                             retcode = removepackages(item['packages'], 
-                                            munkistatusoutput=options.munkistatusoutput,
+                                            munkistatusoutput=munkistatusoutput,
                                             forcedeletebundles=True,
-                                            logfile=os.path.join(logdir,'ManagedInstaller.log'))
+                                            logfile=os.path.join(logdir,'ManagedSoftwareUpdate.log'))
                             if retcode:
                                 if retcode == -128:
                                     message = "Uninstall of %s was cancelled." % name
@@ -328,7 +329,7 @@ def processRemovals(removalList):
                         
                     elif os.path.exists(uninstallmethod[0]) and os.access(uninstallmethod[0], os.X_OK):
                         # it's a script or program to uninstall
-                        if options.munkistatusoutput:
+                        if munkistatusoutput:
                             munkistatus.message("Running uninstall script for %s..." % name)
                             # set indeterminate progress bar 
                             munkistatus.percent(-1)
@@ -347,7 +348,7 @@ def processRemovals(removalList):
                             # an error so we can dump it to the log
                             uninstalleroutput.append(msg)
                             msg = msg.rstrip("\n")
-                            if options.munkistatusoutput:
+                            if munkistatusoutput:
                                 # do nothing with the output
                                 pass
                             else:
@@ -370,7 +371,7 @@ def processRemovals(removalList):
                         else:
                             log("Uninstall of %s was successful." % name)
                             
-                        if options.munkistatusoutput:
+                        if munkistatusoutput:
                             # clear indeterminate progress bar 
                             munkistatus.percent(0)
            
@@ -383,48 +384,23 @@ def processRemovals(removalList):
 
 # module (global) variables
 logdir = None
-options = None
+munkistatusoutput = False
 
 
-def main():
-    global logdir, options
+def run(use_munkistatus):
+    global logdir
+    global munkistatusoutput
     
-    # check to see if we're root
-    if os.geteuid() != 0:
-        print >>sys.stderr, "You must run this as root!"
-        exit(-1)
+    if use_munkistatus:
+        munkistatusoutput = True
     
-    managedinstallbase = munkilib.ManagedInstallDir()
+    managedinstallbase = munkicommon.ManagedInstallDir()
     installdir = os.path.join(managedinstallbase , 'Cache')
     logdir = os.path.join(managedinstallbase, 'Logs')
     
-    p = optparse.OptionParser()
-    p.add_option('--munkistatusoutput', '-m', action='store_true')
-    options, arguments = p.parse_args()
-    
-    needtorestart = removals_need_restart = installs_need_restart = appleupdates_need_restart = False
+    needtorestart = removals_need_restart = installs_need_restart = False
     createDirsIfNeeded([logdir])
     log("### Beginning managed installer session ###")
-    
-    if munkilib.pythonScriptRunning("installcheck"):
-        # sleep one second and check again in case we
-        # were launched by installcheck
-        time.sleep(1)
-        if munkilib.pythonScriptRunning("installcheck"):
-            # installcheck is running, so we should quit
-            print "installcheck is running. Exiting."
-            log("installcheck is running. Exiting.")
-            log("###    End managed installer session    ###")
-            exit(0)
-            
-    # check to see if another instance of this script is running
-    myname = os.path.basename(sys.argv[0])
-    if munkilib.pythonScriptRunning(myname):
-        # another instance of this script is running, so we should quit
-        print "Another instance of %s is running. Exiting." % myname
-        log("Another instance of %s is running. Exiting." % myname)
-        log("###    End managed installer session    ###")
-        exit(0)   
     
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
@@ -432,7 +408,7 @@ def main():
             pl = plistlib.readPlist(installinfo)
         except:
             print >>sys.stderr, "Invalid %s" % installinfo
-            exit(-1)
+            return -1
         
         # remove the install info file
         # it's no longer valid once we start running
@@ -441,7 +417,7 @@ def main():
         if "removals" in pl:
             removalcount = getRemovalCount(pl['removals'])
             if removalcount:
-                if options.munkistatusoutput:
+                if munkistatusoutput:
                     if removalcount == 1:
                         munkistatus.message("Removing 1 item...")
                     else:
@@ -453,10 +429,8 @@ def main():
         if "managed_installs" in pl:
             if not stopRequested():
                 installcount = getInstallCount(pl['managed_installs'])
-                if "apple_updates" in pl:
-                    installcount = installcount + len(pl['apple_updates'])
                 if installcount:
-                    if options.munkistatusoutput:
+                    if munkistatusoutput:
                         if installcount == 1:
                             munkistatus.message("Installing 1 item...")
                         else:
@@ -465,19 +439,14 @@ def main():
                         munkistatus.percent(-1)                        
                     log("Processing installs")
                     installs_need_restart = installWithInfo(installdir, pl['managed_installs'])
-        if "apple_updates" in pl:
-            if not stopRequested():
-                log("Installing Apple updates")
-                swupdldir = '/var/root/Downloads'
-                appleupdates_need_restart = installWithInfo(swupdldir, pl['apple_updates']) or needtorestart
                                     
     else:
         log("No %s found." % installinfo)
         
-    needtorestart = removals_need_restart or installs_need_restart or appleupdates_need_restart
+    needtorestart = removals_need_restart or installs_need_restart
     if needtorestart:
         log("Software installed or removed requires a restart.")
-        if options.munkistatusoutput:
+        if munkistatusoutput:
             munkistatus.hideStopButton()
             munkistatus.message("Software installed or removed requires a restart.")
             munkistatus.percent(-1)
@@ -488,22 +457,18 @@ def main():
     log("###    End managed installer session    ###")
     
     if needtorestart:
-        if munkilib.getconsoleuser() == None:
+        if munkicommon.getconsoleuser() == None:
             time.sleep(5)
             cleanup()
             retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
         else:
-            if options.munkistatusoutput:
-                # someone is logged in and we're using MunkiStatus
+            if munkistatusoutput:
+                # someone is logged in and we're using munkistatus
                 munkistatus.activate()
-                munkistatus.osascript('tell application "MunkiStatus" to display alert "Restart Required" message "Software installed requires a restart. You will have a chance to save open documents." as critical default button "Restart"')
+                munkistatus.osascript('tell application "munkistatus" to display alert "Restart Required" message "Software installed requires a restart. You will have a chance to save open documents." as critical default button "Restart"')
                 cleanup()
                 munkistatus.osascript('tell application "System Events" to restart')
             else:
                 print "Please restart immediately."
     else:
         cleanup()
-
-
-if __name__ == '__main__':
-    main()

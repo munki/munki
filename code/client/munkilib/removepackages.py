@@ -34,7 +34,7 @@ import plistlib
 import sqlite3
 import time
 import munkistatus
-import munkilib
+import munkicommon
 
 
 ##################################################################
@@ -326,32 +326,35 @@ def ImportPackage(packagepath, c):
         if not line and (p.poll() != None):
             break
         
-        item = line.rstrip("\n").split("\t")
-        path = item[0]
-        perms = item[1]
-        uidgid = item[2].split("/")
-        uid = uidgid[0]
-        gid = uidgid[1]
-        if path != ".":
-            # special case for MS Office 2008 installers
-            if ppath == "./tmp/com.microsoft.updater/office_location/":
-                ppath = "./Applications/"
+        try:
+            item = line.rstrip("\n").split("\t")
+            path = item[0]
+            perms = item[1]
+            uidgid = item[2].split("/")
+            uid = uidgid[0]
+            gid = uidgid[1]
+            if path != ".":
+                # special case for MS Office 2008 installers
+                if ppath == "./tmp/com.microsoft.updater/office_location/":
+                    ppath = "./Applications/"
 
-            # prepend the ppath so the paths match the actual install locations
-            path = path.lstrip("./")
-            path = ppath + path
-            path = path.lstrip("./")
+                # prepend the ppath so the paths match the actual install locations
+                path = path.lstrip("./")
+                path = ppath + path
+                path = path.lstrip("./")
 
-            t = (path, )
-            row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
-            if not row:
-                c.execute('INSERT INTO paths (path) values (?)', t)
-                pathkey = c.lastrowid
-            else:
-                pathkey = row[0]
+                t = (path, )
+                row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
+                if not row:
+                    c.execute('INSERT INTO paths (path) values (?)', t)
+                    pathkey = c.lastrowid
+                else:
+                    pathkey = row[0]
 
-            t = (pkgkey, pathkey, uid, gid, perms)
-            c.execute('INSERT INTO pkgs_paths (pkg_key, path_key, uid, gid, perms) values (?, ?, ?, ?, ?)', t)
+                t = (pkgkey, pathkey, uid, gid, perms)
+                c.execute('INSERT INTO pkgs_paths (pkg_key, path_key, uid, gid, perms) values (?, ?, ?, ?, ?)', t)
+        except:
+            pass
 
 
 def ImportBom(bompath, c):
@@ -703,15 +706,16 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
         if row:
             pkgname = row[0]
             pkgid = row[1]
-            receiptpath = None
-            if pkgname.endswith('.pkg'):
-                receiptpath = os.path.join('/Library/Receipts', pkgname)
-            if pkgname.endswith('.bom'):
-                receiptpath = os.path.join('/Library/Receipts/boms', pkgname)
-            if receiptpath and os.path.exists(receiptpath):
-                display_info("Removing %s..." % receiptpath)
-                log("Removing %s..." % receiptpath)
-                retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
+            if osvers < 10:
+                receiptpath = None
+                if pkgname.endswith('.pkg'):
+                    receiptpath = os.path.join('/Library/Receipts', pkgname)
+                if pkgname.endswith('.bom'):
+                    receiptpath = os.path.join('/Library/Receipts/boms', pkgname)
+                if receiptpath and os.path.exists(receiptpath):
+                    display_info("Removing %s..." % receiptpath)
+                    log("Removing %s..." % receiptpath)
+                    retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
         
         # remove pkg info from our database
         if verbose:
@@ -882,7 +886,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         display_error("You must specify at least one package to remove!")
         return -2
 
-    if not initDatabase(packagedb,rebuildpkgdb):
+    if not initDatabase(packagedb,forcerebuild=rebuildpkgdb):
         display_error("Could not initialize receipt database.")
         return -3
 
@@ -918,7 +922,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
 
 
 # some globals
-packagedb = os.path.join(munkilib.ManagedInstallDir(), "b.receiptdb")
+packagedb = os.path.join(munkicommon.ManagedInstallDir(), "b.receiptdb")
 munkistatusoutput = False
 verbose = False
 logfile = ''

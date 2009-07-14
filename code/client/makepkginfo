@@ -41,7 +41,7 @@ import plistlib
 import subprocess
 import hashlib
 
-import munkilib
+import munkilib.munkicommon
 
 
 def getCatalogInfoFromDmg(dmgpath):
@@ -53,12 +53,12 @@ def getCatalogInfoFromDmg(dmgpath):
     To-do: handle multiple installer items on a disk image
     """
     cataloginfo = None
-    mountpoints = munkilib.mountdmg(dmgpath)
+    mountpoints = munkilib.munkicommon.mountdmg(dmgpath)
     for mountpoint in mountpoints:
         for fsitem in os.listdir(mountpoint):
             itempath = os.path.join(mountpoint, fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
-                cataloginfo = munkilib.getPackageMetaData(itempath)
+                cataloginfo = munkilib.munkicommon.getPackageMetaData(itempath)
                 # get out of fsitem loop
                 break
         if cataloginfo:
@@ -67,7 +67,7 @@ def getCatalogInfoFromDmg(dmgpath):
             
     #unmount all the mountpoints from the dmg
     for mountpoint in mountpoints:
-        munkilib.unmountdmg(mountpoint)
+        munkilib.munkicommon.unmountdmg(mountpoint)
     return cataloginfo   
 
 
@@ -187,7 +187,7 @@ def main():
         if item.endswith('.dmg'):
             catinfo = getCatalogInfoFromDmg(item)
         elif item.endswith('.pkg') or item.endswith('.mpkg'):
-            catinfo = munkilib.getPackageMetaData(item)
+            catinfo = munkilib.munkicommon.getPackageMetaData(item)
         else:
             print >>sys.stderr, "%s is not an installer package!" % item
             exit(-1)

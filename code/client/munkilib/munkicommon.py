@@ -24,6 +24,7 @@ Common functions used by the munki tools.
 
 import sys
 import os
+import re
 import plistlib
 import urllib2
 import urlparse
@@ -56,17 +57,23 @@ def readPlist(plistfile):
 
 
 def getconsoleuser():
-    osvers = int(os.uname()[2].split('.')[0])
-    if osvers > 9:
-        cmd = ['/usr/bin/who | /usr/bin/grep console']
-        p = subprocess.Popen(cmd, shell=True, bufsize=1, stdin=subprocess.PIPE, 
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (output, err) = p.communicate()
-        return output
-    else:
-        from SystemConfiguration import SCDynamicStoreCopyConsoleUser
-        cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
-        return cfuser[0]
+    # workaround no longer needed, but leaving this here for now...
+    #osvers = int(os.uname()[2].split('.')[0])
+    #if osvers > 9:
+    #    cmd = ['/usr/bin/who | /usr/bin/grep console']
+    #    p = subprocess.Popen(cmd, shell=True, bufsize=1, stdin=subprocess.PIPE, 
+    #                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #    (output, err) = p.communicate()
+    #    return output
+    #else:
+    #    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+    #    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+    #    return cfuser[0]
+    
+    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+    return cfuser[0]
+    
     
     
 def pythonScriptRunning(scriptname):
@@ -195,6 +202,7 @@ def prefs():
 #####################################################
 
 def getInstallerPkgInfo(filename):
+    """Uses Apple's installer tool to get basic info about an installer item."""
     installerinfo = {}
     p = subprocess.Popen(["/usr/sbin/installer", "-pkginfo", "-verbose", "-plist", "-pkg", filename], bufsize=1, 
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -211,6 +219,12 @@ def getInstallerPkgInfo(filename):
                 installerinfo['RestartAction'] = "RequireRestart"
         if "Title" in pl:
             installerinfo['display_name'] = pl['Title']
+    
+        p = subprocess.Popen(["/usr/sbin/installer", "-query", "RestartAction", "-pkg", filename], bufsize=1, 
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, err) = p.communicate()
+        if out:
+            installerinfo['RestartAction'] = out.rstrip('\n')
                 
     return installerinfo
     
@@ -254,9 +268,12 @@ def getExtendedVersion(bundlepath):
             return padVersionString(pl["CFBundleShortVersionString"],5)
     else:
         return "0.0.0.0.0"
+                
 
 
 def parsePkgRefs(filename):
+    """Parses a .dist file looking for pkg-ref or pkg-info tags to build a list of
+    included sub-packages"""
     info = []
     dom = minidom.parse(filename)
     pkgrefs = dom.getElementsByTagName("pkg-ref")
@@ -269,7 +286,7 @@ def parsePkgRefs(filename):
                         print key, "=>", ref.attributes[key].value.encode('UTF-8')
 
                 pkginfo = {}
-                pkginfo['id'] = ref.attributes['id'].value.encode('UTF-8')
+                pkginfo['packageid'] = ref.attributes['id'].value.encode('UTF-8')
                 pkginfo['version'] = padVersionString(ref.attributes['version'].value.encode('UTF-8'),5)
                 if 'installKBytes' in keys:
                     pkginfo['installed_size'] = int(ref.attributes['installKBytes'].value.encode('UTF-8'))
@@ -287,7 +304,7 @@ def parsePkgRefs(filename):
                             print key, "=>", ref.attributes[key].value.encode('UTF-8')
 
                     pkginfo = {}
-                    pkginfo['id'] = ref.attributes['identifier'].value.encode('UTF-8')
+                    pkginfo['packageid'] = ref.attributes['identifier'].value.encode('UTF-8')
                     pkginfo['version'] = padVersionString(ref.attributes['version'].value.encode('UTF-8'),5)
                     if not pkginfo in info:
                         info.append(pkginfo)
@@ -296,7 +313,7 @@ def parsePkgRefs(filename):
 
 def getFlatPackageInfo(pkgpath):
     """
-    returns array of dictionaries with info on packages
+    returns array of dictionaries with info on subpackages
     contained in the flat package
     """
 
@@ -310,17 +327,16 @@ def getFlatPackageInfo(pkgpath):
         packageinfofile = os.path.join(currentdir, "PackageInfo")
         if os.path.exists(packageinfofile):
             infoarray = parsePkgRefs(packageinfofile)
-
         else:
             distributionfile = os.path.join(currentdir, "Distribution")
             if os.path.exists(distributionfile):
                 infoarray = parsePkgRefs(distributionfile)
-
     shutil.rmtree(mytmpdir)
     return infoarray
 
 
 def getOnePackageInfo(pkgpath):
+    """Gets receipt info for a single bundle-style package"""
     pkginfo = {}
     plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
     if os.path.exists(plistpath):
@@ -328,9 +344,9 @@ def getOnePackageInfo(pkgpath):
         pl = plistlib.readPlist(plistpath)
             
         if "CFBundleIdentifier" in pl:
-            pkginfo['id'] = pl["CFBundleIdentifier"]
+            pkginfo['packageid'] = pl["CFBundleIdentifier"]
         else:
-            pkginfo['id'] = os.path.basename(pkgpath)
+            pkginfo['packageid'] = os.path.basename(pkgpath)
             
         if "CFBundleName" in pl:
             pkginfo['name'] = pl["CFBundleName"]
@@ -382,7 +398,7 @@ def getBundlePackageInfo(pkgpath):
     return infoarray
 
 
-def getPkgInfo(p):
+def getReceiptInfo(p):
     info = []
     if p.endswith(".pkg") or p.endswith(".mpkg"):
         if debug:
@@ -392,36 +408,11 @@ def getPkgInfo(p):
 
         if os.path.isdir(p):              # bundle-style package?
             info = getBundlePackageInfo(p)
+            
     elif p.endswith('.dist'):
-            info = parsePkgRefs(p)
+        info = parsePkgRefs(p)
             
     return info
-
-
-def examinePackage(p):
-    info = []
-    if p.endswith(".pkg") or p.endswith(".mpkg"):
-        if debug:
-            print "Examining %s" % p
-        if os.path.isfile(p):             # new flat package
-            info = getFlatPackageInfo(p)
-
-        if os.path.isdir(p):              # bundle-style package?
-            info = getBundlePackageInfo(p)
-
-        if len(info) == 0:
-            print >>sys.stderr, "Can't determine bundle ID of %s." % p
-            return
-
-        # print info
-        for pkg in info:
-            #print pkg
-            pkg_id = pkg['id']
-            vers = pkg['version']
-            print "packageid: %s \t version: %s" % (pkg_id, vers) 
-
-    else:
-        print >>sys.stderr, "%s doesn't appear to be an Installer package." % p
 
 
 def getInstalledPackageVersion(pkgid):
@@ -442,7 +433,7 @@ def getInstalledPackageVersion(pkgid):
                 info = getBundlePackageInfo(os.path.join(receiptsdir, item))
                 if len(info):
                     infoitem = info[0]
-                    foundbundleid = infoitem['id']
+                    foundbundleid = infoitem['packageid']
                     foundvers = infoitem['version']
                     if pkgid == foundbundleid:
                         if version.LooseVersion(foundvers) > version.LooseVersion(highestversion):
@@ -452,7 +443,7 @@ def getInstalledPackageVersion(pkgid):
             return highestversion
 
     # If we got to this point, we haven't found the pkgid yet.                        
-    # Now check new (Leopard) package database
+    # Now check new (Leopard and later) package database
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid], bufsize=1, 
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
@@ -529,9 +520,11 @@ def getPackageMetaData(pkgitem):
     pkgitem = findInstallerItem(pkgitem)
     if pkgitem == None:
         return {}
-        
+    
+    # first get the data /usr/sbin/installer will give us   
     installerinfo = getInstallerPkgInfo(pkgitem)
-    info = getPkgInfo(pkgitem)
+    # now look for receipt/subpkg info
+    receiptinfo = getReceiptInfo(pkgitem)
     
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
@@ -540,7 +533,7 @@ def getPackageMetaData(pkgitem):
         metaversion = nameAndVersion(shortname)[1]
 
     highestpkgversion = "0.0"
-    for infoitem in info:
+    for infoitem in receiptinfo:
         if version.LooseVersion(infoitem['version']) > version.LooseVersion(highestpkgversion):
             highestpkgversion = infoitem['version']
             if "installed_size" in infoitem:
@@ -549,35 +542,26 @@ def getPackageMetaData(pkgitem):
     
     if metaversion == "0.0.0.0.0":
         metaversion = highestpkgversion
-    elif len(info) == 1:
+    elif len(receiptinfo) == 1:
         # there is only one package in this item
         metaversion = highestpkgversion
     elif highestpkgversion.startswith(metaversion):
         # for example, highestpkgversion is 2.0.3124.0, version in filename is 2.0
         metaversion = highestpkgversion
-    
-    if 'installed_size' in installerinfo:
-        if installerinfo['installed_size'] > 0:
-            installedsize = installerinfo['installed_size']
-
+            
     cataloginfo = {}
     cataloginfo['name'] = nameAndVersion(shortname)[0]
     cataloginfo['version'] = metaversion
     for key in ('display_name', 'RestartAction', 'description'):
         if key in installerinfo:
             cataloginfo[key] = installerinfo[key]
-
-    if installedsize > 0:
-        cataloginfo['installed_size'] = installedsize
-
-    cataloginfo['receipts'] = []        
-    for infoitem in info: 
-        pkginfo = {}
-        if 'filename' in infoitem:
-            pkginfo['filename'] = infoitem['filename']
-        pkginfo['packageid'] = infoitem['id']
-        pkginfo['version'] = infoitem['version']
-        cataloginfo['receipts'].append(pkginfo)        
+    
+    if 'installed_size' in installerinfo:
+           if installerinfo['installed_size'] > 0:
+               cataloginfo['installed_size'] = installerinfo['installed_size']
+           
+    cataloginfo['receipts'] = receiptinfo        
+           
     return cataloginfo
     
     
@@ -731,6 +715,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath,showprogress=False, message
     Gets file from HTTP URL, only if newer on web server.
     Replaces pre-existing file only on success. (thus 'Atomically')
     """
+    err = None
     mytmpdir = tempfile.mkdtemp()
     mytemppath = os.path.join(mytmpdir,"TempDownload")
     if os.path.exists(destinationpath):
@@ -741,21 +726,21 @@ def getHTTPfileIfNewerAtomically(url,destinationpath,showprogress=False, message
     if result == 0:
         try:
             os.rename(mytemppath, destinationpath)
-            return destinationpath
+            return destinationpath, err
         except:
-            print >>sys.stderr, "Could not write to %s" % destinationpath
+            err = "Could not write to %s" % destinationpath
             destinationpath = None
     elif result == 304:
         # not modified, return existing file
-        return destinationpath
+        return destinationpath, err
     else:
-        print >>sys.stderr, "Error code: %s retreiving %s" % (result, url)
+        err = "Error code: %s retreiving %s" % (result, url)
         destinationpath = None
         
     if os.path.exists(mytemppath):
         os.remove(mytemppath)
     os.rmdir(mytmpdir)
-    return destinationpath
+    return destinationpath, err
     
     
 debug = False
