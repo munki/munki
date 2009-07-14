@@ -1227,7 +1227,7 @@ def check(id='', verbosity=0, quiet=False):
     option_verbose = verbosity
     option_quiet = quiet
     
-    if not option_quiet: print "Managed Software Check\n"
+    if not option_quiet: print "Managed Software Update\n"
     
     managedinstallprefs = munkicommon.prefs()
     ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
