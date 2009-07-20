@@ -26,10 +26,10 @@ import sys
 import os
 import re
 import plistlib
-import urllib2
-import urlparse
+#import urllib2
+#import urlparse
 import time
-import calendar
+#import calendar
 import subprocess
 import tempfile
 import shutil
@@ -39,8 +39,153 @@ from xml.dom import minidom
 #from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 from Foundation import NSDictionary, NSDate
 
+import munkistatus
+
+# output and logging functions
+
+
+def getsteps(num_of_steps, limit):
+    """
+    Helper function for display_percent_done
+    """
+    steps = []
+    current = 0.0
+    for i in range(0,num_of_steps):
+        if i == num_of_steps-1:
+            steps.append(int(round(limit)))
+        else:
+            steps.append(int(round(current)))
+        current += float(limit)/float(num_of_steps-1)
+    return steps
+
+
+def display_percent_done(current,maximum):
+    """
+    Mimics the command-line progress meter seen in some
+    of Apple's tools (like softwareupdate), or tells
+    MunkiStatus to display percent done via progress bar.
+    """
+    if munkistatusoutput:
+        step = getsteps(21, maximum)
+        if current in step:
+            if current == maximum:
+                percentdone = 100
+            else:
+                percentdone = int(float(current)/float(maximum)*100)
+            munkistatus.percent(str(percentdone))
+    elif verbose > 1:
+        step = getsteps(16, maximum)
+        output = ''
+        indicator = ['\t0','.','.','20','.','.','40','.','.',
+                    '60','.','.','80','.','.','100\n']
+        for i in range(0,16):
+            if current == step[i]:
+                output += indicator[i]
+        if output:
+            sys.stdout.write(output)
+            sys.stdout.flush()
+
+
+def display_status(msg):
+    """
+    Displays major status messages, formatting as needed
+    for verbose/non-verbose and munkistatus-style output.
+    """
+    log(msg)
+    if munkistatusoutput:
+        munkistatus.detail(msg)
+    elif verbose > 0:
+        print "%s..." % msg
+        sys.stdout.flush()
+
+
+def display_info(msg):
+    """
+    Displays info messages.
+    Not displayed in MunkiStatus.
+    """
+    log(msg)
+    if munkistatusoutput:
+        pass
+    elif verbose > 0:
+        print msg
+        sys.stdout.flush()
+        
+        
+def display_detail(msg):
+    """
+    Displays minor info messages, formatting as needed
+    for verbose/non-verbose and munkistatus-style output.
+    These are usually logged only, but can be printed to
+    stdout if verbose is set to 2 or higher
+    """
+    log(msg)
+    if munkistatusoutput:
+        pass
+    elif verbose > 1:
+        print msg
+        sys.stdout.flush()
+        
+        
+def display_debug1(msg):
+    """
+    Displays debug messages, formatting as needed
+    for verbose/non-verbose and munkistatus-style output.
+    """
+    if munkistatusoutput:
+        pass
+    elif verbose > 2:
+        print msg
+        sys.stdout.flush()
+    if logginglevel > 1:
+        log(msg)
+
+
+def display_debug2(msg):
+    """
+    Displays debug messages, formatting as needed
+    for verbose/non-verbose and munkistatus-style output.
+    """
+    if munkistatusoutput:
+        pass
+    elif verbose > 3:
+        print msg
+    if logginglevel > 2:
+        log(msg)
+
+
+def display_error(msg):
+    """
+    Prints msg to stderr and the log
+    """
+    global errors
+    print >>sys.stderr, msg
+    errmsg = "ERROR: %s" % msg
+    log(errmsg)
+    # collect the errors for later reporting
+    errors = errors + msg + '\n'
+
+
+def log(msg):
+    try:
+        f = open(logfile, mode='a', buffering=1)
+        print >>f, time.ctime(), msg
+        f.close()
+    except:
+        pass
+
 
 # misc functions
+
+def stopRequested():
+    """Allows user to cancel operations when 
+    MunkiStatus is being used"""
+    if munkistatusoutput:
+        if munkistatus.getStopButtonState() == 1:
+            log("### User stopped session ###")
+            return True
+    return False
+
 
 def readPlist(plistfile):
   """Read a plist, return a dict.
@@ -151,6 +296,7 @@ def getManagedInstallsPrefs():
     prefs['ManifestURL'] = "http://munki/repo/manifests/"
     prefs['SoftwareRepoURL'] = "http://munki/repo"
     prefs['ClientIdentifier'] = ""
+    prefs['LogFile'] = os.path.join(prefs['ManagedInstallDir'], "Logs", "ManagedSoftwareUpdate.log")
     prefs['LoggingLevel'] = 1
     prefs['InstallAppleSoftwareUpdates'] = False
     prefs['SoftwareUpdateServerURL'] = None
@@ -187,10 +333,10 @@ def ManifestURL():
 def SoftwareRepoURL():
     prefs = getManagedInstallsPrefs()
     return prefs['SoftwareRepoURL']
-
+    
 
 def pref(prefname):
-    return getManagedInstallsPrefs().get(prefname)
+    return getManagedInstallsPrefs().get(prefname,'')
 
 
 def prefs():
@@ -224,7 +370,9 @@ def getInstallerPkgInfo(filename):
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (out, err) = p.communicate()
         if out:
-            installerinfo['RestartAction'] = out.rstrip('\n')
+            restartAction = out.rstrip('\n')
+            if restartAction != 'None':
+                installerinfo['RestartAction'] = restartAction
                 
     return installerinfo
     
@@ -290,7 +438,7 @@ def parsePkgRefs(filename):
                 pkginfo['version'] = padVersionString(ref.attributes['version'].value.encode('UTF-8'),5)
                 if 'installKBytes' in keys:
                     pkginfo['installed_size'] = int(ref.attributes['installKBytes'].value.encode('UTF-8'))
-                if not pkginfo['id'].startswith('manual'):
+                if not pkginfo['packageid'].startswith('manual'):
                     if not pkginfo in info:
                         info.append(pkginfo)
     else:
@@ -583,170 +731,18 @@ def getAvailableDiskSpace(volumepath="/"):
     return 0
     
     
-#
-#    Handles http downloads for the managed installer tools.
-#
-#    Supports Last-modified and If-modified-since headers so
-#    we download from the server only if we don't have it in the
-#    local cache, or the locally cached item is older than the
-#    one on the server.
-#
-#    Possible failure mode: if client's main catalog gets pointed 
-#    to a different, older, catalog, we'll fail to retreive it.
-#    Need to check content length as well, and if it changes, retreive
-#    it anyway.
-#
-
-
-def getsteps(num_of_steps, limit):
-    """
-    Helper function for display_percent_done
-    """
-    steps = []
-    current = 0.0
-    for i in range(0,num_of_steps):
-        if i == num_of_steps-1:
-            steps.append(int(round(limit)))
-        else:
-            steps.append(int(round(current)))
-        current += float(limit)/float(num_of_steps-1)
-    return steps
-
-
-def display_percent_done(current,maximum):
-    """
-    Mimics the command-line progress meter seen in some
-    of Apple's tools (like softwareupdate)
-    """
-    step = getsteps(16, maximum)
-    output = ''
-    indicator = ['\t0','.','.','20','.','.','40','.','.',
-                '60','.','.','80','.','.','100\n']
-    for i in range(0,16):
-        if current == step[i]:
-            output += indicator[i]
-    if output:
-        sys.stdout.write(output)
-        sys.stdout.flush()
-
-
-def httpDownload(url, filename, headers={}, postData=None, reporthook=None, message=None):
-    reqObj = urllib2.Request(url, postData, headers)
-    fp = urllib2.urlopen(reqObj)
-    headers = fp.info()
     
-    if message: print message
-        
-    #read & write fileObj to filename
-    tfp = open(filename, 'wb')
-    result = filename, headers
-    bs = 1024*8
-    size = -1
-    read = 0
-    blocknum = 0
-
-    if reporthook:
-        if "content-length" in headers:
-            size = int(headers["Content-Length"])
-        reporthook(blocknum, bs, size)
-
-    while 1:
-        block = fp.read(bs)
-        if block == "":
-            break
-        read += len(block)
-        tfp.write(block)
-        blocknum += 1
-        if reporthook:
-            reporthook(blocknum, bs, size)
-
-    fp.close()
-    tfp.close()
-
-    # raise exception if actual size does not match content-length header
-    if size >= 0 and read < size:
-        raise ContentTooShortError("retrieval incomplete: got only %i out "
-                                    "of %i bytes" % (read, size), result)
-
-    return result
-
-
-
-def getfilefromhttpurl(url,filepath,showprogress=False,ifmodifiedsince=None, message=None):
-    """
-    gets a file from a url.
-    If 'ifmodifiedsince' is specified, this header is set
-    and the file is not retreived if it hasn't changed on the server.
-    Returns 0 if successful, or HTTP error code
-    """
-    def reporthook(block_count, block_size, file_size):
-         if showprogress and (file_size > 0):
-            max_blocks = file_size/block_size
-            display_percent_done(block_count, max_blocks)
-                   
-    try:
-        request_headers = {}
-        if ifmodifiedsince:
-            modtimestr = time.strftime("%a, %d %b %Y %H:%M:%S GMT",time.gmtime(ifmodifiedsince))
-            request_headers["If-Modified-Since"] = modtimestr
-        (f,headers) = httpDownload(url, filename=filepath, headers=request_headers, reporthook=reporthook, message=message)
-        if 'last-modified' in headers:
-            # set the modtime of the downloaded file to the modtime of the
-            # file on the server
-            modtimestr = headers['last-modified']
-            modtimetuple = time.strptime(modtimestr, "%a, %d %b %Y %H:%M:%S %Z")
-            modtimeint = calendar.timegm(modtimetuple)
-            os.utime(filepath, (time.time(), modtimeint))
-            
-    except urllib2.HTTPError, err:
-        return err.code
-    #except urllib2.URLError, err:
-    #    return err   
-    except IOError, err:
-        return err
-    except:
-        return (-1, "Unexpected error")
-    
-    return 0
-
-
-def getHTTPfileIfNewerAtomically(url,destinationpath,showprogress=False, message=None):
-    """
-    Gets file from HTTP URL, only if newer on web server.
-    Replaces pre-existing file only on success. (thus 'Atomically')
-    """
-    err = None
-    mytmpdir = tempfile.mkdtemp()
-    mytemppath = os.path.join(mytmpdir,"TempDownload")
-    if os.path.exists(destinationpath):
-        modtime = os.stat(destinationpath).st_mtime
-    else:
-        modtime = None
-    result = getfilefromhttpurl(url, mytemppath, showprogress=True, ifmodifiedsince=modtime, message=message)
-    if result == 0:
-        try:
-            os.rename(mytemppath, destinationpath)
-            return destinationpath, err
-        except:
-            err = "Could not write to %s" % destinationpath
-            destinationpath = None
-    elif result == 304:
-        # not modified, return existing file
-        return destinationpath, err
-    else:
-        err = "Error code: %s retreiving %s" % (result, url)
-        destinationpath = None
-        
-    if os.path.exists(mytemppath):
-        os.remove(mytemppath)
-    os.rmdir(mytmpdir)
-    return destinationpath, err
-    
-    
+# module globals
 debug = False
+verbose = 1
+munkistatusoutput = False
+logfile = pref('LogFile')
+logginglevel = pref('LoggingLevel')
+errors = ""
+
+    
 def main():
     print "This is a library of support tools for the Munki Suite."
-
 
 if __name__ == '__main__':
     main()
