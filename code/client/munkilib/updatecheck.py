@@ -557,7 +557,7 @@ def enoughDiskSpace(manifestitem_pl):
     if availablediskspace > diskspaceneeded:
         return True
     else:
-        munkicommon.display_info("There is insufficient disk space to download and install %s.", manifestitem_pl.get('name'))
+        munkicommon.display_info("There is insufficient disk space to download and install %s." % manifestitem_pl.get('name'))
         munkicommon.display_info("    %sMB needed; %sMB available" % (diskspaceneeded, availablediskspace))
         return False
 
