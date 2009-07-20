@@ -25,10 +25,10 @@ import dateutil.parser
 import subprocess
 import plistlib
 
-import munkilib.munkicommon
-import munkilib.updatecheck
-import munkilib.installer
-from munkilib.munkistatus import osascript
+from munkilib import munkicommon
+from munkilib import updatecheck
+from munkilib import installer
+from munkilib import munkistatus
 
 def getIdleSeconds():
     # stolen from Karl Kuehn -- thanks, Karl!
@@ -38,6 +38,44 @@ def getIdleSeconds():
     if ioregProcess.wait() != 0:
         return 0
     return int(int(ioregProcess.stdout.read()) / 1000000000) # convert from Nanoseconds
+    
+    
+def clearLastNotifiedDate():
+    pl = munkicommon.readPlist("/Library/Preferences/ManagedInstalls.plist")
+    if pl:
+        if 'LastNotifiedDate' in pl:
+            cmd = ['/usr/bin/defaults', 'delete', '/Library/Preferences/ManagedInstalls', 
+                        'LastNotifiedDate']
+            retcode = subprocess.call(cmd)
+        
+        
+def createDirsIfNeeded(dirlist):
+    for directory in dirlist:
+        if not os.path.exists(directory):
+            try:
+                os.mkdir(directory)
+            except:
+                print >>sys.stderr, "Could not create %s" % directory
+                return False
+
+    return True
+        
+        
+def initMunkiDirs():
+    managedinstallprefs = munkicommon.prefs()
+    ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
+    manifestsdir = os.path.join(ManagedInstallDir, "manifests")
+    catalogsdir = os.path.join(ManagedInstallDir, "catalogs")
+    cachedir = os.path.join(ManagedInstallDir, "Cache")
+    logdir = os.path.join(ManagedInstallDir, "Logs")
+    
+    if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir, cachedir, logdir]):
+        # can't use logerror function since logdir might not exist yet
+        errormessage = "Could not create needed directories in %s" % ManagedInstallDir
+        print >>sys.stderr, errormessage
+        munkicommon.errors = errormessage
+        return False
+    return True
 
 
 def main():
@@ -49,21 +87,28 @@ def main():
         
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])
-    if munkilib.munkicommon.pythonScriptRunning(myname):
+    if munkicommon.pythonScriptRunning(myname):
         # another instance of this script is running, so we should quit
         print >>sys.stderr, "Another instance of %s is running. Exiting." % myname
         exit(0)
            
     p = optparse.OptionParser()
     p.add_option('--auto', '-a', action='store_true',
-                    help='No user feedback or intervention. All other options ignored.')
+                    help='''Used by launchd LaunchAgent for scheduled runs.
+                    No user feedback or intervention. All other options ignored.''')
+    p.add_option('--logoutinstall', '-l', action='store_true',
+                    help='Used by launchd LaunchAgent when running at the loginwindow.')
+    p.add_option('--manualcheck', action='store_true',
+                    help='Used by launchd LaunchAgent when checking manually.')
+                       
     p.add_option('--munkistatusoutput', '-m', action='store_true',
                     help='Uses MunkiStatus.app for progress feedback when installing.')
     p.add_option('--id', default='',
                     help='Alternate identifier for catalog retreival')
     p.add_option('--quiet', '-q', action='store_true',
-                    help='Quiet mode. Logs messages, but nothing to stdout.')
-    p.add_option('--verbose', '-v', action='count', default=0,
+                    help='''Quiet mode. Logs messages, but nothing to stdout. 
+                    --verbose is ignored if --quiet is used.''')
+    p.add_option('--verbose', '-v', action='count', default=1,
                     help='More verbose output. May be specified multiple times.')
     p.add_option('--checkonly', action='store_true',
                        help="Check for updates, but don't install them.")
@@ -71,21 +116,53 @@ def main():
                        help='Skip checking and install any pending updates.')
     
     options, arguments = p.parse_args()
-    
+        
     if options.auto:
-        options.munkistatusoutput = True
+        # munkistatusoutput is false for checking, but true for installing
+        options.munkistatusoutput = False
         options.quiet = True
-        options.verbose = 0
         options.checkonly = False
         options.installonly = False
-    
+        
+    if options.logoutinstall:
+        options.munkistatusoutput = True
+        options.quiet = True
+        options.checkonly = False
+        options.installonly = True
+        # if we're running at the loginwindow, let's make sure the user triggered the update
+        triggerfile = "/private/tmp/com.googlecode.munki.installatlogout"
+        if os.path.exists(triggerfile):
+            os.unlink(triggerfile)
+        else:
+            # no trigger file, so don't install
+            exit(0)
+            
+    if options.manualcheck:
+        options.munkistatusoutput = True
+        options.quiet = True
+        options.checkonly = True
+        options.installonly = False
+        
+    if options.quiet:
+        options.verbose = 0
+                           
     if options.checkonly and options.installonly:
         print >>sys.stderr, "--checkonly and --installonly options are mutually exclusive!"
+        exit(-1)
+        
+    # set munkicommon globals
+    munkicommon.munkistatusoutput = options.munkistatusoutput
+    munkicommon.verbose = options.verbose
+    
+    # create needed directories if necessary
+    if not initMunkiDirs():
         exit(-1)
     
     updatesavailable = False
     if not options.installonly:
-        result = munkilib.updatecheck.check(id=options.id, verbosity=options.verbose, quiet=options.quiet)
+        result = updatecheck.check(id=options.id)
+        if options.manualcheck:
+            munkistatus.quit()
         
         if result > 0:
             updatesavailable = True
@@ -94,52 +171,74 @@ def main():
             # there were errors checking for updates.
             # let's check to see if there's a InstallInfo.plist with waiting updates from
             # an earlier successful run
-            installinfo = os.path.join(munkilib.munkicommon.ManagedInstallDir(), 'InstallInfo.plist')
+            installinfo = os.path.join(munkicommon.ManagedInstallDir(), 'InstallInfo.plist')
             if os.path.exists(installinfo):
                 try:
                     pl = plistlib.readPlist(installinfo)
-                    removalcount = munkilib.installer.getRemovalCount(pl.get('removals',[]))
-                    installcount = munkilib.installer.getInstallCount(pl.get('managed_installs',[]))
+                    removalcount = installer.getRemovalCount(pl.get('removals',[]))
+                    installcount = installer.getInstallCount(pl.get('managed_installs',[]))
                     if removalcount or installcount:
                         updatesavailable = True
                 except:
                     print >>sys.stderr, "Invalid %s" % installinfo
-              
     
-    if updatesavailable or options.installonly:
-        if options.auto:
-            if munkilib.munkicommon.getconsoleuser() == None:
+    if options.auto:
+        # when --auto,  munkistatusoutput is false for checking, but true for installing
+       munkicommon.munkistatusoutput = True         
+        
+    if updatesavailable or options.installonly or options.manualcheck:
+        if options.auto or options.manualcheck:
+            if munkicommon.getconsoleuser() == None:
                 if getIdleSeconds() > 10:
                     # no-one is logged in, and 
                     # no keyboard or mouse movement for the past 10 seconds,
                     # therefore no-one is in the middle of logging in (we hope!)
                     # so just install
-                    munkilib.installer.run(options.munkistatusoutput)
+                    # but first, clear the last notified date
+                    # so we can get notified of new changes after this round
+                    # of installs
+                    clearLastNotifiedDate()
+                    # now install
+                    installer.run()
+                    
             else:
                 # someone is logged in, and we have updates.
-                # if we haven't notified in a (admin-configurable) while, notify:
-                lastNotifiedString = munkilib.munkicommon.pref('LastNotifiedDate')
-                daysBetweenNotifications = munkilib.munkicommon.pref('DaysBetweenNotifications')
-                nowString = munkilib.munkicommon.NSDateNowString()
+                # if we haven't notified in a while, notify:
+                lastNotifiedString = munkicommon.pref('LastNotifiedDate')
+                daysBetweenNotifications = munkicommon.pref('DaysBetweenNotifications')
+                nowString = munkicommon.NSDateNowString()
                 now = dateutil.parser.parse(nowString)
+                nextNotifyDate = now
                 if lastNotifiedString:
                     lastNotifiedDate = dateutil.parser.parse(lastNotifiedString)
                     interval = datetime.timedelta(days=daysBetweenNotifications)
+                    if daysBetweenNotifications > 0:
+                        # we make this adjustment so a "daily" notification
+                        # doesn't require 24 hours to elapse
+                        interval = interval - datetime.timedelta(hours=6)
                     nextNotifyDate = lastNotifiedDate + interval
-                    if now >= nextNotifyDate:
-                        # record current notification date
-                        cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
-                                        'LastNotifiedDate', '-date', now.ctime()]
-                        retcode = subprocess.call(cmd)
-                        # notify user of available updates
-                        result = osascript('tell application "Managed Software Update" to activate')
+                if now >= nextNotifyDate or options.manualcheck:
+                    # record current notification date
+                    cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
+                                    'LastNotifiedDate', '-date', now.ctime()]
+                    retcode = subprocess.call(cmd)
+                    # notify user of available updates
+                    result = munkistatus.osascript('tell application "Managed Software Update" to activate')
         else:
             if options.installonly:
                 # install!
-                munkilib.installer.run(options.munkistatusoutput)
+                # but first, clear the last notified date so we can
+                # get notified of new changes after this round
+                # of installs
+                clearLastNotifiedDate()
+                # now we can install
+                installer.run()
             else:
-                print "Run %s --installonly to install the downloaded updates." % myname
+                if not options.quiet:
+                    print "Run %s --installonly to install the downloaded updates." % myname
                 
+    if munkicommon.munkistatusoutput:
+        munkistatus.quit()
         
 if __name__ == '__main__':
     main()
