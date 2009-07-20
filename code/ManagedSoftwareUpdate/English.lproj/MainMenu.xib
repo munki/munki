@@ -8,7 +8,8 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="432"/>
+			<integer value="284"/>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -310,7 +311,7 @@
 														<object class="NSTextView" id="973913323">
 															<reference key="NSNextResponder" ref="805691830"/>
 															<int key="NSvFlags">2322</int>
-															<string key="NSFrameSize">{455, 81}</string>
+															<string key="NSFrameSize">{455, 14}</string>
 															<reference key="NSSuperview" ref="805691830"/>
 															<object class="NSTextContainer" key="NSTextContainer" id="415458352">
 																<object class="NSLayoutManager" key="NSLayoutManager">
@@ -378,8 +379,8 @@
 																<nil key="NSDefaultParagraphStyle"/>
 															</object>
 															<int key="NSTVFlags">6</int>
-															<string key="NSMaxSize">{468, 1e+07}</string>
-															<string key="NSMinize">{223, 81}</string>
+															<string key="NSMaxSize">{927, 1e+07}</string>
+															<string key="NSMinize">{223, 0}</string>
 															<nil key="NSDelegate"/>
 														</object>
 													</object>
@@ -435,13 +436,13 @@
 						<object class="NSButton" id="910886033">
 							<reference key="NSNextResponder" ref="903778767"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{402, 12}, {96, 32}}</string>
+							<string key="NSFrame">{{383, 12}, {115, 32}}</string>
 							<reference key="NSSuperview" ref="903778767"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="528866365">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">134217728</int>
-								<string key="NSContents">Install</string>
+								<string key="NSContents">Update now</string>
 								<reference key="NSSupport" ref="86217858"/>
 								<reference key="NSControlView" ref="910886033"/>
 								<int key="NSButtonFlags">-2038284033</int>
@@ -455,7 +456,7 @@
 						<object class="NSButton" id="535866689">
 							<reference key="NSNextResponder" ref="903778767"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{306, 12}, {96, 32}}</string>
+							<string key="NSFrame">{{287, 12}, {96, 32}}</string>
 							<reference key="NSSuperview" ref="903778767"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="361534812">
@@ -475,13 +476,13 @@
 						<object class="NSTextField" id="51114936">
 							<reference key="NSNextResponder" ref="903778767"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{104, 521}, {306, 17}}</string>
+							<string key="NSFrame">{{104, 521}, {340, 17}}</string>
 							<reference key="NSSuperview" ref="903778767"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="1073509984">
 								<int key="NSCellFlags">68288064</int>
 								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">New software is available for your computer.</string>
+								<string key="NSContents">Software updates are available for your computer.</string>
 								<object class="NSFont" key="NSSupport">
 									<string key="NSName">LucidaGrande-Bold</string>
 									<double key="NSSize">1.300000e+01</double>
@@ -506,8 +507,8 @@
 							<object class="NSTextFieldCell" key="NSCell" id="40803293">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">272629760</int>
-								<string type="base64-UTF8" key="NSContents">SW5zdGFsbGluZyB0aGlzIHNvZnR3YXJlIG1heSB0YWtlIHNvbWUgdGltZS4gSWYgeW91J3JlIG5vdCBy
-ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
+								<string type="base64-UTF8" key="NSContents">VXBkYXRpbmcgeW91ciBzb2Z0d2FyZSBtYXkgdGFrZSBzb21lIHRpbWUuIElmIHlvdSdyZSBub3QgcmVh
+ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 								<object class="NSFont" key="NSSupport">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">1.100000e+01</double>
@@ -631,7 +632,7 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 								</object>
 								<object class="NSMenuItem" id="600599108">
 									<reference key="NSMenu" ref="43653270"/>
-									<string key="NSTitle">Hide NewApplication</string>
+									<string key="NSTitle">Hide Managed Software Update</string>
 									<string key="NSKeyEquiv">h</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -695,7 +696,8 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="10292083">
 									<reference key="NSMenu" ref="381918200"/>
-									<string key="NSTitle">Install all</string>
+									<bool key="NSIsDisabled">YES</bool>
+									<string key="NSTitle">Update now</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="173048731"/>
@@ -1031,12 +1033,12 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 						<reference key="object" ref="903778767"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="910886033"/>
-							<reference ref="535866689"/>
 							<reference ref="51114936"/>
 							<reference ref="694331522"/>
 							<reference ref="1020013803"/>
 							<reference ref="472008763"/>
+							<reference ref="910886033"/>
+							<reference ref="535866689"/>
 						</object>
 						<reference key="parent" ref="801548761"/>
 					</object>
@@ -1592,10 +1594,12 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 					<string>319.ImportedFromIB2</string>
 					<string>320.IBPluginDependency</string>
 					<string>320.ImportedFromIB2</string>
+					<string>340.IBAttributePlaceholdersKey</string>
 					<string>340.IBEditorWindowLastContentRect</string>
 					<string>340.IBPluginDependency</string>
 					<string>340.ImportedFromIB2</string>
 					<string>340.editorWindowContentRectSynchronizationRect</string>
+					<string>347.IBAttributePlaceholdersKey</string>
 					<string>347.IBPluginDependency</string>
 					<string>347.ImportedFromIB2</string>
 					<string>430.IBAttributePlaceholdersKey</string>
@@ -1672,17 +1676,18 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<string>WillClose</string>
 								<string>AlertEnded</string>
+								<string>DidOpen</string>
 							</object>
 							<string key="appleScriptScriptName">ManagedSoftwareUpdate.applescript</string>
 							<string key="appleScriptObjectName">mainWindow</string>
 						</object>
 					</object>
-					<string>{{61, 214}, {512, 562}}</string>
-					<string>{{61, 214}, {512, 562}}</string>
+					<string>{{259, 216}, {512, 562}}</string>
+					<string>{{259, 216}, {512, 562}}</string>
 					<reference ref="9"/>
-					<reference ref="9"/>
+					<boolean value="NO" id="6"/>
 					<string>{{616, 297}, {480, 360}}</string>
-					<boolean value="NO"/>
+					<reference ref="6"/>
 					<reference ref="9"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{512, 400}</string>
@@ -1762,10 +1767,37 @@ ZWFkeSB0byBpbnN0YWxsIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gaW5zdGFsbCBsYXRlci4</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{286, 650}, {117, 23}}</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">IBAppleScriptAttributeName</string>
+						<object class="IBAppleScriptInfoAttribute" key="NS.object.0">
+							<string key="name">IBAppleScriptAttributeName</string>
+							<reference key="object" ref="381918200"/>
+							<int key="appleScriptObjectID">0</int>
+							<int key="appleScriptScriptScope">0</int>
+							<nil key="appleScriptEventHandlerNames"/>
+							<string key="appleScriptScriptName">ManagedSoftwareUpdate.applescript</string>
+							<string key="appleScriptObjectName">updateMenu</string>
+						</object>
+					</object>
+					<string>{{285, 650}, {136, 23}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{807, 332}, {199, 203}}</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">IBAppleScriptAttributeName</string>
+						<object class="IBAppleScriptInfoAttribute" key="NS.object.0">
+							<string key="name">IBAppleScriptAttributeName</string>
+							<reference key="object" ref="10292083"/>
+							<int key="appleScriptObjectID">0</int>
+							<int key="appleScriptScriptScope">0</int>
+							<object class="NSArray" key="appleScriptEventHandlerNames">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<string>ChooseMenuItem</string>
+							</object>
+							<string key="appleScriptScriptName">ManagedSoftwareUpdate.applescript</string>
+							<string key="appleScriptObjectName">installAllMenuItem</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<object class="NSMutableDictionary">

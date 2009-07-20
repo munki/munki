@@ -18,10 +18,22 @@
 -- limitations under the License.
 
 property managedInstallDir : ""
+property restartRequired : false
+property installitems : {}
+property activationCount : 0
+property ManagedInstallPrefs : "/Library/Preferences/ManagedInstalls.plist"
 
-on itemstoinstall()
-	set installlist to {}
-	set ManagedInstallPrefs to "/Library/Preferences/ManagedInstalls.plist"
+on getRemovalDetailPrefs()
+	set ShowRemovalDetail to false
+	try
+		tell application "System Events"
+			set ShowRemovalDetail to value of property list item "ShowRemovalDetail" of property list file ManagedInstallPrefs
+		end tell
+	end try
+	return ShowRemovalDetail
+end getRemovalDetailPrefs
+
+on getInstallInfoFile()
 	try
 		tell application "System Events"
 			set managedInstallDir to value of property list item "ManagedInstallDir" of property list file ManagedInstallPrefs
@@ -30,108 +42,166 @@ on itemstoinstall()
 		set managedInstallDir to "/Library/Managed Installs"
 	end try
 	try
-		tell application "System Events"
-			set InstallInfo to managedInstallDir & "/InstallInfo.plist"
-			set managedinstalllist to value of property list item "managed_installs" of property list file InstallInfo
+		set InstallInfo to managedInstallDir & "/InstallInfo.plist"
+		copy (do shell script "test -e " & quoted form of InstallInfo) to result
+		return InstallInfo
+	on error
+		return ""
+	end try
+end getInstallInfoFile
+
+
+on itemstoinstall()
+	set installlist to {}
+	copy getInstallInfoFile() to InstallInfo
+	if InstallInfo is not "" then
+		try
+			tell application "System Events"
+				set InstallInfo to managedInstallDir & "/InstallInfo.plist"
+				set managedinstalllist to value of property list item "managed_installs" of property list file InstallInfo
+			end tell
 			repeat with installitem in managedinstalllist
 				if (installed of installitem) is false then
 					set end of installlist to (installitem as item)
+					try
+						if |RestartAction| of installitem is "RequireRestart" then
+							set restartRequired to true
+						end if
+					end try
 				end if
 			end repeat
-			try
+		end try
+		
+		set ShowRemovalDetail to getRemovalDetailPrefs()
+		try
+			tell application "System Events"
+				set removallist to value of property list item "removals" of property list file InstallInfo
+			end tell
+			set removalcount to 0
+			repeat with removalitem in removallist
+				if (installed of removalitem) is true then
+					set removalcount to removalcount + 1
+					try
+						if |RestartAction| of removalitem is "RequireRestart" then
+							set restartRequired to true
+						end if
+					end try
+					if ShowRemovalDetail then
+						set display_name of removalitem to display_name of removalitem & " (will be removed)"
+						set end of installlist to (removalitem as item)
+					end if
+				end if
+			end repeat
+			if not ShowRemovalDetail then
+				if removalcount > 0 then
+					if restartRequired then
+						set |RestartAction| of removalitem to "RequireRestart"
+					end if
+					set display_name of removalitem to "Software removals"
+					set |description| of removalitem to "Scheduled removal of managed software."
+					set end of installlist to (removalitem as item)
+				end if
+			end if
+		end try
+		try
+			tell application "System Events"
 				set AppleUpdates to managedInstallDir & "/AppleUpdates.plist"
 				set appleupdatelist to value of property list item "AppleUpdates" of property list file AppleUpdates
-				repeat with installitem in appleupdatelist
-					set end of installlist to (installitem as item)
-				end repeat
-			end try
-		end tell
-	end try
+			end tell
+			--set AppleUpdatesHeader to {display_name:"Apple Software Updates", version_to_install:"", |description|:"", |RestartAction|:""}
+			--set end of installlist to AppleUpdatesHeader
+			repeat with installitem in appleupdatelist
+				set end of installlist to (installitem as item)
+			end repeat
+		end try
+	end if
 	return installlist as list
 end itemstoinstall
 
-on restartRequired()
-	copy itemstoinstall() to installitems
+
+on updateTable()
+	set datasource to data source of table view "table" of scroll view ¬
+		"tableScrollView" of view "splitViewTop" of split view "splitView" of window "MainWindow"
+	set EmptyImage to load image "Empty"
+	set RestartImage to load image "RestartReq"
+	set installitems to my itemstoinstall()
+	delete every data row of datasource
 	repeat with installitem in installitems
+		
+		set theDataRow to make new data row at end of data rows of datasource
 		try
 			if |RestartAction| of installitem is "RequireRestart" then
-				return true
+				set contents of data cell "image" of theDataRow to RestartImage
+			end if
+		on error
+			set contents of data cell "image" of theDataRow to EmptyImage
+		end try
+		try
+			set contents of data cell "name" of theDataRow to display_name of installitem
+		end try
+		if contents of data cell "name" of theDataRow is "" then
+			set contents of data cell "name" of theDataRow to |name| of installitem
+		end if
+		
+		set shortVersion to ""
+		set oldDelims to AppleScript's text item delimiters
+		try
+			if version_to_install of installitem is not "" then
+				set AppleScript's text item delimiters to "."
+				if (count of text items of version_to_install of installitem) > 3 then
+					set shortVersion to text items 1 through 3 of version_to_install of installitem as text
+				else
+					set shortVersion to version_to_install of installitem
+				end if
 			end if
 		end try
+		set AppleScript's text item delimiters to oldDelims
+		
+		set contents of data cell "version" of theDataRow to shortVersion
+		set contents of data cell "description" of theDataRow to |description| of installitem
+		try
+			set contents of data cell "restartaction" of theDataRow to |RestartAction| of installitem
+		end try
 	end repeat
-	return false
-end restartRequired
+end updateTable
 
+on initTable()
+	set theTable to table view "table" of scroll view ¬
+		"tableScrollView" of view "splitViewTop" of split view "splitView" of window "MainWindow"
+	set theDataSource to make new data source at end
+	make new data column at end of data columns of theDataSource with properties {name:"image"}
+	make new data column at end of data columns of theDataSource with properties {name:"name"}
+	make new data column at end of data columns of theDataSource with properties {name:"version"}
+	make new data column at end of data columns of theDataSource with properties {name:"description"}
+	make new data column at end of data columns of theDataSource with properties {name:"restartaction"}
+	
+	set data source of theTable to theDataSource
+end initTable
 
-on awake from nib theObject
-	if name of theObject is "table" then
-		set theDataSource to make new data source at end
-		
-		make new data column at end of data columns of theDataSource with properties {name:"image"}
-		make new data column at end of data columns of theDataSource with properties {name:"name"}
-		make new data column at end of data columns of theDataSource with properties {name:"version"}
-		make new data column at end of data columns of theDataSource with properties {name:"description"}
-		make new data column at end of data columns of theDataSource with properties {name:"restartaction"}
-		
-		copy my itemstoinstall() to installitems
-		
-		set EmptyImage to load image "Empty"
-		set RestartImage to load image "RestartReq"
-		repeat with installitem in installitems
-			
-			set theDataRow to make new data row at end of data rows of theDataSource
-			try
-				if |RestartAction| of installitem is "RequireRestart" then
-					set contents of data cell "image" of theDataRow to RestartImage
-				end if
-			on error
-				set contents of data cell "image" of theDataRow to EmptyImage
-			end try
-			try
-				set contents of data cell "name" of theDataRow to display_name of installitem
-			end try
-			if contents of data cell "name" of theDataRow is "" then
-				set contents of data cell "name" of theDataRow to |name| of installitem
-			end if
-			
-			set oldDelims to AppleScript's text item delimiters
-			set AppleScript's text item delimiters to "."
-			if (count of text items of version_to_install of installitem) > 3 then
-				set shortVersion to text items 1 through 3 of version_to_install of installitem as text
-			else
-				set shortVersion to version_to_install of installitem
-			end if
-			set AppleScript's text item delimiters to oldDelims
-			
-			set contents of data cell "version" of theDataRow to shortVersion
-			set contents of data cell "description" of theDataRow to |description| of installitem
-			try
-				set contents of data cell "restartaction" of theDataRow to |RestartAction| of installitem
-			end try
-		end repeat
-		
-		set data source of theObject to theDataSource
+on installAll()
+	if restartRequired then
+		display alert "Restart Required" message ¬
+			"A restart is required after updating. Log out and update now?" alternate button "Cancel" default button ¬
+			"Log out and update" as warning attached to window 1
+	else
+		display alert "Logout Recommeded" message ¬
+			"A logout is recommeded before updating. Log out and update now?" alternate button "Cancel" other button "Update without logging out" default button ¬
+			"Log out and update" as warning attached to window 1
 	end if
+end installAll
+
+on awake from nib
+	-- nothing
 end awake from nib
+
 
 on clicked theObject
 	if the name of theObject is "laterBtn" then
-		display alert "Install at logout" message ¬
-			"These updates will be installed the next time you log out." default button ¬
-			"OK" as informational attached to window 1
+		quit
 	end if
 	
 	if the name of theObject is "installBtn" then
-		copy my restartRequired() to restartNeeded
-		if restartNeeded then
-			display alert "Restart Required" message ¬
-				"A restart is required after installation. Log out and install now?" alternate button "Cancel" default button ¬
-				"Log out and install" as warning attached to window 1
-		else
-			display alert "Logout Recommeded" message ¬
-				"A logout is recommeded before installation. Log out and install now?" alternate button "Install without logging out" default button ¬
-				"Log out and install" as warning attached to window 1
-		end if
+		my installAll()
 	end if
 end clicked
 
@@ -160,31 +230,64 @@ on selection changed theObject
 end selection changed
 
 on alert ended theObject with reply withReply
-	if button returned of withReply is "Log out and install" then
-		tell application "System Events"
-			log out
-		end tell
-		quit
+	if button returned of withReply is "Log out and update" then
+		-- touch a flag so the process that runs after
+		-- logout knows it's OK to install everything
+		do shell script "/usr/bin/touch /private/tmp/com.googlecode.munki.installatlogout"
+		ignoring application responses
+			tell application "loginwindow"
+				-- "really log out"
+				«event aevtrlgo»
+			end tell
+		end ignoring
 	end if
-	if button returned of withReply is "Install without logging out" then
-		--trigger managedinstaller
-		set triggerpath to quoted form of (managedInstallDir & "/.run_managedsoftwareupdate")
+	if button returned of withReply is "Update without logging out" then
+		-- trigger managedinstaller via launchd WatchPath
+		-- we touch a file that launchd is is watching
+		-- launchd, in turn, launches managedsoftwareupdate --installonly as root
+		set triggerpath to quoted form of (managedInstallDir & "/.managedinstall.launchd")
 		do shell script "/usr/bin/touch " & triggerpath
 		quit
 	end if
-	if button returned of withReply is "OK" then
+	if button returned of withReply is "Quit" then
 		-- acknowleged no new software available, or installing later
 		quit
 	end if
+	
 end alert ended
 
 on activated theObject
-	--if the name of theObject is "theApp" then
-	copy my itemstoinstall() to installitems
-	if (count of installitems) is 0 then
-		display alert "Your software is up to date." message ¬
-			"There is no new software for your computer at this time." default button ¬
-			"OK" as informational attached to window 1
+	set activationCount to activationCount + 1
+	set installitems to my itemstoinstall()
+	if (count of installitems) > 0 then
+		show window "mainWindow"
+		set enabled of (menu item "installAllMenuItem" of menu "updateMenu" of menu 1) to true
+	else
+		if activationCount is 1 then
+			-- trigger manual update check, but only on launch
+			-- we touch a file that launchd is is watching
+			-- launchd, in turn, launches managedsoftwareupdate --manualcheck as root
+			set triggerpath to quoted form of (managedInstallDir & "/.updatecheck.launchd")
+			do shell script "/usr/bin/touch " & triggerpath
+			-- when it's done, it sends an activate message to us again
+		else
+			show window "mainWindow"
+			display alert "Your software is up to date." message ¬
+				"There is no new software for your computer at this time." default button "Quit" as informational attached to window 1
+		end if
 	end if
-	--end if
 end activated
+
+
+on opened theObject
+	if the name of theObject is "mainWindow" then
+		my initTable()
+		my updateTable()
+	end if
+end opened
+
+on choose menu item theObject
+	if the name of theObject is "installAllMenuItem" then
+		my installAll()
+	end if
+end choose menu item
