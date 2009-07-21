@@ -194,9 +194,7 @@ def installWithInfo(dirpath, installlist):
                 return restartflag
                 
             if itempath.endswith(".dmg"):
-                if not munkicommon.munkistatusoutput:
-                    print "Mounting disk image %s" % item["installer_item"]
-                munkicommon.log("Mounting disk image %s" % item["installer_item"])
+                munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
                 mountpoints = munkicommon.mountdmg(itempath)
                 if mountpoints == []:
                     munkicommon.display_error("ERROR: No filesystems mounted from %s" % item["installer_item"])
