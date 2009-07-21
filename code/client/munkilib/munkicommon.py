@@ -380,7 +380,7 @@ def getInstallerPkgInfo(filename):
 def padVersionString(versString,tupleCount):
     if versString == None:
         versString = "0"
-    components = versString.split(".")
+    components = str(versString).split(".")
     if len(components) > tupleCount :
         components = components[0:tupleCount]
     else:
@@ -408,12 +408,16 @@ def getExtendedVersion(bundlepath):
                 sourceVers = padVersionString(pl["SourceVersion"],1)
             if "BuildVersion" in pl:
                 buildVers = padVersionString(pl["BuildVersion"],1)
+            if os.path.exists(infoPlist):
+                   pl = plistlib.readPlist(infoPlist)
+                   if 'IFMinorVersion' in pl:
+                       buildVers = padVersionString(pl['IFMinorVersion'],1)               
             return shortVers + "." + sourceVers + "." + buildVers
-            
+                        
     if os.path.exists(infoPlist):
-        pl = plistlib.readPlist(infoPlist)
-        if "CFBundleShortVersionString" in pl:
-            return padVersionString(pl["CFBundleShortVersionString"],5)
+           pl = plistlib.readPlist(infoPlist)
+           if "CFBundleShortVersionString" in pl:
+               return padVersionString(pl["CFBundleShortVersionString"],5)
     else:
         return "0.0.0.0.0"
                 
@@ -588,6 +592,7 @@ def getInstalledPackageVersion(pkgid):
                             highestversion = foundvers
     
         if highestversion != "0":
+            display_debug2("\tThis machine has %s, version %s" % (pkgid, highestversion))
             return highestversion
 
     # If we got to this point, we haven't found the pkgid yet.                        
@@ -603,10 +608,13 @@ def getInstalledPackageVersion(pkgid):
             foundbundleid = pl["pkgid"]
         if "pkg-version" in pl:
             foundvers = pl["pkg-version"]
+            
         if pkgid == foundbundleid:
+            display_debug2("\tThis machine has %s, version %s" % (pkgid, foundvers))
             return padVersionString(foundvers,5)
-
+    
     # This package does not appear to be currently installed
+    display_debug2("\tThis machine does not have %s" % pkgid)
     return ""
     
     
