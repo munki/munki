@@ -401,10 +401,18 @@ def download_installeritem(pkgurl):
     pkgname = os.path.basename(urlparse.urlsplit(pkgurl)[2])
     destinationpath = os.path.join(mycachedir, pkgname)
     
+    # bump up verboseness so we get download percentage done feedback.
+    oldverbose = munkicommon.verbose
+    munkicommon.verbose = oldverbose + 1
+    
     dl_message = "Downloading %s from %s" % (pkgname, pkgurl)
     munkicommon.log(dl_message)
     dl_message = "Downloading %s..." % pkgname
     (path, err) = getHTTPfileIfNewerAtomically(pkgurl, destinationpath, message=dl_message)
+    
+    # set verboseness back.
+    munkicommon.verbose = oldverbose
+    
     if path:
         return True
     else:
@@ -710,7 +718,8 @@ def processInstalls(manifestitem, cataloglist, installinfo):
         munkicommon.display_detail("Need to install %s" % manifestitemname)
         # check to see if there is enough free space to download and install
         if not enoughDiskSpace(pl):
-            iteminfo["installed"] = False
+            iteminfo['installed'] = False
+            iteminfo['note'] = "Insufficient disk space to download and install"
             installinfo['managed_installs'].append(iteminfo)
             return False
         
@@ -719,8 +728,8 @@ def processInstalls(manifestitem, cataloglist, installinfo):
             url = downloadbaseurl + location
             if download_installeritem(url):
                 filename = os.path.split(location)[1]
-                iteminfo["installer_item"] = filename
-                iteminfo["installed"] = False
+                iteminfo['installer_item'] = filename
+                iteminfo['installed'] = False
                 iteminfo["version_to_install"] = pl.get('version',"UNKNOWN")
                 iteminfo['description'] = pl.get('description','')
                 iteminfo['display_name'] = pl.get('display_name','')
@@ -729,12 +738,14 @@ def processInstalls(manifestitem, cataloglist, installinfo):
                 installinfo['managed_installs'].append(iteminfo)
                 return True
             else:
-                iteminfo["installed"] = False
+                iteminfo['installed'] = False
+                iteminfo['note'] = "Download failed"
                 installinfo['managed_installs'].append(iteminfo)
                 return False
         else:
             munkicommon.display_info("Can't install %s because there's no download info for the installer item" % manifestitemname)
-            iteminfo["installed"] = False
+            iteminfo['installed'] = False
+            iteminfo['note'] = "Download info missing"
             installinfo['managed_installs'].append(iteminfo)
             return False
     else:
@@ -1092,9 +1103,8 @@ def getPrimaryManifest(alternate_id):
 def getInstallCount(installinfo):
     count = 0
     for item in installinfo.get('managed_installs',[]):
-        if 'installed' in item:
-            if not item['installed']:
-                count +=1
+        if 'installer_item' in item:
+            count +=1
     return count
 
 
@@ -1372,8 +1382,8 @@ def check(id=''):
     if installcount:
         munkicommon.display_info("The following items will be installed or upgraded:")
         for item in installinfo['managed_installs']:
-            if not item.get('installed'):
-                munkicommon.display_info("    + %s-%s" % (item.get('name'), item.get('version_to_install')))
+            if item.get('installer_item'):
+                munkicommon.display_info("    + %s-%s" % (item.get('name',''), item.get('version_to_install','')))
                 if item.get('description'):
                    munkicommon.display_info("        %s" % item['description'])
                 if item.get('RestartAction') == 'RequireRestart':
