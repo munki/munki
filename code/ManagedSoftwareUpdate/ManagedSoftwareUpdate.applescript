@@ -61,14 +61,16 @@ on itemstoinstall()
 				set managedinstalllist to value of property list item "managed_installs" of property list file InstallInfo
 			end tell
 			repeat with installitem in managedinstalllist
-				if (installed of installitem) is false then
-					set end of installlist to (installitem as item)
-					try
-						if |RestartAction| of installitem is "RequireRestart" then
-							set restartRequired to true
-						end if
-					end try
-				end if
+				try
+					if exists (installer_item of installitem) then
+						set end of installlist to (installitem as item)
+						try
+							if |RestartAction| of installitem is "RequireRestart" then
+								set restartRequired to true
+							end if
+						end try
+					end if
+				end try
 			end repeat
 		end try
 		
