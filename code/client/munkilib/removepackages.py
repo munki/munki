@@ -95,6 +95,17 @@ import munkicommon
 #                          perms INTEGER )
 #################################################################
 
+def local_display_percent_done(current,maximum):
+    # bump up verboseness so we get download percentage done feedback.
+    oldverbose = munkicommon.verbose
+    munkicommon.verbose = oldverbose + 1
+    
+    munkicommon.display_percent_done(current,maximum)
+    
+    # set verboseness back.
+    munkicommon.verbose = oldverbose
+
+
 def shouldRebuildDB(pkgdbpath):
     """
     Checks to see if our internal package DB should be rebuilt.
@@ -447,7 +458,7 @@ def initDatabase(packagedb,forcerebuild=False):
     CreateTables(c)
 
     currentpkgindex = 0
-    munkicommon.display_percent_done(0, pkgcount)
+    local_display_percent_done(0, pkgcount)
 
     if os.path.exists(receiptsdir):
         receiptlist = os.listdir(receiptsdir)
@@ -462,10 +473,10 @@ def initDatabase(packagedb,forcerebuild=False):
                 
             if item.endswith(".pkg"):
                 receiptpath = os.path.join(receiptsdir, item)
-                munkicommon.display_info("Importing %s..." % receiptpath)
+                munkicommon.display_detail("Importing %s..." % receiptpath)
                 ImportPackage(receiptpath, c)
                 currentpkgindex += 1
-                munkicommon.display_percent_done(currentpkgindex, pkgcount)
+                local_display_percent_done(currentpkgindex, pkgcount)
 
     if os.path.exists(bomsdir):
         bomslist = os.listdir(bomsdir)
@@ -480,10 +491,10 @@ def initDatabase(packagedb,forcerebuild=False):
             
             if item.endswith(".bom"):
                 bompath = os.path.join(bomsdir, item)
-                munkicommon.display_info("Importing %s..." % bompath)
+                munkicommon.display_detail("Importing %s..." % bompath)
                 ImportBom(bompath, c)
                 currentpkgindex += 1
-                munkicommon.display_percent_done(currentpkgindex, pkgcount)
+                local_display_percent_done(currentpkgindex, pkgcount)
     else:
         #no boms dir in some versions of OS X
         for pkg in pkglist:
@@ -495,11 +506,11 @@ def initDatabase(packagedb,forcerebuild=False):
             munkicommon.display_info("Importing %s..." % pkg)
             ImportFromPkgutil(pkg, c)
             currentpkgindex += 1
-            munkicommon.display_percent_done(currentpkgindex, pkgcount)
+            local_display_percent_done(currentpkgindex, pkgcount)
             
     # in case we didn't quite get to 100% for some reason
     if currentpkgindex < pkgcount:
-        munkicommon.display_percent_done(pkgcount, pkgcount)
+        local_display_percent_done(pkgcount, pkgcount)
 
     # commit and close the db when we're done.
     conn.commit()
@@ -588,7 +599,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     and optionally Apple's package database.
     """
     munkicommon.display_status('Removing receipt info')
-    munkicommon.display_percent_done(0,4)
+    local_display_percent_done(0,4)
     
     conn = sqlite3.connect(packagedb)
     c = conn.cursor()
@@ -601,7 +612,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
             aconn = sqlite3.connect(applepkgdb)
             ac = aconn.cursor()
     
-    munkicommon.display_percent_done(1,4)
+    local_display_percent_done(1,4)
     
     for pkgkey in pkgkeylist:
         pkgid = ''
@@ -617,9 +628,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                 if pkgname.endswith('.bom'):
                     receiptpath = os.path.join('/Library/Receipts/boms', pkgname)
                 if receiptpath and os.path.exists(receiptpath):
-                    munkicommon.display_info("Removing %s..." % receiptpath)
-                    if munkicommon.verbose < 2:
-                        munkicommon.log("Removing %s..." % receiptpath)
+                    munkicommon.display_detail("Removing %s..." % receiptpath)
                     retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
         
         # remove pkg info from our database
@@ -635,8 +644,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                     t = (pkgid, )
                     row = ac.execute('SELECT pkg_key FROM pkgs where pkgid = ?', t).fetchone()
                     if row:
-                        if munkicommon.verbose > 1:
-                            print "Removing package data from Apple package database..."
+                        munkicommon.display_detail("Removing package data from Apple package database...")
                         apple_pkg_key = row[0]
                         t = (apple_pkg_key, )
                         ac.execute('DELETE FROM pkgs where pkg_key = ?', t)
@@ -653,28 +661,28 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                     if munkicommon.verbose > 1:
                         if output: print output.rstrip('\n')
                     
-    munkicommon.display_percent_done(2,4)
+    local_display_percent_done(2,4)
     
     # now remove orphaned paths from paths table
     # first, Apple's database if option is passed
     if not noupdateapplepkgdb:
         if osvers < 10:
-            munkicommon.display_info("Removing unused paths from Apple package database...")
+            munkicommon.display_detail("Removing unused paths from Apple package database...")
             ac.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
             aconn.commit()
             ac.close()
             aconn.close()
     
-    munkicommon.display_percent_done(3,4)
+    local_display_percent_done(3,4)
     
     # we do our database last so its modtime is later than the modtime for the Apple DB...
-    munkicommon.display_info("Removing unused paths from internal package database...")
+    munkicommon.display_detail("Removing unused paths from internal package database...")
     c.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
     conn.commit()
     c.close()
     conn.close()
     
-    munkicommon.display_percent_done(4,4)
+    local_display_percent_done(4,4)
 
 
 def isBundle(pathname):
@@ -725,34 +733,37 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
     # we sort in reverse because we can delete from the bottom up,
     # clearing a directory before we try to remove the directory itself
     removalpaths.sort(reverse=True)
-    
-    munkicommon.display_status("Removing filesystem items")
+    removalerrors = ""
+    removalcount = len(removalpaths)
+    munkicommon.display_status("Removing %s filesystem items" % removalcount)
     
     itemcount = len(removalpaths)
     itemindex = 0
-    munkicommon.display_percent_done(itemindex, itemcount)
+    local_display_percent_done(itemindex, itemcount)
     
     for item in removalpaths:
         itemindex += 1
         pathtoremove = "/" + item
         # use os.path.lexists so broken links return true so we can remove them
         if os.path.lexists(pathtoremove):
-            munkicommon.display_info("Removing: " + pathtoremove.encode("UTF-8"))
-            if munkicommon.verbose < 2:
-                munkicommon.log("Removing: " + pathtoremove.encode("UTF-8"))
+            munkicommon.display_detail("Removing: " + pathtoremove.encode("UTF-8"))
             if (os.path.isdir(pathtoremove) and not os.path.islink(pathtoremove)):
                 diritems = os.listdir(pathtoremove)
                 if diritems == ['.DS_Store']:
                     # If there's only a .DS_Store file
                     # we'll consider it empty
                     ds_storepath = pathtoremove + "/.DS_Store"
-                    retcode = subprocess.call(['/bin/rm', ds_storepath])
+                    try:
+                        os.remove(ds_storepath)
                     diritems = os.listdir(pathtoremove)
                 if diritems == []:
                     # directory is empty
-                    retcode = subprocess.call(['/bin/rmdir', pathtoremove])
-                    if retcode:
-                        munkicommon.display_error("ERROR: couldn't remove directory %s" % pathtoremove)
+                    try:
+                        os.rmdir(pathtoremove)
+                    except Exception, err:
+                        msg = "ERROR: couldn't remove directory %s - %s" % (pathtoremove, err)
+                        munkicommon.display_error(msg)
+                        removalerrors = removalerrors + "/n" + msg
                 else:
                     # the directory is marked for deletion but isn't empty.
                     # if so directed, if it's a bundle (like .app), we should
@@ -761,19 +772,38 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     if (forcedeletebundles and isBundle(pathtoremove)):
                         retcode = subprocess.call(['/bin/rm', '-rf', pathtoremove])
                         if retcode:
-                            munkicommon.display_error("ERROR: couldn't remove bundle %s" % pathtoremove)
+                            msg = "ERROR: couldn't remove bundle %s" % pathtoremove
+                            munkicommon.display_error(msg)
+                            removalerrors = removalerrors + "/n" + msg
                     else:
-                        munkicommon.display_error("WARNING: Did not remove %s because it is not empty." % pathtoremove)
+                        msg = "WARNING: Did not remove %s because it is not empty." % pathtoremove
+                        munkicommon.display_error(msg)
+                        removalerrors = removalerrors + "/n" + msg
                         
             else:
                 # not a directory, just unlink it
-                # we're using rm instead of Python because I don't trust
+                # I was using rm instead of Python because I don't trust
                 # handling of resource forks with Python
-                retcode = subprocess.call(['/bin/rm', pathtoremove])
-                if retcode:
-                    munkicommon.display_error("ERROR: couldn't remove item %s" % pathtoremove)
+                #retcode = subprocess.call(['/bin/rm', pathtoremove])
+                # but man that's slow. I think there's a lot of overhead with the
+                # subprocess call. I'm going to use os.remove. I hope I don't regret it.
+                retcode = ''
+                try:
+                    os.remove(pathtoremove)
+                except Exception, err:
+                    msg = "ERROR: couldn't remove item %s: %s" % (pathtoremove, err)
+                    munkicommon.display_error(msg)
+                    removalerrors = removalerrors + "/n" + msg
                     
-        munkicommon.display_percent_done(itemindex, itemcount)        
+        local_display_percent_done(itemindex, itemcount)
+        
+    if removalerrors:
+        display_info("---------------------------------------------------")
+        display_info("There were problems removing some filesystem items.")
+        display_info("---------------------------------------------------")
+        display_info(removalerrors)
+        
+        
 
 
 def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
