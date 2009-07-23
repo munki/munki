@@ -97,7 +97,11 @@ on itemstoinstall()
 			if not ShowRemovalDetail then
 				if removalcount > 0 then
 					if restartRequired then
-						set |RestartAction| of removalitem to "RequireRestart"
+						try
+							set |RestartAction| of removalitem to "RequireRestart"
+						on error
+							set removalitem to removalitem & {|RestartAction|:"RequireRestart"}
+						end try
 					end if
 					set display_name of removalitem to "Software removals"
 					set |description| of removalitem to "Scheduled removal of managed software."
