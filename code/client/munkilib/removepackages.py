@@ -197,7 +197,10 @@ def ImportPackage(packagepath, c):
         return
 
     if not os.path.isdir(packagepath):
-        munkicommon.display_error("%s is not a valid receipt. Skipping." % packagepath)
+        # Every machine I've seen has a bogus BSD.pkg, so we won't print a warning for
+        # that specific one. 
+        if pkgname != "BSD.pkg":
+            munkicommon.display_error("%s is not a valid receipt. Skipping." % packagepath)
         return
 
     if not os.path.exists(bompath):
@@ -755,6 +758,8 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     ds_storepath = pathtoremove + "/.DS_Store"
                     try:
                         os.remove(ds_storepath)
+                    except:
+                        pass
                     diritems = os.listdir(pathtoremove)
                 if diritems == []:
                     # directory is empty
@@ -798,10 +803,10 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
         local_display_percent_done(itemindex, itemcount)
         
     if removalerrors:
-        display_info("---------------------------------------------------")
-        display_info("There were problems removing some filesystem items.")
-        display_info("---------------------------------------------------")
-        display_info(removalerrors)
+        munkicommon.display_info("---------------------------------------------------")
+        munkicommon.display_info("There were problems removing some filesystem items.")
+        munkicommon.display_info("---------------------------------------------------")
+        munkicommon.display_info(removalerrors)
         
         
 
@@ -834,16 +839,20 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
             for item in removalpaths:
                 print "/" + item.encode("UTF-8")
         else:
+            if munkicommon.munkistatusoutput:
+                munkistatus.disableStopButton()
             removeFilesystemItems(removalpaths, forcedeletebundles)
-            if not noremovereceipts:
-                removeReceipts(pkgkeyslist, noupdateapplepkgdb)
-        if munkicommon.munkistatusoutput:
-            munkicommon.display_status('Package removal complete.')
-            time.sleep(2)
-
     else:
         munkicommon.display_status('Nothing to remove.')
         if munkicommon.munkistatusoutput:
+            time.sleep(2)
+            
+    if not listfiles:
+        if not noremovereceipts:
+            removeReceipts(pkgkeyslist, noupdateapplepkgdb)
+        if munkicommon.munkistatusoutput:
+            munkistatus.enableStopButton()
+            munkicommon.display_status('Package removal complete.')
             time.sleep(2)
            
     return 0
@@ -881,12 +890,18 @@ def main():
     # set the munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
+    
+    if options.munkistatusoutput:
+        pkgcount = len(pkgnames)
+        munkistatus.message("Removing %s packages..." % pkgcount)
         
     retcode = removepackages(pkgnames, forcedeletebundles=options.forcedeletebundles, listfiles=options.listfiles, 
                     rebuildpkgdb=options.rebuildpkgdb, noremovereceipts=options.noremovereceipts,
                     noupdateapplepkgdb=options.noupdateapplepkgdb)
+                    
     if options.munkistatusoutput:
         munkistatus.quit()
+        
     exit(retcode)
     
     
