@@ -63,7 +63,7 @@ def title(titleText):
 def message(messageText):
     result = osascript('tell application "MunkiStatus" to set contents of text field "mainTextFld" of window "mainWindow" to "%s"' % messageText)
     # when you change the message, the detail is no longer valid, so let's clear that
-    result = osascript('tell application "MunkiStatus" to set contents of text field "minorTextFld" of window "mainWindow" to ""')
+    result = osascript('tell application "MunkiStatus" to set contents of text field "minorTextFld" of window "mainWindow" to " "')
     
     
 def detail(detailsText):
