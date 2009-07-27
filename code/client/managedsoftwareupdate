@@ -157,7 +157,12 @@ def main():
     # create needed directories if necessary
     if not initMunkiDirs():
         exit(-1)
-    
+        
+    if not munkicommon.verbose == 0 : 
+        print "Managed Software Update Tool"
+        print "Copyright 2009 The Munki Project"
+        print "http://code.google.com/p/munki\n"
+        
     updatesavailable = False
     if not options.installonly:
         result = updatecheck.check(id=options.id)
@@ -235,7 +240,7 @@ def main():
                 installer.run()
             else:
                 if not options.quiet:
-                    print "Run %s --installonly to install the downloaded updates." % myname
+                    print "\nRun %s --installonly to install the downloaded updates." % myname
                 
     if munkicommon.munkistatusoutput:
         munkistatus.quit()
