@@ -6,22 +6,39 @@ There are two kinds of dependency keys.
 
 'requires' are prerequisites: package A requires package B be installed first.
 if package A is removed, package B is unaffected.
-
-'modifies' are packages the current package modifies on install; generally these
-are updaters.  For example, 'Office2008' might resolve to Office2008--12.1.7 which modifies 
-Office2008--12.1.0 which modifies Office2008--12.0.0. (Office2008--12.1.7 and 
-Office2008--12.1.0 are updater packages, Office2008--12.0.0 is the original installer.)
-If you later remove Office2008, you want to remove everything installed by all three packages.
-'modifies' provides a method to theoretically figure it all out.  
-'modifies' is a superset of 'requires'.
-
-when processing installs, the two dependencies are basically equivalent;
-the real difference comes when processing removals.
+'requires' is an array of itemnames.
 
 <key>requires</key>
 <array>
 	<string>TextWrangler</string>
 </array>
 
-The format for dependencies is identical to the managed_installs key in the manifest. 
+The format for requires is identical to the managed_installs key in the manifest. 
 No checking is done for circular dependencies - so don't make any.
+
+
+'modifies' points to ONE package the current package modifies on install; generally this means the current package is an updater.  For example, 'Office2008' might resolve to Office2008-12.1.7.0.0 which modifies 
+Office2008-12.1.0.0.0 which modifies Office2008--12.0.0.0.0 (Office2008--12.1.7.0.0 and 
+Office2008--12.1.0.0.0 are updater packages, Office2008--12.0.0.0.0 is the original installer.)
+If you later remove Office2008, you want to remove everything installed by all three packages.
+'modifies' provides a method to theoretically figure it all out.
+The value for 'modifies' must be a string that unambiguously resolves to a specific version of a specific install:
+
+<key>modifies</key>
+<string>Office2008-12.0.0.0.0</string>
+
+
+when processing installs, the two dependencies are basically equivalent;
+the real difference comes when processing removals.
+
+Supported architectures:
+If an installer item is valid only for PowerPC or only for Intel, you can include a supported_architectures key:
+
+<key>supported_architectures</key>
+<array>
+	<string>powerpc</string>
+	<string>i386</string>
+</array>
+	
+If this key is missing, it is assumed the installer item is valid for both PowerPC and Intel, so generally you'd have only "powerpc" or "i386" here.
+	
