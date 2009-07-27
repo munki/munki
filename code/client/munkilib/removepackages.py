@@ -728,6 +728,18 @@ def isBundle(pathname):
             return False
     else:
         return False
+        
+        
+def insideBundle(pathname):
+    # check the path to see if it's inside a bundle
+    while len(pathname) > 1:
+        if isBundle(pathname):
+            return True
+        else:
+            # chop off last item in path
+            pathname = os.path.dirname(pathname)
+    #if we get here, we didn't find a bundle path
+    return False
 
 def removeFilesystemItems(removalpaths, forcedeletebundles):
     """
@@ -781,9 +793,13 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                             munkicommon.display_error(msg)
                             removalerrors = removalerrors + "/n" + msg
                     else:
-                        msg = "WARNING: Did not remove %s because it is not empty." % pathtoremove
-                        munkicommon.display_error(msg)
-                        removalerrors = removalerrors + "/n" + msg
+                        # if this path is inside a bundle, and we've been directed to force remove
+                        # bundles, we don't need to warn because it's going to be removed with the
+                        # bundle. Otherwise, we should warn about non-empty directories.
+                        if not insideBundle(pathtoremove) or not forcedeletebundles:
+                            msg = "WARNING: Did not remove %s because it is not empty." % pathtoremove
+                            munkicommon.display_error(msg)
+                            removalerrors = removalerrors + "/n" + msg
                         
             else:
                 # not a directory, just unlink it
