@@ -82,11 +82,11 @@ on awake from nib theObject
 end awake from nib
 
 on resigned active theObject
-	copy "" to cfuser
+	(*copy "" to cfuser
 	copy (call method "consoleUser") to cfuser
 	if cfuser is "" then
 		tell me to activate
-	end if
+	end if*)
 end resigned active
 
 
