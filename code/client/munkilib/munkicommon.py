@@ -733,7 +733,7 @@ def getAvailableDiskSpace(volumepath="/"):
 
         if "FreeSpace" in pl:
             freespace = pl["FreeSpace"]
-        return int(freespace/1024)
+            return int(freespace/1024)
 
     # Yikes
     return 0
