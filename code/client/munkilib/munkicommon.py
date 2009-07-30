@@ -747,6 +747,7 @@ munkistatusoutput = False
 logfile = pref('LogFile')
 logginglevel = pref('LoggingLevel')
 errors = ""
+tmpdir = tempfile.mkdtemp()
 
     
 def main():
