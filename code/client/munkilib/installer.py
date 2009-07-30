@@ -24,6 +24,7 @@ import subprocess
 import sys
 import time
 import plistlib
+import tempfile
 import munkicommon
 import munkistatus
 from removepackages import removepackages
@@ -34,7 +35,7 @@ def cleanup():
         munkistatus.quit()
 
 
-def install(pkgpath):
+def install(pkgpath, choicesXMLpath=''):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
@@ -57,6 +58,8 @@ def install(pkgpath):
         
     munkicommon.log("Installing %s from %s" % (packagename, os.path.basename(pkgpath)))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
+    if choicesXMLpath:
+        cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
@@ -66,6 +69,8 @@ def install(pkgpath):
         restartneeded = True
 
     cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, '-target', '/']
+    if choicesXMLpath:
+        cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -131,7 +136,7 @@ def install(pkgpath):
     return (retcode, restartneeded)
 
 
-def installall(dirpath):
+def installall(dirpath, choicesXMLpath=''):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -156,13 +161,13 @@ def installall(dirpath):
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                needtorestart = installall(mountpoint)
+                needtorestart = installall(mountpoint, choicesXMLpath)
                 if needtorestart:
                     restartflag = True
                 munkicommon.unmountdmg(mountpoint)
         
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
-            (retcode, needsrestart) = install(itempath)
+            (retcode, needsrestart) = install(itempath, choicesXMLpath)
             if needsrestart:
                 restartflag = True
     return restartflag
@@ -183,7 +188,9 @@ def installWithInfo(dirpath, installlist):
     correct order.
     """
     restartflag = False
+    itemindex = -1
     for item in installlist:
+        itemindex = itemindex + 1
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
@@ -192,7 +199,11 @@ def installWithInfo(dirpath, installlist):
                 #can't install, so we should stop
                 munkicommon.display_error("Installer item %s was not found." % item["installer_item"])
                 return restartflag
-                
+            if 'installer_choices_xml' in item:
+                choicesXMLfile = os.path.join(munkicommon.tmpdir, "choices.xml")
+                plistlib.writePlist(item['installer_choices_xml'], choicesXMLfile)
+            else:
+                choicesXMLfile = ''
             if itempath.endswith(".dmg"):
                 munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
                 mountpoints = munkicommon.mountdmg(itempath)
@@ -206,23 +217,36 @@ def installWithInfo(dirpath, installlist):
                 for mountpoint in mountpoints:
                     # install all the pkgs and mpkgs at the root
                     # of the mountpoint -- call us recursively!
-                    needtorestart = installall(mountpoint)
+                    needtorestart = installall(mountpoint, choicesXMLfile)
                     if needtorestart:
                         restartflag = True
                     munkicommon.unmountdmg(mountpoint)
             else:
                 itempath = munkicommon.findInstallerItem(itempath)
                 if (itempath.endswith(".pkg") or itempath.endswith(".mpkg") or itempath.endswith(".dist")):
-                    (retcode, needsrestart) = install(itempath)
+                    (retcode, needsrestart) = install(itempath, choicesXMLfile)
                     if needsrestart:
                         restartflag = True
-                
-            # now remove the item from the install cache
-            # (using rm -f in case it's a bundle pkg)
-            # go back to original item path in case findInstallerItem
-            # descended dirs to find a .dist file
-            itempath = os.path.join(dirpath, item["installer_item"])
-            retcode = subprocess.call(["/bin/rm", "-rf", itempath])
+            
+            # check to see if this installer item is needed by any additional items in installinfo
+            # this might happen if there are mulitple things being installed with choicesXML files
+            # applied to a metapackage
+            foundagain = False
+            current_installer_item = item['installer_item']
+            # are we at the end of the installlist?
+            if itemindex+1 != len(installlist):
+                # nope, let's check the remaining items
+                for lateritem in installlist[itemindex+1:]:
+                    if 'installer_item' in lateritem:
+                        if lateritem['installer_item'] == current_installer_item:
+                            foundagain = True
+                            break
+                        
+            if not foundagain:
+                # now remove the item from the install cache
+                # (using rm -rf in case it's a bundle pkg)
+                itempath = os.path.join(dirpath, current_installer_item)
+                retcode = subprocess.call(["/bin/rm", "-rf", itempath])
 
     return restartflag
 
