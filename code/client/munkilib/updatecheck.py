@@ -61,6 +61,8 @@ def reporterrors():
     print munkicommon.errors
 
 
+# global to hold our catalog DBs   
+catalog = {}
 def makeCatalogDB(catalogitems):
     '''Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database'''
@@ -107,8 +109,139 @@ def makeCatalogDB(catalogitems):
 
     return pkgdb
 
-# global to hold our catalog DBs   
-catalog = {}
+
+def addPackageids(catalogitems, pkgid_table):
+    '''
+    Adds packageids from each catalogitem to a dictionary
+    '''
+    for item in catalogitems:
+        name = item['name']
+        if not name in pkgid_table:
+            pkgid_table[name] = []
+        if 'receipts' in item:
+            for receipt in item['receipts']:
+                if 'packageid' in receipt:
+                    if not receipt['packageid'] in pkgid_table[name]:
+                        pkgid_table[name].append(receipt['packageid'])
+                        
+    
+def getInstalledPackages():
+    """
+    Builds a dictionary of installed receipts and their version number
+    """
+    installedpkgs = {}
+    # Check /Library/Receipts
+    receiptsdir = "/Library/Receipts"
+    if os.path.exists(receiptsdir):
+        installitems = os.listdir(receiptsdir)
+        for item in installitems:
+            if item.endswith(".pkg"):
+                infoplist = os.path.join(receiptsdir, item, "Contents/Info.plist")
+                if os.path.exists(infoplist):
+                    pl = plistlib.readPlist(infoplist)
+                    if pl:
+                        pkgid = pl.get('CFBundleIdentifier')
+                        if pkgid:
+                            thisversion = munkicommon.getExtendedVersion(os.path.join(receiptsdir, item))
+                            if not pkgid in installedpkgs:
+                                installedpkgs[pkgid] = thisversion
+                            else:
+                                # pkgid is already in our list. There must be multiple receipts with the same pkgid.
+                                # in this case, we want the highest version number, since that's the one that's installed,
+                                # since presumably the newer package replaced the older
+                                storedversion = installedpkgs[pkgid]
+                                if version.LooseVersion(thisversion) > version.LooseVersion(storedversion):
+                                    installedpkgs[pkgid] = thisversion
+                                
+    # Now check new (Leopard and later) package database
+    p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=1, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+
+    if out:
+        pkgs = out.split("\n")
+        for pkg in pkgs:
+            p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkg], bufsize=1, 
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (out, err) = p.communicate()
+
+            if out:
+                pl = plistlib.readPlistFromString(out)
+                if "pkg-version" in pl:
+                    installedpkgs[pkg] = pl["pkg-version"]
+        
+    return installedpkgs
+
+# global pkgdata
+pkgdata = {}
+def analyzeInstalledPkgs():
+    global pkgdata
+    managed_pkgids = {}
+    for catalogname in catalog.keys():
+        catalogitems = catalog[catalogname]['items']
+        addPackageids(catalogitems, managed_pkgids)
+        
+    installedpkgs = getInstalledPackages()
+    
+    installed = []
+    partiallyinstalled = []
+    installedpkgsmatchedtoname = {}
+    for name in managed_pkgids.keys():
+        somepkgsfound = False
+        allpkgsfound = True
+        for pkg in managed_pkgids[name]:
+            if pkg in installedpkgs.keys():
+                somepkgsfound = True
+                if not name in installedpkgsmatchedtoname:
+                    installedpkgsmatchedtoname[name] = []
+                installedpkgsmatchedtoname[name].append(pkg)
+            else:
+                allpkgsfound = False
+        if allpkgsfound:
+            installed.append(name)
+        elif somepkgsfound:
+            partiallyinstalled.append(name)
+            
+    # we pay special attention to the items that seem partially installed.
+    # we need to see if there are any packages that are unique to this item
+    # if there aren't, then this item probably isn't installed, and we're
+    # just finding receipts that are shared with other items.
+    for name in partiallyinstalled:
+        # get a list of pkgs for this item that are installed
+        pkgsforthisname = installedpkgsmatchedtoname[name]
+        # now build a list of all the pkgs referred to by all the other
+        # items that are either partially or entirely installed
+        allotherpkgs = []
+        for othername in installed:
+            allotherpkgs.extend(installedpkgsmatchedtoname[othername])
+        for othername in partiallyinstalled:
+            if othername != name:
+                allotherpkgs.extend(installedpkgsmatchedtoname[othername])
+        # use Python sets to find pkgs that are unique to this name
+        uniquepkgs = list(set(pkgsforthisname) - set(allotherpkgs))
+        if uniquepkgs:
+            installed.append(name)
+            
+    #for name in sorted(installed):
+    #    if name in partiallyinstalled:
+    #        print "(%s)" % name, installedpkgsmatchedtoname[name]
+    #    else:
+    #        print name, installedpkgsmatchedtoname[name]
+            
+    # build our reference count table
+    refcount = {}
+    for name in installed:
+        for pkg in installedpkgsmatchedtoname[name]:
+            if not pkg in refcount:
+                refcount[pkg] = 1
+            else:
+                refcount[pkg] = refcount[pkg] + 1
+    
+    pkgdata = {}
+    pkgdata['receipts_for_name'] = installedpkgsmatchedtoname
+    pkgdata['installed_names'] = installed
+    pkgdata['pkg_refcount'] = refcount
+
 
 # appdict is a global so we don't call system_profiler more than once per session
 appdict = {}
@@ -714,6 +847,15 @@ def evidenceThisIsInstalled(pl):
     If any tests pass, the item might be installed.
     So this isn't the same as isInstalled()
     """
+    global pkgdata
+    # first check our pkgdata
+    if pl['name'] in pkgdata['installed_names']:
+        return True
+    if 'aliases' in pl:
+        for alias in pl['aliases']:
+            if alias in pkgdata['installed_names']:
+                return True
+                
     if 'installs' in pl:
         installitems = pl['installs']
         for item in installitems:
@@ -837,6 +979,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 iteminfo["version_to_install"] = pl.get('version',"UNKNOWN")
                 iteminfo['description'] = pl.get('description','')
                 iteminfo['display_name'] = pl.get('display_name','')
+                if 'installer_choices_xml' in pl:
+                    iteminfo['installer_choices_xml'] = pl['installer_choices_xml']
                 if 'RestartAction' in pl:
                     iteminfo['RestartAction'] = pl['RestartAction']
                 installinfo['managed_installs'].append(iteminfo)
@@ -892,7 +1036,7 @@ def processManifestForInstalls(manifestpath, installinfo):
     return installinfo
     
     
-def getReceiptsToRemove(infoitems):
+def OLDgetReceiptsToRemove(infoitems):
     """
     Compares all the receipts in the given infoitems
     against the installed receipts by packageid
@@ -910,6 +1054,19 @@ def getReceiptsToRemove(infoitems):
                                 matchingReceipts.append(item['packageid'])
                                 
     return matchingReceipts
+    
+    
+def getReceiptsToRemove(item):
+    name = item['name']
+    if name in pkgdata['receipts_for_name']:
+        return pkgdata['receipts_for_name'][name]
+    # now check aliases
+    if 'aliases' in item:
+         for alias in item['aliases']:
+             if alias in pkgdata['receipts_for_name']:
+                 return pkgdata['receipts_for_name'][alias]
+    # found nothing
+    return []
     
     
 def processRemoval(manifestitem, cataloglist, installinfo):
@@ -931,7 +1088,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     Returns a boolean; when processing dependencies, a false return
     will stop the removal of a dependent item.
     """
-    
+    global pkgdata
     manifestitemname_withversion = os.path.split(manifestitem)[1]
     
     munkicommon.display_detail("Processing manifest item %s..." % manifestitemname_withversion)
@@ -986,7 +1143,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         if 'uninstallable' in item and 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method']
             if uninstallmethod == 'removepackages':
-                packagesToRemove = getReceiptsToRemove(infoitems)
+                packagesToRemove = getReceiptsToRemove(item)
                 if packagesToRemove:
                     uninstall_item = item
                     break
@@ -1036,6 +1193,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             if not set(namesandaliases).intersection(processednamesandaliases):
                 if 'requires' in item_pl:
                     if set(item_pl['requires']).intersection(uninstall_item_names):
+                        munkicommon.display_debug1("%s requires %s, checking to see if it's installed..." % (item_pl.get('name'), manifestitemname))
                         if evidenceThisIsInstalled(item_pl):
                             munkicommon.display_info("%s requires %s and must be removed as well." % (item_pl.get('name'), manifestitemname))
                             success = processRemoval(item_pl.get('name'), cataloglist, installinfo)
@@ -1072,7 +1230,22 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo["manifestitem"] = manifestitemname_withversion
     iteminfo["description"] = "Will be removed." #uninstall_item.get('description','')
     if packagesToRemove:
-        iteminfo['packages'] = packagesToRemove
+        # decrement the refcount for each package
+        packagesToReallyRemove = []
+        for pkg in packagesToRemove:
+            # find pkg in pkgdata['pkg_refcount'] and decrement the ref count so
+            # we only remove packages if we're the last reference to it
+            if pkg in pkgdata['pkg_refcount']:
+                pkgdata['pkg_refcount'][pkg] = pkgdata['pkg_refcount'][pkg] - 1
+                if pkgdata['pkg_refcount'][pkg] == 0:
+                    packagesToReallyRemove.append(pkg)
+                if pkgdata['pkg_refcount'][pkg] < 0:
+                    # this shouldn't happen
+                    munkicommon.display_error("WARNING: pkg id %s ref count is < 0" % pkg)
+            else:
+                # This shouldn't happen
+                munkicommon.display_error("WARNING: pkg id %s missing from pkgdata" % pkg)
+        iteminfo['packages'] = packagesToReallyRemove
     iteminfo["uninstall_method"] = uninstallmethod
     iteminfo["installed"] = True
     iteminfo["installed_version"] = uninstall_item.get('version')
@@ -1088,6 +1261,11 @@ def processManifestForRemovals(manifestpath, installinfo):
     Processes manifests for removals. Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well...
     """
+    global pkgdata
+    if pkgdata == {}:
+        # build our database of installed packages
+        analyzeInstalledPkgs()
+        
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
 
     nestedmanifests = getManifestValueForKey(manifestpath, "included_manifests")
