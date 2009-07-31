@@ -1294,7 +1294,9 @@ def getCatalogs(cataloglist):
             message = "Retreiving catalog '%s'..." % catalogname
             (newcatalog, err) = getHTTPfileIfNewerAtomically(catalogurl, catalogpath, message=message)
             if newcatalog:
-                catalog[catalogname] = makeCatalogDB(munkicommon.readPlist(newcatalog))
+                # can't use munkicommon.readPlist here because it doesn't deal with plists
+                # that aren't dictionaries. Our catalog plists are arrays.
+                catalog[catalogname] = makeCatalogDB(plistlib.readPlist(newcatalog))
             else:
                 munkicommon.display_error("Could not retreive catalog %s from server." % catalog)
                 munkicommon.display_error(err)
