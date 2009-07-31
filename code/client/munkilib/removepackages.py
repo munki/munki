@@ -218,13 +218,19 @@ def ImportPackage(packagepath, c):
 
     timestamp = os.stat(packagepath).st_mtime
     owner = 0
-    pl = plistlib.readPlist(infopath)
+    pl = munkicommon.readPlist(infopath)
     if "CFBundleIdentifier" in pl:
-        pkgid =  pl["CFBundleIdentifier"]
+        pkgid = pl["CFBundleIdentifier"]
+    elif "Bundle identifier" in pl:
+        # special case for JAMF Composer generated packages. WTF?
+        pkgid = pl["Bundle identifier"]
     else:
         pkgid = pkgname
     if "CFBundleShortVersionString" in pl:
         vers = pl["CFBundleShortVersionString"]
+    elif "Bundle versions string, short" in pl:
+        # another special case for JAMF Composer-generated packages. Wow.
+        vers = pl["Bundle versions string, short"]
     else:
         vers = "1.0"
     if "IFPkgRelocatedPath" in pl:

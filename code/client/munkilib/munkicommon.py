@@ -26,10 +26,7 @@ import sys
 import os
 import re
 import plistlib
-#import urllib2
-#import urlparse
 import time
-#import calendar
 import subprocess
 import tempfile
 import shutil
@@ -397,7 +394,7 @@ def getExtendedVersion(bundlepath):
     infoPlist = os.path.join(bundlepath,"Contents","Info.plist")
     pl = {}
     if os.path.exists(versionPlist):
-        pl = plistlib.readPlist(versionPlist)
+        pl = readPlist(versionPlist)
         if pl:
             shortVers = "0.0.0"
             sourceVers = "0"
@@ -409,13 +406,13 @@ def getExtendedVersion(bundlepath):
             if "BuildVersion" in pl:
                 buildVers = padVersionString(pl["BuildVersion"],1)
             if os.path.exists(infoPlist):
-                   pl = plistlib.readPlist(infoPlist)
+                   pl = readPlist(infoPlist)
                    if 'IFMinorVersion' in pl:
                        buildVers = padVersionString(pl['IFMinorVersion'],1)               
             return shortVers + "." + sourceVers + "." + buildVers
                         
     if os.path.exists(infoPlist):
-        pl = plistlib.readPlist(infoPlist)
+        pl = readPlist(infoPlist)
         if "CFBundleShortVersionString" in pl:
             return padVersionString(pl["CFBundleShortVersionString"],5)
         elif "Bundle versions string, short" in pl:
@@ -498,7 +495,7 @@ def getOnePackageInfo(pkgpath):
     plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
     if os.path.exists(plistpath):
         pkginfo['filename'] = os.path.basename(pkgpath)
-        pl = plistlib.readPlist(plistpath)
+        pl = readPlist(plistpath)
             
         if "CFBundleIdentifier" in pl:
             pkginfo['packageid'] = pl["CFBundleIdentifier"]
@@ -539,7 +536,7 @@ def getBundlePackageInfo(pkgpath):
         dirsToSearch = []
         plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
         if os.path.exists(plistpath):
-            pl = plistlib.readPlist(plistpath)
+            pl = readPlist(plistpath)
             if 'IFPkgFlagComponentDirectory' in pl:
                 dirsToSearch.append(pl['IFPkgFlagComponentDirectory'])
                 

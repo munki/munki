@@ -41,7 +41,7 @@ import plistlib
 import subprocess
 import hashlib
 
-import munkilib.munkicommon
+from munkilib import munkicommon
 
 
 def getCatalogInfoFromDmg(dmgpath):
@@ -53,12 +53,12 @@ def getCatalogInfoFromDmg(dmgpath):
     To-do: handle multiple installer items on a disk image
     """
     cataloginfo = None
-    mountpoints = munkilib.munkicommon.mountdmg(dmgpath)
+    mountpoints = munkicommon.mountdmg(dmgpath)
     for mountpoint in mountpoints:
         for fsitem in os.listdir(mountpoint):
             itempath = os.path.join(mountpoint, fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
-                cataloginfo = munkilib.munkicommon.getPackageMetaData(itempath)
+                cataloginfo = munkicommon.getPackageMetaData(itempath)
                 # get out of fsitem loop
                 break
         if cataloginfo:
@@ -67,7 +67,7 @@ def getCatalogInfoFromDmg(dmgpath):
             
     #unmount all the mountpoints from the dmg
     for mountpoint in mountpoints:
-        munkilib.munkicommon.unmountdmg(mountpoint)
+        munkicommon.unmountdmg(mountpoint)
     return cataloginfo   
 
 
@@ -82,7 +82,7 @@ def getBundleInfo(path):
         
     if os.path.exists(infopath):
         try:
-            pl = plistlib.readPlist(infopath)
+            pl = munkicommon.readPlist(infopath)
             return pl
         except:
             pass
@@ -142,7 +142,7 @@ def getiteminfo(itempath):
         infodict['type'] = 'plist'
         infodict['path'] = itempath
         try:
-            pl = plistlib.readPlist(itempath)
+            pl = munkicommon.readPlist(itempath)
             if 'CFBundleShortVersionString' in pl:
                 infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
         except:
@@ -191,7 +191,7 @@ def main():
                 exit(-1)
             
         elif item.endswith('.pkg') or item.endswith('.mpkg'):
-            catinfo = munkilib.munkicommon.getPackageMetaData(item)
+            catinfo = munkicommon.getPackageMetaData(item)
             if not catinfo:
                 print >>sys.stderr, "%s doesn't appear to be a valid installer item!" % item
                 exit(-1)

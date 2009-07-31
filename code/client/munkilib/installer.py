@@ -355,7 +355,7 @@ def run():
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
-            pl = plistlib.readPlist(installinfo)
+            pl = munkicommon.readPlist(installinfo)
         except:
             print >>sys.stderr, "Invalid %s" % installinfo
             return -1

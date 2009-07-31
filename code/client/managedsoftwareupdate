@@ -179,7 +179,7 @@ def main():
             installinfo = os.path.join(munkicommon.ManagedInstallDir(), 'InstallInfo.plist')
             if os.path.exists(installinfo):
                 try:
-                    pl = plistlib.readPlist(installinfo)
+                    pl = munkicommon.readPlist(installinfo)
                     removalcount = installer.getRemovalCount(pl.get('removals',[]))
                     installcount = installer.getInstallCount(pl.get('managed_installs',[]))
                     if removalcount or installcount:

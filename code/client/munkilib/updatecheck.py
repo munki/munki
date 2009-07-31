@@ -138,9 +138,12 @@ def getInstalledPackages():
             if item.endswith(".pkg"):
                 infoplist = os.path.join(receiptsdir, item, "Contents/Info.plist")
                 if os.path.exists(infoplist):
-                    pl = plistlib.readPlist(infoplist)
+                    pl = munkicommon.readPlist(infoplist)
                     if pl:
                         pkgid = pl.get('CFBundleIdentifier')
+                        if not pkgid:
+                            # special case JAMF Composer packages
+                            pkgid = pl.get('Bundle identifier')
                         if pkgid:
                             thisversion = munkicommon.getExtendedVersion(os.path.join(receiptsdir, item))
                             if not pkgid in installedpkgs:
@@ -222,12 +225,6 @@ def analyzeInstalledPkgs():
         if uniquepkgs:
             installed.append(name)
             
-    #for name in sorted(installed):
-    #    if name in partiallyinstalled:
-    #        print "(%s)" % name, installedpkgsmatchedtoname[name]
-    #    else:
-    #        print name, installedpkgsmatchedtoname[name]
-            
     # build our reference count table
     refcount = {}
     for name in installed:
@@ -275,7 +272,7 @@ def getAppBundleID(path):
     infopath = os.path.join(path, "Contents", "Info.plist")
     if os.path.exists(infopath):
         try:
-            pl = plistlib.readPlist(infopath)
+            pl = munkicommon.readPlist(infopath)
             if 'CFBundleIdentifier' in pl:
                 return pl['CFBundleIdentifier']
         except:
@@ -398,7 +395,7 @@ def compareBundleVersion(item):
         return 0
 
     try:
-        pl = plistlib.readPlist(filepath) 
+        pl = munkicommon.readPlist(filepath) 
     except:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
@@ -434,7 +431,7 @@ def comparePlistVersion(item):
         return 0
         
     try:
-        pl = plistlib.readPlist(filepath) 
+        pl = munkicommon.readPlist(filepath) 
     except:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
@@ -546,7 +543,7 @@ def getInstalledVersion(pl):
                 try:
                     # check default location for app
                     filepath = os.path.join(install_item['path'], 'Contents', 'Info.plist')
-                    pl = plistlib.readPlist(filepath)
+                    pl = munkicommon.readPlist(filepath)
                     installedappvers = pl.get('CFBundleShortVersionString')
                 except:
                     # that didn't work, fall through to the slow way
@@ -1034,27 +1031,7 @@ def processManifestForInstalls(manifestpath, installinfo):
             result = processInstall(item, cataloglist, installinfo)
         
     return installinfo
-    
-    
-def OLDgetReceiptsToRemove(infoitems):
-    """
-    Compares all the receipts in the given infoitems
-    against the installed receipts by packageid
-    and returns the intersection of the two sets
-    """
-    matchingReceipts = []
-    for infoitem in infoitems:
-        for key in ['receipts', 'optional_receipts']:
-            if key in infoitem:
-                receipts = infoitem[key]
-                for item in receipts:
-                    if 'packageid' in item:
-                        if not item['packageid'] in matchingReceipts:
-                            if munkicommon.getInstalledPackageVersion(item['packageid']):
-                                matchingReceipts.append(item['packageid'])
-                                
-    return matchingReceipts
-    
+        
     
 def getReceiptsToRemove(item):
     name = item['name']
@@ -1185,7 +1162,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     processednamesandaliases = []
     for catalogname in cataloglist:
         localcatalog = os.path.join(catalogsdir,catalogname)
-        catalog = plistlib.readPlist(localcatalog)
+        catalog = munkicommon.readPlist(localcatalog)
         for item_pl in catalog:
             namesandaliases = []
             namesandaliases.append(item_pl.get('name'))
@@ -1289,7 +1266,7 @@ def processManifestForRemovals(manifestpath, installinfo):
 
 def getManifestValueForKey(manifestpath, keyname):    
     try:
-        pl = plistlib.readPlist(manifestpath)
+        pl = munkicommon.readPlist(manifestpath)
     except:
         munkicommon.display_error("Could not read plist %s" % manifestpath)
         return None    
@@ -1317,7 +1294,7 @@ def getCatalogs(cataloglist):
             message = "Retreiving catalog '%s'..." % catalogname
             (newcatalog, err) = getHTTPfileIfNewerAtomically(catalogurl, catalogpath, message=message)
             if newcatalog:
-                catalog[catalogname] = makeCatalogDB(plistlib.readPlist(newcatalog))
+                catalog[catalogname] = makeCatalogDB(munkicommon.readPlist(newcatalog))
             else:
                 munkicommon.display_error("Could not retreive catalog %s from server." % catalog)
                 munkicommon.display_error(err)
@@ -1651,7 +1628,7 @@ def check(id=''):
         installinfochanged = True
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
         if os.path.exists(installinfopath):
-            oldinstallinfo = plistlib.readPlist(installinfopath)
+            oldinstallinfo = munkicommon.readPlist(installinfopath)
             if oldinstallinfo == installinfo:
                 installinfochanged = False
                 munkicommon.display_detail("No change in InstallInfo.")
@@ -1665,7 +1642,7 @@ def check(id=''):
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
         if os.path.exists(installinfopath):
             try:
-                installinfo = plistlib.readPlist(installinfopath)
+                installinfo = munkicommon.readPlist(installinfopath)
             except:
                 installinfo = {}
                 
