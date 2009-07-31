@@ -820,7 +820,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                 except Exception, err:
                     msg = "ERROR: couldn't remove item %s: %s" % (pathtoremove, err)
                     munkicommon.display_error(msg)
-                    removalerrors = removalerrors + "/n" + msg
+                    removalerrors = removalerrors + "\n" + msg
                     
         local_display_percent_done(itemindex, itemcount)
         
