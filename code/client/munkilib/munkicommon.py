@@ -415,9 +415,13 @@ def getExtendedVersion(bundlepath):
             return shortVers + "." + sourceVers + "." + buildVers
                         
     if os.path.exists(infoPlist):
-           pl = plistlib.readPlist(infoPlist)
-           if "CFBundleShortVersionString" in pl:
-               return padVersionString(pl["CFBundleShortVersionString"],5)
+        pl = plistlib.readPlist(infoPlist)
+        if "CFBundleShortVersionString" in pl:
+            return padVersionString(pl["CFBundleShortVersionString"],5)
+        elif "Bundle versions string, short" in pl:
+            # another special case for JAMF Composer-generated packages. Wow.
+            return padVersionString(pl["Bundle versions string, short"],5)
+        
     else:
         return "0.0.0.0.0"
                 
@@ -470,12 +474,12 @@ def getFlatPackageInfo(pkgpath):
     """
 
     infoarray = []
-    mytmpdir = tempfile.mkdtemp()
-    os.chdir(mytmpdir)
+    pkgtmp = tempfile.mkdtemp(dir=tmpdir)
+    os.chdir(pkgtmp)
     p = subprocess.Popen(["/usr/bin/xar", "-xf", pkgpath, "--exclude", "Payload"])
     returncode = p.wait()
     if returncode == 0:
-        currentdir = mytmpdir
+        currentdir = pkgtmp
         packageinfofile = os.path.join(currentdir, "PackageInfo")
         if os.path.exists(packageinfofile):
             infoarray = parsePkgRefs(packageinfofile)
@@ -483,7 +487,8 @@ def getFlatPackageInfo(pkgpath):
             distributionfile = os.path.join(currentdir, "Distribution")
             if os.path.exists(distributionfile):
                 infoarray = parsePkgRefs(distributionfile)
-    shutil.rmtree(mytmpdir)
+    os.chdir("/")
+    shutil.rmtree(pkgtmp)
     return infoarray
 
 
@@ -497,6 +502,9 @@ def getOnePackageInfo(pkgpath):
             
         if "CFBundleIdentifier" in pl:
             pkginfo['packageid'] = pl["CFBundleIdentifier"]
+        elif "Bundle identifier" in pl:
+            # special case for JAMF Composer generated packages. WTF?
+            pkginfo['packageid'] = pl["Bundle identifier"]
         else:
             pkginfo['packageid'] = os.path.basename(pkgpath)
             
@@ -737,7 +745,15 @@ def getAvailableDiskSpace(volumepath="/"):
 
     # Yikes
     return 0
-    
+ 
+def cleanUpTmpDir():
+    global tmpdir
+    if tmpdir:
+        try:
+            shutil.rmtree(tmpdir) 
+        except:
+            pass
+        tmpdir = None
     
     
 # module globals
