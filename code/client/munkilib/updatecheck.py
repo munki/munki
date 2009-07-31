@@ -1162,7 +1162,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     processednamesandaliases = []
     for catalogname in cataloglist:
         localcatalog = os.path.join(catalogsdir,catalogname)
-        catalog = munkicommon.readPlist(localcatalog)
+        catalog = plistlib.readPlist(localcatalog)
         for item_pl in catalog:
             namesandaliases = []
             namesandaliases.append(item_pl.get('name'))
