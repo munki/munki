@@ -244,6 +244,8 @@ def main():
                 
     if munkicommon.munkistatusoutput:
         munkistatus.quit()
+    if munkicommon.tmpdir:
+        munkicommon.cleanUpTmpDir()
         
 if __name__ == '__main__':
     main()
