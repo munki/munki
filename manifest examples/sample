@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>catalogs</key>
+	<array>
+		<string>testing</string>
+		<string>production</string>
+	</array>
+	<key>included_manifests</key>
+	<array>
+		<string>groups/StandardApps</string>
+		<string>groups/WebPlugins</string>
+	</array>
+	<key>managed_installs</key>
+	<array>
+		<string>WacomTablet</string>
+		<string>iWork09</string>
+		<string>iLife08_iPhoto</string>
+		<string>iLife08_iDVD</string>
+	</array>
+	<key>managed_uninstalls</key>
+	<array>
+		<string>TextWrangler</string>
+	</array>
+</dict>
+</plist>

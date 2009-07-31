@@ -2,43 +2,42 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>display_name</key>
-	<string>Microsoft Silverlight</string>
+	<key>catalogs</key>
+	<array>
+		<string>testing</string>
+	</array>
 	<key>description</key>
-	<string>Microsoft browser plugin for rich Internet experience</string>
+	<string>Adobe Shockwave 11 Slim for Macintosh 10.4 platform</string>
+	<key>display_name</key>
+	<string>Adobe Shockwave 11 Slim</string>
 	<key>installed_size</key>
-	<integer>18944</integer>
+	<integer>9244</integer>
 	<key>installer_item_location</key>
-	<string>internet/Silverlight.2.0.40115.0.dmg</string>
+	<string>internet/Shockwave_Installer_Slim.dmg</string>
 	<key>installer_item_size</key>
-	<integer>7567</integer>
+	<integer>3511</integer>
 	<key>minimum_os_version</key>
 	<string>10.4.0</string>
 	<key>name</key>
-	<string>Silverlight</string>
+	<string>Shockwave_Installer_Slim</string>
 	<key>aliases</key>
 	<array>
-		<string>MicrosoftSilverlight</string>
-	</array>
-	<key>catalogs</key>
-	<array>
-		<string>production</string>
-		<string>testing</string>
+		<string>Shockwave</string>
 	</array>
 	<key>receipts</key>
 	<array>
 		<dict>
 			<key>packageid</key>
-			<string>com.microsoft.installSilverlightPlugin</string>
+			<string>com.adobe.shockwave</string>
 			<key>version</key>
-			<string>2.0.40115.0.0</string>
+			<string>11.0.0r465.0.0</string>
 		</dict>
 	</array>
-	<key>version</key>
-	<string>2.0.40115.0.0</string>
-	<key>uninstallable</key>
-	<true/>
 	<key>uninstall_method</key>
 	<string>removepackages</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>version</key>
+	<string>11.0.0r465.0.0</string>
 </dict>
 </plist>

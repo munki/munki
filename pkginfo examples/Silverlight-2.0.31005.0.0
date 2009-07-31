@@ -5,25 +5,16 @@
 	<key>display_name</key>
 	<string>Microsoft Silverlight</string>
 	<key>description</key>
-	<string>Microsoft browser plugin for rich Internet experience</string>
-	<key>installed_size</key>
-	<integer>18944</integer>
+	<string>Microsoft web plugin for rich application experiences</string>
 	<key>installer_item_location</key>
-	<string>internet/Silverlight.2.0.40115.0.dmg</string>
-	<key>installer_item_size</key>
-	<integer>7567</integer>
+	<string>internet/Silverlight.2.0.31005.0.dmg</string>
 	<key>minimum_os_version</key>
 	<string>10.4.0</string>
 	<key>name</key>
 	<string>Silverlight</string>
-	<key>aliases</key>
-	<array>
-		<string>MicrosoftSilverlight</string>
-	</array>
 	<key>catalogs</key>
 	<array>
 		<string>production</string>
-		<string>testing</string>
 	</array>
 	<key>receipts</key>
 	<array>
@@ -31,14 +22,15 @@
 			<key>packageid</key>
 			<string>com.microsoft.installSilverlightPlugin</string>
 			<key>version</key>
-			<string>2.0.40115.0.0</string>
+			<string>2.0.31005.0.0</string>
 		</dict>
 	</array>
 	<key>version</key>
-	<string>2.0.40115.0.0</string>
+	<string>2.0.31005.0.0</string>
 	<key>uninstallable</key>
 	<true/>
 	<key>uninstall_method</key>
 	<string>removepackages</string>
 </dict>
 </plist>
+

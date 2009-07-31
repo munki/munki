@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>description</key>
+	<string>Plugin to display Flash content in web browsers.</string>
+	<key>display_name</key>
+	<string>Adobe Flash Player</string>
+	<key>installed_size</key>
+	<integer>13200</integer>
+	<key>installer_item_location</key>
+	<string>internet/FlashPlayer10.0.22.87.pkg.dmg</string>
+	<key>installer_item_size</key>
+	<integer>5597</integer>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>FlashPlayer</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleShortVersionString</key>
+			<string>10.0.22</string>
+			<key>path</key>
+			<string>/Library/Internet Plug-Ins/Flash Player.plugin</string>
+			<key>type</key>
+			<string>bundle</string>
+		</dict>
+	</array>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>packageid</key>
+			<string>com.adobe.pkg.FlashPlayer</string>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+	</array>
+	<key>version</key>
+	<string>10.0.22.87.0</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+		<string>testing</string>
+	</array>
+</dict>
+</plist>

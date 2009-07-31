@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>description</key>
+	<string>Mozilla's open source email client.</string>
+	<key>display_name</key>
+	<string>Mozilla Thunderbird</string>
+	<key>installed_size</key>
+	<integer>52800</integer>
+	<key>installer_item_location</key>
+	<string>apps/Thunderbird2.0.0.19.pkg.dmg</string>
+	<key>installer_item_size</key>
+	<integer>19254</integer>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>Thunderbird</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>org.mozilla.thunderbird</string>
+			<key>CFBundleName</key>
+			<string>Thunderbird</string>
+			<key>CFBundleShortVersionString</key>
+			<string>2.0.0.19</string>
+			<key>path</key>
+			<string>/Applications/Thunderbird.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>packageid</key>
+			<string>com.disneyanimation.thunderbird</string>
+			<key>version</key>
+			<string>2.0.0.19.0</string>
+		</dict>
+	</array>
+	<key>version</key>
+	<string>2.0.0.19.0</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+		<string>testing</string>
+	</array>
+</dict>
+</plist>

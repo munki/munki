@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>description</key>
+	<string>Media player used by the ABC.com streaming site.</string>
+	<key>display_name</key>
+	<string>Move Media Player Plugin</string>
+	<key>installed_size</key>
+	<integer>3520</integer>
+	<key>installer_item_location</key>
+	<string>internet/MoveMediaPlayerPlugin.pkg.dmg</string>
+	<key>installer_item_size</key>
+	<integer>1037</integer>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleShortVersionString</key>
+			<string>npmnqmp 071101000050</string>
+			<key>path</key>
+			<string>/Library/Internet Plug-Ins/Move-Media-Player.plugin</string>
+			<key>type</key>
+			<string>bundle</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>MoveMediaPlayerPlugin</string>
+	<key>aliases</key>
+	<array>
+		<string>MoveMediaPlayer</string>
+	</array>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>packageid</key>
+			<string>com.movenetworks.movemediaplayer.plugin.pkg</string>
+			<key>version</key>
+			<string>npmnqmp 071101000050.0.0.0.0</string>
+		</dict>
+	</array>
+	<key>version</key>
+	<string>1.0</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+		<string>testing</string>
+	</array>
+</dict>
+</plist>

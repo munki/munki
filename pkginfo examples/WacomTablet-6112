@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>catalogs</key>
+	<array>
+		<string>testing</string>
+	</array>
+	<key>description</key>
+	<string>Wacom Tablet driver driver supporting USB versions of all Intuos4 (PTK), Intuos3 (PTZ), Intuos2 (XD), Intuos (GD), CintiqPartner (PTU) and Graphire2 (ET-0405A) pen tablets and the Cintiq 12WX, 20WSX, 21UX, 18SX, and 15X pen displays.</string>
+	<key>display_name</key>
+	<string>Wacom Tablet Driver</string>
+	<key>installed_size</key>
+	<integer>24025</integer>
+	<key>installer_item_location</key>
+	<string>drivers/WacomTablet_611-2.dmg</string>
+	<key>installer_item_size</key>
+	<integer>10796</integer>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>WacomTablet</string>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>filename</key>
+			<string>Install Wacom Tablet.pkg</string>
+			<key>packageid</key>
+			<string>com.wacom.installwacomtablet</string>
+			<key>version</key>
+			<string>6.1.1-2.0.0</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>version</key>
+	<string>6.1.1-2.0.0</string>
+</dict>
+</plist>
+
