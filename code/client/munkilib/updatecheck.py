@@ -1357,6 +1357,7 @@ def getPrimaryManifest(alternate_id):
     Gets the client manifest from the server
     """
     global errors
+    manifest = ""
     managedinstallprefs = munkicommon.prefs()
     manifesturl = managedinstallprefs['ManifestURL']
     clientidentifier = managedinstallprefs.get('ClientIdentifier','')
@@ -1545,7 +1546,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
     Replaces pre-existing file only on success. (thus 'Atomically')
     """
     err = None
-    mytemppath = os.path.join(mytmpdir,"TempDownload")
+    mytemppath = os.path.join(munkicommon.tmpdir,"TempDownload")
     if os.path.exists(destinationpath):
         modtime = os.stat(destinationpath).st_mtime
     else:
@@ -1583,7 +1584,6 @@ def getMachineFacts():
     
 
 # some globals
-mytmpdir = ''
 machine = {}
 
 def check(id=''):
@@ -1591,8 +1591,6 @@ def check(id=''):
     if needed. Returns 1 if there are available updates,  0 if there are no available updates, 
     and -1 if there were errors.'''
     
-    global mytmpdir
-    mytmpdir = tempfile.mkdtemp()
     getMachineFacts()
     
     ManagedInstallDir = munkicommon.ManagedInstallDir()
@@ -1671,12 +1669,6 @@ def check(id=''):
             except:
                 installinfo = {}
                 
-    try:
-        # clean up our tmp dir
-        os.rmdir(mytmpdir)
-    except:
-        # not fatal if it fails
-        pass
         
     installcount = getInstallCount(installinfo)
     removalcount = getRemovalCount(installinfo)
