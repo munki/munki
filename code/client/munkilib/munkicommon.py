@@ -35,6 +35,8 @@ from xml.dom import minidom
 
 #from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 from Foundation import NSDictionary, NSDate
+from Foundation import NSData, NSPropertyListSerialization, NSPropertyListMutableContainers, NSPropertyListXMLFormat_v1_0
+from PyObjCTools import Conversion
 
 import munkistatus
 
@@ -195,9 +197,15 @@ def readPlist(plistfile):
   Returns:
     dict of plist contents.
   """
-  return NSDictionary.dictionaryWithContentsOfFile_(plistfile)
-
-
+  plistData = NSData.dataWithContentsOfFile_(plistfile)
+  dataObject, plistFormat, error = NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(plistData, NSPropertyListMutableContainers, None, None)
+  if not error:
+      # convert from Obj-C collection to Python collection
+      return Conversion.pythonCollectionFromPropertyList(dataObject)
+  else:
+      raise Exception(error)
+      
+      
 def getconsoleuser():
     # workaround no longer needed, but leaving this here for now...
     #osvers = int(os.uname()[2].split('.')[0])
@@ -299,6 +307,8 @@ def getManagedInstallsPrefs():
     prefs['SoftwareUpdateServerURL'] = None
     prefs['DaysBetweenNotifications'] = 1
     prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
+    # Added by bcw
+    prefs['UseClientCertificate'] = False
     
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
     pl = {}
@@ -315,6 +325,12 @@ def getManagedInstallsPrefs():
             pass
                 
     return prefs
+
+
+# Added by bcw
+def UseClientCertificate():
+    prefs = getManagedInstallsPrefs()
+    return prefs['UseClientCertificate']
 
 
 def ManagedInstallDir():
@@ -496,7 +512,6 @@ def getOnePackageInfo(pkgpath):
     if os.path.exists(plistpath):
         pkginfo['filename'] = os.path.basename(pkgpath)
         pl = readPlist(plistpath)
-            
         if "CFBundleIdentifier" in pl:
             pkginfo['packageid'] = pl["CFBundleIdentifier"]
         elif "Bundle identifier" in pl:
@@ -509,9 +524,11 @@ def getOnePackageInfo(pkgpath):
             pkginfo['name'] = pl["CFBundleName"]
         
         if "IFPkgFlagInstalledSize" in pl:
-            pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
+            # converting to int because plistlib barfs on longs. This might be a problem...
+            pkginfo['installed_size'] = int(pl["IFPkgFlagInstalledSize"])
+            #pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
         
-        pkginfo['version'] = getExtendedVersion(pkgpath)    
+        pkginfo['version'] = getExtendedVersion(pkgpath)
     return pkginfo
     
 

@@ -30,6 +30,7 @@ import subprocess
 from distutils import version
 import urllib2
 import urlparse
+import httplib
 import hashlib
 import datetime
 import time
@@ -39,7 +40,6 @@ import socket
 #our lib
 import munkicommon
 import munkistatus
-
 
 def reporterrors():
     # just a placeholder right now;
@@ -1433,10 +1433,57 @@ def checkServer():
 #       httpDownload/getfilefromhttpurl/getHTTPfileIfNewerAtomically
 #
 
+# urllib2 has no handler for client certificates, so make one...
+# Subclass HTTPSClientAuthHandler adapted from the following sources:
+# http://www.osmonov.com/2009/04/client-certificates-with-urllib2.html
+# http://www.threepillarsoftware.com/soap_client_auth
+# http://bugs.python.org/issue3466
+# bcw
+class HTTPSClientAuthHandler(urllib2.HTTPSHandler):  
+   def __init__(self, key, cert):  
+       urllib2.HTTPSHandler.__init__(self)  
+       self.key = key  
+       self.cert = cert  
+   def https_open(self, req):  
+       # Rather than pass in a reference to a connection class, we pass in  
+       # a reference to a function which, for all intents and purposes,  
+       # will behave as a constructor  
+       return self.do_open(self.getConnection, req)  
+   def getConnection(self, host, timeout=300):  
+       return httplib.HTTPSConnection(host, key_file=self.key, cert_file=self.cert)
+
+# An empty subclass for identifying missing certs, bcw
+# Maybe there is a better place for this?
+class UseClientCertificateError(IOError):
+    pass
 
 def httpDownload(url, filename, headers={}, postData=None, reporthook=None, message=None):
+
+    # The required name for combination certifcate and private key
+    # File must be PEM formatted and include the client's private key
+    # bcw
+    pemfile = 'munki.pem'
+    
+    # Grab the prefs for UseClientCertificate and construct a loc for the cert, bcw
+    ManagedInstallDir = munkicommon.ManagedInstallDir()
+    UseClientCertificate = munkicommon.UseClientCertificate()
+    cert = os.path.join(ManagedInstallDir, 'certs', pemfile)
+    
     reqObj = urllib2.Request(url, postData, headers)
-    fp = urllib2.urlopen(reqObj)
+    
+    if UseClientCertificate == True:
+        # Check for the existence of the PEM file, bcw
+    	if os.path.isfile(cert):
+            # Construct a secure urllib2 opener, bcw
+            secureopener = urllib2.build_opener(HTTPSClientAuthHandler(cert, cert))
+            fp = secureopener.open(reqObj)
+    	else:
+	    # No x509 cert so fail -0x509 (decimal -1289). So amusing. bcw
+    	    raise UseClientCertificateError(-1289, "PEM file missing, %s" % cert)
+  
+    else:	    
+        fp = urllib2.urlopen(reqObj)
+    
     headers = fp.info()
     
     if message:
@@ -1480,7 +1527,6 @@ def httpDownload(url, filename, headers={}, postData=None, reporthook=None, mess
     return result
 
 
-
 def getfilefromhttpurl(url,filepath, ifmodifiedsince=None, message=None):
     """
     gets a file from a url.
@@ -1509,8 +1555,14 @@ def getfilefromhttpurl(url,filepath, ifmodifiedsince=None, message=None):
             
     except urllib2.HTTPError, err:
         return err.code
-    #except urllib2.URLError, err:
-    #    return err   
+    # Uncommented the exception handler below and added str(err)
+    # This will catch missing or invalid certs/keys in getHTTPfileIfNewerAtomically 
+    # bcw
+    except urllib2.URLError, err:
+        return str(err)
+    # This will catch missing certs in getHTTPfileIfNewerAtomically, bcw
+    except UseClientCertificateError, err:
+        return err 
     except IOError, err:
         return err
     except Exception, err:
@@ -1542,6 +1594,14 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
         # not modified, return existing file
         munkicommon.display_debug1("%s already exists and is up-to-date." % destinationpath)
         return destinationpath, err
+    # Added to catch private key errors when the opener is constructed, bcw
+    elif result == '<urlopen error SSL_CTX_use_PrivateKey_file error>':
+        err = "SSL_CTX_use_PrivateKey_file error: PrivateKey Invalid or Missing"
+        destinationpath = None
+    # Added to catch certificate errors when the opener is constructed, bcw
+    elif result == '<urlopen error SSL_CTX_use_certificate_chain_file error>':
+        err = "SSL_CTX_use_certificate_chain_file error: Certificate Invalid or Missing"
+        destinationpath = None
     else:
         err = "Error code: %s retreiving %s" % (result, url)
         destinationpath = None
@@ -1550,6 +1610,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
         os.remove(mytemppath)
         
     return destinationpath, err
+    
     
 def getMachineFacts():
     global machine
@@ -1688,5 +1749,5 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+    main()
 
