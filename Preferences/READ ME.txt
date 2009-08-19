@@ -8,3 +8,4 @@ prefs['LoggingLevel'] = 1
 prefs['ClientIdentifier'] = (fully-qualified hostname)
 prefs['InstallAppleSoftwareUpdates'] = False
 prefs['SoftwareUpdateServerURL'] = None
+prefs['UseClientCertificate'] = False

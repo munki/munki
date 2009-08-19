@@ -10,12 +10,10 @@
   <string>arbitrary_catalog_name</string>
   <key>SoftwareRepoURL</key>
   <string>http://webserver/repo</string>
+  <key>UseClientCertificate</key>
+  <false/>
   <key>LoggingLevel</key>
   <integer>1</integer>
-  <key>InstallAppleSoftwareUpdates</key>
-  <false/>
-  <key>SoftwareUpdateServerURL</key>
-  <string>http://xserve.myorg.com:8088/</string>
   <key>DaysBetweenNotifications</key>
   <integer>1</integer>
 </dict>
