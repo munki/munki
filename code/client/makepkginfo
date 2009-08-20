@@ -37,12 +37,12 @@ import os
 import re
 import optparse
 from distutils import version
-import plistlib
+#import plistlib
 import subprocess
 import hashlib
 
 from munkilib import munkicommon
-
+from munkilib import FoundationPlist
 
 def getCatalogInfoFromDmg(dmgpath):
     """
@@ -82,7 +82,7 @@ def getBundleInfo(path):
         
     if os.path.exists(infopath):
         try:
-            pl = munkicommon.readPlist(infopath)
+            pl = FoundationPlist.readPlist(infopath)
             return pl
         except:
             pass
@@ -142,7 +142,7 @@ def getiteminfo(itempath):
         infodict['type'] = 'plist'
         infodict['path'] = itempath
         try:
-            pl = munkicommon.readPlist(itempath)
+            pl = FoundationPlist.readPlist(itempath)
             if 'CFBundleShortVersionString' in pl:
                 infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
         except:
@@ -251,7 +251,7 @@ def main():
             catinfo['uninstall_method'] = "removepackages"
             
             # and now, what we've all been waiting for...
-            print plistlib.writePlistToString(catinfo)
+            print FoundationPlist.writePlistToString(catinfo)
 
 
 if __name__ == '__main__':
