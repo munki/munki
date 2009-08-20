@@ -24,7 +24,7 @@ Created by Greg Neagle on 2008-11-13.
 #standard libs
 import sys
 import os
-import plistlib
+#import plistlib
 import tempfile
 import subprocess
 from distutils import version
@@ -40,6 +40,7 @@ import socket
 #our lib
 import munkicommon
 import munkistatus
+import FoundationPlist
 
 def reporterrors():
     # just a placeholder right now;
@@ -138,7 +139,7 @@ def getInstalledPackages():
             if item.endswith(".pkg"):
                 infoplist = os.path.join(receiptsdir, item, "Contents/Info.plist")
                 if os.path.exists(infoplist):
-                    pl = munkicommon.readPlist(infoplist)
+                    pl = FoundationPlist.readPlist(infoplist)
                     if pl:
                         pkgid = pl.get('CFBundleIdentifier')
                         if not pkgid:
@@ -169,7 +170,7 @@ def getInstalledPackages():
             (out, err) = p.communicate()
 
             if out:
-                pl = plistlib.readPlistFromString(out)
+                pl = FoundationPlist.readPlistFromString(out)
                 if "pkg-version" in pl:
                     installedpkgs[pkg] = pl["pkg-version"]
         
@@ -255,7 +256,7 @@ def getAppData():
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (plist, err) = p.communicate()
         if p.returncode == 0:
-            pl = plistlib.readPlistFromString(plist)
+            pl = FoundationPlist.readPlistFromString(plist)
             # top level is an array instead of a dict, so get dict
             spdict = pl[0]
             if '_items' in spdict:
@@ -272,7 +273,7 @@ def getAppBundleID(path):
     infopath = os.path.join(path, "Contents", "Info.plist")
     if os.path.exists(infopath):
         try:
-            pl = munkicommon.readPlist(infopath)
+            pl = FoundationPlist.readPlist(infopath)
             if 'CFBundleIdentifier' in pl:
                 return pl['CFBundleIdentifier']
         except:
@@ -395,7 +396,7 @@ def compareBundleVersion(item):
         return 0
 
     try:
-        pl = munkicommon.readPlist(filepath) 
+        pl = FoundationPlist.readPlist(filepath) 
     except:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
@@ -431,7 +432,7 @@ def comparePlistVersion(item):
         return 0
         
     try:
-        pl = munkicommon.readPlist(filepath) 
+        pl = FoundationPlist.readPlist(filepath) 
     except:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
@@ -543,7 +544,7 @@ def getInstalledVersion(pl):
                 try:
                     # check default location for app
                     filepath = os.path.join(install_item['path'], 'Contents', 'Info.plist')
-                    pl = munkicommon.readPlist(filepath)
+                    pl = FoundationPlist.readPlist(filepath)
                     installedappvers = pl.get('CFBundleShortVersionString')
                 except:
                     # that didn't work, fall through to the slow way
@@ -1162,7 +1163,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     processednamesandaliases = []
     for catalogname in cataloglist:
         localcatalog = os.path.join(catalogsdir,catalogname)
-        catalog = plistlib.readPlist(localcatalog)
+        catalog = FoundationPlist.readPlist(localcatalog)
         for item_pl in catalog:
             namesandaliases = []
             namesandaliases.append(item_pl.get('name'))
@@ -1266,7 +1267,7 @@ def processManifestForRemovals(manifestpath, installinfo):
 
 def getManifestValueForKey(manifestpath, keyname):    
     try:
-        pl = munkicommon.readPlist(manifestpath)
+        pl = FoundationPlist.readPlist(manifestpath)
     except:
         munkicommon.display_error("Could not read plist %s" % manifestpath)
         return None    
@@ -1294,9 +1295,7 @@ def getCatalogs(cataloglist):
             message = "Retreiving catalog '%s'..." % catalogname
             (newcatalog, err) = getHTTPfileIfNewerAtomically(catalogurl, catalogpath, message=message)
             if newcatalog:
-                # can't use munkicommon.readPlist here because it doesn't deal with plists
-                # that aren't dictionaries. Our catalog plists are arrays.
-                catalog[catalogname] = makeCatalogDB(plistlib.readPlist(newcatalog))
+                catalog[catalogname] = makeCatalogDB(FoundationPlist.readPlist(newcatalog))
             else:
                 munkicommon.display_error("Could not retreive catalog %s from server." % catalog)
                 munkicommon.display_error(err)
@@ -1691,12 +1690,12 @@ def check(id=''):
         installinfochanged = True
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
         if os.path.exists(installinfopath):
-            oldinstallinfo = munkicommon.readPlist(installinfopath)
+            oldinstallinfo = FoundationPlist.readPlist(installinfopath)
             if oldinstallinfo == installinfo:
                 installinfochanged = False
                 munkicommon.display_detail("No change in InstallInfo.")
         if installinfochanged:
-            plistlib.writePlist(installinfo, os.path.join(ManagedInstallDir, "InstallInfo.plist"))
+            FoundationPlist.writePlist(installinfo, os.path.join(ManagedInstallDir, "InstallInfo.plist"))
             
     else:
         # couldn't get a primary manifest. Check to see if we have a valid InstallList from
@@ -1705,7 +1704,7 @@ def check(id=''):
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
         if os.path.exists(installinfopath):
             try:
-                installinfo = munkicommon.readPlist(installinfopath)
+                installinfo = FoundationPlist.readPlist(installinfopath)
             except:
                 installinfo = {}
                 

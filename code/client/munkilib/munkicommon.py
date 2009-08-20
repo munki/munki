@@ -25,7 +25,7 @@ Common functions used by the munki tools.
 import sys
 import os
 import re
-import plistlib
+#import plistlib
 import time
 import subprocess
 import tempfile
@@ -35,11 +35,9 @@ from xml.dom import minidom
 
 #from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 from Foundation import NSDictionary, NSDate
-from Foundation import NSData, NSPropertyListSerialization, NSPropertyListMutableContainers, NSPropertyListXMLFormat_v1_0
-from PyObjCTools import Conversion
 
 import munkistatus
-
+import FoundationPlist
 # output and logging functions
 
 
@@ -186,26 +184,6 @@ def stopRequested():
     return False
 
 
-def readPlist(plistfile):
-  """Read a plist, return a dict.
-  This method can deal with binary plists,
-  whereas plistlib cannot.
-
-  Args:
-    plistfile: Path to plist file to read
-
-  Returns:
-    dict of plist contents.
-  """
-  plistData = NSData.dataWithContentsOfFile_(plistfile)
-  dataObject, plistFormat, error = NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(plistData, NSPropertyListMutableContainers, None, None)
-  if not error:
-      # convert from Obj-C collection to Python collection
-      return Conversion.pythonCollectionFromPropertyList(dataObject)
-  else:
-      raise Exception(error)
-      
-      
 def getconsoleuser():
     # workaround no longer needed, but leaving this here for now...
     #osvers = int(os.uname()[2].split('.')[0])
@@ -224,8 +202,7 @@ def getconsoleuser():
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
     
-    
-    
+        
 def pythonScriptRunning(scriptname):
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
@@ -259,7 +236,7 @@ def mountdmg(dmgpath):
     if err:
         print >>sys.stderr, "Error %s mounting %s." % (err, dmgpath)
     if plist:
-        pl = plistlib.readPlistFromString(plist)
+        pl = FoundationPlist.readPlistFromString(plist)
         for entity in pl['system-entities']:
             if 'mount-point' in entity:
                 mountpoints.append(entity['mount-point'])
@@ -368,7 +345,7 @@ def getInstallerPkgInfo(filename):
     (out, err) = p.communicate()
 
     if out:
-        pl = plistlib.readPlistFromString(out)
+        pl = FoundationPlist.readPlistFromString(out)
         if 'Size' in pl:
             installerinfo['installed_size'] = int(pl['Size'])
         if 'Description' in pl:
@@ -410,7 +387,7 @@ def getExtendedVersion(bundlepath):
     infoPlist = os.path.join(bundlepath,"Contents","Info.plist")
     pl = {}
     if os.path.exists(versionPlist):
-        pl = readPlist(versionPlist)
+        pl = FoundationPlist.readPlist(versionPlist)
         if pl:
             shortVers = "0.0.0"
             sourceVers = "0"
@@ -422,13 +399,13 @@ def getExtendedVersion(bundlepath):
             if "BuildVersion" in pl:
                 buildVers = padVersionString(pl["BuildVersion"],1)
             if os.path.exists(infoPlist):
-                   pl = readPlist(infoPlist)
+                   pl = FoundationPlist.readPlist(infoPlist)
                    if 'IFMinorVersion' in pl:
                        buildVers = padVersionString(pl['IFMinorVersion'],1)               
             return shortVers + "." + sourceVers + "." + buildVers
                         
     if os.path.exists(infoPlist):
-        pl = readPlist(infoPlist)
+        pl = FoundationPlist.readPlist(infoPlist)
         if "CFBundleShortVersionString" in pl:
             return padVersionString(pl["CFBundleShortVersionString"],5)
         elif "Bundle versions string, short" in pl:
@@ -511,7 +488,7 @@ def getOnePackageInfo(pkgpath):
     plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
     if os.path.exists(plistpath):
         pkginfo['filename'] = os.path.basename(pkgpath)
-        pl = readPlist(plistpath)
+        pl = FoundationPlist.readPlist(plistpath)
         if "CFBundleIdentifier" in pl:
             pkginfo['packageid'] = pl["CFBundleIdentifier"]
         elif "Bundle identifier" in pl:
@@ -525,8 +502,8 @@ def getOnePackageInfo(pkgpath):
         
         if "IFPkgFlagInstalledSize" in pl:
             # converting to int because plistlib barfs on longs. This might be a problem...
-            pkginfo['installed_size'] = int(pl["IFPkgFlagInstalledSize"])
-            #pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
+            #pkginfo['installed_size'] = int(pl["IFPkgFlagInstalledSize"])
+            pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
         
         pkginfo['version'] = getExtendedVersion(pkgpath)
     return pkginfo
@@ -553,7 +530,7 @@ def getBundlePackageInfo(pkgpath):
         dirsToSearch = []
         plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
         if os.path.exists(plistpath):
-            pl = readPlist(plistpath)
+            pl = FoundationPlist.readPlist(plistpath)
             if 'IFPkgFlagComponentDirectory' in pl:
                 dirsToSearch.append(pl['IFPkgFlagComponentDirectory'])
                 
@@ -624,7 +601,7 @@ def getInstalledPackageVersion(pkgid):
     (out, err) = p.communicate()
 
     if out:
-        pl = plistlib.readPlistFromString(out)
+        pl = FoundationPlist.readPlistFromString(out)
 
         if "pkgid" in pl:
             foundbundleid = pl["pkgid"]
@@ -751,7 +728,7 @@ def getAvailableDiskSpace(volumepath="/"):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if out:
-        pl = plistlib.readPlistFromString(out)
+        pl = FoundationPlist.readPlistFromString(out)
 
         if "FreeSpace" in pl:
             freespace = pl["FreeSpace"]

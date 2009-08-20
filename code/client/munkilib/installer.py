@@ -23,10 +23,11 @@ import os
 import subprocess
 import sys
 import time
-import plistlib
+#import plistlib
 import tempfile
 import munkicommon
 import munkistatus
+import FoundationPlist
 from removepackages import removepackages
 
 
@@ -201,7 +202,7 @@ def installWithInfo(dirpath, installlist):
                 return restartflag
             if 'installer_choices_xml' in item:
                 choicesXMLfile = os.path.join(munkicommon.tmpdir, "choices.xml")
-                plistlib.writePlist(item['installer_choices_xml'], choicesXMLfile)
+                FoundationPlist.writePlist(item['installer_choices_xml'], choicesXMLfile)
             else:
                 choicesXMLfile = ''
             if itempath.endswith(".dmg"):
@@ -355,7 +356,7 @@ def run():
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
-            pl = plistlib.readPlist(installinfo)
+            pl = FoundationPlist.readPlist(installinfo)
         except:
             print >>sys.stderr, "Invalid %s" % installinfo
             return -1

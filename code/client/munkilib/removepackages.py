@@ -30,11 +30,12 @@ import optparse
 import os
 import subprocess
 import sys
-import plistlib
+#import plistlib
 import sqlite3
 import time
 import munkistatus
 import munkicommon
+import FoundationPlist
 
 
 ##################################################################
@@ -218,7 +219,7 @@ def ImportPackage(packagepath, c):
 
     timestamp = os.stat(packagepath).st_mtime
     owner = 0
-    pl = munkicommon.readPlist(infopath)
+    pl = FoundationPlist.readPlist(infopath)
     if "CFBundleIdentifier" in pl:
         pkgid = pl["CFBundleIdentifier"]
     elif "Bundle identifier" in pl:
@@ -308,7 +309,7 @@ def ImportBom(bompath, c):
         bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (plist, err) = p.communicate()
     if plist:
-        pl = plistlib.readPlistFromString(plist)
+        pl = FoundationPlist.readPlistFromString(plist)
         if "install-location" in pl:
             ppath = pl["install-location"]
         if "pkg-version" in pl:
@@ -369,7 +370,7 @@ def ImportFromPkgutil(pkgname, c):
         bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (plist, err) = p.communicate()
     if plist:
-        pl = plistlib.readPlistFromString(plist)
+        pl = FoundationPlist.readPlistFromString(plist)
         if "install-location" in pl:
             ppath = pl["install-location"]
         if "pkg-version" in pl:
