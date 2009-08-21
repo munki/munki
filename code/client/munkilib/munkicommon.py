@@ -407,7 +407,7 @@ def getExtendedVersion(bundlepath):
             return shortVers + "." + sourceVers + "." + buildVers
                         
     if os.path.exists(infoPlist):
-        pl = FoundationPlist.(infoPlist)
+        pl = FoundationPlist.readPlist(infoPlist)
         if "CFBundleShortVersionString" in pl:
             return padVersionString(pl["CFBundleShortVersionString"],5)
         elif "Bundle versions string, short" in pl:
