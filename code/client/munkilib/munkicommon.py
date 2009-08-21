@@ -291,7 +291,7 @@ def getManagedInstallsPrefs():
     pl = {}
     if os.path.exists(prefsfile):
         try:
-            pl = readPlist(prefsfile)
+            pl = FoundationPlist.readPlist(prefsfile)
             for key in pl.keys():
                 if type(pl[key]).__name__ == "__NSCFDate":
                     # convert NSDate/CFDates to strings
@@ -299,7 +299,9 @@ def getManagedInstallsPrefs():
                 else:
                     prefs[key] = pl[key]               
         except:
-            pass
+            display_error("ERROR: Problem reading %s. Using defaults." % prefsfile)
+    else:
+        display_error("WARNING: No prefs file found at %s. Using defaults." % prefsfile)
                 
     return prefs
 
@@ -405,7 +407,7 @@ def getExtendedVersion(bundlepath):
             return shortVers + "." + sourceVers + "." + buildVers
                         
     if os.path.exists(infoPlist):
-        pl = FoundationPlist.readPlist(infoPlist)
+        pl = FoundationPlist.(infoPlist)
         if "CFBundleShortVersionString" in pl:
             return padVersionString(pl["CFBundleShortVersionString"],5)
         elif "Bundle versions string, short" in pl:
