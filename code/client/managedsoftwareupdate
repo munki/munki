@@ -23,12 +23,13 @@ import optparse
 import datetime
 import dateutil.parser
 import subprocess
-import plistlib
+#import plistlib
 
 from munkilib import munkicommon
 from munkilib import updatecheck
 from munkilib import installer
 from munkilib import munkistatus
+from munkilib import FoundationPlist
 
 def getIdleSeconds():
     # stolen from Karl Kuehn -- thanks, Karl!
@@ -41,7 +42,7 @@ def getIdleSeconds():
     
     
 def clearLastNotifiedDate():
-    pl = munkicommon.readPlist("/Library/Preferences/ManagedInstalls.plist")
+    pl = FoundationPlist.readPlist("/Library/Preferences/ManagedInstalls.plist")
     if pl:
         if 'LastNotifiedDate' in pl:
             cmd = ['/usr/bin/defaults', 'delete', '/Library/Preferences/ManagedInstalls', 
@@ -100,7 +101,6 @@ def main():
                     help='Used by launchd LaunchAgent when running at the loginwindow.')
     p.add_option('--manualcheck', action='store_true',
                     help='Used by launchd LaunchAgent when checking manually.')
-                       
     p.add_option('--munkistatusoutput', '-m', action='store_true',
                     help='Uses MunkiStatus.app for progress feedback when installing.')
     p.add_option('--id', default='',
