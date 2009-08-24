@@ -301,7 +301,8 @@ def getManagedInstallsPrefs():
         except:
             display_error("ERROR: Problem reading %s. Using defaults." % prefsfile)
     else:
-        display_error("WARNING: No prefs file found at %s. Using defaults." % prefsfile)
+        #display_error("WARNING: No prefs file found at %s. Using defaults." % prefsfile)
+        pass
                 
     return prefs
 
@@ -753,12 +754,12 @@ def cleanUpTmpDir():
 debug = False
 verbose = 1
 munkistatusoutput = False
-logfile = pref('LogFile')
-logginglevel = pref('LoggingLevel')
 errors = ""
 tmpdir = tempfile.mkdtemp()
+logfile = pref('LogFile')
+logginglevel = pref('LoggingLevel')
 
-    
+
 def main():
     print "This is a library of support tools for the Munki Suite."
 
