@@ -57,7 +57,7 @@ def install(pkgpath, choicesXMLpath=''):
         # clear indeterminate progress bar 
         munkistatus.percent(0)
         
-    munkicommon.log("Installing %s from %s" % (packagename, os.path.basename(pkgpath)))
+    munkicommon.log("Installing %s from %s" % (packagename, os.path.basename(pkgpath).encode('UTF-8')))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
