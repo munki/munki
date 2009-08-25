@@ -154,8 +154,8 @@ def getInstalledPackages():
                                 storedversion = installedpkgs[pkgid]
                                 if version.LooseVersion(thisversion) > version.LooseVersion(storedversion):
                                     installedpkgs[pkgid] = thisversion
-                        except:
-                            pass
+                    except:
+                        pass
                                 
     # Now check new (Leopard and later) package database
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=1, 
