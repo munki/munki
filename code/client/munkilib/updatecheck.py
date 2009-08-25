@@ -24,8 +24,6 @@ Created by Greg Neagle on 2008-11-13.
 #standard libs
 import sys
 import os
-#import plistlib
-import tempfile
 import subprocess
 from distutils import version
 import urllib2
@@ -139,8 +137,8 @@ def getInstalledPackages():
             if item.endswith(".pkg"):
                 infoplist = os.path.join(receiptsdir, item, "Contents/Info.plist")
                 if os.path.exists(infoplist):
-                    pl = FoundationPlist.readPlist(infoplist)
-                    if pl:
+                    try:
+                        pl = FoundationPlist.readPlist(infoplist)
                         pkgid = pl.get('CFBundleIdentifier')
                         if not pkgid:
                             # special case JAMF Composer packages
@@ -156,6 +154,8 @@ def getInstalledPackages():
                                 storedversion = installedpkgs[pkgid]
                                 if version.LooseVersion(thisversion) > version.LooseVersion(storedversion):
                                     installedpkgs[pkgid] = thisversion
+                        except:
+                            pass
                                 
     # Now check new (Leopard and later) package database
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=1, 
@@ -509,7 +509,16 @@ def compareReceiptVersion(item):
     munkicommon.display_debug1("Looking for package %s, version %s" % (pkgid, vers))
     installedvers = munkicommon.getInstalledPackageVersion(pkgid)
     if installedvers:
-        return compareVersions(installedvers, vers)
+        # compare the same number of version components.
+        # if munkicommon.getInstalledPackageVersion(pkgid) returns "7.1.0"
+        # and our candidate version is "7.1.0.123.456"
+        # consider this a match.
+        # we do this because the Leopard (and later) package database
+        # sometimes seems to store less detail on versions than is available
+        # in the original package
+        component_count = len(str(installedvers).split("."))
+        normalized_vers = munkicommon.padVersionString(vers,component_count)
+        return compareVersions(installedvers, normalized_vers)
     else:
         munkicommon.display_debug1("\tThis package is not currently installed.")
         return 0
