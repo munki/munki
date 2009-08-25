@@ -116,6 +116,7 @@ def shouldRebuildDB(pkgdbpath):
     """
     receiptsdir = "/Library/Receipts"
     bomsdir = "/Library/Receipts/boms"
+    sl_receiptsdir = "/private/var/db/receipts"
     installhistory = "/Library/Receipts/InstallHistory.plist"
     applepkgdb = "/Library/Receipts/db/a.receiptdb"
 
@@ -147,6 +148,18 @@ def shouldRebuildDB(pkgdbpath):
                 bom_modtime = os.stat(bompath).st_mtime
                 if (packagedb_modtime < bom_modtime):
                     return True
+
+    if os.path.exists(sl_receiptsdir):
+        receiptsdir_modtime = os.stat(sl_receiptsdir).st_mtime
+        if packagedb_modtime < receiptsdir_modtime:
+            return True
+        receiptlist = os.listdir(sl_receiptsdir)
+        for item in receiptlist:
+            if item.endswith(".bom") or item.endswith(".plist"):
+                pkgpath = os.path.join(receiptsdir, item)
+                pkg_modtime = os.stat(pkgpath).st_mtime
+                if (packagedb_modtime < pkg_modtime):
+                    return True                    
                     
     if os.path.exists(installhistory):
         installhistory_modtime = os.stat(installhistory).st_mtime
@@ -404,7 +417,7 @@ def ImportFromPkgutil(pkgname, c):
 
             #prepend the ppath so the paths match the actual install locations
             path = path.lstrip("./")
-            path = ppath + path
+            path = ppath.encode('UTF-8') + path
             path = path.lstrip("./")
 
             t = (path, )
@@ -513,7 +526,7 @@ def initDatabase(packagedb,forcerebuild=False):
                 conn.close()
                 #our package db isn't valid, so we should delete it
                 os.remove(packagedb)
-            munkicommon.display_info("Importing %s..." % pkg)
+            munkicommon.display_detail("Importing %s..." % pkg)
             ImportFromPkgutil(pkg, c)
             currentpkgindex += 1
             local_display_percent_done(currentpkgindex, pkgcount)
