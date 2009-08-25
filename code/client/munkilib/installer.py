@@ -68,7 +68,10 @@ def install(pkgpath, choicesXMLpath=''):
     if restartaction == "RequireRestart":
         munkicommon.display_status("%s requires a restart after installation." % packagename)
         restartneeded = True
-
+        
+    # get the OS version; we need it later when processing installer's output, 
+    # which varies depnding on OS version.    
+    osvers = int(os.uname()[2].split('.')[0])
     cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, '-target', '/']
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
@@ -103,7 +106,9 @@ def install(pkgpath, choicesXMLpath=''):
             elif msg.startswith("%"):
                 if munkicommon.munkistatusoutput:
                     percent = float(msg[1:])
-                    percent = int(percent * 100)
+                    if osvers < 10:
+                        # Leopard uses a float from 0 to 1
+                        percent = int(percent * 100)
                     munkistatus.percent(percent)
             elif msg.startswith(" Error"):
                 if munkicommon.munkistatusoutput:
