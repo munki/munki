@@ -613,7 +613,11 @@ def getInstalledPackageVersion(pkgid):
             
         if pkgid == foundbundleid:
             display_debug2("\tThis machine has %s, version %s" % (pkgid, foundvers))
-            return padVersionString(foundvers,5)
+            components = str(foundvers).split(".")
+            if len(components) > 2:
+                return foundvers
+            else:
+                return padVersionString(foundvers,3)
     
     # This package does not appear to be currently installed
     display_debug2("\tThis machine does not have %s" % pkgid)
