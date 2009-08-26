@@ -800,7 +800,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     except Exception, err:
                         msg = "ERROR: couldn't remove directory %s - %s" % (pathtoremove, err)
                         munkicommon.display_error(msg)
-                        removalerrors = removalerrors + "/n" + msg
+                        removalerrors = removalerrors + "\n" + msg
                 else:
                     # the directory is marked for deletion but isn't empty.
                     # if so directed, if it's a bundle (like .app), we should
@@ -811,7 +811,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                         if retcode:
                             msg = "ERROR: couldn't remove bundle %s" % pathtoremove
                             munkicommon.display_error(msg)
-                            removalerrors = removalerrors + "/n" + msg
+                            removalerrors = removalerrors + "\n" + msg
                     else:
                         # if this path is inside a bundle, and we've been directed to force remove
                         # bundles, we don't need to warn because it's going to be removed with the
@@ -819,7 +819,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                         if not insideBundle(pathtoremove) or not forcedeletebundles:
                             msg = "WARNING: Did not remove %s because it is not empty." % pathtoremove
                             munkicommon.display_error(msg)
-                            removalerrors = removalerrors + "/n" + msg
+                            removalerrors = removalerrors + "\n" + msg
                         
             else:
                 # not a directory, just unlink it
