@@ -213,7 +213,7 @@ def pythonScriptRunning(scriptname):
     for line in lines:
         (pid, proc) = line.split(None,1)
         # first look for Python processes
-        if proc.find("MacOS/Python ") != -1:
+        if proc.find("MacOS/Python ") != -1 or proc.find("python ") != -1:
             if proc.find(scriptname) != -1:
                 if int(pid) != int(mypid):
                     return pid
@@ -280,8 +280,8 @@ def getManagedInstallsPrefs():
     prefs['ClientIdentifier'] = ""
     prefs['LogFile'] = os.path.join(prefs['ManagedInstallDir'], "Logs", "ManagedSoftwareUpdate.log")
     prefs['LoggingLevel'] = 1
-    prefs['InstallAppleSoftwareUpdates'] = False
-    prefs['SoftwareUpdateServerURL'] = None
+    #prefs['InstallAppleSoftwareUpdates'] = False
+    #prefs['SoftwareUpdateServerURL'] = None
     prefs['DaysBetweenNotifications'] = 1
     prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
     # Added by bcw
@@ -299,10 +299,13 @@ def getManagedInstallsPrefs():
                 else:
                     prefs[key] = pl[key]               
         except:
-            display_error("ERROR: Problem reading %s. Using defaults." % prefsfile)
+            display_error("ERROR: Could not read preferences file %s." % prefsfile)
+            raise Exception("Could not read preferences file %s." % prefsfile)
     else:
         #display_error("WARNING: No prefs file found at %s. Using defaults." % prefsfile)
-        pass
+        # no prefs file, so we'll write out a "default" prefs file
+        del prefs['LastNotifiedDate']
+        FoundationPlist.writePlist(prefs, prefsfile)
                 
     return prefs
 
