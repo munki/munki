@@ -226,19 +226,18 @@ def analyzeInstalledPkgs():
         if uniquepkgs:
             installed.append(name)
             
-    # build our reference count table
-    refcount = {}
+    # build our reference table
+    references = {}
     for name in installed:
         for pkg in installedpkgsmatchedtoname[name]:
-            if not pkg in refcount:
-                refcount[pkg] = 1
-            else:
-                refcount[pkg] = refcount[pkg] + 1
+            if not pkg in references:
+                references[pkg] = []
+            references[pkg].append(name)
     
     pkgdata = {}
     pkgdata['receipts_for_name'] = installedpkgsmatchedtoname
     pkgdata['installed_names'] = installed
-    pkgdata['pkg_refcount'] = refcount
+    pkgdata['pkg_references'] = references
 
 
 # appdict is a global so we don't call system_profiler more than once per session
@@ -874,13 +873,14 @@ def evidenceThisIsInstalled(pl):
                     # some version is installed
                     return True
                     
-    if 'receipts' in pl:
-        receipts = pl['receipts']
-        for item in receipts:
-            if 'packageid' in item:
-                if munkicommon.getInstalledPackageVersion(item['packageid']):
-                    # some version of this package is installed
-                    return True
+    # this has been superceded by our pkgdata check
+    #if 'receipts' in pl:
+    #    receipts = pl['receipts']
+    #    for item in receipts:
+    #        if 'packageid' in item:
+    #            if munkicommon.getInstalledPackageVersion(item['packageid']):
+    #                # some version of this package is installed
+    #                return True
 
     # if we got this far, we failed all the tests, so the item
     # must not be installed (or we have bad metadata...)
@@ -978,7 +978,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
         
         if 'installer_item_location' in pl:
             location = pl['installer_item_location']
-            url = downloadbaseurl + location
+            url = downloadbaseurl + urllib2.quote(location)
             if download_installeritem(url):
                 filename = os.path.split(location)[1]
                 iteminfo['installer_item'] = filename
@@ -1215,20 +1215,20 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo["name"] = uninstall_item.get('name', '')
     iteminfo["display_name"] = uninstall_item.get('display_name', '')
     iteminfo["manifestitem"] = manifestitemname_withversion
-    iteminfo["description"] = "Will be removed." #uninstall_item.get('description','')
+    iteminfo["description"] = "Will be removed."
     if packagesToRemove:
-        # decrement the refcount for each package
+        # remove references for each package
         packagesToReallyRemove = []
         for pkg in packagesToRemove:
-            # find pkg in pkgdata['pkg_refcount'] and decrement the ref count so
+            munkicommon.display_debug1("Considering %s for removal..." % pkg)
+            # find pkg in pkgdata['pkg_references'] and remove the reference so
             # we only remove packages if we're the last reference to it
-            if pkg in pkgdata['pkg_refcount']:
-                pkgdata['pkg_refcount'][pkg] = pkgdata['pkg_refcount'][pkg] - 1
-                if pkgdata['pkg_refcount'][pkg] == 0:
+            if pkg in pkgdata['pkg_references']:
+                munkicommon.display_debug1("%s references are: %s" % (pkg, pkgdata['pkg_refcount'][pkg]))
+                pkgdata['pkg_references'][pkg].remove(iteminfo["name"])
+                if len(pkgdata['pkg_refcount'][pkg]) == 0:
+                    munkicommon.display_debug1("Adding %s to removal list." % pkg)
                     packagesToReallyRemove.append(pkg)
-                if pkgdata['pkg_refcount'][pkg] < 0:
-                    # this shouldn't happen
-                    munkicommon.display_error("WARNING: pkg id %s ref count is < 0" % pkg)
             else:
                 # This shouldn't happen
                 munkicommon.display_error("WARNING: pkg id %s missing from pkgdata" % pkg)
@@ -1297,7 +1297,7 @@ def getCatalogs(cataloglist):
     
     for catalogname in cataloglist:
         if not catalogname in catalog:
-            catalogurl = sw_repo_baseurl + "/catalogs/" + catalogname
+            catalogurl = sw_repo_baseurl + "/catalogs/" + urllib2.quote(catalogname)
             catalogpath = os.path.join(catalog_dir, catalogname)
             message = "Getting catalog %s from %s..." % (catalogname, catalogurl)
             munkicommon.log(message)
@@ -1325,7 +1325,7 @@ def getmanifest(partialurl, suppress_errors=False):
     else:
         # request for nested manifest
         manifestname = os.path.split(partialurl)[1]
-        manifesturl = sw_repo_baseurl + "/manifests/" + partialurl
+        manifesturl = sw_repo_baseurl + "/manifests/" + urllib2.quote(partialurl)
         
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = "Getting manifest %s from %s..." % (manifestname, manifesturl)
@@ -1353,10 +1353,10 @@ def getPrimaryManifest(alternate_id):
         manifesturl = manifesturl + "/"
     if alternate_id:
         # use id passed in at command-line
-        manifesturl = manifesturl + alternate_id
+        manifesturl = manifesturl + urllib2.quote(alternate_id)
     elif clientidentifier:
         # use client_identfier from /Library/Preferences/ManagedInstalls.plist
-        manifesturl = manifesturl + clientidentifier
+        manifesturl = manifesturl + urllib2.quote(clientidentifier)
     else:
         # no client identifier specified, so use the hostname
         hostname = os.uname()[1]
