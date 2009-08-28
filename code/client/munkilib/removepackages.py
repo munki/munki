@@ -807,6 +807,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     # remove it anyway - no use having a broken bundle hanging
                     # around
                     if (forcedeletebundles and isBundle(pathtoremove)):
+                        munkicommon.display_detail("WARNING: Removing non-empty bundle: %s" % pathtoremove)
                         retcode = subprocess.call(['/bin/rm', '-rf', pathtoremove])
                         if retcode:
                             msg = "ERROR: couldn't remove bundle %s" % pathtoremove
