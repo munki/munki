@@ -42,12 +42,15 @@ def getIdleSeconds():
     
     
 def clearLastNotifiedDate():
-    pl = FoundationPlist.readPlist("/Library/Preferences/ManagedInstalls.plist")
-    if pl:
-        if 'LastNotifiedDate' in pl:
-            cmd = ['/usr/bin/defaults', 'delete', '/Library/Preferences/ManagedInstalls', 
+    try:
+        pl = FoundationPlist.readPlist("/Library/Preferences/ManagedInstalls.plist")
+        if pl:
+            if 'LastNotifiedDate' in pl:
+                cmd = ['/usr/bin/defaults', 'delete', '/Library/Preferences/ManagedInstalls', 
                         'LastNotifiedDate']
-            retcode = subprocess.call(cmd)
+                retcode = subprocess.call(cmd)
+    except:
+        pass
         
         
 def createDirsIfNeeded(dirlist):
