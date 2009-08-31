@@ -156,7 +156,7 @@ def shouldRebuildDB(pkgdbpath):
         receiptlist = os.listdir(sl_receiptsdir)
         for item in receiptlist:
             if item.endswith(".bom") or item.endswith(".plist"):
-                pkgpath = os.path.join(receiptsdir, item)
+                pkgpath = os.path.join(sl_receiptsdir, item)
                 pkg_modtime = os.stat(pkgpath).st_mtime
                 if (packagedb_modtime < pkg_modtime):
                     return True                    
