@@ -1227,9 +1227,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             # find pkg in pkgdata['pkg_references'] and remove the reference so
             # we only remove packages if we're the last reference to it
             if pkg in pkgdata['pkg_references']:
-                munkicommon.display_debug1("%s references are: %s" % (pkg, pkgdata['pkg_refcount'][pkg]))
+                munkicommon.display_debug1("%s references are: %s" % (pkg, pkgdata['pkg_references'][pkg]))
                 pkgdata['pkg_references'][pkg].remove(iteminfo["name"])
-                if len(pkgdata['pkg_refcount'][pkg]) == 0:
+                if len(pkgdata['pkg_references'][pkg]) == 0:
                     munkicommon.display_debug1("Adding %s to removal list." % pkg)
                     packagesToReallyRemove.append(pkg)
             else:
