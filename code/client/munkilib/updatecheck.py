@@ -755,8 +755,10 @@ def getItemDetail(name, cataloglist, vers=''):
                 # we have an item whose name and version matches the request.
                 # now check to see if it meets os and cpu requirements
                 if 'minimum_os_version' in item:
-                    munkicommon.display_debug1("Considering item %s, version %s with minimum os version required %s" % (item['name'], item['version'], item['minimum_os_version']))
-                    if version.LooseVersion(machine['os_vers']) < version.LooseVersion(item['minimum_os_version']):
+                    min_os_vers = munkicommon.padVersionString(item['minimum_os_version'],3)
+                    munkicommon.display_debug1("Considering item %s, version %s with minimum os version required %s" % (item['name'], item['version'], min_os_vers))
+                    munkicommon.display_debug2("Our OS version is %s" % machine['os_vers'])
+                    if version.LooseVersion(machine['os_vers']) < version.LooseVersion(min_os_vers):
                         # skip this one, go to the next
                         continue
                         
@@ -1126,6 +1128,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         return True
         
     uninstall_item = None
+    packagesToRemove = []
     for item in infoitems:
         # check for uninstall info
         # walk through the list of items (sorted newest first)
@@ -1631,7 +1634,8 @@ def getMachineFacts():
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
-    machine['os_vers'] = output.rstrip("\n")
+    # format version string like "10.5.8", so that "10.6" becomes "10.6.0"
+    machine['os_vers'] = munkicommon.padVersionString(output.rstrip("\n"),3)
     
 
 # some globals
