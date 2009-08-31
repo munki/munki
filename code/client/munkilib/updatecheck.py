@@ -594,13 +594,20 @@ def getInstalledVersion(pl):
     return "UNKNOWN"            
 
 
-def download_installeritem(pkgurl):
+def download_installeritem(location):
     """
-    Downloads a installer item from pkgurl.
+    Downloads a installer item.
     """
     ManagedInstallDir = munkicommon.ManagedInstallDir()
-    mycachedir = os.path.join(ManagedInstallDir, "Cache")    
-    pkgname = os.path.basename(urlparse.urlsplit(pkgurl)[2])
+    sw_repo_baseurl = munkicommon.SoftwareRepoURL()
+    downloadbaseurl = sw_repo_baseurl + "/pkgs/"
+    mycachedir = os.path.join(ManagedInstallDir, "Cache")
+    
+    # build a URL, quoting the the location to encode reserved characters
+    pkgurl = downloadbaseurl + urllib2.quote(location)
+    
+    # grab last path component of location to derive package name.
+    pkgname = os.path.basename(location)
     destinationpath = os.path.join(mycachedir, pkgname)
     
     # bump up verboseness so we get download percentage done feedback.
@@ -899,10 +906,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     """
     
     managedinstallprefs = munkicommon.prefs()
-    sw_repo_baseurl = managedinstallprefs['SoftwareRepoURL']
     ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
-    
-    downloadbaseurl = sw_repo_baseurl + "/pkgs/"
     
     manifestitemname = os.path.split(manifestitem)[1]
     #munkicommon.display_info("Getting detail on %s..." % manifestitemname)
@@ -978,8 +982,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
         
         if 'installer_item_location' in pl:
             location = pl['installer_item_location']
-            url = downloadbaseurl + urllib2.quote(location)
-            if download_installeritem(url):
+            if download_installeritem(location):
                 filename = os.path.split(location)[1]
                 iteminfo['installer_item'] = filename
                 iteminfo['installed'] = False
