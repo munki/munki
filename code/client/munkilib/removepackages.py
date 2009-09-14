@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# encoding: utf-8
 #
 # Copyright 2009 Greg Neagle.
 #
@@ -261,7 +262,7 @@ def ImportPackage(packagepath, c):
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                             
     while True: 
-        line =  p.stdout.readline()
+        line =  p.stdout.readline().decode('UTF-8')
         if not line and (p.poll() != None):
             break
         
@@ -279,7 +280,10 @@ def ImportPackage(packagepath, c):
 
                 # prepend the ppath so the paths match the actual install locations
                 path = path.lstrip("./")
-                path = ppath + path
+                if ppath.endswith("/"):
+                    path = ppath + path
+                else:
+                    path = ppath + "/" + path
                 path = path.lstrip("./")
 
                 t = (path, )
@@ -339,7 +343,7 @@ def ImportBom(bompath, c):
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                             
     while True: 
-        line =  p.stdout.readline()
+        line =  p.stdout.readline().decode('UTF-8')
         if not line and (p.poll() != None):
             break
         item = line.rstrip("\n").split("\t")
@@ -349,10 +353,16 @@ def ImportBom(bompath, c):
         uid = uidgid[0]
         gid = uidgid[1]
         if path != ".":
+            # special case for MS Office 2008 installers
+            if ppath == "./tmp/com.microsoft.updater/office_location/":
+                ppath = "./Applications/"
 
             #prepend the ppath so the paths match the actual install locations
             path = path.lstrip("./")
-            path = ppath + path
+            if ppath.endswith("/"):
+                path = ppath + path
+            else:
+                path = ppath + "/" + path
             path = path.lstrip("./")
 
             t = (path, )
@@ -400,7 +410,7 @@ def ImportFromPkgutil(pkgname, c):
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     while True: 
-        line =  p.stdout.readline()
+        line =  p.stdout.readline().decode('UTF-8')
         if not line and (p.poll() != None):
             break
         path = line.rstrip("\n")
@@ -414,10 +424,16 @@ def ImportFromPkgutil(pkgname, c):
         uid = "0"
         gid = "0"
         if path != ".":
+            # special case for MS Office 2008 installers
+            if ppath == "./tmp/com.microsoft.updater/office_location/":
+                ppath = "./Applications/"
 
             #prepend the ppath so the paths match the actual install locations
             path = path.lstrip("./")
-            path = ppath.encode('UTF-8') + path
+            if ppath.endswith("/"):
+                path = ppath + path
+            else:
+                path = ppath + "/" + path
             path = path.lstrip("./")
 
             t = (path, )
@@ -781,7 +797,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
         pathtoremove = "/" + item
         # use os.path.lexists so broken links return true so we can remove them
         if os.path.lexists(pathtoremove):
-            munkicommon.display_detail("Removing: " + pathtoremove.encode("UTF-8"))
+            munkicommon.display_detail("Removing: " + pathtoremove)
             if (os.path.isdir(pathtoremove) and not os.path.islink(pathtoremove)):
                 diritems = os.listdir(pathtoremove)
                 if diritems == ['.DS_Store']:
@@ -808,7 +824,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     # around
                     if (forcedeletebundles and isBundle(pathtoremove)):
                         munkicommon.display_detail("WARNING: Removing non-empty bundle: %s" % pathtoremove)
-                        retcode = subprocess.call(['/bin/rm', '-rf', pathtoremove])
+                        retcode = subprocess.call(['/bin/rm', '-r', pathtoremove])
                         if retcode:
                             msg = "ERROR: couldn't remove bundle %s" % pathtoremove
                             munkicommon.display_error(msg)
@@ -874,7 +890,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         if listfiles:
             removalpaths.sort()
             for item in removalpaths:
-                print "/" + item.encode("UTF-8")
+                print "/" + item
         else:
             if munkicommon.munkistatusoutput:
                 munkistatus.disableStopButton()
