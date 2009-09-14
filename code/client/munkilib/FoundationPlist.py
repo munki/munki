@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 #
 # Copyright 2009 Greg Neagle.
