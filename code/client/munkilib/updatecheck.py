@@ -115,9 +115,10 @@ def addPackageids(catalogitems, pkgid_table):
     '''
     for item in catalogitems:
         name = item['name']
-        if not name in pkgid_table:
-            pkgid_table[name] = []
-        if 'receipts' in item:
+        if item.get('receipts'):
+            if not name in pkgid_table:
+                pkgid_table[name] = []
+                
             for receipt in item['receipts']:
                 if 'packageid' in receipt:
                     if not receipt['packageid'] in pkgid_table[name]:
@@ -403,6 +404,9 @@ def compareBundleVersion(item):
     if 'CFBundleShortVersionString' in pl:
         installedvers = pl['CFBundleShortVersionString']
         return compareVersions(installedvers, vers)
+    elif 'CFBundleVersion' in pl:
+        installedvers = pl['CFBundleVersion']
+        return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tNo version info in %s." % filepath)
         return 0
@@ -438,6 +442,9 @@ def comparePlistVersion(item):
     
     if 'CFBundleShortVersionString' in pl:
         installedvers = pl['CFBundleShortVersionString']
+        return compareVersions(installedvers, vers)
+    elif 'CFBundleVersion' in pl:
+        installedvers = pl['CFBundleVersion']
         return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tNo version info in %s." % filepath)
