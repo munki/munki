@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 #
 # Copyright 2009 Greg Neagle.
@@ -414,6 +414,8 @@ def getExtendedVersion(bundlepath):
         pl = FoundationPlist.readPlist(infoPlist)
         if "CFBundleShortVersionString" in pl:
             return padVersionString(pl["CFBundleShortVersionString"],5)
+        elif "CFBundleVersion" in pl:
+            return padVersionString(pl["CFBundleVersion"],5)
         elif "Bundle versions string, short" in pl:
             # another special case for JAMF Composer-generated packages. Wow.
             return padVersionString(pl["Bundle versions string, short"],5)
