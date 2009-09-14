@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# encoding: utf-8
 #
 # Copyright 2009 Greg Neagle.
 #
@@ -57,7 +58,7 @@ def install(pkgpath, choicesXMLpath=''):
         # clear indeterminate progress bar 
         munkistatus.percent(0)
         
-    munkicommon.log("Installing %s from %s" % (packagename, os.path.basename(pkgpath).encode('UTF-8')))
+    munkicommon.log("Installing %s from %s" % (packagename, os.path.basename(pkgpath)))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
@@ -79,7 +80,7 @@ def install(pkgpath, choicesXMLpath=''):
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     while True: 
-        installinfo =  p.stdout.readline()
+        installinfo =  p.stdout.readline().decode('UTF-8')
         if not installinfo and (p.poll() != None):
             break
         if installinfo.startswith("installer:"):
@@ -93,7 +94,7 @@ def install(pkgpath, choicesXMLpath=''):
                     if munkicommon.munkistatusoutput:
                         munkistatus.detail(phase)
                     else:
-                        print phase
+                        print phase.encode('UTF-8')
                         sys.stdout.flush()
             elif msg.startswith("STATUS:"):
                 status = msg[7:]
@@ -101,7 +102,7 @@ def install(pkgpath, choicesXMLpath=''):
                     if munkicommon.munkistatusoutput:
                         munkistatus.detail(status)
                     else:
-                        print status 
+                        print status.encode('UTF-8')
                         sys.stdout.flush()
             elif msg.startswith("%"):
                 if munkicommon.munkistatusoutput:
@@ -114,13 +115,13 @@ def install(pkgpath, choicesXMLpath=''):
                 if munkicommon.munkistatusoutput:
                     munkistatus.detail(msg)
                 else:
-                    print >>sys.stderr, msg
+                    print >>sys.stderr, msg.encode('UTF-8')
                 munkicommon.log(msg)
             elif msg.startswith(" Cannot install"):
                 if munkicommon.munkistatusoutput:
                     munkistatus.detail(msg)
                 else:
-                    print >>sys.stderr, msg
+                    print >>sys.stderr, msg.encode('UTF-8')
                 munkicommon.log(msg)
             else:
                 munkicommon.log(msg)
@@ -311,7 +312,7 @@ def processRemovals(removalList):
                                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                         while (p.poll() == None): 
-                            msg =  p.stdout.readline()
+                            msg =  p.stdout.readline().decode('UTF-8')
                             # save all uninstaller output in case there is
                             # an error so we can dump it to the log
                             uninstalleroutput.append(msg)
