@@ -51,7 +51,7 @@ def install(pkgpath, choicesXMLpath=''):
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
-    packagename = output.splitlines()[0]
+    packagename = output.decode('UTF-8').splitlines()[0]
     
     if munkicommon.munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
@@ -65,7 +65,7 @@ def install(pkgpath, choicesXMLpath=''):
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
-    restartaction = output.rstrip("\n")
+    restartaction = output.decode('UTF-8').rstrip("\n")
     if restartaction == "RequireRestart":
         munkicommon.display_status("%s requires a restart after installation." % packagename)
         restartneeded = True

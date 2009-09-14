@@ -698,7 +698,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                     p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, err) = p.communicate()
                     if munkicommon.verbose > 1:
-                        if output: print output.rstrip('\n')
+                        if output: print output.decode('UTF-8').rstrip('\n')
                     
     local_display_percent_done(2,4)
     

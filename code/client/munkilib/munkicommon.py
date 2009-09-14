@@ -92,7 +92,7 @@ def display_status(msg):
     if munkistatusoutput:
         munkistatus.detail(msg)
     elif verbose > 0:
-        print "%s..." % msg
+        print "%s..." % msg.encode('UTF-8')
         sys.stdout.flush()
 
 
@@ -105,7 +105,7 @@ def display_info(msg):
     if munkistatusoutput:
         pass
     elif verbose > 0:
-        print msg
+        print msg.encode('UTF-8')
         sys.stdout.flush()
         
         
@@ -120,7 +120,7 @@ def display_detail(msg):
     if munkistatusoutput:
         pass
     elif verbose > 1:
-        print msg
+        print msg.encode('UTF-8')
         sys.stdout.flush()
         
         
@@ -132,7 +132,7 @@ def display_debug1(msg):
     if munkistatusoutput:
         pass
     elif verbose > 2:
-        print msg
+        print msg.encode('UTF-8')
         sys.stdout.flush()
     if logginglevel > 1:
         log(msg)
@@ -146,7 +146,7 @@ def display_debug2(msg):
     if munkistatusoutput:
         pass
     elif verbose > 3:
-        print msg
+        print msg.encode('UTF-8')
     if logginglevel > 2:
         log(msg)
 
@@ -156,7 +156,7 @@ def display_error(msg):
     Prints msg to stderr and the log
     """
     global errors
-    print >>sys.stderr, msg
+    print >>sys.stderr, msg.encode('UTF-8')
     errmsg = "ERROR: %s" % msg
     log(errmsg)
     # collect the errors for later reporting
@@ -166,7 +166,7 @@ def display_error(msg):
 def log(msg):
     try:
         f = open(logfile, mode='a', buffering=1)
-        print >>f, time.ctime(), msg
+        print >>f, time.ctime(), msg.encode('UTF-8')
         f.close()
     except:
         pass

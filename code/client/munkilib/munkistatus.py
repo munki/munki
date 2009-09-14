@@ -38,7 +38,7 @@ def osascript(osastring):
     if p.returncode != 0:
         print >>sys.stderr, "Error: ", err
     if out:
-        return out.rstrip("\n")
+        return out.decode('UTF-8').rstrip("\n")
 
 
 def quit():
