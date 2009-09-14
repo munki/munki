@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 #
 # Copyright 2009 Greg Neagle.
@@ -126,6 +126,8 @@ def getiteminfo(itempath):
             infodict['CFBundleIdentifier'] = pl['CFBundleIdentifier']
         if 'CFBundleShortVersionString' in pl:
             infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+        elif 'CFBundleVersion' in pl:
+            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion']
         if 'LSMinimumSystemVersion' in pl:
             infodict['minosversion'] = pl['LSMinimumSystemVersion']
         elif 'SystemVersionCheck:MinimumSystemVersion' in pl:
@@ -137,6 +139,8 @@ def getiteminfo(itempath):
         pl = getBundleInfo(itempath)
         if 'CFBundleShortVersionString' in pl:
             infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+        elif 'CFBundleVersion' in pl:
+            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion']
             
     elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
@@ -145,6 +149,8 @@ def getiteminfo(itempath):
             pl = FoundationPlist.readPlist(itempath)
             if 'CFBundleShortVersionString' in pl:
                 infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+            elif 'CFBundleVersion' in pl:
+                infodict['CFBundleShortVersionString'] = pl['CFBundleVersion']
         except:
             pass
         
