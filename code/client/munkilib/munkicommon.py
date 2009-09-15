@@ -481,10 +481,23 @@ def getFlatPackageInfo(pkgpath):
         packageinfofile = os.path.join(currentdir, "PackageInfo")
         if os.path.exists(packageinfofile):
             infoarray = parsePkgRefs(packageinfofile)
-        else:
+                
+        if not infoarray:
+            # didn't get any packageid info.
+            # look for subpackages at the top level
+            for item in os.listdir(currentdir):
+                itempath = os.path.join(currentdir, item)
+                if itempath.endswith(".pkg") and os.path.isdir(itempath):
+                    packageinfofile = os.path.join(itempath, "PackageInfo")
+                    if os.path.exists(packageinfofile):
+                        infoarray.extend(parsePkgRefs(packageinfofile))
+                        
+        if not infoarray:
+            # found no PackageInfo files, so let's look at the Distribution file
             distributionfile = os.path.join(currentdir, "Distribution")
             if os.path.exists(distributionfile):
                 infoarray = parsePkgRefs(distributionfile)
+                
     os.chdir("/")
     shutil.rmtree(pkgtmp)
     return infoarray
