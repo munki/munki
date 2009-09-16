@@ -35,7 +35,7 @@
 	<array>
 		<dict>
 			<key>packageid</key>
-			<string>com.disneyanimation.Firefox.pkg</string>
+			<string>com.demo.Firefox.pkg</string>
 			<key>version</key>
 			<string>3.0.10.0.0</string>
 		</dict>

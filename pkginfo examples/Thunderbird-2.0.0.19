@@ -35,7 +35,7 @@
 	<array>
 		<dict>
 			<key>packageid</key>
-			<string>com.disneyanimation.thunderbird</string>
+			<string>com.demo.thunderbird</string>
 			<key>version</key>
 			<string>2.0.0.19.0</string>
 		</dict>

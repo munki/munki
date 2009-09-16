@@ -52,7 +52,7 @@
 		</dict>
 		<dict>
 			<key>attributeSetting</key>
-			<false/>
+			<true/>
 			<key>choiceAttribute</key>
 			<string>selected</string>
 			<key>choiceIdentifier</key>
@@ -109,7 +109,7 @@
 		<key>packageid</key>
 		<string>com.apple.pkg.iDVDExtraContent</string>
 		<key>version</key>
-		<string>1.0.0.1730000.1655</string>
+		<string>1.0.0.0.0</string>
 	</dict>
 	</array>
 	<key>optional_receipts</key>

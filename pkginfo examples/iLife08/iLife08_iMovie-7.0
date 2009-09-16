@@ -6,7 +6,7 @@
 	<string>RequireRestart</string>
 	<key>catalogs</key>
 	<array>
-		<string>testing</string>
+		<string>production</string>
 	</array>
 	<key>description</key>
 	<string>Includes iMovie '08.</string>
@@ -105,7 +105,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.iMovie</string>
 			<key>version</key>
-			<string>7.0.0.1410000.1672</string>
+			<string>7.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
@@ -113,7 +113,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.iLifeSoundEffects_Loops</string>
 			<key>version</key>
-			<string>2.0.0.210000.1655</string>
+			<string>2.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
@@ -121,7 +121,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.iLife'08</string>
 			<key>version</key>
-			<string>8.0.0.2360000.1674</string>
+			<string>8.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
@@ -129,7 +129,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.iLifeCookie</string>
 			<key>version</key>
-			<string>8.0.0.2360000.1674</string>
+			<string>8.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
@@ -137,7 +137,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.AppleIntermediateCodec</string>
 			<key>version</key>
-			<string>1.2.0.830000.1588</string>
+			<string>1.2.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
@@ -145,7 +145,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.iLifeMediaBrowser</string>
 			<key>version</key>
-			<string>2.0.0.120000.1669</string>
+			<string>2.0.0.0.0</string>
 		</dict>
 	</array>
 	<key>optional_receipts</key>

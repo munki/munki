@@ -4,7 +4,7 @@
 <dict>
 	<key>catalogs</key>
 	<array>
-		<string>testing</string>
+		<string>production</string>
 	</array>
 	<key>description</key>
 	<string>Updates iMovie 7.</string>
@@ -34,7 +34,7 @@
 			<key>packageid</key>
 			<string>com.apple.pkg.iMovie_710</string>
 			<key>version</key>
-			<string>7.1.0.1560000.1764</string>
+			<string>7.1.0.0.0</string>
 		</dict>
 	</array>
 	<key>uninstall_method</key>

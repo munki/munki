@@ -1,55 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>RestartAction</key>
 	<string>RequireRestart</string>
 	<key>catalogs</key>
 	<array>
-		<string>production</string>
+		<string>testing</string>
 	</array>
 	<key>description</key>
-	<string>Includes GarageBand '08.</string>
+	<string></string>
 	<key>display_name</key>
-	<string>GarageBand ’08</string>
+	<string>iLife ’09 – GarageBand</string>
 	<key>installed_size</key>
-	<integer>1326414</integer>
+	<integer>2209159</integer>
 	<key>installer_item_location</key>
-	<string>apps/iLife08/iLife08.dmg</string>
+	<string>apps/iLife09/iLife09.dmg</string>
+	<key>installer_item_size</key>
+	<integer>4576235</integer>
+	<key>minimum_os_version</key>
+	<string>10.5.0</string>
+	<key>name</key>
+	<string>iLife09_GarageBand</string>
 	<key>installer_choices_xml</key>
 	<array>
-		<dict>
-			<key>attributeSetting</key>
-			<true/>
-			<key>choiceAttribute</key>
-			<string>selected</string>
-			<key>choiceIdentifier</key>
-			<string>GarageBand</string>
-		</dict>
-		<dict>
-			<key>attributeSetting</key>
-			<false/>
-			<key>choiceAttribute</key>
-			<string>selected</string>
-			<key>choiceIdentifier</key>
-			<string>iTunes</string>
-		</dict>
-		<dict>
-			<key>attributeSetting</key>
-			<false/>
-			<key>choiceAttribute</key>
-			<string>selected</string>
-			<key>choiceIdentifier</key>
-			<string>iPhoto</string>
-		</dict>
-		<dict>
-			<key>attributeSetting</key>
-			<false/>
-			<key>choiceAttribute</key>
-			<string>selected</string>
-			<key>choiceIdentifier</key>
-			<string>iMovie</string>
-		</dict>
 		<dict>
 			<key>attributeSetting</key>
 			<false/>
@@ -64,15 +38,15 @@
 			<key>choiceAttribute</key>
 			<string>selected</string>
 			<key>choiceIdentifier</key>
-			<string>iDVDExtraContent</string>
+			<string>iMovie</string>
 		</dict>
 		<dict>
 			<key>attributeSetting</key>
-			<false/>
+			<true/>
 			<key>choiceAttribute</key>
 			<string>selected</string>
 			<key>choiceIdentifier</key>
-			<string>iWeb</string>
+			<string>GarageBand</string>
 		</dict>
 		<dict>
 			<key>attributeSetting</key>
@@ -90,54 +64,72 @@
 			<key>choiceIdentifier</key>
 			<string>iLifeSoundEffects</string>
 		</dict>
-	</array>	
-	<key>installer_item_size</key>
-	<integer>3708030</integer>
-	<key>minimum_os_version</key>
-	<string>10.4.0</string>
-	<key>name</key>
-	<string>iLife08_GarageBand</string>
+		<dict>
+			<key>attributeSetting</key>
+			<false/>
+			<key>choiceAttribute</key>
+			<string>selected</string>
+			<key>choiceIdentifier</key>
+			<string>iWeb</string>
+		</dict>
+		<dict>
+			<key>attributeSetting</key>
+			<false/>
+			<key>choiceAttribute</key>
+			<string>selected</string>
+			<key>choiceIdentifier</key>
+			<string>iPhoto</string>
+		</dict>
+	</array>
 	<key>receipts</key>
 	<array>
 		<dict>
 			<key>installed_size</key>
-			<integer>199933</integer>
+			<integer>518247</integer>
 			<key>packageid</key>
 			<string>com.apple.pkg.GarageBand</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>5.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
-			<integer>407080</integer>
+			<integer>443400</integer>
 			<key>packageid</key>
 			<string>com.apple.pkg.GarageBand_MagicContent</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>5.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
-			<integer>1172</integer>
+			<integer>11593</integer>
 			<key>packageid</key>
 			<string>com.apple.pkg.GarageBandFactoryContent</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>5.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
-			<integer>350738</integer>
+			<integer>518153</integer>
+			<key>packageid</key>
+			<string>com.apple.pkg.GarageBand_LTPContent</string>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>installed_size</key>
+			<integer>352536</integer>
 			<key>packageid</key>
 			<string>com.apple.pkg.GarageBand_Instruments</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>5.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
-			<integer>98478</integer>
+			<integer>98477</integer>
 			<key>packageid</key>
 			<string>com.apple.pkg.GarageBand_Loops</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>5.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
@@ -149,45 +141,27 @@
 		</dict>
 		<dict>
 			<key>installed_size</key>
-			<integer>10</integer>
+			<integer>114</integer>
 			<key>packageid</key>
-			<string>com.apple.pkg.iLife'08</string>
+			<string>com.apple.pkg.iLife'09</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>9.0.0.0.0</string>
 		</dict>
 		<dict>
 			<key>installed_size</key>
-			<integer>10</integer>
+			<integer>8</integer>
 			<key>packageid</key>
 			<string>com.apple.pkg.iLifeCookie</string>
 			<key>version</key>
-			<string>8.0.0.0.0</string>
+			<string>9.0.0.0.0</string>
 		</dict>
-		<dict>
-			<key>installed_size</key>
-			<integer>321</integer>
-			<key>packageid</key>
-			<string>com.apple.pkg.AppleIntermediateCodec</string>
-			<key>version</key>
-			<string>1.2.0.0.0</string>
-		</dict>
-		<dict>
-			<key>installed_size</key>
-			<integer>2041</integer>
-			<key>packageid</key>
-			<string>com.apple.pkg.iLifeMediaBrowser</string>
-			<key>version</key>
-			<string>2.0.0.0.0</string>
-		</dict>
-	</array>
-	<key>optional_receipts</key>
-	<array>
 	</array>
 	<key>uninstall_method</key>
 	<string>removepackages</string>
 	<key>uninstallable</key>
 	<true/>
 	<key>version</key>
-	<string>4.0.0.0.0</string>
+	<string>5.0.0.0.0</string>
 </dict>
 </plist>
+
