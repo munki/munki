@@ -24,7 +24,6 @@ import os
 import subprocess
 import sys
 import time
-#import plistlib
 import tempfile
 import munkicommon
 import munkistatus
