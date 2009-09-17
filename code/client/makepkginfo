@@ -37,7 +37,6 @@ import os
 import re
 import optparse
 from distutils import version
-#import plistlib
 import subprocess
 import hashlib
 
