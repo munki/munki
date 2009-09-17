@@ -387,29 +387,10 @@ def padVersionString(versString,tupleCount):
 
 def getExtendedVersion(bundlepath):
     """
-    Returns five-part version number like Apple uses in package DB
+    Returns five-part version number like Apple uses in distribution
+    and flat packages
     """
-    versionPlist = os.path.join(bundlepath,"Contents","version.plist")
-    infoPlist = os.path.join(bundlepath,"Contents","Info.plist")
-    pl = {}
-    #if os.path.exists(versionPlist):
-    #    pl = FoundationPlist.readPlist(versionPlist)
-    #    if pl:
-    #        shortVers = "0.0.0"
-    #        sourceVers = "0"
-    #        buildVers = "0"
-    #        if "CFBundleShortVersionString" in pl:
-    #            shortVers = padVersionString(pl["CFBundleShortVersionString"],3)
-    #        if "SourceVersion" in pl:
-    #            sourceVers = padVersionString(pl["SourceVersion"],1)
-    #        if "BuildVersion" in pl:
-    #            buildVers = padVersionString(pl["BuildVersion"],1)
-    #        if os.path.exists(infoPlist):
-    #               pl = FoundationPlist.readPlist(infoPlist)
-    #               if 'IFMinorVersion' in pl:
-    #                   buildVers = padVersionString(pl['IFMinorVersion'],1)               
-    #        return shortVers + "." + sourceVers + "." + buildVers
-                        
+    infoPlist = os.path.join(bundlepath,"Contents","Info.plist")                    
     if os.path.exists(infoPlist):
         pl = FoundationPlist.readPlist(infoPlist)
         if "CFBundleShortVersionString" in pl:
@@ -418,8 +399,7 @@ def getExtendedVersion(bundlepath):
             return padVersionString(pl["CFBundleVersion"],5)
         elif "Bundle versions string, short" in pl:
             # another special case for JAMF Composer-generated packages. Wow.
-            return padVersionString(pl["Bundle versions string, short"],5)
-        
+            return padVersionString(pl["Bundle versions string, short"],5)        
     else:
         return "0.0.0.0.0"
   
@@ -529,8 +509,6 @@ def getOnePackageInfo(pkgpath):
             pkginfo['name'] = pl["CFBundleName"]
         
         if "IFPkgFlagInstalledSize" in pl:
-            # converting to int because plistlib barfs on longs. This might be a problem...
-            #pkginfo['installed_size'] = int(pl["IFPkgFlagInstalledSize"])
             pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
         
         pkginfo['version'] = getExtendedVersion(pkgpath)
