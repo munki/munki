@@ -515,16 +515,7 @@ def compareReceiptVersion(item):
     munkicommon.display_debug1("Looking for package %s, version %s" % (pkgid, vers))
     installedvers = munkicommon.getInstalledPackageVersion(pkgid)
     if installedvers:
-        # compare the same number of version components.
-        # if munkicommon.getInstalledPackageVersion(pkgid) returns "7.1.0"
-        # and our candidate version is "7.1.0.123.456"
-        # consider this a match.
-        # we do this because the Leopard (and later) package database
-        # sometimes seems to store less detail on versions than is available
-        # in the original package
-        component_count = len(str(installedvers).split("."))
-        normalized_vers = munkicommon.padVersionString(vers,component_count)
-        return compareVersions(installedvers, normalized_vers)
+        return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tThis package is not currently installed.")
         return 0
