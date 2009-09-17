@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-munkilib
+munkicommon
 
 Created by Greg Neagle on 2008-11-18.
 
@@ -25,11 +25,11 @@ Common functions used by the munki tools.
 import sys
 import os
 import re
-#import plistlib
 import time
 import subprocess
 import tempfile
 import shutil
+import urllib2
 from distutils import version
 from xml.dom import minidom
 
@@ -392,23 +392,23 @@ def getExtendedVersion(bundlepath):
     versionPlist = os.path.join(bundlepath,"Contents","version.plist")
     infoPlist = os.path.join(bundlepath,"Contents","Info.plist")
     pl = {}
-    if os.path.exists(versionPlist):
-        pl = FoundationPlist.readPlist(versionPlist)
-        if pl:
-            shortVers = "0.0.0"
-            sourceVers = "0"
-            buildVers = "0"
-            if "CFBundleShortVersionString" in pl:
-                shortVers = padVersionString(pl["CFBundleShortVersionString"],3)
-            if "SourceVersion" in pl:
-                sourceVers = padVersionString(pl["SourceVersion"],1)
-            if "BuildVersion" in pl:
-                buildVers = padVersionString(pl["BuildVersion"],1)
-            if os.path.exists(infoPlist):
-                   pl = FoundationPlist.readPlist(infoPlist)
-                   if 'IFMinorVersion' in pl:
-                       buildVers = padVersionString(pl['IFMinorVersion'],1)               
-            return shortVers + "." + sourceVers + "." + buildVers
+    #if os.path.exists(versionPlist):
+    #    pl = FoundationPlist.readPlist(versionPlist)
+    #    if pl:
+    #        shortVers = "0.0.0"
+    #        sourceVers = "0"
+    #        buildVers = "0"
+    #        if "CFBundleShortVersionString" in pl:
+    #            shortVers = padVersionString(pl["CFBundleShortVersionString"],3)
+    #        if "SourceVersion" in pl:
+    #            sourceVers = padVersionString(pl["SourceVersion"],1)
+    #        if "BuildVersion" in pl:
+    #            buildVers = padVersionString(pl["BuildVersion"],1)
+    #        if os.path.exists(infoPlist):
+    #               pl = FoundationPlist.readPlist(infoPlist)
+    #               if 'IFMinorVersion' in pl:
+    #                   buildVers = padVersionString(pl['IFMinorVersion'],1)               
+    #        return shortVers + "." + sourceVers + "." + buildVers
                         
     if os.path.exists(infoPlist):
         pl = FoundationPlist.readPlist(infoPlist)
@@ -422,12 +422,11 @@ def getExtendedVersion(bundlepath):
         
     else:
         return "0.0.0.0.0"
+  
                 
-
-
 def parsePkgRefs(filename):
-    """Parses a .dist file looking for pkg-ref or pkg-info tags to build a list of
-    included sub-packages"""
+    """Parses a .dist or PackageInfo file looking for pkg-ref or pkg-info tags 
+    to get info on included sub-packages"""
     info = []
     dom = minidom.parse(filename)
     pkgrefs = dom.getElementsByTagName("pkg-ref")
@@ -472,9 +471,15 @@ def getFlatPackageInfo(pkgpath):
     """
 
     infoarray = []
+    # get the absolute path to the pkg because we need to do a chdir later
+    abspkgpath = os.path.abspath(pkgpath)
+    # make a tmp dir to expand the flat package into
     pkgtmp = tempfile.mkdtemp(dir=tmpdir)
+    # record our current working dir
+    cwd = os.getcwd()
+    # change into our tmpdir so we can use xar to unarchive the flat package
     os.chdir(pkgtmp)
-    p = subprocess.Popen(["/usr/bin/xar", "-xf", pkgpath, "--exclude", "Payload"])
+    p = subprocess.Popen(["/usr/bin/xar", "-xf", abspkgpath, "--exclude", "Payload"])
     returncode = p.wait()
     if returncode == 0:
         currentdir = pkgtmp
@@ -483,7 +488,7 @@ def getFlatPackageInfo(pkgpath):
             infoarray = parsePkgRefs(packageinfofile)
                 
         if not infoarray:
-            # didn't get any packageid info.
+            # didn't get any packageid info or no PackageInfo file
             # look for subpackages at the top level
             for item in os.listdir(currentdir):
                 itempath = os.path.join(currentdir, item)
@@ -493,12 +498,14 @@ def getFlatPackageInfo(pkgpath):
                         infoarray.extend(parsePkgRefs(packageinfofile))
                         
         if not infoarray:
-            # found no PackageInfo files, so let's look at the Distribution file
+            # found no PackageInfo files and no subpackages,
+            # so let's look at the Distribution file
             distributionfile = os.path.join(currentdir, "Distribution")
             if os.path.exists(distributionfile):
                 infoarray = parsePkgRefs(distributionfile)
                 
-    os.chdir("/")
+    # change back to original working dir
+    os.chdir(cwd)
     shutil.rmtree(pkgtmp)
     return infoarray
 
@@ -530,6 +537,15 @@ def getOnePackageInfo(pkgpath):
     return pkginfo
     
 
+def getText(nodelist):
+    '''Helper function to get text from XML child nodes'''
+    rc = ""
+    for node in nodelist:
+        if node.nodeType == node.TEXT_NODE:
+            rc = rc + node.data
+    return rc
+
+
 def getBundlePackageInfo(pkgpath):
     infoarray = []
     
@@ -543,9 +559,23 @@ def getBundlePackageInfo(pkgpath):
     if os.path.exists(bundlecontents):
         for item in os.listdir(bundlecontents):
             if item.endswith(".dist"):
-                filename = os.path.join(bundlecontents, item)
-                infoarray = parsePkgRefs(filename)
-                return infoarray
+                filename = os.path.join(bundlecontents, item)                
+                dom = minidom.parse(filename)
+                pkgrefs = dom.getElementsByTagName("pkg-ref")
+                if pkgrefs:
+                    # try to find subpackages from the file: references
+                    for ref in pkgrefs:
+                        fileref = getText(ref.childNodes)
+                        if fileref.startswith("file:"):
+                            relativepath = urllib2.unquote(fileref[5:])
+                            subpkgpath = os.path.join(pkgpath, relativepath)
+                            if os.path.exists(subpkgpath):
+                                pkginfo = getBundlePackageInfo(subpkgpath)
+                                if pkginfo:
+                                    infoarray.extend(pkginfo)
+            
+                    if infoarray:
+                        return infoarray
                 
         # no .dist file found, look for packages in subdirs
         dirsToSearch = []
@@ -553,20 +583,36 @@ def getBundlePackageInfo(pkgpath):
         if os.path.exists(plistpath):
             pl = FoundationPlist.readPlist(plistpath)
             if 'IFPkgFlagComponentDirectory' in pl:
-                dirsToSearch.append(pl['IFPkgFlagComponentDirectory'])
-                
+                componentdir = pl['IFPkgFlagComponentDirectory']
+                dirsToSearch.append(componentdir)
+            
         if dirsToSearch == []:     
-            dirsToSearch = ['Contents', 'Contents/Packages', 'Contents/Resources', 'Contents/Resources/Packages']
+            dirsToSearch = ['Contents', 'Contents/Installers', 'Contents/Packages', 'Contents/Resources', 'Contents/Resources/Packages']
         for subdir in dirsToSearch:
             searchdir = os.path.join(pkgpath, subdir)
             if os.path.exists(searchdir):
                 for item in os.listdir(searchdir):
                     itempath = os.path.join(searchdir, item)
-                    if os.path.isdir(itempath) and itempath.endswith(".pkg"):
-                        pkginfo = getOnePackageInfo(itempath)
-                        if pkginfo:
-                            infoarray.append(pkginfo)
-                            
+                    if os.path.isdir(itempath):
+                        if itempath.endswith(".pkg"):
+                            pkginfo = getOnePackageInfo(itempath)
+                            if pkginfo:
+                                infoarray.append(pkginfo)
+                        elif itempath.endswith(".mpkg"):
+                            pkginfo = getBundlePackageInfo(itempath)
+                            if pkginfo:
+                                infoarray.extend(pkginfo)
+                    
+        if infoarray:
+            return infoarray
+        else:
+            # couldn't find any subpackages, just return info from the .dist file
+            # if it exists
+            for item in os.listdir(bundlecontents):
+                if item.endswith(".dist"):
+                    distfile = os.path.join(bundlecontents, item)
+                    infoarray.extend(parsePkgRefs(distfile))
+                    
     return infoarray
 
 
@@ -631,11 +677,7 @@ def getInstalledPackageVersion(pkgid):
             
         if pkgid == foundbundleid:
             display_debug2("\tThis machine has %s, version %s" % (pkgid, foundvers))
-            components = str(foundvers).split(".")
-            if len(components) > 2:
-                return foundvers
-            else:
-                return padVersionString(foundvers,3)
+            return padVersionString(foundvers,5)
     
     # This package does not appear to be currently installed
     display_debug2("\tThis machine does not have %s" % pkgid)
