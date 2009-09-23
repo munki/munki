@@ -45,9 +45,6 @@ http://swrepo_root/manifests/leopard_standard_apps:
 
 <dict>
 	<key>catalogs</key>
-	<array>
-		<string>production</string>
-	</array>
 	<key>managed_installs</key>
 	<array>
 		<string>MicrosoftOffice2008</string>
@@ -55,6 +52,8 @@ http://swrepo_root/manifests/leopard_standard_apps:
 		<string>Thunderbird</string>
 	</array>
 </dict>
+
+Note that this included manifest does not have an entry for "catalogs" - if the catalogs to search are not specified in an included manifest, the catalogs of its parent manifest will be used.
 
 Uninstalls:
 You may include a "managed_uninstalls" key:
