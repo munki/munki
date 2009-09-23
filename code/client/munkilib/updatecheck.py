@@ -1016,16 +1016,17 @@ def processInstall(manifestitem, cataloglist, installinfo):
         return True
     
     
-def processManifestForInstalls(manifestpath, installinfo):
+def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
     """
     Processes manifests to build a list of items to install.
     Can be recursive if manifests inlcude other manifests.
     Probably doesn't handle circular manifest references well...
     """
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
-    
     if cataloglist:
         getCatalogs(cataloglist)
+    else:
+        cataloglist = parentcatalogs
     
     nestedmanifests = getManifestValueForKey(manifestpath, "included_manifests")
     if nestedmanifests:
@@ -1034,7 +1035,7 @@ def processManifestForInstalls(manifestpath, installinfo):
             if munkicommon.stopRequested():
                 return {}
             if nestedmanifestpath:
-                listofinstalls = processManifestForInstalls(nestedmanifestpath, installinfo)
+                listofinstalls = processManifestForInstalls(nestedmanifestpath, installinfo, cataloglist)
                     
     installitems = getManifestValueForKey(manifestpath, "managed_installs")
     if installitems:
