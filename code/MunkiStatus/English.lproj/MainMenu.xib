@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="372"/>
-			<integer value="394"/>
+			<integer value="371"/>
 			<integer value="29"/>
+			<integer value="394"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -45,7 +45,7 @@
 				<string key="NSName">_NSMainMenu</string>
 			</object>
 			<object class="NSWindowTemplate" id="972006081">
-				<int key="NSWindowStyleMask">5</int>
+				<int key="NSWindowStyleMask">1</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{335, 627}, {532, 123}}</string>
 				<int key="NSWTFlags">1946157056</int>
@@ -163,7 +163,7 @@
 									<string>NeXT TIFF v4.0 pasteboard type</string>
 								</object>
 							</object>
-							<string key="NSFrame">{{17, 42}, {64, 64}}</string>
+							<string key="NSFrame">{{20, 39}, {64, 64}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSImageCell" key="NSCell" id="442116785">
@@ -535,8 +535,8 @@
 					<integer value="1"/>
 					<string>{74, 862}</string>
 					<string>{{11, 836}, {478, 20}}</string>
-					<string>{{99, 598}, {532, 123}}</string>
-					<string>{{99, 598}, {532, 123}}</string>
+					<string>{{398, 360}, {532, 123}}</string>
+					<string>{{398, 360}, {532, 123}}</string>
 					<boolean value="NO" id="6"/>
 					<string>{{238, 285}, {480, 360}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -549,8 +549,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{0, 575}, {480, 270}}</string>
-					<string>{{0, 575}, {480, 270}}</string>
+					<string>{{40, 137}, {480, 270}}</string>
+					<string>{{40, 137}, {480, 270}}</string>
 					<reference ref="6"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

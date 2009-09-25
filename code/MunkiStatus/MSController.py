@@ -111,7 +111,7 @@ class MSController(NSObject):
             self.window.setTitle_(u"Managed Software Update")
             self.window.orderFrontRegardless()
             if self.imageFld:
-                theImage = NSImage.imageNamed_("Installer")
+                theImage = NSImage.imageNamed_("MunkiStatus")
                 self.imageFld.setImage_(theImage)
             if self.messageFld:
                 self.messageFld.setStringValue_(u"Waiting...")
