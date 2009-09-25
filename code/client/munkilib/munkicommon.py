@@ -219,6 +219,18 @@ def pythonScriptRunning(scriptname):
                     return pid
 
     return 0
+    
+    
+def osascript(osastring):
+    '''Wrapper to run AppleScript commands'''
+    cmd = ['osascript', '-e', osastring]
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    if p.returncode != 0:
+        print >>sys.stderr, "Error: ", err
+    if out:
+        return out.decode('UTF-8').rstrip("\n")
 
 
 # dmg helpers

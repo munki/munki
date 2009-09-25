@@ -230,7 +230,7 @@ def main():
                                     'LastNotifiedDate', '-date', now.ctime()]
                     retcode = subprocess.call(cmd)
                     # notify user of available updates
-                    result = munkistatus.osascript('tell application "Managed Software Update" to activate')
+                    result = munkicommon.osascript('tell application "Managed Software Update" to activate')
         else:
             if options.installonly:
                 # install!

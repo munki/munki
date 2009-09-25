@@ -17,171 +17,189 @@
 """
 munkistatus.py
 
-Created by Greg Neagle on 2009-04-17.
+Created by Greg Neagle on 2009-09-24.
 
-Utility functions for using MunkiStatus.app.
-Can be called as a standalone script with options,
-or as a Python library
+Utility functions for using MunkiStatus.app
+to display status and progress.
 """
 
-import sys
 import os
-import optparse
 import subprocess
+import socket
+import time
+
+# module socket variable
+s = None
+
+def launchMunkiStatus():
+    # first let LaunchServices try
+    retcode = subprocess.call(["/usr/bin/open", "-a", "FunkiStatus.app"])
+    if retcode:
+        # that failed; let's look for an exact path
+        munkiStatusPath = "/Users/Shared/munki/munki/code/MunkiStatusPy/MunkiStatus/build/Debug/MunkiStatus.app"
+        #munkiStatusPath = "/Library/Application Support/Managed Installs/MunkiStatus.app"
+        if os.path.exists(munkiStatusPath):
+            retcode = subprocess.call(["/usr/bin/open", munkiStatusPath])
 
 
-def osascript(osastring):
-    cmd = ['osascript', '-e', osastring]
+def launchAndConnectToMunkiStatus():
+    global s
+    launchMunkiStatus()
+    socketpath = getMunkiStatusSocket()
+    if socketpath:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.connect(socketpath)
+    #else:
+        #raise Exception("Could not open connection to MunkiStatus.app")
+
+
+def sendCommand(message):
+    global s
+    if s == None:
+        launchAndConnectToMunkiStatus()
+    if s:        
+        try:
+            # we can send only a single line.
+            messagelines = message.splitlines(True)
+            s.send(messagelines[0])
+        except socket.error, (err, errmsg):
+            if err == 32 or err == 9:
+                # broken pipe
+                # MunkiStatus must have died; try relaunching
+                s.close()
+                launchAndConnectToMunkiStatus()
+                if s:
+                    # try again!
+                    s.send(messagelines[0])
+            
+
+def readResponse():
+    global s
+    if s:
+        try:
+            # our responses are really short
+            data = s.recv(256)
+            return int(data.rstrip('\n'))
+        except socket.error, (err, errmsg):
+            print err, errmsg
+            s.close()
+            s = None
+            
+    return ''
+    
+
+def getPIDforProcessName(processname):
+    cmd = ['/bin/ps', '-eo', 'pid=,command=']
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
-    if p.returncode != 0:
-        print >>sys.stderr, "Error: ", err
-    if out:
-        return out.decode('UTF-8').rstrip("\n")
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while True: 
+        line =  p.stdout.readline().decode('UTF-8')
+        if not line and (p.poll() != None):
+            break
+        line = line.rstrip('\n');
+        (pid, proc) = line.split(None,1)
+        if proc.find(processname) != -1:
+            return pid
 
-
-def quit():
-    # see if MunkiStatus is running first
-    cmd = ['/usr/bin/killall', '-s', 'MunkiStatus']
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
-    if p.returncode == 0:
-        # it's running, send it a quit message
-        result = osascript('tell application "MunkiStatus" to quit')
-    
-    
-def activate():
-    osascript('tell application "MunkiStatus" to activate')
-    
-    
-def title(titleText):
-    result = osascript('tell application "MunkiStatus" to set title of window "mainWindow" to "%s"' % titleText)
-    
-    
-def message(messageText):
-    result = osascript('tell application "MunkiStatus" to set contents of text field "mainTextFld" of window "mainWindow" to "%s"' % messageText)
-    # when you change the message, the detail is no longer valid, so let's clear that
-    result = osascript('tell application "MunkiStatus" to set contents of text field "minorTextFld" of window "mainWindow" to " "')
-    
-    
-def detail(detailsText):
-    result = osascript('tell application "MunkiStatus" to set contents of text field "minorTextFld" of window "mainWindow" to "%s"' % detailsText)
-    
-    
-def percent(percentage):
-    # Note:  this is a relatively slow operation.
-    # If you are calling this on every iteration of a loop, 
-    # you may find it slows the loop down unacceptibly, as 
-    # Your loop spends more time waiting for this operation
-    # than actually doing its work. You might
-    # instead try calling it once at the beginning of the loop,
-    # once every X iterations, then once at the end to speed things up.
-    # X might equal (number of iterations / 10 or even 20)
-    percent = int(float(percentage))
-    if percent > 100:
-        percent = 100
-    if percent < 0:
-        # set an indeterminate progress bar
-        result = osascript('tell application "MunkiStatus" to set indeterminate of progress indicator "progressBar" of window "mainWindow" to true')
-        result = osascript('tell application "MunkiStatus" to tell window "mainWindow" to tell progress indicator "progressBar" to start')
-    elif percent == 0:
-        # we only clear the indeterminate status when we set the percentage to 0;
-        # we tried always doing it, but it really slows down response times such
-        # that a script spends way more time updating MunkiStatus than it does
-        # actually performing its task
-        result = osascript('tell application "MunkiStatus" to set indeterminate of progress indicator "progressBar" of window "mainWindow" to false')
-        result = osascript('tell application "MunkiStatus" to set contents of progress indicator "progressBar" of window "mainWindow" to 0')
-    else:
-        percentStr = str(percent)
-        result = osascript('tell application "MunkiStatus" to set contents of progress indicator "progressBar" of window "mainWindow" to %s' % percentStr)
-    
-    
-def getStopButtonState():
-    # see if MunkiStatus is running first
-    cmd = ['/usr/bin/killall', '-s', 'MunkiStatus']
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
-    if p.returncode == 0:
-        # it's running, ask it for the button state
-        result = osascript('tell application "MunkiStatus" to get the state of button "stopBtn" of window "mainWindow"')
-        if result == "1":
-            return 1
-    
     return 0
     
     
-def hideStopButton():
-    result = osascript('tell application "MunkiStatus" to set visible of button "stopBtn" of window "mainWindow" to false')
-   
-   
-def showStopButton():
-    result = osascript('tell application "MunkiStatus" to set visible of button "stopBtn" of window "mainWindow" to true')
+def getMunkiStatusPID():
+    return getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
+
+
+def getMunkiStatusSocket():
+    pid = getMunkiStatusPID()
+    if pid:
+        socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % pid
+        for i in range(0,5):
+            if os.path.exists(socketpath):
+                return socketpath
+            else:
+                # sleep and try again
+                time.sleep(.2)
+    else:
+        return ""
+        
+        
+def activate():
+    '''Brings MunkiStatus window to the front.'''
+    sendCommand(u"ACTIVATE: \n")
+        
+        
+def title(titleText):
+    '''Sets the window title.'''
+    sendCommand(u"TITLE: %s\n" % titleText)
+
+
+def message(messageText):
+    '''Sets the status message.'''
+    sendCommand(u"MESSAGE: %s\n" % messageText)
+        
+        
+def detail(detailsText):
+    '''Sets the detail text.'''
+    sendCommand(u"DETAIL: %s\n" % detailsText)
+        
     
+def percent(percentage):
+    '''Sets the progress indicator to 0-100 percent done.
+    If you pass a negative number, the progress indicator
+    is shown as an indeterminate indicator (barber pole).'''
+    sendCommand("PERCENT: %s\n" % percentage)
+        
+
+def hideStopButton():
+    '''Hides the stop button.'''
+    sendCommand(u"HIDESTOPBUTTON: \n")
+
+
+def showStopButton():
+    '''Shows the stop button.'''
+    sendCommand(u"SHOWSTOPBUTTON: \n")
+
 
 def disableStopButton():
-    result = osascript('tell application "MunkiStatus" to set enabled of button "stopBtn" of window "mainWindow" to false')
+    '''Disables (grays out) the stop button.'''
+    sendCommand(u"DISABLESTOPBUTTON: \n")       
 
 
 def enableStopButton():
-    result = osascript('tell application "MunkiStatus" to set enabled of button "stopBtn" of window "mainWindow" to true')
+    '''Enables the stop button.'''
+    sendCommand(u"ENABLESTOPBUTTON: \n")
+    
+    
+def restartAlert():
+    try:
+        sendCommand(u"ACTIVATE: \n")
+        sendCommand(u"RESTARTALERT: \n")
+        return readResponse()
+    except:
+        return 0
+    
+
+def getStopButtonState():
+    '''Returns 1 if the stop button has been clicked, 0 otherwise.'''
+    try:
+        s.send(u"GETSTOPBUTTONSTATE: \n")
+        state = readResponse()
+        if state:
+            return state
+        else:
+            return 0
+    except:
+        return 0
 
 
-def main():
-    p = optparse.OptionParser()
-    p.add_option('--activate', '-a', action='store_true',
-                    help='Bring MunkiStatus to the front.')
-    p.add_option('--title', '-t', default='',
-                    help='Window title.')                    
-    p.add_option('--message', '-m', default='',
-                    help='Main message text.')
-    p.add_option('--detail', '-d',
-                    help='Minor message text.')
-    p.add_option('--percent', '-p', default='',
-                    help='Update progress bar to show percent done. Negative values show an indeterminate progress bar.')
-    p.add_option('--quit', '-q', action='store_true',
-                    help='Tell MunkiStatus to quit.')
-    p.add_option('--getStopButtonState', '-g', action='store_true',
-                    help='Returns 1 if stop button has been clicked.')
-    p.add_option('--hideStopButton', action='store_true',
-                    help='Hide the stop button.')
-    p.add_option('--showStopButton', action='store_true',
-                    help='Show the stop button.')
-    p.add_option('--disableStopButton', action='store_true',
-                    help='Disable the stop button.')
-    p.add_option('--enableStopButton', action='store_true',
-                    help='Enable the stop button.')
-    
-    
-    options, arguments = p.parse_args()
-    
-    if options.quit:
-        quit()
-        exit()           
-    if options.activate:
-        activate()
-    if options.title:
-        title(options.title)
-    if options.message:
-        message(options.message)        
-    if options.detail:
-        detail(options.detail)
-    if options.percent:
-        percent(options.percent)
-    if options.getStopButtonState:
-        print getStopButtonState()
-    if options.hideStopButton:
-        hideStopButton()        
-    if options.showStopButton:
-        showStopButton()
-    if options.disableStopButton:
-        disableStopButton()        
-    if options.enableStopButton:
-        enableStopButton()
-    
-                        
-if __name__ == '__main__':
-	main()
+def quit():
+    '''Quits MunkiStatus.app.'''
+    global s
+    try:
+        s.send(u"QUIT: \n")
+        s.close()
+        s = None
+    except:
+        pass
+
+
 

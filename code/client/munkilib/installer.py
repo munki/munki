@@ -420,10 +420,11 @@ def run():
         else:
             if munkicommon.munkistatusoutput:
                 # someone is logged in and we're using munkistatus
+                print "Notifying currently logged-in user to restart."
                 munkistatus.activate()
-                munkistatus.osascript('tell application "munkistatus" to display alert "Restart Required" message "Software installed requires a restart. You will have a chance to save open documents." as critical default button "Restart"')
+                munkistatus.restartAlert()
                 cleanup()
-                munkistatus.osascript('tell application "System Events" to restart')
+                munkicommon.osascript('tell application "System Events" to restart')
             else:
                 print "Please restart immediately."
     else:
