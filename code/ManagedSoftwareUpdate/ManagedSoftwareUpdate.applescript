@@ -251,35 +251,65 @@ on alert ended theObject with reply withReply
 		-- trigger managedinstaller via launchd WatchPath
 		-- we touch a file that launchd is is watching
 		-- launchd, in turn, launches managedsoftwareupdate --installonly as root
-		set triggerpath to quoted form of (managedInstallDir & "/.managedinstall.launchd")
-		do shell script "/usr/bin/touch " & triggerpath
-		quit
+		try
+			set triggerpath to quoted form of (managedInstallDir & "/.managedinstall.launchd")
+			do shell script "/usr/bin/touch " & triggerpath
+			quit
+		on error
+			show window "mainWindow"
+			display alert "Cannot start installation session" message ¬
+				"There is a configuration problem with the managed software installer. Contact your systems administrator." default button "Quit" as informational attached to window 1
+		end try
 	end if
 	if button returned of withReply is "Quit" then
 		-- acknowleged no new software available, or installing later
 		quit
 	end if
-	
 end alert ended
 
 on activated theObject
-	set activationCount to activationCount + 1
 	set installitems to my itemstoinstall()
 	if (count of installitems) > 0 then
+		my initTable()
+		my updateTable()
 		show window "mainWindow"
 		set enabled of (menu item "installAllMenuItem" of menu "updateMenu" of menu 1) to true
 	else
-		if activationCount is 1 then
-			-- trigger manual update check, but only on launch
-			-- we touch a file that launchd is is watching
-			-- launchd, in turn, launches managedsoftwareupdate --manualcheck as root
-			set triggerpath to quoted form of (managedInstallDir & "/.updatecheck.launchd")
-			do shell script "/usr/bin/touch " & triggerpath
-			-- when it's done, it sends an activate message to us again
-		else
+		-- did managedsoftwareupdate --manual just finish?
+		set now to current date
+		tell application "System Events"
+			try
+				set ManagedInstallPrefsFile to "/Library/Preferences/ManagedInstalls.plist"
+				set ManagedInstallPrefs to value of property list file ManagedInstallPrefsFile
+				
+				set lastNotifiedDate to |LastNotifiedDate| of ManagedInstallPrefs
+			on error
+				set lastNotifiedDate to date "Thursday, January 1, 1970 12:00:00 AM"
+			end try
+		end tell
+		if now - lastNotifiedDate < 10 then
+			-- managedsoftwareupdate --manual just ran, but there are no updates
 			show window "mainWindow"
 			display alert "Your software is up to date." message ¬
 				"There is no new software for your computer at this time." default button "Quit" as informational attached to window 1
+		else
+			tell application "System Events"
+				set processList to name of every process
+			end tell
+			if processList contains "MunkiStatus" then
+				tell application "MunkiStatus" to activate
+			else
+				try
+					-- touch a file to get launchd to run managedsoftwareupdate --manual as root
+					set triggerpath to quoted form of (managedInstallDir & "/.updatecheck.launchd")
+					do shell script "/usr/bin/touch " & triggerpath
+					-- when it's done, it sends an activate message or launches us again
+				on error
+					show window "mainWindow"
+					display alert "Cannot check for updates." message ¬
+						"There is a configuration problem with the managed software installer. Contact your systems administrator." default button "Quit" as informational attached to window 1
+				end try
+			end if
 		end if
 	end if
 end activated
@@ -287,8 +317,8 @@ end activated
 
 on opened theObject
 	if the name of theObject is "mainWindow" then
-		my initTable()
-		my updateTable()
+		--my initTable()
+		--my updateTable()
 	end if
 end opened
 
