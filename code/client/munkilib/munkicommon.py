@@ -630,7 +630,29 @@ def getInstalledPackageVersion(pkgid):
     Returns the version string of the installed pkg
     if it exists, or an empty string if it does not
     """
+    
+    
+    # First check (Leopard and later) package database
+    try:
+        p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid], bufsize=1, 
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, err) = p.communicate()
 
+        if out:
+            pl = FoundationPlist.readPlistFromString(out)
+
+            if "pkgid" in pl:
+                foundbundleid = pl["pkgid"]
+            if "pkg-version" in pl:
+                foundvers = pl["pkg-version"]
+            
+            if pkgid == foundbundleid:
+                display_debug2("\tThis machine has %s, version %s" % (pkgid, foundvers))
+            return padVersionString(foundvers,5)
+    except:
+        pass
+            
+    # If we got to this point, we haven't found the pkgid yet. 
     # Check /Library/Receipts
     receiptsdir = "/Library/Receipts"
     if os.path.exists(receiptsdir):
@@ -646,28 +668,11 @@ def getInstalledPackageVersion(pkgid):
                     if pkgid == foundbundleid:
                         if version.LooseVersion(foundvers) > version.LooseVersion(highestversion):
                             highestversion = foundvers
-    
+
         if highestversion != "0":
             display_debug2("\tThis machine has %s, version %s" % (pkgid, highestversion))
             return highestversion
-
-    # If we got to this point, we haven't found the pkgid yet.                        
-    # Now check new (Leopard and later) package database
-    p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid], bufsize=1, 
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
-
-    if out:
-        pl = FoundationPlist.readPlistFromString(out)
-
-        if "pkgid" in pl:
-            foundbundleid = pl["pkgid"]
-        if "pkg-version" in pl:
-            foundvers = pl["pkg-version"]
-            
-        if pkgid == foundbundleid:
-            display_debug2("\tThis machine has %s, version %s" % (pkgid, foundvers))
-            return padVersionString(foundvers,5)
+   
     
     # This package does not appear to be currently installed
     display_debug2("\tThis machine does not have %s" % pkgid)
