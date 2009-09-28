@@ -60,7 +60,7 @@ def sendCommand(message):
         try:
             # we can send only a single line.
             messagelines = message.splitlines(True)
-            s.send(messagelines[0])
+            s.send(messagelines[0].encode('UTF-8'))
         except socket.error, (err, errmsg):
             if err == 32 or err == 9:
                 # broken pipe
