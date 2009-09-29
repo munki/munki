@@ -908,6 +908,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
     managedinstallprefs = munkicommon.prefs()
     ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
     
+    if munkicommon.munkistatusoutput:
+        # reset progress indicator and detail field
+        munkistatus.percent("-1")
+        munkistatus.detail('')
+    
     manifestitemname = os.path.split(manifestitem)[1]
     #munkicommon.display_info("Getting detail on %s..." % manifestitemname)
     pl = getItemDetail(manifestitem, cataloglist)
@@ -1081,7 +1086,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     """
     global pkgdata
     manifestitemname_withversion = os.path.split(manifestitem)[1]
-    
+        
     munkicommon.display_detail("Processing manifest item %s..." % manifestitemname_withversion)
     (manifestitemname, includedversion) = nameAndVersion(manifestitemname_withversion)
     infoitems = []
