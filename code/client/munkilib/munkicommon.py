@@ -277,7 +277,7 @@ def unmountdmg(mountpoint):
 
 def NSDateNowString():
     '''
-    Generates a NSDate-compatible 
+    Generates a NSDate-compatible string
     '''
     now = NSDate.new()
     return str(now)

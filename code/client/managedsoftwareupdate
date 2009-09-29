@@ -168,6 +168,16 @@ def main():
     updatesavailable = False
     if not options.installonly:
         result = updatecheck.check(id=options.id)
+        
+        # record last check date and result
+        nowString = munkicommon.NSDateNowString()
+        cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
+                        'LastCheckDate', '-date', nowString]
+        retcode = subprocess.call(cmd)
+        cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
+                        'LastCheckResult', '-int', str(result)]
+        retcode = subprocess.call(cmd)
+        
         if options.manualcheck:
             munkistatus.quit()
         
