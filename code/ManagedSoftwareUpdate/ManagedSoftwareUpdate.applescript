@@ -274,7 +274,8 @@ on activated theObject
 		my updateTable()
 		show window "mainWindow"
 		set enabled of (menu item "installAllMenuItem" of menu "updateMenu" of menu 1) to true
-	else
+	else if visible of window "mainWindow" is false then
+		-- we haven't shown the main window yet
 		-- did managedsoftwareupdate --manual just finish?
 		set now to current date
 		tell application "System Events"
@@ -282,23 +283,28 @@ on activated theObject
 				set ManagedInstallPrefsFile to "/Library/Preferences/ManagedInstalls.plist"
 				set ManagedInstallPrefs to value of property list file ManagedInstallPrefsFile
 				
-				set lastNotifiedDate to |LastNotifiedDate| of ManagedInstallPrefs
+				set lastCheckedDate to |LastCheckDate| of ManagedInstallPrefs
 			on error
-				set lastNotifiedDate to date "Thursday, January 1, 1970 12:00:00 AM"
+				set lastCheckedDate to date "Thursday, January 1, 1970 12:00:00 AM"
 			end try
 		end tell
-		if now - lastNotifiedDate < 10 then
+		if now - lastCheckedDate < 10 then
 			-- managedsoftwareupdate --manual just ran, but there are no updates
+			-- because if there were updates, count of installitems > 0
 			show window "mainWindow"
 			display alert "Your software is up to date." message ¬
 				"There is no new software for your computer at this time." default button "Quit" as informational attached to window 1
 		else
+			-- no items to install, managedsoftwareupdate didn't finish checking recently
+			-- so we are either checking or need to check
 			tell application "System Events"
 				set processList to name of every process
 			end tell
 			if processList contains "MunkiStatus" then
+				-- we're currently checking, just bring the status window to the front
 				tell application "MunkiStatus" to activate
 			else
+				-- run managedsoftwareupdate --manual
 				try
 					-- touch a file to get launchd to run managedsoftwareupdate --manual as root
 					set triggerpath to quoted form of (managedInstallDir & "/.updatecheck.launchd")
