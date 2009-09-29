@@ -59,7 +59,11 @@ def getLoginwindowPicture():
                     if theImage:
                         return theImage
                 return NSImage.imageNamed_("Solid Aqua Blue")
-    return NSImage.alloc().initWithContentsFile_("/System/Library/CoreServices/DefaultDesktop.jpg")
+    theImage = NSImage.alloc().initWithContentsOfFile_("/System/Library/CoreServices/DefaultDesktop.jpg")
+    if theImage:
+        return theImage
+    else:
+        return NSImage.imageNamed_("Solid Aqua Blue")
     
                 
 def getconsoleuser():
