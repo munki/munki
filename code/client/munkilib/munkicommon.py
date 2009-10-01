@@ -412,8 +412,8 @@ def getExtendedVersion(bundlepath):
         elif "Bundle versions string, short" in pl:
             # another special case for JAMF Composer-generated packages. Wow.
             return padVersionString(pl["Bundle versions string, short"],5)        
-    else:
-        return "0.0.0.0.0"
+    # didn't find a version number, so return 0...
+    return "0.0.0.0.0"
   
                 
 def parsePkgRefs(filename):
