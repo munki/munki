@@ -762,7 +762,7 @@ def getItemDetail(name, cataloglist, vers=''):
 
                 if 'maximum_os_version' in item:
                     max_os_vers = munkicommon.padVersionString(item['maximum_os_version'],3)
-                    munkicommon.display_debug1("Considering item %s, version %s with maximum os version supported %s" % (item['name'], item['version'], min_os_vers))
+                    munkicommon.display_debug1("Considering item %s, version %s with maximum os version supported %s" % (item['name'], item['version'], max_os_vers))
                     munkicommon.display_debug2("Our OS version is %s" % machine['os_vers'])
                     if version.LooseVersion(machine['os_vers']) > version.LooseVersion(max_os_vers):
                         # skip this one, go to the next
