@@ -54,7 +54,8 @@ def readPlist(filepath):
     plistData = NSData.dataWithContentsOfFile_(filepath)
     dataObject, plistFormat, error = NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(plistData, NSPropertyListMutableContainers, None, None)
     if error:
-        raise NSPropertyListSerializationException(error)
+        errmsg = "%s in file %s" % (error, filepath)
+        raise NSPropertyListSerializationException(errmsg)
     else:
         return dataObject
 
