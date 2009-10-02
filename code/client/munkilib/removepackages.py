@@ -250,8 +250,9 @@ def ImportPackage(packagepath, c):
         vers = "1.0"
     if "IFPkgRelocatedPath" in pl:
         ppath = pl["IFPkgRelocatedPath"]
+        ppath = ppath.lstrip('./').rstrip('/')
     else:
-        ppath = "./"
+        ppath = ""
         
     t = (timestamp, owner, pkgid, vers, ppath, pkgname)
     c.execute('INSERT INTO pkgs (timestamp, owner, pkgid, vers, ppath, pkgname) values (?, ?, ?, ?, ?, ?)', t)
@@ -275,16 +276,13 @@ def ImportPackage(packagepath, c):
             gid = uidgid[1]
             if path != ".":
                 # special case for MS Office 2008 installers
-                if ppath == "./tmp/com.microsoft.updater/office_location/":
-                    ppath = "./Applications/"
+                if ppath == "tmp/com.microsoft.updater/office_location":
+                    ppath = "Applications"
 
                 # prepend the ppath so the paths match the actual install locations
                 path = path.lstrip("./")
-                if ppath.endswith("/"):
-                    path = ppath + path
-                else:
+                if ppath:
                     path = ppath + "/" + path
-                path = path.lstrip("./")
 
                 t = (path, )
                 row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
@@ -319,7 +317,7 @@ def ImportBom(bompath, c):
     owner = 0
     pkgid =  os.path.splitext(pkgname)[0]
     vers = "1.0"
-    ppath = "./"
+    ppath = ""
 
     #try to get metadata from applepkgdb
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
@@ -329,6 +327,7 @@ def ImportBom(bompath, c):
         pl = FoundationPlist.readPlistFromString(plist)
         if "install-location" in pl:
             ppath = pl["install-location"]
+            ppath = ppath.lstrip('./').rstrip('/')
         if "pkg-version" in pl:
             vers = pl["pkg-version"]
         if "install-time" in pl:
@@ -354,16 +353,13 @@ def ImportBom(bompath, c):
         gid = uidgid[1]
         if path != ".":
             # special case for MS Office 2008 installers
-            if ppath == "./tmp/com.microsoft.updater/office_location/":
-                ppath = "./Applications/"
+            if ppath == "tmp/com.microsoft.updater/office_location":
+                ppath = "Applications"
 
             #prepend the ppath so the paths match the actual install locations
             path = path.lstrip("./")
-            if ppath.endswith("/"):
-                path = ppath + path
-            else:
+            if ppath:
                 path = ppath + "/" + path
-            path = path.lstrip("./")
 
             t = (path, )
             row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
@@ -386,7 +382,7 @@ def ImportFromPkgutil(pkgname, c):
     owner = 0
     pkgid =  pkgname
     vers = "1.0"
-    ppath = "./"
+    ppath = ""
 
     #get metadata from applepkgdb
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
@@ -396,6 +392,7 @@ def ImportFromPkgutil(pkgname, c):
         pl = FoundationPlist.readPlistFromString(plist)
         if "install-location" in pl:
             ppath = pl["install-location"]
+            ppath = ppath.lstrip('./').rstrip('/')
         if "pkg-version" in pl:
             vers = pl["pkg-version"]
         if "install-time" in pl:
@@ -425,16 +422,14 @@ def ImportFromPkgutil(pkgname, c):
         gid = "0"
         if path != ".":
             # special case for MS Office 2008 installers
-            if ppath == "./tmp/com.microsoft.updater/office_location/":
-                ppath = "./Applications/"
+            # /tmp/com.microsoft.updater/office_location
+            if ppath == "tmp/com.microsoft.updater/office_location":
+                ppath = "Applications"
 
             #prepend the ppath so the paths match the actual install locations
             path = path.lstrip("./")
-            if ppath.endswith("/"):
-                path = ppath + path
-            else:
+            if ppath:
                 path = ppath + "/" + path
-            path = path.lstrip("./")
 
             t = (path, )
             row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
@@ -890,7 +885,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         if listfiles:
             removalpaths.sort()
             for item in removalpaths:
-                print "/" + item
+                print "/" + item.encode('UTF-8')
         else:
             if munkicommon.munkistatusoutput:
                 munkistatus.disableStopButton()
