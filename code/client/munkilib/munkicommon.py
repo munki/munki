@@ -508,22 +508,26 @@ def getOnePackageInfo(pkgpath):
     plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
     if os.path.exists(plistpath):
         pkginfo['filename'] = os.path.basename(pkgpath)
-        pl = FoundationPlist.readPlist(plistpath)
-        if "CFBundleIdentifier" in pl:
-            pkginfo['packageid'] = pl["CFBundleIdentifier"]
-        elif "Bundle identifier" in pl:
-            # special case for JAMF Composer generated packages. WTF?
-            pkginfo['packageid'] = pl["Bundle identifier"]
-        else:
-            pkginfo['packageid'] = os.path.basename(pkgpath)
+        try:
+            pl = FoundationPlist.readPlist(plistpath)
+            if "CFBundleIdentifier" in pl:
+                pkginfo['packageid'] = pl["CFBundleIdentifier"]
+            elif "Bundle identifier" in pl:
+                # special case for JAMF Composer generated packages. WTF?
+                pkginfo['packageid'] = pl["Bundle identifier"]
+            else:
+                pkginfo['packageid'] = os.path.basename(pkgpath)
             
-        if "CFBundleName" in pl:
-            pkginfo['name'] = pl["CFBundleName"]
+            if "CFBundleName" in pl:
+                pkginfo['name'] = pl["CFBundleName"]
         
-        if "IFPkgFlagInstalledSize" in pl:
-            pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
+            if "IFPkgFlagInstalledSize" in pl:
+                pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
         
-        pkginfo['version'] = getExtendedVersion(pkgpath)
+            pkginfo['version'] = getExtendedVersion(pkgpath)
+        except:
+            pkginfo['packageid'] = "BAD PLIST in %s" % os.path.basename(pkgpath)
+            pkginfo['version'] = "0.0.0.0.0"
     return pkginfo
     
 
