@@ -306,22 +306,29 @@ def getSoftwareUpdateInfo():
         if 'ProductPaths' in pl:
             products = pl['ProductPaths']
             for product_key in products.keys():
-                name = products[product_key]
-                installitem = os.path.join(updatesdir, name)
+                updatename = products[product_key]
+                installitem = os.path.join(updatesdir, updatename)
                 if os.path.exists(installitem) and os.path.isdir(installitem):
                     for subitem in os.listdir(installitem):
                         if subitem.endswith('.dist'):
                             distfile = os.path.join(installitem, subitem)
                             (title, vers, description) = parseDist(distfile)
                             iteminfo = {}
-                            iteminfo["installer_item"] = installitem
+                            iteminfo["installer_item"] = updatename
                             iteminfo["name"] = title
                             iteminfo["description"] = description
                             if iteminfo["description"] == '':
                                 iteminfo["description"] = "Updated Apple software."
                             iteminfo["version_to_install"] = vers
                             iteminfo['display_name'] = title
-                            iteminfo['RestartAction'] = "RequireRestart"
+                            p = subprocess.Popen(["/usr/sbin/installer", "-query", "RestartAction", 
+                                                  "-pkg", distfile], bufsize=1, 
+                                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            (out, err) = p.communicate()
+                            if out:
+                                restartAction = out.rstrip('\n')
+                                if restartAction != 'None':
+                                    iteminfo['RestartAction'] = restartAction
                             infoarray.append(iteminfo)
                             break
 
