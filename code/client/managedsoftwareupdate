@@ -23,6 +23,7 @@ import optparse
 import datetime
 import dateutil.parser
 import subprocess
+import time
 
 from munkilib import munkicommon
 from munkilib import updatecheck
