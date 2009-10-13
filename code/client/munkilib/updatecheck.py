@@ -956,7 +956,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     if 'requires' in pl:
         dependencies = pl['requires']
         for item in dependencies:
-            munkicommon.display_detail("%s requires %s. Getting info on %s..." % (manifestitemname, item, item))
+            munkicommon.display_detail("%s-%s requires %s. Getting info on %s..." % (pl.get('name', manifestitemname), pl.get('version',''), item, item))
             success = processInstall(item, cataloglist, installinfo)
             if not success:
                 dependenciesMet = False
@@ -970,7 +970,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
         else:
             item = dependencies
             
-        munkicommon.display_detail("%s modifies %s. Getting info on %s..." % (manifestitemname, item, item))
+        munkicommon.display_detail("%s-%s modifies %s. Getting info on %s..." % (pl.get('name', manifestitemname), pl.get('version',''), item, item))
         success = processInstall(item, cataloglist, installinfo)
         if not success:
             dependenciesMet = False
