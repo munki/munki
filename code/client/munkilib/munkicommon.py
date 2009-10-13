@@ -292,8 +292,8 @@ def getManagedInstallsPrefs():
     prefs['ClientIdentifier'] = ""
     prefs['LogFile'] = os.path.join(prefs['ManagedInstallDir'], "Logs", "ManagedSoftwareUpdate.log")
     prefs['LoggingLevel'] = 1
-    #prefs['InstallAppleSoftwareUpdates'] = False
-    #prefs['SoftwareUpdateServerURL'] = None
+    prefs['InstallAppleSoftwareUpdates'] = False
+    prefs['SoftwareUpdateServerURL'] = None
     prefs['DaysBetweenNotifications'] = 1
     prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
     # Added by bcw
@@ -705,17 +705,21 @@ def findInstallerItem(path):
     if path.endswith('.pkg') or path.endswith('.mpkg') or path.endswith('.dmg'):
         return path
     else:
-        # Apple Software Updates sometimes download as
-        # directories with .dist files within. Grrr.
-        if os.path.isdir(path):
+        # Apple Software Updates download as directories
+        # with .dist files and .pkgs
+        if os.path.exists(path) and os.path.isdir(path):
             for item in os.listdir(path):
-                if item.endswith('.dist'):
-                    itempath = os.path.join(path,item)
-                    # usually the .dist file is a symlink to another one
-                    # in a subfolder (like Packages)
-                    if os.path.islink(itempath):
-                        itempath = os.path.realpath(itempath)
-                    return itempath
+                if item.endswith('.pkg'):
+                    return path
+                    
+            # we didn't find a pkg at this level
+            # look for a Packages dir
+            path = os.path.join(path,"Packages")
+            if os.path.exists(path) and os.path.isdir(path):
+                for item in os.listdir(path):
+                    if item.endswith('.pkg'):
+                        return path
+    # found nothing!
     return ''
 
 

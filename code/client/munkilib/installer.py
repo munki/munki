@@ -31,12 +31,7 @@ import FoundationPlist
 from removepackages import removepackages
 
 
-def cleanup():
-    if munkicommon.munkistatusoutput:
-        munkistatus.quit()
-
-
-def install(pkgpath, choicesXMLpath=''):
+def install(pkgpath, choicesXMLpath=None):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
@@ -142,7 +137,7 @@ def install(pkgpath, choicesXMLpath=''):
     return (retcode, restartneeded)
 
 
-def installall(dirpath, choicesXMLpath=''):
+def installall(dirpath, choicesXMLpath=None):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -167,16 +162,23 @@ def installall(dirpath, choicesXMLpath=''):
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                needtorestart = installall(mountpoint, choicesXMLpath)
+                (retcode, restartflag) = installall(mountpoint, choicesXMLpath)
                 if needtorestart:
                     restartflag = True
+                if retcode:
+                    # ran into error; should stop.
+                    return (retcode, restartflag)                
                 munkicommon.unmountdmg(mountpoint)
         
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
             (retcode, needsrestart) = install(itempath, choicesXMLpath)
             if needsrestart:
                 restartflag = True
-    return restartflag
+            if retcode:
+                # ran into error; should stop.
+                return (retcode, restartflag)
+                
+    return (retcode, restartflag)
     
 
 def getInstallCount(installList):
@@ -188,7 +190,7 @@ def getInstallCount(installList):
     return count
 
     
-def installWithInfo(dirpath, installlist):
+def installWithInfo(dirpath, installlist, appleupdates=False):
     """
     Uses the installlist to install items in the
     correct order.
@@ -202,7 +204,8 @@ def installWithInfo(dirpath, installlist):
         if "installer_item" in item:
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
-                #can't install, so we should stop
+                # can't install, so we should stop. Since later items might
+                # depend on this one, we shouldn't continue
                 munkicommon.display_error("Installer item %s was not found." % item["installer_item"])
                 return restartflag
             if 'installer_choices_xml' in item:
@@ -229,11 +232,16 @@ def installWithInfo(dirpath, installlist):
                     munkicommon.unmountdmg(mountpoint)
             else:
                 itempath = munkicommon.findInstallerItem(itempath)
-                if (itempath.endswith(".pkg") or itempath.endswith(".mpkg") or itempath.endswith(".dist")):
+                if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
                     (retcode, needsrestart) = install(itempath, choicesXMLfile)
                     if needsrestart:
                         restartflag = True
-            
+                elif os.path.isdir(itempath):
+                    # directory of packages, like what we get from Software Update
+                    (retcode, needsrestart) = installall(itempath, choicesXMLfile)
+                    if needsrestart:
+                        restartflag = True
+                        
             # check to see if this installer item is needed by any additional items in installinfo
             # this might happen if there are mulitple things being installed with choicesXML files
             # applied to a metapackage
@@ -398,7 +406,9 @@ def run():
                                     
     else:
         munkicommon.log("No %s found." % installinfo)
-        
+    
+    munkicommon.log("###    End managed installer session    ###")
+    
     needtorestart = removals_need_restart or installs_need_restart
     if needtorestart:
         munkicommon.log("Software installed or removed requires a restart.")
@@ -410,12 +420,8 @@ def run():
             print "Software installed or removed requires a restart."
             sys.stdout.flush()
            
-    munkicommon.log("###    End managed installer session    ###")
-    
-    if needtorestart:
         if munkicommon.getconsoleuser() == None:
             time.sleep(5)
-            cleanup()
             retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
         else:
             if munkicommon.munkistatusoutput:
@@ -423,9 +429,7 @@ def run():
                 print "Notifying currently logged-in user to restart."
                 munkistatus.activate()
                 munkistatus.restartAlert()
-                cleanup()
                 munkicommon.osascript('tell application "System Events" to restart')
             else:
                 print "Please restart immediately."
-    else:
-        cleanup()
+    

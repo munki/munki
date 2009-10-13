@@ -28,6 +28,7 @@ from munkilib import munkicommon
 from munkilib import updatecheck
 from munkilib import installer
 from munkilib import munkistatus
+from munkilib import appleupdates
 from munkilib import FoundationPlist
 
 def getIdleSeconds():
@@ -81,8 +82,78 @@ def initMunkiDirs():
     return True
 
 
-def main():
+def doInstallTasks():    
+    # first, clear the last notified date
+    # so we can get notified of new changes after this round
+    # of installs
+    applesaysrestart = munkisaysrestart = False
+    clearLastNotifiedDate()
     
+    # are we supposed to handle Apple Software Updates?
+    if munkicommon.pref('InstallAppleSoftwareUpdates'):
+        applesaysrestart = appleupdates.installAppleUpdates()
+    
+    if applesaysrestart:
+        # if Apple updates require a restart, skip the munki installs
+        # until after the restart
+        cmd = ['/usr/bin/touch', 
+               '/Users/Shared/.com.googlecode.munki.installatstartup']
+        retcode = subprocess.call(cmd)
+    else:
+        # install munki updates
+        munkisaysrestart = installer.run()
+        
+    if (applesaysrestart or munkisaysrestart):
+        munkicommon.log("Software installed or removed requires a restart.")
+        if munkicommon.munkistatusoutput:
+            munkistatus.hideStopButton()
+            munkistatus.message("Software installed or removed requires a restart.")
+            munkistatus.percent(-1)
+        else:
+            print "Software installed or removed requires a restart."
+            sys.stdout.flush()
+           
+        if munkicommon.getconsoleuser() == None:
+            time.sleep(5)
+            retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
+        else:
+            if munkicommon.munkistatusoutput:
+                # someone is logged in and we're using munkistatus
+                print "Notifying currently logged-in user to restart."
+                munkistatus.activate()
+                munkistatus.restartAlert()
+                munkicommon.osascript('tell application "System Events" to restart')
+            else:
+                print "Please restart immediately."
+    
+    
+def notifyUserOfUpdates(manualcheck):
+    # someone is logged in, and we have updates.
+    # if we haven't notified in a while, notify:
+    lastNotifiedString = munkicommon.pref('LastNotifiedDate')
+    daysBetweenNotifications = munkicommon.pref('DaysBetweenNotifications')
+    nowString = munkicommon.NSDateNowString()
+    now = dateutil.parser.parse(nowString)
+    nextNotifyDate = now
+    if lastNotifiedString:
+        lastNotifiedDate = dateutil.parser.parse(lastNotifiedString)
+        interval = datetime.timedelta(days=daysBetweenNotifications)
+        if daysBetweenNotifications > 0:
+            # we make this adjustment so a "daily" notification
+            # doesn't require 24 hours to elapse
+            interval = interval - datetime.timedelta(hours=6)
+        nextNotifyDate = lastNotifiedDate + interval
+    if now >= nextNotifyDate or manualcheck:
+        # record current notification date
+        cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
+                        'LastNotifiedDate', '-date', now.ctime()]
+        retcode = subprocess.call(cmd)
+        # notify user of available updates
+        result = munkicommon.osascript('tell application "Managed Software Update" to activate')
+
+
+
+def main():
     # check to see if we're root
     if os.geteuid() != 0:
         print >>sys.stderr, "You must run this as root!"
@@ -118,8 +189,9 @@ def main():
                        help='Skip checking and install any pending updates.')
     
     options, arguments = p.parse_args()
-        
+    
     if options.auto:
+        # typically invoked by a launch daemon periodically
         # munkistatusoutput is false for checking, but true for installing
         options.munkistatusoutput = False
         options.quiet = True
@@ -127,19 +199,26 @@ def main():
         options.installonly = False
         
     if options.logoutinstall:
+        # typically invoked by launchd agent
+        # running in the LoginWindow context
         options.munkistatusoutput = True
         options.quiet = True
         options.checkonly = False
         options.installonly = True
-        # if we're running at the loginwindow, let's make sure the user triggered the update
-        triggerfile = "/private/tmp/com.googlecode.munki.installatlogout"
-        if os.path.exists(triggerfile):
-            os.unlink(triggerfile)
-        else:
-            # no trigger file, so don't install
+        # if we're running at the loginwindow, let's make sure the user triggered 
+        # the update before logging out, or we triggered it before restarting.
+        user_triggered = False
+        triggerfiles = ["/private/tmp/com.googlecode.munki.installatlogout", 
+                        "/Users/Shared/.com.googlecode.munki.installatstartup"]
+        for f in triggerfiles:
+            if os.path.exists(f):
+                os.unlink(f)
+                user_triggered = True
+        if not user_triggered:
             exit(0)
             
     if options.manualcheck:
+        # triggered by Managed Software Update.app
         options.munkistatusoutput = True
         options.quiet = True
         options.checkonly = True
@@ -177,10 +256,7 @@ def main():
         cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
                         'LastCheckResult', '-int', str(result)]
         retcode = subprocess.call(cmd)
-        
-        if options.manualcheck:
-            munkistatus.quit()
-        
+                
         if result > 0:
             updatesavailable = True
         
@@ -198,62 +274,36 @@ def main():
                         updatesavailable = True
                 except:
                     print >>sys.stderr, "Invalid %s" % installinfo
+                    
+    if options.auto or options.manualcheck:
+        # are we supposed to check for and install Apple Software Updates?
+        if munkicommon.pref('InstallAppleSoftwareUpdates'):
+            if options.manualcheck:
+                munkistatus.message("Checking for available Apple Software Updates...")
+                munkistatus.percent(-1)
+            if appleupdates.appleSoftwareUpdatesAvailable():
+                updatesavailable = True
+    
+    if options.manualcheck:
+        # don't need MunkiStatus any more...
+        munkistatus.quit()
     
     if options.auto:
         # when --auto,  munkistatusoutput is false for checking, but true for installing
-       munkicommon.munkistatusoutput = True         
+        munkicommon.munkistatusoutput = True         
         
     if updatesavailable or options.installonly or options.manualcheck:
         if options.auto or options.manualcheck:
             if munkicommon.getconsoleuser() == None:
                 if getIdleSeconds() > 10:
-                    # no-one is logged in, and 
-                    # no keyboard or mouse movement for the past 10 seconds,
-                    # therefore no-one is in the middle of logging in (we hope!)
-                    # so just install
-                    # but first, clear the last notified date
-                    # so we can get notified of new changes after this round
-                    # of installs
-                    clearLastNotifiedDate()
-                    # now install
-                    installer.run()
-                    
+                    doInstallTasks()
             else:
-                # someone is logged in, and we have updates.
-                # if we haven't notified in a while, notify:
-                lastNotifiedString = munkicommon.pref('LastNotifiedDate')
-                daysBetweenNotifications = munkicommon.pref('DaysBetweenNotifications')
-                nowString = munkicommon.NSDateNowString()
-                now = dateutil.parser.parse(nowString)
-                nextNotifyDate = now
-                if lastNotifiedString:
-                    lastNotifiedDate = dateutil.parser.parse(lastNotifiedString)
-                    interval = datetime.timedelta(days=daysBetweenNotifications)
-                    if daysBetweenNotifications > 0:
-                        # we make this adjustment so a "daily" notification
-                        # doesn't require 24 hours to elapse
-                        interval = interval - datetime.timedelta(hours=6)
-                    nextNotifyDate = lastNotifiedDate + interval
-                if now >= nextNotifyDate or options.manualcheck:
-                    # record current notification date
-                    cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/ManagedInstalls', 
-                                    'LastNotifiedDate', '-date', now.ctime()]
-                    retcode = subprocess.call(cmd)
-                    # notify user of available updates
-                    result = munkicommon.osascript('tell application "Managed Software Update" to activate')
-        else:
-            if options.installonly:
-                # install!
-                # but first, clear the last notified date so we can
-                # get notified of new changes after this round
-                # of installs
-                clearLastNotifiedDate()
-                # now we can install
-                installer.run()
-            else:
-                if not options.quiet:
-                    print "\nRun %s --installonly to install the downloaded updates." % myname
-                
+                notifyUserOfUpdates(options.manualcheck)
+        elif options.installonly:
+            doInstallTasks()
+        elif not options.quiet:
+            print "\nRun %s --installonly to install the downloaded updates." % myname
+            
     if munkicommon.munkistatusoutput:
         munkistatus.quit()
     if munkicommon.tmpdir:
