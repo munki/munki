@@ -23,7 +23,6 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 import os
 import subprocess
 import sys
-import time
 import tempfile
 import munkicommon
 import munkistatus
@@ -409,27 +408,5 @@ def run():
     
     munkicommon.log("###    End managed installer session    ###")
     
-    needtorestart = removals_need_restart or installs_need_restart
-    if needtorestart:
-        munkicommon.log("Software installed or removed requires a restart.")
-        if munkicommon.munkistatusoutput:
-            munkistatus.hideStopButton()
-            munkistatus.message("Software installed or removed requires a restart.")
-            munkistatus.percent(-1)
-        else:
-            print "Software installed or removed requires a restart."
-            sys.stdout.flush()
-           
-        if munkicommon.getconsoleuser() == None:
-            time.sleep(5)
-            retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
-        else:
-            if munkicommon.munkistatusoutput:
-                # someone is logged in and we're using munkistatus
-                print "Notifying currently logged-in user to restart."
-                munkistatus.activate()
-                munkistatus.restartAlert()
-                munkicommon.osascript('tell application "System Events" to restart')
-            else:
-                print "Please restart immediately."
+    return (removals_need_restart or installs_need_restart)
     
