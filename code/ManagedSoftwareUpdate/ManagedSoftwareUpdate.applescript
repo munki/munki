@@ -22,6 +22,7 @@ property restartRequired : false
 property installitems : {}
 property activationCount : 0
 property ManagedInstallPrefs : "/Library/Preferences/ManagedInstalls.plist"
+property AppleUpdatesAvailable : false
 
 on getRemovalDetailPrefs()
 	set ShowRemovalDetail to false
@@ -118,6 +119,8 @@ on itemstoinstall()
 			--set end of installlist to AppleUpdatesHeader
 			repeat with installitem in appleupdatelist
 				set end of installlist to (installitem as item)
+				set restartRequired to true
+				set AppleUpdatesAvailable to true
 			end repeat
 		end try
 	end if
@@ -190,7 +193,7 @@ on installAll()
 			"A restart is required after updating. Log out and update now?" alternate button "Cancel" default button ¬
 			"Log out and update" as warning attached to window 1
 	else
-		display alert "Logout Recommeded" message ¬
+		display alert "Logout Recommended" message ¬
 			"A logout is recommeded before updating. Log out and update now?" alternate button "Cancel" other button "Update without logging out" default button ¬
 			"Log out and update" as warning attached to window 1
 	end if
@@ -238,7 +241,7 @@ end selection changed
 on alert ended theObject with reply withReply
 	if button returned of withReply is "Log out and update" then
 		-- touch a flag so the process that runs after
-		-- logout knows it's OK to install everything
+		-- logout knows it's OK to install everything	
 		do shell script "/usr/bin/touch /private/tmp/com.googlecode.munki.installatlogout"
 		ignoring application responses
 			tell application "loginwindow"
