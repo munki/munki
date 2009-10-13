@@ -36,13 +36,6 @@ end getRemovalDetailPrefs
 
 on getInstallInfoFile()
 	try
-		tell application "System Events"
-			set managedInstallDir to value of property list item "ManagedInstallDir" of property list file ManagedInstallPrefs
-		end tell
-	on error
-		set managedInstallDir to "/Library/Managed Installs"
-	end try
-	try
 		set InstallInfo to managedInstallDir & "/InstallInfo.plist"
 		copy (do shell script "test -e " & quoted form of InstallInfo) to result
 		return InstallInfo
@@ -54,6 +47,21 @@ end getInstallInfoFile
 
 on itemstoinstall()
 	set installlist to {}
+	try
+		tell application "System Events"
+			set AppleUpdates to managedInstallDir & "/AppleUpdates.plist"
+			set appleupdatelist to value of property list item "AppleUpdates" of property list file AppleUpdates
+		end tell
+		repeat with installitem in appleupdatelist
+			set end of installlist to (installitem as item)
+			try
+				if |RestartAction| of installitem is "RequireRestart" then
+					set restartRequired to true
+				end if
+			end try
+			set AppleUpdatesAvailable to true
+		end repeat
+	end try
 	copy getInstallInfoFile() to InstallInfo
 	if InstallInfo is not "" then
 		try
@@ -110,19 +118,6 @@ on itemstoinstall()
 				end if
 			end if
 		end try
-		try
-			tell application "System Events"
-				set AppleUpdates to managedInstallDir & "/AppleUpdates.plist"
-				set appleupdatelist to value of property list item "AppleUpdates" of property list file AppleUpdates
-			end tell
-			--set AppleUpdatesHeader to {display_name:"Apple Software Updates", version_to_install:"", |description|:"", |RestartAction|:""}
-			--set end of installlist to AppleUpdatesHeader
-			repeat with installitem in appleupdatelist
-				set end of installlist to (installitem as item)
-				set restartRequired to true
-				set AppleUpdatesAvailable to true
-			end repeat
-		end try
 	end if
 	return installlist as list
 end itemstoinstall
@@ -141,6 +136,8 @@ on updateTable()
 		try
 			if |RestartAction| of installitem is "RequireRestart" then
 				set contents of data cell "image" of theDataRow to RestartImage
+			else
+				set contents of data cell "image" of theDataRow to EmptyImage
 			end if
 		on error
 			set contents of data cell "image" of theDataRow to EmptyImage
@@ -273,6 +270,13 @@ end alert ended
 on activated theObject
 	if visible of window "mainWindow" is false then
 		-- we haven't shown the main window yet
+		try
+			tell application "System Events"
+				set managedInstallDir to value of property list item "ManagedInstallDir" of property list file ManagedInstallPrefs
+			end tell
+		on error
+			set managedInstallDir to "/Library/Managed Installs"
+		end try
 		set installitems to my itemstoinstall()
 		if (count of installitems) > 0 then
 			my initTable()
