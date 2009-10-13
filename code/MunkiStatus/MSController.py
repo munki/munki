@@ -131,8 +131,7 @@ class MSController(NSObject):
             NSThread.detachNewThreadSelector_toTarget_withObject_(self.handleSocket, self, None)
             NSApp.activateIgnoringOtherApps_(True)
             
-    def handleSocket(self):
-        
+    def handleSocket(self):        
         # Autorelease pool for memory management
         pool = NSAutoreleasePool.alloc().init()
         
@@ -190,6 +189,12 @@ class MSController(NSObject):
     def processSocketMsg(self, message):
         if message.startswith("ACTIVATE: "):
             NSApp.activateIgnoringOtherApps_(True)
+            return ""
+        if message.startswith("HIDE: "):
+            self.window.orderOut_(self)
+            return ""
+        if message.startswith("SHOW: "):
+            self.window.orderFront_(self)
             return ""
         if message.startswith("TITLE: "):
             self.window.setTitle_(message[7:])
