@@ -43,7 +43,8 @@ def launchMunkiStatus():
 
 def launchAndConnectToMunkiStatus():
     global s
-    launchMunkiStatus()
+    if not getMunkiStatusPID():
+        launchMunkiStatus()
     socketpath = getMunkiStatusSocket()
     if socketpath:
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -98,7 +99,7 @@ def getPIDforProcessName(processname):
         line = line.rstrip('\n');
         (pid, proc) = line.split(None,1)
         if proc.find(processname) != -1:
-            return pid
+            return str(pid)
 
     return 0
     
@@ -126,6 +127,16 @@ def activate():
     sendCommand(u"ACTIVATE: \n")
         
         
+def hide():
+    '''Hides MunkiStatus window.'''
+    sendCommand(u"HIDE: \n")
+
+
+def show():
+    '''Shows MunkiStatus window.'''
+    sendCommand(u"SHOW: \n")
+
+
 def title(titleText):
     '''Sets the window title.'''
     sendCommand(u"TITLE: %s\n" % titleText)
