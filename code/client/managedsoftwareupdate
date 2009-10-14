@@ -87,14 +87,15 @@ def doInstallTasks():
     # first, clear the last notified date
     # so we can get notified of new changes after this round
     # of installs
-    applesaysrestart = munkisaysrestart = False
+    apple_says_restart = False
+    munki_says_restart = False
     clearLastNotifiedDate()
     
     # are we supposed to handle Apple Software Updates?
     if munkicommon.pref('InstallAppleSoftwareUpdates'):
-        applesaysrestart = appleupdates.installAppleUpdates()
-    
-    if applesaysrestart:
+        apple_says_restart = appleupdates.installAppleUpdates()
+        
+    if apple_says_restart:
         # if Apple updates require a restart, skip the munki installs
         # until after the restart
         cmd = ['/usr/bin/touch', 
@@ -102,9 +103,9 @@ def doInstallTasks():
         retcode = subprocess.call(cmd)
     else:
         # install munki updates
-        munkisaysrestart = installer.run()
+        munki_says_restart = installer.run()
         
-    if (applesaysrestart or munkisaysrestart):
+    if (apple_says_restart or munki_says_restart):
         munkicommon.log("Software installed or removed requires a restart.")
         if munkicommon.munkistatusoutput:
             munkistatus.hideStopButton()
@@ -282,7 +283,7 @@ def main():
             if options.manualcheck:
                 munkistatus.message("Checking for available Apple Software Updates...")
                 munkistatus.percent(-1)
-            if appleupdates.appleSoftwareUpdatesAvailable():
+            if appleupdates.appleSoftwareUpdatesAvailable(options.manualcheck):
                 updatesavailable = True
     
     if options.manualcheck:
