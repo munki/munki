@@ -145,14 +145,14 @@ class MSController(NSObject):
         s.listen(1)
         conn, addr = s.accept()
         if debug:
-            NSLog("Connection established.")
+            NSLog(u"Connection established.")
         buffer = ''
         keepLooping = True
         while keepLooping:
             data = conn.recv(1024)
             if not data:
                 # socket connection was closed, we should terminate.
-                NSLog("Connection closed without QUIT message.")
+                NSLog(u"Connection closed without QUIT message.")
                 break
             if debug:
                 NSLog(repr(data))
@@ -163,10 +163,10 @@ class MSController(NSObject):
                 buffer = ''
                 for line in lines:
                     if line.endswith('\n'):
-                        command = line.rstrip('\n')
+                        command = line.decode('UTF-8').rstrip('\n')
                         if debug:
                             NSLog(u"Received command: %s" % command)
-                        if command.startswith("QUIT: "):
+                        if command.startswith(u"QUIT: "):
                             keepLooping = False
                             break
                         response = self.processSocketMsg(command)
@@ -187,42 +187,42 @@ class MSController(NSObject):
         del pool
         
     def processSocketMsg(self, message):
-        if message.startswith("ACTIVATE: "):
+        if message.startswith(u"ACTIVATE: "):
             NSApp.activateIgnoringOtherApps_(True)
             return ""
-        if message.startswith("HIDE: "):
+        if message.startswith(u"HIDE: "):
             self.window.orderOut_(self)
             return ""
-        if message.startswith("SHOW: "):
+        if message.startswith(u"SHOW: "):
             self.window.orderFront_(self)
             return ""
-        if message.startswith("TITLE: "):
+        if message.startswith(u"TITLE: "):
             self.window.setTitle_(message[7:])
             return ""
-        if message.startswith("MESSAGE: "):
+        if message.startswith(u"MESSAGE: "):
             self.messageFld.setStringValue_(message[9:])
             return ""
-        if message.startswith("DETAIL: "):
+        if message.startswith(u"DETAIL: "):
             self.detailFld.setStringValue_(message[8:])
             return ""
-        if message.startswith("PERCENT: "):
+        if message.startswith(u"PERCENT: "):
             self.setPercentageDone(message[9:])
             return ""
-        if message.startswith("GETSTOPBUTTONSTATE: "):
+        if message.startswith(u"GETSTOPBUTTONSTATE: "):
             return "%s\n" % self.stopBtnState
-        if message.startswith("HIDESTOPBUTTON: "):
+        if message.startswith(u"HIDESTOPBUTTON: "):
             self.stopBtn.setHidden_(True)
             return ""
-        if message.startswith("SHOWSTOPBUTTON: "):
+        if message.startswith(u"SHOWSTOPBUTTON: "):
             self.stopBtn.setHidden_(False)
             return ""
-        if message.startswith("ENABLESTOPBUTTON: "):
+        if message.startswith(u"ENABLESTOPBUTTON: "):
             self.stopBtn.setEnabled_(True)
             return ""
-        if message.startswith("DISABLESTOPBUTTON: "):
+        if message.startswith(u"DISABLESTOPBUTTON: "):
             self.stopBtn.setEnabled_(False)
             return ""
-        if message.startswith("RESTARTALERT: "):
+        if message.startswith(u"RESTARTALERT: "):
             self.doRestartAlert()
             while 1:
                 if self.restartAlertDismissed:
@@ -248,6 +248,6 @@ class MSController(NSObject):
         
     def doRestartAlert(self):
         self.restartAlertDismissed = 0
-        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_("Restart Required", "Restart", objc.nil, objc.nil, "Software installed or removed requires a restart. You will have a chance to save open documents.")
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Restart Required", u"Restart", objc.nil, objc.nil, "Software installed or removed requires a restart. You will have a chance to save open documents.")
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil) 
         
