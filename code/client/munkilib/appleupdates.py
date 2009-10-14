@@ -17,7 +17,9 @@ import subprocess
 import dateutil.parser
 import datetime
 from xml.dom import minidom
+
 import munkicommon
+import munkistatus
 import installer
 
 
@@ -96,6 +98,10 @@ def checkForSoftwareUpdates():
                          
     while True: 
         output = p.stdout.readline()
+        if munkicommon.munkistatusoutput:
+            if munkistatus.getStopButtonState() == 1:
+                os.kill(p.pid, 15) #15 is SIGTERM
+                break
         if not output and (p.poll() != None):
             break
         munkicommon.log(output.rstrip('\n'))
@@ -352,7 +358,7 @@ def writeAppleUpdatesFile():
         return False
 
 
-def appleSoftwareUpdatesAvailable():
+def appleSoftwareUpdatesAvailable(checking_manually):
     '''Checks for available Apple Software Updates, trying not to hit the SUS
     more than needed'''
     # have we already processed the list of Apple Updates?
@@ -362,26 +368,29 @@ def appleSoftwareUpdatesAvailable():
         updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
         if appleUpdatesFile_modtime > updatesindexfile_modtime:
             return True
-        
-    # have we checked recently?  Don't want to check with
-    # Apple Software Update server too frequently
-    nowString = munkicommon.NSDateNowString()
-    now = dateutil.parser.parse(nowString)
-    nextSUcheck = now
-    try:
-        cmd = ['/usr/bin/defaults', 'read', '/Library/Preferences/com.apple.softwareupdate',  'LastSuccessfulDate']
-        p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (out, err) = p.communicate()
-        lastSUcheckString = out.rstrip('\n')
-        if lastSUcheckString:
-            lastSUcheck = dateutil.parser.parse(lastSUcheckString)
-            interval = datetime.timedelta(hours=24)
-            nextSUcheck = lastSUcheck + interval
-    except:
-        pass
-    if now >= nextSUcheck:
+    
+    if checking_manually:
         retcode = checkForSoftwareUpdates()
+    else:
+        # have we checked recently?  Don't want to check with
+        # Apple Software Update server too frequently
+        nowString = munkicommon.NSDateNowString()
+        now = dateutil.parser.parse(nowString)
+        nextSUcheck = now
+        try:
+            cmd = ['/usr/bin/defaults', 'read', '/Library/Preferences/com.apple.softwareupdate',  'LastSuccessfulDate']
+            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (out, err) = p.communicate()
+            lastSUcheckString = out.rstrip('\n')
+            if lastSUcheckString:
+                lastSUcheck = dateutil.parser.parse(lastSUcheckString)
+                interval = datetime.timedelta(hours=24)
+                nextSUcheck = lastSUcheck + interval
+        except:
+            pass
+        if now >= nextSUcheck:
+            retcode = checkForSoftwareUpdates()
         
     return writeAppleUpdatesFile()
 
@@ -411,8 +420,24 @@ def installAppleUpdates():
     to install all downloaded updates'''
 
     restartneeded = False
-    munkicommon.display_status("Checking for Apple Updates to install...")
-    appleupdatelist = getSoftwareUpdateInfo()
+    appleupdatelist = []
+    # first check if appleUpdatesFile is current
+    updatesindexfile = '/Library/Updates/index.plist'
+    if os.path.exists(appleUpdatesFile) and os.path.exists(updatesindexfile):
+        appleUpdatesFile_modtime = os.stat(appleUpdatesFile).st_mtime
+        updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
+        if appleUpdatesFile_modtime > updatesindexfile_modtime:
+            try:
+                pl = FoundationPlist.readPlist(appleUpdatesFile)
+                appleupdatelist = pl['AppleUpdates']
+            except:
+                appleupdatelist = []
+    if appleupdatelist == []:
+        # we don't have any updates in appleUpdatesFile, 
+        # or appleUpdatesFile is out-of-date, so check  updatesindexfile
+        appleupdatelist = getSoftwareUpdateInfo()
+    
+    # did we find some Apple updates?        
     if appleupdatelist:
         # once we start, we should remove /Library/Updates/index.plist
         # because it will point to items we've already installed
