@@ -1710,8 +1710,10 @@ def check(id=''):
         if munkicommon.stopRequested():
             return 0
         installinfo = processManifestForRemovals(mainmanifestpath, installinfo)
-        if munkicommon.munkistatusoutput:
-            munkistatus.disableStopButton()
+        
+        #if munkicommon.munkistatusoutput:
+        #    munkistatus.message("Finishing update check...")
+        #    munkistatus.disableStopButton()
         
         # need to write out install list so the autoinstaller
         # can use it to install things in the right order

@@ -39,12 +39,14 @@ def install(pkgpath, choicesXMLpath=None):
     
     restartneeded = False
     installeroutput = []
-
+    
     cmd = ['/usr/sbin/installer', '-pkginfo', '-pkg', pkgpath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
     packagename = output.decode('UTF-8').splitlines()[0]
+    if not packagename:
+        packagename = os.path.basename(pkgpath)
     
     if munkicommon.munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
@@ -155,19 +157,20 @@ def installall(dirpath, choicesXMLpath=None):
                 munkicommon.display_error("ERROR: No filesystems mounted from %s" % item)
                 return restartflag
             if munkicommon.stopRequested():
-                for mountpoint in mountpoints:
-                    munkicommon.unmountdmg(mountpoint)
+                munkicommon.unmountdmg(mountpoints[0])
                 return restartflag
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                (retcode, restartflag) = installall(mountpoint, choicesXMLpath)
-                if needtorestart:
+                (retcode, needsrestart) = installall(mountpoint, choicesXMLpath)
+                if needsrestart:
                     restartflag = True
                 if retcode:
-                    # ran into error; should stop.
-                    return (retcode, restartflag)                
-                munkicommon.unmountdmg(mountpoint)
+                    # ran into error; should unmount and stop.
+                    munkicommon.unmountdmg(mountpoints[0])
+                    return (retcode, restartflag)  
+                                  
+            munkicommon.unmountdmg(mountpoints[0])
         
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
             (retcode, needsrestart) = install(itempath, choicesXMLpath)
@@ -212,6 +215,13 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                 FoundationPlist.writePlist(item['installer_choices_xml'], choicesXMLfile)
             else:
                 choicesXMLfile = ''
+            if munkicommon.munkistatusoutput:
+                display_name = item.get('display_name', '')
+                if display_name == '':
+                    display_name = item.get('name', '')
+                munkistatus.message("Installing %s..." % display_name)
+                # clear indeterminate progress bar 
+                munkistatus.percent(0)
             if itempath.endswith(".dmg"):
                 munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
                 mountpoints = munkicommon.mountdmg(itempath)
@@ -219,16 +229,15 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                     munkicommon.display_error("ERROR: No filesystems mounted from %s" % item["installer_item"])
                     return restartflag
                 if munkicommon.stopRequested():
-                    for mountpoint in mountpoints:
-                        munkicommon.unmountdmg(mountpoint)
+                    munkicommon.unmountdmg(mountpoints[0])
                     return restartflag
                 for mountpoint in mountpoints:
                     # install all the pkgs and mpkgs at the root
                     # of the mountpoint -- call us recursively!
-                    needtorestart = installall(mountpoint, choicesXMLfile)
+                    (retcode, needtorestart) = installall(mountpoint, choicesXMLfile)
                     if needtorestart:
                         restartflag = True
-                    munkicommon.unmountdmg(mountpoint)
+                munkicommon.unmountdmg(mountpoints[0])
             else:
                 itempath = munkicommon.findInstallerItem(itempath)
                 if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
@@ -247,7 +256,7 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
             foundagain = False
             current_installer_item = item['installer_item']
             # are we at the end of the installlist?
-            if itemindex+1 != len(installlist):
+            if itemindex+1 < len(installlist):
                 # nope, let's check the remaining items
                 for lateritem in installlist[itemindex+1:]:
                     if 'installer_item' in lateritem:

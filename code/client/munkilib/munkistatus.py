@@ -70,7 +70,7 @@ def sendCommand(message):
                 launchAndConnectToMunkiStatus()
                 if s:
                     # try again!
-                    s.send(messagelines[0])
+                    s.send(messagelines[0].encode('UTF-8'))
             
 
 def readResponse():
@@ -156,7 +156,7 @@ def percent(percentage):
     '''Sets the progress indicator to 0-100 percent done.
     If you pass a negative number, the progress indicator
     is shown as an indeterminate indicator (barber pole).'''
-    sendCommand("PERCENT: %s\n" % percentage)
+    sendCommand(u"PERCENT: %s\n" % percentage)
         
 
 def hideStopButton():
@@ -209,7 +209,8 @@ def quit():
         s.close()
         s = None
     except:
-        pass
+        if getMunkiStatusPID():
+            retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
 
 
 

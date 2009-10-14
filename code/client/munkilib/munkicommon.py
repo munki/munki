@@ -289,11 +289,11 @@ def getManagedInstallsPrefs():
     prefs['ManagedInstallDir'] = "/Library/Managed Installs"
     prefs['ManifestURL'] = "http://munki/repo/manifests/"
     prefs['SoftwareRepoURL'] = "http://munki/repo"
-    prefs['ClientIdentifier'] = ""
-    prefs['LogFile'] = os.path.join(prefs['ManagedInstallDir'], "Logs", "ManagedSoftwareUpdate.log")
+    prefs['ClientIdentifier'] = ''
+    prefs['LogFile'] = "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     prefs['LoggingLevel'] = 1
     prefs['InstallAppleSoftwareUpdates'] = False
-    prefs['SoftwareUpdateServerURL'] = None
+    prefs['SoftwareUpdateServerURL'] = ''
     prefs['DaysBetweenNotifications'] = 1
     prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
     # Added by bcw
