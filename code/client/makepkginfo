@@ -64,9 +64,8 @@ def getCatalogInfoFromDmg(dmgpath):
             # get out of mountpoint loop
             break
             
-    #unmount all the mountpoints from the dmg
-    for mountpoint in mountpoints:
-        munkicommon.unmountdmg(mountpoint)
+    #eject the dmg
+    munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
 
 
@@ -163,20 +162,25 @@ def getiteminfo(itempath):
 
 
 def main():
-    usage = "usage: %prog [options] /path/to/installeritem"
+    usage = "usage: %prog [options] [/path/to/installeritem]"
     p = optparse.OptionParser(usage=usage)
     p.add_option('--file', '-f', action="append",
                     help='Path to a filesystem item installed by this package. Can be specified multiple times.')
     options, arguments = p.parse_args()
-    if len(arguments) == 0:
-        print >>sys.stderr, "Need to specify an installer item (.pkg, .mpkg, .dmg)!"
+    
+    if len(arguments) == 0 and not options.file:
+        print >>sys.stderr, "Need to specify an installer item (.pkg, .mpkg, .dmg) and/or --file options!"
         exit(-1)
     
     if len(arguments) > 1:
         print >>sys.stderr, "Can process only one installer item at a time. Ignoring additional installer items."
-        
-    item = arguments[0].rstrip("/")
-    if os.path.exists(item):
+    
+    catinfo = {}
+    try:
+        item = arguments[0].rstrip("/")
+    except:
+        item = ''
+    if item and os.path.exists(item):
         # get size of installer item
         itemsize = 0 
         if os.path.isfile(item):
@@ -205,58 +209,60 @@ def main():
             print >>sys.stderr, "%s is not an installer package!" % item
             exit(-1)
             
-        if catinfo:
-            catinfo['installer_item_size'] = int(itemsize/1024)
-            minosversion = ""
-            if options.file:
-                installs = []           
-                for fitem in options.file:
-                    # no trailing slashes, please.
-                    fitem = fitem.rstrip('/')
-                    if fitem.startswith('/Library/Receipts'):
-                        # no receipts, please!
-                        print >>sys.stderr, "Item %s appears to be a receipt. Skipping." % fitem
-                        continue
-                    if os.path.exists(fitem):
-                        iteminfodict = getiteminfo(fitem)
-                        if 'minosversion' in iteminfodict:
-                            thisminosversion = iteminfodict.pop('minosversion')
-                            if not minosversion:
-                                minosversion = thisminosversion
-                            elif version.LooseVersion(thisminosversion) < version.LooseVersion(minosversion):
-                                minosversion = thisminosversion
-                        installs.append(iteminfodict)
-                    else:
-                        print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
-                catinfo['installs'] = installs   
-                    
-            # try to generate the correct item location
-            temppath = item
-            location = ""
-            while len(temppath) > 4:
-                if temppath.endswith('/pkgs'):
-                    location = item[len(temppath)+1:]
-                    break
-                else:
-                    temppath = os.path.dirname(temppath)
-                    
-            if not location:
-                #just the filename
-                location = os.path.split(item)[1]
-            catinfo['installer_item_location'] = location
-            
-            if minosversion:
-                catinfo['minimum_os_version'] = minosversion
+        catinfo['installer_item_size'] = int(itemsize/1024)
+        # try to generate the correct item location
+        temppath = item
+        location = ""
+        while len(temppath) > 4:
+            if temppath.endswith('/pkgs'):
+                location = item[len(temppath)+1:]
+                break
             else:
-                catinfo['minimum_os_version'] = "10.4.0"
+                temppath = os.path.dirname(temppath)
                 
-            # some metainfo
-            catinfo['catalogs'] = ['testing']
-            catinfo['uninstallable'] = True
-            catinfo['uninstall_method'] = "removepackages"
+        if not location:
+            #just the filename
+            location = os.path.split(item)[1]
+        catinfo['installer_item_location'] = location
+        
             
-            # and now, what we've all been waiting for...
-            print FoundationPlist.writePlistToString(catinfo)
+        # some metainfo
+        catinfo['catalogs'] = ['testing']
+        catinfo['uninstallable'] = True
+        catinfo['uninstall_method'] = "removepackages"
+        
+    minosversion = ""
+    installs = []
+    if options.file:           
+        for fitem in options.file:
+            # no trailing slashes, please.
+            fitem = fitem.rstrip('/')
+            if fitem.startswith('/Library/Receipts'):
+                # no receipts, please!
+                print >>sys.stderr, "Item %s appears to be a receipt. Skipping." % fitem
+                continue
+            if os.path.exists(fitem):
+                iteminfodict = getiteminfo(fitem)
+                if 'minosversion' in iteminfodict:
+                    thisminosversion = iteminfodict.pop('minosversion')
+                    if not minosversion:
+                        minosversion = thisminosversion
+                    elif version.LooseVersion(thisminosversion) < version.LooseVersion(minosversion):
+                        minosversion = thisminosversion
+                installs.append(iteminfodict)
+            else:
+                print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
+            
+    if catinfo:
+        if minosversion:
+            catinfo['minimum_os_version'] = minosversion
+        else:
+            catinfo['minimum_os_version'] = "10.4.0"
+    
+    catinfo['installs'] = installs
+
+    # and now, what we've all been waiting for...
+    print FoundationPlist.writePlistToString(catinfo)
 
 
 if __name__ == '__main__':
