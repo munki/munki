@@ -24,6 +24,8 @@ import os
 import subprocess
 import sys
 import tempfile
+
+import adobeutils
 import munkicommon
 import munkistatus
 import FoundationPlist
@@ -144,21 +146,22 @@ def installall(dirpath, choicesXMLpath=None):
     Will mount dmg files and install pkgs and mpkgs found at the
     root of any mountpoints.
     """
+    retcode = 0
     restartflag = False
     installitems = os.listdir(dirpath)
     for item in installitems:
         if munkicommon.stopRequested():
-            return restartflag
+            return (retcode, restartflag)
         itempath = os.path.join(dirpath, item)
         if item.endswith(".dmg"):
             munkicommon.display_info("Mounting disk image %s" % item)
             mountpoints = munkicommon.mountdmg(itempath)
             if mountpoints == []:
                 munkicommon.display_error("ERROR: No filesystems mounted from %s" % item)
-                return restartflag
+                return (retcode, restartflag)
             if munkicommon.stopRequested():
                 munkicommon.unmountdmg(mountpoints[0])
-                return restartflag
+                return (retcode, restartflag)
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
@@ -210,45 +213,66 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                 # depend on this one, we shouldn't continue
                 munkicommon.display_error("Installer item %s was not found." % item["installer_item"])
                 return restartflag
-            if 'installer_choices_xml' in item:
-                choicesXMLfile = os.path.join(munkicommon.tmpdir, "choices.xml")
-                FoundationPlist.writePlist(item['installer_choices_xml'], choicesXMLfile)
+            installer_type = item.get("installer_type","")
+            if installer_type == "AdobeUberInstaller":
+                # Adobe CS4 installer
+                pkgname = item.get("adobe_package_name","")
+                retcode = adobeutils.install(itempath, pkgname)
+                if retcode == 8:
+                    # Adobe Setup says restart needed
+                    restartflag = True
+            elif installer_type == "AdobeSetup":
+                # Adobe CS4 updater
+                if munkicommon.munkistatusoutput:
+                    display_name = item.get('display_name', '')
+                    if display_name == '':
+                        display_name = item.get('name', '')
+                    munkistatus.message("Installing %s..." % display_name)
+                retcode = adobeutils.runAdobeSetup(itempath)
+                if retcode == 8:
+                    # Adobe Setup says restart needed
+                    restartflag = True
             else:
-                choicesXMLfile = ''
-            if munkicommon.munkistatusoutput:
-                display_name = item.get('display_name', '')
-                if display_name == '':
-                    display_name = item.get('name', '')
-                munkistatus.message("Installing %s..." % display_name)
-                # clear indeterminate progress bar 
-                munkistatus.percent(0)
-            if itempath.endswith(".dmg"):
-                munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
-                mountpoints = munkicommon.mountdmg(itempath)
-                if mountpoints == []:
-                    munkicommon.display_error("ERROR: No filesystems mounted from %s" % item["installer_item"])
-                    return restartflag
-                if munkicommon.stopRequested():
+                # must be Apple installer package
+                if 'installer_choices_xml' in item:
+                    choicesXMLfile = os.path.join(munkicommon.tmpdir, "choices.xml")
+                    FoundationPlist.writePlist(item['installer_choices_xml'], choicesXMLfile)
+                else:
+                    choicesXMLfile = ''
+                if munkicommon.munkistatusoutput:
+                    display_name = item.get('display_name', '')
+                    if display_name == '':
+                        display_name = item.get('name', '')
+                    munkistatus.message("Installing %s..." % display_name)
+                    # clear indeterminate progress bar 
+                    munkistatus.percent(0)
+                if itempath.endswith(".dmg"):
+                    munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
+                    mountpoints = munkicommon.mountdmg(itempath)
+                    if mountpoints == []:
+                        munkicommon.display_error("ERROR: No filesystems mounted from %s" % item["installer_item"])
+                        return restartflag
+                    if munkicommon.stopRequested():
+                        munkicommon.unmountdmg(mountpoints[0])
+                        return restartflag
+                    for mountpoint in mountpoints:
+                        # install all the pkgs and mpkgs at the root
+                        # of the mountpoint -- call us recursively!
+                        (retcode, needtorestart) = installall(mountpoint, choicesXMLfile)
+                        if needtorestart:
+                            restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
-                    return restartflag
-                for mountpoint in mountpoints:
-                    # install all the pkgs and mpkgs at the root
-                    # of the mountpoint -- call us recursively!
-                    (retcode, needtorestart) = installall(mountpoint, choicesXMLfile)
-                    if needtorestart:
-                        restartflag = True
-                munkicommon.unmountdmg(mountpoints[0])
-            else:
-                itempath = munkicommon.findInstallerItem(itempath)
-                if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
-                    (retcode, needsrestart) = install(itempath, choicesXMLfile)
-                    if needsrestart:
-                        restartflag = True
-                elif os.path.isdir(itempath):
-                    # directory of packages, like what we get from Software Update
-                    (retcode, needsrestart) = installall(itempath, choicesXMLfile)
-                    if needsrestart:
-                        restartflag = True
+                else:
+                    itempath = munkicommon.findInstallerItem(itempath)
+                    if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
+                        (retcode, needsrestart) = install(itempath, choicesXMLfile)
+                        if needsrestart:
+                            restartflag = True
+                    elif os.path.isdir(itempath):
+                        # directory of packages, like what we get from Software Update
+                        (retcode, needsrestart) = installall(itempath, choicesXMLfile)
+                        if needsrestart:
+                            restartflag = True
                         
             # check to see if this installer item is needed by any additional items in installinfo
             # this might happen if there are mulitple things being installed with choicesXML files
@@ -310,6 +334,18 @@ def processRemovals(removalList):
                                 munkicommon.display_error(message)
                             else:
                                 munkicommon.log("Uninstall of %s was successful." % name)
+                                
+                    elif uninstallmethod[0] == "AdobeUberUninstaller":
+                        if "uninstaller_item" in item:
+                            managedinstallbase = munkicommon.ManagedInstallDir()
+                            itempath = os.path.join(managedinstallbase, 'Cache', item["uninstaller_item"])
+                            if os.path.exists(itempath):
+                                pkgname = item.get("adobe_package_name","")
+                                retcode = adobeutils.uninstall(itempath, pkgname)
+                                if retcode:
+                                    munkicommon.display_error("Uninstall of %s failed." % name)
+                            else:
+                                munkicommon.display_error("AdobeUberUninstaller package for %s was missing from the Cache." % name)
                         
                     elif os.path.exists(uninstallmethod[0]) and os.access(uninstallmethod[0], os.X_OK):
                         # it's a script or program to uninstall

@@ -3,6 +3,9 @@
 """
 adobeutils.py
 
+Utilities to enable munki to install/uninstall Adobe CS4 products using their
+CS4 Deployment Toolkit.
+
 """
 # Copyright 2009 Greg Neagle.
 #
@@ -29,6 +32,8 @@ import munkicommon
 import munkistatus
 
 # dmg helper
+# we need this instead of the one in munkicommon because the Adobe stuff
+# needs the dmgs mounted under /Volumes.  We can merge this later.
 def mountdmg(dmgpath):
     """
     Attempts to mount the dmg at dmgpath
@@ -50,12 +55,14 @@ def mountdmg(dmgpath):
     return mountpoints
 
 
-def getAdobePackageName(installroot):
+def getAdobePackageInfo(installroot):
     # gets the package name from the AdobeUberInstaller.xml file
+    info = {}
+    info['description'] = ""
     installerxml = os.path.join(installroot, "AdobeUberInstaller.xml")
     if os.path.exists(installerxml):
         description = ''
-        dom = minidom.parse(xmlfile)
+        dom = minidom.parse(installerxml)
         installinfo = dom.getElementsByTagName("InstallInfo")
         if installinfo:
             packagedescriptions = installinfo[0].getElementsByTagName("PackageDescription")
@@ -65,15 +72,20 @@ def getAdobePackageName(installroot):
                     description += node.nodeValue
 
         if description:
-            name = description.split(' : ')[0]
-            if name:
-                return name
-                
-    return os.path.basename(installroot)
+            description_parts = description.split(' : ', 1)
+            info['display_name'] = description_parts[0]
+            if len(description_parts) > 1:
+                info['description'] = description_parts[1]
+            else:
+                info['description'] = ""
+            return info
+    
+    info['display_name'] = os.path.basename(installroot)      
+    return info
     
 
 lastlogline = ''
-def getAdobeInstallerInfo():
+def getAdobeInstallerLogInfo():
     # Adobe Setup.app and AdobeUberInstaller don't provide progress output,
     # so we're forced to do fancy log tailing...
     global lastlogline
@@ -121,7 +133,7 @@ def getPercent(current, maximum):
     # returns a value useful with MunkiStatus
     if current < 0:
         percentdone = -1
-    elif current > maximum
+    elif current > maximum:
         percentdone = -1
     elif current == maximum:
         percentdone = 100
@@ -129,28 +141,79 @@ def getPercent(current, maximum):
         percentdone = int(float(current)/float(maximum)*100)
     return percentdone
     
+    
+def findSetupApp(dirpath):
+    # search dirpath and enclosed directories for Setup.app
+    for (path, dirs, files) in os.walk(dirpath):
+        if path.endswith("Setup.app"):
+            setup_path = os.path.join(path, "Contents", "MacOS", "Setup")
+            if os.path.exists(setup_path):
+                return setup_path
+    return ''
 
-def runAdobeUberTool(dmgpath, uninstalling=False):
+
+def runAdobeSetup(dmgpath):
+    # runs the Adobe setup tool in silent mode from
+    # an Adobe CS4 update DMG
+    munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
+    mountpoints = mountdmg(dmgpath)
+    if mountpoints:
+        setup_path = findSetupApp(mountpoints[0])
+        if setup_path:
+            munkicommon.display_status("Running Adobe Update Installer")
+            adobe_setup = [ setup_path, '--mode=silent', '--skipProcessCheck=1' ]
+            p = subprocess.Popen(adobe_setup, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            while (p.poll() == None): 
+                time.sleep(1)
+                loginfo = getAdobeInstallerLogInfo()
+                if loginfo.startswith("Mounting payload image at "):
+                    try:
+                        payloadpath = loginfo[26:]
+                        payloadfilename = os.path.basename(payloadpath)
+                        payloadname = os.path.splitext(payloadfilename)[0]
+                        munkicommon.display_status("Installing payload: %s" % payloadname)
+                    except:
+                        pass
+                      
+            retcode = p.poll()
+            if retcode:
+                munkicommon.display_error("***Adobe Setup error: %s: %s***" % (retcode, adobeSetupError(retcode)))
+        else:
+            munkicommon.display_error("%s doesn't appear to contain an Adobe CS4 update." % os.path.basename(dmgpath))
+            retcode = -1
+        munkicommon.unmountdmg(mountpoints[0])
+    else:
+        munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
+        retcode = -1
+    
+    return retcode
+    
+    
+def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     # runs either AdobeUberInstaller or AdobeUberUninstaller
     # from a disk image and provides progress feedback
+    # pkgname is the name of a directory at the top level of the dmg
+    # containing the AdobeUber tools and their XML files
     munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
     mountpoints = mountdmg(dmgpath)
     if mountpoints:
         installroot = mountpoints[0]
         if uninstalling:
-            ubertool = os.path.join(installroot, "AdobeUberUninstaller")
+            ubertool = os.path.join(installroot, pkgname, "AdobeUberUninstaller")
         else:
-            ubertool = os.path.join(installroot, "AdobeUberInstaller")
+            ubertool = os.path.join(installroot, pkgname, "AdobeUberInstaller")
             
         if os.path.exists(ubertool):
-            packagename = getAdobePackageName(installroot)
+            info = getAdobePackageInfo(installroot)
+            packagename = info['display_name']
             action = "Installing"
             if uninstalling:
                 action = "Uninstalling"
             if munkicommon.munkistatusoutput:
                 munkistatus.message("%s %s..." % (action, packagename))
-                # clear indeterminate progress bar 
-                munkistatus.percent(0)
+                munkistatus.detail("Starting %s" % os.path.basename(ubertool))
+                munkistatus.percent(-1)
             else:
                 munkicommon.display_status("%s %s" % (action, packagename))
             
@@ -163,7 +226,7 @@ def runAdobeUberTool(dmgpath, uninstalling=False):
                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             while (p.poll() == None): 
                 time.sleep(1)
-                loginfo = getAdobeInstallerInfo()
+                loginfo = getAdobeInstallerLogInfo()
                 # installing
                 if loginfo.startswith("Mounting payload image at "):
                     # increment payload_completed_count
@@ -188,7 +251,7 @@ def runAdobeUberTool(dmgpath, uninstalling=False):
             # ubertool completed  
             retcode = p.poll()
             if retcode:
-                munkicommon.display_error("***Adobe Setup error: %s***" % retcode)
+                munkicommon.display_error("***Adobe Setup error: %s: %s***" % (retcode, adobeSetupError(retcode)))
         else:
             munkicommon.display_error("No %s found" % ubertool)
             retcode = -1
@@ -203,12 +266,35 @@ def runAdobeUberTool(dmgpath, uninstalling=False):
         return -1
         
 
-def install(dmgpath):
-    runAdobeUberTool(dmgpath)
+def adobeSetupError(errorcode):
+    # returns text description for numeric error code
+    # Reference: http://www.adobe.com/devnet/creativesuite/pdfs/DeployGuide.pdf
+    errormessage = { 0 : "Application installed successfully",
+                     1 : "Unable to parse command line",
+                     2 : "Unknoen user interface mode specified",
+                     3 : "Unable to initialize ExtendScript",
+                     4 : "User interface workflow failed",
+                     5 : "Unable to initialize user interface workflow",
+                     6 : "Slient workflow completed with errors",
+                     7 : "Unable to complete the silent workflow",
+                     8 : "Exit and restart",
+                     9 : "Unsupported operating system version",
+                     10 : "Unsuppoerted file system",
+                     11 : "Another instance running",
+                     12 : "CAPS integrity error",
+                     13 : "Media opitmization failed",
+                     14 : "Failed due to insuffcient privileges",
+                     9999 : "Catastrophic error",
+                     -1 : "The AdobeUberInstaller failed before launching the installer" }
+    return errormessage.get(errorcode, "Unknown error")
 
 
-def uninstall(dmgpath):
-    runAdobeUberTool(dmgpath, uninstalling=True)
+def install(dmgpath, pkgname=''):
+    return runAdobeUberTool(dmgpath, pkgname)
+
+
+def uninstall(dmgpath, pkgname=''):
+    return runAdobeUberTool(dmgpath, pkgname, uninstalling=True)
 
 
 def main():

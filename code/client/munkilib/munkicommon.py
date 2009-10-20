@@ -406,12 +406,12 @@ def getExtendedVersion(bundlepath):
     if os.path.exists(infoPlist):
         pl = FoundationPlist.readPlist(infoPlist)
         if "CFBundleShortVersionString" in pl:
-            return padVersionString(pl["CFBundleShortVersionString"],5)
+            return padVersionString(pl["CFBundleShortVersionString"].split()[0],5)
         elif "CFBundleVersion" in pl:
-            return padVersionString(pl["CFBundleVersion"],5)
+            return padVersionString(pl["CFBundleVersion"].split()[0],5)
         elif "Bundle versions string, short" in pl:
             # another special case for JAMF Composer-generated packages. Wow.
-            return padVersionString(pl["Bundle versions string, short"],5)        
+            return padVersionString(pl["Bundle versions string, short"].split()[0],5)        
     # didn't find a version number, so return 0...
     return "0.0.0.0.0"
   

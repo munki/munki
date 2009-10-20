@@ -402,10 +402,10 @@ def compareBundleVersion(item):
         return 0
 
     if 'CFBundleShortVersionString' in pl:
-        installedvers = pl['CFBundleShortVersionString']
+        installedvers = pl['CFBundleShortVersionString'].split()[0]
         return compareVersions(installedvers, vers)
     elif 'CFBundleVersion' in pl:
-        installedvers = pl['CFBundleVersion']
+        installedvers = pl['CFBundleVersion'].split()[0]
         return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tNo version info in %s." % filepath)
@@ -441,10 +441,10 @@ def comparePlistVersion(item):
         return 0
     
     if 'CFBundleShortVersionString' in pl:
-        installedvers = pl['CFBundleShortVersionString']
+        installedvers = pl['CFBundleShortVersionString'].split()[0]
         return compareVersions(installedvers, vers)
     elif 'CFBundleVersion' in pl:
-        installedvers = pl['CFBundleVersion']
+        installedvers = pl['CFBundleVersion'].split()[0]
         return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tNo version info in %s." % filepath)
@@ -792,7 +792,7 @@ def getItemDetail(name, cataloglist, vers=''):
     return None
     
     
-def enoughDiskSpace(manifestitem_pl):
+def enoughDiskSpace(manifestitem_pl, uninstalling=False):
     """
     Used to determine if there is enough disk space
     to be able to download and install the manifestitem
@@ -805,12 +805,19 @@ def enoughDiskSpace(manifestitem_pl):
         installeritemsize = manifestitem_pl['installer_item_size']
     if 'installed_size' in manifestitem_pl:
         installedsize = manifestitem_pl['installed_size']
+    if uninstalling:
+        installedsize = 0
+        if 'uninstaller_item_size' in manifestitem_pl:
+            installeritemsize = manifestitem_pl['uninstaller_item_size']
     diskspaceneeded = (installeritemsize + installedsize + fudgefactor)/1024
     availablediskspace = munkicommon.getAvailableDiskSpace()/1024
     if availablediskspace > diskspaceneeded:
         return True
     else:
-        munkicommon.display_info("There is insufficient disk space to download and install %s." % manifestitem_pl.get('name'))
+        if uninstalling:
+            munkicommon.display_info("There is insufficient disk space to download the uninstaller for %s." % manifestitem_pl.get('name'))
+        else:
+            munkicommon.display_info("There is insufficient disk space to download and install %s." % manifestitem_pl.get('name'))
         munkicommon.display_info("    %sMB needed; %sMB available" % (diskspaceneeded, availablediskspace))
         return False
 
@@ -1006,6 +1013,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     iteminfo['installer_choices_xml'] = pl['installer_choices_xml']
                 if 'RestartAction' in pl:
                     iteminfo['RestartAction'] = pl['RestartAction']
+                if 'installer_type' in pl:
+                    iteminfo['installer_type'] = pl['installer_type']
+                if "adobe_package_name" in pl:
+                    iteminfo['adobe_package_name'] = pl['adobe_package_name']
                 installinfo['managed_installs'].append(iteminfo)
                 return True
             else:
@@ -1155,6 +1166,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 else:
                     # no matching packages found. Check next item
                     continue
+            elif uninstallmethod == 'AdobeUberUninstaller':
+                # Adobe CS4 package
+                uninstall_item = item
+                break
             else:
                 # uninstall_method is a local script.
                 # Check to see if it exists and is executable
@@ -1252,6 +1267,20 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 munkicommon.display_error("WARNING: pkg id %s missing from pkgdata" % pkg)
         iteminfo['packages'] = packagesToReallyRemove
     iteminfo["uninstall_method"] = uninstallmethod
+    if uninstallmethod == "AdobeUberUninstaller":
+        if 'uninstaller_item_location' in item:
+            location = uninstall_item['uninstaller_item_location']
+        else:
+            location = uninstall_item['installer_item_location']
+        if not enoughDiskSpace(uninstall_item, uninstalling=True):
+            return False
+        if download_installeritem(location):
+            filename = os.path.split(location)[1]
+            iteminfo['uninstaller_item'] = filename
+            iteminfo['adobe_package_name'] = uninstall_item.get('adobe_package_name','')
+        else:
+            munkicommon.display_error("WARNING: Failed to download the uninstaller for %s" % iteminfo["name"])
+            return False
     iteminfo["installed"] = True
     iteminfo["installed_version"] = uninstall_item.get('version')
     if 'RestartAction' in uninstall_item:
@@ -1683,23 +1712,7 @@ def check(id=''):
         installinfo = processManifestForInstalls(mainmanifestpath, installinfo)
         if munkicommon.stopRequested():
             return 0
-        
-        # clean up cache dir
-        # remove any item in the install cache that isn't scheduled
-        # to be installed --
-        # this allows us to 'pull back' an item before it is installed
-        # by removing it from the manifest
-        installer_item_list = []
-        for item in installinfo['managed_installs']:
-            if "installer_item" in item:
-                installer_item_list.append(item["installer_item"])
-        
-        cachedir = os.path.join(ManagedInstallDir, "Cache")
-        for item in os.listdir(cachedir):
-            if item not in installer_item_list:
-                munkicommon.display_detail("Removing %s from cache" % item)
-                os.unlink(os.path.join(cachedir, item))
-        
+                
         if munkicommon.munkistatusoutput:
             # reset progress indicator and detail field
             munkistatus.percent("-1")
@@ -1711,11 +1724,26 @@ def check(id=''):
             return 0
         installinfo = processManifestForRemovals(mainmanifestpath, installinfo)
         
-        #if munkicommon.munkistatusoutput:
-        #    munkistatus.message("Finishing update check...")
-        #    munkistatus.disableStopButton()
-        
-        # need to write out install list so the autoinstaller
+        # clean up cache dir
+        # remove any item in the cache that isn't scheduled
+        # to be used for an install or removal
+        # this could happen if an item is downloaded on one
+        # updatecheck run, but later removed from the manifest
+        # before it is installed or removed
+        cache_list = []
+        for item in installinfo['managed_installs']:
+            if "installer_item" in item:
+                cache_list.append(item["installer_item"])
+        for item in installinfo['removals']:
+            if "uninstaller_item" in item:
+                cache_list.append(item["uninstaller_item"])        
+        cachedir = os.path.join(ManagedInstallDir, "Cache")
+        for item in os.listdir(cachedir):
+            if item not in cache_list:
+                munkicommon.display_detail("Removing %s from cache" % item)
+                os.unlink(os.path.join(cachedir, item))
+
+        # write out install list so our installer
         # can use it to install things in the right order
         installinfochanged = True
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
