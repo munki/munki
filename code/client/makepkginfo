@@ -42,8 +42,9 @@ import hashlib
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
+from munkilib import adobeutils
 
-def getCatalogInfoFromDmg(dmgpath):
+def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     """
     * Mounts a disk image 
     * Gets catalog info for the first installer item found at the root level.
@@ -64,6 +65,36 @@ def getCatalogInfoFromDmg(dmgpath):
             # get out of mountpoint loop
             break
             
+    if not cataloginfo:
+        # ADOBE STUFF
+        # no Apple installer items found. Look for AdobeUberInstaller items
+        pkgroot = os.path.join(mountpoints[0], pkgname)
+        adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
+        if os.path.exists(adobeinstallxml):
+            # this is a CS4 Enterprise Deployment package
+            cataloginfo = adobeutils.getAdobePackageInfo(pkgroot)
+            if cataloginfo:
+                # add some more data
+                cataloginfo['name'] = cataloginfo['display_name'].replace(" ",'')
+                cataloginfo['uninstallable'] = True
+                cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
+                cataloginfo['installer_type'] = "AdobeUberInstaller"
+    
+    if not cataloginfo:
+        # ADOBE STUFF
+        # maybe this is an Adobe update DMG
+        # look for Adobe Setup.app
+        setuppath = adobeutils.findSetupApp(mountpoints[0])
+        if setuppath:
+            cataloginfo = adobeutils.getAdobeUpdateInfo(mountpoints[0])
+            if cataloginfo:
+                # add some more data
+                cataloginfo['name'] = cataloginfo['display_name'].replace(" ",'')
+                cataloginfo['description'] = "Adobe CS4 application update"
+                cataloginfo['uninstallable'] = False
+                cataloginfo['installer_type'] = "AdobeSetup"
+                cataloginfo['modifies'] = ["PleaseEditMe-1.0.0.0.0"]
+                            
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
@@ -123,9 +154,9 @@ def getiteminfo(itempath):
         if 'CFBundleIdentifier' in pl:
             infodict['CFBundleIdentifier'] = pl['CFBundleIdentifier']
         if 'CFBundleShortVersionString' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+            infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString'].split()[0]
         elif 'CFBundleVersion' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion']
+            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion'].split()[0]
         if 'LSMinimumSystemVersion' in pl:
             infodict['minosversion'] = pl['LSMinimumSystemVersion']
         elif 'SystemVersionCheck:MinimumSystemVersion' in pl:
@@ -136,9 +167,9 @@ def getiteminfo(itempath):
         infodict['path'] = itempath
         pl = getBundleInfo(itempath)
         if 'CFBundleShortVersionString' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+            infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString'].split()[0]
         elif 'CFBundleVersion' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion']
+            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion'].split()[0]
             
     elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
@@ -146,9 +177,9 @@ def getiteminfo(itempath):
         try:
             pl = FoundationPlist.readPlist(itempath)
             if 'CFBundleShortVersionString' in pl:
-                infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString']
+                infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString'].split()[0]
             elif 'CFBundleVersion' in pl:
-                infodict['CFBundleShortVersionString'] = pl['CFBundleVersion']
+                infodict['CFBundleShortVersionString'] = pl['CFBundleVersion'].split()[0]
         except:
             pass
         
@@ -165,7 +196,17 @@ def main():
     usage = "usage: %prog [options] [/path/to/installeritem]"
     p = optparse.OptionParser(usage=usage)
     p.add_option('--file', '-f', action="append",
-                    help='Path to a filesystem item installed by this package. Can be specified multiple times.')
+                    help='Path to a filesystem item installed by this package, typically an application.\n \
+                    Can be specified multiple times.')
+    p.add_option('--pkgname', '-p',
+                    help='If installer item is a DMG containing an Adobe CS4 Deployment Toolkit installation,\n \
+                    pkgname is the name of an Adobe CS4 Deployment Toolkit installer package folder at the top\n \
+                    level of the mounted dmg.\n \
+                    If this flag is missing, the AdobeUber* files should be at the top level of the mounted dmg.')
+    p.add_option('--uninstallerdmg', '-u',
+                    help='If installer item is a DMG containing an Adobe CS4 Deployment Toolkit installation,\n \
+                    uninstallerdmg is a path to a disk image containing an AdobeUberUninstaller for this item.')
+    
     options, arguments = p.parse_args()
     
     if len(arguments) == 0 and not options.file:
@@ -194,7 +235,10 @@ def main():
                     itemsize += int(os.lstat(filename).st_size)
         
         if item.endswith('.dmg'):
-            catinfo = getCatalogInfoFromDmg(item)
+            pkgname = ''
+            if options.pkgname:
+                pkgname = options.pkgname
+            catinfo = getCatalogInfoFromDmg(item, pkgname)
             if not catinfo:
                 print >>sys.stderr, "Could not find a supported installer item in %s!" % item
                 exit(-1)
@@ -225,11 +269,34 @@ def main():
             location = os.path.split(item)[1]
         catinfo['installer_item_location'] = location
         
-            
+        # ADOBE STUFF - though maybe generalizable in the future?
+        if options.uninstallerdmg:
+            uninstallerpath = options.uninstallerdmg
+            if os.path.exists(uninstallerpath):
+                # try to generate the correct item location
+                temppath = uninstallerpath
+                location = ""
+                while len(temppath) > 4:
+                    if temppath.endswith('/pkgs'):
+                        location = uninstallerpath[len(temppath)+1:]
+                        break
+                    else:
+                        temppath = os.path.dirname(temppath)
+
+                if not location:
+                    #just the filename
+                    location = os.path.split(uninstallerpath)[1]
+                catinfo['uninstaller_item_location'] = location
+                itemsize = int(os.path.getsize(uninstallerpath))
+                catinfo['uninstaller_item_size'] = int(itemsize/1024)
+            else:
+                print >>sys.stderr, "No uninstaller at %s" % uninstallerpath
+                    
         # some metainfo
         catinfo['catalogs'] = ['testing']
-        catinfo['uninstallable'] = True
-        catinfo['uninstall_method'] = "removepackages"
+        if catinfo.get('receipts',None):
+            catinfo['uninstallable'] = True
+            catinfo['uninstall_method'] = "removepackages"
         
     minosversion = ""
     installs = []
@@ -258,6 +325,9 @@ def main():
             catinfo['minimum_os_version'] = minosversion
         else:
             catinfo['minimum_os_version'] = "10.4.0"
+        if not 'version' in catinfo:
+            catinfo['version'] = "1.0.0.0.0 (Please edit me!)"
+        
     
     catinfo['installs'] = installs
 
