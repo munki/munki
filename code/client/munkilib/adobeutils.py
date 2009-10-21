@@ -53,6 +53,58 @@ def mountdmg(dmgpath):
                 mountpoints.append(entity['mount-point'])
 
     return mountpoints
+    
+    
+def getAdobeUpdateInfo(installroot):
+    # given the root of mounted Adobe Updater DMG, look for info about the update
+    info = {}
+    # look for an extensions folder
+    for (path, dirs, files) in os.walk(installroot):
+        if path.endswith("/extensions"):
+            # hopefully, there's a single directory in here:
+            extensions = []
+            for item in os.listdir(path):
+                itempath = os.path.join(path, item)
+                if os.path.isdir(itempath):
+                    extensions.append(itempath)
+            
+            if len(extensions) > 1:
+                # right now, I have no idea how to deal with multiple updates
+                # in a single DMG, so bail
+                return info
+            else:
+                extensionpath = extensions[0]
+                # look for .proxy.xml file in the extension dir
+                for item in os.listdir(extensionpath):
+                    if item.endswith('.proxy.xml'):
+                        xmlpath = os.path.join(extensionpath, item)
+                        dom = minidom.parse(xmlpath)
+                        payload_info = dom.getElementsByTagName("PayloadInfo")
+                        if payload_info:
+                            installer_properties = payload_info[0].getElementsByTagName("InstallerProperties")
+                            if installer_properties:
+                                properties = installer_properties[0].getElementsByTagName("Property")
+                                for prop in properties:
+                                    if 'name' in prop.attributes.keys():
+                                        propname = prop.attributes['name'].value.encode('UTF-8')
+                                        propvalue = ''
+                                        for node in prop.childNodes:
+                                            propvalue += node.nodeValue
+                                        if propname == 'ProductName':
+                                            info['display_name'] = propvalue
+                                        if propname == 'ProductVersion':
+                                            info['version'] = munkicommon.padVersionString(propvalue,5)    
+                            
+                            installmetadata = payload_info[0].getElementsByTagName("InstallDestinationMetadata")
+                            if installmetadata:
+                                totalsizes = installmetadata[0].getElementsByTagName("TotalSize")
+                                if totalsizes:
+                                    installsize = ''
+                                    for node in totalsizes[0].childNodes:
+                                        installsize += node.nodeValue
+                                    info['installed_size'] = str(int(installsize)/1024)
+                        
+    return info
 
 
 def getAdobePackageInfo(installroot):
