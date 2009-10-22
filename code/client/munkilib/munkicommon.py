@@ -268,6 +268,27 @@ def unmountdmg(mountpoint):
         p = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint, '-force'], 
             bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (output, err) = p.communicate()
+        
+        
+def isApplication(pathname):
+    '''Returns true if path appears to be an OS X application'''
+    # No symlinks, please
+    if os.path.islink(pathname):
+        return False
+    if pathname.endswith(".app"):
+        return True
+    if os.path.isdir(pathname):
+        # look for app bundle structure
+        # use Info.plist to determine the name of the executable
+        infoplist = os.path.join(pathname, "Contents", "Info.plist")
+        if os.path.exists(infoplist):
+            pl = FoundationPlist.readPlist(infoplist)
+            # get CFBundleExecutable, falling back to bundle name if it's missing
+            bundleexecutable = pl.get('CFBundleExecutable',os.path.basename(pathname))
+            bundleexecutablepath = os.path.join(pathname, "Contents", "MacOS", bundleexecutable)
+            if os.path.exists(bundleexecutablepath):
+                return True
+    return False
 
 
 #####################################################

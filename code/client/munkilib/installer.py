@@ -185,7 +185,39 @@ def installall(dirpath, choicesXMLpath=None):
                 
     return (retcode, restartflag)
     
-
+    
+def copyAppFromDMG(dmgpath):
+    # copies application from DMG to /Applications
+    mountpoints = munkicommon.mountdmg(dmgpath)
+    if mountpoints:
+        retcode = 0
+        appfound = False
+        mountpoint = mountpoints[0]
+        # find an app at the root level, copy it to /Applications
+        for item in os.listdir(mountpoint):
+            itempath = os.path.join(mountpoint,item)
+            if item.endswith('.app'):
+                appfound = True
+                retcode = subprocess.call(["/bin/cp", "-pR", itempath, "/Applications/"])
+                if retcode == 0:
+                    # remove com.apple.quarantine attribute from copied app
+                    newpath = os.path.join("/Applications", item)
+                    cmd = ["/usr/bin/xattr", "-dr", "com.apple.quarantine", newpath]
+                    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    (output, err) = p.communicate()
+                    
+        munkicommon.unmountdmg(mountpoint)
+        if not appfound:
+            munkicommon.display_error("No application found on %s", os.path.basename(dmgpath))
+            retcode = -2
+            
+        return retcode
+    else:
+        munkicommon.display_error("No mountable filesystems on %s", os.path.basename(dmgpath))
+        return -1
+    
+    
 def getInstallCount(installList):
     count = 0
     for item in installList:
@@ -232,6 +264,8 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                 if retcode == 8:
                     # Adobe Setup says restart needed
                     restartflag = True
+            elif installer_type == "appdmg":
+                retcode = copyAppFromDMG(itempath)
             else:
                 # must be Apple installer package
                 if 'installer_choices_xml' in item:
@@ -346,6 +380,17 @@ def processRemovals(removalList):
                                     munkicommon.display_error("Uninstall of %s failed." % name)
                             else:
                                 munkicommon.display_error("AdobeUberUninstaller package for %s was missing from the Cache." % name)
+                                
+                    elif uninstallmethod[0] == "remove_app":
+                        remove_app_info = item.get('remove_app_info',None)
+                        if remove_app_info:
+                            path_to_remove = remove_app_info['path']
+                            munkicommon.display_status("Removing %s" % path_to_remove)
+                            retcode = subprocess.call(["/bin/rm", "-rf", path_to_remove])
+                            if retcode:
+                                munkicommon.display_error("Removal error for %s" % path_to_remove)
+                        else:
+                            munkicommon.display_error("Application removal info missing from %s" % name)
                         
                     elif os.path.exists(uninstallmethod[0]) and os.access(uninstallmethod[0], os.X_OK):
                         # it's a script or program to uninstall

@@ -44,13 +44,14 @@ from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
 
+
 def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     """
     * Mounts a disk image 
     * Gets catalog info for the first installer item found at the root level.
     * Unmounts the disk image
     
-    To-do: handle multiple installer items on a disk image
+    To-do: handle multiple installer items on a disk image(?)
     """
     cataloginfo = None
     mountpoints = munkicommon.mountdmg(dmgpath)
@@ -79,6 +80,8 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
                 cataloginfo['uninstallable'] = True
                 cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
                 cataloginfo['installer_type'] = "AdobeUberInstaller"
+                if pkgname:
+                    cataloginfo['adobe_package_name'] = pkgname
     
     if not cataloginfo:
         # ADOBE STUFF
@@ -94,7 +97,25 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
                 cataloginfo['uninstallable'] = False
                 cataloginfo['installer_type'] = "AdobeSetup"
                 cataloginfo['modifies'] = ["PleaseEditMe-1.0.0.0.0"]
-                            
+                
+    if not cataloginfo:
+        # maybe this is an appdmg
+        # look for an app at the top level of the dmg
+        for item in os.listdir(mountpoints[0]):
+            itempath = os.path.join(mountpoints[0],item)
+            if munkicommon.isApplication(itempath):
+                appinfo = getiteminfo(itempath)
+                if appinfo:
+                    appinfo['path'] = os.path.join("/Applications", item)
+                    cataloginfo = {}
+                    cataloginfo['name'] = appinfo.get('CFBundleName', os.path.splitext(item)[0])
+                    cataloginfo['version'] = munkicommon.padVersionString(appinfo.get('CFBundleShortVersionString',"0"),5)
+                    cataloginfo['installs'] = [appinfo]
+                    cataloginfo['installer_type'] = "appdmg"
+                    cataloginfo['uninstallable'] = True
+                    cataloginfo['uninstall_method'] = "remove_app"
+                    break
+                    
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
@@ -145,7 +166,7 @@ def getiteminfo(itempath):
     and gets additional metadata for later comparison.
     """
     infodict = {}
-    if itempath.endswith('.app'):
+    if munkicommon.isApplication(itempath):
         infodict['type'] = 'application'
         infodict['path'] = itempath
         pl = getBundleInfo(itempath)
@@ -217,6 +238,7 @@ def main():
         print >>sys.stderr, "Can process only one installer item at a time. Ignoring additional installer items."
     
     catinfo = {}
+    installs = []
     try:
         item = arguments[0].rstrip("/")
     except:
@@ -299,7 +321,7 @@ def main():
             catinfo['uninstall_method'] = "removepackages"
         
     minosversion = ""
-    installs = []
+    maxfileversion = "0.0.0.0.0"
     if options.file:           
         for fitem in options.file:
             # no trailing slashes, please.
@@ -316,6 +338,10 @@ def main():
                         minosversion = thisminosversion
                     elif version.LooseVersion(thisminosversion) < version.LooseVersion(minosversion):
                         minosversion = thisminosversion
+                if 'CFBundleShortVersionString' in iteminfodict:
+                    thisitemversion = munkicommon.padVersionString(iteminfodict['CFBundleShortVersionString'],5)
+                    if version.LooseVersion(thisitemversion) > version.LooseVersion(maxfileversion):
+                        maxfileversion = thisitemversion
                 installs.append(iteminfodict)
             else:
                 print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
@@ -326,10 +352,13 @@ def main():
         else:
             catinfo['minimum_os_version'] = "10.4.0"
         if not 'version' in catinfo:
-            catinfo['version'] = "1.0.0.0.0 (Please edit me!)"
+            if maxfileversion != "0.0.0.0.0":
+                catinfo['version'] = maxfileversion
+            else:
+                catinfo['version'] = "1.0.0.0.0 (Please edit me!)"
         
-    
-    catinfo['installs'] = installs
+    if installs:
+        catinfo['installs'] = installs
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)

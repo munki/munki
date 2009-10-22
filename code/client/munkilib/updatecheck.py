@@ -802,13 +802,16 @@ def enoughDiskSpace(manifestitem_pl, uninstalling=False):
     installeritemsize = 0
     installedsize = 0
     if 'installer_item_size' in manifestitem_pl:
-        installeritemsize = manifestitem_pl['installer_item_size']
+        installeritemsize = int(manifestitem_pl['installer_item_size'])
     if 'installed_size' in manifestitem_pl:
-        installedsize = manifestitem_pl['installed_size']
+        installedsize = int(manifestitem_pl['installed_size'])
+    else:
+        # fudge this value
+        installedsize = installeritemsize
     if uninstalling:
         installedsize = 0
         if 'uninstaller_item_size' in manifestitem_pl:
-            installeritemsize = manifestitem_pl['uninstaller_item_size']
+            installeritemsize = int(manifestitem_pl['uninstaller_item_size'])
     diskspaceneeded = (installeritemsize + installedsize + fudgefactor)/1024
     availablediskspace = munkicommon.getAvailableDiskSpace()/1024
     if availablediskspace > diskspaceneeded:
@@ -830,37 +833,38 @@ def isInstalled(pl):
     Returns True if it looks like this or a newer version
     is installed; False otherwise.
     """
-    if 'installs' in pl:
-       installitems = pl['installs']
-       for item in installitems:
-           itemtype = item.get('type')
-           if itemtype == 'application':
-               if compareApplicationVersion(item) in (-1, 0):
-                   return False
+    # does 'installs' exist and is it non-empty?
+    if pl.get('installs', None):
+        installitems = pl['installs']
+        for item in installitems:
+            itemtype = item.get('type')
+            if itemtype == 'application':
+                if compareApplicationVersion(item) in (-1, 0):
+                    return False
                    
-           if itemtype == 'bundle':
-               if compareBundleVersion(item) in (-1, 0):
-                   # not there or older
-                   return False
+            if itemtype == 'bundle':
+                if compareBundleVersion(item) in (-1, 0):
+                    # not there or older
+                    return False
                    
-           if itemtype == 'plist':
-               if comparePlistVersion(item) in (-1, 0):
-                   # not there or older
-                   return False
+            if itemtype == 'plist':
+                if comparePlistVersion(item) in (-1, 0):
+                    # not there or older
+                    return False
                    
-           if itemtype == 'file':
-               if filesystemItemExists(item) == 0 :
-                   # not there, or wrong checksum
-                   return False
+            if itemtype == 'file':
+                if filesystemItemExists(item) == 0 :
+                    # not there, or wrong checksum
+                    return False
    
     # if there is no 'installs' key, then we'll use receipt info
     # to determine install status.
     elif 'receipts' in pl:
-       receipts = pl['receipts']
-       for item in receipts:
-           if compareReceiptVersion(item) in (-1, 0):
-               # not there or older
-               return False
+        receipts = pl['receipts']
+        for item in receipts:
+            if compareReceiptVersion(item) in (-1, 0):
+                # not there or older
+                return False
 
     # if we got this far, we passed all the tests, so the item
     # must be installed (or we don't have enough info...)
@@ -1170,6 +1174,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 # Adobe CS4 package
                 uninstall_item = item
                 break
+            elif uninstallmethod == 'remove_app':
+                uninstall_item = item
+                break
             else:
                 # uninstall_method is a local script.
                 # Check to see if it exists and is executable
@@ -1281,6 +1288,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         else:
             munkicommon.display_error("WARNING: Failed to download the uninstaller for %s" % iteminfo["name"])
             return False
+    elif uninstallmethod == "remove_app":
+        if uninstall_item.get('installs',None):
+            iteminfo['remove_app_info'] = uninstall_item['installs'][0]
+            
     iteminfo["installed"] = True
     iteminfo["installed_version"] = uninstall_item.get('version')
     if 'RestartAction' in uninstall_item:
