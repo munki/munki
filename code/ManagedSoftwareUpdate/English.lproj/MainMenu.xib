@@ -9,7 +9,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="284"/>
-			<integer value="21"/>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -509,7 +509,7 @@
 								<int key="NSCellFlags2">272629760</int>
 								<string type="base64-UTF8" key="NSContents">VXBkYXRpbmcgeW91ciBzb2Z0d2FyZSBtYXkgdGFrZSBzb21lIHRpbWUuIElmIHlvdSdyZSBub3QgcmVh
 ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
-								<object class="NSFont" key="NSSupport">
+								<object class="NSFont" key="NSSupport" id="894148264">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">1.100000e+01</double>
 									<int key="NSfFlags">16</int>
@@ -551,6 +551,22 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 								<bool key="NSAnimates">YES</bool>
 							</object>
 							<bool key="NSEditable">YES</bool>
+						</object>
+						<object class="NSTextField" id="592213051">
+							<reference key="NSNextResponder" ref="903778767"/>
+							<int key="NSvFlags">268</int>
+							<string key="NSFrame">{{21, 26}, {208, 14}}</string>
+							<reference key="NSSuperview" ref="903778767"/>
+							<bool key="NSEnabled">YES</bool>
+							<object class="NSTextFieldCell" key="NSCell" id="438128796">
+								<int key="NSCellFlags">68288064</int>
+								<int key="NSCellFlags2">272630784</int>
+								<string key="NSContents"/>
+								<reference key="NSSupport" ref="894148264"/>
+								<reference key="NSControlView" ref="592213051"/>
+								<reference key="NSBackgroundColor" ref="353294510"/>
+								<reference key="NSTextColor" ref="115687089"/>
+							</object>
 						</object>
 					</object>
 					<string key="NSFrameSize">{512, 562}</string>
@@ -1039,6 +1055,7 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 							<reference ref="472008763"/>
 							<reference ref="910886033"/>
 							<reference ref="535866689"/>
+							<reference ref="592213051"/>
 						</object>
 						<reference key="parent" ref="801548761"/>
 					</object>
@@ -1496,6 +1513,20 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 						<reference key="object" ref="973913323"/>
 						<reference key="parent" ref="859465562"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">473</int>
+						<reference key="object" ref="592213051"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="438128796"/>
+						</object>
+						<reference key="parent" ref="903778767"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">474</int>
+						<reference key="object" ref="438128796"/>
+						<reference key="parent" ref="592213051"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1643,6 +1674,9 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 					<string>471.IBPluginDependency</string>
 					<string>472.IBAttributePlaceholdersKey</string>
 					<string>472.IBPluginDependency</string>
+					<string>473.IBAttributePlaceholdersKey</string>
+					<string>473.IBPluginDependency</string>
+					<string>474.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1999,6 +2033,20 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">IBAppleScriptAttributeName</string>
+						<object class="IBAppleScriptInfoAttribute" key="NS.object.0">
+							<string key="name">IBAppleScriptAttributeName</string>
+							<reference key="object" ref="592213051"/>
+							<int key="appleScriptObjectID">0</int>
+							<int key="appleScriptScriptScope">0</int>
+							<nil key="appleScriptEventHandlerNames"/>
+							<string key="appleScriptScriptName">ManagedSoftwareUpdate.applescript</string>
+							<string key="appleScriptObjectName">RestartNoticeFld</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -2021,7 +2069,7 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">472</int>
+			<int key="maxID">474</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

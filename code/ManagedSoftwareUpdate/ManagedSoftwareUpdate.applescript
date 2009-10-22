@@ -89,34 +89,39 @@ on itemstoinstall()
 				set removallist to value of property list item "removals" of property list file InstallInfo
 			end tell
 			set removalcount to 0
+			set removalsrequirerestart to false
 			repeat with removalitem in removallist
 				if (installed of removalitem) is true then
 					set removalcount to removalcount + 1
 					try
 						if |RestartAction| of removalitem is "RequireRestart" then
 							set restartRequired to true
+							set removalsrequirerestart to true
 						end if
 					end try
 					if ShowRemovalDetail then
-						set display_name of removalitem to display_name of removalitem & " (will be removed)"
+						try
+							set display_name of removalitem to display_name of removalitem & " (will be removed)"
+						on error
+							set |name| of removalitem to |name| of removalitem & " (will be removed)"
+						end try
 						set end of installlist to (removalitem as item)
 					end if
 				end if
 			end repeat
 			if not ShowRemovalDetail then
 				if removalcount > 0 then
-					if restartRequired then
-						try
-							set |RestartAction| of removalitem to "RequireRestart"
-						on error
-							set removalitem to removalitem & {|RestartAction|:"RequireRestart"}
-						end try
+					set removalitem to {display_name:"Software removals", |description|:"Scheduled removal of managed software.", |RestartAction|:""}
+					if removalsrequirerestart then
+						set |RestartAction| of removalitem to "RequireRestart"
 					end if
-					set display_name of removalitem to "Software removals"
-					set |description| of removalitem to "Scheduled removal of managed software."
 					set end of installlist to (removalitem as item)
 				end if
 			end if
+		on error
+			display alert "Cannot read installation info" message ¬
+				"There is a problem with the managed software installation info. Contact your systems administrator." default button "Quit"
+			quit
 		end try
 	end if
 	return installlist as list
@@ -281,6 +286,9 @@ on activated theObject
 		if (count of installitems) > 0 then
 			my initTable()
 			my updateTable()
+			if restartRequired then
+				set contents of text field "RestartNoticeFld" of window "mainWindow" to "Updates require a restart."
+			end if
 			show window "mainWindow"
 			set enabled of (menu item "installAllMenuItem" of menu "updateMenu" of menu 1) to true
 		else
