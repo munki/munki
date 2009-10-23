@@ -1056,21 +1056,24 @@ def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
     else:
         cataloglist = parentcatalogs
     
-    nestedmanifests = getManifestValueForKey(manifestpath, "included_manifests")
-    if nestedmanifests:
-        for item in nestedmanifests:
-            nestedmanifestpath = getmanifest(item)
-            if munkicommon.stopRequested():
-                return {}
-            if nestedmanifestpath:
-                listofinstalls = processManifestForInstalls(nestedmanifestpath, installinfo, cataloglist)
+    if cataloglist:
+        nestedmanifests = getManifestValueForKey(manifestpath, "included_manifests")
+        if nestedmanifests:
+            for item in nestedmanifests:
+                nestedmanifestpath = getmanifest(item)
+                if munkicommon.stopRequested():
+                    return {}
+                if nestedmanifestpath:
+                    listofinstalls = processManifestForInstalls(nestedmanifestpath, installinfo, cataloglist)
                     
-    installitems = getManifestValueForKey(manifestpath, "managed_installs")
-    if installitems:
-        for item in installitems:
-            if munkicommon.stopRequested():
-                return {}
-            result = processInstall(item, cataloglist, installinfo)
+        installitems = getManifestValueForKey(manifestpath, "managed_installs")
+        if installitems:
+            for item in installitems:
+                if munkicommon.stopRequested():
+                    return {}
+                result = processInstall(item, cataloglist, installinfo)
+    else:
+        munkicommon.display_error("WARNING: manifest %s has no 'catalogs'" % manifestpath)
         
     return installinfo
         
@@ -1301,7 +1304,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     return True
     
     
-def processManifestForRemovals(manifestpath, installinfo):
+def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
     """
     Processes manifests for removals. Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well...
@@ -1312,22 +1315,29 @@ def processManifestForRemovals(manifestpath, installinfo):
         analyzeInstalledPkgs()
         
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
+    if cataloglist:
+        getCatalogs(cataloglist)
+    else:
+        cataloglist = parentcatalogs
+        
+    if cataloglist:
+        nestedmanifests = getManifestValueForKey(manifestpath, "included_manifests")
+        if nestedmanifests:
+            for item in nestedmanifests:
+                if munkicommon.stopRequested():
+                    return {}
+                nestedmanifestpath = getmanifest(item)
+                if nestedmanifestpath:
+                    listofremovals = processManifestForRemovals(nestedmanifestpath, installinfo, cataloglist)
 
-    nestedmanifests = getManifestValueForKey(manifestpath, "included_manifests")
-    if nestedmanifests:
-        for item in nestedmanifests:
-            if munkicommon.stopRequested():
-                return {}
-            nestedmanifestpath = getmanifest(item)
-            if nestedmanifestpath:
-                listofremovals = processManifestForRemovals(nestedmanifestpath, installinfo)
-
-    removalitems = getManifestValueForKey(manifestpath, "managed_uninstalls")
-    if removalitems:
-        for item in removalitems:
-            if munkicommon.stopRequested():
-                return {}
-            result = processRemoval(item, cataloglist, installinfo)
+        removalitems = getManifestValueForKey(manifestpath, "managed_uninstalls")
+        if removalitems:
+            for item in removalitems:
+                if munkicommon.stopRequested():
+                    return {}
+                result = processRemoval(item, cataloglist, installinfo)
+    else:
+        munkicommon.display_error("WARNING: manifest %s has no 'catalogs'" % manifestpath)
 
     return installinfo
 
