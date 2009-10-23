@@ -45,6 +45,24 @@ from munkilib import FoundationPlist
 from munkilib import adobeutils
 
 
+def DMGhasSLA(dmgpath):
+    '''Returns true if dmg has a Software License Agreement.
+    These dmgs cannot be attached without user intervention'''
+    hasSLA = False
+    p = subprocess.Popen(['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
+            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (plist, err) = p.communicate()
+    if err:
+        print >>sys.stderr, "hdiutil error %s with image %s." % (err, dmgpath)
+    if plist:
+        pl = FoundationPlist.readPlistFromString(plist)
+        properties = pl.get('Properties')
+        if properties:
+            hasSLA = properties.get('Software License Agreement',False)
+    
+    return hasSLA
+
+
 def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     """
     * Mounts a disk image 
@@ -53,6 +71,11 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     
     To-do: handle multiple installer items on a disk image(?)
     """
+    if DMGhasSLA(dmgpath):
+        print >>sys.stderr, "%s has an attached Software License Agreement." % dmgpath
+        print >>sys.stderr, "It cannot be automatically mounted. You'll need to create a new dmg."
+        exit(-1)
+        
     cataloginfo = None
     mountpoints = munkicommon.mountdmg(dmgpath)
     for mountpoint in mountpoints:
