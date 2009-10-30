@@ -100,11 +100,15 @@ def makeCatalogDB(catalogitems):
                         pkgid_table[receipt['packageid']][receipt['version']] = []
                     pkgid_table[receipt['packageid']][receipt['version']].append(itemindex)
                     
-        pkgdb = {}
-        pkgdb['named'] = name_table
-        pkgdb['receipts'] = pkgid_table
-        #pkgdb['installeritem_table'] = installeritem_table
-        pkgdb['items'] = catalogitems
+    # build table of update items with a list comprehension --
+    # filter all items from the catalogitems that have a non-empty 'update_for' list
+    updaters = [item for item in catalogitems if item.get('update_for')]              
+                    
+    pkgdb = {}
+    pkgdb['named'] = name_table
+    pkgdb['receipts'] = pkgid_table
+    pkgdb['updaters'] = updaters
+    pkgdb['items'] = catalogitems
 
     return pkgdb
 
@@ -912,7 +916,35 @@ def evidenceThisIsInstalled(pl):
     # must not be installed (or we have bad metadata...)
     return False
     
-
+    
+def lookForUpdates(manifestitem, cataloglist, installinfo):
+    """
+    Looks for updates for a given manifest item that is either 
+    installed or scheduled to be installed. This handles updates
+    that aren't simply later versions of the manifest item.
+    For example, AdobeCameraRaw is an update for Adobe Photoshop.
+    Returns a list of manifestitem names that are updates for 
+    manifestitem.
+    """
+    nameWithVersion = os.path.split(manifestitem)[1]
+    (name, includedversion) = nameAndVersion(nameWithVersion)
+    # get a list of catalog items that are updates for other items
+    update_list = []
+    for catalogname in cataloglist:
+        updaters = catalog[catalogname]['updaters']
+        # list comprehension coming up...
+        update_items = [catalogitem['name']
+                        for catalogitem in updaters 
+                        if (name in catalogitem.get('update_for',[]) or nameAndVersion in catalogitem.get('update_for',[]))]
+        if update_items:
+            update_list.extend(update_items)
+    if update_list:
+        # make sure the list has only unique items:
+        update_list = list(set(update_list))
+        
+    return update_list
+    
+    
 def processInstall(manifestitem, cataloglist, installinfo):
     """
     Processes a manifest item. Determines if it needs to be
@@ -1022,6 +1054,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 if "adobe_package_name" in pl:
                     iteminfo['adobe_package_name'] = pl['adobe_package_name']
                 installinfo['managed_installs'].append(iteminfo)
+                # now look for updates for this item 
+                update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
+                for update_item in update_list:
+                    # call processInstall recursively so we get the latest version and and  dependencies
+                    is_or_will_be_installed = processInstall(update_item,cataloglist,installinfo)
                 return True
             else:
                 iteminfo['installed'] = False
@@ -1041,6 +1078,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
         # remove included version number if any
         (name, includedversion) = nameAndVersion(manifestitemname)
         munkicommon.display_detail("%s version %s (or newer) is already installed." % (name, pl['version']))
+        # the item is already installed; now look for updates for this item 
+        update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
+        for update_item in update_list:
+            # call processInstall recursively so we get the latest version and and  dependencies
+            is_or_will_be_installed = processInstall(update_item,cataloglist,installinfo)
         return True
     
     
@@ -1071,7 +1113,8 @@ def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
             for item in installitems:
                 if munkicommon.stopRequested():
                     return {}
-                result = processInstall(item, cataloglist, installinfo)
+                is_or_will_be_installed = processInstall(item, cataloglist, installinfo)
+                
     else:
         munkicommon.display_error("WARNING: manifest %s has no 'catalogs'" % manifestpath)
         
@@ -1301,6 +1344,11 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         iteminfo['RestartAction'] = uninstall_item['RestartAction']
     installinfo['removals'].append(iteminfo)
     munkicommon.display_detail("Removal of %s added to ManagedInstaller tasks." % manifestitemname_withversion)
+    # now look to see if there are any updates for this item that should also be removed
+    update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
+    for update_item in update_list:
+        # call us recursively...
+        is_or_will_be_removed = processRemoval(update_item,cataloglist,installinfo)
     return True
     
     
@@ -1335,7 +1383,8 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
             for item in removalitems:
                 if munkicommon.stopRequested():
                     return {}
-                result = processRemoval(item, cataloglist, installinfo)
+                is_or_will_be_removed = processRemoval(item, cataloglist, installinfo)
+                    
     else:
         munkicommon.display_error("WARNING: manifest %s has no 'catalogs'" % manifestpath)
 
