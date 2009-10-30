@@ -231,8 +231,8 @@ def osascript(osastring):
         print >>sys.stderr, "Error: ", err
     if out:
         return out.decode('UTF-8').rstrip("\n")
-
-
+        
+        
 # dmg helpers
 
 def mountdmg(dmgpath):
