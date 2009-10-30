@@ -233,12 +233,17 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
     correct order.
     """
     restartflag = False
-    itemindex = -1
+    itemindex = 0
     for item in installlist:
-        itemindex = itemindex + 1
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
+            itemindex = itemindex + 1
+            if munkicommon.munkistatusoutput:
+                display_name = item.get('display_name') or item.get('name')
+                munkistatus.message("Installing %s (%s of %s)..." % (display_name, itemindex, len(installlist)))
+                munkistatus.detail("")
+                munkistatus.percent(-1)
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
                 # can't install, so we should stop. Since later items might
@@ -255,11 +260,6 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                     restartflag = True
             elif installer_type == "AdobeSetup":
                 # Adobe CS4 updater
-                if munkicommon.munkistatusoutput:
-                    display_name = item.get('display_name', '')
-                    if display_name == '':
-                        display_name = item.get('name', '')
-                    munkistatus.message("Installing %s..." % display_name)
                 retcode = adobeutils.runAdobeSetup(itempath)
                 if retcode == 8:
                     # Adobe Setup says restart needed
@@ -273,13 +273,6 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                     FoundationPlist.writePlist(item['installer_choices_xml'], choicesXMLfile)
                 else:
                     choicesXMLfile = ''
-                if munkicommon.munkistatusoutput:
-                    display_name = item.get('display_name', '')
-                    if display_name == '':
-                        display_name = item.get('name', '')
-                    munkistatus.message("Installing %s..." % display_name)
-                    # clear indeterminate progress bar 
-                    munkistatus.percent(0)
                 if itempath.endswith(".dmg"):
                     munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
                     mountpoints = munkicommon.mountdmg(itempath)
@@ -340,25 +333,29 @@ def getRemovalCount(removalList):
     return count
 
 
-def processRemovals(removalList):
+def processRemovals(removallist):
     restartFlag = False
-    for item in removalList:
+    index = 0
+    for item in removallist:
         if munkicommon.stopRequested():
             return restartFlag
         if 'installed' in item:
             if item['installed']:
-                name = item.get('name','')
+                index += 1
+                name = item.get('display_name') or item.get('name')
+                if munkicommon.munkistatusoutput:
+                    munkistatus.message("Removing %s (%s of %s)..." % (name, index, len(removallist)))
+                    munkistatus.detail("")
+                    munkistatus.percent(-1)
+                else:
+                    munkicommon.display_status("Removing %s (%s of %s)..." % (name, index, len(removallist)))
+                
                 if 'uninstall_method' in item:
                     uninstallmethod = item['uninstall_method'].split(' ')
                     if uninstallmethod[0] == "removepackages":
                         if 'packages' in item:
                             if item.get('RestartAction') == "RequireRestart":
                                 restartFlag = True
-                            if munkicommon.munkistatusoutput:
-                                # clear indeterminate progress bar 
-                                munkistatus.percent(0)                               
-                            
-                            munkicommon.display_status("Removing %s..." % name)
                             retcode = removepackages(item['packages'], forcedeletebundles=True)
                             if retcode:
                                 if retcode == -128:
@@ -468,30 +465,32 @@ def run():
         os.unlink(installinfo)
         
         if "removals" in pl:
-            removalcount = getRemovalCount(pl['removals'])
-            if removalcount:
+            # filter list to items that need to be removed
+            removallist = [item for item in pl['removals'] if item.get('installed')]
+            if removallist:
                 if munkicommon.munkistatusoutput:
-                    if removalcount == 1:
+                    if len(removallist) == 1:
                         munkistatus.message("Removing 1 item...")
                     else:
-                        munkistatus.message("Removing %i items..." % removalcount)
+                        munkistatus.message("Removing %i items..." % len(removallist))
                     # set indeterminate progress bar 
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
-                removals_need_restart = processRemovals(pl['removals'])
+                removals_need_restart = processRemovals(removallist)
         if "managed_installs" in pl:
             if not munkicommon.stopRequested():
-                installcount = getInstallCount(pl['managed_installs'])
-                if installcount:
+                # filter list to items that need to be installed
+                installlist = [item for item in pl['managed_installs'] if item.get('installed') == False]
+                if installlist:
                     if munkicommon.munkistatusoutput:
-                        if installcount == 1:
+                        if len(installlist) == 1:
                             munkistatus.message("Installing 1 item...")
                         else:
-                            munkistatus.message("Installing %i items..." % installcount)
+                            munkistatus.message("Installing %i items..." % len(installlist))
                         # set indeterminate progress bar 
                         munkistatus.percent(-1)                        
                     munkicommon.log("Processing installs")
-                    installs_need_restart = installWithInfo(installdir, pl['managed_installs'])
+                    installs_need_restart = installWithInfo(installdir, installlist)
                                     
     else:
         munkicommon.log("No %s found." % installinfo)
