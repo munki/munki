@@ -189,8 +189,15 @@ def main():
                        help="Check for updates, but don't install them.")
     p.add_option('--installonly', action='store_true',
                        help='Skip checking and install any pending updates.')
+    p.add_option('--version', '-V', action='store_true',
+                      help='Print the version of the munki tools and exit.')
+    
     
     options, arguments = p.parse_args()
+    
+    if options.version:
+        print munkicommon.version()
+        exit(0)
     
     if options.auto:
         # typically invoked by a launch daemon periodically
