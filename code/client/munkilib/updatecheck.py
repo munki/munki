@@ -884,13 +884,17 @@ def evidenceThisIsInstalled(pl):
     So this isn't the same as isInstalled()
     """
     global pkgdata
-    # first check our pkgdata
-    if pl['name'] in pkgdata['installed_names']:
-        return True
-    if 'aliases' in pl:
-        for alias in pl['aliases']:
-            if alias in pkgdata['installed_names']:
-                return True
+    
+    if pl.get('receipts'):
+        if pkgdata == {}:
+           # build our database of installed packages
+           analyzeInstalledPkgs()
+        if pl['name'] in pkgdata['installed_names']:
+            return True
+        if 'aliases' in pl:
+            for alias in pl['aliases']:
+                if alias in pkgdata['installed_names']:
+                    return True
                 
     if 'installs' in pl:
         installitems = pl['installs']
@@ -903,17 +907,8 @@ def evidenceThisIsInstalled(pl):
                     # some version is installed
                     return True
                     
-    # this has been superceded by our pkgdata check
-    #if 'receipts' in pl:
-    #    receipts = pl['receipts']
-    #    for item in receipts:
-    #        if 'packageid' in item:
-    #            if munkicommon.getInstalledPackageVersion(item['packageid']):
-    #                # some version of this package is installed
-    #                return True
-
     # if we got this far, we failed all the tests, so the item
-    # must not be installed (or we have bad metadata...)
+    # must not be installed (or we dont't have the right info...)
     return False
     
     
@@ -1054,11 +1049,13 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 if "adobe_package_name" in pl:
                     iteminfo['adobe_package_name'] = pl['adobe_package_name']
                 installinfo['managed_installs'].append(iteminfo)
-                # now look for updates for this item 
-                update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
-                for update_item in update_list:
-                    # call processInstall recursively so we get the latest version and and  dependencies
-                    is_or_will_be_installed = processInstall(update_item,cataloglist,installinfo)
+                if nameAndVersion(manifestitemname)[1] == '':
+                    # didn't specify a specific version, so
+                    # now look for updates for this item 
+                    update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
+                    for update_item in update_list:
+                        # call processInstall recursively so we get the latest version and and  dependencies
+                        is_or_will_be_installed = processInstall(update_item,cataloglist,installinfo)
                 return True
             else:
                 iteminfo['installed'] = False
@@ -1078,11 +1075,13 @@ def processInstall(manifestitem, cataloglist, installinfo):
         # remove included version number if any
         (name, includedversion) = nameAndVersion(manifestitemname)
         munkicommon.display_detail("%s version %s (or newer) is already installed." % (name, pl['version']))
-        # the item is already installed; now look for updates for this item 
-        update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
-        for update_item in update_list:
-            # call processInstall recursively so we get the latest version and and  dependencies
-            is_or_will_be_installed = processInstall(update_item,cataloglist,installinfo)
+        if not includedversion:
+            # no specific version is specified;
+            # the item is already installed; now look for updates for this item 
+            update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
+            for update_item in update_list:
+                # call processInstall recursively so we get the latest version and and  dependencies
+                is_or_will_be_installed = processInstall(update_item,cataloglist,installinfo)
         return True
     
     
@@ -1153,7 +1152,6 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     Returns a boolean; when processing dependencies, a false return
     will stop the removal of a dependent item.
     """
-    global pkgdata
     manifestitemname_withversion = os.path.split(manifestitem)[1]
         
     munkicommon.display_detail("Processing manifest item %s..." % manifestitemname_withversion)
@@ -1318,7 +1316,13 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             else:
                 # This shouldn't happen
                 munkicommon.display_error("WARNING: pkg id %s missing from pkgdata" % pkg)
-        iteminfo['packages'] = packagesToReallyRemove
+        if packagesToReallyRemove:
+            iteminfo['packages'] = packagesToReallyRemove
+        else:
+            # no packages that belong to this item only.
+            munkicommon.display_error("WARNING: could not find unique packages to remove for %s" % iteminfo["name"])
+            return False
+            
     iteminfo["uninstall_method"] = uninstallmethod
     if uninstallmethod == "AdobeUberUninstaller":
         if 'uninstaller_item_location' in item:
@@ -1356,12 +1360,7 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
     """
     Processes manifests for removals. Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well...
-    """
-    global pkgdata
-    if pkgdata == {}:
-        # build our database of installed packages
-        analyzeInstalledPkgs()
-        
+    """        
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
     if cataloglist:
         getCatalogs(cataloglist)
