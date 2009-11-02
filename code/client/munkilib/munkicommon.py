@@ -33,14 +33,17 @@ import urllib2
 from distutils import version
 from xml.dom import minidom
 
-#from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 from Foundation import NSDictionary, NSDate
 
 import munkistatus
 import FoundationPlist
+
+def version():
+    '''Returns version of munkitools'''
+    return "0.4.5"
+
+
 # output and logging functions
-
-
 def getsteps(num_of_steps, limit):
     """
     Helper function for display_percent_done
