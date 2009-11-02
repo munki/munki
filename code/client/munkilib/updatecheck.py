@@ -1342,17 +1342,20 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         if uninstall_item.get('installs',None):
             iteminfo['remove_app_info'] = uninstall_item['installs'][0]
             
+    # before we add this removal to the list, check for installed updates and add them to the
+    # removal list as well:
+    update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
+    for update_item in update_list:
+        # call us recursively...
+        is_or_will_be_removed = processRemoval(update_item,cataloglist,installinfo)
+    
+    # finish recording info for this removal
     iteminfo["installed"] = True
     iteminfo["installed_version"] = uninstall_item.get('version')
     if 'RestartAction' in uninstall_item:
         iteminfo['RestartAction'] = uninstall_item['RestartAction']
     installinfo['removals'].append(iteminfo)
     munkicommon.display_detail("Removal of %s added to ManagedInstaller tasks." % manifestitemname_withversion)
-    # now look to see if there are any updates for this item that should also be removed
-    update_list = lookForUpdates(iteminfo["name"], cataloglist, installinfo)
-    for update_item in update_list:
-        # call us recursively...
-        is_or_will_be_removed = processRemoval(update_item,cataloglist,installinfo)
     return True
     
     
