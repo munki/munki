@@ -452,13 +452,16 @@ def installAppleUpdates():
     
     # did we find some Apple updates?        
     if appleupdatelist:
-        # once we start, we should remove /Library/Updates/index.plist
-        # because it will point to items we've already installed
-        os.unlink('/Library/Updates/index.plist')
-        # remove the appleupdatesfile 
-        # so Managed Software Update.app doesn't display these
-        # updates again
-        os.unlink(appleUpdatesFile)
+        try:
+            # once we start, we should remove /Library/Updates/index.plist
+            # because it will point to items we've already installed
+            os.unlink('/Library/Updates/index.plist')
+            # remove the appleupdatesfile 
+            # so Managed Software Update.app doesn't display these
+            # updates again
+            os.unlink(appleUpdatesFile)
+        except:
+            pass
         # now try to install the updates
         restartneeded = installer.installWithInfo("/Library/Updates", appleupdatelist, appleupdates=True)
     
