@@ -196,7 +196,7 @@ def main():
     options, arguments = p.parse_args()
     
     if options.version:
-        print munkicommon.version()
+        print munkicommon.get_version()
         exit(0)
     
     if options.auto:

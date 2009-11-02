@@ -38,7 +38,7 @@ from Foundation import NSDictionary, NSDate
 import munkistatus
 import FoundationPlist
 
-def version():
+def get_version():
     '''Returns version of munkitools'''
     return "0.4.5"
 
