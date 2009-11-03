@@ -9,26 +9,31 @@
 	<key>description</key>
 	<string></string>
 	<key>display_name</key>
-	<string>iPhoto Update</string>
+	<string>GarageBand Update</string>
 	<key>installed_size</key>
-	<integer>369426</integer>
+	<integer>250651</integer>
 	<key>installer_item_location</key>
-	<string>apps/iLife09/iPhoto_81.dmg</string>
+	<string>apps/iLife09/GarageBand51.dmg</string>
 	<key>installer_item_size</key>
-	<integer>164250</integer>
+	<integer>142629</integer>
 	<key>minimum_os_version</key>
 	<string>10.5.0</string>
 	<key>name</key>
-	<string>iLife09_iPhoto</string>
-	<key>modifies</key>
-	<string>iLife09_iPhoto-8.0.0.0.0</string>
+	<string>iLife09_GarageBandUpdate</string>
+	<key>update_for</key>
+	<array>
+	  <string>iLife09</string>
+	  <string>iLife09_GarageBand</string>
+	</array>
 	<key>receipts</key>
 	<array>
 		<dict>
+			<key>installed_size</key>
+			<integer>250651</integer>
 			<key>packageid</key>
-			<string>com.apple.pkg.iPhoto_81</string>
+			<string>com.apple.pkg.GarageBand51</string>
 			<key>version</key>
-			<string>8.1.1.1203730862.0</string>
+			<string>5.1.1.1203730862.0</string>
 		</dict>
 	</array>
 	<key>uninstall_method</key>
@@ -36,7 +41,7 @@
 	<key>uninstallable</key>
 	<true/>
 	<key>version</key>
-	<string>8.1.1.1203730862.0</string>
+	<string>5.1.0.0.0</string>
 </dict>
 </plist>
 
