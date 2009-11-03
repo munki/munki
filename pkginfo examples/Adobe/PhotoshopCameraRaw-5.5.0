@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>catalogs</key>
+	<array>
+		<string>testing</string>
+	</array>
+	<key>description</key>
+	<string>Updated digital camera RAW support for Photoshop CS4.</string>
+	<key>display_name</key>
+	<string>Photoshop Camera Raw</string>
+	<key>installed_size</key>
+	<integer>73140</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Camera_Raw_5_5_updater.dmg</string>
+	<key>installer_item_size</key>
+	<integer>47765</integer>
+	<key>installer_type</key>
+	<string>AdobeSetup</string>
+  <key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleShortVersionString</key>
+			<string>5.5</string>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Plug-Ins/CS4/File Formats/Camera Raw.plugin</string>
+			<key>type</key>
+			<string>bundle</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCameraRaw</string>
+	<key>update_for</key>
+	<array>
+	  <string>PhotoshopCS4</string>
+	  <string>AdobeCS4DesignStandard</string>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>version</key>
+	<string>5.5.0.0.0</string>
+</dict>
+</plist>
+

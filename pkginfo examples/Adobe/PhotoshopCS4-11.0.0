@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>catalogs</key>
+	<array>
+		<string>testing</string>
+	</array>
+	<key>installer_type</key>
+	<string>AdobeUberInstaller</string>
+	<key>description</key>
+	<string>Installs Adobe Photoshop CS4 and related components.</string>
+	<key>display_name</key>
+	<string>Adobe Photoshop CS4</string>
+	<key>installed_size</key>
+	<integer>1062420</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Install_Photoshop_CS4.dmg</string>
+	<key>installer_item_size</key>
+	<integer>1062420</integer>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.Photoshop</string>
+			<key>CFBundleName</key>
+			<string>Photoshop</string>
+			<key>CFBundleShortVersionString</key>
+			<string>11.0.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe Photoshop CS4/Adobe Photoshop CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCS4</string>
+	<key>uninstall_method</key>
+	<string>AdobeUberUninstaller</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstaller_item_location</key>
+	<string>apps/Adobe/Uninstall_Photoshop_CS4.dmg</string>
+	<key>uninstaller_item_size</key>
+	<integer>69186</integer>
+	<key>version</key>
+	<string>11.0.0.0.0</string>
+</dict>
+</plist>
