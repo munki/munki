@@ -163,25 +163,6 @@
 			<key>version</key>
 			<string>8.0.0.0.0</string>
 		</dict>
-		<dict>
-			<key>installed_size</key>
-			<integer>321</integer>
-			<key>packageid</key>
-			<string>com.apple.pkg.AppleIntermediateCodec</string>
-			<key>version</key>
-			<string>1.2.0.0.0</string>
-		</dict>
-		<dict>
-			<key>installed_size</key>
-			<integer>2041</integer>
-			<key>packageid</key>
-			<string>com.apple.pkg.iLifeMediaBrowser</string>
-			<key>version</key>
-			<string>2.0.0.0.0</string>
-		</dict>
-	</array>
-	<key>optional_receipts</key>
-	<array>
 	</array>
 	<key>uninstall_method</key>
 	<string>removepackages</string>

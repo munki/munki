@@ -7,34 +7,36 @@
 		<string>production</string>
 	</array>
 	<key>description</key>
-	<string>Update for iWeb '08.</string>
+	<string>Updates iMovie 7.</string>
 	<key>display_name</key>
-	<string>iWeb Update 2.0.3</string>
+	<string>iMovie Update</string>
 	<key>installed_size</key>
-	<integer>67988</integer>
+	<integer>97480</integer>
 	<key>installer_item_location</key>
-	<string>apps/iLife08/iWeb_203.dmg</string>
+	<string>apps/iLife08/iMovie_710.dmg</string>
 	<key>installer_item_size</key>
-	<integer>17600</integer>
+	<integer>45632</integer>
 	<key>minimum_os_version</key>
 	<string>10.4.0</string>
 	<key>name</key>
-	<string>iLife08_iWeb</string>
-	<key>modifies</key>
-	<string>iLife08_iWeb-2.0.0.0.0</string>
+	<string>iLife08_iMovieUpdate</string>
+	<key>update_for</key>
+	<array>
+	  <string>iLife08_iMovie</string>
+  </array>
 	<key>receipts</key>
 	<array>
 		<dict>
 			<key>filename</key>
-			<string>iWeb_203.pkg</string>
+			<string>iMovie_710.pkg</string>
 			<key>installed_size</key>
-			<integer>61170</integer>
+			<integer>92114</integer>
 			<key>name</key>
-			<string>iWeb_203</string>
+			<string>iMovie_710</string>
 			<key>packageid</key>
-			<string>com.apple.pkg.iWeb_203</string>
+			<string>com.apple.pkg.iMovie_710</string>
 			<key>version</key>
-			<string>2.0.3.0.0</string>
+			<string>7.1.0.0.0</string>
 		</dict>
 	</array>
 	<key>uninstall_method</key>
@@ -42,7 +44,7 @@
 	<key>uninstallable</key>
 	<true/>
 	<key>version</key>
-	<string>2.0.3.0.0</string>
+	<string>7.1.0.0.0</string>
 </dict>
 </plist>
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>catalogs</key>
@@ -9,32 +9,34 @@
 	<key>description</key>
 	<string></string>
 	<key>display_name</key>
-	<string>iMovie Update 7.1.4</string>
+	<string>iPhoto Update</string>
 	<key>installed_size</key>
-	<integer>90344</integer>
+	<integer>150972</integer>
 	<key>installer_item_location</key>
-	<string>apps/iLife08/iMovie_714.dmg</string>
+	<string>apps/iLife08/iPhoto_710.dmg</string>
 	<key>installer_item_size</key>
-	<integer>39008</integer>
+	<integer>60762</integer>
 	<key>minimum_os_version</key>
 	<string>10.4.0</string>
 	<key>name</key>
-	<string>iLife08_iMovie</string>
-	<key>modifies</key>
-	<string>iLife08_iMovie-7.1.0.0.0</string>
+	<string>iLife08_iPhotoUpdate</string>
+	<key>update_for</key>
+	<array>
+	  <string>iLife08_iPhoto</string>
+	</array>
 	<key>receipts</key>
 	<array>
 		<dict>
 			<key>filename</key>
-			<string>iMovie_714.pkg</string>
+			<string>iPhoto_710.pkg</string>
 			<key>installed_size</key>
-			<integer>83248</integer>
+			<integer>131766</integer>
 			<key>name</key>
-			<string>iMovie_714</string>
+			<string>iPhoto_710</string>
 			<key>packageid</key>
-			<string>com.apple.pkg.iMovie_714</string>
+			<string>com.apple.pkg.iPhoto_710</string>
 			<key>version</key>
-			<string>7.1.4.0.0</string>
+			<string>7.1.0.0.0</string>
 		</dict>
 	</array>
 	<key>uninstall_method</key>
@@ -42,7 +44,7 @@
 	<key>uninstallable</key>
 	<true/>
 	<key>version</key>
-	<string>7.1.4.0.0</string>
+	<string>7.1.0.0.0</string>
 </dict>
 </plist>
 
