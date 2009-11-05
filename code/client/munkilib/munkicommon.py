@@ -152,6 +152,30 @@ def display_debug2(msg):
         print msg.encode('UTF-8')
     if logginglevel > 2:
         log(msg)
+        
+        
+def reset_warnings():
+    warningsfile = os.path.join(os.path.dirname(logfile), "warnings.log")
+    if os.path.exists(warningsfile):
+        rotatelog(warningsfile)
+
+
+def display_warning(msg):
+    """
+    Prints warning msgs to stderr and the log
+    """
+    global warnings
+    warning = "WARNING: %s" % msg
+    print >>sys.stderr, warning.encode('UTF-8')
+    log(warning)
+    # append this warning to our warnings log
+    log(warning, "warnings.log")
+
+
+def reset_errors():
+    errorsfile = os.path.join(os.path.dirname(logfile), "errors.log")
+    if os.path.exists(errorsfile):
+        rotatelog(errorsfile)
 
 
 def display_error(msg):
@@ -159,20 +183,55 @@ def display_error(msg):
     Prints msg to stderr and the log
     """
     global errors
-    print >>sys.stderr, msg.encode('UTF-8')
     errmsg = "ERROR: %s" % msg
+    print >>sys.stderr, errmsg.encode('UTF-8')
     log(errmsg)
+    # append this error to our errors log
+    log(errmsg, "errors.log")
     # collect the errors for later reporting
     errors = errors + msg + '\n'
 
 
-def log(msg):
+def log(msg, logname=''):
+    if not logname:
+        # use our regular logfile
+        logpath = logfile
+    else:
+        logpath = os.path.join(os.path.dirname(logfile), logname)
     try:
-        f = open(logfile, mode='a', buffering=1)
+        f = open(logpath, mode='a', buffering=1)
         print >>f, time.ctime(), msg.encode('UTF-8')
         f.close()
     except:
         pass
+        
+        
+def rotatelog(logname=''):
+    if not logname:
+        # use our regular logfile
+        logpath = logfile
+    else:
+        logpath = os.path.join(os.path.dirname(logfile), logname)
+    if os.path.exists(logpath):
+        for x in range(3,-1,-1):
+            try:
+                os.unlink(logpath+"."+str(x+1))
+            except:
+                pass
+            try:
+                os.rename(logpath+"."+str(x), logpath+"."+str(x+1))
+            except:
+                pass
+        try:
+            os.rename(logpath, logpath+".0")
+        except:
+            pass
+
+
+def rotate_main_log():
+    if os.path.exists(logfile):
+        if os.path.getsize(logfile) > 1000000:
+            rotatelog(logfile)
 
 
 # misc functions
@@ -187,20 +246,7 @@ def stopRequested():
     return False
 
 
-def getconsoleuser():
-    # workaround no longer needed, but leaving this here for now...
-    #osvers = int(os.uname()[2].split('.')[0])
-    #if osvers > 9:
-    #    cmd = ['/usr/bin/who | /usr/bin/grep console']
-    #    p = subprocess.Popen(cmd, shell=True, bufsize=1, stdin=subprocess.PIPE, 
-    #                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #    (output, err) = p.communicate()
-    #    return output
-    #else:
-    #    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
-    #    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
-    #    return cfuser[0]
-    
+def getconsoleuser():    
     from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
@@ -311,8 +357,14 @@ def getManagedInstallsPrefs():
     # define default values
     prefs = {}
     prefs['ManagedInstallDir'] = "/Library/Managed Installs"
-    prefs['ManifestURL'] = "http://munki/repo/manifests/"
+    # deprecated; to be replaced with CatalogURL and PackageURL
     prefs['SoftwareRepoURL'] = "http://munki/repo"
+    # effective defaults for the following three; though if they
+    # are not in the prefs plist, they are calculated relative
+    # to the SoftwareRepoURL
+    #prefs['ManifestURL'] = "http://munki/repo/manifests/"
+    #prefs['CatalogURL'] = "http://munki/repo/catalogs/"
+    #prefs['PackageURL'] = "http://munki/repo/pkgs/"
     prefs['ClientIdentifier'] = ''
     prefs['LogFile'] = "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     prefs['LoggingLevel'] = 1
@@ -345,27 +397,6 @@ def getManagedInstallsPrefs():
                 
     return prefs
 
-
-# Added by bcw
-def UseClientCertificate():
-    prefs = getManagedInstallsPrefs()
-    return prefs['UseClientCertificate']
-
-
-def ManagedInstallDir():
-    prefs = getManagedInstallsPrefs()
-    return prefs['ManagedInstallDir']
-
-
-def ManifestURL():
-    prefs = getManagedInstallsPrefs()
-    return prefs['ManifestURL']
-
-
-def SoftwareRepoURL():
-    prefs = getManagedInstallsPrefs()
-    return prefs['SoftwareRepoURL']
-    
 
 def pref(prefname):
     return getManagedInstallsPrefs().get(prefname,'')
@@ -846,9 +877,11 @@ debug = False
 verbose = 1
 munkistatusoutput = False
 errors = ""
+warnings = ""
 tmpdir = tempfile.mkdtemp()
 logfile = pref('LogFile')
 logginglevel = pref('LoggingLevel')
+
 
 
 def main():

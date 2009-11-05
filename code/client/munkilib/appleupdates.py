@@ -127,8 +127,7 @@ def checkForSoftwareUpdates():
             retcode = 0
         else:
             # there was an error
-            print >>sys.stderr, "softwareupdate error: %s" % retcode
-            munkicommon.log("softwareupdate error: %s" % retcode)
+            munkicommon.display_error("softwareupdate error: %s" % retcode)
             
     if osvers == 9:
         # put mode back for Software Update.app
@@ -469,7 +468,7 @@ def installAppleUpdates():
     
 
 # define this here so we can access it in multiple functions
-appleUpdatesFile = '/Library/Managed Installs/AppleUpdates.plist'
+appleUpdatesFile = os.path.join(munkicommon.pref('ManagedInstallDir'),'AppleUpdates.plist')
 
 
 def main():

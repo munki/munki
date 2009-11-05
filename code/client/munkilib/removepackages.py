@@ -215,7 +215,7 @@ def ImportPackage(packagepath, c):
         # Every machine I've seen has a bogus BSD.pkg, so we won't print a warning for
         # that specific one. 
         if pkgname != "BSD.pkg":
-            munkicommon.display_error("%s is not a valid receipt. Skipping." % packagepath)
+            munkicommon.display_warning("%s is not a valid receipt. Skipping." % packagepath)
         return
 
     if not os.path.exists(bompath):
@@ -224,11 +224,11 @@ def ImportPackage(packagepath, c):
         bompath = os.path.join(packagepath, "Contents/Resources", 
                                 bomname)
         if not os.path.exists(bompath):
-            munkicommon.display_error("%s has no BOM file. Skipping." % packagepath)
+            munkicommon.display_warning("%s has no BOM file. Skipping." % packagepath)
             return
 
     if not os.path.exists(infopath):
-        munkicommon.display_error("%s has no Info.plist. Skipping." % packagepath)
+        munkicommon.display_warning("%s has no Info.plist. Skipping." % packagepath)
         return
 
     timestamp = os.stat(packagepath).st_mtime
@@ -809,7 +809,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     try:
                         os.rmdir(pathtoremove)
                     except Exception, err:
-                        msg = "ERROR: couldn't remove directory %s - %s" % (pathtoremove, err)
+                        msg = "Couldn't remove directory %s - %s" % (pathtoremove, err)
                         munkicommon.display_error(msg)
                         removalerrors = removalerrors + "\n" + msg
                 else:
@@ -818,10 +818,10 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     # remove it anyway - no use having a broken bundle hanging
                     # around
                     if (forcedeletebundles and isBundle(pathtoremove)):
-                        munkicommon.display_detail("WARNING: Removing non-empty bundle: %s" % pathtoremove)
+                        munkicommon.display_warning("Removing non-empty bundle: %s" % pathtoremove)
                         retcode = subprocess.call(['/bin/rm', '-r', pathtoremove])
                         if retcode:
-                            msg = "ERROR: couldn't remove bundle %s" % pathtoremove
+                            msg = "Couldn't remove bundle %s" % pathtoremove
                             munkicommon.display_error(msg)
                             removalerrors = removalerrors + "\n" + msg
                     else:
@@ -829,7 +829,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                         # bundles, we don't need to warn because it's going to be removed with the
                         # bundle. Otherwise, we should warn about non-empty directories.
                         if not insideBundle(pathtoremove) or not forcedeletebundles:
-                            msg = "WARNING: Did not remove %s because it is not empty." % pathtoremove
+                            msg = "Did not remove %s because it is not empty." % pathtoremove
                             munkicommon.display_error(msg)
                             removalerrors = removalerrors + "\n" + msg
                         
@@ -844,7 +844,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                 try:
                     os.remove(pathtoremove)
                 except Exception, err:
-                    msg = "ERROR: couldn't remove item %s: %s" % (pathtoremove, err)
+                    msg = "Couldn't remove item %s: %s" % (pathtoremove, err)
                     munkicommon.display_error(msg)
                     removalerrors = removalerrors + "\n" + msg
                     
@@ -907,7 +907,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
 
 
 # some globals
-packagedb = os.path.join(munkicommon.ManagedInstallDir(), "b.receiptdb")
+packagedb = os.path.join(munkicommon.pref('ManagedInstallDir'), "b.receiptdb")
 
 def main():
     # command-line options

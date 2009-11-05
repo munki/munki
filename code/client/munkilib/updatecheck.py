@@ -600,9 +600,12 @@ def download_installeritem(location):
     """
     Downloads a installer item.
     """
-    ManagedInstallDir = munkicommon.ManagedInstallDir()
-    sw_repo_baseurl = munkicommon.SoftwareRepoURL()
-    downloadbaseurl = sw_repo_baseurl + "/pkgs/"
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    downloadbaseurl = munkicommon.pref('PackageURL') or munkicommon.pref('SoftwareRepoURL') + "/pkgs/"
+    if not downloadbaseurl.endswith('/'):
+        downloadbaseurl = downloadbaseurl + "/"
+    munkicommon.display_debug2("Download base URL is: %s" % downloadbaseurl)
+    
     mycachedir = os.path.join(ManagedInstallDir, "Cache")
     
     # build a URL, quoting the the location to encode reserved characters
@@ -617,8 +620,7 @@ def download_installeritem(location):
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
     
-    dl_message = "Downloading %s from %s" % (pkgname, pkgurl)
-    munkicommon.log(dl_message)
+    munkicommon.log("Downloading %s from %s" % (pkgname, location))
     dl_message = "Downloading %s..." % pkgname
     (path, err) = getHTTPfileIfNewerAtomically(pkgurl, destinationpath, message=dl_message)
     
@@ -822,10 +824,10 @@ def enoughDiskSpace(manifestitem_pl, uninstalling=False):
         return True
     else:
         if uninstalling:
-            munkicommon.display_info("There is insufficient disk space to download the uninstaller for %s." % manifestitem_pl.get('name'))
+            munkicommon.display_warning("There is insufficient disk space to download the uninstaller for %s." % manifestitem_pl.get('name'))
         else:
-            munkicommon.display_info("There is insufficient disk space to download and install %s." % manifestitem_pl.get('name'))
-        munkicommon.display_info("    %sMB needed; %sMB available" % (diskspaceneeded, availablediskspace))
+            munkicommon.display_warning("There is insufficient disk space to download and install %s." % manifestitem_pl.get('name'))
+        munkicommon.display_warning("    %sMB needed; %sMB available" % (diskspaceneeded, availablediskspace))
         return False
 
 
@@ -964,7 +966,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
     pl = getItemDetail(manifestitem, cataloglist)
     
     if not pl:
-        munkicommon.display_info("Could not process item %s for install because could not get detail." % manifestitem)
+        munkicommon.display_warning("Could not process item %s for install: " % manifestitem)
+        munkicommon.display_warning("No pkginfo for %s found in catalogs: %s" % (manifestitem, ', '.join(cataloglist)))
         return False
                  
     # check to see if item is already in the installlist:
@@ -1014,7 +1017,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             dependenciesMet = False
     
     if not dependenciesMet:
-        munkicommon.display_info("Didn't attempt to install %s because could not resolve all dependencies." % manifestitemname)
+        munkicommon.display_warning("Didn't attempt to install %s because could not resolve all dependencies." % manifestitemname)
         return False
     
     iteminfo = {}
@@ -1063,7 +1066,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 installinfo['managed_installs'].append(iteminfo)
                 return False
         else:
-            munkicommon.display_info("Can't install %s because there's no download info for the installer item" % manifestitemname)
+            munkicommon.display_warning("Can't install %s because there's no download info for the installer item" % manifestitemname)
             iteminfo['installed'] = False
             iteminfo['note'] = "Download info missing"
             installinfo['managed_installs'].append(iteminfo)
@@ -1115,7 +1118,7 @@ def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
                 is_or_will_be_installed = processInstall(item, cataloglist, installinfo)
                 
     else:
-        munkicommon.display_error("WARNING: manifest %s has no 'catalogs'" % manifestpath)
+        munkicommon.display_warning("Manifest %s has no 'catalogs'" % manifestpath)
         
     return installinfo
         
@@ -1167,7 +1170,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         infoitems = getAllItemsWithName(manifestitemname,cataloglist)
         
     if not infoitems:
-        munkicommon.display_info("Could not get information for %s" % manifestitemname_withversion)
+        munkicommon.display_warning("Could not get information for %s" % manifestitemname_withversion)
         return False
     
     for item in infoitems:
@@ -1175,7 +1178,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         # if so, that's bad - it means it's scheduled to be installed
         # _and_ removed.  We'll warn, and do nothing with this item.
         if isItemInInstallInfo(item, installinfo['managed_installs']):
-            munkicommon.display_info("Will not attempt to remove %s because some version of it is in the list of managed installs, or it is required by another managed install." % manifestitemname_withversion)
+            munkicommon.display_warning("Will not attempt to remove %s because some version of it is in the list of managed installs, or it is required by another managed install." % manifestitemname_withversion)
             return False
     
     for item in infoitems:
@@ -1230,7 +1233,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     
     if not uninstall_item:
         # we didn't find an item that seems to match anything on disk.
-        munkicommon.display_info("Could not find uninstall info for %s." % manifestitemname_withversion)
+        munkicommon.display_warning("Could not find uninstall info for %s." % manifestitemname_withversion)
         return False
        
     # if we got this far, we have enough info to attempt an uninstall.
@@ -1245,7 +1248,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     # and we're supposed to remove SomePackage--1.0.1.0.0... what do we do?
     #
     dependentitemsremoved = True
-    ManagedInstallDir = munkicommon.ManagedInstallDir()
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
     
     # make a list of the name and aliases of the current uninstall_item
@@ -1291,7 +1294,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     dependentitemsremoved = False
     
     if not dependentitemsremoved:
-        munkicommon.display_info("Will not attempt to remove %s because could not remove all items dependent on it." % manifestitemname_withversion)
+        munkicommon.display_warning("Will not attempt to remove %s because could not remove all items dependent on it." % manifestitemname_withversion)
         return False
           
     # Finally! We can record the removal information!
@@ -1315,12 +1318,12 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     packagesToReallyRemove.append(pkg)
             else:
                 # This shouldn't happen
-                munkicommon.display_error("WARNING: pkg id %s missing from pkgdata" % pkg)
+                munkicommon.display_warning("pkg id %s missing from pkgdata" % pkg)
         if packagesToReallyRemove:
             iteminfo['packages'] = packagesToReallyRemove
         else:
             # no packages that belong to this item only.
-            munkicommon.display_error("WARNING: could not find unique packages to remove for %s" % iteminfo["name"])
+            munkicommon.display_warning("could not find unique packages to remove for %s" % iteminfo["name"])
             return False
             
     iteminfo["uninstall_method"] = uninstallmethod
@@ -1336,7 +1339,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             iteminfo['uninstaller_item'] = filename
             iteminfo['adobe_package_name'] = uninstall_item.get('adobe_package_name','')
         else:
-            munkicommon.display_error("WARNING: Failed to download the uninstaller for %s" % iteminfo["name"])
+            munkicommon.display_warning("Failed to download the uninstaller for %s" % iteminfo["name"])
             return False
     elif uninstallmethod == "remove_app":
         if uninstall_item.get('installs',None):
@@ -1388,7 +1391,7 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
                 is_or_will_be_removed = processRemoval(item, cataloglist, installinfo)
                     
     else:
-        munkicommon.display_error("WARNING: manifest %s has no 'catalogs'" % manifestpath)
+        munkicommon.display_warning("Manifest %s has no 'catalogs'" % manifestpath)
 
     return installinfo
 
@@ -1410,16 +1413,17 @@ def getCatalogs(cataloglist):
     Retreives the catalogs from the server and populates our catalogs dictionary
     """
     global catalog
-    managedinstallprefs = munkicommon.prefs()
-    sw_repo_baseurl = managedinstallprefs['SoftwareRepoURL']
-    catalog_dir = os.path.join(managedinstallprefs['ManagedInstallDir'], "catalogs")
+    catalogbaseurl = munkicommon.pref('CatalogURL') or  munkicommon.pref('SoftwareRepoURL') + "/catalogs/"
+    if not catalogbaseurl.endswith('?') and not catalogbaseurl.endswith('/'):
+        catalogbaseurl = catalogbaseurl + "/"
+    munkicommon.display_debug2("Catalog base URL is: %s" % catalogbaseurl)
+    catalog_dir = os.path.join(munkicommon.pref('ManagedInstallDir'), "catalogs")
     
     for catalogname in cataloglist:
         if not catalogname in catalog:
-            catalogurl = sw_repo_baseurl + "/catalogs/" + urllib2.quote(catalogname)
+            catalogurl = catalogbaseurl + urllib2.quote(catalogname)
             catalogpath = os.path.join(catalog_dir, catalogname)
-            message = "Getting catalog %s from %s..." % (catalogname, catalogurl)
-            munkicommon.log(message)
+            munkicommon.log("Getting catalog %s..." % catalogname)
             message = "Retreiving catalog '%s'..." % catalogname
             (newcatalog, err) = getHTTPfileIfNewerAtomically(catalogurl, catalogpath, message=message)
             if newcatalog:
@@ -1433,22 +1437,23 @@ def getmanifest(partialurl, suppress_errors=False):
     """
     Gets a manifest from the server
     """
-    managedinstallprefs = munkicommon.prefs()
-    sw_repo_baseurl = managedinstallprefs['SoftwareRepoURL']
-    manifest_dir = os.path.join(managedinstallprefs['ManagedInstallDir'], "manifests")
+    manifestbaseurl = munkicommon.pref('ManifestURL') or munkicommon.pref('SoftwareRepoURL') + "/manifests/"
+    if not manifestbaseurl.endswith('?') and not manifestbaseurl.endswith('/'):
+        manifestbaseurl = manifestbaseurl + "/"
+    munkicommon.display_debug2("Manifest base URL is: %s" % manifestbaseurl)
+    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'), "manifests")
         
-    if partialurl.startswith("http"):
+    if partialurl.startswith("http://"):
         # then it's really a request for the client's primary manifest
         manifesturl = partialurl
         manifestname = "client_manifest.plist"
     else:
         # request for nested manifest
+        munkicommon.log("Getting manifest %s..." % partialurl)
         manifestname = os.path.split(partialurl)[1]
-        manifesturl = sw_repo_baseurl + "/manifests/" + urllib2.quote(partialurl)
+        manifesturl = manifestbaseurl + urllib2.quote(partialurl)
         
     manifestpath = os.path.join(manifest_dir, manifestname)
-    message = "Getting manifest %s from %s..." % (manifestname, manifesturl)
-    munkicommon.log(message)
     message = "Retreiving list of software for this machine..."
     (newmanifest, err) = getHTTPfileIfNewerAtomically(manifesturl, manifestpath, message=message)
     if not newmanifest and not suppress_errors:
@@ -1464,35 +1469,32 @@ def getPrimaryManifest(alternate_id):
     """
     global errors
     manifest = ""
-    managedinstallprefs = munkicommon.prefs()
-    manifesturl = managedinstallprefs['ManifestURL']
-    clientidentifier = managedinstallprefs.get('ClientIdentifier','')
-
+    manifesturl = munkicommon.pref('ManifestURL') or munkicommon.pref('SoftwareRepoURL') + "/manifests/"
     if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
         manifesturl = manifesturl + "/"
-    if alternate_id:
-        # use id passed in at command-line
-        manifesturl = manifesturl + urllib2.quote(alternate_id)
-    elif clientidentifier:
-        # use client_identfier from /Library/Preferences/ManagedInstalls.plist
-        manifesturl = manifesturl + urllib2.quote(clientidentifier)
-    else:
+    clientidentifier = alternate_id or munkicommon.pref('ClientIdentifier')
+
+    munkicommon.display_debug2("Manifest base URL is: %s" % manifesturl)
+    if not clientidentifier:
         # no client identifier specified, so use the hostname
         hostname = os.uname()[1]
-        munkicommon.display_detail("No client id specified. Requesting %s..." % (manifesturl + hostname))
-        manifest = getmanifest(manifesturl + hostname,suppress_errors=True)
+        clientidentifier = hostname
+        munkicommon.display_detail("No client id specified. Requesting %s..." % clientidentifier)
+        manifest = getmanifest(manifesturl + clientidentifier, suppress_errors=True)
         if not manifest:
             # try the short hostname
-            munkicommon.display_detail("Request failed. Trying %s..." % (manifesturl + hostname.split('.')[0]))
-            manifest = getmanifest(manifesturl + hostname.split('.')[0], suppress_errors=True)
+            clientidentifier = hostname.split('.')[0]
+            munkicommon.display_detail("Request failed. Trying %s..." % clientidentifier)
+            manifest = getmanifest(manifesturl + clientidentifier, suppress_errors=True)
             if not manifest:
                 # last resort - try for the site_default manifest
-                munkicommon.display_detail("Request failed. Trying %s..." % (manifesturl + "site_default"))
-                manifesturl = manifesturl + "site_default"
-                
+                clientidentifier = "site_default"
+                munkicommon.display_detail("Request failed. Trying ..." % clientidentifier)
+                                
     if not manifest:
-        manifest = getmanifest(manifesturl)
+        manifest = getmanifest(manifesturl + urllib2.quote(clientidentifier))
     if manifest:
+        munkicommon.display_detail("Using manifest: %s" % clientidentifier)
         # clear out any errors we got while trying to find
         # the primary manifest
         errors = ""
@@ -1592,8 +1594,8 @@ def httpDownload(url, filename, headers={}, postData=None, reporthook=None, mess
     pemfile = 'munki.pem'
     
     # Grab the prefs for UseClientCertificate and construct a loc for the cert, bcw
-    ManagedInstallDir = munkicommon.ManagedInstallDir()
-    UseClientCertificate = munkicommon.UseClientCertificate()
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    UseClientCertificate = munkicommon.pref('UseClientCertificate')
     cert = os.path.join(ManagedInstallDir, 'certs', pemfile)
     
     reqObj = urllib2.Request(url, postData, headers)
@@ -1761,7 +1763,7 @@ def check(id=''):
     
     getMachineFacts()
     
-    ManagedInstallDir = munkicommon.ManagedInstallDir()
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
             
     if munkicommon.munkistatusoutput:
         munkistatus.activate()

@@ -157,7 +157,7 @@ def installall(dirpath, choicesXMLpath=None):
             munkicommon.display_info("Mounting disk image %s" % item)
             mountpoints = munkicommon.mountdmg(itempath)
             if mountpoints == []:
-                munkicommon.display_error("ERROR: No filesystems mounted from %s" % item)
+                munkicommon.display_error("No filesystems mounted from %s" % item)
                 return (retcode, restartflag)
             if munkicommon.stopRequested():
                 munkicommon.unmountdmg(mountpoints[0])
@@ -239,8 +239,9 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
             return restartflag
         if "installer_item" in item:
             itemindex = itemindex + 1
+            display_name = item.get('display_name') or item.get('name')
+            version_to_install = item.get('version_to_install','')
             if munkicommon.munkistatusoutput:
-                display_name = item.get('display_name') or item.get('name')
                 munkistatus.message("Installing %s (%s of %s)..." % (display_name, itemindex, len(installlist)))
                 munkistatus.detail("")
                 munkistatus.percent(-1)
@@ -258,12 +259,14 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                 if retcode == 8:
                     # Adobe Setup says restart needed
                     restartflag = True
+                    retcode = 0
             elif installer_type == "AdobeSetup":
                 # Adobe CS4 updater
                 retcode = adobeutils.runAdobeSetup(itempath)
                 if retcode == 8:
                     # Adobe Setup says restart needed
                     restartflag = True
+                    retcode = 0
             elif installer_type == "appdmg":
                 retcode = copyAppFromDMG(itempath)
             else:
@@ -277,7 +280,7 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                     munkicommon.display_status("Mounting disk image %s" % item["installer_item"])
                     mountpoints = munkicommon.mountdmg(itempath)
                     if mountpoints == []:
-                        munkicommon.display_error("ERROR: No filesystems mounted from %s" % item["installer_item"])
+                        munkicommon.display_error("No filesystems mounted from %s" % item["installer_item"])
                         return restartflag
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
@@ -300,7 +303,13 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                         (retcode, needsrestart) = installall(itempath, choicesXMLfile)
                         if needsrestart:
                             restartflag = True
-                        
+                            
+            # record install success/failure
+            if retcode == 0:
+                munkicommon.log("Install of %s-%s: SUCCESS" % (display_name, version_to_install), "Install.log")
+            else:
+                munkicommon.log("Install of %s-%s: FAILED with return code: %s" % (display_name, version_to_install, retcode), "Install.log")
+                
             # check to see if this installer item is needed by any additional items in installinfo
             # this might happen if there are mulitple things being installed with choicesXML files
             # applied to a metapackage
@@ -368,7 +377,7 @@ def processRemovals(removallist):
                                 
                     elif uninstallmethod[0] == "AdobeUberUninstaller":
                         if "uninstaller_item" in item:
-                            managedinstallbase = munkicommon.ManagedInstallDir()
+                            managedinstallbase = munkicommon.pref('ManagedInstallDir')
                             itempath = os.path.join(managedinstallbase, 'Cache', item["uninstaller_item"])
                             if os.path.exists(itempath):
                                 pkgname = item.get("adobe_package_name","")
@@ -439,6 +448,14 @@ def processRemovals(removallist):
            
                     else:
                         munkicommon.log("Uninstall of %s failed because there was no valid uninstall method." % name)
+                        retcode = -99
+                    
+                    # record removal success/failure
+                    if retcode == 0:
+                        munkicommon.log("Removal of %s: SUCCESS" % name, "Install.log")
+                    else:
+                        munkicommon.log("Removal of %s: FAILED with return code: %s" % (name, retcode), "Install.log")
+                    
                                     
     return restartFlag
 
@@ -446,7 +463,7 @@ def processRemovals(removallist):
 
 def run():
     
-    managedinstallbase = munkicommon.ManagedInstallDir()
+    managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
     
     needtorestart = removals_need_restart = installs_need_restart = False
