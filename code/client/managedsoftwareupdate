@@ -60,7 +60,7 @@ def createDirsIfNeeded(dirlist):
             try:
                 os.mkdir(directory)
             except:
-                print >>sys.stderr, "Could not create %s" % directory
+                print >>sys.stderr, "ERROR: Could not create %s" % directory
                 return False
 
     return True
@@ -76,7 +76,7 @@ def initMunkiDirs():
     
     if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir, cachedir, logdir]):
         # can't use logerror function since logdir might not exist yet
-        errormessage = "Could not create needed directories in %s" % ManagedInstallDir
+        errormessage = "ERROR: Could not create needed directories in %s" % ManagedInstallDir
         print >>sys.stderr, errormessage
         munkicommon.errors = errormessage
         return False
@@ -248,6 +248,11 @@ def main():
     if not initMunkiDirs():
         exit(-1)
         
+    # reset our errors and warnings files, rotate main log if needed
+    munkicommon.reset_errors()
+    munkicommon.reset_warnings()
+    munkicommon.rotate_main_log()
+        
     if not munkicommon.verbose == 0 : 
         print "Managed Software Update Tool"
         print "Copyright 2009 The Munki Project"
@@ -273,7 +278,7 @@ def main():
             # there were errors checking for updates.
             # let's check to see if there's a InstallInfo.plist with waiting updates from
             # an earlier successful run
-            installinfo = os.path.join(munkicommon.ManagedInstallDir(), 'InstallInfo.plist')
+            installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'), 'InstallInfo.plist')
             if os.path.exists(installinfo):
                 try:
                     pl = munkicommon.readPlist(installinfo)
