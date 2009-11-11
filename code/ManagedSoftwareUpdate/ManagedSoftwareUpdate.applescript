@@ -300,16 +300,23 @@ on activated theObject
 					set ManagedInstallPrefs to value of property list file ManagedInstallPrefsFile
 					
 					set lastCheckedDate to |LastCheckDate| of ManagedInstallPrefs
+					set lastCheckResult to |LastCheckResult| of ManagedInstallPrefs
 				on error
 					set lastCheckedDate to date "Thursday, January 1, 1970 12:00:00 AM"
+					set lastCheckResult to 0
 				end try
 			end tell
 			if now - lastCheckedDate < 10 then
 				-- managedsoftwareupdate --manual just ran, but there are no updates
 				-- because if there were updates, count of installitems > 0
 				show window "mainWindow"
-				display alert "Your software is up to date." message ¬
-					"There is no new software for your computer at this time." default button "Quit" as informational attached to window 1
+				if lastCheckResult is -1 then
+					display alert "Managed Software Update cannot check for updates right now." message ¬
+						"Managed Software Update cannot contact the update server at this time." default button "Quit" as informational attached to window 1
+				else
+					display alert "Your software is up to date." message ¬
+						"There is no new software for your computer at this time." default button "Quit" as informational attached to window 1
+				end if
 			else
 				-- no items to install, managedsoftwareupdate didn't finish checking recently
 				-- so we are either checking or need to check
