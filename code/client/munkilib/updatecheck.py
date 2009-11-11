@@ -40,25 +40,6 @@ import munkicommon
 import munkistatus
 import FoundationPlist
 
-def reporterrors():
-    # just a placeholder right now;
-    # this needs to be expanded to support error reporting
-    # via email and HTTP CGI.
-    # (and maybe moved to a library module so the installer
-    # can use it, too.)
-    
-    managedinstallprefs = munkicommon.prefs()
-    clientidentifier = managedinstallprefs.get('ClientIdentifier','')
-    #alternate_id = option_id
-    hostname = os.uname()[1]
-    
-    print "installcheck errors %s:" % datetime.datetime.now().ctime()
-    print "Hostname:           %s" % hostname
-    print "Client identifier:  %s" % clientidentifier
-    #print "Alternate ID:       %s" % alternate_id
-    print "-----------------------------------------"
-    print munkicommon.errors
-
 
 # global to hold our catalog DBs   
 catalog = {}
@@ -615,15 +596,13 @@ def download_installeritem(location):
     pkgname = os.path.basename(location)
     destinationpath = os.path.join(mycachedir, pkgname)
     
+    munkicommon.display_detail("Downloading %s from %s" % (pkgname, location))
     # bump up verboseness so we get download percentage done feedback.
     # this is kind of a hack...
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
-    
-    munkicommon.log("Downloading %s from %s" % (pkgname, location))
     dl_message = "Downloading %s..." % pkgname
     (path, err) = getHTTPfileIfNewerAtomically(pkgurl, destinationpath, message=dl_message)
-    
     # set verboseness back.
     munkicommon.verbose = oldverbose
     
@@ -632,8 +611,7 @@ def download_installeritem(location):
     else:
         munkicommon.display_error("Could not download %s from server." % pkgname)
         munkicommon.display_error(err)
-        return False
-        
+        return False        
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
@@ -1423,13 +1401,20 @@ def getCatalogs(cataloglist):
         if not catalogname in catalog:
             catalogurl = catalogbaseurl + urllib2.quote(catalogname)
             catalogpath = os.path.join(catalog_dir, catalogname)
-            munkicommon.log("Getting catalog %s..." % catalogname)
+            munkicommon.display_detail("Getting catalog %s..." % catalogname)
             message = "Retreiving catalog '%s'..." % catalogname
             (newcatalog, err) = getHTTPfileIfNewerAtomically(catalogurl, catalogpath, message=message)
             if newcatalog:
-                catalog[catalogname] = makeCatalogDB(FoundationPlist.readPlist(newcatalog))
+                if munkicommon.validPlist(newcatalog):
+                    catalog[catalogname] = makeCatalogDB(FoundationPlist.readPlist(newcatalog))
+                else:
+                    munkicommon.display_error("Retreived catalog %s is invalid." % catalogname)
+                    try:
+                        os.unlink(newcatalog)
+                    except:
+                        pass
             else:
-                munkicommon.display_error("Could not retreive catalog %s from server." % catalog)
+                munkicommon.display_error("Could not retrieve catalog %s from server." % catalogname)
                 munkicommon.display_error(err)
             
 
@@ -1449,25 +1434,34 @@ def getmanifest(partialurl, suppress_errors=False):
         manifestname = "client_manifest.plist"
     else:
         # request for nested manifest
-        munkicommon.log("Getting manifest %s..." % partialurl)
+        munkicommon.display_detail("Getting manifest %s..." % partialurl)
         manifestname = os.path.split(partialurl)[1]
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
         
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = "Retreiving list of software for this machine..."
     (newmanifest, err) = getHTTPfileIfNewerAtomically(manifesturl, manifestpath, message=message)
-    if not newmanifest and not suppress_errors:
-        munkicommon.display_error("Could not retreive manifest %s from the server." % partialurl)
-        munkicommon.display_error(err)
-        
-    return newmanifest
+    if not newmanifest: 
+        if not suppress_errors:
+            munkicommon.display_error("Could not retrieve manifest %s from the server." % partialurl)
+            munkicommon.display_error(err)
+        return None
+    
+    if munkicommon.validPlist(newmanifest):
+        return newmanifest
+    else:
+        munkicommon.display_error("manifest returned for %s is invalid." % partialurl)
+        try:
+            os.unlink(newmanifest)
+        except:
+            pass
+        return None
 
 
 def getPrimaryManifest(alternate_id):
     """
     Gets the client manifest from the server
     """
-    global errors
     manifest = ""
     manifesturl = munkicommon.pref('ManifestURL') or munkicommon.pref('SoftwareRepoURL') + "/manifests/"
     if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
@@ -1489,43 +1483,31 @@ def getPrimaryManifest(alternate_id):
             if not manifest:
                 # last resort - try for the site_default manifest
                 clientidentifier = "site_default"
-                munkicommon.display_detail("Request failed. Trying ..." % clientidentifier)
+                munkicommon.display_detail("Request failed. Trying %s..." % clientidentifier)
                                 
     if not manifest:
         manifest = getmanifest(manifesturl + urllib2.quote(clientidentifier))
     if manifest:
+        # record this info for later
+        munkicommon.report['ManifestName'] = clientidentifier
         munkicommon.display_detail("Using manifest: %s" % clientidentifier)
-        # clear out any errors we got while trying to find
-        # the primary manifest
-        errors = ""
         
     return manifest
     
-    
-def getInstallCount(installinfo):
-    count = 0
-    for item in installinfo.get('managed_installs',[]):
-        if 'installer_item' in item:
-            count +=1
-    return count
 
-
-def getRemovalCount(installinfo):
-    count = 0
-    for item in installinfo.get('removals',[]):
-        if 'installed' in item:
-            if item['installed']:
-                count +=1
-    return count
-
-
-def checkServer():
-    '''in progress'''
-    managedinstallprefs = munkicommon.prefs()
-    manifesturl = managedinstallprefs['ManifestURL']
+def checkServer(url):
+    '''A function we can call to check to see if the server is
+    available before we kick off a full run. This can be fooled by
+    ISPs that return results for non-existent web servers...'''
     # deconstruct URL so we can check availability
-    port = 80
-    (scheme, netloc, path, query, fragment) = urlparse.urlsplit(manifesturl)
+    (scheme, netloc, path, query, fragment) = urlparse.urlsplit(url)
+    if scheme == "http":
+        port = 80
+    elif scheme == "https":
+        port = 443
+    else:
+        return False
+    
     # get rid of any embedded username/password
     netlocparts = netloc.split("@")
     netloc = netlocparts[-1]
@@ -1533,15 +1515,27 @@ def checkServer():
     netlocparts = netloc.split(":")
     host = netlocparts[0]
     if len(netlocparts) == 2:
-        port = netlocparts[1]
-        
+        port = int(netlocparts[1])
     s = socket.socket()
-    #try:
-    s.connect((host, port))
-    s.close()
-    return True
-    #except:
-        #return False
+    # set timeout to 5 secs
+    s.settimeout(5.0)
+    try:
+        s.connect((host, port))
+        s.close()
+        return (0, 'OK')
+    except socket.error, err:
+        if type(err) == str:
+            return (-1, err)
+        else:
+            return err
+    except socket.timeout, err:
+        return (-1, err)
+    except Exception, err:
+        # common errors
+        # (50, 'Network is down')
+        # (8, 'nodename nor servname provided, or not known')
+        # (61, 'Connection refused')
+        return tuple(err)
         
 
 # HTTP download functions
@@ -1554,8 +1548,8 @@ def checkServer():
 #    one on the server.
 #
 #    Possible failure mode: if client's main catalog gets pointed 
-#    to a different, older, catalog, we'll fail to retreive it.
-#    Need to check content length as well, and if it changes, retreive
+#    to a different, older, catalog, we'll fail to retrieve it.
+#    Need to check content length as well, and if it changes, retrieve
 #    it anyway.
 #
 #    Should probably cleanup/unify 
@@ -1598,6 +1592,8 @@ def httpDownload(url, filename, headers={}, postData=None, reporthook=None, mess
     UseClientCertificate = munkicommon.pref('UseClientCertificate')
     cert = os.path.join(ManagedInstallDir, 'certs', pemfile)
     
+    # set default timeout so we don't hang if the server stops responding
+    socket.setdefaulttimeout(30)
     reqObj = urllib2.Request(url, postData, headers)
     
     if UseClientCertificate == True:
@@ -1660,7 +1656,7 @@ def getfilefromhttpurl(url,filepath, ifmodifiedsince=None, message=None):
     """
     gets a file from a url.
     If 'ifmodifiedsince' is specified, this header is set
-    and the file is not retreived if it hasn't changed on the server.
+    and the file is not retrieved if it hasn't changed on the server.
     Returns 0 if successful, or HTTP error code
     """
     def reporthook(block_count, block_size, file_size):
@@ -1732,7 +1728,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
         err = "SSL_CTX_use_certificate_chain_file error: Certificate Invalid or Missing"
         destinationpath = None
     else:
-        err = "Error code: %s retreiving %s" % (result, url)
+        err = "Error code: %s retrieving %s" % (result, url)
         destinationpath = None
         
     if os.path.exists(mytemppath):
@@ -1744,6 +1740,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
 def getMachineFacts():
     global machine
     
+    machine['hostname'] = os.uname()[1]
     machine['arch'] = os.uname()[4]
     cmd = ['/usr/bin/sw_vers', '-productVersion']
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
@@ -1755,13 +1752,12 @@ def getMachineFacts():
 
 # some globals
 machine = {}
-
 def check(id=''):
     '''Checks for available new or updated managed software, downloading installer items
     if needed. Returns 1 if there are available updates,  0 if there are no available updates, 
     and -1 if there were errors.'''
-    
     getMachineFacts()
+    munkicommon.report['MachineInfo'] = machine
     
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
             
@@ -1804,19 +1800,38 @@ def check(id=''):
         # this could happen if an item is downloaded on one
         # updatecheck run, but later removed from the manifest
         # before it is installed or removed
-        cache_list = []
-        for item in installinfo['managed_installs']:
-            if "installer_item" in item:
-                cache_list.append(item["installer_item"])
-        for item in installinfo['removals']:
-            if "uninstaller_item" in item:
-                cache_list.append(item["uninstaller_item"])        
+        #cache_list = []
+        #for item in installinfo['managed_installs']:
+        #    if "installer_item" in item:
+        #        cache_list.append(item["installer_item"])
+        #for item in installinfo['removals']:
+        #    if "uninstaller_item" in item:
+        #        cache_list.append(item["uninstaller_item"])
+        cache_list = [item["installer_item"] for item in installinfo['managed_installs'] if item.get("installer_item")]
+        cache_list.extend([item["uninstaller_item"] for item in installinfo['removals'] if item.get("uninstaller_item")])
         cachedir = os.path.join(ManagedInstallDir, "Cache")
         for item in os.listdir(cachedir):
             if item not in cache_list:
                 munkicommon.display_detail("Removing %s from cache" % item)
                 os.unlink(os.path.join(cachedir, item))
-
+                
+        # filter managed_installs to get items already installed
+        installed_items = [item for item in installinfo['managed_installs'] if item.get('installed')]
+        # filter managed_installs to get problem items: not installed, but no installer item
+        problem_items = [item for item in installinfo['managed_installs'] if item.get('installed') == False and not item.get('installer_item')]
+        # filter removals to get items already removed (or never installed)
+        removed_items = [item for item in installinfo['removals'] if item.get('installed') == False]
+                        
+        # filter managed_installs and removals lists so they have only items that need action
+        installinfo['managed_installs'] = [item for item in installinfo['managed_installs'] if item.get('installer_item')]
+        installinfo['removals'] = [item for item in installinfo['removals'] if item.get('installed')]
+        
+        munkicommon.report['ManagedInstalls'] = installed_items
+        munkicommon.report['ProblemInstalls'] = problem_items
+        munkicommon.report['RemovedItems'] = removed_items
+        munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
+        munkicommon.report['ItemsToRemove'] = installinfo['removals']
+                
         # write out install list so our installer
         # can use it to install things in the right order
         installinfochanged = True
@@ -1832,42 +1847,45 @@ def check(id=''):
     else:
         # couldn't get a primary manifest. Check to see if we have a valid InstallList from
         # an earlier run.
-        munkicommon.display_error("Could not retreive managed install primary manifest.")
+        munkicommon.display_error("Could not retrieve managed install primary manifest.")
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
         if os.path.exists(installinfopath):
             try:
                 installinfo = FoundationPlist.readPlist(installinfopath)
+                munkicommon.report['ItemsToInstall'] = installinfo.get('managed_installs',[])
+                munkicommon.report['ItemsToRemove'] = installinfo.get('removals',[])
             except:
                 installinfo = {}
                 
         
-    installcount = getInstallCount(installinfo)
-    removalcount = getRemovalCount(installinfo)
+    installcount = len(installinfo.get("managed_installs",[]))
+    removalcount = len(installinfo.get("removals",[]))
     
-    if installcount:
+    munkicommon.log("")
+    if installcount: 
         munkicommon.display_info("The following items will be installed or upgraded:")
-        for item in installinfo['managed_installs']:
-            if item.get('installer_item'):
-                munkicommon.display_info("    + %s-%s" % (item.get('name',''), item.get('version_to_install','')))
-                if item.get('description'):
-                   munkicommon.display_info("        %s" % item['description'])
-                if item.get('RestartAction') == 'RequireRestart':
-                    munkicommon.display_info("       *Restart required")
+    for item in installinfo['managed_installs']:
+        if item.get('installer_item'):
+            munkicommon.display_info("    + %s-%s" % (item.get('name',''), item.get('version_to_install','')))
+            if item.get('description'):
+               munkicommon.display_info("        %s" % item['description'])
+            if item.get('RestartAction') == 'RequireRestart':
+                munkicommon.display_info("       *Restart required")
+                munkicommon.report['RestartRequired'] = True
     if removalcount:
         munkicommon.display_info("The following items will be removed:")
-        for item in installinfo['removals']:
-            if item.get('installed'):
-                munkicommon.display_info("    - %s" % item.get('name'))
-                if item.get('RestartAction') == 'RequireRestart':
-                    munkicommon.display_info("       *Restart required")
-    
+    for item in installinfo['removals']:
+        if item.get('installed'):
+            munkicommon.display_info("    - %s" % item.get('name'))
+            if item.get('RestartAction') == 'RequireRestart':
+                munkicommon.display_info("       *Restart required")
+                munkicommon.report['RestartRequired'] = True
+   
     if installcount == 0 and removalcount == 0:
         munkicommon.display_info("No changes to managed software are available.")
         
+    munkicommon.savereport()  
     munkicommon.log("###    End managed software check    ###")
-    
-    if munkicommon.errors:
-        reporterrors()
     
     if installcount or removalcount:
         return 1

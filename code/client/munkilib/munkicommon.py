@@ -119,12 +119,13 @@ def display_detail(msg):
     These are usually logged only, but can be printed to
     stdout if verbose is set to 2 or higher
     """
-    log(msg)
     if munkistatusoutput:
         pass
     elif verbose > 1:
         print msg.encode('UTF-8')
         sys.stdout.flush()
+    if logginglevel > 0:
+        log(msg)
         
         
 def display_debug1(msg):
@@ -138,7 +139,7 @@ def display_debug1(msg):
         print msg.encode('UTF-8')
         sys.stdout.flush()
     if logginglevel > 1:
-        log(msg)
+        log("DEBUG1: %s" % msg)
 
 
 def display_debug2(msg):
@@ -151,7 +152,7 @@ def display_debug2(msg):
     elif verbose > 3:
         print msg.encode('UTF-8')
     if logginglevel > 2:
-        log(msg)
+        log("DEBUG2: %s" % msg)
         
         
 def reset_warnings():
@@ -170,6 +171,8 @@ def display_warning(msg):
     log(warning)
     # append this warning to our warnings log
     log(warning, "warnings.log")
+    # collect the warning for later reporting
+    report['Warnings'].append(msg)
 
 
 def reset_errors():
@@ -189,10 +192,12 @@ def display_error(msg):
     # append this error to our errors log
     log(errmsg, "errors.log")
     # collect the errors for later reporting
-    errors = errors + msg + '\n'
+    report['Errors'].append(msg)
 
 
 def log(msg, logname=''):
+    # date/time format string
+    formatstr = "%b %d %H:%M:%S"
     if not logname:
         # use our regular logfile
         logpath = logfile
@@ -200,7 +205,7 @@ def log(msg, logname=''):
         logpath = os.path.join(os.path.dirname(logfile), logname)
     try:
         f = open(logpath, mode='a', buffering=1)
-        print >>f, time.ctime(), msg.encode('UTF-8')
+        print >>f, time.strftime(formatstr), msg.encode('UTF-8')
         f.close()
     except:
         pass
@@ -234,7 +239,88 @@ def rotate_main_log():
             rotatelog(logfile)
 
 
+def printreportitem(label, value, indent=0):
+    indentspace = "    "
+    if type(value) == type(None):
+        print indentspace*indent, "%s: !NONE!" % label
+    elif type(value) == list or type(value).__name__ == 'NSCFArray':
+        if label:
+            print indentspace*indent, "%s:" % label
+        index = 0
+        for item in value:
+            index += 1
+            printreportitem(index, item, indent+1)
+    elif type(value) == dict or type(value).__name__ == 'NSCFDictionary':
+        if label:
+            print indentspace*indent, "%s:" % label
+        for subkey in value.keys():
+            printreportitem(subkey, value[subkey], indent+1)
+    else:
+        print indentspace*indent, "%s: %s" % (label, value)
+        
+            
+def printreport(reportdict):
+    """Prints the report dictionary in a pretty(?) way"""
+    for key in reportdict.keys():
+        printreportitem(key, reportdict[key])
+        
+
+def savereport():
+    FoundationPlist.writePlist(report, os.path.join(pref('ManagedInstallDir'), "ManagedInstallReport.plist"))
+    
+
+def archive_report():
+    reportfile = os.path.join(pref('ManagedInstallDir'), "ManagedInstallReport.plist")
+    if os.path.exists(reportfile):
+        modtime = os.stat(reportfile).st_mtime
+        formatstr = "%Y-%m-%d-%H%M%S"
+        archivename = "ManagedInstallReport-" + time.strftime(formatstr,time.localtime(modtime)) + ".plist"
+        archivepath = os.path.join(pref('ManagedInstallDir'), "Archives")
+        if not os.path.exists(archivepath):
+            try:
+                os.mkdir(archivepath)
+            except:
+                display_warning("Could not create report archive path.")
+        try:
+            os.rename(reportfile, os.path.join(archivepath, archivename))
+            # convert to binary format to compress
+            #cmd = ['/usr/bin/plutil', '-convert', 'binary1', os.path.join(archivepath, archivename)]
+            #p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+            #                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            #(out, err) = p.communicate()
+        except:
+            display_warning("Could not archive report.")
+        # now keep number of archived reports to 100 or fewer
+        p = subprocess.Popen(['/bin/ls', '-t1', archivepath], 
+            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, err) = p.communicate()
+        if output:
+            archiveitems = [item for item in output.splitlines() if item.startswith("ManagedInstallReport-")]
+            if len(archiveitems) > 100:
+                for item in archiveitems[100:]:
+                    itempath = os.path.join(archivepath, archiveitem)
+                    if os.path.isfile(itempath):
+                        try:
+                            os.unlink(itempath)
+                        except:
+                            display_warning("Could not remove archive item %s" % itempath)
+            
+        
+        
 # misc functions
+
+def validPlist(path):
+    '''Uses plutil to determine if path contains a valid plist.
+    Returns True or False.'''
+    cmd = ['/usr/bin/plutil', '-lint', '-s' , path]
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    if p.returncode == 0:
+        return True
+    else:
+        return False
+
 
 def stopRequested():
     """Allows user to cancel operations when 
@@ -689,8 +775,7 @@ def getInstalledPackageVersion(pkgid):
     Returns the version string of the installed pkg
     if it exists, or an empty string if it does not
     """
-    
-    
+        
     # First check (Leopard and later) package database
     try:
         p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid], bufsize=1, 
@@ -876,12 +961,12 @@ def cleanUpTmpDir():
 debug = False
 verbose = 1
 munkistatusoutput = False
-errors = ""
-warnings = ""
 tmpdir = tempfile.mkdtemp()
 logfile = pref('LogFile')
 logginglevel = pref('LoggingLevel')
-
+report = {}
+report['Errors'] = []
+report['Warnings'] = []
 
 
 def main():

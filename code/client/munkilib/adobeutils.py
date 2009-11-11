@@ -245,7 +245,7 @@ def runAdobeSetup(dmgpath):
                       
             retcode = p.poll()
             if retcode:
-                munkicommon.display_error("***Adobe Setup error: %s: %s***" % (retcode, adobeSetupError(retcode)))
+                munkicommon.display_error("Adobe Setup error: %s: %s" % (retcode, adobeSetupError(retcode)))
         else:
             munkicommon.display_error("%s doesn't appear to contain an Adobe CS4 update." % os.path.basename(dmgpath))
             retcode = -1
@@ -304,21 +304,21 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
                         payloadpath = loginfo[26:]
                         payloadfilename = os.path.basename(payloadpath)
                         payloadname = os.path.splitext(payloadfilename)[0]
-                        munkicommon.display_status("Installing payload: %s" % payloadname)
+                        munkicommon.display_status("Installing payload: %s (%s of %s)" % (payloadname, payload_completed_count, number_of_payloads))
                     except:
                         pass
                 # uninstalling
                 if loginfo.startswith("Physical payload uninstall result"):
                     # increment payload_completed_count
                     payload_completed_count = payload_completed_count + 1
-                    munkicommon.display_status("Removed Adobe payload %s" % payload_completed_count)
+                    munkicommon.display_status("Removed Adobe payload %s of %s" % (payload_completed_count, number_of_payloads))
                     if munkicommon.munkistatusoutput:
                         munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
             
             # ubertool completed  
             retcode = p.poll()
             if retcode:
-                munkicommon.display_error("***Adobe Setup error: %s: %s***" % (retcode, adobeSetupError(retcode)))
+                munkicommon.display_error("Adobe Setup error: %s: %s" % (retcode, adobeSetupError(retcode)))
         else:
             munkicommon.display_error("No %s found" % ubertool)
             retcode = -1

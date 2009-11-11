@@ -49,7 +49,7 @@ def selectSoftwareUpdateServer():
             oldsusserver = out.rstrip('\n')
             
         cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate',
-               'CatalogURL', munkilib.pref('SoftwareUpdateServerURL')]
+               'CatalogURL', munkicommon.pref('SoftwareUpdateServerURL')]
         retcode = subprocess.call(cmd)
 
 
@@ -203,7 +203,12 @@ def kickOffUpdatesAndRestart():
                 # need to restart loginwindow so it notices the change
                 cmd = [ '/usr/bin/killall', 'loginwindow' ]
                 retcode = subprocess.call(cmd)
-                # and now we can remove the AccessibilityAPIFile
+                # argh!  big problem.  killing loginwindow also kills us if we're
+                # running as a LaunchAgent in the LoginWindow context
+                # We'll get relaunched, but then we lose our place in the code
+                # and have to start over.
+                
+                # now we can remove the AccessibilityAPIFile
                 os.unlink(AccessibilityAPIFile)
                 
             # before we kick off the update, leave a trigger file so munki will install stuff
@@ -229,8 +234,7 @@ def kickOffUpdatesAndRestart():
             while True: 
                 line =  p.stdout.readline()
                 if not line and (p.poll() != None):
-                    break
-            
+                    break            
             return
         else:
             # unsupported OS version
@@ -446,11 +450,13 @@ def installAppleUpdates():
                 appleupdatelist = []
     if appleupdatelist == []:
         # we don't have any updates in appleUpdatesFile, 
-        # or appleUpdatesFile is out-of-date, so check  updatesindexfile
+        # or appleUpdatesFile is out-of-date, so check updatesindexfile
         appleupdatelist = getSoftwareUpdateInfo()
     
     # did we find some Apple updates?        
     if appleupdatelist:
+        munkicommon.report['AppleUpdateList'] = appleupdatelist
+        munkicommon.savereport()
         try:
             # once we start, we should remove /Library/Updates/index.plist
             # because it will point to items we've already installed
@@ -462,8 +468,10 @@ def installAppleUpdates():
         except:
             pass
         # now try to install the updates
-        restartneeded = installer.installWithInfo("/Library/Updates", appleupdatelist, appleupdates=True)
-    
+        restartneeded = installer.installWithInfo("/Library/Updates", appleupdatelist)
+        if restartneeded:
+            munkicommon.report['RestartRequired'] = True
+        munkicommon.savereport()
     return restartneeded
     
 

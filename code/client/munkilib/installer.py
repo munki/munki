@@ -32,6 +32,13 @@ import FoundationPlist
 from removepackages import removepackages
 
 
+# initialize our report fields
+# we do this here because appleupdates.installAppleUpdates()
+# calls installWithInfo()
+munkicommon.report['InstallResults'] = []
+munkicommon.report['RemovalResults'] = []
+
+
 def install(pkgpath, choicesXMLpath=None):
     """
     Uses the apple installer to install the package or metapackage
@@ -102,12 +109,15 @@ def install(pkgpath, choicesXMLpath=None):
                         print status.encode('UTF-8')
                         sys.stdout.flush()
             elif msg.startswith("%"):
+                percent = float(msg[1:])
+                if osvers < 10:
+                    # Leopard uses a float from 0 to 1
+                    percent = int(percent * 100)
                 if munkicommon.munkistatusoutput:
-                    percent = float(msg[1:])
-                    if osvers < 10:
-                        # Leopard uses a float from 0 to 1
-                        percent = int(percent * 100)
-                    munkistatus.percent(percent)
+                   munkistatus.percent(percent)
+                else:
+                    print "%s percent complete" % percent
+                    sys.stdout.flush()
             elif msg.startswith(" Error"):
                 if munkicommon.munkistatusoutput:
                     munkistatus.detail(msg)
@@ -218,16 +228,7 @@ def copyAppFromDMG(dmgpath):
         return -1
     
     
-def getInstallCount(installList):
-    count = 0
-    for item in installList:
-        if 'installed' in item:
-            if not item['installed']:
-                count +=1
-    return count
-
-    
-def installWithInfo(dirpath, installlist, appleupdates=False):
+def installWithInfo(dirpath, installlist):
     """
     Uses the installlist to install items in the
     correct order.
@@ -306,9 +307,13 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                             
             # record install success/failure
             if retcode == 0:
-                munkicommon.log("Install of %s-%s: SUCCESS" % (display_name, version_to_install), "Install.log")
+                success_msg = "Install of %s-%s: SUCCESS" % (display_name, version_to_install)
+                munkicommon.log(success_msg, "Install.log")
+                munkicommon.report['InstallResults'].append(success_msg)
             else:
-                munkicommon.log("Install of %s-%s: FAILED with return code: %s" % (display_name, version_to_install, retcode), "Install.log")
+                failure_msg = "Install of %s-%s: FAILED with return code: %s" % (display_name, version_to_install, retcode)
+                munkicommon.log(failure_msg, "Install.log")
+                munkicommon.report['InstallResults'].append(failure_msg)
                 
             # check to see if this installer item is needed by any additional items in installinfo
             # this might happen if there are mulitple things being installed with choicesXML files
@@ -331,15 +336,6 @@ def installWithInfo(dirpath, installlist, appleupdates=False):
                 retcode = subprocess.call(["/bin/rm", "-rf", itempath])
 
     return restartflag
-
-
-def getRemovalCount(removalList):
-    count = 0
-    for item in removalList:
-        if 'installed' in item:
-            if item['installed']:
-                count +=1
-    return count
 
 
 def processRemovals(removallist):
@@ -452,17 +448,19 @@ def processRemovals(removallist):
                     
                     # record removal success/failure
                     if retcode == 0:
-                        munkicommon.log("Removal of %s: SUCCESS" % name, "Install.log")
+                        success_msg = "Removal of %s: SUCCESS" % name
+                        munkicommon.log(success_msg, "Install.log")
+                        munkicommon.report['RemovalResults'].append(success_msg)
                     else:
-                        munkicommon.log("Removal of %s: FAILED with return code: %s" % (name, retcode), "Install.log")
+                        failure_msg = "Removal of %s: FAILED with return code: %s" % (name, retcode)
+                        munkicommon.log(failure_msg, "Install.log")
+                        munkicommon.report['RemovalResults'].append(failure_msg)
                     
                                     
     return restartFlag
 
 
-
 def run():
-    
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
     
@@ -484,6 +482,7 @@ def run():
         if "removals" in pl:
             # filter list to items that need to be removed
             removallist = [item for item in pl['removals'] if item.get('installed')]
+            munkicommon.report['ItemsToRemove'] = removallist
             if removallist:
                 if munkicommon.munkistatusoutput:
                     if len(removallist) == 1:
@@ -498,6 +497,7 @@ def run():
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
                 installlist = [item for item in pl['managed_installs'] if item.get('installed') == False]
+                munkicommon.report['ItemsToInstall'] = installlist
                 if installlist:
                     if munkicommon.munkistatusoutput:
                         if len(installlist) == 1:
@@ -513,6 +513,7 @@ def run():
         munkicommon.log("No %s found." % installinfo)
     
     munkicommon.log("###    End managed installer session    ###")
+    munkicommon.savereport()
     
     return (removals_need_restart or installs_need_restart)
     
