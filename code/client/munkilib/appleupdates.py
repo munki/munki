@@ -390,7 +390,14 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
             return writeAppleUpdatesFile()
     
     if forcecheck:
+        # typically because user initiated the check from
+        # Managed Software Update.app
         retcode = checkForSoftwareUpdates()
+    elif suppresscheck:
+        # typically because we're doing a logout install; if
+        # there are no waiting Apple Updates we shouldn't 
+        # trigger a check for them
+        return False
     else:
         # have we checked recently?  Don't want to check with
         # Apple Software Update server too frequently
