@@ -374,7 +374,7 @@ def writeAppleUpdatesFile():
         return False
 
 
-def appleSoftwareUpdatesAvailable(checking_manually):
+def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     '''Checks for available Apple Software Updates, trying not to hit the SUS
     more than needed'''
     # have we already processed the list of Apple Updates?
@@ -384,8 +384,12 @@ def appleSoftwareUpdatesAvailable(checking_manually):
         updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
         if appleUpdatesFile_modtime > updatesindexfile_modtime:
             return True
+        else:
+            # updatesindexfile is newer, use it to generate a new
+            # appleUpdatesFile
+            return writeAppleUpdatesFile()
     
-    if checking_manually:
+    if forcecheck:
         retcode = checkForSoftwareUpdates()
     else:
         # have we checked recently?  Don't want to check with

@@ -334,9 +334,13 @@ def main():
                 munkistatus.message("Checking for available Apple Software Updates...")
                 munkistatus.detail("")
                 munkistatus.percent(-1)
-            if appleupdates.appleSoftwareUpdatesAvailable(options.manualcheck):
+            if appleupdates.appleSoftwareUpdatesAvailable(forcecheck=options.manualcheck):
                 updatesavailable = True
     
+    if options.installonly and munkicommon.pref('InstallAppleSoftwareUpdates'):
+        if appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True):
+            updatesavailable = True
+   
     if options.manualcheck:
         # don't need MunkiStatus any more...
         munkistatus.quit()
