@@ -29,9 +29,9 @@ repo_root/
 		adobe/
 			AdobePhotoshopCS3.dmg
 			AdobePhotoshopCS4.dmg
-		disney/
-			DAPasswordChanger.dmg
-			DisneyAnimationSetupAssistant4.6.dmg
+		my_org/
+			MyOrgPasswordChanger.dmg
+			MyOrgSetupAssistant4.6.dmg
 		microsoft/
 			Office2008.dmg
 			Office2008SP1.dmg
@@ -48,9 +48,9 @@ repo_root/
 		apps/
 			Firefox-3.0.3
 			Firefox-3.1b1
-		disney/
-			DAPasswordChanger
-			DASetupAssistant
+		my_org/
+			MyOrgPasswordChanger
+			MyOrgSetupAssistant
 		microsoft/
 			Office2008-12.0.0
 			Office2008-12.1.0
@@ -78,7 +78,7 @@ Edit ManagedInstalls.plist (from the Preferences folder in this distribution):
 Change the ManagedInstallDir key to point to your desired directory. My eventual intention is /Library/Managed Installs, but for testing I've been using /Users/Shared/Managed Installs
 Change the ManifestURL in /Library/Preferences/ManagedInstalls.plist to http:/yourwebserver/repo_root/manifests/
 Change the ClientIdentifier to the name of the actual catalog file on the webserver (perhaps simply client_manifest.plist for now...)
-Change the SoftwareRepoURL to the url to repo_root.
+Change the SoftwareRepoURL to the HTTP url to your repo_root.
 Copy this file to /Library/Preferences/.
 
 Now, from the code/client directory:
@@ -101,6 +101,10 @@ http://webserver/repo/manifests/arbitrarystring
 2) If no --id option is passed, it looks for a ClientIdentifier value in /Library/Preferences/ManagedInstalls.plist and uses that.
 3) If no ClientIdentifier is available, it uses the fully-qualified hostname of the machine:
 http://webserver/repo/manifests/hostname.mycompany.com
+If that fails, it tries the short hostname:
+http://webserver/repo/manifests/hostname
+If that fails, it tries to retrieve a manifest named "site_default":
+http://webserver/repo/manifests/site_default
 Note that if the ManifestURL takes the form of a CGI invocation (http://webserver/cgi-bin/getmanifest?), the final URLs look like
 http://webserver/cgi-bin/getmanifest?arbitrarystring
 The CGI approach will open the possibility for pattern matching and more logic in the client-to-catalog mapping...
@@ -116,7 +120,7 @@ Unless the --auto option is passed, after checking for and downloading updates, 
 
 Tool: Managed Software Update.app
 This app will be used to notify the user that there are updates to be installed, and ask them to log out to have them installed, or notify them that they will be installed at next logout.
-
+Users can also run this app to trigger a check for available updates; if there are no available updates (in InstallInfo.plist) when it is launched, it will run a check and return the results.
 
 
 Tool: makepkginfo
