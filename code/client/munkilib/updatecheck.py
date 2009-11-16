@@ -1075,7 +1075,7 @@ def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
     if cataloglist:
         getCatalogs(cataloglist)
-    else:
+    elif parentcatalogs:
         cataloglist = parentcatalogs
     
     if cataloglist:
@@ -1348,7 +1348,7 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
     if cataloglist:
         getCatalogs(cataloglist)
-    else:
+    elif parentcatalogs:
         cataloglist = parentcatalogs
         
     if cataloglist:
@@ -1764,6 +1764,7 @@ def check(id=''):
     if munkicommon.munkistatusoutput:
         munkistatus.activate()
         munkistatus.message("Checking for available updates...")
+        munkistatus.detail("")
         munkistatus.percent("-1")
         
     munkicommon.log("### Beginning managed software check ###")

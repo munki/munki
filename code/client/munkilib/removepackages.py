@@ -78,7 +78,8 @@ import FoundationPlist
 #                      taint VARCHAR NOT NULL);
 #################################################################
 #################################################################
-# our package db schema -- a subset of Apple's
+# our package db schema -- a subset of Apple's, but sufficient
+#                          for our needs:
 #
 # CREATE TABLE paths (path_key INTEGER PRIMARY KEY AUTOINCREMENT,
 #                     path VARCHAR NOT NULL UNIQUE )
@@ -942,6 +943,7 @@ def main():
     if options.munkistatusoutput:
         pkgcount = len(pkgnames)
         munkistatus.message("Removing %s packages..." % pkgcount)
+        munkistatus.detail("")
         
     retcode = removepackages(pkgnames, forcedeletebundles=options.forcedeletebundles, listfiles=options.listfiles, 
                     rebuildpkgdb=options.rebuildpkgdb, noremovereceipts=options.noremovereceipts,

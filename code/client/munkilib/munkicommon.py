@@ -298,7 +298,7 @@ def archive_report():
             archiveitems = [item for item in output.splitlines() if item.startswith("ManagedInstallReport-")]
             if len(archiveitems) > 100:
                 for item in archiveitems[100:]:
-                    itempath = os.path.join(archivepath, archiveitem)
+                    itempath = os.path.join(archivepath, item)
                     if os.path.isfile(itempath):
                         try:
                             os.unlink(itempath)
