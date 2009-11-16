@@ -108,18 +108,22 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     
     if not cataloginfo:
         # ADOBE STUFF
-        # maybe this is an Adobe update DMG
+        # maybe this is an Adobe update DMG or CS3 installer
         # look for Adobe Setup.app
         setuppath = adobeutils.findSetupApp(mountpoints[0])
         if setuppath:
-            cataloginfo = adobeutils.getAdobeUpdateInfo(mountpoints[0])
+            cataloginfo = adobeutils.getAdobeSetupInfo(mountpoints[0])
             if cataloginfo:
                 # add some more data
                 cataloginfo['name'] = cataloginfo['display_name'].replace(" ",'')
-                cataloginfo['description'] = "Adobe CS4 application update"
-                cataloginfo['uninstallable'] = False
                 cataloginfo['installer_type'] = "AdobeSetup"
-                cataloginfo['modifies'] = ["PleaseEditMe-1.0.0.0.0"]
+                if cataloginfo.get('AdobeSetupType') == "ProductInstall":
+                    cataloginfo['uninstallable'] = True
+                    cataloginfo['uninstall_method'] = "AdobeSetup"
+                else:
+                    cataloginfo['description'] = "Adobe updater"
+                    cataloginfo['uninstallable'] = False
+                    cataloginfo['modifies'] = ["PleaseEditMe-1.0.0.0.0"]
                 
     if not cataloginfo:
         # maybe this is an appdmg
@@ -248,7 +252,8 @@ def main():
                     level of the mounted dmg.\n \
                     If this flag is missing, the AdobeUber* files should be at the top level of the mounted dmg.')
     p.add_option('--uninstallerdmg', '-u',
-                    help='If installer item is a DMG containing an Adobe CS4 Deployment Toolkit installation,\n \
+                    help='If installer item is a DMG containing an Adobe CS4 Deployment Toolkit installation\n \
+                    package or Adobe CS3 deployment package,\n \
                     uninstallerdmg is a path to a disk image containing an AdobeUberUninstaller for this item.')
     
     options, arguments = p.parse_args()

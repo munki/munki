@@ -34,7 +34,7 @@ import munkistatus
 # dmg helper
 # we need this instead of the one in munkicommon because the Adobe stuff
 # needs the dmgs mounted under /Volumes.  We can merge this later.
-def mountdmg(dmgpath):
+def mountAdobeDmg(dmgpath):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
@@ -53,78 +53,111 @@ def mountdmg(dmgpath):
                 mountpoints.append(entity['mount-point'])
 
     return mountpoints
+
+
+def getPayloadInfo(dirpath):
+    payloadinfo = {}
+    # look for .proxy.xml file dir
+    if os.path.isdir(dirpath):
+        for item in os.listdir(dirpath):
+            if item.endswith('.proxy.xml'):
+                xmlpath = os.path.join(dirpath, item)
+                dom = minidom.parse(xmlpath)
+                payload_info = dom.getElementsByTagName("PayloadInfo")
+                if payload_info:
+                    installer_properties = payload_info[0].getElementsByTagName("InstallerProperties")
+                    if installer_properties:
+                        properties = installer_properties[0].getElementsByTagName("Property")
+                        for prop in properties:
+                            if 'name' in prop.attributes.keys():
+                                propname = prop.attributes['name'].value.encode('UTF-8')
+                                propvalue = ''
+                                for node in prop.childNodes:
+                                    propvalue += node.nodeValue
+                                if propname == 'ProductName':
+                                    payloadinfo['display_name'] = propvalue
+                                if propname == 'ProductVersion':
+                                    payloadinfo['version'] = munkicommon.padVersionString(propvalue,5)    
+                
+                    installmetadata = payload_info[0].getElementsByTagName("InstallDestinationMetadata")
+                    if installmetadata:
+                        totalsizes = installmetadata[0].getElementsByTagName("TotalSize")
+                        if totalsizes:
+                            installsize = ''
+                            for node in totalsizes[0].childNodes:
+                                installsize += node.nodeValue
+                            payloadinfo['installed_size'] = int(installsize)/1024
+    return payloadinfo
     
     
-def getAdobeUpdateInfo(installroot):
-    # given the root of mounted Adobe Updater DMG (not a full product install DMG),
-    # look for info about the update
+def getAdobeSetupInfo(installroot):
+    # given the root of mounted Adobe DMG,
+    # look for info about the installer or updater
     info = {}
-    # look for an extensions folder
+    payloads = []
+    
+    # look for a payloads folder
     for (path, dirs, files) in os.walk(installroot):
-        if path.endswith("/extensions"):
-            extensions = []
+        if path.endswith("/payloads"):
+            driverfolder = ''
+            setupxml = os.path.join(path, "setup.xml")
+            if os.path.exists(setupxml):
+                dom = minidom.parse(setupxml)
+                drivers =  dom.getElementsByTagName("Driver")
+                if drivers:
+                    driver = drivers[0]
+                    if 'folder' in driver.attributes.keys():
+                        driverfolder = driver.attributes['folder'].value.encode('UTF-8')
             for item in os.listdir(path):
-                #skip LanguagePacks
-                if item.find("LanguagePack") == -1:
-                    itempath = os.path.join(path, item)
-                    if os.path.isdir(itempath):
-                        extensions.append(itempath)
-            
-            payloads = []
-            for extensionpath in extensions:
-                # look for .proxy.xml file in the extension dir
-                for item in os.listdir(extensionpath):
-                    if item.endswith('.proxy.xml'):
-                        payloadinfo = {}
-                        xmlpath = os.path.join(extensionpath, item)
-                        dom = minidom.parse(xmlpath)
-                        payload_info = dom.getElementsByTagName("PayloadInfo")
-                        if payload_info:
-                            installer_properties = payload_info[0].getElementsByTagName("InstallerProperties")
-                            if installer_properties:
-                                properties = installer_properties[0].getElementsByTagName("Property")
-                                for prop in properties:
-                                    if 'name' in prop.attributes.keys():
-                                        propname = prop.attributes['name'].value.encode('UTF-8')
-                                        propvalue = ''
-                                        for node in prop.childNodes:
-                                            propvalue += node.nodeValue
-                                        if propname == 'ProductName':
-                                            payloadinfo['display_name'] = propvalue
-                                        if propname == 'ProductVersion':
-                                            payloadinfo['version'] = munkicommon.padVersionString(propvalue,5)    
-                            
-                            installmetadata = payload_info[0].getElementsByTagName("InstallDestinationMetadata")
-                            if installmetadata:
-                                totalsizes = installmetadata[0].getElementsByTagName("TotalSize")
-                                if totalsizes:
-                                    installsize = ''
-                                    for node in totalsizes[0].childNodes:
-                                        installsize += node.nodeValue
-                                    payloadinfo['installed_size'] = int(installsize)/1024
-                            
+                payloadpath = os.path.join(path, item)
+                payloadinfo = getPayloadInfo(payloadpath)
                 if payloadinfo:
                     payloads.append(payloadinfo)
-                    
-            if payloads:
-                if len(payloads) == 1:
-                    info['display_name'] = payloads[0]['display_name']
-                    info['version'] = payloads[0]['version']
-                    info['installed_size'] = payloads[0]['installed_size']
-                else:
-                    info['payloads'] = payloads
-                    info['display_name'] = "ADMIN: choose from payloads"
-                    info['version'] = "ADMIN: choose from payloads"
-                    installed_size = 0
-                    for payload in payloads:
-                        installed_size = installed_size + payload.get('installed_size',0)
-                    info['installed_size'] = installed_size
+                    if driverfolder and item == driverfolder:
+                        info['display_name'] = payloadinfo['display_name']
+                        info['version'] = payloadinfo['version']
+                        info['AdobeSetupType'] = "ProductInstall"
+                        
+            # we found a payloads directory, so no need to keep walking the installroot
+            break
+
+    if not payloads:
+        # look for an extensions folder; almost certainly this is an Updater
+        for (path, dirs, files) in os.walk(installroot):
+            if path.endswith("/extensions"):
+                for item in os.listdir(path):
+                    #skip LanguagePacks
+                    if item.find("LanguagePack") == -1:
+                        itempath = os.path.join(path, item)
+                        payloadinfo = getPayloadInfo(itempath)
+                        if payloadinfo:
+                            payloads.append(payloadinfo)
+                        
+                # we found an extensions dir, so no need to keep walking the install root
+                break
+                   
+    if payloads:
+        if len(payloads) == 1:
+            info['display_name'] = payloads[0]['display_name']
+            info['version'] = payloads[0]['version']
+            info['installed_size'] = payloads[0]['installed_size']
+        else:
+            if not 'display_name' in info:
+                info['display_name'] = "ADMIN: choose from payloads"
+                info['payloads'] = payloads
+            if not 'version' in info:
+                info['version'] = "ADMIN please set me"
+            installed_size = 0
+            for payload in payloads:
+                installed_size = installed_size + payload.get('installed_size',0)
+            info['installed_size'] = installed_size
     return info
 
 
 def getAdobePackageInfo(installroot):
-    # gets the package name from the AdobeUberInstaller.xml file
-    info = {}
+    # gets the package name from the AdobeUberInstaller.xml file;
+    # other info from the payloads folder
+    info = getAdobeSetupInfo(installroot)
     info['description'] = ""
     installerxml = os.path.join(installroot, "AdobeUberInstaller.xml")
     if os.path.exists(installerxml):
@@ -146,8 +179,9 @@ def getAdobePackageInfo(installroot):
             else:
                 info['description'] = ""
             return info
-    
-    info['display_name'] = os.path.basename(installroot)      
+            
+    if not info.get('display_name'):
+        info['display_name'] = os.path.basename(installroot)      
     return info
     
 
@@ -223,7 +257,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
     '''An abstraction of the tasks for running Adobe Setup,
     AdobeUberInstaller ot AdobeUberUninstaller'''
     if not number_of_payloads:
-        # indeterminate progress bard
+        # indeterminate progress bar
         munkistatus.percent(-1)
     payload_completed_count = 0
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
@@ -268,7 +302,7 @@ def runAdobeSetup(dmgpath, uninstalling=False):
     # runs the Adobe setup tool in silent mode from
     # an Adobe update DMG or an Adobe CS3 install DMG
     munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
-    mountpoints = mountdmg(dmgpath)
+    mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         setup_path = findSetupApp(mountpoints[0])
         if setup_path:
@@ -316,7 +350,7 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     # pkgname is the name of a directory at the top level of the dmg
     # containing the AdobeUber tools and their XML files
     munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
-    mountpoints = mountdmg(dmgpath)
+    mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         installroot = mountpoints[0]
         if uninstalling:
