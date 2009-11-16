@@ -321,7 +321,7 @@ def runAdobeSetup(dmgpath, uninstalling=False):
                     return -1
             else:
                 if os.path.exists(installxml):
-                    deploymentfile = uninstallxml
+                    deploymentfile = installxml
             
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
