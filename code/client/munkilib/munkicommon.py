@@ -504,24 +504,34 @@ def getInstallerPkgInfo(filename):
     (out, err) = p.communicate()
 
     if out:
-        pl = FoundationPlist.readPlistFromString(out)
-        if 'Size' in pl:
-            installerinfo['installed_size'] = int(pl['Size'])
-        if 'Description' in pl:
-            installerinfo['description'] = pl['Description']
-        if 'Will Restart' in pl:
-            if pl['Will Restart'] == "YES":
-                installerinfo['RestartAction'] = "RequireRestart"
-        if "Title" in pl:
-            installerinfo['display_name'] = pl['Title']
+        # discard any lines at the beginning that aren't part of the plist
+        lines = out.splitlines()
+        pl = ''
+        for index in range(len(lines)):
+            try:
+                pl = FoundationPlist.readPlistFromString(lines[index:])
+            except:
+                pass
+            if pl:
+                break
+        if pl:            
+            if 'Size' in pl:
+                installerinfo['installed_size'] = int(pl['Size'])
+            if 'Description' in pl:
+                installerinfo['description'] = pl['Description']
+            if 'Will Restart' in pl:
+                if pl['Will Restart'] == "YES":
+                    installerinfo['RestartAction'] = "RequireRestart"
+            if "Title" in pl:
+                installerinfo['display_name'] = pl['Title']
     
-        p = subprocess.Popen(["/usr/sbin/installer", "-query", "RestartAction", "-pkg", filename], bufsize=1, 
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (out, err) = p.communicate()
-        if out:
-            restartAction = out.rstrip('\n')
-            if restartAction != 'None':
-                installerinfo['RestartAction'] = restartAction
+    p = subprocess.Popen(["/usr/sbin/installer", "-query", "RestartAction", "-pkg", filename], bufsize=1, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    if out:
+        restartAction = out.rstrip('\n')
+        if restartAction != 'None':
+            installerinfo['RestartAction'] = restartAction
                 
     return installerinfo
     
