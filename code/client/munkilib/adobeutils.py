@@ -329,7 +329,7 @@ def runAdobeSetup(dmgpath, uninstalling=False):
             munkicommon.display_status("Running Adobe Setup")
             adobe_setup = [ setup_path, '--mode=silent', '--skipProcessCheck=1' ]
             if deploymentfile:
-                adobe_setup.append('--deploymentFile=%s' % deploymentFile)
+                adobe_setup.append('--deploymentFile=%s' % deploymentfile)
                 
             retcode = runAdobeInstallTool(adobe_setup, number_of_payloads)
             
