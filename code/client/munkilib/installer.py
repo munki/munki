@@ -49,6 +49,10 @@ def install(pkgpath, choicesXMLpath=None):
     restartneeded = False
     installeroutput = []
     
+    if os.path.islink(pkgpath):
+        # resolve links before passing them to /usr/bin/installer
+        pkgpath = os.path.realpath(pkgpath)
+    
     cmd = ['/usr/sbin/installer', '-pkginfo', '-pkg', pkgpath]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -59,6 +63,7 @@ def install(pkgpath, choicesXMLpath=None):
     
     if munkicommon.munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
+        munkistatus.detail("")
         # clear indeterminate progress bar 
         munkistatus.percent(0)
         
@@ -208,14 +213,22 @@ def copyAppFromDMG(dmgpath):
             itempath = os.path.join(mountpoint,item)
             if item.endswith('.app'):
                 appfound = True
-                retcode = subprocess.call(["/bin/cp", "-pR", itempath, "/Applications/"])
+                destpath = os.path.join("/Applications", item)
+                if os.path.exists(destpath):
+                    retcode = subprocess.call(["/bin/rm", "-r", destpath])
+                    if retcode:
+                        munkicommon.display_error("Error removing existing %s" % destpath)
+                if retcode == 0:
+                    retcode = subprocess.call(["/bin/cp", "-pR", itempath, destpath])
+                    if retcode:
+                        munkicommon.display_error("Error copying %s to %s" % (itempath, destpath))
                 if retcode == 0:
                     # remove com.apple.quarantine attribute from copied app
-                    newpath = os.path.join("/Applications", item)
-                    cmd = ["/usr/bin/xattr", "-dr", "com.apple.quarantine", newpath]
+                    cmd = ["/usr/bin/xattr", "-d", "com.apple.quarantine", destpath]
                     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    (output, err) = p.communicate()
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    (out, err) = p.communicate()
+                    retcode = p.returncode
                     
         munkicommon.unmountdmg(mountpoint)
         if not appfound:
@@ -262,7 +275,7 @@ def installWithInfo(dirpath, installlist):
                     restartflag = True
                     retcode = 0
             elif installer_type == "AdobeSetup":
-                # Adobe CS4 updater
+                # Adobe updater or Adobe CS3 installer
                 retcode = adobeutils.runAdobeSetup(itempath)
                 if retcode == 8:
                     # Adobe Setup says restart needed
@@ -286,23 +299,31 @@ def installWithInfo(dirpath, installlist):
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag
-                    for mountpoint in mountpoints:
-                        # install all the pkgs and mpkgs at the root
-                        # of the mountpoint -- call us recursively!
-                        (retcode, needtorestart) = installall(mountpoint, choicesXMLfile)
-                        if needtorestart:
-                            restartflag = True
+                    needtorestart = False
+                    if item.get('pkg_path').endswith('.pkg') or item.get('pkg_path').endswith('.mpkg'):
+                        # admin has specified the relative path of the pkg on the DMG
+                        # this is useful if there is more than one pkg on the DMG, or
+                        # the actual pkg is not at the root of the DMG
+                        fullpkgpath = os.path.join(mountpoints[0],item['pkg_path'])
+                        if os.path.exists(fullpkgpath):
+                            (retcode, needtorestart) = install(fullpkgpath, choicesXMLfile)
+                    else:
+                        # no relative path to pkg on dmg, so just install all pkgs found 
+                        # at the root of the first mountpoint (hopefully there's only one)
+                        (retcode, needtorestart) = installall(mountpoints[0], choicesXMLfile)
+                    if needtorestart:
+                        restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
                 else:
                     itempath = munkicommon.findInstallerItem(itempath)
                     if (itempath.endswith(".pkg") or itempath.endswith(".mpkg")):
-                        (retcode, needsrestart) = install(itempath, choicesXMLfile)
-                        if needsrestart:
+                        (retcode, needtorestart) = install(itempath, choicesXMLfile)
+                        if needtorestart:
                             restartflag = True
                     elif os.path.isdir(itempath):
                         # directory of packages, like what we get from Software Update
-                        (retcode, needsrestart) = installall(itempath, choicesXMLfile)
-                        if needsrestart:
+                        (retcode, needtorestart) = installall(itempath, choicesXMLfile)
+                        if needtorestart:
                             restartflag = True
                             
             # record install success/failure
@@ -383,6 +404,17 @@ def processRemovals(removallist):
                             else:
                                 munkicommon.display_error("AdobeUberUninstaller package for %s was missing from the Cache." % name)
                                 
+                    elif uninstallmethod[0] == "AdobeSetup":
+                        if "uninstaller_item" in item:
+                            managedinstallbase = munkicommon.pref('ManagedInstallDir')
+                            itempath = os.path.join(managedinstallbase, 'Cache', item["uninstaller_item"])
+                            if os.path.exists(itempath):
+                                retcode = adobeutils.runAdobeSetup(itempath, uninstalling=True)
+                                if retcode:
+                                    munkicommon.display_error("Uninstall of %s failed." % name)
+                            else:
+                                munkicommon.display_error("Adobe Setup package for %s was missing from the Cache." % name)
+                                
                     elif uninstallmethod[0] == "remove_app":
                         remove_app_info = item.get('remove_app_info',None)
                         if remove_app_info:
@@ -398,6 +430,7 @@ def processRemovals(removallist):
                         # it's a script or program to uninstall
                         if munkicommon.munkistatusoutput:
                             munkistatus.message("Running uninstall script for %s..." % name)
+                            munkistatus.detail("")
                             # set indeterminate progress bar 
                             munkistatus.percent(-1)
                         
@@ -489,6 +522,7 @@ def run():
                         munkistatus.message("Removing 1 item...")
                     else:
                         munkistatus.message("Removing %i items..." % len(removallist))
+                    munkistatus.detail("")
                     # set indeterminate progress bar 
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
@@ -504,6 +538,7 @@ def run():
                             munkistatus.message("Installing 1 item...")
                         else:
                             munkistatus.message("Installing %i items..." % len(installlist))
+                        munkistatus.detail("")
                         # set indeterminate progress bar 
                         munkistatus.percent(-1)                        
                     munkicommon.log("Processing installs")
