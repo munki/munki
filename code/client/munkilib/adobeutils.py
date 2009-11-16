@@ -217,44 +217,97 @@ def findSetupApp(dirpath):
             if os.path.exists(setup_path):
                 return setup_path
     return ''
+    
+    
+def runAdobeInstallTool(cmd, number_of_payloads=0):
+    '''An abstraction of the tasks for running Adobe Setup,
+    AdobeUberInstaller ot AdobeUberUninstaller'''
+    if not number_of_payloads:
+        # indeterminate progress bard
+        munkistatus.percent(-1)
+    payload_completed_count = 0
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while (p.poll() == None): 
+        time.sleep(1)
+        loginfo = getAdobeInstallerLogInfo()
+        # installing
+        if loginfo.startswith("Mounting payload image at "):
+            # increment payload_completed_count
+            payload_completed_count = payload_completed_count + 1
+            if munkicommon.munkistatusoutput and number_of_payloads:
+                munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
+            try:
+                payloadpath = loginfo[26:]
+                payloadfilename = os.path.basename(payloadpath)
+                payloadname = os.path.splitext(payloadfilename)[0]
+                munkicommon.display_status("Installing payload: %s" % payloadname)
+            except:
+                munkicommon.display_status("Installing payload %s" % payload_completed_count)
+        # uninstalling
+        if loginfo.startswith("Physical payload uninstall result"):
+            # increment payload_completed_count
+            payload_completed_count = payload_completed_count + 1
+            if munkicommon.munkistatusoutput and number_of_payloads:
+                munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
+            munkicommon.display_status("Removed Adobe payload %s" % payload_completed_count)
+                
+    # run of tool completed  
+    retcode = p.poll()
+    if retcode != 0 and retcode != 8:
+        munkicommon.display_error("Adobe Setup error: %s: %s" % (retcode, adobeSetupError(retcode)))
+    else:
+        if munkicommon.munkistatusoutput:
+            munkistatus.percent(100)
+        munkicommon.display_status("Done.")
+        
+    return retcode
 
 
-def runAdobeSetup(dmgpath):
+def runAdobeSetup(dmgpath, uninstalling=False):
     # runs the Adobe setup tool in silent mode from
-    # an Adobe CS4 update DMG
+    # an Adobe update DMG or an Adobe CS3 install DMG
     munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
     mountpoints = mountdmg(dmgpath)
     if mountpoints:
         setup_path = findSetupApp(mountpoints[0])
         if setup_path:
-            munkicommon.display_status("Running Adobe Update Installer")
+            # look for install.xml or uninstall.xml at root
+            deploymentfile = None
+            installxml = os.path.join(mountpoints[0], "install.xml")
+            uninstallxml = os.path.join(mountpoints[0], "uninstall.xml")
+            if uninstalling:
+                if os.path.exists(uninstallxml):
+                    deploymentfile = uninstallxml
+                else:
+                    # we've been asked to uninstall, but found no uninstall.xml
+                    # so we need to bail
+                    munkicommon.unmountdmg(mountpoints[0])
+                    munkicommon.display_error("%s doesn't appear to contain uninstall info." % os.path.basename(dmgpath))
+                    return -1
+            else:
+                if os.path.exists(installxml):
+                    deploymentfile = uninstallxml
+            
+            # try to find and count the number of payloads 
+            # so we can give a rough progress indicator
+            number_of_payloads = countPayloads(mountpoints[0])
+            munkicommon.display_status("Running Adobe Setup")
             adobe_setup = [ setup_path, '--mode=silent', '--skipProcessCheck=1' ]
-            p = subprocess.Popen(adobe_setup, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            while (p.poll() == None): 
-                time.sleep(1)
-                loginfo = getAdobeInstallerLogInfo()
-                if loginfo.startswith("Mounting payload image at "):
-                    try:
-                        payloadpath = loginfo[26:]
-                        payloadfilename = os.path.basename(payloadpath)
-                        payloadname = os.path.splitext(payloadfilename)[0]
-                        munkicommon.display_status("Installing payload: %s" % payloadname)
-                    except:
-                        pass
-                      
-            retcode = p.poll()
-            if retcode:
-                munkicommon.display_error("Adobe Setup error: %s: %s" % (retcode, adobeSetupError(retcode)))
+            if deploymentfile:
+                adobe_setup.append('--deploymentFile=%s' % deploymentFile)
+                
+            retcode = runAdobeInstallTool(adobe_setup, number_of_payloads)
+            
         else:
-            munkicommon.display_error("%s doesn't appear to contain an Adobe CS4 update." % os.path.basename(dmgpath))
+            munkicommon.display_error("%s doesn't appear to contain Adobe Setup." % os.path.basename(dmgpath))
             retcode = -1
+            
         munkicommon.unmountdmg(mountpoints[0])
+        return retcode
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
-        retcode = -1
-    
-    return retcode
+        return -1
     
     
 def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
@@ -287,45 +340,13 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(installroot)
-            payload_completed_count = 0
             
-            p = subprocess.Popen([ubertool], shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            while (p.poll() == None): 
-                time.sleep(1)
-                loginfo = getAdobeInstallerLogInfo()
-                # installing
-                if loginfo.startswith("Mounting payload image at "):
-                    # increment payload_completed_count
-                    payload_completed_count = payload_completed_count + 1
-                    if munkicommon.munkistatusoutput:
-                        munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
-                    try:
-                        payloadpath = loginfo[26:]
-                        payloadfilename = os.path.basename(payloadpath)
-                        payloadname = os.path.splitext(payloadfilename)[0]
-                        munkicommon.display_status("Installing payload: %s (%s of %s)" % (payloadname, payload_completed_count, number_of_payloads))
-                    except:
-                        pass
-                # uninstalling
-                if loginfo.startswith("Physical payload uninstall result"):
-                    # increment payload_completed_count
-                    payload_completed_count = payload_completed_count + 1
-                    munkicommon.display_status("Removed Adobe payload %s of %s" % (payload_completed_count, number_of_payloads))
-                    if munkicommon.munkistatusoutput:
-                        munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
+            retcode = runAdobeInstallTool([ubertool], number_of_payloads)
             
-            # ubertool completed  
-            retcode = p.poll()
-            if retcode:
-                munkicommon.display_error("Adobe Setup error: %s: %s" % (retcode, adobeSetupError(retcode)))
         else:
             munkicommon.display_error("No %s found" % ubertool)
             retcode = -1
         
-        if munkicommon.munkistatusoutput:
-            munkistatus.percent(100)
-        munkicommon.display_status("Done.")
         munkicommon.unmountdmg(installroot)
         return retcode
     else:
@@ -338,7 +359,7 @@ def adobeSetupError(errorcode):
     # Reference: http://www.adobe.com/devnet/creativesuite/pdfs/DeployGuide.pdf
     errormessage = { 0 : "Application installed successfully",
                      1 : "Unable to parse command line",
-                     2 : "Unknoen user interface mode specified",
+                     2 : "Unknown user interface mode specified",
                      3 : "Unable to initialize ExtendScript",
                      4 : "User interface workflow failed",
                      5 : "Unable to initialize user interface workflow",
@@ -346,8 +367,8 @@ def adobeSetupError(errorcode):
                      7 : "Unable to complete the silent workflow",
                      8 : "Exit and restart",
                      9 : "Unsupported operating system version",
-                     10 : "Unsuppoerted file system",
-                     11 : "Another instance running",
+                     10 : "Unsupported file system",
+                     11 : "Another instance of Adobe Setup is running",
                      12 : "CAPS integrity error",
                      13 : "Media opitmization failed",
                      14 : "Failed due to insuffcient privileges",
