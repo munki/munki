@@ -52,8 +52,11 @@ def makeCatalogDB(catalogitems):
     itemindex = -1
     for item in catalogitems:
         itemindex = itemindex + 1
-        name = item['name']
-        vers = item['version']
+        name = item.get('name', "NO NAME")
+        vers = item.get('version', "NO VERSION")
+        
+        if name == "NO NAME" or version == "NO VERISON":
+            munkicommon.display_warning("Bad pkginfo: %s" % item)
         
         # build indexes for items by name and version
         if not name in name_table:
@@ -99,7 +102,9 @@ def addPackageids(catalogitems, pkgid_table):
     Adds packageids from each catalogitem to a dictionary
     '''
     for item in catalogitems:
-        name = item['name']
+        name = item.get('name')
+        if not name:
+            continue
         if item.get('receipts'):
             if not name in pkgid_table:
                 pkgid_table[name] = []
@@ -1199,6 +1204,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 # Adobe CS4 package
                 uninstall_item = item
                 break
+            elif uninstallmethod == 'AdobeSetup':
+                # Adobe CS3 packagemake
+                uninstall_item = item
+                break
             elif uninstallmethod == 'remove_app':
                 uninstall_item = item
                 break
@@ -1305,7 +1314,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             return False
             
     iteminfo["uninstall_method"] = uninstallmethod
-    if uninstallmethod == "AdobeUberUninstaller":
+    if uninstallmethod == "AdobeUberUninstaller" or uninstallmethod == "AdobeSetup":
         if 'uninstaller_item_location' in item:
             location = uninstall_item['uninstaller_item_location']
         else:
@@ -1808,8 +1817,8 @@ def check(id=''):
         #for item in installinfo['removals']:
         #    if "uninstaller_item" in item:
         #        cache_list.append(item["uninstaller_item"])
-        cache_list = [item["installer_item"] for item in installinfo['managed_installs'] if item.get("installer_item")]
-        cache_list.extend([item["uninstaller_item"] for item in installinfo['removals'] if item.get("uninstaller_item")])
+        cache_list = [item["installer_item"] for item in installinfo.get('managed_installs',[]) if item.get("installer_item")]
+        cache_list.extend([item["uninstaller_item"] for item in installinfo.get('removals',[]) if item.get("uninstaller_item")])
         cachedir = os.path.join(ManagedInstallDir, "Cache")
         for item in os.listdir(cachedir):
             if item not in cache_list:
@@ -1817,15 +1826,15 @@ def check(id=''):
                 os.unlink(os.path.join(cachedir, item))
                 
         # filter managed_installs to get items already installed
-        installed_items = [item for item in installinfo['managed_installs'] if item.get('installed')]
+        installed_items = [item for item in installinfo.get('managed_installs',[]) if item.get('installed')]
         # filter managed_installs to get problem items: not installed, but no installer item
-        problem_items = [item for item in installinfo['managed_installs'] if item.get('installed') == False and not item.get('installer_item')]
+        problem_items = [item for item in installinfo.get('managed_installs',[]) if item.get('installed') == False and not item.get('installer_item')]
         # filter removals to get items already removed (or never installed)
-        removed_items = [item for item in installinfo['removals'] if item.get('installed') == False]
+        removed_items = [item for item in installinfo.get('removals',[]) if item.get('installed') == False]
                         
         # filter managed_installs and removals lists so they have only items that need action
-        installinfo['managed_installs'] = [item for item in installinfo['managed_installs'] if item.get('installer_item')]
-        installinfo['removals'] = [item for item in installinfo['removals'] if item.get('installed')]
+        installinfo['managed_installs'] = [item for item in installinfo.get('managed_installs',[]) if item.get('installer_item')]
+        installinfo['removals'] = [item for item in installinfo.get('removals',[]) if item.get('installed')]
         
         munkicommon.report['ManagedInstalls'] = installed_items
         munkicommon.report['ProblemInstalls'] = problem_items

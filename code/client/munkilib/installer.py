@@ -53,11 +53,10 @@ def install(pkgpath, choicesXMLpath=None):
         # resolve links before passing them to /usr/bin/installer
         pkgpath = os.path.realpath(pkgpath)
     
-    cmd = ['/usr/sbin/installer', '-pkginfo', '-pkg', pkgpath]
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
-    packagename = output.decode('UTF-8').splitlines()[0]
+    packagename = ''
+    pkginfo = munkicommon.getInstallerPkgInfo(pkgpath)
+    if pkginfo:
+        packagename = pkginfo.get('display_name')
     if not packagename:
         packagename = os.path.basename(pkgpath)
     
@@ -300,7 +299,7 @@ def installWithInfo(dirpath, installlist):
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag
                     needtorestart = False
-                    if item.get('pkg_path').endswith('.pkg') or item.get('pkg_path').endswith('.mpkg'):
+                    if item.get('pkg_path','').endswith('.pkg') or item.get('pkg_path','').endswith('.mpkg'):
                         # admin has specified the relative path of the pkg on the DMG
                         # this is useful if there is more than one pkg on the DMG, or
                         # the actual pkg is not at the root of the DMG
