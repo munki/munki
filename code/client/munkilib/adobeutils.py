@@ -424,7 +424,8 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
 
 def adobeSetupError(errorcode):
     # returns text description for numeric error code
-    # Reference: http://www.adobe.com/devnet/creativesuite/pdfs/DeployGuide.pdf
+    # Reference:  
+    # http://www.adobe.com/devnet/creativesuite/pdfs/DeployGuide.pdf
     errormessage = { 0 : "Application installed successfully",
                      1 : "Unable to parse command line",
                      2 : "Unknown user interface mode specified",
@@ -441,7 +442,7 @@ def adobeSetupError(errorcode):
                      13 : "Media opitmization failed",
                      14 : "Failed due to insuffcient privileges",
                      9999 : "Catastrophic error",
-                     -1 : "The AdobeUberInstaller failed before launching the installer" }
+                     -1 : "AdobeUberInstaller failed before launching Setup" }
     return errormessage.get(errorcode, "Unknown error")
 
 
