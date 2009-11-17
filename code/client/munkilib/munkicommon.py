@@ -549,9 +549,12 @@ def getInstallerPkgInfo(filename):
             if "Title" in pl:
                 installerinfo['display_name'] = pl['Title']
     
-    p = subprocess.Popen(["/usr/sbin/installer", "-query", "RestartAction", 
-                          "-pkg", filename], bufsize=1, 
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(["/usr/sbin/installer", 
+                          "-query", "RestartAction", 
+                          "-pkg", filename], 
+                          bufsize=1, 
+                          stdout=subprocess.PIPE, 
+                          stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if out:
         restartAction = out.rstrip('\n')
@@ -703,7 +706,7 @@ def getOnePackageInfo(pkgpath):
             if "CFBundleIdentifier" in pl:
                 pkginfo['packageid'] = pl["CFBundleIdentifier"]
             elif "Bundle identifier" in pl:
-                # special case for JAMF Composer generated packages. WTF?
+                # special case for JAMF Composer generated packages.
                 pkginfo['packageid'] = pl["Bundle identifier"]
             else:
                 pkginfo['packageid'] = os.path.basename(pkgpath)
@@ -831,8 +834,9 @@ def getInstalledPackageVersion(pkgid):
         
     # First check (Leopard and later) package database
     try:
-        p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", 
-                                pkgid], bufsize=1, 
+        p = subprocess.Popen(["/usr/sbin/pkgutil", 
+                                "--pkg-info-plist", pkgid], 
+                                bufsize=1, 
                                 stdout=subprocess.PIPE, 
                                 stderr=subprocess.PIPE)
         (out, err) = p.communicate()
@@ -867,7 +871,7 @@ def getInstalledPackageVersion(pkgid):
                     foundvers = infoitem['version']
                     if pkgid == foundbundleid:
                         if version.LooseVersion(foundvers) > \
-                             version.LooseVersion(highestversion):
+                           version.LooseVersion(highestversion):
                             highestversion = foundvers
 
         if highestversion != "0":
@@ -999,7 +1003,8 @@ def getAvailableDiskSpace(volumepath="/"):
     # returns available diskspace in KBytes.
     p = subprocess.Popen(["/usr/sbin/diskutil", "info", "-plist", volumepath], 
                          bufsize=1,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                         stdout=subprocess.PIPE, 
+                         stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if out:
         try:
