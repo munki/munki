@@ -41,14 +41,18 @@ def selectSoftwareUpdateServer():
     # switch to our preferred Software Update Server if supplied
     global oldsuserver
     if munkicommon.pref('SoftwareUpdateServerURL'):
-        cmd = ['/usr/bin/defaults', 'read', '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
-        p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd = ['/usr/bin/defaults', 'read',
+               '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
+        p = subprocess.Popen(cmd, shell=False, bufsize=1,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, 
+                             stderr=subprocess.PIPE)
         (out, err) = p.communicate()
         if p.returncode == 0:
             oldsusserver = out.rstrip('\n')
             
-        cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate',
+        cmd = ['/usr/bin/defaults', 'write',
+               '/Library/Preferences/com.apple.SoftwareUpdate',
                'CatalogURL', munkicommon.pref('SoftwareUpdateServerURL')]
         retcode = subprocess.call(cmd)
 
@@ -57,23 +61,34 @@ def restoreSoftwareUpdateServer():
     # switch back to original Software Update server
     if munkicommon.pref('SoftwareUpdateServerURL'):
         if oldsuserver:
-            cmd = ['/usr/bin/defaults', 'write', '/Library/Preferences/com.apple.SoftwareUpdate',
-                    'CatalogURL', oldsuserver]
+            cmd = ['/usr/bin/defaults', 'write',
+                   '/Library/Preferences/com.apple.SoftwareUpdate',
+                   'CatalogURL', oldsuserver]
         else:
-            cmd = ['/usr/bin/defaults', 'delete', '/Library/Preferences/com.apple.SoftwareUpdate']
+            cmd = ['/usr/bin/defaults', 'delete',
+                   '/Library/Preferences/com.apple.SoftwareUpdate']
         retcode = subprocess.call(cmd)
         
         
 def setupSoftwareUpdateCheck():
     # set defaults for root user and current host
-    cmd = ['/usr/bin/defaults', '-currentHost', 'write', 'com.apple.SoftwareUpdate', 'AgreedToLicenseAgreement', '-bool', 'YES']
-    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['/usr/bin/defaults', '-currentHost', 'write',
+           'com.apple.SoftwareUpdate', 'AgreedToLicenseAgreement', 
+           '-bool', 'YES']
+    p = subprocess.Popen(cmd, bufsize=1, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
-    cmd = ['/usr/bin/defaults', '-currentHost', 'write', 'com.apple.SoftwareUpdate', 'AutomaticDownload', '-bool', 'YES']
-    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['/usr/bin/defaults', '-currentHost', 'write',
+           'com.apple.SoftwareUpdate', 'AutomaticDownload', 
+           '-bool', 'YES']
+    p = subprocess.Popen(cmd, bufsize=1, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
-    cmd = ['/usr/bin/defaults', '-currentHost', 'write', 'com.apple.SoftwareUpdate', 'LaunchAppInBackground', '-bool', 'YES']
-    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['/usr/bin/defaults', '-currentHost', 'write',
+           'com.apple.SoftwareUpdate', 'LaunchAppInBackground', 
+           '-bool', 'YES']
+    p = subprocess.Popen(cmd, bufsize=1, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     
     
@@ -85,7 +100,8 @@ def checkForSoftwareUpdates():
     if osvers == 9:
         setupSoftwareUpdateCheck()
         softwareupdateapp = "/System/Library/CoreServices/Software Update.app"
-        softwareupdatecheck = os.path.join(softwareupdateapp, "Contents/Resources/SoftwareUpdateCheck")
+        softwareupdatecheck = os.path.join(softwareupdateapp, 
+                                "Contents/Resources/SoftwareUpdateCheck")
         
         # record mode of Software Update.app
         rawmode = os.stat(softwareupdateapp).st_mode
@@ -122,7 +138,8 @@ def checkForSoftwareUpdates():
     retcode = p.poll()
     if retcode:
         if osvers == 9:
-            # there's always an error because we prevent the app from launching
+            # there's always an error on Leopard
+            # because we prevent the app from launching
             # so let's just ignore them
             retcode = 0
         else:
@@ -183,13 +200,15 @@ def kickOffUpdatesAndRestart():
     '''Attempts to jumpstart the install-and-restart behavior
     of Software Update. Currently is a very flawed implementation,
     so we're not currently using it.'''
+    swupdateapp = "/System/Library/CoreServices/Software Update.app"
+    swupdate = os.path.join(swupdateapp, "Contents/MacOS/Software Update")
     # get the OS version 
     osvers = int(os.uname()[2].split('.')[0])
     if munkicommon.getconsoleuser() == None:
         if osvers == 100:
-            PID = getPIDforProcessName('loginwindow.app/Contents/MacOS/loginwindow')
-            cmd = ['/bin/launchctl', 'bsexec', PID, 
-                   '/System/Library/CoreServices/Software Update.app/Contents/MacOS/Software Update', 
+            PID = getPIDforProcessName(
+                                 'loginwindow.app/Contents/MacOS/loginwindow')
+            cmd = ['/bin/launchctl', 'bsexec', PID, swupdate, 
                    '-RootInstallMode', 'YES']
             retcode = subprocess.call(cmd)
             return
@@ -203,7 +222,8 @@ def kickOffUpdatesAndRestart():
                 # need to restart loginwindow so it notices the change
                 cmd = [ '/usr/bin/killall', 'loginwindow' ]
                 retcode = subprocess.call(cmd)
-                # argh!  big problem.  killing loginwindow also kills us if we're
+                # argh!  big problem.  
+                # killing loginwindow also kills us if we're
                 # running as a LaunchAgent in the LoginWindow context
                 # We'll get relaunched, but then we lose our place in the code
                 # and have to start over.
@@ -211,7 +231,8 @@ def kickOffUpdatesAndRestart():
                 # now we can remove the AccessibilityAPIFile
                 os.unlink(AccessibilityAPIFile)
                 
-            # before we kick off the update, leave a trigger file so munki will install stuff
+            # before we kick off the update, 
+            # leave a trigger file so munki will install stuff
             # after the restart
             cmd = ['/usr/bin/touch', 
                    '/Users/Shared/.com.googlecode.munki.installatstartup']
@@ -219,17 +240,23 @@ def kickOffUpdatesAndRestart():
                 
             # Try to click the back button on the loginwindow
             cmd = ['/usr/bin/osascript', '-e',
-                   'tell application "System Events" to tell process "SecurityAgent" to click button "Back" of window 1']
+                   'tell application "System Events" ' + \
+                   'to tell process "SecurityAgent" ' + \
+                   'to click button "Back" of window 1']
             retcode = subprocess.call(cmd)
             # we don't care about the return code.
             # Next, try to click the Restart button
-            # this will fail if the Restart button has been disabled on the loginwindow.
+            # this will fail if the Restart button has been 
+            # disabled on the loginwindow.
             cmd = ['/usr/bin/osascript', '-e', 
-                   'tell application "System Events" to tell process "SecurityAgent" to click button "Restart" of window 1']
-            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            
-            
+                   'tell application "System Events" ' + \
+                   'to tell process "SecurityAgent" ' + \
+                   'to click button "Restart" of window 1']
+            p = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                 stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+                        
             # now wait for the osascript to complete
             while True: 
                 line =  p.stdout.readline()
@@ -258,7 +285,9 @@ def parseDist(filename):
             if string_elements:
                 strings = string_elements[0]
                 if 'language' in strings.attributes.keys():
-                    if strings.attributes['language'].value.encode('UTF-8') == "English":
+                    if strings.attributes['language'
+                                             ].value.encode(
+                                                        'UTF-8') == "English":
                         for node in strings.childNodes:
                             text += node.nodeValue
                             
@@ -340,12 +369,16 @@ def getSoftwareUpdateInfo():
                             iteminfo["name"] = title
                             iteminfo["description"] = description
                             if iteminfo["description"] == '':
-                                iteminfo["description"] = "Updated Apple software."
+                                iteminfo["description"] = \
+                                                "Updated Apple software."
                             iteminfo["version_to_install"] = vers
                             iteminfo['display_name'] = title
-                            p = subprocess.Popen(["/usr/sbin/installer", "-query", "RestartAction", 
-                                                  "-pkg", distfile], bufsize=1, 
-                                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            p = subprocess.Popen(["/usr/sbin/installer",
+                                                  "-query", "RestartAction", 
+                                                  "-pkg", distfile], 
+                                                  bufsize=1, 
+                                                  stdout=subprocess.PIPE, 
+                                                  stderr=subprocess.PIPE)
                             (out, err) = p.communicate()
                             if out:
                                 restartAction = out.rstrip('\n')
@@ -405,9 +438,13 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         now = dateutil.parser.parse(nowString)
         nextSUcheck = now
         try:
-            cmd = ['/usr/bin/defaults', 'read', '/Library/Preferences/com.apple.softwareupdate',  'LastSuccessfulDate']
-            p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cmd = ['/usr/bin/defaults', 'read', 
+                   '/Library/Preferences/com.apple.softwareupdate',    
+                   'LastSuccessfulDate']
+            p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
             (out, err) = p.communicate()
             lastSUcheckString = out.rstrip('\n')
             if lastSUcheckString:
@@ -432,9 +469,11 @@ def OLDinstallAppleUpdates():
             # remove the appleupdatesfile 
             # so we don't try to install again after restart
             os.unlink(appleUpdatesFile)
-            # now invoke the install-and-restart behavior from Apple's Software Update
+            # now invoke the install-and-restart behavior 
+            # from Apple's Software Update
             kickOffUpdatesAndRestart()
-            # we're done for now, since the Apple updater will restart the machine.
+            # we're done for now, since the Apple updater 
+            # will restart the machine.
             return True
             
     return False
@@ -479,7 +518,8 @@ def installAppleUpdates():
         except:
             pass
         # now try to install the updates
-        restartneeded = installer.installWithInfo("/Library/Updates", appleupdatelist)
+        restartneeded = installer.installWithInfo("/Library/Updates",
+                                                  appleupdatelist)
         if restartneeded:
             munkicommon.report['RestartRequired'] = True
         munkicommon.savereport()
