@@ -41,8 +41,10 @@ def mountAdobeDmg(dmgpath):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
-    p = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath, '-nobrowse', '-plist'],
-            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath,
+                          '-nobrowse', '-plist'],
+                          bufsize=1, 
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (plist, err) = p.communicate()
     if err:
         print >>sys.stderr, "Error %s mounting %s." % (err, dmgpath)
@@ -65,28 +67,39 @@ def getPayloadInfo(dirpath):
                 dom = minidom.parse(xmlpath)
                 payload_info = dom.getElementsByTagName("PayloadInfo")
                 if payload_info:
-                    installer_properties = payload_info[0].getElementsByTagName("InstallerProperties")
+                    installer_properties = \
+                      payload_info[0].getElementsByTagName(
+                        "InstallerProperties")
                     if installer_properties:
-                        properties = installer_properties[0].getElementsByTagName("Property")
+                        properties = \
+                          installer_properties[0].getElementsByTagName(
+                            "Property")
                         for prop in properties:
                             if 'name' in prop.attributes.keys():
-                                propname = prop.attributes['name'].value.encode('UTF-8')
+                                propname = \
+                                 prop.attributes['name'].value.encode('UTF-8')
                                 propvalue = ''
                                 for node in prop.childNodes:
                                     propvalue += node.nodeValue
                                 if propname == 'ProductName':
                                     payloadinfo['display_name'] = propvalue
                                 if propname == 'ProductVersion':
-                                    payloadinfo['version'] = munkicommon.padVersionString(propvalue,5)    
-                
-                    installmetadata = payload_info[0].getElementsByTagName("InstallDestinationMetadata")
+                                    payloadinfo['version'] = \
+                                     munkicommon.padVersionString(propvalue,5)    
+                                     
+                    installmetadata = \
+                        payload_info[0].getElementsByTagName(
+                                                 "InstallDestinationMetadata")
                     if installmetadata:
-                        totalsizes = installmetadata[0].getElementsByTagName("TotalSize")
+                        totalsizes = \
+                          installmetadata[0].getElementsByTagName("TotalSize")
                         if totalsizes:
                             installsize = ''
                             for node in totalsizes[0].childNodes:
                                 installsize += node.nodeValue
-                            payloadinfo['installed_size'] = int(installsize)/1024
+                            payloadinfo['installed_size'] = \
+                                                         int(installsize)/1024
+                                                         
     return payloadinfo
     
     
@@ -107,7 +120,8 @@ def getAdobeSetupInfo(installroot):
                 if drivers:
                     driver = drivers[0]
                     if 'folder' in driver.attributes.keys():
-                        driverfolder = driver.attributes['folder'].value.encode('UTF-8')
+                        driverfolder = \
+                             driver.attributes['folder'].value.encode('UTF-8')
             for item in os.listdir(path):
                 payloadpath = os.path.join(path, item)
                 payloadinfo = getPayloadInfo(payloadpath)
@@ -118,7 +132,8 @@ def getAdobeSetupInfo(installroot):
                         info['version'] = payloadinfo['version']
                         info['AdobeSetupType'] = "ProductInstall"
                         
-            # we found a payloads directory, so no need to keep walking the installroot
+            # we found a payloads directory, 
+            # so no need to keep walking the installroot
             break
 
     if not payloads:
@@ -133,7 +148,8 @@ def getAdobeSetupInfo(installroot):
                         if payloadinfo:
                             payloads.append(payloadinfo)
                         
-                # we found an extensions dir, so no need to keep walking the install root
+                # we found an extensions dir, 
+                # so no need to keep walking the install root
                 break
                    
     if payloads:
@@ -149,7 +165,8 @@ def getAdobeSetupInfo(installroot):
                 info['version'] = "ADMIN please set me"
             installed_size = 0
             for payload in payloads:
-                installed_size = installed_size + payload.get('installed_size',0)
+                installed_size = installed_size + \
+                                 payload.get('installed_size',0)
             info['installed_size'] = installed_size
     return info
 
@@ -165,7 +182,8 @@ def getAdobePackageInfo(installroot):
         dom = minidom.parse(installerxml)
         installinfo = dom.getElementsByTagName("InstallInfo")
         if installinfo:
-            packagedescriptions = installinfo[0].getElementsByTagName("PackageDescription")
+            packagedescriptions = \
+                installinfo[0].getElementsByTagName("PackageDescription")
             if packagedescriptions:
                 prop = packagedescriptions[0]
                 for node in prop.childNodes:
@@ -270,26 +288,32 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
             # increment payload_completed_count
             payload_completed_count = payload_completed_count + 1
             if munkicommon.munkistatusoutput and number_of_payloads:
-                munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
+                munkistatus.percent(getPercent(payload_completed_count,
+                                               number_of_payloads))
             try:
                 payloadpath = loginfo[26:]
                 payloadfilename = os.path.basename(payloadpath)
                 payloadname = os.path.splitext(payloadfilename)[0]
-                munkicommon.display_status("Installing payload: %s" % payloadname)
+                munkicommon.display_status("Installing payload: %s" %
+                                            payloadname)
             except:
-                munkicommon.display_status("Installing payload %s" % payload_completed_count)
+                munkicommon.display_status("Installing payload %s" %
+                                            payload_completed_count)
         # uninstalling
         if loginfo.startswith("Physical payload uninstall result"):
             # increment payload_completed_count
             payload_completed_count = payload_completed_count + 1
             if munkicommon.munkistatusoutput and number_of_payloads:
-                munkistatus.percent(getPercent(payload_completed_count, number_of_payloads))
-            munkicommon.display_status("Removed Adobe payload %s" % payload_completed_count)
+                munkistatus.percent(getPercent(payload_completed_count,
+                                               number_of_payloads))
+            munkicommon.display_status("Removed Adobe payload %s" %
+                                        payload_completed_count)
                 
     # run of tool completed  
     retcode = p.poll()
     if retcode != 0 and retcode != 8:
-        munkicommon.display_error("Adobe Setup error: %s: %s" % (retcode, adobeSetupError(retcode)))
+        munkicommon.display_error("Adobe Setup error: %s: %s" % 
+                                   (retcode, adobeSetupError(retcode)))
     else:
         if munkicommon.munkistatusoutput:
             munkistatus.percent(100)
@@ -301,7 +325,8 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
 def runAdobeSetup(dmgpath, uninstalling=False):
     # runs the Adobe setup tool in silent mode from
     # an Adobe update DMG or an Adobe CS3 install DMG
-    munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         setup_path = findSetupApp(mountpoints[0])
@@ -314,10 +339,13 @@ def runAdobeSetup(dmgpath, uninstalling=False):
                 if os.path.exists(uninstallxml):
                     deploymentfile = uninstallxml
                 else:
-                    # we've been asked to uninstall, but found no uninstall.xml
+                    # we've been asked to uninstall, 
+                    # but found no uninstall.xml
                     # so we need to bail
                     munkicommon.unmountdmg(mountpoints[0])
-                    munkicommon.display_error("%s doesn't appear to contain uninstall info." % os.path.basename(dmgpath))
+                    munkicommon.display_error(
+                              "%s doesn't appear to contain uninstall info." %
+                               os.path.basename(dmgpath))
                     return -1
             else:
                 if os.path.exists(installxml):
@@ -327,14 +355,17 @@ def runAdobeSetup(dmgpath, uninstalling=False):
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(mountpoints[0])
             munkicommon.display_status("Running Adobe Setup")
-            adobe_setup = [ setup_path, '--mode=silent', '--skipProcessCheck=1' ]
+            adobe_setup = [ setup_path, '--mode=silent',  
+                            '--skipProcessCheck=1' ]
             if deploymentfile:
                 adobe_setup.append('--deploymentFile=%s' % deploymentfile)
                 
             retcode = runAdobeInstallTool(adobe_setup, number_of_payloads)
             
         else:
-            munkicommon.display_error("%s doesn't appear to contain Adobe Setup." % os.path.basename(dmgpath))
+            munkicommon.display_error(
+                             "%s doesn't appear to contain Adobe Setup." % 
+                             os.path.basename(dmgpath))
             retcode = -1
             
         munkicommon.unmountdmg(mountpoints[0])
@@ -349,14 +380,17 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     # from a disk image and provides progress feedback
     # pkgname is the name of a directory at the top level of the dmg
     # containing the AdobeUber tools and their XML files
-    munkicommon.display_status("Mounting disk image %s" % os.path.basename(dmgpath))
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         installroot = mountpoints[0]
         if uninstalling:
-            ubertool = os.path.join(installroot, pkgname, "AdobeUberUninstaller")
+            ubertool = os.path.join(installroot, pkgname,
+                                    "AdobeUberUninstaller")
         else:
-            ubertool = os.path.join(installroot, pkgname, "AdobeUberInstaller")
+            ubertool = os.path.join(installroot, pkgname,
+                                    "AdobeUberInstaller")
             
         if os.path.exists(ubertool):
             info = getAdobePackageInfo(installroot)
