@@ -876,7 +876,7 @@ def getInstalledPackageVersion(pkgid):
 
         if highestversion != "0":
             display_debug2("\tThis machine has %s, version %s" % 
-                                          (pkgid, highestversion))
+                            (pkgid, highestversion))
             return highestversion
    
     
