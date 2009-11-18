@@ -66,7 +66,7 @@ def createDirsIfNeeded(dirlist):
         if not os.path.exists(directory):
             try:
                 os.mkdir(directory)
-            except OSError, IOError:
+            except (OSError, IOError):
                 print >>sys.stderr, "ERROR: Could not create %s" % directory
                 return False
 
