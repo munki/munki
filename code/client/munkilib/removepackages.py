@@ -299,7 +299,7 @@ def ImportPackage(packagepath, c):
 
                 t = (pkgkey, pathkey, uid, gid, perms)
                 c.execute('INSERT INTO pkgs_paths (pkg_key, path_key, uid, gid, perms) values (?, ?, ?, ?, ?)', t)
-        except:
+        except sqlite3.DatabaseError:
             pass
 
 
@@ -463,7 +463,7 @@ def initDatabase(packagedb,forcerebuild=False):
     if os.path.exists(packagedb):
         try:
             os.remove(packagedb)
-        except Exception, e:
+        except (OSError, IOError), e:
             munkicommon.display_error(
                 "Could not remove out-of-date receipt database.")
             return False
@@ -838,14 +838,14 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     ds_storepath = pathtoremove + "/.DS_Store"
                     try:
                         os.remove(ds_storepath)
-                    except:
+                    except (OSError, IOError):
                         pass
                     diritems = os.listdir(pathtoremove)
                 if diritems == []:
                     # directory is empty
                     try:
                         os.rmdir(pathtoremove)
-                    except Exception, err:
+                    except (OSError, IOError), err:
                         msg = "Couldn't remove directory %s - %s" % \
                                (pathtoremove, err)
                         munkicommon.display_error(msg)
@@ -891,7 +891,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                 retcode = ''
                 try:
                     os.remove(pathtoremove)
-                except Exception, err:
+                except (OSError, IOError), err:
                     msg = "Couldn't remove item %s: %s" % (pathtoremove, err)
                     munkicommon.display_error(msg)
                     removalerrors = removalerrors + "\n" + msg
