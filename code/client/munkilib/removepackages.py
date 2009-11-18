@@ -213,10 +213,11 @@ def ImportPackage(packagepath, c):
         return
 
     if not os.path.isdir(packagepath):
-        # Every machine I've seen has a bogus BSD.pkg, so we won't print a warning for
-        # that specific one. 
+        # Every machine I've seen has a bogus BSD.pkg, 
+        # so we won't print a warning for that specific one. 
         if pkgname != "BSD.pkg":
-            munkicommon.display_warning("%s is not a valid receipt. Skipping." % packagepath)
+            munkicommon.display_warning(
+                "%s is not a valid receipt. Skipping." % packagepath)
         return
 
     if not os.path.exists(bompath):
@@ -225,11 +226,13 @@ def ImportPackage(packagepath, c):
         bompath = os.path.join(packagepath, "Contents/Resources", 
                                 bomname)
         if not os.path.exists(bompath):
-            munkicommon.display_warning("%s has no BOM file. Skipping." % packagepath)
+            munkicommon.display_warning("%s has no BOM file. Skipping." % 
+                                        packagepath)
             return
 
     if not os.path.exists(infopath):
-        munkicommon.display_warning("%s has no Info.plist. Skipping." % packagepath)
+        munkicommon.display_warning("%s has no Info.plist. Skipping." %
+                                    packagepath)
         return
 
     timestamp = os.stat(packagepath).st_mtime
@@ -279,14 +282,16 @@ def ImportPackage(packagepath, c):
                 # special case for MS Office 2008 installers
                 if ppath == "tmp/com.microsoft.updater/office_location":
                     ppath = "Applications"
-
-                # prepend the ppath so the paths match the actual install locations
+                    
+                # prepend the ppath so the paths match the actual install 
+                # locations
                 path = path.lstrip("./")
                 if ppath:
                     path = ppath + "/" + path
-
+                    
                 t = (path, )
-                row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
+                row = c.execute('SELECT path_key from paths where path = ?',
+                                t).fetchone()
                 if not row:
                     c.execute('INSERT INTO paths (path) values (?)', t)
                     pathkey = c.lastrowid
@@ -308,7 +313,8 @@ def ImportBom(bompath, c):
     # If we completely trusted the accuracy of Apple's database, we wouldn't
     # need the bom files, but in my enviroment at least, the bom files are
     # a better indicator of what flat packages have actually been installed
-    # on the current machine. We still need to consult Apple's package database
+    # on the current machine. 
+    # We still need to consult Apple's package database
     # because the bom files are missing metadata about the package.
     
     applepkgdb = "/Library/Receipts/db/a.receiptdb"
@@ -363,7 +369,8 @@ def ImportBom(bompath, c):
                 path = ppath + "/" + path
 
             t = (path, )
-            row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
+            row = c.execute('SELECT path_key from paths where path = ?',
+                            t).fetchone()
             if not row:
                 c.execute('INSERT INTO paths (path) values (?)', t)
                 pathkey = c.lastrowid
@@ -433,7 +440,8 @@ def ImportFromPkgutil(pkgname, c):
                 path = ppath + "/" + path
 
             t = (path, )
-            row = c.execute('SELECT path_key from paths where path = ?', t).fetchone()
+            row = c.execute('SELECT path_key from paths where path = ?',
+                            t).fetchone()
             if not row:
                 c.execute('INSERT INTO paths (path) values (?)', t)
                 pathkey = c.lastrowid
@@ -450,16 +458,17 @@ def initDatabase(packagedb,forcerebuild=False):
     """
     if not shouldRebuildDB(packagedb) and not forcerebuild:
         return True
-
+        
     munkicommon.display_status('Gathering information on installed packages')
-
+    
     if os.path.exists(packagedb):
         try:
             os.remove(packagedb)
         except Exception, e:
-            munkicommon.display_error("Could not remove out-of-date receipt database.")
+            munkicommon.display_error(
+                "Could not remove out-of-date receipt database.")
             return False
-
+            
     pkgcount = 0
     receiptsdir = "/Library/Receipts"
     bomsdir = "/Library/Receipts/boms"
@@ -477,24 +486,25 @@ def initDatabase(packagedb,forcerebuild=False):
         #no boms dir in some versions of OS X
         pkglist = []
         cmd = ['/usr/sbin/pkgutil', '--pkgs']
-        p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
+        p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, 
+                             stderr=subprocess.STDOUT)
         while True: 
             line =  p.stdout.readline()
             if not line and (p.poll() != None):
                 break
             pkglist.append(line.rstrip('\n'))
             pkgcount += 1
-
+            
     conn = sqlite3.connect(packagedb)
     conn.text_factory = str
     c = conn.cursor()
     CreateTables(c)
-
+    
     currentpkgindex = 0
     local_display_percent_done(0, pkgcount)
-
+    
     if os.path.exists(receiptsdir):
         receiptlist = os.listdir(receiptsdir)
         for item in receiptlist:
@@ -503,7 +513,6 @@ def initDatabase(packagedb,forcerebuild=False):
                 conn.close()
                 #our package db isn't valid, so we should delete it
                 os.remove(packagedb)
-                
                 return False
                 
             if item.endswith(".pkg"):
@@ -512,7 +521,7 @@ def initDatabase(packagedb,forcerebuild=False):
                 ImportPackage(receiptpath, c)
                 currentpkgindex += 1
                 local_display_percent_done(currentpkgindex, pkgcount)
-
+                
     if os.path.exists(bomsdir):
         bomslist = os.listdir(bomsdir)
         for item in bomslist:
@@ -521,9 +530,8 @@ def initDatabase(packagedb,forcerebuild=False):
                 conn.close()
                 #our package db isn't valid, so we should delete it
                 os.remove(packagedb)
-                
                 return False
-            
+                
             if item.endswith(".bom"):
                 bompath = os.path.join(bomsdir, item)
                 munkicommon.display_detail("Importing %s..." % bompath)
@@ -546,7 +554,7 @@ def initDatabase(packagedb,forcerebuild=False):
     # in case we didn't quite get to 100% for some reason
     if currentpkgindex < pkgcount:
         local_display_percent_done(pkgcount, pkgcount)
-
+        
     # commit and close the db when we're done.
     conn.commit()
     c.close()
@@ -568,10 +576,12 @@ def getpkgkeys(pkgnames):
     pkgkeyslist = []
     for pkg in pkgnames:
         t = (pkg, )
-        pkg_keys = c.execute('select pkg_key from pkgs where pkgname = ?', t).fetchall()
+        pkg_keys = c.execute('select pkg_key from pkgs where pkgname = ?',
+                             t).fetchall()
         if not pkg_keys:
             # try pkgid
-            pkg_keys = c.execute('select pkg_key from pkgs where pkgid = ?', t).fetchall()
+            pkg_keys = c.execute('select pkg_key from pkgs where pkgid = ?',
+                                 t).fetchall()
         if not pkg_keys:
             munkicommon.display_error("%s not found in database." % pkg)
             pkgerror = True
@@ -599,18 +609,30 @@ def getpathstoremove(pkgkeylist):
     # set up some subqueries:
     # all the paths that are referred to by the selected packages:
     if len(pkgkeys) > 1:
-        in_selected_packages = "select distinct path_key from pkgs_paths where pkg_key in %s" % str(pkgkeys)
+        in_selected_packages = \
+          "select distinct path_key from pkgs_paths where pkg_key in %s" % \
+           str(pkgkeys)
     else:
-        in_selected_packages = "select distinct path_key from pkgs_paths where pkg_key = %s" % str(pkgkeys[0])
-    
-    # all the paths that are referred to by every package except the selected packages:
+        in_selected_packages = \
+          "select distinct path_key from pkgs_paths where pkg_key = %s" % \
+           str(pkgkeys[0])
+        
+    # all the paths that are referred to by every package 
+    # except the selected packages:
     if len(pkgkeys) > 1:
-        not_in_other_packages = "select distinct path_key from pkgs_paths where pkg_key not in %s" % str(pkgkeys)
+        not_in_other_packages = \
+        "select distinct path_key from pkgs_paths where pkg_key not in %s" % \
+         str(pkgkeys)
     else:
-        not_in_other_packages = "select distinct path_key from pkgs_paths where pkg_key != %s" % str(pkgkeys[0])
+        not_in_other_packages = \
+        "select distinct path_key from pkgs_paths where pkg_key != %s" % \
+         str(pkgkeys[0])
         
     # every path that is used by the selected packages and no other packages:
-    combined_query = "select path from paths where (path_key in (%s) and path_key not in (%s))" % (in_selected_packages, not_in_other_packages)
+    combined_query = \
+        "select path from paths where " + \
+        "(path_key in (%s) and path_key not in (%s))" % \
+                                (in_selected_packages, not_in_other_packages)
     
     munkicommon.display_status('Determining which filesystem items to remove')
     if munkicommon.munkistatusoutput:
@@ -652,7 +674,8 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     for pkgkey in pkgkeylist:
         pkgid = ''
         t = (pkgkey, )
-        row = c.execute('SELECT pkgname, pkgid from pkgs where pkg_key = ?', t).fetchone()
+        row = c.execute('SELECT pkgname, pkgid from pkgs where pkg_key = ?',
+                        t).fetchone()
         if row:
             pkgname = row[0]
             pkgid = row[1]
@@ -661,7 +684,8 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                 if pkgname.endswith('.pkg'):
                     receiptpath = os.path.join('/Library/Receipts', pkgname)
                 if pkgname.endswith('.bom'):
-                    receiptpath = os.path.join('/Library/Receipts/boms', pkgname)
+                    receiptpath = os.path.join('/Library/Receipts/boms',
+                                                pkgname)
                 if receiptpath and os.path.exists(receiptpath):
                     munkicommon.display_detail("Removing %s..." % receiptpath)
                     retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
@@ -673,28 +697,35 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
         c.execute('DELETE FROM pkgs where pkg_key = ?', t)
         
         # then remove pkg info from Apple's database unless option is passed
-        if not noupdateapplepkgdb:
-            if pkgid:
-                if osvers < 10:
-                    t = (pkgid, )
-                    row = ac.execute('SELECT pkg_key FROM pkgs where pkgid = ?', t).fetchone()
-                    if row:
-                        munkicommon.display_detail("Removing package data from Apple package database...")
-                        apple_pkg_key = row[0]
-                        t = (apple_pkg_key, )
-                        ac.execute('DELETE FROM pkgs where pkg_key = ?', t)
-                        ac.execute('DELETE FROM pkgs_paths where pkg_key = ?', t)
-                        ac.execute('DELETE FROM pkgs_groups where pkg_key = ?', t)
-                        ac.execute('DELETE FROM acls where pkg_key = ?', t)
-                        ac.execute('DELETE FROM taints where pkg_key = ?', t)
-                        ac.execute('DELETE FROM sha1s where pkg_key = ?', t)
-                        ac.execute('DELETE FROM oldpkgs where pkg_key = ?', t)
-                else:
-                    cmd = ['/usr/sbin/pkgutil', '--forget', pkgid]
-                    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    (output, err) = p.communicate()
-                    if munkicommon.verbose > 1:
-                        if output: print output.decode('UTF-8').rstrip('\n')
+        if not noupdateapplepkgdb and pkgid:
+            if osvers < 10:
+                # Leopard
+                t = (pkgid, )
+                row = ac.execute(
+                    'SELECT pkg_key FROM pkgs where pkgid = ?',
+                     t).fetchone()
+                if row:
+                    munkicommon.display_detail(
+                        "Removing package data from Apple package "+
+                        "database...")
+                    apple_pkg_key = row[0]
+                    t = (apple_pkg_key, )
+                    ac.execute('DELETE FROM pkgs where pkg_key = ?', t)
+                    ac.execute('DELETE FROM pkgs_paths where pkg_key = ?', t)
+                    ac.execute('DELETE FROM pkgs_groups where pkg_key = ?', t)
+                    ac.execute('DELETE FROM acls where pkg_key = ?', t)
+                    ac.execute('DELETE FROM taints where pkg_key = ?', t)
+                    ac.execute('DELETE FROM sha1s where pkg_key = ?', t)
+                    ac.execute('DELETE FROM oldpkgs where pkg_key = ?', t)
+            else:
+                # Snow Leopard or higher, must use pkgutil
+                cmd = ['/usr/sbin/pkgutil', '--forget', pkgid]
+                p = subprocess.Popen(cmd, bufsize=1, 
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+                (output, err) = p.communicate()
+                if munkicommon.verbose > 1:
+                    if output: print output.decode('UTF-8').rstrip('\n')
                     
     local_display_percent_done(2,4)
     
@@ -702,7 +733,8 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     # first, Apple's database if option is passed
     if not noupdateapplepkgdb:
         if osvers < 10:
-            munkicommon.display_detail("Removing unused paths from Apple package database...")
+            munkicommon.display_detail(
+                "Removing unused paths from Apple package database...")
             ac.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
             aconn.commit()
             ac.close()
@@ -711,7 +743,8 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     local_display_percent_done(3,4)
     
     # we do our database last so its modtime is later than the modtime for the Apple DB...
-    munkicommon.display_detail("Removing unused paths from internal package database...")
+    munkicommon.display_detail(
+        "Removing unused paths from internal package database...")
     c.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
     conn.commit()
     c.close()
@@ -773,6 +806,7 @@ def insideBundle(pathname):
     #if we get here, we didn't find a bundle path
     return False
 
+
 def removeFilesystemItems(removalpaths, forcedeletebundles):
     """
     Attempts to remove all the paths in the array removalpaths
@@ -791,10 +825,12 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
     for item in removalpaths:
         itemindex += 1
         pathtoremove = "/" + item
-        # use os.path.lexists so broken links return true so we can remove them
+        # use os.path.lexists so broken links return true 
+        # so we can remove them
         if os.path.lexists(pathtoremove):
             munkicommon.display_detail("Removing: " + pathtoremove)
-            if (os.path.isdir(pathtoremove) and not os.path.islink(pathtoremove)):
+            if (os.path.isdir(pathtoremove) and \
+               not os.path.islink(pathtoremove)):
                 diritems = os.listdir(pathtoremove)
                 if diritems == ['.DS_Store']:
                     # If there's only a .DS_Store file
@@ -810,7 +846,8 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     try:
                         os.rmdir(pathtoremove)
                     except Exception, err:
-                        msg = "Couldn't remove directory %s - %s" % (pathtoremove, err)
+                        msg = "Couldn't remove directory %s - %s" % \
+                               (pathtoremove, err)
                         munkicommon.display_error(msg)
                         removalerrors = removalerrors + "\n" + msg
                 else:
@@ -819,28 +856,38 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     # remove it anyway - no use having a broken bundle hanging
                     # around
                     if (forcedeletebundles and isBundle(pathtoremove)):
-                        munkicommon.display_warning("Removing non-empty bundle: %s" % pathtoremove)
-                        retcode = subprocess.call(['/bin/rm', '-r', pathtoremove])
+                        munkicommon.display_warning(
+                            "Removing non-empty bundle: %s" % pathtoremove)
+                        retcode = subprocess.call(['/bin/rm', '-r',
+                                                   pathtoremove])
                         if retcode:
                             msg = "Couldn't remove bundle %s" % pathtoremove
                             munkicommon.display_error(msg)
                             removalerrors = removalerrors + "\n" + msg
                     else:
-                        # if this path is inside a bundle, and we've been directed to force remove
-                        # bundles, we don't need to warn because it's going to be removed with the
-                        # bundle. Otherwise, we should warn about non-empty directories.
-                        if not insideBundle(pathtoremove) or not forcedeletebundles:
-                            msg = "Did not remove %s because it is not empty." % pathtoremove
+                        # if this path is inside a bundle, and we've been
+                        # directed to force remove bundles,
+                        # we don't need to warn because it's going to be 
+                        # removed with the bundle. 
+                        # Otherwise, we should warn about non-empty 
+                        # directories.
+                        if not insideBundle(pathtoremove) or \
+                           not forcedeletebundles:
+                            msg = \
+                              "Did not remove %s because it is not empty." % \
+                               pathtoremove
                             munkicommon.display_error(msg)
                             removalerrors = removalerrors + "\n" + msg
-                        
+                            
             else:
                 # not a directory, just unlink it
                 # I was using rm instead of Python because I don't trust
                 # handling of resource forks with Python
                 #retcode = subprocess.call(['/bin/rm', pathtoremove])
-                # but man that's slow. I think there's a lot of overhead with the
-                # subprocess call. I'm going to use os.remove. I hope I don't regret it.
+                # but man that's slow. 
+                # I think there's a lot of overhead with the
+                # subprocess call. I'm going to use os.remove. 
+                # I hope I don't regret it.
                 retcode = ''
                 try:
                     os.remove(pathtoremove)
@@ -852,36 +899,38 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
         local_display_percent_done(itemindex, itemcount)
         
     if removalerrors:
-        munkicommon.display_info("---------------------------------------------------")
-        munkicommon.display_info("There were problems removing some filesystem items.")
-        munkicommon.display_info("---------------------------------------------------")
+        munkicommon.display_info(
+                        "---------------------------------------------------")
+        munkicommon.display_info(
+                        "There were problems removing some filesystem items.")
+        munkicommon.display_info(
+                        "---------------------------------------------------")
         munkicommon.display_info(removalerrors)
         
         
-
-
 def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
                     rebuildpkgdb=False, noremovereceipts=False,
                     noupdateapplepkgdb=False):
     
     if pkgnames == []:
-        munkicommon.display_error("You must specify at least one package to remove!")
+        munkicommon.display_error(
+            "You must specify at least one package to remove!")
         return -2
-
+        
     if not initDatabase(packagedb,forcerebuild=rebuildpkgdb):
         munkicommon.display_error("Could not initialize receipt database.")
         return -3
-
+        
     pkgkeyslist = getpkgkeys(pkgnames)
     if len(pkgkeyslist) == 0:
         return -4
-    
+        
     if munkicommon.stopRequested():
         return -128
     removalpaths = getpathstoremove(pkgkeyslist)
     if munkicommon.stopRequested():
         return -128
-
+        
     if removalpaths:
         if listfiles:
             removalpaths.sort()
@@ -916,17 +965,21 @@ def main():
     p.add_option('--forcedeletebundles', '-f', action='store_true',
                     help='Delete bundles even if they aren\'t empty.')
     p.add_option('--listfiles', '-l', action='store_true',
-                    help='List the filesystem objects to be removed, but do not actually remove them.')
+                    help='List the filesystem objects to be removed, \
+                    but do not actually remove them.')
     p.add_option('--rebuildpkgdb', action='store_true',
                     help='Force a rebuild of the internal package database.')
     p.add_option('--noremovereceipts', action='store_true',
-                    help='Do not remove receipts and boms from /Library/Receipts and update internal package database.')
+                    help='Do not remove receipts and boms from \
+                    /Library/Receipts and update internal package database.')
     p.add_option('--noupdateapplepkgdb', action='store_true',
-                    help='Do not update Apple\'s package database. If --noremovereceipts is also given, this is implied')
+                    help='Do not update Apple\'s package database. \
+                    If --noremovereceipts is also given, this is implied')
     p.add_option('--munkistatusoutput', '-m', action='store_true',
                     help='Output is formatted for use with MunkiStatus.')
     p.add_option('--verbose', '-v', action='count', default=1,
-                    help='More verbose output. May be specified multiple times.')
+                    help='More verbose output. \
+                    May be specified multiple times.')
     
     # Get our options and our package names
     options, pkgnames = p.parse_args()
@@ -945,13 +998,14 @@ def main():
         munkistatus.message("Removing %s packages..." % pkgcount)
         munkistatus.detail("")
         
-    retcode = removepackages(pkgnames, forcedeletebundles=options.forcedeletebundles, listfiles=options.listfiles, 
-                    rebuildpkgdb=options.rebuildpkgdb, noremovereceipts=options.noremovereceipts,
-                    noupdateapplepkgdb=options.noupdateapplepkgdb)
-                    
+    retcode = removepackages(pkgnames,
+                             forcedeletebundles=options.forcedeletebundles,
+                             listfiles=options.listfiles,
+                             rebuildpkgdb=options.rebuildpkgdb,
+                             noremovereceipts=options.noremovereceipts,
+                             noupdateapplepkgdb=options.noupdateapplepkgdb)                    
     if options.munkistatusoutput:
         munkistatus.quit()
-        
     exit(retcode)
     
     
