@@ -142,12 +142,10 @@ def install(pkgpath, choicesXMLpath=None):
     retcode = p.poll()
     if retcode:
         munkicommon.display_status("Install of %s failed." % packagename)
-        munkicommon.display_error(                 
-                      "-------------------------------------------------")
+        munkicommon.display_error("-"*78)
         for line in installeroutput:
             munkicommon.display_error(line.rstrip("\n"))
-        munkicommon.display_error(
-                      "-------------------------------------------------")
+        munkicommon.display_error("-"*78)
         restartneeded = False
     else:
         munkicommon.log("Install of %s was successful." % packagename)
@@ -183,8 +181,8 @@ def installall(dirpath, choicesXMLpath=None):
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                (retcode, needsrestart) = \
-                                        installall(mountpoint, choicesXMLpath)
+                (retcode, needsrestart) = installall(mountpoint,
+                                                     choicesXMLpath)
                 if needsrestart:
                     restartflag = True
                 if retcode:
@@ -221,8 +219,8 @@ def copyAppFromDMG(dmgpath):
                 if os.path.exists(destpath):
                     retcode = subprocess.call(["/bin/rm", "-r", destpath])
                     if retcode:
-                        munkicommon.display_error(
-                                    "Error removing existing %s" % destpath)
+                        munkicommon.display_error("Error removing existing "
+                                                  "%s" % destpath)
                 if retcode == 0:
                     retcode = subprocess.call(["/bin/cp", "-pR", 
                                                 itempath, destpath])
@@ -269,7 +267,8 @@ def installWithInfo(dirpath, installlist):
             version_to_install = item.get('version_to_install','')
             if munkicommon.munkistatusoutput:
                 munkistatus.message("Installing %s (%s of %s)..." % 
-                                (display_name, itemindex, len(installlist)))
+                                    (display_name, itemindex, 
+                                     len(installlist)))
                 munkistatus.detail("")
                 munkistatus.percent(-1)
             itempath = os.path.join(dirpath, item["installer_item"])
@@ -277,7 +276,7 @@ def installWithInfo(dirpath, installlist):
                 # can't install, so we should stop. Since later items might
                 # depend on this one, we shouldn't continue
                 munkicommon.display_error("Installer item %s was not found." %
-                                            item["installer_item"])
+                                           item["installer_item"])
                 return restartflag
             installer_type = item.get("installer_type","")
             if installer_type == "AdobeUberInstaller":
@@ -301,9 +300,9 @@ def installWithInfo(dirpath, installlist):
                 # must be Apple installer package
                 if 'installer_choices_xml' in item:
                     choicesXMLfile = os.path.join(munkicommon.tmpdir, 
-                                                    "choices.xml")
+                                                  "choices.xml")
                     FoundationPlist.writePlist(item['installer_choices_xml'],
-                                                choicesXMLfile)
+                                               choicesXMLfile)
                 else:
                     choicesXMLfile = ''
                 if itempath.endswith(".dmg"):
@@ -311,9 +310,9 @@ def installWithInfo(dirpath, installlist):
                                                 item["installer_item"])
                     mountpoints = munkicommon.mountdmg(itempath)
                     if mountpoints == []:
-                        munkicommon.display_error(
-                                    "No filesystems mounted from %s" %
-                                     item["installer_item"])
+                        munkicommon.display_error("No filesystems mounted "
+                                                  "from %s" %
+                                                  item["installer_item"])
                         return restartflag
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
@@ -326,17 +325,17 @@ def installWithInfo(dirpath, installlist):
                         # this is useful if there is more than one pkg on 
                         # the DMG, or
                         # the actual pkg is not at the root of the DMG
-                        fullpkgpath = \
-                                os.path.join(mountpoints[0],item['pkg_path'])
+                        fullpkgpath = os.path.join(mountpoints[0],
+                                                    item['pkg_path'])
                         if os.path.exists(fullpkgpath):
-                            (retcode, needtorestart) = \
-                                         install(fullpkgpath, choicesXMLfile)
+                            (retcode, needtorestart) = install(fullpkgpath,
+                                                               choicesXMLfile)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
-                        (retcode, needtorestart) = \
-                                    installall(mountpoints[0], choicesXMLfile)
+                        (retcode, needtorestart) = installall(mountpoints[0],
+                                                              choicesXMLfile)
                     if needtorestart:
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
@@ -344,28 +343,28 @@ def installWithInfo(dirpath, installlist):
                     itempath = munkicommon.findInstallerItem(itempath)
                     if (itempath.endswith(".pkg") or \
                             itempath.endswith(".mpkg")):
-                        (retcode, needtorestart) = \
-                                      install(itempath, choicesXMLfile)
+                        (retcode, needtorestart) = install(itempath,
+                                                           choicesXMLfile)
                         if needtorestart:
                             restartflag = True
                     elif os.path.isdir(itempath):
                         # directory of packages, 
                         # like what we get from Software Update
-                        (retcode, needtorestart) = \
-                                   installall(itempath, choicesXMLfile)
+                        (retcode, needtorestart) = installall(itempath,
+                                                              choicesXMLfile)
                         if needtorestart:
                             restartflag = True
                             
             # record install success/failure
             if retcode == 0:
-                success_msg = "Install of %s-%s: SUCCESS" % \
-                               (display_name, version_to_install)
+                success_msg = ("Install of %s-%s: SUCCESS" % 
+                               (display_name, version_to_install))
                 munkicommon.log(success_msg, "Install.log")
                 munkicommon.report['InstallResults'].append(success_msg)
             else:
-                failure_msg = \
-                        "Install of %s-%s: FAILED with return code: %s" % \
-                              (display_name, version_to_install, retcode)
+                failure_msg = ("Install of %s-%s: "
+                               "FAILED with return code: %s" %
+                               (display_name, version_to_install, retcode))
                 munkicommon.log(failure_msg, "Install.log")
                 munkicommon.report['InstallResults'].append(failure_msg)
                 
@@ -423,14 +422,14 @@ def processRemovals(removallist):
                                                      forcedeletebundles=True)
                             if retcode:
                                 if retcode == -128:
-                                    message = \
-                                       "Uninstall of %s was cancelled." % name
+                                    message = ("Uninstall of %s was "
+                                               "cancelled." % name)
                                 else:
                                     message = "Uninstall of %s failed." % name
                                 munkicommon.display_error(message)
                             else:
-                                munkicommon.log(
-                                     "Uninstall of %s was successful." % name)
+                                munkicommon.log("Uninstall of %s was"
+                                                "successful." % name)
                                 
                     elif uninstallmethod[0] == "AdobeUberUninstaller":
                         if "uninstaller_item" in item:
@@ -444,12 +443,15 @@ def processRemovals(removallist):
                                 retcode = adobeutils.uninstall(itempath,
                                                                pkgname)
                                 if retcode:
-                                    munkicommon.display_error(
-                                             "Uninstall of %s failed." % name)
+                                    munkicommon.display_error("Uninstall of "
+                                                              "%s failed." %
+                                                               name)
                             else:
-                                munkicommon.display_error(
-                                      "AdobeUberUninstaller package for %s " %
-                                       name + " was missing from the Cache.")
+                                munkicommon.display_error("Adobe"
+                                                          "UberUninstaller "
+                                                          "package for %s "          
+                                                          "was missing from " 
+                                                          "the Cache." % name)
                                 
                     elif uninstallmethod[0] == "AdobeSetup":
                         if "uninstaller_item" in item:
@@ -462,12 +464,14 @@ def processRemovals(removallist):
                                 retcode = adobeutils.runAdobeSetup(itempath,
                                                             uninstalling=True)
                                 if retcode:
-                                    munkicommon.display_error(
-                                             "Uninstall of %s failed." % name)
+                                    munkicommon.display_error("Uninstall of "
+                                                              "%s failed." %
+                                                               name)
                             else:
-                                munkicommon.display_error(
-                                        "Adobe Setup package for %s " % name +
-                                        " was missing from the Cache.")
+                                munkicommon.display_error("Adobe Setup "
+                                                          "package for %s " 
+                                                          "was missing from " 
+                                                          "the Cache." % name)
                                 
                     elif uninstallmethod[0] == "remove_app":
                         remove_app_info = item.get('remove_app_info',None)
@@ -478,19 +482,20 @@ def processRemovals(removallist):
                             retcode = subprocess.call(["/bin/rm", "-rf",
                                                         path_to_remove])
                             if retcode:
-                                munkicommon.display_error(
-                                      "Removal error for %s" % path_to_remove)
+                                munkicommon.display_error("Removal error "
+                                                          "for %s" %
+                                                           path_to_remove)
                         else:
-                            munkicommon.display_error(
-                                "Application removal info missing from %s" % 
-                                name)
+                            munkicommon.display_error("Application removal "
+                                                      "info missing from %s" % 
+                                                      name)
                         
                     elif os.path.exists(uninstallmethod[0]) and \
                          os.access(uninstallmethod[0], os.X_OK):
                         # it's a script or program to uninstall
                         if munkicommon.munkistatusoutput:
-                            munkistatus.message(
-                                "Running uninstall script for %s..." % name)
+                            munkistatus.message("Running uninstall script "
+                                                "for %s..." % name)
                             munkistatus.detail("")
                             # set indeterminate progress bar 
                             munkistatus.percent(-1)
@@ -534,18 +539,17 @@ def processRemovals(removallist):
                             print >>sys.stderr, message
                             munkicommon.log(message)
                         else:
-                            munkicommon.log(
-                                "Uninstall of %s was successful." % name)
+                            munkicommon.log("Uninstall of %s was "
+                                            "successful." % name)
                             
                         if munkicommon.munkistatusoutput:
                             # clear indeterminate progress bar 
                             munkistatus.percent(0)
            
                     else:
-                        munkicommon.log(
-                            "Uninstall of %s " % name +
-                            " failed because there was no valid uninstall" +       
-                            " method.")
+                        munkicommon.log("Uninstall of %s failed because "
+                                        "there was no valid uninstall "    
+                                        "method." % name)
                         retcode = -99
                     
                     # record removal success/failure
