@@ -979,8 +979,8 @@ def main():
     p.add_option('--munkistatusoutput', '-m', action='store_true',
                     help='Output is formatted for use with MunkiStatus.')
     p.add_option('--verbose', '-v', action='count', default=1,
-                    help='''More verbose output. 
-                    May be specified multiple times.''')
+                    help='''More verbose output. May be specified multiple 
+                    times.''')
     
     # Get our options and our package names
     options, pkgnames = p.parse_args()
