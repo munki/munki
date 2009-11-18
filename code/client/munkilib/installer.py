@@ -579,13 +579,16 @@ def run():
     if os.path.exists(installinfo):
         try:
             pl = FoundationPlist.readPlist(installinfo)
-        except:
+        except FoundationPlist.NSPropertyListSerializationException:
             print >>sys.stderr, "Invalid %s" % installinfo
             return -1
         
         # remove the install info file
         # it's no longer valid once we start running
-        os.unlink(installinfo)
+        try:
+            os.unlink(installinfo)
+        except (OSError, IOError):
+            munkicommon.display_warning("Could not remove %s" % installinfo)
         
         if "removals" in pl:
             # filter list to items that need to be removed
