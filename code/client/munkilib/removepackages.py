@@ -31,7 +31,6 @@ import optparse
 import os
 import subprocess
 import sys
-#import plistlib
 import sqlite3
 import time
 import munkistatus
@@ -742,9 +741,10 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     
     local_display_percent_done(3,4)
     
-    # we do our database last so its modtime is later than the modtime for the Apple DB...
-    munkicommon.display_detail(
-        "Removing unused paths from internal package database...")
+    # we do our database last so its modtime is later than the modtime for the 
+    # Apple DB...
+    munkicommon.display_detail("Removing unused paths from internal package "
+                               "database...")
     c.execute('DELETE FROM paths where path_key not in (select distinct path_key from pkgs_paths)')
     conn.commit()
     c.close()
