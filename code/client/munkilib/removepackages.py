@@ -965,21 +965,22 @@ def main():
     p.add_option('--forcedeletebundles', '-f', action='store_true',
                     help='Delete bundles even if they aren\'t empty.')
     p.add_option('--listfiles', '-l', action='store_true',
-                    help='List the filesystem objects to be removed, \
-                    but do not actually remove them.')
+                    help='''List the filesystem objects to be removed, 
+                    but do not actually remove them.''')
     p.add_option('--rebuildpkgdb', action='store_true',
                     help='Force a rebuild of the internal package database.')
     p.add_option('--noremovereceipts', action='store_true',
-                    help='Do not remove receipts and boms from \
-                    /Library/Receipts and update internal package database.')
+                    help='''Do not remove receipts and boms from 
+                    /Library/Receipts and update internal package 
+                    database.''')
     p.add_option('--noupdateapplepkgdb', action='store_true',
-                    help='Do not update Apple\'s package database. \
-                    If --noremovereceipts is also given, this is implied')
+                    help='''Do not update Apple\'s package database. 
+                    If --noremovereceipts is also given, this is implied''')
     p.add_option('--munkistatusoutput', '-m', action='store_true',
                     help='Output is formatted for use with MunkiStatus.')
     p.add_option('--verbose', '-v', action='count', default=1,
-                    help='More verbose output. \
-                    May be specified multiple times.')
+                    help='''More verbose output. 
+                    May be specified multiple times.''')
     
     # Get our options and our package names
     options, pkgnames = p.parse_args()
