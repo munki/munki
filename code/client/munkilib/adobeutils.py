@@ -290,15 +290,11 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
             if munkicommon.munkistatusoutput and number_of_payloads:
                 munkistatus.percent(getPercent(payload_completed_count,
                                                number_of_payloads))
-            try:
-                payloadpath = loginfo[26:]
-                payloadfilename = os.path.basename(payloadpath)
-                payloadname = os.path.splitext(payloadfilename)[0]
-                munkicommon.display_status("Installing payload: %s" %
-                                            payloadname)
-            except:
-                munkicommon.display_status("Installing payload %s" %
-                                            payload_completed_count)
+            payloadpath = loginfo[26:]
+            payloadfilename = os.path.basename(payloadpath)
+            payloadname = os.path.splitext(payloadfilename)[0]
+            munkicommon.display_status("Installing payload: %s" %
+                                        payloadname)
         # uninstalling
         if loginfo.startswith("Physical payload uninstall result"):
             # increment payload_completed_count
