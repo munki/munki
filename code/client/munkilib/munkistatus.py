@@ -186,7 +186,7 @@ def restartAlert():
         sendCommand(u"ACTIVATE: \n")
         sendCommand(u"RESTARTALERT: \n")
         return readResponse()
-    except:
+    except IOError:
         return 0
     
 
@@ -199,7 +199,7 @@ def getStopButtonState():
             return state
         else:
             return 0
-    except:
+    except IOError:
         return 0
 
 
@@ -210,7 +210,7 @@ def quit():
         s.send(u"QUIT: \n")
         s.close()
         s = None
-    except:
+    except IOError:
         if getMunkiStatusPID():
             retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
 
