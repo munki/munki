@@ -169,7 +169,7 @@ def getBundleInfo(path):
         try:
             pl = FoundationPlist.readPlist(infopath)
             return pl
-        except:
+        except FoundationPlist.NSPropertyListSerializationException:
             pass
 
     return None
@@ -245,7 +245,7 @@ def getiteminfo(itempath):
             elif 'CFBundleVersion' in pl:
                 infodict['CFBundleShortVersionString'] = \
                     pl['CFBundleVersion'].split()[0]
-        except:
+        except FoundationPlist.NSPropertyListSerializationException:
             pass
         
     if not 'CFBundleShortVersionString' in infodict:
@@ -293,10 +293,7 @@ def main():
     
     catinfo = {}
     installs = []
-    try:
-        item = arguments[0].rstrip("/")
-    except:
-        item = ''
+    item = arguments[0].rstrip("/")
     if item and os.path.exists(item):
         # get size of installer item
         itemsize = 0 
