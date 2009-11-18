@@ -157,7 +157,8 @@ def getInstalledPackages():
                                 if version.LooseVersion(thisversion) > \
                                    version.LooseVersion(storedversion):
                                     installedpkgs[pkgid] = thisversion
-                    except:
+                    except (AttributeError,
+                        FoundationPlist.NSPropertyListSerializationException):
                         pass
                                 
     # Now check new (Leopard and later) package database
@@ -284,7 +285,8 @@ def getAppBundleID(path):
             pl = FoundationPlist.readPlist(infopath)
             if 'CFBundleIdentifier' in pl:
                 return pl['CFBundleIdentifier']
-        except:
+        except (AttributeError,
+                FoundationPlist.NSPropertyListSerializationException):
             pass
             
     return None
@@ -415,7 +417,7 @@ def compareBundleVersion(item):
 
     try:
         pl = FoundationPlist.readPlist(filepath) 
-    except:
+    except FoundationPlist.NSPropertyListSerializationException:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
 
@@ -455,7 +457,7 @@ def comparePlistVersion(item):
         
     try:
         pl = FoundationPlist.readPlist(filepath) 
-    except:
+    except FoundationPlist.NSPropertyListSerializationException:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
     
@@ -581,7 +583,7 @@ def getInstalledVersion(pl):
                                             'Contents', 'Info.plist')
                     pl = FoundationPlist.readPlist(filepath)
                     installedappvers = pl.get('CFBundleShortVersionString')
-                except:
+                except FoundationPlist.NSPropertyListSerializationException:
                     # that didn't work, fall through to the slow way
                     # using System Profiler
                     appinfo = []
@@ -1574,7 +1576,7 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
 def getManifestValueForKey(manifestpath, keyname):    
     try:
         pl = FoundationPlist.readPlist(manifestpath)
-    except:
+    except FoundationPlist.NSPropertyListSerializationException:
         munkicommon.display_error("Could not read plist %s" % manifestpath)
         return None    
     if keyname in pl:
@@ -1615,7 +1617,7 @@ def getCatalogs(cataloglist):
                         "Retreived catalog %s is invalid." % catalogname)
                     try:
                         os.unlink(newcatalog)
-                    except:
+                    except (OSError, IOError):
                         pass
             else:
                 munkicommon.display_error(
@@ -1667,7 +1669,7 @@ def getmanifest(partialurl, suppress_errors=False):
                                   partialurl)
         try:
             os.unlink(newmanifest)
-        except:
+        except (OSError, IOError):
             pass
         return None
 
@@ -1942,7 +1944,7 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
         try:
             os.rename(mytemppath, destinationpath)
             return destinationpath, err
-        except:
+        except (OSError, IOError):
             err = "Could not write to %s" % destinationpath
             destinationpath = None
     elif result == 304:
@@ -2100,12 +2102,13 @@ def check(id=''):
         if os.path.exists(installinfopath):
             try:
                 installinfo = FoundationPlist.readPlist(installinfopath)
+            except FoundationPlist.NSPropertyListSerializationException:
+                installinfo = {}
+            else:
                 munkicommon.report['ItemsToInstall'] = \
                     installinfo.get('managed_installs',[])
                 munkicommon.report['ItemsToRemove'] = \
                     installinfo.get('removals',[])
-            except:
-                installinfo = {}
         
     installcount = len(installinfo.get("managed_installs",[]))
     removalcount = len(installinfo.get("removals",[]))
