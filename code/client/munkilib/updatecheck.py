@@ -1158,6 +1158,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     iteminfo['installer_type'] = pl['installer_type']
                 if "adobe_package_name" in pl:
                     iteminfo['adobe_package_name'] = pl['adobe_package_name']
+                if 'package_path' in pl:
+                    iteminfo['package_path'] = pl['package_path']
                 installinfo['managed_installs'].append(iteminfo)
                 if nameAndVersion(manifestitemname)[1] == '':
                     # didn't specify a specific version, so

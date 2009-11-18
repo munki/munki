@@ -281,7 +281,8 @@ def installWithInfo(dirpath, installlist):
             installer_type = item.get("installer_type","")
             if installer_type == "AdobeUberInstaller":
                 # Adobe CS4 installer
-                pkgname = item.get("adobe_package_name","")
+                pkgname = item.get("adobe_package_name") or \
+                          item.get("package_path","")
                 retcode = adobeutils.install(itempath, pkgname)
                 if retcode == 8:
                     # Adobe Setup says restart needed
@@ -318,13 +319,13 @@ def installWithInfo(dirpath, installlist):
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag
                     needtorestart = False
-                    if item.get('pkg_path','').endswith('.pkg') or \
-                                item.get('pkg_path','').endswith('.mpkg'):
+                    if item.get('package_path','').endswith('.pkg') or \
+                                item.get('package_path','').endswith('.mpkg'):
                         # admin has specified the relative path of the pkg 
                         # on the DMG
                         # this is useful if there is more than one pkg on 
-                        # the DMG, or
-                        # the actual pkg is not at the root of the DMG
+                        # the DMG, or the actual pkg is not at the root
+                        # of the DMG
                         fullpkgpath = os.path.join(mountpoints[0],
                                                     item['pkg_path'])
                         if os.path.exists(fullpkgpath):
@@ -439,7 +440,8 @@ def processRemovals(removallist):
                                                     'Cache', 
                                                     item["uninstaller_item"])
                             if os.path.exists(itempath):
-                                pkgname = item.get("adobe_package_name","")
+                                pkgname = item.get("adobe_package_name") or \
+                                          item.get("pacakge_path","")
                                 retcode = adobeutils.uninstall(itempath,
                                                                pkgname)
                                 if retcode:

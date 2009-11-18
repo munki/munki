@@ -80,16 +80,21 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
         
     cataloginfo = None
     mountpoints = munkicommon.mountdmg(dmgpath)
-    for mountpoint in mountpoints:
-        for fsitem in os.listdir(mountpoint):
+    if pkgname:
+        pkgpath = os.path.join(mountpoints[0], pkgname)
+        if os.path.exists(pkgpath):
+            cataloginfo = munkicommon.getPackageMetaData(pkgpath)
+            if cataloginfo:
+                cataloginfo['package_path'] = pkgname
+    else:
+        # search for first package at root
+        for fsitem in os.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoint, fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
                 # get out of fsitem loop
                 break
-        if cataloginfo:
-            # get out of mountpoint loop
-            break
+        
             
     if not cataloginfo:
         # ADOBE STUFF
@@ -107,7 +112,7 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
                 cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
                 cataloginfo['installer_type'] = "AdobeUberInstaller"
                 if pkgname:
-                    cataloginfo['adobe_package_name'] = pkgname
+                    cataloginfo['package_path'] = pkgname
     
     if not cataloginfo:
         # ADOBE STUFF
@@ -265,17 +270,27 @@ def main():
                     package, typically an application. 
                     Can be specified multiple times.''')
     p.add_option('--pkgname', '-p',
-                    help='''If installer item is a DMG containing an Adobe CS4 
-                    Deployment Toolkit installation, pkgname is the name of an 
-                    Adobe CS4 Deployment Toolkit installer package folder at
-                    the top level of the mounted dmg.
-                    If this flag is missing, the AdobeUber* files should be at      
-                    the top level of the mounted dmg.''')
+                    help='''Optional flag.
+                    
+                    -If the installer item is a disk image containing
+                    multiple packages, or the package to be installed
+                    is not at the root of the mounted disk image, this
+                    is a relative path from the root of the mounted
+                    disk image to the specific package to be installed.
+                    
+                    -If the installer item is a disk image containing
+                    an Adobe CS4 Deployment Toolkit installation, pkgname
+                    is the name of an Adobe CS4 Deployment Toolkit 
+                    installer package folder at the top level of the 
+                    mounted dmg.
+                    
+                    If this flag is missing, the AdobeUber* files should
+                    be at the top level of the mounted dmg.''')
     p.add_option('--uninstallerdmg', '-u',
-                    help='''If installer item is a DMG containing an Adobe CS4  
-                    Deployment Toolkit installation package or Adobe CS3 
-                    deployment package, uninstallerdmg is a path to a disk 
-                    image containing an AdobeUberUninstaller for this 
+                    help='''If installer item is a DMG containing an Adobe CS4
+                    Deployment Toolkit installation package or Adobe CS3
+                    deployment package, uninstallerdmg is a path to a disk
+                    image containing an AdobeUberUninstaller for this
                     item.''')
     
     options, arguments = p.parse_args()
