@@ -72,8 +72,10 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     To-do: handle multiple installer items on a disk image(?)
     """
     if DMGhasSLA(dmgpath):
-        print >>sys.stderr, "%s has an attached Software License Agreement." % dmgpath
-        print >>sys.stderr, "It cannot be automatically mounted. You'll need to create a new dmg."
+        print >>sys.stderr, \
+        "%s has an attached Software License Agreement." % dmgpath
+        print >>sys.stderr, \
+        "It cannot be automatically mounted. You'll need to create a new dmg."
         exit(-1)
         
     cataloginfo = None
@@ -99,7 +101,8 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
             cataloginfo = adobeutils.getAdobePackageInfo(pkgroot)
             if cataloginfo:
                 # add some more data
-                cataloginfo['name'] = cataloginfo['display_name'].replace(" ",'')
+                cataloginfo['name'] = \
+                    cataloginfo['display_name'].replace(" ",'')
                 cataloginfo['uninstallable'] = True
                 cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
                 cataloginfo['installer_type'] = "AdobeUberInstaller"
@@ -115,7 +118,8 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
             cataloginfo = adobeutils.getAdobeSetupInfo(mountpoints[0])
             if cataloginfo:
                 # add some more data
-                cataloginfo['name'] = cataloginfo['display_name'].replace(" ",'')
+                cataloginfo['name'] = \
+                    cataloginfo['display_name'].replace(" ",'')
                 cataloginfo['installer_type'] = "AdobeSetup"
                 if cataloginfo.get('AdobeSetupType') == "ProductInstall":
                     cataloginfo['uninstallable'] = True
@@ -135,8 +139,12 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
                 if appinfo:
                     appinfo['path'] = os.path.join("/Applications", item)
                     cataloginfo = {}
-                    cataloginfo['name'] = appinfo.get('CFBundleName', os.path.splitext(item)[0])
-                    cataloginfo['version'] = munkicommon.padVersionString(appinfo.get('CFBundleShortVersionString',"0"),5)
+                    cataloginfo['name'] = appinfo.get('CFBundleName',
+                                                    os.path.splitext(item)[0])
+                    cataloginfo['version'] = \
+                                munkicommon.padVersionString(
+                                appinfo.get('CFBundleShortVersionString', "0")
+                                ,5)
                     cataloginfo['installs'] = [appinfo]
                     cataloginfo['installer_type'] = "appdmg"
                     cataloginfo['uninstallable'] = True
@@ -189,8 +197,8 @@ def getiteminfo(itempath):
     """
     Gets info for filesystem items passed to makecatalog item, to be used for
     the "installs" key.
-    Determines if the item is an application, bundle, Info.plist, or a file or directory
-    and gets additional metadata for later comparison.
+    Determines if the item is an application, bundle, Info.plist, or a file or 
+    directory and gets additional metadata for later comparison.
     """
     infodict = {}
     if munkicommon.isApplication(itempath):
@@ -202,32 +210,41 @@ def getiteminfo(itempath):
         if 'CFBundleIdentifier' in pl:
             infodict['CFBundleIdentifier'] = pl['CFBundleIdentifier']
         if 'CFBundleShortVersionString' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString'].split()[0]
+            infodict['CFBundleShortVersionString'] = \
+                pl['CFBundleShortVersionString'].split()[0]
         elif 'CFBundleVersion' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion'].split()[0]
+            infodict['CFBundleShortVersionString'] = \
+                pl['CFBundleVersion'].split()[0]
         if 'LSMinimumSystemVersion' in pl:
             infodict['minosversion'] = pl['LSMinimumSystemVersion']
         elif 'SystemVersionCheck:MinimumSystemVersion' in pl:
-            infodict['minosversion'] = pl['SystemVersionCheck:MinimumSystemVersion']
+            infodict['minosversion'] = \
+                pl['SystemVersionCheck:MinimumSystemVersion']
             
-    elif os.path.exists(os.path.join(itempath,'Contents','Info.plist')) or os.path.exists(os.path.join(itempath,'Resources','Info.plist')):
+    elif os.path.exists(os.path.join(itempath,'Contents','Info.plist')) or \
+         os.path.exists(os.path.join(itempath,'Resources','Info.plist')):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
         pl = getBundleInfo(itempath)
         if 'CFBundleShortVersionString' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString'].split()[0]
+            infodict['CFBundleShortVersionString'] = \
+                pl['CFBundleShortVersionString'].split()[0]
         elif 'CFBundleVersion' in pl:
-            infodict['CFBundleShortVersionString'] = pl['CFBundleVersion'].split()[0]
+            infodict['CFBundleShortVersionString'] = \
+                pl['CFBundleVersion'].split()[0]
             
-    elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
+    elif itempath.endswith("Info.plist") or \
+         itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
         infodict['path'] = itempath
         try:
             pl = FoundationPlist.readPlist(itempath)
             if 'CFBundleShortVersionString' in pl:
-                infodict['CFBundleShortVersionString'] = pl['CFBundleShortVersionString'].split()[0]
+                infodict['CFBundleShortVersionString'] = \
+                    pl['CFBundleShortVersionString'].split()[0]
             elif 'CFBundleVersion' in pl:
-                infodict['CFBundleShortVersionString'] = pl['CFBundleVersion'].split()[0]
+                infodict['CFBundleShortVersionString'] = \
+                    pl['CFBundleVersion'].split()[0]
         except:
             pass
         
@@ -244,26 +261,35 @@ def main():
     usage = "usage: %prog [options] [/path/to/installeritem]"
     p = optparse.OptionParser(usage=usage)
     p.add_option('--file', '-f', action="append",
-                    help='Path to a filesystem item installed by this package, typically an application.\n \
-                    Can be specified multiple times.')
+                    help='''Path to a filesystem item installed by this 
+                    package, typically an application. 
+                    Can be specified multiple times.''')
     p.add_option('--pkgname', '-p',
-                    help='If installer item is a DMG containing an Adobe CS4 Deployment Toolkit installation,\n \
-                    pkgname is the name of an Adobe CS4 Deployment Toolkit installer package folder at the top\n \
-                    level of the mounted dmg.\n \
-                    If this flag is missing, the AdobeUber* files should be at the top level of the mounted dmg.')
+                    help='''If installer item is a DMG containing an Adobe CS4 
+                    Deployment Toolkit installation, pkgname is the name of an 
+                    Adobe CS4 Deployment Toolkit installer package folder at
+                    the top level of the mounted dmg.
+                    If this flag is missing, the AdobeUber* files should be at      
+                    the top level of the mounted dmg.''')
     p.add_option('--uninstallerdmg', '-u',
-                    help='If installer item is a DMG containing an Adobe CS4 Deployment Toolkit installation\n \
-                    package or Adobe CS3 deployment package,\n \
-                    uninstallerdmg is a path to a disk image containing an AdobeUberUninstaller for this item.')
+                    help='''If installer item is a DMG containing an Adobe CS4  
+                    Deployment Toolkit installation package or Adobe CS3 
+                    deployment package, uninstallerdmg is a path to a disk 
+                    image containing an AdobeUberUninstaller for this 
+                    item.''')
     
     options, arguments = p.parse_args()
     
     if len(arguments) == 0 and not options.file:
-        print >>sys.stderr, "Need to specify an installer item (.pkg, .mpkg, .dmg) and/or --file options!"
+        print >>sys.stderr, \
+            ("Need to specify an installer item (.pkg, .mpkg, .dmg) "
+             "and/or --file options!")
         exit(-1)
     
     if len(arguments) > 1:
-        print >>sys.stderr, "Can process only one installer item at a time. Ignoring additional installer items."
+        print >>sys.stderr, \
+            ("Can process only one installer item at a time. "
+             "Ignoring additional installer items.")
     
     catinfo = {}
     installs = []
@@ -290,13 +316,15 @@ def main():
                 pkgname = options.pkgname
             catinfo = getCatalogInfoFromDmg(item, pkgname)
             if not catinfo:
-                print >>sys.stderr, "Could not find a supported installer item in %s!" % item
+                print >>sys.stderr, \
+                    "Could not find a supported installer item in %s!" % item
                 exit(-1)
             
         elif item.endswith('.pkg') or item.endswith('.mpkg'):
             catinfo = munkicommon.getPackageMetaData(item)
             if not catinfo:
-                print >>sys.stderr, "%s doesn't appear to be a valid installer item!" % item
+                print >>sys.stderr, \
+                    "%s doesn't appear to be a valid installer item!" % item
                 exit(-1)
             
         else:
@@ -356,7 +384,8 @@ def main():
             fitem = fitem.rstrip('/')
             if fitem.startswith('/Library/Receipts'):
                 # no receipts, please!
-                print >>sys.stderr, "Item %s appears to be a receipt. Skipping." % fitem
+                print >>sys.stderr, \
+                    "Item %s appears to be a receipt. Skipping." % fitem
                 continue
             if os.path.exists(fitem):
                 iteminfodict = getiteminfo(fitem)
@@ -364,11 +393,15 @@ def main():
                     thisminosversion = iteminfodict.pop('minosversion')
                     if not minosversion:
                         minosversion = thisminosversion
-                    elif version.LooseVersion(thisminosversion) < version.LooseVersion(minosversion):
+                    elif version.LooseVersion(thisminosversion) < \
+                         version.LooseVersion(minosversion):
                         minosversion = thisminosversion
                 if 'CFBundleShortVersionString' in iteminfodict:
-                    thisitemversion = munkicommon.padVersionString(iteminfodict['CFBundleShortVersionString'],5)
-                    if version.LooseVersion(thisitemversion) > version.LooseVersion(maxfileversion):
+                    thisitemversion = \
+                        munkicommon.padVersionString(
+                            iteminfodict['CFBundleShortVersionString'],5)
+                    if version.LooseVersion(thisitemversion) > \
+                       version.LooseVersion(maxfileversion):
                         maxfileversion = thisitemversion
                 installs.append(iteminfodict)
             else:
