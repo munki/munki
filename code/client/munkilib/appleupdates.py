@@ -402,7 +402,7 @@ def writeAppleUpdatesFile():
     else:
         try:
             os.unlink(appleUpdatesFile)
-        except:
+        except (OSError, IOError):
             pass
         return False
 
@@ -437,22 +437,22 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         nowString = munkicommon.NSDateNowString()
         now = dateutil.parser.parse(nowString)
         nextSUcheck = now
-        try:
-            cmd = ['/usr/bin/defaults', 'read', 
-                   '/Library/Preferences/com.apple.softwareupdate',    
-                   'LastSuccessfulDate']
-            p = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                 stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
-            (out, err) = p.communicate()
-            lastSUcheckString = out.rstrip('\n')
-            if lastSUcheckString:
+        cmd = ['/usr/bin/defaults', 'read', 
+               '/Library/Preferences/com.apple.softwareupdate',    
+               'LastSuccessfulDate']
+        p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        (out, err) = p.communicate()
+        lastSUcheckString = out.rstrip('\n')
+        if lastSUcheckString:
+            try:
                 lastSUcheck = dateutil.parser.parse(lastSUcheckString)
                 interval = datetime.timedelta(hours=24)
                 nextSUcheck = lastSUcheck + interval
-        except:
-            pass
+            except ValueError:
+                pass
         if now >= nextSUcheck:
             retcode = checkForSoftwareUpdates()
         
@@ -496,7 +496,7 @@ def installAppleUpdates():
             try:
                 pl = FoundationPlist.readPlist(appleUpdatesFile)
                 appleupdatelist = pl['AppleUpdates']
-            except:
+            except FoundationPlist.NSPropertyListSerializationException:
                 appleupdatelist = []
     if appleupdatelist == []:
         # we don't have any updates in appleUpdatesFile, 
@@ -515,7 +515,7 @@ def installAppleUpdates():
             # so Managed Software Update.app doesn't display these
             # updates again
             os.unlink(appleUpdatesFile)
-        except:
+        except (OSError, IOError):
             pass
         # now try to install the updates
         restartneeded = installer.installWithInfo("/Library/Updates",
