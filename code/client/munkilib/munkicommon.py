@@ -207,7 +207,7 @@ def log(msg, logname=''):
         f = open(logpath, mode='a', buffering=1)
         print >>f, time.strftime(formatstr), msg.encode('UTF-8')
         f.close()
-    except:
+    except (OSError, IOError):
         pass
         
         
@@ -221,15 +221,15 @@ def rotatelog(logname=''):
         for x in range(3,-1,-1):
             try:
                 os.unlink(logpath+"."+str(x+1))
-            except:
+            except (OSError, IOError):
                 pass
             try:
                 os.rename(logpath+"."+str(x), logpath+"."+str(x+1))
-            except:
+            except (OSError, IOError):
                 pass
         try:
             os.rename(logpath, logpath+".0")
-        except:
+        except (OSError, IOError):
             pass
 
 
@@ -283,7 +283,7 @@ def archive_report():
         if not os.path.exists(archivepath):
             try:
                 os.mkdir(archivepath)
-            except:
+            except (OSError, IOError):
                 display_warning("Could not create report archive path.")
         try:
             os.rename(reportfile, os.path.join(archivepath, archivename))
@@ -295,7 +295,7 @@ def archive_report():
             #                     stdout=subprocess.PIPE, 
             #                     stderr=subprocess.PIPE)
             #(out, err) = p.communicate()
-        except:
+        except (OSError, IOError):
             display_warning("Could not archive report.")
         # now keep number of archived reports to 100 or fewer
         p = subprocess.Popen(['/bin/ls', '-t1', archivepath], 
@@ -312,7 +312,7 @@ def archive_report():
                     if os.path.isfile(itempath):
                         try:
                             os.unlink(itempath)
-                        except:
+                        except (OSError, IOError):
                             display_warning("Could not remove archive item %s"                  
                                              % itempath)
             
@@ -486,16 +486,21 @@ def getManagedInstallsPrefs():
     if os.path.exists(prefsfile):
         try:
             pl = FoundationPlist.readPlist(prefsfile)
+        except FoundationPlist.NSPropertyListSerializationException:
+            display_error("ERROR: Could not read preferences file %s." 
+                           % prefsfile)
+            raise Exception("Could not read preferences file %s." % prefsfile)
+        try:
             for key in pl.keys():
                 if type(pl[key]).__name__ == "__NSCFDate":
                     # convert NSDate/CFDates to strings
                     prefs[key] = str(pl[key])
                 else:
-                    prefs[key] = pl[key]               
-        except:
-            display_error("ERROR: Could not read preferences file %s." 
+                    prefs[key] = pl[key]
+        except AttributeError:
+            display_error("ERROR: Preferences file %s contains invalid data." 
                            % prefsfile)
-            raise Exception("Could not read preferences file %s." % prefsfile)
+            raise Exception("Preferences file %s invalid." % prefsfile)
     else:
         # no prefs file, so we'll write out a "default" prefs file
         del prefs['LastNotifiedDate']
@@ -718,7 +723,8 @@ def getOnePackageInfo(pkgpath):
                 pkginfo['installed_size'] = pl["IFPkgFlagInstalledSize"]
         
             pkginfo['version'] = getExtendedVersion(pkgpath)
-        except:
+        except (AttributeError, 
+                FoundationPlist.NSPropertyListSerializationException):
             pkginfo['packageid'] = "BAD PLIST in %s" % \
                                     os.path.basename(pkgpath)
             pkginfo['version'] = "0.0.0.0.0"
@@ -833,15 +839,16 @@ def getInstalledPackageVersion(pkgid):
     """
         
     # First check (Leopard and later) package database
-    try:
-        p = subprocess.Popen(["/usr/sbin/pkgutil", 
-                                "--pkg-info-plist", pkgid], 
-                                bufsize=1, 
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-        (out, err) = p.communicate()
+   
+    p = subprocess.Popen(["/usr/sbin/pkgutil", 
+                            "--pkg-info-plist", pkgid], 
+                            bufsize=1, 
+                            stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
 
-        if out:
+    if out:
+        try:
             pl = FoundationPlist.readPlistFromString(out)
 
             if "pkgid" in pl:
@@ -853,8 +860,9 @@ def getInstalledPackageVersion(pkgid):
                 display_debug2("\tThis machine has %s, version %s" % 
                                 (pkgid, foundvers))
             return padVersionString(foundvers,5)
-    except:
-        pass
+        except (AttributeError,
+                FoundationPlist.NSPropertyListSerializationException):
+            pass
             
     # If we got to this point, we haven't found the pkgid yet. 
     # Check /Library/Receipts
@@ -1013,7 +1021,8 @@ def getAvailableDiskSpace(volumepath="/"):
             if "FreeSpace" in pl:
                 freespace = pl["FreeSpace"]
                 return int(freespace/1024)
-        except:
+        except (AttributeError,
+                FoundationPlist.NSPropertyListSerializationException):
             pass
 
     # Yikes
@@ -1025,7 +1034,7 @@ def cleanUpTmpDir():
     if tmpdir:
         try:
             shutil.rmtree(tmpdir) 
-        except:
+        except (OSError, IOError):
             pass
         tmpdir = None
     
