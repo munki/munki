@@ -26,6 +26,9 @@
 		257572CC072881A4000BE9CA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		257572CD072881A4000BE9CA /* AppleScriptKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */; };
 		60A014C40DBD2AA20071D9A8 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 60A014C20DBD2AA20071D9A8 /* MainMenu.xib */; };
+		C04C446710B4A25A00679193 /* LogOutReq.tif in Resources */ = {isa = PBXBuildFile; fileRef = C04C446410B4A25A00679193 /* LogOutReq.tif */; };
+		C04C446810B4A25A00679193 /* RestartRec.tif in Resources */ = {isa = PBXBuildFile; fileRef = C04C446510B4A25A00679193 /* RestartRec.tif */; };
+		C04C446910B4A25A00679193 /* ShutDownReq.tif in Resources */ = {isa = PBXBuildFile; fileRef = C04C446610B4A25A00679193 /* ShutDownReq.tif */; };
 		C09152A20FB51AE1006BC8DE /* Empty.png in Resources */ = {isa = PBXBuildFile; fileRef = C09152A10FB51AE1006BC8DE /* Empty.png */; };
 		C09153060FB64FD1006BC8DE /* Managed Software Update.icns in Resources */ = {isa = PBXBuildFile; fileRef = C09153050FB64FD1006BC8DE /* Managed Software Update.icns */; };
 		C0ACDAA70FB4A387006D30B3 /* Installer.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDA9A0FB4A386006D30B3 /* Installer.tiff */; };
@@ -44,6 +47,9 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		60A014C30DBD2AA20071D9A8 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		65359356078DD41800E8BB2F /* AppleScriptKit.sdef */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.sdef; name = AppleScriptKit.sdef; path = /System/Library/Frameworks/AppleScriptKit.framework/Versions/A/Resources/AppleScriptKit.sdef; sourceTree = "<absolute>"; };
+		C04C446410B4A25A00679193 /* LogOutReq.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = LogOutReq.tif; sourceTree = "<group>"; };
+		C04C446510B4A25A00679193 /* RestartRec.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = RestartRec.tif; sourceTree = "<group>"; };
+		C04C446610B4A25A00679193 /* ShutDownReq.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = ShutDownReq.tif; sourceTree = "<group>"; };
 		C09152A10FB51AE1006BC8DE /* Empty.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Empty.png; sourceTree = "<group>"; };
 		C09153050FB64FD1006BC8DE /* Managed Software Update.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Update.icns"; sourceTree = "<group>"; };
 		C0ACDA9A0FB4A386006D30B3 /* Installer.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Installer.tiff; sourceTree = "<group>"; };
@@ -131,6 +137,9 @@
 				C0ACDA9F0FB4A386006D30B3 /* package.tiff */,
 				C0ACDAA00FB4A386006D30B3 /* Restart.tif */,
 				C0ACDAA30FB4A386006D30B3 /* RestartReq.tif */,
+				C04C446410B4A25A00679193 /* LogOutReq.tif */,
+				C04C446510B4A25A00679193 /* RestartRec.tif */,
+				C04C446610B4A25A00679193 /* ShutDownReq.tif */,
 				60A014C20DBD2AA20071D9A8 /* MainMenu.xib */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				65359356078DD41800E8BB2F /* AppleScriptKit.sdef */,
@@ -210,6 +219,9 @@
 				C0ACDAB00FB4A387006D30B3 /* RestartReq.tif in Resources */,
 				C09152A20FB51AE1006BC8DE /* Empty.png in Resources */,
 				C09153060FB64FD1006BC8DE /* Managed Software Update.icns in Resources */,
+				C04C446710B4A25A00679193 /* LogOutReq.tif in Resources */,
+				C04C446810B4A25A00679193 /* RestartRec.tif in Resources */,
+				C04C446910B4A25A00679193 /* ShutDownReq.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -19,6 +19,7 @@
 
 property managedInstallDir : ""
 property restartRequired : false
+property logoutRequired : false
 property installitems : {}
 property activationCount : 0
 property ManagedInstallPrefs : "/Library/Preferences/ManagedInstalls.plist"
@@ -44,24 +45,8 @@ on getInstallInfoFile()
 	end try
 end getInstallInfoFile
 
-
 on itemstoinstall()
 	set installlist to {}
-	try
-		tell application "System Events"
-			set AppleUpdates to managedInstallDir & "/AppleUpdates.plist"
-			set appleupdatelist to value of property list item "AppleUpdates" of property list file AppleUpdates
-		end tell
-		repeat with installitem in appleupdatelist
-			set end of installlist to (installitem as item)
-			try
-				if |RestartAction| of installitem is "RequireRestart" then
-					set restartRequired to true
-				end if
-			end try
-			set AppleUpdatesAvailable to true
-		end repeat
-	end try
 	copy getInstallInfoFile() to InstallInfo
 	if InstallInfo is not "" then
 		try
@@ -74,13 +59,22 @@ on itemstoinstall()
 					if exists (installer_item of installitem) then
 						set end of installlist to (installitem as item)
 						try
-							if |RestartAction| of installitem is "RequireRestart" then
+							if |RestartAction| of installitem is "RequireRestart" or |RestartAction| of installitem is "RecommendRestart" then
 								set restartRequired to true
+							end if
+						end try
+						try
+							if |RestartAction| of installitem is "RequireLogout" then
+								set logoutRequired to true
 							end if
 						end try
 					end if
 				end try
 			end repeat
+		on error
+			display alert "Cannot read installation info" message ¬
+				"There is a problem with the managed software installation info. Contact your systems administrator." default button "Quit"
+			quit
 		end try
 		
 		set ShowRemovalDetail to getRemovalDetailPrefs()
@@ -94,7 +88,7 @@ on itemstoinstall()
 				if (installed of removalitem) is true then
 					set removalcount to removalcount + 1
 					try
-						if |RestartAction| of removalitem is "RequireRestart" then
+						if |RestartAction| of removalitem is "RequireRestart" or |RestartAction| of removalitem is "RecommendRestart" then
 							set restartRequired to true
 							set removalsrequirerestart to true
 						end if
@@ -124,23 +118,42 @@ on itemstoinstall()
 			quit
 		end try
 	end if
+	if installlist is {} then
+		try
+			tell application "System Events"
+				set AppleUpdates to managedInstallDir & "/AppleUpdates.plist"
+				set appleupdatelist to value of property list item "AppleUpdates" of property list file AppleUpdates
+			end tell
+			repeat with installitem in appleupdatelist
+				set end of installlist to (installitem as item)
+				try
+					if |RestartAction| of installitem is "RequireRestart" then
+						set restartRequired to true
+					end if
+				end try
+				set AppleUpdatesAvailable to true
+			end repeat
+		end try
+	end if
 	return installlist as list
 end itemstoinstall
-
 
 on updateTable()
 	set datasource to data source of table view "table" of scroll view ¬
 		"tableScrollView" of view "splitViewTop" of split view "splitView" of window "MainWindow"
 	set EmptyImage to load image "Empty"
 	set RestartImage to load image "RestartReq"
+	set LogoutImage to load image "LogOutReq"
 	set installitems to my itemstoinstall()
 	delete every data row of datasource
 	repeat with installitem in installitems
 		
 		set theDataRow to make new data row at end of data rows of datasource
 		try
-			if |RestartAction| of installitem is "RequireRestart" then
+			if |RestartAction| of installitem is "RequireRestart" or |RestartAction| of installitem is "RecommendRestart" then
 				set contents of data cell "image" of theDataRow to RestartImage
+			else if |RestartAction| of installitem is "RequireLogout" then
+				set contents of data cell "image" of theDataRow to LogoutImage
 			else
 				set contents of data cell "image" of theDataRow to EmptyImage
 			end if
@@ -194,6 +207,10 @@ on installAll()
 		display alert "Restart Required" message ¬
 			"A restart is required after updating. Log out and update now?" alternate button "Cancel" default button ¬
 			"Log out and update" as warning attached to window 1
+	else if logoutRequired then
+		display alert "Logout Required" message ¬
+			"A logout is required before updating. Log out and update now?" alternate button "Cancel" default button ¬
+			"Log out and update" as warning attached to window 1
 	else
 		display alert "Logout Recommended" message ¬
 			"A logout is recommeded before updating. Log out and update now?" alternate button "Cancel" other button "Update without logging out" default button ¬
@@ -228,8 +245,10 @@ on selection changed theObject
 			set theDataRow to selected data row of theObject
 			set theDescription to the contents of data cell "description" of theDataRow
 			set theRestartAction to the contents of data cell "restartaction" of theDataRow
-			if theRestartAction is "RequireRestart" then
+			if theRestartAction is "RequireRestart" or theRestartAction is "RecommendRestart" then
 				set theRestartAction to return & "Restart required after install."
+			else if theRestartAction is "RequireLogout" then
+				set theRestartAction to return & "Logout required before install."
 			end if
 			set theText to theDescription & return & theRestartAction
 		else
@@ -282,12 +301,19 @@ on activated theObject
 		on error
 			set managedInstallDir to "/Library/Managed Installs"
 		end try
+		try
+			tell application "System Events"
+				set logoutRequired to value of property list item "InstallRequiresLogout" of property list file ManagedInstallPrefs
+			end tell
+		end try
 		set installitems to my itemstoinstall()
 		if (count of installitems) > 0 then
 			my initTable()
 			my updateTable()
 			if restartRequired then
 				set contents of text field "RestartNoticeFld" of window "mainWindow" to "Updates require a restart."
+			else if logoutRequired then
+				set contents of text field "RestartNoticeFld" of window "mainWindow" to "Updates require a logout."
 			end if
 			show window "mainWindow"
 			set enabled of (menu item "installAllMenuItem" of menu "updateMenu" of menu 1) to true
