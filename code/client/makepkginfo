@@ -89,7 +89,7 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
     else:
         # search for first package at root
         for fsitem in os.listdir(mountpoints[0]):
-            itempath = os.path.join(mountpoint, fsitem)
+            itempath = os.path.join(mountpoints[0], fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
                 # get out of fsitem loop
