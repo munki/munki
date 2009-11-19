@@ -320,14 +320,14 @@ def installWithInfo(dirpath, installlist):
                         return restartflag
                     needtorestart = False
                     if item.get('package_path','').endswith('.pkg') or \
-                                item.get('package_path','').endswith('.mpkg'):
+                       item.get('package_path','').endswith('.mpkg'):
                         # admin has specified the relative path of the pkg 
                         # on the DMG
                         # this is useful if there is more than one pkg on 
                         # the DMG, or the actual pkg is not at the root
                         # of the DMG
                         fullpkgpath = os.path.join(mountpoints[0],
-                                                    item['pkg_path'])
+                                                    item['package_path'])
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = install(fullpkgpath,
                                                                choicesXMLfile)
