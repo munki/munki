@@ -95,25 +95,26 @@ def doInstallTasks():
     # so we can get notified of new changes after this round
     # of installs
     clearLastNotifiedDate()
-    apple_says_restart = False
-    munki_says_restart = False
     
-    # are we supposed to handle Apple Software Updates?
-    if munkicommon.pref('InstallAppleSoftwareUpdates'):
-        apple_says_restart = appleupdates.installAppleUpdates()
-        
-    if apple_says_restart:
-        # if Apple updates require a restart, skip the munki installs
-        # until after the restart
-        cmd = ['/usr/bin/touch', 
-               '/Users/Shared/.com.googlecode.munki.installatstartup']
-        retcode = subprocess.call(cmd)
-    else:
+    # munki updates take priority over Apple Updates, because
+    # a munki install or (especially) removal could make a 
+    # pending Apple update no longer necessary or even complicate
+    # or prevent the removal of another item.
+    # Therefore we only install Apple updates if there are no
+    # pending munki updates.
+    
+    if munkiUpdatesAvailable():
         # install munki updates
-        munki_says_restart = installer.run()
-        munkicommon.savereport()
-    
-    return (apple_says_restart or munki_says_restart)
+        need_to_restart = installer.run()
+        # clear any Apple update info since it may no longer
+        # be relevant
+        appleupdates.clearAppleUpdateInfo()
+    elif munkicommon.pref('InstallAppleSoftwareUpdates'):
+        # are we supposed to handle Apple Software Updates?
+        need_to_restart = appleupdates.installAppleUpdates()
+        
+    munkicommon.savereport()
+    return need_to_restart
 
         
 def doRestart():
@@ -141,7 +142,23 @@ def doRestart():
                             'tell application "System Events" to restart')
         else:
             print "Please restart immediately."
-    
+
+
+def munkiUpdatesAvailable():
+    updatesavailable = False
+    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'), 
+                               'InstallInfo.plist')
+    if os.path.exists(installinfo):
+        try:
+            pl = FoundationPlist.readPlist(installinfo)
+            updatesavailable = len(pl.get('removals',[])) or \
+                               len(pl.get('managed_installs',[]))
+        except (AttributeError,         
+                FoundationPlist.NSPropertyListSerializationException):
+            munkicommon.display_error("Install info at %s is invalid." %
+                                       installinfo)
+    return updatesavailable
+   
     
 def notifyUserOfUpdates(manualcheck):
     # someone is logged in, and we have updates.
@@ -282,10 +299,13 @@ def main():
         
     if not options.installonly:
         # check to see if we can talk to the manifest server
-        server = munkicommon.pref('ManifestURL') or munkicommon.pref('SoftwareRepoURL')
+        server = munkicommon.pref('ManifestURL') or \
+                 munkicommon.pref('SoftwareRepoURL')
         result = updatecheck.checkServer(server)
         if result != (0, 'OK'):
-            munkicommon.display_error("managedsoftwareupdate: server check for %s failed: %s" % (server, str(result)))
+            munkicommon.display_error("managedsoftwareupdate: "
+                                      "server check for %s failed: %s" %
+                                      (server, str(result)))
             if options.manualcheck:
                 # magic incantations so Managed Software Update.app will 
                 # display an appropriate message
@@ -334,20 +354,9 @@ def main():
                'LastCheckResult', '-int', str(result)]
         retcode = subprocess.call(cmd)
         
-    # check to see if there are available updates
-    updatesavailable = False       
-    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'), 
-                               'InstallInfo.plist')
-    if os.path.exists(installinfo):
-        try:
-            pl = FoundationPlist.readPlist(installinfo)
-            updatesavailable = len(pl.get('removals',[])) or \
-                               len(pl.get('managed_installs',[]))
-        except FoundationPlist.NSPropertyListSerializationException:
-            munkicommon.display_error("Install info at %s is invalid." %
-                                       installinfo)
-            
-    if options.auto or options.manualcheck:
+    updatesavailable = munkiUpdatesAvailable()
+    if not updatesavailable and (options.auto or options.manualcheck):
+        # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
         if munkicommon.pref('InstallAppleSoftwareUpdates'):
             if options.manualcheck:
@@ -359,8 +368,10 @@ def main():
                                             forcecheck=options.manualcheck):
                 updatesavailable = True
                 
-    if options.installonly and \
+    if not updatesavailable and options.installonly and \
        munkicommon.pref('InstallAppleSoftwareUpdates'):
+        # just look and see if there are already downloaded Apple updates
+        # to install; don't run softwareupdate to check with Apple
         if appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True):
             updatesavailable = True
             
