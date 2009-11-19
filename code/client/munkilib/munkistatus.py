@@ -192,6 +192,8 @@ def restartAlert():
 
 def getStopButtonState():
     '''Returns 1 if the stop button has been clicked, 0 otherwise.'''
+    if not s:
+        return 0
     try:
         s.send(u"GETSTOPBUTTONSTATE: \n")
         state = readResponse()
@@ -210,7 +212,7 @@ def quit():
         s.send(u"QUIT: \n")
         s.close()
         s = None
-    except IOError:
+    except (AttributeError, IOError):
         if getMunkiStatusPID():
             retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
 
