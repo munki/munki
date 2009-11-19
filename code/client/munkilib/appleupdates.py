@@ -479,6 +479,17 @@ def OLDinstallAppleUpdates():
     return False
 
 
+def clearAppleUpdateInfo():
+    '''Clears Apple update info. Called after performing munki updates
+    because the Apple updates may no longer be relevant.'''
+    updatesindexfile = '/Library/Updates/index.plist'
+    try:
+        os.unlink(updatesindexfile)
+        os.unlink(appleUpdatesFile)
+    except (OSError, IOError):
+        pass
+
+
 def installAppleUpdates():
     '''Uses /usr/sbin/installer to install updates previously
     downloaded. Some items downloaded by SoftwareUpdate are not
@@ -527,7 +538,8 @@ def installAppleUpdates():
     
 
 # define this here so we can access it in multiple functions
-appleUpdatesFile = os.path.join(munkicommon.pref('ManagedInstallDir'),'AppleUpdates.plist')
+appleUpdatesFile = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                                'AppleUpdates.plist')
 
 
 def main():
