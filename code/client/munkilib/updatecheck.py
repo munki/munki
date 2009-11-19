@@ -2126,7 +2126,8 @@ def check(id=''):
                                       item.get('version_to_install','')))
             if item.get('description'):
                munkicommon.display_info("        %s" % item['description'])
-            if item.get('RestartAction') == 'RequireRestart':
+            if item.get('RestartAction') == 'RequireRestart' or \
+               item.get('RestartAction') == 'RecommendRestart':
                 munkicommon.display_info("       *Restart required")
                 munkicommon.report['RestartRequired'] = True
     if removalcount:
@@ -2134,7 +2135,8 @@ def check(id=''):
     for item in installinfo['removals']:
         if item.get('installed'):
             munkicommon.display_info("    - %s" % item.get('name'))
-            if item.get('RestartAction') == 'RequireRestart':
+            if item.get('RestartAction') == 'RequireRestart' or \
+               item.get('RestartAction') == 'RecommendRestart':
                 munkicommon.display_info("       *Restart required")
                 munkicommon.report['RestartRequired'] = True
    
