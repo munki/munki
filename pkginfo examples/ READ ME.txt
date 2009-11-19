@@ -2,7 +2,7 @@ Use 'makepkginfo' to create pkginfo files - it does the hard work so you don't h
 
 These examples don't show all the supported keys.  Here's a few more:
 	
-There are two kinds of dependency keys.
+There are three types of dependency/relationship keys.
 
 'requires' are prerequisites: package A requires package B be installed first.
 if package A is removed, package B is unaffected.
@@ -27,9 +27,27 @@ The value for 'modifies' must be a string that unambiguously resolves to a speci
 <key>modifies</key>
 <string>Office2008-12.0.0.0.0</string>
 
-
 when processing installs, the two dependencies are basically equivalent;
 the real difference comes when processing removals.
+
+'modifies' has been deprecated and support for it will be removed in 
+a future release.
+
+The third type of relationship is "update_for".
+This signifies that that current package should be considered an update
+for the packages listed in the "update_for" array. When processing a
+package, we look through the catalogs for other packages that declare
+they are updates for the current package and install them if needed.
+This can be a one-to-many relationship - one package can be an update 
+for several other packages; for example, "PhotoshopCS4update-11.0.1" 
+could be an update for PhotoshopCS4 and for AdobeCS4DesignSuite.
+
+When removing an item, any updates for that item are removed as well.
+
+With 'requires' and 'update_for' you can completely replace the 
+functionality of 'modifies', plus do more, so 'modifies' is on its way
+out.
+
 
 Supported architectures:
 If an installer item is valid only for PowerPC or only for Intel, you can include a supported_architectures key:
