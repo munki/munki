@@ -52,7 +52,7 @@ class NSPropertyListSerializationException(Exception):
 def readPlist(filepath):
     """
     Read a .plist file from filepath.  Return the unpacked root object
-    (which usually is a dictionary).
+    (which is usually a dictionary).
     """
     plistData = NSData.dataWithContentsOfFile_(filepath)
     dataObject, plistFormat, error = \
