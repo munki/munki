@@ -2094,10 +2094,9 @@ def check(id=''):
             FoundationPlist.writePlist(installinfo, 
                                        os.path.join(ManagedInstallDir,
                                                     "InstallInfo.plist"))
-            
     else:
         # couldn't get a primary manifest. Check to see if we have a valid 
-        # InstallList from an earlier run.
+        # install/remove list from an earlier run.
         munkicommon.display_error(
             "Could not retrieve managed install primary manifest.")
         installinfopath = os.path.join(ManagedInstallDir, "InstallInfo.plist")
@@ -2111,7 +2110,7 @@ def check(id=''):
                     installinfo.get('managed_installs',[])
                 munkicommon.report['ItemsToRemove'] = \
                     installinfo.get('removals',[])
-        
+                    
     installcount = len(installinfo.get("managed_installs",[]))
     removalcount = len(installinfo.get("removals",[]))
     

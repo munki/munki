@@ -158,6 +158,20 @@ def munkiUpdatesAvailable():
             munkicommon.display_error("Install info at %s is invalid." %
                                        installinfo)
     return updatesavailable
+
+
+def recordUpdateCheckResult(result):
+    # record last check date and result
+    nowString = munkicommon.NSDateNowString()
+    cmd = ['/usr/bin/defaults', 'write', 
+           '/Library/Preferences/ManagedInstalls', 
+           'LastCheckDate', '-date', nowString]
+    retcode = subprocess.call(cmd)
+    cmd = ['/usr/bin/defaults', 'write', 
+           '/Library/Preferences/ManagedInstalls', 
+           'LastCheckResult', '-int', str(result)]
+    retcode = subprocess.call(cmd)
+    return
    
     
 def notifyUserOfUpdates(manualcheck):
@@ -312,15 +326,7 @@ def main():
                 # launch MunkiStatus so focus leaves 
                 # Managed Software Update.app
                 munkistatus.message("Checking for available updates")
-                # record last check date and result
-                nowString = munkicommon.NSDateNowString()
-                cmd = ['/usr/bin/defaults', 'write', 
-                       '/Library/Preferences/ManagedInstalls', 
-                       'LastCheckDate', '-date', nowString]
-                retcode = subprocess.call(cmd)
-                cmd = ['/usr/bin/defaults', 'write', 
-                       '/Library/Preferences/ManagedInstalls', 
-                       'LastCheckResult', '-int', "-1"]
+                recordUpdateCheckResult(-1)
                 retcode = subprocess.call(cmd)
                 # activate Managed Software Update.app
                 notifyUserOfUpdates(True)
@@ -340,19 +346,10 @@ def main():
         print "Managed Software Update Tool"
         print "Copyright 2009 The Munki Project"
         print "http://code.google.com/p/munki\n"
-            
+    
+    updatecheckresult = None
     if not options.installonly:
-        result = updatecheck.check(id=options.id)
-        # record last check date and result
-        nowString = munkicommon.NSDateNowString()
-        cmd = ['/usr/bin/defaults', 'write',    
-               '/Library/Preferences/ManagedInstalls', 
-               'LastCheckDate', '-date', nowString]
-        retcode = subprocess.call(cmd)
-        cmd = ['/usr/bin/defaults', 'write', 
-               '/Library/Preferences/ManagedInstalls', 
-               'LastCheckResult', '-int', str(result)]
-        retcode = subprocess.call(cmd)
+        updatecheckresult = updatecheck.check(id=options.id)
         
     updatesavailable = munkiUpdatesAvailable()
     if not updatesavailable and (options.auto or options.manualcheck):
@@ -367,7 +364,10 @@ def main():
             if appleupdates.appleSoftwareUpdatesAvailable(
                                             forcecheck=options.manualcheck):
                 updatesavailable = True
-                
+    
+    if updatecheckresult is not None:
+        recordUpdateCheckResult(updatecheckresult)
+    
     if not updatesavailable and options.installonly and \
        munkicommon.pref('InstallAppleSoftwareUpdates'):
         # just look and see if there are already downloaded Apple updates
