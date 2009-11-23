@@ -24,6 +24,7 @@ import datetime
 import dateutil.parser
 import subprocess
 import time
+import traceback
 
 from munkilib import munkicommon
 from munkilib import updatecheck
@@ -106,12 +107,28 @@ def doInstallTasks():
     if munkiUpdatesAvailable():
         # install munki updates
         need_to_restart = installer.run()
+        try:
+            need_to_restart = installer.run()
+        except:
+            munkicommon.display_error("Unexpected error in "
+                                      " munkilib.installer:")
+            munkicommon.display_error(traceback.format_exc())
+            munkicommon.savereport()
+            exit(-1)
+        
         # clear any Apple update info since it may no longer
         # be relevant
         appleupdates.clearAppleUpdateInfo()
     elif munkicommon.pref('InstallAppleSoftwareUpdates'):
         # are we supposed to handle Apple Software Updates?
-        need_to_restart = appleupdates.installAppleUpdates()
+        try:
+            need_to_restart = appleupdates.installAppleUpdates()
+        except:
+            munkicommon.display_error("Unexpected error in "
+                                      " installAppleUpdates:")
+            munkicommon.display_error(traceback.format_exc())
+            munkicommon.savereport()
+            exit(-1)
         
     munkicommon.savereport()
     return need_to_restart
@@ -342,14 +359,20 @@ def main():
     munkicommon.report['StartTime'] = time.ctime()
     munkicommon.report['RunType'] = runtype
     
-    if not munkicommon.verbose == 0 : 
+    if options.verbose: 
         print "Managed Software Update Tool"
         print "Copyright 2009 The Munki Project"
         print "http://code.google.com/p/munki\n"
     
     updatecheckresult = None
     if not options.installonly:
-        updatecheckresult = updatecheck.check(id=options.id)
+        try:
+            updatecheckresult = updatecheck.check(id=options.id)
+        except:
+            munkicommon.display_error("Unexpected error in updatecheck:")
+            munkicommon.display_error(traceback.format_exc())
+            munkicommon.savereport()
+            exit(-1)
         
     updatesavailable = munkiUpdatesAvailable()
     if not updatesavailable and (options.auto or options.manualcheck):
