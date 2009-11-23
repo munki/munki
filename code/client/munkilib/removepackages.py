@@ -195,6 +195,25 @@ def CreateTables(c):
                                           uid INTEGER,
                                           gid INTEGER,
                                           perms INTEGER )''')
+                                          
+                                          
+def findBundleReceiptFromID(pkgid):
+    '''Finds a bundle receipt in /Library/Receipts based on packageid.
+    Some packages write bundle receipts under /Library/Receipts even on
+    Snow Leopard; we need to be able to find them so we can remove them.
+    Returns a path.'''
+    if not pkgid:
+        return ''
+    receiptsdir = "/Library/Receipts"
+    for item in os.listdir(receiptsdir):
+        itempath = os.path.join(receiptsdir, item)
+        if item.endswith('.pkg') and os.path.isdir(itempath):
+            info = munkicommon.getOnePackageInfo(itempath)
+            if info.get('packageid') == pkgid:
+                return itempath
+                
+    #if we get here, not found
+    return ''
 
 
 def ImportPackage(packagepath, c):
@@ -570,7 +589,8 @@ def getpkgkeys(pkgnames):
     conn = sqlite3.connect(packagedb)
     c = conn.cursor()
     
-    # check package names to make sure they're all in the database, build our list of pkg_keys
+    # check package names to make sure they're all in the database, 
+    # build our list of pkg_keys
     pkgerror = False
     pkgkeyslist = []
     for pkg in pkgnames:
@@ -663,10 +683,9 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     osvers = int(os.uname()[2].split('.')[0])
     
     applepkgdb = '/Library/Receipts/db/a.receiptdb'
-    if not noupdateapplepkgdb:
-        if osvers < 10:
-            aconn = sqlite3.connect(applepkgdb)
-            ac = aconn.cursor()
+    if not noupdateapplepkgdb and osvers < 10:
+        aconn = sqlite3.connect(applepkgdb)
+        ac = aconn.cursor()
     
     local_display_percent_done(1,4)
     
@@ -678,17 +697,21 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
         if row:
             pkgname = row[0]
             pkgid = row[1]
+            receiptpath = None
             if osvers < 10:
-                receiptpath = None
                 if pkgname.endswith('.pkg'):
                     receiptpath = os.path.join('/Library/Receipts', pkgname)
                 if pkgname.endswith('.bom'):
                     receiptpath = os.path.join('/Library/Receipts/boms',
                                                 pkgname)
-                if receiptpath and os.path.exists(receiptpath):
-                    munkicommon.display_detail("Removing %s..." % receiptpath)
-                    retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
-        
+            else:
+                # clean up /Library/Receipts in case there's stuff left there
+                receiptpath = findBundleReceiptFromID(pkgid)
+                
+            if receiptpath and os.path.exists(receiptpath):
+                munkicommon.display_detail("Removing %s..." % receiptpath)
+                retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
+            
         # remove pkg info from our database
         if munkicommon.verbose > 1:
             print "Removing package data from internal database..."
