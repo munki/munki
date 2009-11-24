@@ -420,6 +420,7 @@ def main():
                 print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
             
     if catinfo:
+        catinfo['autoremove'] = False
         if minosversion:
             catinfo['minimum_os_version'] = minosversion
         else:

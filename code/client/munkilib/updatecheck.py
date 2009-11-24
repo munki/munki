@@ -91,12 +91,24 @@ def makeCatalogDB(catalogitems):
     # build table of update items with a list comprehension --
     # filter all items from the catalogitems that have a non-empty 
     # 'update_for' list
-    updaters = [item for item in catalogitems if item.get('update_for')]              
-                    
+    updaters = [item for item in catalogitems if item.get('update_for')]
+    
+    # build table of autoremove items with a list comprehension --
+    # filter all items from the catalogitems that have a non-empty 
+    # 'autoremove' list
+    # autoremove items are automatically removed if they are not in the
+    # managed_install list (either directly or indirectly via included
+    # manifests)
+    autoremoveitems = [item.get('name') for item in catalogitems 
+                            if item.get('autoremove')]
+    # convert to set and back to list to get list of unique names                        
+    autoremoveitems = list(set(autoremoveitems))
+    
     pkgdb = {}
     pkgdb['named'] = name_table
     pkgdb['receipts'] = pkgid_table
     pkgdb['updaters'] = updaters
+    pkgdb['autoremoveitems'] = autoremoveitems
     pkgdb['items'] = catalogitems
     
     return pkgdb
@@ -977,14 +989,38 @@ def evidenceThisIsInstalled(pl):
     # if we got this far, we failed all the tests, so the item
     # must not be installed (or we dont't have the right info...)
     return False
+
+
+def getAutoRemovalItems(installinfo, cataloglist):
+    '''Gets a list of items marked for automatic removal from the catalogs
+    in cataloglist. Filters those against items in the managed_installs
+    list, which should contain everything that is supposed to be installed.
+    '''
+    autoremovalnames = []
+    for catalogname in cataloglist:
+        autoremovalnames += catalog[catalogname]['autoremoveitems']
+    
+    #print "Managed Installs: ", installinfo.get('managed_installs',[])
+    already_processed_names = [item['name'] 
+                              for item in 
+                                  installinfo.get('managed_installs',[])]
+    #print "Removals: ", installinfo.get('removals',[])
+    already_processed_names += [item['manifestitem']
+                                for item in installinfo.get('removals',[])]
+    autoremovalnames = [item for item in autoremovalnames
+                             if item not in already_processed_names]
+    #print "Auto removal names: ", autoremovalnames
+    return autoremovalnames
     
     
 def lookForUpdates(manifestitem, cataloglist, installinfo):
     """
     Looks for updates for a given manifest item that is either 
-    installed or scheduled to be installed. This handles updates
-    that aren't simply later versions of the manifest item.
-    For example, AdobeCameraRaw is an update for Adobe Photoshop.
+    installed or scheduled to be installed. This handles not only
+    specific application updates, but also updates that aren't simply 
+    later versions of the manifest item.
+    For example, AdobeCameraRaw is an update for Adobe Photoshop, but
+    doesn't update the version of Adobe Photoshop.
     Returns a list of manifestitem names that are updates for 
     manifestitem.
     """
@@ -1559,14 +1595,16 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
                                                 nestedmanifestpath, 
                                                 installinfo, cataloglist)
                                                 
-        removalitems = getManifestValueForKey(manifestpath, 
-                                              "managed_uninstalls")
-        if removalitems:
-            for item in removalitems:
-                if munkicommon.stopRequested():
-                    return {}
-                is_or_will_be_removed = processRemoval(item, cataloglist,
-                                                       installinfo)
+        autoremovalitems = getAutoRemovalItems(installinfo, cataloglist)
+        explicitremovalitems = getManifestValueForKey(manifestpath, 
+                                                "managed_uninstalls") or []
+        removalitems = autoremovalitems
+        removalitems.extend(explicitremovalitems)
+        for item in removalitems:
+            if munkicommon.stopRequested():
+                return {}
+            is_or_will_be_removed = processRemoval(item, cataloglist,
+                                                   installinfo)
                 
     else:
         munkicommon.display_warning("Manifest %s has no 'catalogs'" %
