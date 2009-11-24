@@ -54,9 +54,11 @@ def install(pkgpath, choicesXMLpath=None):
         pkgpath = os.path.realpath(pkgpath)
     
     packagename = ''
+    restartaction = 'None'
     pkginfo = munkicommon.getInstallerPkgInfo(pkgpath)
     if pkginfo:
         packagename = pkginfo.get('display_name')
+        restartaction = pkginfo.get('RestartAction','None')
     if not packagename:
         packagename = os.path.basename(pkgpath)
     
@@ -66,7 +68,8 @@ def install(pkgpath, choicesXMLpath=None):
         # clear indeterminate progress bar 
         munkistatus.percent(0)
         
-    munkicommon.log("Installing %s from %s" % (packagename, os.path.basename(pkgpath)))
+    munkicommon.log("Installing %s from %s" % (packagename,
+                                               os.path.basename(pkgpath)))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
@@ -74,7 +77,8 @@ def install(pkgpath, choicesXMLpath=None):
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = p.communicate()
     restartaction = output.decode('UTF-8').rstrip("\n")
-    if restartaction == "RequireRestart":
+    if restartaction == "RequireRestart" or \
+       restartaction == "RecommendRestart":
         munkicommon.display_status("%s requires a restart after installation."
                                     % packagename)
         restartneeded = True
@@ -390,7 +394,7 @@ def installWithInfo(dirpath, installlist):
                 # (using rm -rf in case it's a bundle pkg)
                 itempath = os.path.join(dirpath, current_installer_item)
                 retcode = subprocess.call(["/bin/rm", "-rf", itempath])
-
+    
     return restartflag
 
 

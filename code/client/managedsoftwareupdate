@@ -96,7 +96,7 @@ def doInstallTasks():
     # so we can get notified of new changes after this round
     # of installs
     clearLastNotifiedDate()
-    
+    need_to_restart = False
     # munki updates take priority over Apple Updates, because
     # a munki install or (especially) removal could make a 
     # pending Apple update no longer necessary or even complicate
@@ -106,7 +106,6 @@ def doInstallTasks():
     
     if munkiUpdatesAvailable():
         # install munki updates
-        need_to_restart = installer.run()
         try:
             need_to_restart = installer.run()
         except:
