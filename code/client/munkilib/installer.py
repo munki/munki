@@ -209,6 +209,8 @@ def installall(dirpath, choicesXMLpath=None):
     
 def copyAppFromDMG(dmgpath):
     # copies application from DMG to /Applications
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
     mountpoints = munkicommon.mountdmg(dmgpath)
     if mountpoints:
         retcode = 0
@@ -226,6 +228,8 @@ def copyAppFromDMG(dmgpath):
                         munkicommon.display_error("Error removing existing "
                                                   "%s" % destpath)
                 if retcode == 0:
+                    munkicommon.display_status(
+                                "Copying %s to Applications folder" % item)
                     retcode = subprocess.call(["/bin/cp", "-pR", 
                                                 itempath, destpath])
                     if retcode:
@@ -233,14 +237,18 @@ def copyAppFromDMG(dmgpath):
                                                     (itempath, destpath))
                 if retcode == 0:
                     # remove com.apple.quarantine attribute from copied app
-                    cmd = ["/usr/bin/xattr", "-d", 
-                           "com.apple.quarantine", destpath]
+                    cmd = ["/usr/bin/xattr", destpath]
                     p = subprocess.Popen(cmd, shell=False, bufsize=1, 
                                          stdin=subprocess.PIPE, 
                                          stdout=subprocess.PIPE, 
                                          stderr=subprocess.PIPE)
                     (out, err) = p.communicate()
-                    retcode = p.returncode
+                    if out:
+                        xattrs = out.splitlines()
+                        if "com.apple.quarantine" in xattrs:
+                            err = subprocess.call(["/usr/bin/xattr", "-d", 
+                                                   "com.apple.quarantine", 
+                                                   destpath])
                     
         munkicommon.unmountdmg(mountpoint)
         if not appfound:
@@ -267,7 +275,8 @@ def installWithInfo(dirpath, installlist):
             return restartflag
         if "installer_item" in item:
             itemindex = itemindex + 1
-            display_name = item.get('display_name') or item.get('name')
+            display_name = item.get('display_name') or item.get('name') or \
+                           item.get('manifestitem')
             version_to_install = item.get('version_to_install','')
             if munkicommon.munkistatusoutput:
                 munkistatus.message("Installing %s (%s of %s)..." % 
@@ -275,6 +284,10 @@ def installWithInfo(dirpath, installlist):
                                      len(installlist)))
                 munkistatus.detail("")
                 munkistatus.percent(-1)
+            else:
+                munkicommon.display_status("Installing %s (%s of %s)" % 
+                                            (display_name, itemindex, 
+                                            len(installlist)))
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
                 # can't install, so we should stop. Since later items might
@@ -362,7 +375,7 @@ def installWithInfo(dirpath, installlist):
                             
             # record install success/failure
             if retcode == 0:
-                success_msg = ("Install of %s-%s: SUCCESS" % 
+                success_msg = ("Install of %s-%s: SUCCESSFUL" % 
                                (display_name, version_to_install))
                 munkicommon.log(success_msg, "Install.log")
                 munkicommon.report['InstallResults'].append(success_msg)
@@ -407,7 +420,8 @@ def processRemovals(removallist):
         if 'installed' in item:
             if item['installed']:
                 index += 1
-                name = item.get('display_name') or item.get('name')
+                name = item.get('display_name') or item.get('name') or \
+                       item.get('manifestitem')
                 if munkicommon.munkistatusoutput:
                     munkistatus.message("Removing %s (%s of %s)..." % 
                                         (name, index, len(removallist)))
@@ -560,7 +574,7 @@ def processRemovals(removallist):
                     
                     # record removal success/failure
                     if retcode == 0:
-                        success_msg = "Removal of %s: SUCCESS" % name
+                        success_msg = "Removal of %s: SUCCESSFUL" % name
                         munkicommon.log(success_msg, "Install.log")
                         munkicommon.report[
                                          'RemovalResults'].append(success_msg)
