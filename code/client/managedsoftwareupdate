@@ -240,6 +240,9 @@ def main():
     p.add_option('--logoutinstall', '-l', action='store_true',
                     help='''Used by launchd LaunchAgent when running at the 
                     loginwindow.''')
+    p.add_option('--installwithnologout', action='store_true',
+                    help='''Used by Managed Software Update.app when user 
+                            triggers an install without logging out.''')    
     p.add_option('--manualcheck', action='store_true',
                     help='''Used by launchd LaunchAgent when checking
                     manually.''')
@@ -303,6 +306,15 @@ def main():
         if not user_triggered:
             exit(0)
             
+    if options.installwithnologout:
+        # typically invoked by Managed Software Update.app
+        # by user who decides not to logout
+        runtype = "installwithnologout"
+        options.munkistatusoutput = True
+        options.quiet = True
+        options.checkonly = False
+        options.installonly = True
+        
     if options.manualcheck:
         # triggered by Managed Software Update.app
         runtype = "manualcheck"
