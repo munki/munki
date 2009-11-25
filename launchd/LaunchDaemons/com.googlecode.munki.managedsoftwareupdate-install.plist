@@ -9,12 +9,11 @@
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/munki/managedsoftwareupdate</string>
-    <string>--installonly</string>
-    <string>--munkistatusoutput</string>
+    <string>--installwithnologout</string>
   </array>
   <key>WatchPaths</key>
   <array>
-    <string>/Library/Managed Installs/.run_managedsoftwareupdate</string>
+    <string>/Library/Managed Installs/.managedinstall.launchd</string>
   </array>
   <key>OnDemand</key>
   <true/>
