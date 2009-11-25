@@ -55,11 +55,14 @@ def getLoginwindowPicture():
             desktopPicturePath = loginwindowPrefs.get('DesktopPicture', '')
             if desktopPicturePath:
                 if os.path.exists(desktopPicturePath):
-                    theImage = NSImage.alloc().initWithContentsOfFile_(desktopPicturePath)
+                    theImage = \
+                        NSImage.alloc().initWithContentsOfFile_(
+                            desktopPicturePath)
                     if theImage:
                         return theImage
                 return NSImage.imageNamed_("Solid Aqua Blue")
-    theImage = NSImage.alloc().initWithContentsOfFile_("/System/Library/CoreServices/DefaultDesktop.jpg")
+    theImage = NSImage.alloc().initWithContentsOfFile_(
+                        "/System/Library/CoreServices/DefaultDesktop.jpg")
     if theImage:
         return theImage
     else:
@@ -128,7 +131,10 @@ class MSController(NSObject):
                 self.progressIndicator.setUsesThreadedAnimation_(True)
                 self.progressIndicator.startAnimation_(self)
         
-            NSThread.detachNewThreadSelector_toTarget_withObject_(self.handleSocket, self, None)
+            NSThread.detachNewThreadSelector_toTarget_withObject_(
+                                                            self.handleSocket, 
+                                                            self, 
+                                                            None)
             NSApp.activateIgnoringOtherApps_(True)
             
     def handleSocket(self):        

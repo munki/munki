@@ -28,4 +28,5 @@ class MunkiStatusAppDelegate(NSObject):
         pass
 
     def applicationWillTerminate_(self,sender):
-        NSLog("Application will terminate.")
+        #NSLog("Application will terminate.")
+        pass
