@@ -190,7 +190,7 @@ def recordUpdateCheckResult(result):
     return
    
     
-def notifyUserOfUpdates(manualcheck):
+def notifyUserOfUpdates(manualcheck=False):
     # someone is logged in, and we have updates.
     # if we haven't notified in a while, notify:
     lastNotifiedString = munkicommon.pref('LastNotifiedDate')
