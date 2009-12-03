@@ -388,14 +388,18 @@ def installWithInfo(dirpath, installlist):
                 
             # check to see if this installer item is needed by any additional 
             # items in installinfo
-            # this might happen if there are mulitple things being installed 
-            # with choicesXML files applied to a metapackage
+            # this might happen if there are multiple things being installed 
+            # with choicesXML files applied to a metapackage or
+            # multiple packages being installed from a single DMG
             foundagain = False
             current_installer_item = item['installer_item']
             # are we at the end of the installlist?
-            if itemindex+1 < len(installlist):
+            # (we already incremented itemindex for display
+            # so with zero-based arrays itemindex now points to the item
+            # after the current item)
+            if itemindex < len(installlist):
                 # nope, let's check the remaining items
-                for lateritem in installlist[itemindex+1:]:
+                for lateritem in installlist[itemindex:]:
                     if 'installer_item' in lateritem:
                         if lateritem['installer_item'] == \
                                     current_installer_item:
