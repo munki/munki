@@ -308,85 +308,89 @@ def main():
     
     catinfo = {}
     installs = []
-    item = arguments[0].rstrip("/")
-    if item and os.path.exists(item):
-        # get size of installer item
-        itemsize = 0 
-        if os.path.isfile(item):
-            itemsize = int(os.path.getsize(item))
-        if os.path.isdir(item):
-            # need to walk the dir and add it all up
-            for (path, dirs, files) in os.walk(item):
-                for f in files:
-                    filename = os.path.join(path, f)
-                    # use os.lstat so we don't follow symlinks
-                    itemsize += int(os.lstat(filename).st_size)
+    if arguments:
+        item = arguments[0].rstrip("/")
+        if item and os.path.exists(item):
+            # get size of installer item
+            itemsize = 0 
+            if os.path.isfile(item):
+                itemsize = int(os.path.getsize(item))
+            if os.path.isdir(item):
+                # need to walk the dir and add it all up
+                for (path, dirs, files) in os.walk(item):
+                    for f in files:
+                        filename = os.path.join(path, f)
+                        # use os.lstat so we don't follow symlinks
+                        itemsize += int(os.lstat(filename).st_size)
         
-        if item.endswith('.dmg'):
-            pkgname = ''
-            if options.pkgname:
-                pkgname = options.pkgname
-            catinfo = getCatalogInfoFromDmg(item, pkgname)
-            if not catinfo:
-                print >>sys.stderr, \
-                    "Could not find a supported installer item in %s!" % item
-                exit(-1)
+            if item.endswith('.dmg'):
+                pkgname = ''
+                if options.pkgname:
+                    pkgname = options.pkgname
+                catinfo = getCatalogInfoFromDmg(item, pkgname)
+                if not catinfo:
+                    print >>sys.stderr, \
+                        "Could not find a supported installer item in %s!" % \
+                         item
+                    exit(-1)
             
-        elif item.endswith('.pkg') or item.endswith('.mpkg'):
-            catinfo = munkicommon.getPackageMetaData(item)
-            if not catinfo:
-                print >>sys.stderr, \
-                    "%s doesn't appear to be a valid installer item!" % item
-                exit(-1)
+            elif item.endswith('.pkg') or item.endswith('.mpkg'):
+                catinfo = munkicommon.getPackageMetaData(item)
+                if not catinfo:
+                    print >>sys.stderr, \
+                        "%s doesn't appear to be a valid installer item!" % \
+                         item
+                    exit(-1)
             
-        else:
-            print >>sys.stderr, "%s is not an installer package!" % item
-            exit(-1)
-            
-        catinfo['installer_item_size'] = int(itemsize/1024)
-        # try to generate the correct item location
-        temppath = item
-        location = ""
-        while len(temppath) > 4:
-            if temppath.endswith('/pkgs'):
-                location = item[len(temppath)+1:]
-                break
             else:
-                temppath = os.path.dirname(temppath)
+                print >>sys.stderr, "%s is not an installer package!" % item
+                exit(-1)
+            
+            catinfo['installer_item_size'] = int(itemsize/1024)
+            # try to generate the correct item location
+            temppath = item
+            location = ""
+            while len(temppath) > 4:
+                if temppath.endswith('/pkgs'):
+                    location = item[len(temppath)+1:]
+                    break
+                else:
+                    temppath = os.path.dirname(temppath)
                 
-        if not location:
-            #just the filename
-            location = os.path.split(item)[1]
-        catinfo['installer_item_location'] = location
+            if not location:
+                #just the filename
+                location = os.path.split(item)[1]
+            catinfo['installer_item_location'] = location
         
-        # ADOBE STUFF - though maybe generalizable in the future?
-        if options.uninstallerdmg:
-            uninstallerpath = options.uninstallerdmg
-            if os.path.exists(uninstallerpath):
-                # try to generate the correct item location
-                temppath = uninstallerpath
-                location = ""
-                while len(temppath) > 4:
-                    if temppath.endswith('/pkgs'):
-                        location = uninstallerpath[len(temppath)+1:]
-                        break
-                    else:
-                        temppath = os.path.dirname(temppath)
+            # ADOBE STUFF - though maybe generalizable in the future?
+            if options.uninstallerdmg:
+                uninstallerpath = options.uninstallerdmg
+                if os.path.exists(uninstallerpath):
+                    # try to generate the correct item location
+                    temppath = uninstallerpath
+                    location = ""
+                    while len(temppath) > 4:
+                        if temppath.endswith('/pkgs'):
+                            location = uninstallerpath[len(temppath)+1:]
+                            break
+                        else:
+                            temppath = os.path.dirname(temppath)
 
-                if not location:
-                    #just the filename
-                    location = os.path.split(uninstallerpath)[1]
-                catinfo['uninstaller_item_location'] = location
-                itemsize = int(os.path.getsize(uninstallerpath))
-                catinfo['uninstaller_item_size'] = int(itemsize/1024)
-            else:
-                print >>sys.stderr, "No uninstaller at %s" % uninstallerpath
+                    if not location:
+                        #just the filename
+                        location = os.path.split(uninstallerpath)[1]
+                    catinfo['uninstaller_item_location'] = location
+                    itemsize = int(os.path.getsize(uninstallerpath))
+                    catinfo['uninstaller_item_size'] = int(itemsize/1024)
+                else:
+                    print >>sys.stderr, "No uninstaller at %s" % \
+                                        uninstallerpath
                     
-        # some metainfo
-        catinfo['catalogs'] = ['testing']
-        if catinfo.get('receipts',None):
-            catinfo['uninstallable'] = True
-            catinfo['uninstall_method'] = "removepackages"
+            # some metainfo
+            catinfo['catalogs'] = ['testing']
+            if catinfo.get('receipts',None):
+                catinfo['uninstallable'] = True
+                catinfo['uninstall_method'] = "removepackages"
         
     minosversion = ""
     maxfileversion = "0.0.0.0.0"
