@@ -1456,11 +1456,12 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                                                    (item_pl.get('name'),
                                                     manifestitemname))
                         if evidenceThisIsInstalled(item_pl):
-                            munkicommon.display_info("%s requires %s, which "
-                                                     "must be removed as "
-                                                     "well." %
+                            munkicommon.display_detail("%s requires %s. "
+                                                     "%s must be removed "
+                                                     "as well." %
                                                      (item_pl.get('name'), 
-                                                      manifestitemname))
+                                                      manifestitemname,
+                                                      item_pl.get('name')))
                             success = processRemoval(item_pl.get('name'),
                                                      cataloglist, installinfo)
                             if not success:
