@@ -554,7 +554,7 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 						</object>
 						<object class="NSTextField" id="592213051">
 							<reference key="NSNextResponder" ref="903778767"/>
-							<int key="NSvFlags">268</int>
+							<int key="NSvFlags">292</int>
 							<string key="NSFrame">{{21, 26}, {208, 14}}</string>
 							<reference key="NSSuperview" ref="903778767"/>
 							<bool key="NSEnabled">YES</bool>
