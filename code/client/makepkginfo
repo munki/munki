@@ -63,7 +63,7 @@ def DMGhasSLA(dmgpath):
     return hasSLA
 
 
-def getCatalogInfoFromDmg(dmgpath, pkgname=''):
+def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
     """
     * Mounts a disk image 
     * Gets catalog info for the first installer item found at the root level.
@@ -86,7 +86,7 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
             cataloginfo = munkicommon.getPackageMetaData(pkgpath)
             if cataloginfo:
                 cataloginfo['package_path'] = pkgname
-    else:
+    elif not appname:
         # search for first package at root
         for fsitem in os.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
@@ -96,65 +96,75 @@ def getCatalogInfoFromDmg(dmgpath, pkgname=''):
                 break
         
             
-    if not cataloginfo:
-        # ADOBE STUFF
-        # no Apple installer items found. Look for AdobeUberInstaller items
-        pkgroot = os.path.join(mountpoints[0], pkgname)
-        adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
-        if os.path.exists(adobeinstallxml):
-            # this is a CS4 Enterprise Deployment package
-            cataloginfo = adobeutils.getAdobePackageInfo(pkgroot)
-            if cataloginfo:
-                # add some more data
-                cataloginfo['name'] = \
-                    cataloginfo['display_name'].replace(" ",'')
-                cataloginfo['uninstallable'] = True
-                cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
-                cataloginfo['installer_type'] = "AdobeUberInstaller"
-                if pkgname:
-                    cataloginfo['package_path'] = pkgname
-    
-    if not cataloginfo:
-        # ADOBE STUFF
-        # maybe this is an Adobe update DMG or CS3 installer
-        # look for Adobe Setup.app
-        setuppath = adobeutils.findSetupApp(mountpoints[0])
-        if setuppath:
-            cataloginfo = adobeutils.getAdobeSetupInfo(mountpoints[0])
-            if cataloginfo:
-                # add some more data
-                cataloginfo['name'] = \
-                    cataloginfo['display_name'].replace(" ",'')
-                cataloginfo['installer_type'] = "AdobeSetup"
-                if cataloginfo.get('AdobeSetupType') == "ProductInstall":
+        if not cataloginfo:
+            # ADOBE STUFF
+            # no Apple installer items found. 
+            # Look for AdobeUberInstaller items
+            pkgroot = os.path.join(mountpoints[0], pkgname)
+            adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
+            if os.path.exists(adobeinstallxml):
+                # this is a CS4 Enterprise Deployment package
+                cataloginfo = adobeutils.getAdobePackageInfo(pkgroot)
+                if cataloginfo:
+                    # add some more data
+                    cataloginfo['name'] = \
+                        cataloginfo['display_name'].replace(" ",'')
                     cataloginfo['uninstallable'] = True
-                    cataloginfo['uninstall_method'] = "AdobeSetup"
-                else:
-                    cataloginfo['description'] = "Adobe updater"
-                    cataloginfo['uninstallable'] = False
-                    cataloginfo['modifies'] = ["PleaseEditMe-1.0.0.0.0"]
+                    cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
+                    cataloginfo['installer_type'] = "AdobeUberInstaller"
+                    if pkgname:
+                        cataloginfo['package_path'] = pkgname
+    
+        if not cataloginfo:
+            # ADOBE STUFF
+            # maybe this is an Adobe update DMG or CS3 installer
+            # look for Adobe Setup.app
+            setuppath = adobeutils.findSetupApp(mountpoints[0])
+            if setuppath:
+                cataloginfo = adobeutils.getAdobeSetupInfo(mountpoints[0])
+                if cataloginfo:
+                    # add some more data
+                    cataloginfo['name'] = \
+                        cataloginfo['display_name'].replace(" ",'')
+                    cataloginfo['installer_type'] = "AdobeSetup"
+                    if cataloginfo.get('AdobeSetupType') == "ProductInstall":
+                        cataloginfo['uninstallable'] = True
+                        cataloginfo['uninstall_method'] = "AdobeSetup"
+                    else:
+                        cataloginfo['description'] = "Adobe updater"
+                        cataloginfo['uninstallable'] = False
+                        cataloginfo['update_for'] = ["PleaseEditMe-1.0.0.0.0"]
                 
     if not cataloginfo:
         # maybe this is an appdmg
         # look for an app at the top level of the dmg
-        for item in os.listdir(mountpoints[0]):
-            itempath = os.path.join(mountpoints[0],item)
+        if appname:
+            itempath = os.path.join(mountpoints[0], appname)
             if munkicommon.isApplication(itempath):
                 appinfo = getiteminfo(itempath)
-                if appinfo:
-                    appinfo['path'] = os.path.join("/Applications", item)
-                    cataloginfo = {}
-                    cataloginfo['name'] = appinfo.get('CFBundleName',
-                                                    os.path.splitext(item)[0])
-                    cataloginfo['version'] = \
-                                munkicommon.padVersionString(
-                                appinfo.get('CFBundleShortVersionString', "0")
-                                ,5)
-                    cataloginfo['installs'] = [appinfo]
-                    cataloginfo['installer_type'] = "appdmg"
-                    cataloginfo['uninstallable'] = True
-                    cataloginfo['uninstall_method'] = "remove_app"
-                    break
+        else:
+            appname = ''
+            for item in os.listdir(mountpoints[0]):
+                itempath = os.path.join(mountpoints[0], item)
+                if munkicommon.isApplication(itempath):
+                    appname = item
+                    appinfo = getiteminfo(itempath)
+                    if appinfo:
+                        break
+                        
+        if appinfo:                
+            appinfo['path'] = os.path.join("/Applications", appname)
+            cataloginfo = {}
+            cataloginfo['name'] = appinfo.get('CFBundleName',
+                                            os.path.splitext(appname)[0])
+            cataloginfo['version'] = \
+                        munkicommon.padVersionString(
+                        appinfo.get('CFBundleShortVersionString', "0")
+                        ,5)
+            cataloginfo['installs'] = [appinfo]
+            cataloginfo['installer_type'] = "appdmg"
+            cataloginfo['uninstallable'] = True
+            cataloginfo['uninstall_method'] = "remove_app"
                     
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
@@ -214,12 +224,8 @@ def getiteminfo(itempath):
             infodict['CFBundleName'] = pl['CFBundleName']
         if 'CFBundleIdentifier' in pl:
             infodict['CFBundleIdentifier'] = pl['CFBundleIdentifier']
-        if 'CFBundleShortVersionString' in pl:
-            infodict['CFBundleShortVersionString'] = \
-                pl['CFBundleShortVersionString'].split()[0]
-        elif 'CFBundleVersion' in pl:
-            infodict['CFBundleShortVersionString'] = \
-                pl['CFBundleVersion'].split()[0]
+        infodict['CFBundleShortVersionString'] = \
+            munkicommon.getVersionString(pl)
         if 'LSMinimumSystemVersion' in pl:
             infodict['minosversion'] = pl['LSMinimumSystemVersion']
         elif 'SystemVersionCheck:MinimumSystemVersion' in pl:
@@ -231,12 +237,8 @@ def getiteminfo(itempath):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
         pl = getBundleInfo(itempath)
-        if 'CFBundleShortVersionString' in pl:
-            infodict['CFBundleShortVersionString'] = \
-                pl['CFBundleShortVersionString'].split()[0]
-        elif 'CFBundleVersion' in pl:
-            infodict['CFBundleShortVersionString'] = \
-                pl['CFBundleVersion'].split()[0]
+        infodict['CFBundleShortVersionString'] = \
+            munkicommon.getVersionString(pl)
             
     elif itempath.endswith("Info.plist") or \
          itempath.endswith("version.plist"):
@@ -244,16 +246,13 @@ def getiteminfo(itempath):
         infodict['path'] = itempath
         try:
             pl = FoundationPlist.readPlist(itempath)
-            if 'CFBundleShortVersionString' in pl:
-                infodict['CFBundleShortVersionString'] = \
-                    pl['CFBundleShortVersionString'].split()[0]
-            elif 'CFBundleVersion' in pl:
-                infodict['CFBundleShortVersionString'] = \
-                    pl['CFBundleVersion'].split()[0]
+            infodict['CFBundleShortVersionString'] = \
+                munkicommon.getVersionString(pl)
         except FoundationPlist.NSPropertyListSerializationException:
             pass
         
-    if not 'CFBundleShortVersionString' in infodict:
+    if not 'CFBundleShortVersionString' in infodict and \
+       not 'CFBundleVersion' in infodict:
         infodict['type'] = 'file'
         infodict['path'] = itempath
         if os.path.isfile(itempath):
@@ -286,6 +285,13 @@ def main():
                     
                     If this flag is missing, the AdobeUber* files should
                     be at the top level of the mounted dmg.''')
+    p.add_option('--appname', '-a',
+                    help='''Optional flag.
+                     
+                    -If the installer item is a disk image with a 
+                    drag-and-drop application, this is the name or relative
+                    path of the application to be installed. Useful if there 
+                    is more than one application at the root of the dmg.''')
     p.add_option('--uninstallerdmg', '-u',
                     help='''If installer item is a DMG containing an Adobe CS4
                     Deployment Toolkit installation package or Adobe CS3
@@ -325,9 +331,13 @@ def main():
         
             if item.endswith('.dmg'):
                 pkgname = ''
+                appname = ''
                 if options.pkgname:
                     pkgname = options.pkgname
-                catinfo = getCatalogInfoFromDmg(item, pkgname)
+                if options.appname:
+                    appname = options.appname
+                
+                catinfo = getCatalogInfoFromDmg(item, pkgname, appname)
                 if not catinfo:
                     print >>sys.stderr, \
                         "Could not find a supported installer item in %s!" % \
