@@ -39,7 +39,8 @@ def launchMunkiStatus():
         munkiStatusPath = \
             "/Library/Application Support/Managed Installs/MunkiStatus.app"
         if os.path.exists(munkiStatusPath):
-            retcode = subprocess.call(["/usr/bin/open", munkiStatusPath])
+            retcode = subprocess.call(["/usr/bin/open", "-a",
+                                        munkiStatusPath])
 
 
 def launchAndConnectToMunkiStatus():
