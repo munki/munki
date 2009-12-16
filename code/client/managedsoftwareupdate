@@ -428,14 +428,20 @@ def main():
             # just install
             mustrestart = doInstallTasks()
         elif options.auto:
-            if munkicommon.getconsoleuser():
-                # someone is logged in, so notify
-                notifyUserOfUpdates()
+            consoleuser = munkicommon.getconsoleuser()
+            if consoleuser:
+                # someone is logged in.
+                if consoleuser == u"loginwindow":
+                    # someone is logged in, but we're sitting at
+                    # the loginwindow due to fast user switching
+                    # so do nothing
+                    pass
+                else:
+                    # notify the current console user
+                    notifyUserOfUpdates()
             elif getIdleSeconds() > 10:
                 # no console user, system is idle, so install
                 mustrestart = doInstallTasks()
-            else:
-                pass
         elif not options.quiet:
             print ("\nRun %s --installonly to install the downloaded "
                    "updates." % myname)
