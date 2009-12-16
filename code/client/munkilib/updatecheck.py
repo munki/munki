@@ -432,12 +432,9 @@ def compareBundleVersion(item):
     except FoundationPlist.NSPropertyListSerializationException:
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
-
-    if 'CFBundleShortVersionString' in pl:
-        installedvers = pl['CFBundleShortVersionString'].split()[0]
-        return compareVersions(installedvers, vers)
-    elif 'CFBundleVersion' in pl:
-        installedvers = pl['CFBundleVersion'].split()[0]
+        
+    installedvers = munkicommon.getVersionString(pl)
+    if installedvers:
         return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tNo version info in %s." % filepath)
@@ -446,7 +443,7 @@ def compareBundleVersion(item):
 
 def comparePlistVersion(item):
     """
-    Gets the CFBundleShortVersionString from the plist
+    Gets the version string from the plist
     at filepath and compares versions.
     Returns  0 if the plist isn't installed
             -1 if it's older
@@ -473,11 +470,8 @@ def comparePlistVersion(item):
         munkicommon.display_debug1("\t%s may not be a plist!" % filepath)
         return 0
     
-    if 'CFBundleShortVersionString' in pl:
-        installedvers = pl['CFBundleShortVersionString'].split()[0]
-        return compareVersions(installedvers, vers)
-    elif 'CFBundleVersion' in pl:
-        installedvers = pl['CFBundleVersion'].split()[0]
+    installedvers = munkicommon.getVersionString(pl)
+    if installedvers:
         return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1("\tNo version info in %s." % filepath)
@@ -870,13 +864,13 @@ def getItemDetail(name, cataloglist, vers=''):
     return None
     
     
-def enoughDiskSpace(manifestitem_pl, uninstalling=False):
+def enoughDiskSpace(manifestitem_pl, installlist=[], uninstalling=False):
     """
     Used to determine if there is enough disk space
     to be able to download and install the manifestitem
     """
     # fudgefactor is set to 100MB
-    fudgefactor = 100000
+    fudgefactor = 102400
     installeritemsize = 0
     installedsize = 0
     if 'installer_item_size' in manifestitem_pl:
@@ -890,8 +884,16 @@ def enoughDiskSpace(manifestitem_pl, uninstalling=False):
         installedsize = 0
         if 'uninstaller_item_size' in manifestitem_pl:
             installeritemsize = int(manifestitem_pl['uninstaller_item_size'])
-    diskspaceneeded = (installeritemsize + installedsize + fudgefactor)/1024
-    availablediskspace = munkicommon.getAvailableDiskSpace()/1024
+    diskspaceneeded = (installeritemsize + installedsize + fudgefactor)
+    
+    # munkicommon.getAvailableDiskSpace() returns KB
+    availablediskspace = munkicommon.getAvailableDiskSpace()
+    for item in installlist:
+        # subtract space needed for other items that are to be installed
+        if item.get('installer_item'):
+            availablediskspace = availablediskspace - \
+                                 item.get('installed_size',0)
+        
     if availablediskspace > diskspaceneeded:
         return True
     else:
@@ -904,7 +906,8 @@ def enoughDiskSpace(manifestitem_pl, uninstalling=False):
                                         "download and install %s." %
                                         manifestitem_pl.get('name'))
         munkicommon.display_warning("    %sMB needed; %sMB available" %
-                                    (diskspaceneeded, availablediskspace))
+                                                  (diskspaceneeded/1024,
+                                                   availablediskspace/1024))
         return False
 
 
@@ -1165,11 +1168,14 @@ def processInstall(manifestitem, cataloglist, installinfo):
     iteminfo["name"] = pl.get('name', '')
     iteminfo["manifestitem"] = manifestitemname
     iteminfo["description"] = pl.get('description', '')
+    iteminfo["installer_item_size"] = pl.get('installer_item_size',0)
+    iteminfo["installed_size"] = pl.get('installer_item_size',
+                                        iteminfo["installer_item_size"])
                
     if not isInstalled(pl):
         munkicommon.display_detail("Need to install %s" % manifestitemname)
         # check to see if there is enough free space to download and install
-        if not enoughDiskSpace(pl):
+        if not enoughDiskSpace(pl, installinfo.get('managed_installs',[])):
             iteminfo['installed'] = False
             iteminfo['note'] = \
                 "Insufficient disk space to download and install"
