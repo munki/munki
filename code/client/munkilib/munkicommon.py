@@ -34,6 +34,7 @@ from distutils import version
 from xml.dom import minidom
 
 from Foundation import NSDictionary, NSDate
+#from CoreFoundation import CFPreferencesCopyAppValue
 
 import munkistatus
 import FoundationPlist
@@ -434,6 +435,9 @@ def isApplication(pathname):
         infoplist = os.path.join(pathname, "Contents", "Info.plist")
         if os.path.exists(infoplist):
             pl = FoundationPlist.readPlist(infoplist)
+            if 'CFBundlePackageType' in pl:
+                if pl['CFBundlePackageType'] != 'APPL':
+                    return False
             # get CFBundleExecutable, 
             # falling back to bundle name if it's missing
             bundleexecutable = pl.get('CFBundleExecutable',     
@@ -480,7 +484,7 @@ def getManagedInstallsPrefs():
     prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
     # Added by bcw
     prefs['UseClientCertificate'] = False
-    
+        
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
     pl = {}
     if os.path.exists(prefsfile):
@@ -505,7 +509,7 @@ def getManagedInstallsPrefs():
         # no prefs file, so we'll write out a "default" prefs file
         del prefs['LastNotifiedDate']
         FoundationPlist.writePlist(prefs, prefsfile)
-                
+                            
     return prefs
 
 
@@ -581,6 +585,32 @@ def padVersionString(versString,tupleCount):
     return ".".join(components)
     
 
+def getVersionString(pl):
+    # Gets a version string from the plist.
+    # if there's a valid CFBundleShortVersionString, returns that.
+    # else if there's a CFBundleVersion, returns that
+    # else returns an empty string.
+    CFBundleShortVersionString = ''
+    if 'CFBundleShortVersionString' in pl:
+        CFBundleShortVersionString = \
+            pl['CFBundleShortVersionString'].split()[0]
+    if "Bundle versions string, short" in pl:
+        CFBundleShortVersionString = \
+            pl['Bundle versions string, short'].split()[0]
+    if CFBundleShortVersionString:
+        if CFBundleShortVersionString[0] in "0123456789":
+            # starts with a number...
+            return CFBundleShortVersionString
+    if 'CFBundleVersion' in pl:
+        # no CFBundleShortVersionString, or bad one
+        CFBundleVersion = str(pl['CFBundleVersion']).split()[0]
+        if CFBundleVersion[0] in "0123456789":
+            # starts with a number...
+            return CFBundleVersion
+            
+    return ''
+
+
 def getExtendedVersion(bundlepath):
     """
     Returns five-part version number like Apple uses in distribution
@@ -589,15 +619,10 @@ def getExtendedVersion(bundlepath):
     infoPlist = os.path.join(bundlepath,"Contents","Info.plist")                    
     if os.path.exists(infoPlist):
         pl = FoundationPlist.readPlist(infoPlist)
-        if "CFBundleShortVersionString" in pl:
-            return padVersionString(        
-                              pl["CFBundleShortVersionString"].split()[0],5)
-        elif "CFBundleVersion" in pl:
-            return padVersionString(pl["CFBundleVersion"].split()[0],5)
-        elif "Bundle versions string, short" in pl:
-            # another special case for JAMF Composer-generated packages. Wow.
-            return padVersionString(
-                            pl["Bundle versions string, short"].split()[0],5)
+        versionstring = getVersionString(pl)
+        if versionstring:
+            return padVersionString(versionstring, 5)
+            
     # didn't find a version number, so return 0...
     return "0.0.0.0.0"
   
@@ -1019,8 +1044,9 @@ def getAvailableDiskSpace(volumepath="/"):
             pl = FoundationPlist.readPlistFromString(out)
 
             if "FreeSpace" in pl:
-                freespace = pl["FreeSpace"]
-                return int(freespace/1024)
+                # pl["FreeSpace"] is in bytes
+                return int(pl["FreeSpace"]/1024)
+                
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             pass
