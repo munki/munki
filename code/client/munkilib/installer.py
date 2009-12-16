@@ -219,36 +219,39 @@ def copyAppFromDMG(dmgpath):
         # find an app at the root level, copy it to /Applications
         for item in os.listdir(mountpoint):
             itempath = os.path.join(mountpoint,item)
-            if item.endswith('.app'):
+            if munkicommon.isApplication(itempath):
                 appfound = True
-                destpath = os.path.join("/Applications", item)
-                if os.path.exists(destpath):
-                    retcode = subprocess.call(["/bin/rm", "-r", destpath])
-                    if retcode:
-                        munkicommon.display_error("Error removing existing "
-                                                  "%s" % destpath)
-                if retcode == 0:
-                    munkicommon.display_status(
-                                "Copying %s to Applications folder" % item)
-                    retcode = subprocess.call(["/bin/cp", "-pR", 
-                                                itempath, destpath])
-                    if retcode:
-                        munkicommon.display_error("Error copying %s to %s" % 
-                                                    (itempath, destpath))
-                if retcode == 0:
-                    # remove com.apple.quarantine attribute from copied app
-                    cmd = ["/usr/bin/xattr", destpath]
-                    p = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                         stdin=subprocess.PIPE, 
-                                         stdout=subprocess.PIPE, 
-                                         stderr=subprocess.PIPE)
-                    (out, err) = p.communicate()
-                    if out:
-                        xattrs = out.splitlines()
-                        if "com.apple.quarantine" in xattrs:
-                            err = subprocess.call(["/usr/bin/xattr", "-d", 
-                                                   "com.apple.quarantine", 
-                                                   destpath])
+                break
+                
+        if appfound:        
+            destpath = os.path.join("/Applications", item)
+            if os.path.exists(destpath):
+                retcode = subprocess.call(["/bin/rm", "-r", destpath])
+                if retcode:
+                    munkicommon.display_error("Error removing existing "
+                                              "%s" % destpath)
+            if retcode == 0:
+                munkicommon.display_status(
+                            "Copying %s to Applications folder" % item)
+                retcode = subprocess.call(["/bin/cp", "-pR", 
+                                            itempath, destpath])
+                if retcode:
+                    munkicommon.display_error("Error copying %s to %s" % 
+                                                (itempath, destpath))
+            if retcode == 0:
+                # remove com.apple.quarantine attribute from copied app
+                cmd = ["/usr/bin/xattr", destpath]
+                p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                                     stdin=subprocess.PIPE, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE)
+                (out, err) = p.communicate()
+                if out:
+                    xattrs = out.splitlines()
+                    if "com.apple.quarantine" in xattrs:
+                        err = subprocess.call(["/usr/bin/xattr", "-d", 
+                                               "com.apple.quarantine", 
+                                               destpath])
                     
         munkicommon.unmountdmg(mountpoint)
         if not appfound:
