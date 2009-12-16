@@ -274,7 +274,7 @@ def findSetupApp(dirpath):
 def runAdobeInstallTool(cmd, number_of_payloads=0):
     '''An abstraction of the tasks for running Adobe Setup,
     AdobeUberInstaller ot AdobeUberUninstaller'''
-    if not number_of_payloads:
+    if munkicommon.munkistatusoutput and not number_of_payloads:
         # indeterminate progress bar
         munkistatus.percent(-1)
     payload_completed_count = 0
