@@ -599,13 +599,20 @@ def getVersionString(pl):
             pl['Bundle versions string, short'].split()[0]
     if CFBundleShortVersionString:
         if CFBundleShortVersionString[0] in "0123456789":
-            # starts with a number...
+            # starts with a number; that's good
+            # now for another edge case thanks to Adobe:
+            # replace commas with periods
+            CFBundleShortVersionString = \
+                CFBundleShortVersionString.replace(',','.')
             return CFBundleShortVersionString
     if 'CFBundleVersion' in pl:
         # no CFBundleShortVersionString, or bad one
         CFBundleVersion = str(pl['CFBundleVersion']).split()[0]
         if CFBundleVersion[0] in "0123456789":
-            # starts with a number...
+            # starts with a number; that's good
+            # now for another edge case thanks to Adobe:
+            # replace commas with periods
+            CFBundleVersion = CFBundleVersion.replace(',','.')
             return CFBundleVersion
             
     return ''
