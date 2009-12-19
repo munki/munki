@@ -80,6 +80,10 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
         
     cataloginfo = None
     mountpoints = munkicommon.mountdmg(dmgpath)
+    if not mountpoints:
+        print >>sys.stderr, "Could not mount %s!" % dmgpath
+        exit(-1)
+        
     if pkgname:
         pkgpath = os.path.join(mountpoints[0], pkgname)
         if os.path.exists(pkgpath):
