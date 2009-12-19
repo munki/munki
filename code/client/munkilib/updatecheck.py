@@ -77,7 +77,7 @@ def makeCatalogDB(catalogitems):
         # build table of receipts              
         if 'receipts' in item:
             for receipt in item['receipts']:
-                if 'packageid' in receipt:
+                if 'packageid' in receipt and 'version' in receipt:
                     if not receipt['packageid'] in pkgid_table:
                         pkgid_table[receipt['packageid']] = {}
                     if not (receipt['version'] in   
@@ -1388,7 +1388,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         # check for uninstall info
         # walk through the list of items (sorted newest first)
         # and grab the first uninstall method we find.
-        if 'uninstallable' in item and 'uninstall_method' in item:
+        if item.get('uninstallable') and 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method']
             if uninstallmethod == 'removepackages':
                 packagesToRemove = getReceiptsToRemove(item)
@@ -2174,6 +2174,10 @@ def check(id=''):
                item.get('RestartAction') == 'RecommendRestart':
                 munkicommon.display_info("       *Restart required")
                 munkicommon.report['RestartRequired'] = True
+            if item.get('RestartAction') == 'RequireLogout':
+                munkicommon.display_info("       *Logout required")
+                munkicommon.report['LogoutRequired'] = True
+                
     if removalcount:
         munkicommon.display_info("The following items will be removed:")
     for item in installinfo['removals']:
@@ -2183,7 +2187,10 @@ def check(id=''):
                item.get('RestartAction') == 'RecommendRestart':
                 munkicommon.display_info("       *Restart required")
                 munkicommon.report['RestartRequired'] = True
-   
+            if item.get('RestartAction') == 'RequireLogout':
+                munkicommon.display_info("       *Logout required")
+                munkicommon.report['LogoutRequired'] = True
+           
     if installcount == 0 and removalcount == 0:
         munkicommon.display_info(
             "No changes to managed software are available.")
