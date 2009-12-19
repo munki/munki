@@ -81,6 +81,8 @@ def getPayloadInfo(dirpath):
                                 propvalue = ''
                                 for node in prop.childNodes:
                                     propvalue += node.nodeValue
+                                if propname == 'AdobeCode':
+                                    payloadinfo['AdobeCode'] = propvalue
                                 if propname == 'ProductName':
                                     payloadinfo['display_name'] = propvalue
                                 if propname == 'ProductVersion':
@@ -156,18 +158,17 @@ def getAdobeSetupInfo(installroot):
         if len(payloads) == 1:
             info['display_name'] = payloads[0]['display_name']
             info['version'] = payloads[0]['version']
-            info['installed_size'] = payloads[0]['installed_size']
         else:
             if not 'display_name' in info:
                 info['display_name'] = "ADMIN: choose from payloads"
-                info['payloads'] = payloads
             if not 'version' in info:
                 info['version'] = "ADMIN please set me"
-            installed_size = 0
-            for payload in payloads:
-                installed_size = installed_size + \
-                                 payload.get('installed_size',0)
-            info['installed_size'] = installed_size
+        info['payloads'] = payloads
+        installed_size = 0
+        for payload in payloads:
+            installed_size = installed_size + \
+                             payload.get('installed_size',0)
+        info['installed_size'] = installed_size
     return info
 
 
