@@ -96,7 +96,10 @@ def display_status(msg):
     if munkistatusoutput:
         munkistatus.detail(msg)
     elif verbose > 0:
-        print "%s..." % msg.encode('UTF-8')
+        if msg.endswith(".") or msg.endswith(u"…"):
+            print "%s" % msg.encode('UTF-8')
+        else:
+            print "%s..." % msg.encode('UTF-8')
         sys.stdout.flush()
 
 

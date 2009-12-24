@@ -33,7 +33,7 @@ import munkistatus
 
 # dmg helper
 # we need this instead of the one in munkicommon because the Adobe stuff
-# needs the dmgs mounted under /Volumes.  We can merge this later.
+# needs the dmgs mounted under /Volumes.  We can merge this later (or not).
 def mountAdobeDmg(dmgpath):
     """
     Attempts to mount the dmg at dmgpath
@@ -417,7 +417,263 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
+
+
+# appdict is a global so we don't call system_profiler more than once per session
+appdict = {}
+def getAppData():
+    """
+    Queries system_profiler and returns a dict
+    of app info items
+    """
+    global appdict
+    if appdict == {}:
+        munkicommon.display_debug1(
+            "Getting info on currently installed applications...")
+        cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
+        p = subprocess.Popen(cmd, shell=False, bufsize=1,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, 
+                             stderr=subprocess.PIPE)
+        (plist, err) = p.communicate()
+        if p.returncode == 0:
+            pl = FoundationPlist.readPlistFromString(plist)
+            # top level is an array instead of a dict, so get dict
+            spdict = pl[0]
+            if '_items' in spdict:
+                appdict = spdict['_items']
+
+    return appdict
+
+
+lastpatchlogline = ''
+def getAcrobatPatchLogInfo(logpath):
+    global lastpatchlogline
+    if os.path.exists(logpath):
+        p = subprocess.Popen(['/usr/bin/tail', '-1', logpath], 
+            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, err) = p.communicate()
+        logline = output.rstrip('\n')
+        # is it different than the last time we checked?
+        if logline != lastpatchlogline:
+            lastpatchlogline = logline
+            return logline
+    return ''
+
+
+def findAcrobatPatchApp(dirpath):
+    '''Attempts to find an AcrobatPro patching application
+    in dirpath'''
+    for (path, dirs, files) in os.walk(dirpath):
+        if path.endswith(".app"):
+            # look for Adobe's patching script
+            patch_script_path = os.path.join(path, "Contents", "Resources",
+                                        "ApplyOperation.py")
+            if os.path.exists(patch_script_path):
+                return path
+    return ''
+
+
+def updateAcrobatPro(dmgpath):
+    """Uses the scripts and Resources inside the Acrobat Patch application 
+    bundle to silently update Acrobat Pro and related apps
+    Why oh why does this use a different mechanism than the other Adobe 
+    apps?"""
+    
+    if munkicommon.munkistatusoutput:
+        munkistatus.percent(-1)
+    
+    #first mount the dmg
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
+    mountpoints = mountAdobeDmg(dmgpath)
+    if mountpoints:
+        installroot = mountpoints[0]
+        pathToAcrobatPatchApp = findAcrobatPatchApp(installroot)
+    else:
+        munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
+        return -1
         
+    if not pathToAcrobatPatchApp:
+        munkicommon.display_error("No Acrobat Patch app at %s" %
+                                   pathToAcrobatPatchApp)
+        munkicommon.unmountdmg(installroot)
+        return -1
+        
+    # some values needed by the patching script
+    resourcesDir = os.path.join(pathToAcrobatPatchApp, 
+                                "Contents", "Resources")
+    ApplyOperation = os.path.join(resourcesDir, "ApplyOperation.py")        
+    callingScriptPath = os.path.join(resourcesDir, "InstallUpdates.sh")
+    
+    appList = []
+    appListFile = os.path.join(resourcesDir, "app_list.txt")
+    if os.path.exists(appListFile):
+        f = open(appListFile, mode='r', buffering=1)
+        if f:
+            for line in f.readlines():
+                appList.append(line)
+            f.close()
+            
+    if not appList:
+        munkicommon.display_error("Did not find a list of apps to update.")
+        munkicommon.unmountdmg(installroot)
+        return -1
+        
+    payloadNum = -1
+    for line in appList:
+        payloadNum = payloadNum + 1
+        if munkicommon.munkistatusoutput:
+            munkistatus.percent(getPercent(payloadNum+1, len(appList)+1))
+        
+        (appname, status) = line.split("\t")
+        munkicommon.display_status("Searching for %s" % appname)
+        candidates = [item for item in getAppData()
+                      if item.get("path","").endswith("/" + appname) and 
+                      not item.get("path","").startswith("/Volumes")]
+        # hope there's only one!
+        if len(candidates) == 0:
+            if status == "optional":
+                continue
+            else:
+                munkicommon.display_error("Cannot patch %s because it "
+                                          "was not found on the startup "
+                                          "disk." % appname)
+                munkicommon.unmountdmg(installroot)
+                return -1
+                
+        if len(candidates) > 1:
+            munkicommon.display_error("Cannot patch %s because we found "
+                                      "more than one copy on the "
+                                      "startup disk." % appname)
+            munkicommon.unmountdmg(installroot)
+            return -1
+        
+        munkicommon.display_status("Updating %s" % appname)
+        apppath = os.path.dirname(candidates[0]["path"])
+        cmd = [ApplyOperation, apppath, appname, resourcesDir,
+               callingScriptPath, str(payloadNum)]
+        
+        # figure out the log file path
+        patchappname = os.path.basename(pathToAcrobatPatchApp)
+        logfile_name = patchappname.split('.')[0] + str(payloadNum) + '.log'
+        homePath = os.path.expanduser("~")
+        logfile_dir = os.path.join(homePath, "Library", "Logs", 
+                                            "Adobe", "Acrobat")
+        logfile_path = os.path.join(logfile_dir, logfile_name)
+        
+        p = subprocess.Popen(cmd, shell=False, bufsize=1,
+                             stdin=subprocess.PIPE, 
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        while (p.poll() == None): 
+            time.sleep(1)
+            #loginfo = getAcrobatPatchLogInfo(logfile_path)
+            #if loginfo:
+            #    print loginfo
+                
+        # run of patch tool completed  
+        retcode = p.poll()
+        if retcode != 0:
+            munkicommon.display_error("Error patching %s: %s" % 
+                                       (appname, retcode))
+            break
+        else:
+            munkicommon.display_status("Patching %s complete." % appname)
+    
+    munkicommon.display_status("Done.")
+    if munkicommon.munkistatusoutput:
+        munkistatus.percent(100)
+    
+    munkicommon.unmountdmg(installroot)
+    return retcode
+    
+
+def getBundleInfo(path):
+    """
+    Returns Info.plist data if available
+    for bundle at path
+    """
+    infopath = os.path.join(path, "Contents", "Info.plist")
+    if not os.path.exists(infopath):
+        infopath = os.path.join(path, "Resources", "Info.plist")
+
+    if os.path.exists(infopath):
+        try:
+            pl = FoundationPlist.readPlist(infopath)
+            return pl
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+
+    return None
+
+
+
+def getAdobeCatalogInfo(mountpoint, pkgname):
+    '''Used by makepkginfo to build pkginfo data for Adobe
+    installers/updaters'''
+    
+    # Look for AdobeUberInstaller items (CS4 install)
+    pkgroot = os.path.join(mountpoint, pkgname)
+    adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
+    if os.path.exists(adobeinstallxml):
+        # this is a CS4 Enterprise Deployment package
+        cataloginfo = getAdobePackageInfo(pkgroot)
+        if cataloginfo:
+            # add some more data
+            cataloginfo['name'] = \
+                cataloginfo['display_name'].replace(" ",'')
+            cataloginfo['uninstallable'] = True
+            cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
+            cataloginfo['installer_type'] = "AdobeUberInstaller"
+            if pkgname:
+                cataloginfo['package_path'] = pkgname
+            return cataloginfo
+            
+    # maybe this is an Adobe update DMG or CS3 installer
+    # look for Adobe Setup.app
+    setuppath = findSetupApp(mountpoint)
+    if setuppath:
+        cataloginfo = getAdobeSetupInfo(mountpoint)
+        if cataloginfo:
+            # add some more data
+            cataloginfo['name'] = \
+                cataloginfo['display_name'].replace(" ",'')
+            cataloginfo['installer_type'] = "AdobeSetup"
+            if cataloginfo.get('AdobeSetupType') == "ProductInstall":
+                cataloginfo['uninstallable'] = True
+                cataloginfo['uninstall_method'] = "AdobeSetup"
+            else:
+                cataloginfo['description'] = "Adobe updater"
+                cataloginfo['uninstallable'] = False
+                cataloginfo['update_for'] = ["PleaseEditMe-1.0.0.0.0"]
+            return cataloginfo
+            
+    # maybe this is an Adobe Acrobat 9 Pro patcher?
+    acrobatpatcherapp = findAcrobatPatchApp(mountpoint)
+    if acrobatpatcherapp:
+        cataloginfo = {}
+        cataloginfo['installer_type'] = "AdobeAcrobatUpdater"
+        cataloginfo['uninstallable'] = False
+        pl = getBundleInfo(acrobatpatcherapp)
+        cataloginfo['version'] = munkicommon.getVersionString(pl)
+        cataloginfo['name'] = "AcrobatPro9Update"
+        cataloginfo['display_name'] = "Adobe Acrobat Pro Update"
+        cataloginfo['update_for'] = ["AcrobatPro9"]
+        cataloginfo['RestartAction'] = 'RequireLogout'
+        cataloginfo['requires'] = []
+        cataloginfo['installs'] = \
+            [{'CFBundleIdentifier': 'com.adobe.Acrobat.Pro',
+             'CFBundleName': 'Acrobat',
+             'CFBundleShortVersionString': cataloginfo['version'],
+             'path': 
+            '/Applications/Adobe Acrobat 9 Pro/Adobe Acrobat Pro.app',
+              'type': 'application'}]
+        return cataloginfo
+    
+    # didn't find any Adobe installers/updaters we understand
+    return None
+
 
 def adobeSetupError(errorcode):
     # returns text description for numeric error code
@@ -429,7 +685,7 @@ def adobeSetupError(errorcode):
                      3 : "Unable to initialize ExtendScript",
                      4 : "User interface workflow failed",
                      5 : "Unable to initialize user interface workflow",
-                     6 : "Slient workflow completed with errors",
+                     6 : "Silent workflow completed with errors",
                      7 : "Unable to complete the silent workflow",
                      8 : "Exit and restart",
                      9 : "Unsupported operating system version",

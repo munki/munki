@@ -315,6 +315,9 @@ def installWithInfo(dirpath, installlist):
                     # Adobe Setup says restart needed
                     restartflag = True
                     retcode = 0
+            elif installer_type == "AdobeAcrobatUpdater":
+                # Acrobat Pro 9 updater
+                retcode = adobeutils.updateAcrobatPro(itempath)
             elif installer_type == "appdmg":
                 retcode = copyAppFromDMG(itempath)
             else:

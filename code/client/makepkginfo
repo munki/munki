@@ -98,47 +98,11 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
                 # get out of fsitem loop
                 break
-        
-            
-        if not cataloginfo:
-            # ADOBE STUFF
-            # no Apple installer items found. 
-            # Look for AdobeUberInstaller items
-            pkgroot = os.path.join(mountpoints[0], pkgname)
-            adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
-            if os.path.exists(adobeinstallxml):
-                # this is a CS4 Enterprise Deployment package
-                cataloginfo = adobeutils.getAdobePackageInfo(pkgroot)
-                if cataloginfo:
-                    # add some more data
-                    cataloginfo['name'] = \
-                        cataloginfo['display_name'].replace(" ",'')
-                    cataloginfo['uninstallable'] = True
-                    cataloginfo['uninstall_method'] = "AdobeUberUninstaller"
-                    cataloginfo['installer_type'] = "AdobeUberInstaller"
-                    if pkgname:
-                        cataloginfo['package_path'] = pkgname
-    
-        if not cataloginfo:
-            # ADOBE STUFF
-            # maybe this is an Adobe update DMG or CS3 installer
-            # look for Adobe Setup.app
-            setuppath = adobeutils.findSetupApp(mountpoints[0])
-            if setuppath:
-                cataloginfo = adobeutils.getAdobeSetupInfo(mountpoints[0])
-                if cataloginfo:
-                    # add some more data
-                    cataloginfo['name'] = \
-                        cataloginfo['display_name'].replace(" ",'')
-                    cataloginfo['installer_type'] = "AdobeSetup"
-                    if cataloginfo.get('AdobeSetupType') == "ProductInstall":
-                        cataloginfo['uninstallable'] = True
-                        cataloginfo['uninstall_method'] = "AdobeSetup"
-                    else:
-                        cataloginfo['description'] = "Adobe updater"
-                        cataloginfo['uninstallable'] = False
-                        cataloginfo['update_for'] = ["PleaseEditMe-1.0.0.0.0"]
                 
+        if not cataloginfo:
+            cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
+                                                         pkgname) 
+                    
     if not cataloginfo:
         # maybe this is an appdmg
         # look for an app at the top level of the dmg
