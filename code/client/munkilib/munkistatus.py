@@ -32,15 +32,27 @@ import time
 s = None
 
 def launchMunkiStatus():
-    # first let LaunchServices try
-    retcode = subprocess.call(["/usr/bin/open", "-a", "MunkiStatus.app"])
-    if retcode:
-        # that failed; let's look for an exact path
-        munkiStatusPath = \
-            "/Library/Application Support/Managed Installs/MunkiStatus.app"
-        if os.path.exists(munkiStatusPath):
-            retcode = subprocess.call(["/usr/bin/open", "-a",
-                                        munkiStatusPath])
+    # use launchd KeepAlive path so it launches from a launchd agent
+    # in the correct context.
+    # this is more complicated to set up, but makes Apple (and launchservices)
+    # happier.
+    # there needs to be a launch agent that is triggered when the launchfile
+    # is created; and that launch agent then runs MunkiStatus.app.
+    launchfile = "/var/run/com.googlecode.munki.munkistatus"
+    cmd = ['/usr/bin/touch', launchfile]
+    retcode = subprocess.call(cmd)
+    if os.path.exists(launchfile):
+        os.unlink(launchfile)
+    
+    # OLD: let LaunchServices try
+    #retcode = subprocess.call(["/usr/bin/open", "-a", "MunkiStatus.app"])
+    #if retcode:
+    #    # that failed; let's look for an exact path
+    #    munkiStatusPath = \
+    #        "/Library/Application Support/Managed Installs/MunkiStatus.app"
+    #    if os.path.exists(munkiStatusPath):
+    #        retcode = subprocess.call(["/usr/bin/open", "-a",
+    #                                    munkiStatusPath])
 
 
 def launchAndConnectToMunkiStatus():
@@ -112,17 +124,16 @@ def getMunkiStatusPID():
 
 
 def getMunkiStatusSocket():
-    pid = getMunkiStatusPID()
-    if pid:
-        socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % pid
-        for i in range(0,5):
+    for i in range(0,10):
+        pid = getMunkiStatusPID()
+        if pid:
+            socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % pid
             if os.path.exists(socketpath):
                 return socketpath
             else:
                 # sleep and try again
                 time.sleep(.2)
-    else:
-        return ""
+    return ""
         
         
 def activate():

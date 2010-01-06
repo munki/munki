@@ -41,7 +41,7 @@ import FoundationPlist
 
 def get_version():
     '''Returns version of munkitools'''
-    return "0.4.8"
+    return "0.4.9"
 
 
 # output and logging functions
