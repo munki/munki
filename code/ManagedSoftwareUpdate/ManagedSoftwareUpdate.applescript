@@ -272,17 +272,16 @@ on alert ended theObject with reply withReply
 		end ignoring
 	end if
 	if button returned of withReply is "Update without logging out" then
-		-- trigger managedinstaller via launchd WatchPath
+		-- trigger managedinstaller via launchd KeepAlive path trigger
 		-- we touch a file that launchd is is watching
-		-- launchd, in turn, launches managedsoftwareupdate --installonly as root
+		-- launchd, in turn, launches managedsoftwareupdate --installwithnologout as root
 		try
-			set triggerpath to quoted form of (managedInstallDir & "/.managedinstall.launchd")
-			do shell script "/usr/bin/touch " & triggerpath
+			do shell script "/usr/bin/touch /private/tmp/.com.googlecode.munki.managedinstall.launchd"
 			quit
 		on error
 			show window "mainWindow"
 			display alert "Cannot start installation session" message ¬
-				"There is a configuration problem with the managed software installer. Contact your systems administrator." default button "Quit" as informational attached to window 1
+				"There is a configuration problem with the managed software installer. Could not start install session. Contact your systems administrator." default button "Quit" as informational attached to window 1
 		end try
 	end if
 	if button returned of withReply is "Quit" then
@@ -353,16 +352,15 @@ on activated theObject
 					-- we're currently checking, just bring the status window to the front
 					tell application "MunkiStatus" to activate
 				else
-					-- run managedsoftwareupdate --manual
+					-- run managedsoftwareupdate --manualcheck
 					try
-						-- touch a file to get launchd to run managedsoftwareupdate --manual as root
-						set triggerpath to quoted form of (managedInstallDir & "/.updatecheck.launchd")
-						do shell script "/usr/bin/touch " & triggerpath
+						-- touch a file to get launchd to run managedsoftwareupdate --manualcheck as root
+						do shell script "/usr/bin/touch /private/tmp/.com.googlecode.munki.updatecheck.launchd"
 						-- when it's done, it sends an activate message or launches us again
 					on error
 						show window "mainWindow"
 						display alert "Cannot check for updates." message ¬
-							"There is a configuration problem with the managed software installer. Contact your systems administrator." default button "Quit" as informational attached to window 1
+							"There is a configuration problem with the managed software installer. Could not start update check process. Contact your systems administrator." default button "Quit" as informational attached to window 1
 					end try
 				end if
 			end if
