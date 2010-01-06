@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.googlecode.munki.munkistatus</string>
+  <key>LimitLoadToSessionType</key>
+  <array>
+    <string>LoginWindow</string>
+    <string>Aqua</string>
+  </array>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Library/Application Support/Managed Installs/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
+  </array>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>KeepAlive</key>
+  <dict>
+     <key>PathState</key>
+     <dict>
+       <key>/var/run/com.googlecode.munki.munkistatus</key>
+       <true/>
+     </dict>
+  </dict>
+</dict>
+</plist>
