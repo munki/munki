@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Debug</key>
-  <true/>
   <key>Label</key>
   <string>com.googlecode.munki.managedsoftwareupdate-manualcheck</string>
   <key>ProgramArguments</key>
@@ -11,12 +9,17 @@
     <string>/usr/local/munki/managedsoftwareupdate</string>
     <string>--manualcheck</string>
   </array>
-  <key>WatchPaths</key>
-  <array>
-    <string>/Library/Managed Installs/.updatecheck.launchd</string>
-  </array>
+  <key>KeepAlive</key>
+  <dict>
+     <key>PathState</key>
+     <dict>
+       <key>/private/tmp/.com.googlecode.munki.updatecheck.launchd</key>
+       <true/>
+     </dict>
+  </dict>
   <key>OnDemand</key>
   <true/>
 </dict>
 </plist>
+
 
