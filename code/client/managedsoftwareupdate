@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -309,6 +309,11 @@ def main():
     if options.installwithnologout:
         # typically invoked by Managed Software Update.app
         # by user who decides not to logout
+        launchdtriggerfile = \
+            "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
+        if os.path.exists(launchdtriggerfile):
+            # remove it so we aren't automatically relaunched 
+            os.unlink(launchdtriggerfile)
         runtype = "installwithnologout"
         options.munkistatusoutput = True
         options.quiet = True
@@ -317,6 +322,11 @@ def main():
         
     if options.manualcheck:
         # triggered by Managed Software Update.app
+        launchdtriggerfile = \
+            "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
+        if os.path.exists(launchdtriggerfile):
+            # remove it so we aren't automatically relaunched 
+            os.unlink(launchdtriggerfile)
         runtype = "manualcheck"
         options.munkistatusoutput = True
         options.quiet = True
@@ -372,7 +382,7 @@ def main():
     
     if options.verbose: 
         print "Managed Software Update Tool"
-        print "Copyright 2009 The Munki Project"
+        print "Copyright 2010 The Munki Project"
         print "http://code.google.com/p/munki\n"
     
     updatecheckresult = None
