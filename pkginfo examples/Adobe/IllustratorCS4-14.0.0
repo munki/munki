@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Installs Adobe Illustrator CS4 and related tools.</string>
+	<key>display_name</key>
+	<string>Adobe Illustrator CS4</string>
+	<key>installed_size</key>
+	<integer>2100000</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Install_Illustrator_CS4.dmg</string>
+	<key>installer_item_size</key>
+	<integer>1513675</integer>
+	<key>installer_type</key>
+	<string>AdobeUberInstaller</string>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>IllustratorCS4</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.illustrator</string>
+			<key>CFBundleName</key>
+			<string>Illustrator</string>
+			<key>CFBundleShortVersionString</key>
+			<string>367</string>
+			<key>path</key>
+			<string>/Applications/Adobe Illustrator CS4/Adobe Illustrator.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>AdobeUberUninstaller</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstaller_item_location</key>
+	<string>apps/Adobe/Uninstall_Illustrator_CS4.dmg</string>
+	<key>uninstaller_item_size</key>
+	<integer>60398</integer>
+	<key>version</key>
+	<string>14.0.0.0.0</string>
+</dict>
+</plist>
+

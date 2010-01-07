@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>display_name</key>
+	<string>Adobe Photoshop CS3</string>
+	<key>installed_size</key>
+	<integer>973851</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Install_AdobePhotoshopCS3.dmg</string>
+	<key>installer_item_size</key>
+	<integer>811528</integer>
+	<key>installer_type</key>
+	<string>AdobeSetup</string>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCS3</string>
+	<key>installs</key>
+  	<array>
+  		<dict>
+  			<key>CFBundleIdentifier</key>
+  			<string>com.adobe.Photoshop</string>
+  			<key>CFBundleName</key>
+  			<string>Photoshop</string>
+  			<key>CFBundleShortVersionString</key>
+  			<string>10.0</string>
+  			<key>path</key>
+  			<string>/Applications/Adobe Photoshop CS3/Adobe Photoshop CS3.app</string>
+  			<key>type</key>
+  			<string>application</string>
+  		</dict>
+  	</array>
+	<key>autoremove</key>
+  <true/>
+	<key>uninstall_method</key>
+	<string>AdobeSetup</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstaller_item_location</key>
+	<string>apps/Adobe/Uninstall_AdobePhotoshopCS3.dmg</string>
+	<key>uninstaller_item_size</key>
+	<integer>9331</integer>
+	<key>version</key>
+	<string>10.0.0.0.0</string>
+</dict>
+</plist>
+

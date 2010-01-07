@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Updated digital camera RAW support for Adobe CS4 applications.</string>
+	<key>display_name</key>
+	<string>Adobe Camera Raw</string>
+	<key>installed_size</key>
+	<integer>78700</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Camera_Raw_5_6_updater.dmg</string>
+	<key>installer_item_size</key>
+	<integer>51849</integer>
+	<key>installer_type</key>
+	<string>AdobeSetup</string>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeCameraRaw</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleShortVersionString</key>
+			<string>5.6</string>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Plug-Ins/CS4/File Formats/Camera Raw.plugin</string>
+			<key>type</key>
+			<string>bundle</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+	  <string>PhotoshopCS4</string>
+	  <string>IllustratorCS4</string>
+	  <string>AfterEffectsCS4</string>
+	  <string>AdobeCS4DesignStandard</string>
+	  <string>AdobeCS4DesignPremium</string>
+	  <string>AdobeCS4MasterCollection</string>
+	  <string>AdobeCS4ProductionPremium</string>
+	</array>
+	<key>version</key>
+	<string>5.6.0.0.0</string>
+</dict>
+</plist>
+

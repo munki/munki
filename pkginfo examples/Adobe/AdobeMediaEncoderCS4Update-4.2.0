@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Adobe updater</string>
+	<key>display_name</key>
+	<string>Adobe Media Encoder CS4 Update</string>
+	<key>installed_size</key>
+	<integer>307975</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/AME_All_CS4.2_mul_AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>102934</integer>
+	<key>installer_type</key>
+	<string>AdobeSetup</string>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeMediaEncoderCS4Update</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.ame.application</string>
+			<key>CFBundleShortVersionString</key>
+			<string>4.2</string>
+			<key>path</key>
+			<string>/Applications/Adobe Media Encoder CS4/Adobe Media Encoder CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeCS4MasterCollection</string>
+		<string>AdobeCS4ProductionPremium</string>
+		<string>AfterEffectsCS4</string>
+	</array>
+	<key>version</key>
+	<string>4.2.0.0.0</string>
+</dict>
+</plist>
+

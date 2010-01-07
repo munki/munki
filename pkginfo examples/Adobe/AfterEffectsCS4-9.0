@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Adobe After Effects CS4 and related tools.</string>
+	<key>display_name</key>
+	<string>After Effects CS4</string>
+	<key>installed_size</key>
+	<integer>1321961</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Install_AfterEffectsCS4.dmg</string>
+	<key>installer_item_size</key>
+	<integer>1374095</integer>
+	<key>installer_type</key>
+	<string>AdobeUberInstaller</string>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AfterEffectsCS4</string>
+	<key>installs</key>
+	<array>
+	  <dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.AfterEffects</string>
+			<key>CFBundleName</key>
+			<string>After Effects</string>
+			<key>CFBundleShortVersionString</key>
+			<string>9.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe After Effects CS4/Adobe After Effects CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>AdobeUberUninstaller</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstaller_item_location</key>
+	<string>apps/Adobe/Uninstall_AfterEffectsCS4.dmg</string>
+	<key>uninstaller_item_size</key>
+	<integer>63681</integer>
+	<key>version</key>
+	<string>9.0.0.0.0</string>
+</dict>
+</plist>
+

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Installs InDesign, Photoshop Extended, Illustrator, Acrobat 9 Pro, Flash Professional, Dreamweaver, Fireworks, Contribute, After Effects, Premiere Pro, Soundbooth and more.</string>
+	<key>display_name</key>
+	<string>Adobe CS4 Master Collection</string>
+	<key>installed_size</key>
+	<integer>5557453</integer>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/Install_AdobeCS4MasterCollection.dmg</string>
+	<key>installer_item_size</key>
+	<integer>7251932</integer>
+	<key>installer_type</key>
+	<string>AdobeUberInstaller</string>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeCS4MasterCollection</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.Photoshop</string>
+			<key>CFBundleName</key>
+			<string>Photoshop</string>
+			<key>CFBundleShortVersionString</key>
+			<string>11.0.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe Photoshop CS4/Adobe Photoshop CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.illustrator</string>
+			<key>CFBundleName</key>
+			<string>Illustrator</string>
+			<key>CFBundleShortVersionString</key>
+			<string>367</string>
+			<key>path</key>
+			<string>/Applications/Adobe Illustrator CS4/Adobe Illustrator.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.InDesign</string>
+			<key>CFBundleName</key>
+			<string>InDesign</string>
+			<key>CFBundleShortVersionString</key>
+			<string>6.0.0.352</string>
+			<key>path</key>
+			<string>/Applications/Adobe InDesign CS4/Adobe InDesign CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.Acrobat.Pro</string>
+			<key>CFBundleName</key>
+			<string>Acrobat</string>
+			<key>CFBundleShortVersionString</key>
+			<string>9.0.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe Acrobat 9 Pro/Adobe Acrobat Pro.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.AfterEffects</string>
+			<key>CFBundleName</key>
+			<string>After Effects</string>
+			<key>CFBundleShortVersionString</key>
+			<string>9.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe After Effects CS4/Adobe After Effects CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.dreamweaver-10.0</string>
+			<key>CFBundleName</key>
+			<string>Dreamweaver</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.0.0.4117</string>
+			<key>path</key>
+			<string>/Applications/Adobe Dreamweaver CS4/Adobe Dreamweaver CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.macromedia.fireworks</string>
+			<key>CFBundleName</key>
+			<string>Fireworks</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.0.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe Fireworks CS4/Adobe Fireworks CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.flash-10.0</string>
+			<key>CFBundleName</key>
+			<string>Flash</string>
+			<key>CFBundleShortVersionString</key>
+			<string>10.0.0.544</string>
+			<key>path</key>
+			<string>/Applications/Adobe Flash CS4/Adobe Flash CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.AdobePremierePro</string>
+			<key>CFBundleName</key>
+			<string>Premiere Pro</string>
+			<key>CFBundleShortVersionString</key>
+			<string>4.0.0</string>
+			<key>path</key>
+			<string>/Applications/Adobe Premiere Pro CS4/Adobe Premiere Pro CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.Soundbooth</string>
+			<key>CFBundleName</key>
+			<string>Adobe Soundbooth CS4</string>
+			<key>CFBundleShortVersionString</key>
+			<string>20080902.0652</string>
+			<key>path</key>
+			<string>/Applications/Adobe Soundbooth CS4/Adobe Soundbooth CS4.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>AdobeUberUninstaller</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>uninstaller_item_location</key>
+	<string>apps/Adobe/Uninstall_AdobeCS4MasterCollection.dmg</string>
+	<key>version</key>
+	<string>4.0.0.0.0</string>
+</dict>
+</plist>
+
