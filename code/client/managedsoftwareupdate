@@ -33,19 +33,18 @@ from munkilib import munkistatus
 from munkilib import appleupdates
 from munkilib import FoundationPlist
 
+
 def getIdleSeconds():
-    # stolen from Karl Kuehn -- thanks, Karl!
-    # I'd like to Python-ize it a bit better; 
-    # calling awk seems unPythonic, but it works.
-    commandString = \
-    "/usr/sbin/ioreg -c IOHIDSystem -d 4 | /usr/bin/awk '/Idle/ { print $4 }'"
-    ioregProcess = subprocess.Popen([commandString], shell=True,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-    if ioregProcess.wait() != 0:
-        return 0
-    # convert from Nanoseconds
-    return int(int(ioregProcess.stdout.read()) / 1000000000) 
+    '''Gets the number of seconds since the last mouse or keyboard event'''
+    cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4']
+    p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = p.communicate()
+    ioreglines = output.splitlines()
+    for line in ioreglines:
+        if "Idle" in line:
+            parts = line.split()
+            return int(int(parts[3])/1000000000)
     
     
 def clearLastNotifiedDate():
