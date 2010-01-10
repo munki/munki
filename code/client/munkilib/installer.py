@@ -457,7 +457,7 @@ def processRemovals(removallist):
                                     message = "Uninstall of %s failed." % name
                                 munkicommon.display_error(message)
                             else:
-                                munkicommon.log("Uninstall of %s was"
+                                munkicommon.log("Uninstall of %s was "
                                                 "successful." % name)
                                 
                     elif uninstallmethod[0] == "AdobeUberUninstaller":

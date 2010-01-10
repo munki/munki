@@ -2069,6 +2069,7 @@ def check(id=''):
                 
         if munkicommon.munkistatusoutput:
             # reset progress indicator and detail field
+            munkistatus.message("Checking for additional changes...")
             munkistatus.percent("-1")
             munkistatus.detail('')
         

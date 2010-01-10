@@ -363,9 +363,9 @@ def main():
                 # display an appropriate message
                 # launch MunkiStatus so focus leaves 
                 # Managed Software Update.app
+                munkistatus.activate()
                 munkistatus.message("Checking for available updates")
                 recordUpdateCheckResult(-1)
-                retcode = subprocess.call(cmd)
                 # activate Managed Software Update.app
                 notifyUserOfUpdates(True)
                 munkistatus.quit()
