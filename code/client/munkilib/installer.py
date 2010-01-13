@@ -233,7 +233,7 @@ def copyAppFromDMG(dmgpath):
             if retcode == 0:
                 munkicommon.display_status(
                             "Copying %s to Applications folder" % item)
-                retcode = subprocess.call(["/bin/cp", "-pR", 
+                retcode = subprocess.call(["/bin/cp", "-R", 
                                             itempath, destpath])
                 if retcode:
                     munkicommon.display_error("Error copying %s to %s" % 
