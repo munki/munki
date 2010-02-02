@@ -1037,7 +1037,7 @@ def lookForUpdates(manifestitem, cataloglist, installinfo):
         update_items = [catalogitem['name']
                             for catalogitem in updaters 
                             if (name in catalogitem.get('update_for',[]) or
-                                nameAndVersion in   
+                                nameWithVersion in 
                                 catalogitem.get('update_for',[]))]
         if update_items:
             update_list.extend(update_items)
