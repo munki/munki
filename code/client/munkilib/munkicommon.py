@@ -598,7 +598,7 @@ def getVersionString(pl):
     # else if there's a CFBundleVersion, returns that
     # else returns an empty string.
     CFBundleShortVersionString = ''
-    if 'CFBundleShortVersionString' in pl:
+    if pl.get('CFBundleShortVersionString'):
         CFBundleShortVersionString = \
             pl['CFBundleShortVersionString'].split()[0]
     if "Bundle versions string, short" in pl:
@@ -612,7 +612,7 @@ def getVersionString(pl):
             CFBundleShortVersionString = \
                 CFBundleShortVersionString.replace(',','.')
             return CFBundleShortVersionString
-    if 'CFBundleVersion' in pl:
+    if pl.get('CFBundleVersion'):
         # no CFBundleShortVersionString, or bad one
         CFBundleVersion = str(pl['CFBundleVersion']).split()[0]
         if CFBundleVersion[0] in "0123456789":
