@@ -38,6 +38,29 @@ from removepackages import removepackages
 munkicommon.report['InstallResults'] = []
 munkicommon.report['RemovalResults'] = []
 
+def removeBundleRelocationInfo(pkgpath):
+    '''Attempts to remove any info in the package
+    that would cause bundle relocation behavior.
+    This makes bundles install or update in their
+    default location.'''
+    if os.path.isdir(pkgpath):
+        # remove relocatable stuff
+        tokendefinitions = os.path.join(pkgpath,
+            "Contents/Resources/TokenDefinitions.plist")
+        if os.path.exists(tokendefinitions):
+            try:
+                os.remove(tokendefinitions)
+            except:
+                pass
+        infoplist = os.path.join(pkgpath, "Contents/Info.plist")
+        pl = FoundationPlist.readPlist(infoplist)
+        if 'IFPkgPathMappings' in pl:
+            del pl['IFPkgPathMappings']
+            try:
+                FoundationPlist.writePlist(pl, infoplist)
+            except:
+                pass
+        
 
 def install(pkgpath, choicesXMLpath=None):
     """
@@ -52,6 +75,8 @@ def install(pkgpath, choicesXMLpath=None):
     if os.path.islink(pkgpath):
         # resolve links before passing them to /usr/bin/installer
         pkgpath = os.path.realpath(pkgpath)
+        
+    removeBundleRelocationInfo(pkgpath)
     
     packagename = ''
     restartaction = 'None'
@@ -174,7 +199,7 @@ def installall(dirpath, choicesXMLpath=None):
         itempath = os.path.join(dirpath, item)
         if item.endswith(".dmg"):
             munkicommon.display_info("Mounting disk image %s" % item)
-            mountpoints = munkicommon.mountdmg(itempath)
+            mountpoints = munkicommon.mountdmg(itempath, use_shadow=True)
             if mountpoints == []:
                 munkicommon.display_error("No filesystems mounted from %s" %
                                            item)
@@ -414,9 +439,14 @@ def installWithInfo(dirpath, installlist):
                         
             if not foundagain:
                 # now remove the item from the install cache
-                # (using rm -rf in case it's a bundle pkg)
                 itempath = os.path.join(dirpath, current_installer_item)
-                retcode = subprocess.call(["/bin/rm", "-rf", itempath])
+                if os.path.isdir(itempath):
+                    retcode = subprocess.call(["/bin/rm", "-rf", itempath])
+                else:
+                    retcode = subprocess.call(["/bin/rm", itempath])
+                shadowfile = os.path.join(itempath,".shadow")
+                if os.path.exists(shadowfile):
+                    retcode = subprocess.call(["/bin/rm" shadowfile])
     
     return restartflag
 

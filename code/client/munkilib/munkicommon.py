@@ -385,15 +385,19 @@ def osascript(osastring):
         
 # dmg helpers
 
-def mountdmg(dmgpath):
+def mountdmg(dmgpath, use_shadow=False):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
+    If use_shadow is true, mount image with shadow file
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
-    p = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath, 
-                          '-mountRandom', '/tmp', '-nobrowse', '-plist'],
+    cmd = ['/usr/bin/hdiutil', 'attach', dmgpath, 
+                '-mountRandom', '/tmp', '-nobrowse', '-plist']
+    if use_shadow:
+        cmd.append('-shadow')
+    p = subprocess.Popen(cmd,
                          bufsize=1, stdout=subprocess.PIPE, 
                          stderr=subprocess.PIPE)
     (plist, err) = p.communicate()
