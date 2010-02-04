@@ -446,7 +446,7 @@ def installWithInfo(dirpath, installlist):
                     retcode = subprocess.call(["/bin/rm", itempath])
                 shadowfile = os.path.join(itempath,".shadow")
                 if os.path.exists(shadowfile):
-                    retcode = subprocess.call(["/bin/rm" shadowfile])
+                    retcode = subprocess.call(["/bin/rm", shadowfile])
     
     return restartflag
 
