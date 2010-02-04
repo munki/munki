@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.googlecode.munki.ManagedSoftwareUpdate</string>
+  <key>LimitLoadToSessionType</key>
+  <array>
+    <string>Aqua</string>
+  </array>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/open</string>
+    <string>-a</string>
+    <string>Managed Software Update</string>
+  </array>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>KeepAlive</key>
+  <dict>
+     <key>PathState</key>
+     <dict>
+       <key>/var/run/com.googlecode.munki.ManagedSoftwareUpdate</key>
+       <true/>
+     </dict>
+  </dict>
+</dict>
+</plist>
