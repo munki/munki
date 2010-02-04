@@ -211,9 +211,14 @@ def notifyUserOfUpdates(manualcheck=False):
                '/Library/Preferences/ManagedInstalls', 
                'LastNotifiedDate', '-date', now.ctime()]
         retcode = subprocess.call(cmd)
-        # notify user of available updates
-        result = munkicommon.osascript(
-                    'tell application "Managed Software Update" to activate')
+        # notify user of available updates using LaunchAgent to start
+        # Managed Software Update.app in the user context
+        launchfile = "/var/run/com.googlecode.munki.ManagedSoftwareUpdate"
+        cmd = ['/usr/bin/touch', launchfile]
+        retcode = subprocess.call(cmd)
+        time.sleep(1)
+        if os.path.exists(launchfile):
+            os.unlink(launchfile)
 
 
 def main():

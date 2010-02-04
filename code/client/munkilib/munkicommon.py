@@ -373,7 +373,7 @@ def pythonScriptRunning(scriptname):
     
 def osascript(osastring):
     '''Wrapper to run AppleScript commands'''
-    cmd = ['osascript', '-e', osastring]
+    cmd = ['/usr/bin/osascript', '-e', osastring]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()

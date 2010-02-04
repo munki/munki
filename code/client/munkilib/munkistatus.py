@@ -41,18 +41,9 @@ def launchMunkiStatus():
     launchfile = "/var/run/com.googlecode.munki.munkistatus"
     cmd = ['/usr/bin/touch', launchfile]
     retcode = subprocess.call(cmd)
+    time.sleep(1)
     if os.path.exists(launchfile):
         os.unlink(launchfile)
-    
-    # OLD: let LaunchServices try
-    #retcode = subprocess.call(["/usr/bin/open", "-a", "MunkiStatus.app"])
-    #if retcode:
-    #    # that failed; let's look for an exact path
-    #    munkiStatusPath = \
-    #        "/Library/Application Support/Managed Installs/MunkiStatus.app"
-    #    if os.path.exists(munkiStatusPath):
-    #        retcode = subprocess.call(["/usr/bin/open", "-a",
-    #                                    munkiStatusPath])
 
 
 def launchAndConnectToMunkiStatus():
