@@ -11,6 +11,7 @@
   </array>
   <key>ProgramArguments</key>
   <array>
+    <string>/usr/local/munki/launchapp</string>
     <string>/Library/Application Support/Managed Installs/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
   </array>
   <key>RunAtLoad</key>

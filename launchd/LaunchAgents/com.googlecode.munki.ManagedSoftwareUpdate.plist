@@ -10,8 +10,7 @@
   </array>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/bin/open</string>
-    <string>-a</string>
+    <string>/usr/local/munki/launchapp</string>
     <string>Managed Software Update</string>
   </array>
   <key>RunAtLoad</key>
