@@ -120,10 +120,10 @@ class MSController(NSObject):
             if self.imageFld:
                 theImage = NSImage.imageNamed_("MunkiStatus")
                 self.imageFld.setImage_(theImage)
-            if self.messageFld:
-                self.messageFld.setStringValue_(u"Working...")
-            if self.detailFld:
-                self.detailFld.setStringValue_(u"")
+            #if self.messageFld:
+            #    self.messageFld.setStringValue_(u"Working...")
+            #if self.detailFld:
+            #    self.detailFld.setStringValue_(u"")
             if self.progressIndicator:
                 self.progressIndicator.setMinValue_(0.0)
                 self.progressIndicator.setMaxValue_(100.0)
