@@ -202,8 +202,23 @@ on initTable()
 	set data source of theTable to theDataSource
 end initTable
 
+on countOfGUIusers()
+	try
+		set userlist to do shell script "/usr/bin/who | /usr/bin/grep console"
+	on error
+		set userlist to ""
+	end try
+	return count of paragraphs of userlist
+end countOfGUIusers
+
 on installAll()
-	if restartRequired then
+	if my countOfGUIusers() > 1 then
+		display alert "Other users logged in" message ¬
+			"There are other users logged into this computer. " & ¬
+			"Updating now could cause other users to lose their work. " & return & ¬
+			"Please try again later after the other users have logged out." default button ¬
+			"Cancel" as warning attached to window 1
+	else if restartRequired then
 		display alert "Restart Required" message ¬
 			"A restart is required after updating. Log out and update now?" alternate button "Cancel" default button ¬
 			"Log out and update" as warning attached to window 1
