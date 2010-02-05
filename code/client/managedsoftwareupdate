@@ -143,10 +143,22 @@ def doRestart():
     else:
         print restartMessage
         sys.stdout.flush()
-       
-    if munkicommon.getconsoleuser() == None:
+    
+    consoleuser = munkicommon.getconsoleuser()
+    if consoleuser == None:
+        # no-one is logged in and we're at the loginwindow
         time.sleep(5)
         retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
+    elif consoleuser == u"loginwindow":
+        # crap. Someone is logged in, Fast User Switching is active,
+        # but we're switched out to the loginwindow. Not safe to
+        # restart because users might have unsaved work.
+        # this could happen if someone switched to the loginwindow while
+        # updates were being installed.
+        #
+        # TO-DO: handle this!
+        #
+        pass
     else:
         if munkicommon.munkistatusoutput:
             # someone is logged in and we're using munkistatus
