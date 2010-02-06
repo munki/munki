@@ -351,8 +351,23 @@ def getconsoleuser():
     from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
-    
-        
+
+
+def currentGUIusers():
+    '''Gets a list of GUI users by parsing the output of /usr/bin/who'''
+    gui_users = []
+    p = subprocess.Popen("/usr/bin/who", shell=False, stdin=subprocess.PIPE, 
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = p.communicate()
+    lines = output.splitlines()
+    for line in lines:
+        if "console" in line:
+            parts = line.split()
+            gui_users.append(parts[0])
+
+    return gui_users
+
+
 def pythonScriptRunning(scriptname):
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 

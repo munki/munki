@@ -144,21 +144,10 @@ def doRestart():
         print restartMessage
         sys.stdout.flush()
     
-    consoleuser = munkicommon.getconsoleuser()
-    if consoleuser == None:
+    if not munkicommon.currentGUIusers():
         # no-one is logged in and we're at the loginwindow
         time.sleep(5)
         retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
-    elif consoleuser == u"loginwindow":
-        # crap. Someone is logged in, Fast User Switching is active,
-        # but we're switched out to the loginwindow. Not safe to
-        # restart because users might have unsaved work.
-        # this could happen if someone switched to the loginwindow while
-        # updates were being installed.
-        #
-        # TO-DO: handle this!
-        #
-        pass
     else:
         if munkicommon.munkistatusoutput:
             # someone is logged in and we're using munkistatus
@@ -454,20 +443,24 @@ def main():
             # just install
             mustrestart = doInstallTasks()
         elif options.auto:
-            consoleuser = munkicommon.getconsoleuser()
-            if consoleuser:
-                # someone is logged in.
-                if consoleuser == u"loginwindow":
-                    # someone is logged in, but we're sitting at
-                    # the loginwindow due to fast user switching
-                    # so do nothing
-                    pass
-                else:
-                    # notify the current console user
-                    notifyUserOfUpdates()
-            elif getIdleSeconds() > 10:
-                # no console user, system is idle, so install
-                mustrestart = doInstallTasks()
+            if not munkicommon.currentGUIusers():
+                # no GUI users
+                if getIdleSeconds() > 10:
+                    # no GUI users, system is idle, so install
+                    mustrestart = doInstallTasks()
+            else:
+                # there are GUI users
+                consoleuser = munkicommon.getconsoleuser()
+                if consoleuser:
+                    # someone is logged in.
+                    if consoleuser == u"loginwindow":
+                        # someone is logged in, but we're sitting at
+                        # the loginwindow due to fast user switching
+                        # so do nothing
+                        pass
+                    else:
+                        # notify the current console user
+                        notifyUserOfUpdates()
         elif not options.quiet:
             print ("\nRun %s --installonly to install the downloaded "
                    "updates." % myname)
