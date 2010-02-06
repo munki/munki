@@ -12,7 +12,7 @@
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/munki/launchapp</string>
-    <string>/Library/Application Support/Managed Installs/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
+    <string>/Library/Application Support/Managed Installs/MunkiStatus.app</string>
   </array>
   <key>RunAtLoad</key>
   <false/>
