@@ -38,7 +38,7 @@ def launchMunkiStatus():
     # happier.
     # there needs to be a launch agent that is triggered when the launchfile
     # is created; and that launch agent then runs MunkiStatus.app.
-    launchfile = "/var/run/com.googlecode.munki.munkistatus"
+    launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     cmd = ['/usr/bin/touch', launchfile]
     retcode = subprocess.call(cmd)
     time.sleep(1)

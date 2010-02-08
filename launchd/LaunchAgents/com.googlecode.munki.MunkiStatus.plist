@@ -20,7 +20,7 @@
   <dict>
      <key>PathState</key>
      <dict>
-       <key>/var/run/com.googlecode.munki.munkistatus</key>
+       <key>/var/run/com.googlecode.munki.MunkiStatus</key>
        <true/>
      </dict>
   </dict>
