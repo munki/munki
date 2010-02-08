@@ -217,7 +217,7 @@ def notifyUserOfUpdates(manualcheck=False):
         launchfile = "/var/run/com.googlecode.munki.ManagedSoftwareUpdate"
         cmd = ['/usr/bin/touch', launchfile]
         retcode = subprocess.call(cmd)
-        time.sleep(1)
+        time.sleep(0.1)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
 
@@ -228,14 +228,6 @@ def main():
         print >>sys.stderr, "You must run this as root!"
         exit(-1)
         
-    # check to see if another instance of this script is running
-    myname = os.path.basename(sys.argv[0])
-    if munkicommon.pythonScriptRunning(myname):
-        # another instance of this script is running, so we should quit
-        print >>sys.stderr, \
-              "Another instance of %s is running. Exiting." % myname
-        exit(0)
-           
     p = optparse.OptionParser()
     p.set_usage("""Usage: %prog [options]""")
     p.add_option('--auto', '-a', action='store_true',
@@ -349,6 +341,33 @@ def main():
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
+
+    # check to see if another instance of this script is running
+    myname = os.path.basename(sys.argv[0])
+    if munkicommon.pythonScriptRunning(myname):
+        # another instance of this script is running, so we should quit
+        if options.manualcheck:
+            # a manual update check was triggered 
+            # (probably by Managed Software Update), but managedsoftwareupdate
+            # is already running. We should provide user feedback
+            munkistatus.activate()
+            munkistatus.message("Checking for available updates...")
+            while True:
+                # loop til the other instance exits
+                if not munkicommon.pythonScriptRunning(myname):
+                    break
+                # or user clicks Stop
+                if munkistatus.getStopButtonState() == 1:
+                    break
+                
+            # activate Managed Software Update.app
+            notifyUserOfUpdates(True)
+            munkistatus.quit()
+        else:
+            print >>sys.stderr, \
+              "Another instance of %s is running. Exiting." % myname
+        exit(0)
+
     
     # create needed directories if necessary
     if not initMunkiDirs():
@@ -369,7 +388,7 @@ def main():
                 # launch MunkiStatus so focus leaves 
                 # Managed Software Update.app
                 munkistatus.activate()
-                munkistatus.message("Checking for available updates")
+                munkistatus.message("Checking for available updates...")
                 recordUpdateCheckResult(-1)
                 # activate Managed Software Update.app
                 notifyUserOfUpdates(True)
