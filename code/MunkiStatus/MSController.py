@@ -98,7 +98,8 @@ class MSController(NSObject):
     
     def awakeFromNib(self):
         NSLog(u"MunkiStatus.app PID: %s" % os.getpid())
-        if getconsoleuser() == None:
+        consoleuser = getconsoleuser()
+        if consoleuser == None or consoleuser == u"loginwindow":
             if self.backdropWindow:
                 self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
                 self.backdropWindow.setLevel_(NSStatusWindowLevel)
