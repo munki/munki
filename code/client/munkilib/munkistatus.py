@@ -41,7 +41,7 @@ def launchMunkiStatus():
     launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     cmd = ['/usr/bin/touch', launchfile]
     retcode = subprocess.call(cmd)
-    time.sleep(1)
+    time.sleep(0.1)
     if os.path.exists(launchfile):
         os.unlink(launchfile)
 
