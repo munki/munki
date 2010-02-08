@@ -25,6 +25,7 @@ import sys
 import os
 import optparse
 import subprocess
+import time
 
 
 def getconsoleuser():    
@@ -53,6 +54,10 @@ def main():
             exit(-1)
         retcode = subprocess.call(["/usr/bin/open", "-a", app])
         exit(retcode)
+    else:
+        # sleep 10 seconds so we don't trigger launchd throttling
+        time.sleep(10)
+        exit(0)
     
 
 if __name__ == '__main__':
