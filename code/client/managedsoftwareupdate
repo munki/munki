@@ -359,6 +359,7 @@ def main():
                 # or user clicks Stop
                 if munkistatus.getStopButtonState() == 1:
                     break
+                time.sleep(0.5)
                 
             # activate Managed Software Update.app
             notifyUserOfUpdates(True)
