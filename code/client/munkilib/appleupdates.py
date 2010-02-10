@@ -315,33 +315,6 @@ def parseDist(filename):
                 # append the line to the description
                 description += line + "\n"
                 
-    if description:
-        # low-brow convert from HTML to plain text
-        # get rid of embedded styles:
-        p = re.compile('<style[^<>]*>[^<>]*</style>')
-        description = p.sub('',description)
-        # replace <li> with '• '
-        p = re.compile('<li>')
-        description = p.sub(u'• ',description)
-        # then get rid of all HTML tags
-        p = re.compile('<[^<>]*>')
-        description = p.sub('',description)
-        # then get entities
-        p = re.compile('&nbsp;')
-        description = p.sub(' ',description)
-        p = re.compile('&lt;')
-        description = p.sub('<',description)
-        p = re.compile('&gt;')
-        description = p.sub('>',description)
-        # fix escaped single quotes
-        p = re.compile("\\\\'")
-        description = p.sub("'",description)
-        # replace two or more consecutive blank lines with one
-        p = re.compile('\\n{3,}')
-        description = p.sub("\\n\\n",description)
-        # get rid of leading blank lines, tabs, and spaces
-        description = description.lstrip("\n \t").rstrip("\n \t")
-        
     return title, vers, description
 
 

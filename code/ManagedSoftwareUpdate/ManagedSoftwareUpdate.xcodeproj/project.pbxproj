@@ -35,6 +35,9 @@
 		C0ACDAAC0FB4A387006D30B3 /* package.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDA9F0FB4A386006D30B3 /* package.tiff */; };
 		C0ACDAAD0FB4A387006D30B3 /* Restart.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDAA00FB4A386006D30B3 /* Restart.tif */; };
 		C0ACDAB00FB4A387006D30B3 /* RestartReq.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0ACDAA30FB4A386006D30B3 /* RestartReq.tif */; };
+		C0B5D690112260A6009453BD /* MSUWebViewPolicyDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C0B5D68E112260A6009453BD /* MSUWebViewPolicyDelegate.h */; };
+		C0B5D691112260A6009453BD /* MSUWebViewPolicyDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C0B5D68F112260A6009453BD /* MSUWebViewPolicyDelegate.m */; };
+		C0B5D6F0112266FF009453BD /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0B5D6EF112266FF009453BD /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +59,9 @@
 		C0ACDA9F0FB4A386006D30B3 /* package.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = package.tiff; sourceTree = "<group>"; };
 		C0ACDAA00FB4A386006D30B3 /* Restart.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Restart.tif; sourceTree = "<group>"; };
 		C0ACDAA30FB4A386006D30B3 /* RestartReq.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = RestartReq.tif; sourceTree = "<group>"; };
+		C0B5D68E112260A6009453BD /* MSUWebViewPolicyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSUWebViewPolicyDelegate.h; sourceTree = "<group>"; };
+		C0B5D68F112260A6009453BD /* MSUWebViewPolicyDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSUWebViewPolicyDelegate.m; sourceTree = "<group>"; };
+		C0B5D6EF112266FF009453BD /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		DA206CF1015C4E2903C91932 /* AppleScriptKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppleScriptKit.framework; path = /System/Library/Frameworks/AppleScriptKit.framework; sourceTree = "<absolute>"; };
 		DA206CF3015C4E8B03C91932 /* ManagedSoftwareUpdate.applescript */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.applescript; path = ManagedSoftwareUpdate.applescript; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -67,6 +73,7 @@
 			files = (
 				257572CC072881A4000BE9CA /* Cocoa.framework in Frameworks */,
 				257572CD072881A4000BE9CA /* AppleScriptKit.framework in Frameworks */,
+				C0B5D6F0112266FF009453BD /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,6 +131,8 @@
 			isa = PBXGroup;
 			children = (
 				29B97316FDCFA39411CA2CEA /* main.m */,
+				C0B5D68E112260A6009453BD /* MSUWebViewPolicyDelegate.h */,
+				C0B5D68F112260A6009453BD /* MSUWebViewPolicyDelegate.m */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -150,6 +159,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C0B5D6EF112266FF009453BD /* WebKit.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
@@ -163,6 +173,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0B5D690112260A6009453BD /* MSUWebViewPolicyDelegate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				257572CA072881A4000BE9CA /* main.m in Sources */,
+				C0B5D691112260A6009453BD /* MSUWebViewPolicyDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

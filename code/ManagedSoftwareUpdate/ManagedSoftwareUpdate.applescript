@@ -259,18 +259,11 @@ on selection changed theObject
 		if selected data rows of theObject is not {} then
 			set theDataRow to selected data row of theObject
 			set theDescription to the contents of data cell "description" of theDataRow
-			set theRestartAction to the contents of data cell "restartaction" of theDataRow
-			if theRestartAction is "RequireRestart" or theRestartAction is "RecommendRestart" then
-				set theRestartAction to return & "Restart required after install."
-			else if theRestartAction is "RequireLogout" then
-				set theRestartAction to return & "Logout required before install."
-			end if
-			set theText to theDescription & return & theRestartAction
 		else
-			set theText to ""
+			set theDescription to ""
 		end if
-		set contents of text view "description" of scroll view ¬
-			"descriptionScrollView" of view "splitViewBottom" of split view "splitView" of window id 1 to theText
+		set webview to call method "mainFrame" of object (view "description" of view "splitViewBottom" of split view "splitView" of window id 1)
+		call method "loadHTMLString:baseURL:" of webview with parameter theDescription
 	end if
 end selection changed
 
