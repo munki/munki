@@ -259,7 +259,8 @@ def analyzeInstalledPkgs():
     pkgdata['pkg_references'] = references
 
 
-# appdict is a global so we don't call system_profiler more than once per session
+# appdict is a global so we don't call system_profiler 
+# more than once per session
 appdict = {}
 def getAppData():
     """
@@ -967,27 +968,32 @@ def evidenceThisIsInstalled(pl):
     """
     global pkgdata
     
-    if pl.get('receipts'):
-        if pkgdata == {}:
-           # build our database of installed packages
-           analyzeInstalledPkgs()
-        if pl['name'] in pkgdata['installed_names']:
-            return True
-        if 'aliases' in pl:
-            for alias in pl['aliases']:
-                if alias in pkgdata['installed_names']:
-                    return True
-                
-    if 'installs' in pl:
+    if pl.get('uninstall_method') == "removepackages":
+        # we're supposed to use receipt info to remove
+        # this, so we should check for relevent receipts
+        if pl.get('receipts'):
+            if pkgdata == {}:
+               # build our database of installed packages
+               analyzeInstalledPkgs()
+            if pl['name'] in pkgdata['installed_names']:
+                return True
+            if 'aliases' in pl:
+                for alias in pl['aliases']:
+                    if alias in pkgdata['installed_names']:
+                        return True
+    elif 'installs' in pl:
         installitems = pl['installs']
+        foundallinstallitems = True
         for item in installitems:
             if 'path' in item:
                 # we can only check by path; if the item has been moved
                 # we're not clever enough to find it, and our removal
-                # methods are even less clever
-                if os.path.exists(item['path']):
-                    # some version is installed
-                    return True
+                # methods are currently even less clever
+                if not os.path.exists(item['path']):
+                    # this item isn't on disk
+                    foundallinstallitems = False
+        if foundallinstallitems:
+            return True
                     
     # if we got this far, we failed all the tests, so the item
     # must not be installed (or we dont't have the right info...)
@@ -1381,44 +1387,38 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         iteminfo["installed"] = False
         installinfo['removals'].append(iteminfo)
         return True
-        
+    
+    # if we get here, installEvidence is true, and item
+    # holds the item we found install evidence for, so we
+    # should use that item to do the removal 
     uninstall_item = None
     packagesToRemove = []
-    for item in infoitems:
-        # check for uninstall info
-        # walk through the list of items (sorted newest first)
-        # and grab the first uninstall method we find.
-        if item.get('uninstallable') and 'uninstall_method' in item:
-            uninstallmethod = item['uninstall_method']
-            if uninstallmethod == 'removepackages':
-                packagesToRemove = getReceiptsToRemove(item)
-                if packagesToRemove:
-                    uninstall_item = item
-                    break
-                else:
-                    # no matching packages found. Check next item
-                    continue
-            elif uninstallmethod == 'AdobeUberUninstaller':
-                # Adobe CS4 package
+    # check for uninstall info
+    # and grab the first uninstall method we find.
+    if item.get('uninstallable') and 'uninstall_method' in item:
+        uninstallmethod = item['uninstall_method']
+        if uninstallmethod == 'removepackages':
+            packagesToRemove = getReceiptsToRemove(item)
+            if packagesToRemove:
                 uninstall_item = item
-                break
-            elif uninstallmethod == 'AdobeSetup':
-                # Adobe CS3 packagemake
+        elif uninstallmethod == 'AdobeUberUninstaller':
+            # Adobe CS4 package
+            uninstall_item = item
+        elif uninstallmethod == 'AdobeSetup':
+            # Adobe CS3 package
+            uninstall_item = item
+        elif uninstallmethod == 'remove_app':
+            uninstall_item = item
+        else:
+            # uninstall_method is a local script.
+            # Check to see if it exists and is executable
+            if os.path.exists(uninstallmethod) and \
+               os.access(uninstallmethod, os.X_OK):
                 uninstall_item = item
-                break
-            elif uninstallmethod == 'remove_app':
-                uninstall_item = item
-                break
-            else:
-                # uninstall_method is a local script.
-                # Check to see if it exists and is executable
-                if os.path.exists(uninstallmethod) and \
-                   os.access(uninstallmethod, os.X_OK):
-                    uninstall_item = item
-                    break
                     
     if not uninstall_item:
-        # we didn't find an item that seems to match anything on disk.
+        # the uninstall info for the item couldn't be matched 
+        # to what's on disk
         munkicommon.display_warning("Could not find uninstall info for %s." %
                                      manifestitemname_withversion)
         return False
