@@ -24,13 +24,15 @@ Utilities for dealing with Apple Software Update.
 import sys
 import os
 import stat
-import FoundationPlist
 import re
 import subprocess
-import dateutil.parser
-import datetime
+#import dateutil.parser
+#import datetime
 from xml.dom import minidom
 
+from Foundation import NSDate
+
+import FoundationPlist
 import munkicommon
 import munkistatus
 import installer
@@ -407,8 +409,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     else:
         # have we checked recently?  Don't want to check with
         # Apple Software Update server too frequently
-        nowString = munkicommon.NSDateNowString()
-        now = dateutil.parser.parse(nowString)
+        now = NSDate.new()
         nextSUcheck = now
         cmd = ['/usr/bin/defaults', 'read', 
                '/Library/Preferences/com.apple.softwareupdate',    
@@ -421,12 +422,12 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         lastSUcheckString = out.rstrip('\n')
         if lastSUcheckString:
             try:
-                lastSUcheck = dateutil.parser.parse(lastSUcheckString)
-                interval = datetime.timedelta(hours=24)
-                nextSUcheck = lastSUcheck + interval
+                lastSUcheck = NSDate.dateWithString_(lastSUcheckString)
+                interval = 24 * 60 * 60
+                nextSUcheck = lastSUcheck.dateByAddingTimeInterval_(interval)
             except ValueError:
                 pass
-        if now >= nextSUcheck:
+        if now.timeIntervalSinceDate_(nextSUcheck) > 0:
             retcode = checkForSoftwareUpdates()
         
     return writeAppleUpdatesFile()

@@ -20,11 +20,13 @@ managedsoftwareupdate
 import sys
 import os
 import optparse
-import datetime
-import dateutil.parser
+#import datetime
+#import dateutil.parser
 import subprocess
 import time
 import traceback
+
+from Foundation import NSDate
 
 from munkilib import munkicommon
 from munkilib import updatecheck
@@ -178,10 +180,10 @@ def munkiUpdatesAvailable():
 
 def recordUpdateCheckResult(result):
     # record last check date and result
-    nowString = munkicommon.NSDateNowString()
+    now = NSDate.new()
     cmd = ['/usr/bin/defaults', 'write', 
            '/Library/Preferences/ManagedInstalls', 
-           'LastCheckDate', '-date', nowString]
+           'LastCheckDate', '-date', str(now)]
     retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', 'write', 
            '/Library/Preferences/ManagedInstalls', 
@@ -195,22 +197,22 @@ def notifyUserOfUpdates(manualcheck=False):
     # if we haven't notified in a while, notify:
     lastNotifiedString = munkicommon.pref('LastNotifiedDate')
     daysBetweenNotifications = munkicommon.pref('DaysBetweenNotifications')
-    nowString = munkicommon.NSDateNowString()
-    now = dateutil.parser.parse(nowString)
+    now = NSDate.new()
     nextNotifyDate = now
     if lastNotifiedString:
-        lastNotifiedDate = dateutil.parser.parse(lastNotifiedString)
-        interval = datetime.timedelta(days=daysBetweenNotifications)
+        lastNotifiedDate = NSDate.dateWithString_(lastNotifiedString)
+        interval = daysBetweenNotifications * (24 * 60 * 60)
         if daysBetweenNotifications > 0:
             # we make this adjustment so a "daily" notification
             # doesn't require 24 hours to elapse
-            interval = interval - datetime.timedelta(hours=6)
-        nextNotifyDate = lastNotifiedDate + interval
-    if now >= nextNotifyDate or manualcheck:
+            # subtract 6 hours
+            interval = interval - (6 * 60 * 60)
+        nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
+    if now.timeIntervalSinceDate_(nextNotifyDate) > 0  or manualcheck:
         # record current notification date
         cmd = ['/usr/bin/defaults', 'write',
                '/Library/Preferences/ManagedInstalls', 
-               'LastNotifiedDate', '-date', now.ctime()]
+               'LastNotifiedDate', '-date', str(now)]
         retcode = subprocess.call(cmd)
         # notify user of available updates using LaunchAgent to start
         # Managed Software Update.app in the user context
@@ -409,6 +411,10 @@ def main():
         print "Managed Software Update Tool"
         print "Copyright 2010 The Munki Project"
         print "http://code.google.com/p/munki\n"
+    
+    if options.manualcheck:
+        # pre-heat MunkiStatus
+        munkistatus.activate()
     
     updatecheckresult = None
     if not options.installonly:

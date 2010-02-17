@@ -33,7 +33,7 @@ import urllib2
 from distutils import version
 from xml.dom import minidom
 
-from Foundation import NSDictionary, NSDate
+#from Foundation import NSDictionary, NSDate
 #from CoreFoundation import CFPreferencesCopyAppValue
 
 import munkistatus
@@ -474,14 +474,6 @@ def isApplication(pathname):
 #####################################################
 # managed installs preferences/metadata
 #####################################################
-
-
-def NSDateNowString():
-    '''
-    Generates a NSDate-compatible string
-    '''
-    now = NSDate.new()
-    return str(now)
 
 
 def getManagedInstallsPrefs():

@@ -30,7 +30,7 @@ import urllib2
 import urlparse
 import httplib
 import hashlib
-import datetime
+#import datetime
 import time
 import calendar
 import socket

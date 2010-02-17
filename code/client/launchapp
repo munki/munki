@@ -19,6 +19,7 @@ Launches an app only if we're called in the current
 GUI user's session.
 Prevents multiple copies of the app from being launched
 when Fast User Switching is in use
+Intended for use by a launchd LaunchAgent.
 """
 
 import sys
@@ -46,13 +47,20 @@ def main():
     if (consoleuser == thisuser) or \
         (consoleuser == None and thisuser == "root"):
         p = optparse.OptionParser()
+        p.add_option('-a', action='store_true')
+        p.add_option('-b', action='store_true')
         options, arguments = p.parse_args()
+        cmd = ["/usr/bin/open"]
+        if options.b:
+            cmd.append("-b")
+        else:
+            cmd.append("-a")
         try:
-            app = arguments[0]
+            cmd.append(arguments[0])
         except:
             print >>sys.stderr, "Must specify an app to launch!"
             exit(-1)
-        retcode = subprocess.call(["/usr/bin/open", "-a", app])
+        retcode = subprocess.call(cmd)
         exit(retcode)
     else:
         # sleep 10 seconds so we don't trigger launchd throttling

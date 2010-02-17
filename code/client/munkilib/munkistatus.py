@@ -115,7 +115,7 @@ def getMunkiStatusPID():
 
 
 def getMunkiStatusSocket():
-    for i in range(0,10):
+    for i in range(10):
         pid = getMunkiStatusPID()
         if pid:
             socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % pid
@@ -123,7 +123,7 @@ def getMunkiStatusSocket():
                 return socketpath
             else:
                 # sleep and try again
-                time.sleep(.2)
+                time.sleep(.5)
     return ""
         
         
