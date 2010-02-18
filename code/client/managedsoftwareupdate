@@ -411,11 +411,7 @@ def main():
         print "Managed Software Update Tool"
         print "Copyright 2010 The Munki Project"
         print "http://code.google.com/p/munki\n"
-    
-    if options.manualcheck:
-        # pre-heat MunkiStatus
-        munkistatus.activate()
-    
+        
     updatecheckresult = None
     if not options.installonly:
         try:
