@@ -115,15 +115,22 @@ def getMunkiStatusPID():
 
 
 def getMunkiStatusSocket():
-    for i in range(10):
+    pid = None
+    for i in range(8):
         pid = getMunkiStatusPID()
         if pid:
+            break
+        else:
+            # sleep and try again
+            time.sleep(.25)
+    if pid:
+        for i in range(12):
             socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % pid
             if os.path.exists(socketpath):
                 return socketpath
-            else:
-                # sleep and try again
-                time.sleep(.5)
+            
+            # sleep and try again
+            time.sleep(.25)
     return ""
         
         
