@@ -121,22 +121,21 @@ class MSController(NSObject):
             if self.imageFld:
                 theImage = NSImage.imageNamed_("MunkiStatus")
                 self.imageFld.setImage_(theImage)
-            #if self.messageFld:
-            #    self.messageFld.setStringValue_(u"Working...")
-            #if self.detailFld:
-            #    self.detailFld.setStringValue_(u"")
             if self.progressIndicator:
                 self.progressIndicator.setMinValue_(0.0)
                 self.progressIndicator.setMaxValue_(100.0)
                 self.progressIndicator.setIndeterminate_(True)
                 self.progressIndicator.setUsesThreadedAnimation_(True)
                 self.progressIndicator.startAnimation_(self)
-        
+            
+            # start our message processing thread
             NSThread.detachNewThreadSelector_toTarget_withObject_(
-                                                            self.handleSocket, 
-                                                            self, 
-                                                            None)
+                                                        self.handleSocket, 
+                                                        self, 
+                                                        None)
+
             NSApp.activateIgnoringOtherApps_(True)
+
             
     def handleSocket(self):        
         # Autorelease pool for memory management
@@ -176,7 +175,7 @@ class MSController(NSObject):
                         if command.startswith(u"QUIT: "):
                             keepLooping = False
                             break
-                        response = self.processSocketMsg(command)
+                        response = self.processSocketMsg_(command)
                         if response:
                             conn.send(response)
                     else:
@@ -193,7 +192,7 @@ class MSController(NSObject):
         # Clean up autorelease pool
         del pool
         
-    def processSocketMsg(self, message):
+    def processSocketMsg_(self, message):
         if message.startswith(u"ACTIVATE: "):
             NSApp.activateIgnoringOtherApps_(True)
             return ""
