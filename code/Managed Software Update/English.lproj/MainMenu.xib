@@ -8,8 +8,8 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="389"/>
 			<integer value="81"/>
-			<integer value="371"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -586,8 +586,8 @@
 			<object class="NSWindowTemplate" id="972006081">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{167, 222}, {512, 546}}</string>
-				<int key="NSWTFlags">1946158080</int>
+				<string key="NSWindowRect">{{448, 228}, {512, 546}}</string>
+				<int key="NSWTFlags">1954022400</int>
 				<string key="NSWindowTitle">Managed Software Update</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
@@ -1020,12 +1020,12 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 														<bool key="EncodedWithXMLCoder">YES</bool>
 														<boolean value="NO" id="6"/>
 														<reference ref="6"/>
-														<integer value="12"/>
-														<integer value="11"/>
+														<integer value="12" id="416753039"/>
+														<reference ref="416753039"/>
 														<reference ref="6"/>
 														<reference ref="6"/>
 														<reference ref="6"/>
-														<integer value="10"/>
+														<reference ref="416753039"/>
 														<reference ref="6"/>
 														<string>Lucida Grande</string>
 													</object>
@@ -2381,6 +2381,8 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 					<string>396.IBPluginDependency</string>
 					<string>397.IBPluginDependency</string>
 					<string>398.IBPluginDependency</string>
+					<string>400.IBPluginDependency</string>
+					<string>401.IBPluginDependency</string>
 					<string>402.IBPluginDependency</string>
 					<string>403.IBPluginDependency</string>
 					<string>404.IBPluginDependency</string>
@@ -2567,6 +2569,8 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
@@ -2641,17 +2645,13 @@ ZHkgdG8gdXBkYXRlIG5vdywgeW91IGNhbiBjaG9vc2UgdG8gdXBkYXRlIGxhdGVyLg</string>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>descriptionView</string>
-							<string>laterBtn</string>
 							<string>restartImageFld</string>
 							<string>restartInfoFld</string>
 							<string>tableView</string>
 							<string>theWindow</string>
-							<string>updateNowBtn</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
