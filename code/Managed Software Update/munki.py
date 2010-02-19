@@ -82,10 +82,23 @@ def startUpdateCheck():
     if subprocess.call(cmd):
         return -1
     else:
-        time.sleep(1)
-        # check to see if we were successful in starting the update
-        return updateInProgress()
-
+        for i in range(5):
+            time.sleep(1)
+            # check to see if we were successful in starting the update
+            result = updateInProgress()
+            if result == 1:
+                return 1
+            else:
+                # try again
+                pass
+        if result == -1:
+            try:
+                # this might fail if we don't own it
+                os.unlink(_updatechecklaunchfile)
+            except:
+                pass
+        return result
+       
 
 def updateInProgress():
     # if MunkiStatus is running, we're doing an update right now
@@ -96,11 +109,6 @@ def updateInProgress():
         return 1
     elif os.path.exists(_updatechecklaunchfile):
         # we tried to trigger the update, but it failed?
-        try:
-            # this might fail if we don't own it
-            os.unlink(_updatechecklaunchfile)
-        except:
-            pass
         return -1
     else:
         return 0
@@ -128,7 +136,7 @@ def checkForUpdates():
     if (not lastCheckedDateString) or now.timeIntervalSinceDate_(lastCheckedDate) > 10:
         # we haven't checked in more than 10 seconds
         result = startUpdateCheck()
-        if result == 0:
+        if result == 1:
             return 1
         else:
             return -2
