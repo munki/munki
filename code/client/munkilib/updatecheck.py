@@ -1851,7 +1851,7 @@ class UseClientCertificateError(IOError):
 
 def httpDownload(url, filename, headers={}, postData=None, reporthook=None, message=None):
 
-    # The required name for combination certifcate and private key
+    # The required name for combination certificate and private key
     # File must be PEM formatted and include the client's private key
     # bcw
     pemfile = 'munki.pem'

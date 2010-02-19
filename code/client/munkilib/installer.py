@@ -52,8 +52,15 @@ def removeBundleRelocationInfo(pkgpath):
                 os.remove(tokendefinitions)
             except:
                 pass
+                
+        pl = {}
         infoplist = os.path.join(pkgpath, "Contents/Info.plist")
-        pl = FoundationPlist.readPlist(infoplist)
+        if os.path.exists(infoplist):
+            try:
+                pl = FoundationPlist.readPlist(infoplist)
+            except:
+                pass
+                
         if 'IFPkgPathMappings' in pl:
             del pl['IFPkgPathMappings']
             try:
