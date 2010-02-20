@@ -692,8 +692,8 @@ def adobeSetupError(errorcode):
                      10 : "Unsupported file system",
                      11 : "Another instance of Adobe Setup is running",
                      12 : "CAPS integrity error",
-                     13 : "Media opitmization failed",
-                     14 : "Failed due to insuffcient privileges",
+                     13 : "Media optimization failed",
+                     14 : "Failed due to insufficient privileges",
                      9999 : "Catastrophic error",
                      -1 : "AdobeUberInstaller failed before launching Setup" }
     return errormessage.get(errorcode, "Unknown error")
