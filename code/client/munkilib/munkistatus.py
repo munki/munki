@@ -72,10 +72,15 @@ def sendCommand(message):
                 # broken pipe
                 # MunkiStatus must have died; try relaunching
                 s.close()
+                s = None
                 launchAndConnectToMunkiStatus()
                 if s:
                     # try again!
-                    s.send(messagelines[0].encode('UTF-8'))
+                    try:
+                        s.send(messagelines[0].encode('UTF-8'))
+                    except socket.error, (err, errmsg):
+                        # ok, we give up.
+                        pass
             
 
 def readResponse():
