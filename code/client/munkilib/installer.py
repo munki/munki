@@ -43,6 +43,8 @@ def removeBundleRelocationInfo(pkgpath):
     that would cause bundle relocation behavior.
     This makes bundles install or update in their
     default location.'''
+    munkicommon.display_debug1(
+            "Looking for bundle relocation info...")
     if os.path.isdir(pkgpath):
         # remove relocatable stuff
         tokendefinitions = os.path.join(pkgpath,
@@ -50,6 +52,8 @@ def removeBundleRelocationInfo(pkgpath):
         if os.path.exists(tokendefinitions):
             try:
                 os.remove(tokendefinitions)
+                munkicommon.display_debug1(
+                        "Removed Contents/Resources/TokenDefinitions.plist")
             except:
                 pass
                 
@@ -65,6 +69,8 @@ def removeBundleRelocationInfo(pkgpath):
             del pl['IFPkgPathMappings']
             try:
                 FoundationPlist.writePlist(pl, infoplist)
+                munkicommon.display_debug1(
+                        "Removed IFPkgPathMappings")
             except:
                 pass
         
