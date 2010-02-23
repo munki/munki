@@ -148,9 +148,6 @@
 			<string>2.0.0.0.0</string>
 		</dict>
 	</array>
-	<key>optional_receipts</key>
-	<array>
-	</array>
 	<key>uninstall_method</key>
 	<string>removepackages</string>
 	<key>uninstallable</key>

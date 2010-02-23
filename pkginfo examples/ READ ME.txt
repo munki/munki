@@ -2,7 +2,7 @@ Use 'makepkginfo' to create pkginfo files - it does the hard work so you don't h
 
 These examples don't show all the supported keys.  Here's a few more:
 	
-There are three types of dependency/relationship keys.
+There are two types of dependency/relationship keys.
 
 'requires' are prerequisites: package A requires package B be installed first.
 if package A is removed, package B is unaffected.
@@ -13,27 +13,10 @@ if package A is removed, package B is unaffected.
 	<string>TextWrangler</string>
 </array>
 
-The format for requires is identical to the managed_installs key in the manifest. 
+The format for 'requires' is identical to the managed_installs key in the manifest. 
 No checking is done for circular dependencies - so don't make any.
 
-
-'modifies' points to ONE package the current package modifies on install; generally this means the current package is an updater.  For example, 'Office2008' might resolve to Office2008-12.1.7.0.0 which modifies 
-Office2008-12.1.0.0.0 which modifies Office2008--12.0.0.0.0 (Office2008--12.1.7.0.0 and 
-Office2008--12.1.0.0.0 are updater packages, Office2008--12.0.0.0.0 is the original installer.)
-If you later remove Office2008, you want to remove everything installed by all three packages.
-'modifies' provides a method to theoretically figure it all out.
-The value for 'modifies' must be a string that unambiguously resolves to a specific version of a specific install:
-
-<key>modifies</key>
-<string>Office2008-12.0.0.0.0</string>
-
-when processing installs, the two dependencies are basically equivalent;
-the real difference comes when processing removals.
-
-'modifies' has been deprecated and support for it will be removed in 
-a future release.
-
-The third type of relationship is "update_for".
+The second type of relationship is "update_for".
 This signifies that that current package should be considered an update
 for the packages listed in the "update_for" array. When processing a
 package, we look through the catalogs for other packages that declare
@@ -42,11 +25,7 @@ This can be a one-to-many relationship - one package can be an update
 for several other packages; for example, "PhotoshopCS4update-11.0.1" 
 could be an update for PhotoshopCS4 and for AdobeCS4DesignSuite.
 
-When removing an item, any updates for that item are removed as well.
-
-With 'requires' and 'update_for' you can completely replace the 
-functionality of 'modifies', plus do more, so 'modifies' is on its way
-out.
+When removing an item, any updates for that item are removed as well, if possible.
 
 
 Supported architectures:
