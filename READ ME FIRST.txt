@@ -68,8 +68,9 @@ The other choice is implementing the CGI in the code/server folder in this distr
 
 Bootstrapping:
 Put some installer items (flat packages or dmgs) in repo_root/pkgs/
-Create pkginfo files.
-Copy the manifest example (manifest.plist) to repo_root/catalogs/.  Rename if you'd like.
+Create pkginfo files. Put these in repo_root/pkgsinfo/
+Create the catalogs by running makecatalogs /path/to/repo_root.
+Copy the manifest example (manifest.plist) to repo_root/manifests/.  Rename if you'd like.
 
 You're done with the webserver.
 On a client:
