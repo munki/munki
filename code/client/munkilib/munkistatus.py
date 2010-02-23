@@ -31,6 +31,7 @@ import time
 # module socket variable
 s = None
 
+
 def launchMunkiStatus():
     # use launchd KeepAlive path so it launches from a launchd agent
     # in the correct context.
@@ -81,7 +82,7 @@ def sendCommand(message):
                     except socket.error, (err, errmsg):
                         # ok, we give up.
                         pass
-            
+
 
 def readResponse():
     global s
@@ -96,7 +97,7 @@ def readResponse():
             s = None
             
     return ''
-    
+
 
 def getPIDforProcessName(processname):
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
@@ -113,8 +114,8 @@ def getPIDforProcessName(processname):
                 return str(pid)
 
     return 0
-    
-    
+
+
 def getMunkiStatusPID():
     return getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
 
@@ -137,13 +138,13 @@ def getMunkiStatusSocket():
             # sleep and try again
             time.sleep(.25)
     return ""
-        
-        
+
+
 def activate():
     '''Brings MunkiStatus window to the front.'''
     sendCommand(u"ACTIVATE: \n")
-        
-        
+
+
 def hide():
     '''Hides MunkiStatus window.'''
     sendCommand(u"HIDE: \n")
@@ -162,19 +163,19 @@ def title(titleText):
 def message(messageText):
     '''Sets the status message.'''
     sendCommand(u"MESSAGE: %s\n" % messageText)
-        
-        
+
+
 def detail(detailsText):
     '''Sets the detail text.'''
     sendCommand(u"DETAIL: %s\n" % detailsText)
-        
-    
+
+
 def percent(percentage):
     '''Sets the progress indicator to 0-100 percent done.
     If you pass a negative number, the progress indicator
     is shown as an indeterminate indicator (barber pole).'''
     sendCommand(u"PERCENT: %s\n" % percentage)
-        
+
 
 def hideStopButton():
     '''Hides the stop button.'''
@@ -194,8 +195,8 @@ def disableStopButton():
 def enableStopButton():
     '''Enables the stop button.'''
     sendCommand(u"ENABLESTOPBUTTON: \n")
-    
-    
+
+
 def restartAlert():
     try:
         sendCommand(u"ACTIVATE: \n")
@@ -203,7 +204,7 @@ def restartAlert():
         return readResponse()
     except IOError:
         return 0
-    
+
 
 def getStopButtonState():
     '''Returns 1 if the stop button has been clicked, 0 otherwise.'''
@@ -230,6 +231,3 @@ def quit():
     except (AttributeError, IOError):
         if getMunkiStatusPID():
             retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
-
-
-
