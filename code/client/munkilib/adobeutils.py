@@ -3,8 +3,7 @@
 """
 adobeutils.py
 
-Utilities to enable munki to install/uninstall Adobe CS4 products using their
-CS4 Deployment Toolkit.
+Utilities to enable munki to install/uninstall Adobe CS3/CS4 products using the CS3/CS4 Deployment Toolkits.
 
 """
 # Copyright 2009 Greg Neagle.
