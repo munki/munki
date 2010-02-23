@@ -82,7 +82,7 @@ def startUpdateCheck():
     if subprocess.call(cmd):
         return -1
     else:
-        for i in range(5):
+        for i in range(7):
             time.sleep(1)
             # check to see if we were successful in starting the update
             result = updateInProgress()
