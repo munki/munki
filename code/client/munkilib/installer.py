@@ -370,7 +370,8 @@ def installWithInfo(dirpath, installlist):
                 if itempath.endswith(".dmg"):
                     munkicommon.display_status("Mounting disk image %s" %
                                                 item["installer_item"])
-                    mountpoints = munkicommon.mountdmg(itempath)
+                    mountpoints = munkicommon.mountdmg(itempath, 
+                                                        use_shadow=True)
                     if mountpoints == []:
                         munkicommon.display_error("No filesystems mounted "
                                                   "from %s" %
