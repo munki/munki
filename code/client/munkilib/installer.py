@@ -75,11 +75,12 @@ def removeBundleRelocationInfo(pkgpath):
                 pass
         
 
-def install(pkgpath, choicesXMLpath=None):
+def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
-    Returns the installer return code and true if a restart is needed.
+    Returns a tuple: 
+    the installer return code and restart needed as a boolean.
     """
     
     restartneeded = False
@@ -89,7 +90,8 @@ def install(pkgpath, choicesXMLpath=None):
         # resolve links before passing them to /usr/bin/installer
         pkgpath = os.path.realpath(pkgpath)
         
-    removeBundleRelocationInfo(pkgpath)
+    if suppressBundleRelocation:
+        removeBundleRelocationInfo(pkgpath)
     
     packagename = ''
     restartaction = 'None'
@@ -197,7 +199,7 @@ def install(pkgpath, choicesXMLpath=None):
     return (retcode, restartneeded)
 
 
-def installall(dirpath, choicesXMLpath=None):
+def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -224,7 +226,8 @@ def installall(dirpath, choicesXMLpath=None):
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
                 (retcode, needsrestart) = installall(mountpoint,
-                                                     choicesXMLpath)
+                                                     choicesXMLpath,
+                                                     suppressBundleRelocation)
                 if needsrestart:
                     restartflag = True
                 if retcode:
@@ -235,7 +238,8 @@ def installall(dirpath, choicesXMLpath=None):
             munkicommon.unmountdmg(mountpoints[0])
         
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
-            (retcode, needsrestart) = install(itempath, choicesXMLpath)
+            (retcode, needsrestart) = install(itempath, choicesXMLpath, 
+                                                suppressBundleRelocation)
             if needsrestart:
                 restartflag = True
             if retcode:
@@ -360,6 +364,8 @@ def installWithInfo(dirpath, installlist):
                 retcode = copyAppFromDMG(itempath)
             else:
                 # must be Apple installer package
+                suppressBundleRelocation = item.get(
+                                    "suppress_bundle_relocation", False)
                 if 'installer_choices_xml' in item:
                     choicesXMLfile = os.path.join(munkicommon.tmpdir, 
                                                   "choices.xml")
@@ -370,8 +376,12 @@ def installWithInfo(dirpath, installlist):
                 if itempath.endswith(".dmg"):
                     munkicommon.display_status("Mounting disk image %s" %
                                                 item["installer_item"])
+                    mountWithShadow = suppressBundleRelocation
+                    # we need to mount the diskimage as read/write to
+                    # be able to modify the package to suppress bundle
+                    # relocation
                     mountpoints = munkicommon.mountdmg(itempath, 
-                                                        use_shadow=True)
+                                                use_shadow=mountWithShadow)
                     if mountpoints == []:
                         munkicommon.display_error("No filesystems mounted "
                                                   "from %s" %
@@ -392,13 +402,15 @@ def installWithInfo(dirpath, installlist):
                                                     item['package_path'])
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = install(fullpkgpath,
-                                                               choicesXMLfile)
+                                                     choicesXMLfile,
+                                                     suppressBundleRelocation)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = installall(mountpoints[0],
-                                                              choicesXMLfile)
+                                                              choicesXMLfile,
+                                                    suppressBundleRelocation)
                     if needtorestart:
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
@@ -407,14 +419,16 @@ def installWithInfo(dirpath, installlist):
                     if (itempath.endswith(".pkg") or \
                             itempath.endswith(".mpkg")):
                         (retcode, needtorestart) = install(itempath,
-                                                           choicesXMLfile)
+                                                           choicesXMLfile,
+                                                    suppressBundleRelocation)
                         if needtorestart:
                             restartflag = True
                     elif os.path.isdir(itempath):
                         # directory of packages, 
                         # like what we get from Software Update
                         (retcode, needtorestart) = installall(itempath,
-                                                              choicesXMLfile)
+                                                              choicesXMLfile,
+                                                    suppressBundleRelocation)
                         if needtorestart:
                             restartflag = True
                             
