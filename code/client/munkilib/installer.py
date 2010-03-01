@@ -366,6 +366,8 @@ def installWithInfo(dirpath, installlist):
                 # must be Apple installer package
                 suppressBundleRelocation = item.get(
                                     "suppress_bundle_relocation", False)
+                munkicommon.display_debug1("suppress_bundle_relocation: %s" %
+                                                    suppressBundleRelocation )
                 if 'installer_choices_xml' in item:
                     choicesXMLfile = os.path.join(munkicommon.tmpdir, 
                                                   "choices.xml")

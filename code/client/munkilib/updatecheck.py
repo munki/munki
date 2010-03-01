@@ -1192,11 +1192,16 @@ def processInstall(manifestitem, cataloglist, installinfo):
             location = pl['installer_item_location']
             if download_installeritem(location):
                 filename = os.path.split(location)[1]
+                # required keys
                 iteminfo['installer_item'] = filename
                 iteminfo['installed'] = False
                 iteminfo["version_to_install"] = pl.get('version',"UNKNOWN")
                 iteminfo['description'] = pl.get('description','')
                 iteminfo['display_name'] = pl.get('display_name','')
+                # optional keys
+                if 'suppress_bundle_relocation' in pl:
+                    iteminfo['suppress_bundle_relocation'] = \
+                        pl['suppress_bundle_relocation']
                 if 'installer_choices_xml' in pl:
                     iteminfo['installer_choices_xml'] = \
                         pl['installer_choices_xml']
