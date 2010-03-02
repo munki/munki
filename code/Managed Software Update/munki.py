@@ -28,6 +28,7 @@ from ScriptingBridge import SBApplication
 
 _updatechecklaunchfile = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 _MunkiStatusIdentifier = "com.googlecode.munki.MunkiStatus"
+_MunkiStatusApp = None
 
 def getManagedInstallsPrefs():
     # define default values
@@ -101,16 +102,24 @@ def startUpdateCheck():
        
 
 def updateInProgress():
+    global _MunkiStatusApp
+    if not _MunkiStatusApp:
+        # we record this in a module global so we don't have to call
+        # SBApplication.applicationWithBundleIdentifier_ more than once
+        _MunkiStatusApp = SBApplication.applicationWithBundleIdentifier_(_MunkiStatusIdentifier)
+    if not _MunkiStatusApp:
+        # LaunchServices can't find MunkiStatus.app
+        return -1
     # if MunkiStatus is running, we're doing an update right now
-    MunkiStatus = SBApplication.applicationWithBundleIdentifier_(_MunkiStatusIdentifier)
-    if MunkiStatus and MunkiStatus.isRunning():
+    if _MunkiStatusApp.isRunning():
         # bring it back to the front
-        MunkiStatus.activate()
+        _MunkiStatusApp.activate()
         return 1
     elif os.path.exists(_updatechecklaunchfile):
         # we tried to trigger the update, but it failed?
         return -1
     else:
+        # we're not updating right now
         return 0
     
     
