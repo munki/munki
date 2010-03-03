@@ -128,7 +128,7 @@ def display_detail(msg):
     elif verbose > 1:
         print msg.encode('UTF-8')
         sys.stdout.flush()
-    if logginglevel > 0:
+    if pref('LoggingLevel') > 0:
         log(msg)
         
         
@@ -142,7 +142,7 @@ def display_debug1(msg):
     elif verbose > 2:
         print msg.encode('UTF-8')
         sys.stdout.flush()
-    if logginglevel > 1:
+    if pref('LoggingLevel') > 1:
         log("DEBUG1: %s" % msg)
 
 
@@ -155,12 +155,13 @@ def display_debug2(msg):
         pass
     elif verbose > 3:
         print msg.encode('UTF-8')
-    if logginglevel > 2:
+    if pref('LoggingLevel') > 2:
         log("DEBUG2: %s" % msg)
         
         
 def reset_warnings():
-    warningsfile = os.path.join(os.path.dirname(logfile), "warnings.log")
+    warningsfile = os.path.join(os.path.dirname(pref("LogFile")),
+                                                "warnings.log")
     if os.path.exists(warningsfile):
         rotatelog(warningsfile)
 
@@ -180,7 +181,7 @@ def display_warning(msg):
 
 
 def reset_errors():
-    errorsfile = os.path.join(os.path.dirname(logfile), "errors.log")
+    errorsfile = os.path.join(os.path.dirname(pref("LogFile")), "errors.log")
     if os.path.exists(errorsfile):
         rotatelog(errorsfile)
 
@@ -204,9 +205,9 @@ def log(msg, logname=''):
     formatstr = "%b %d %H:%M:%S"
     if not logname:
         # use our regular logfile
-        logpath = logfile
+        logpath = pref("LogFile")
     else:
-        logpath = os.path.join(os.path.dirname(logfile), logname)
+        logpath = os.path.join(os.path.dirname(pref("LogFile")), logname)
     try:
         f = open(logpath, mode='a', buffering=1)
         print >>f, time.strftime(formatstr), msg.encode('UTF-8')
@@ -218,9 +219,9 @@ def log(msg, logname=''):
 def rotatelog(logname=''):
     if not logname:
         # use our regular logfile
-        logpath = logfile
+        logpath = pref("LogFile")
     else:
-        logpath = os.path.join(os.path.dirname(logfile), logname)
+        logpath = os.path.join(os.path.dirname(pref("LogFile")), logname)
     if os.path.exists(logpath):
         for x in range(3,-1,-1):
             try:
@@ -238,9 +239,9 @@ def rotatelog(logname=''):
 
 
 def rotate_main_log():
-    if os.path.exists(logfile):
-        if os.path.getsize(logfile) > 1000000:
-            rotatelog(logfile)
+    if os.path.exists(pref("LogFile")):
+        if os.path.getsize(pref("LogFile")) > 1000000:
+            rotatelog(pref("LogFile"))
 
 
 def printreportitem(label, value, indent=0):
@@ -476,63 +477,61 @@ def isApplication(pathname):
 #####################################################
 
 
-def getManagedInstallsPrefs():
+def prefs():
     # define default values
-    prefs = {}
-    prefs['ManagedInstallDir'] = "/Library/Managed Installs"
-    # deprecated; to be replaced with CatalogURL and PackageURL
-    prefs['SoftwareRepoURL'] = "http://munki/repo"
-    # effective defaults for the following three; though if they
-    # are not in the prefs plist, they are calculated relative
-    # to the SoftwareRepoURL
-    #prefs['ManifestURL'] = "http://munki/repo/manifests/"
-    #prefs['CatalogURL'] = "http://munki/repo/catalogs/"
-    #prefs['PackageURL'] = "http://munki/repo/pkgs/"
-    prefs['ClientIdentifier'] = ''
-    prefs['LogFile'] = \
-        "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
-    prefs['LoggingLevel'] = 1
-    prefs['InstallAppleSoftwareUpdates'] = False
-    prefs['SoftwareUpdateServerURL'] = ''
-    prefs['DaysBetweenNotifications'] = 1
-    prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
-    # Added by bcw
-    prefs['UseClientCertificate'] = False
+    global _prefs
+    if not _prefs:
+        _prefs['ManagedInstallDir'] = "/Library/Managed Installs"
+        # convenience; to be replaced with CatalogURL and PackageURL
+        _prefs['SoftwareRepoURL'] = "http://munki/repo"
+        # effective defaults for the following three; though if they
+        # are not in the prefs plist, they are calculated relative
+        # to the SoftwareRepoURL (if it exists)
+        #prefs['ManifestURL'] = "http://munki/repo/manifests/"
+        #prefs['CatalogURL'] = "http://munki/repo/catalogs/"
+        #prefs['PackageURL'] = "http://munki/repo/pkgs/"
+        _prefs['ClientIdentifier'] = ''
+        _prefs['LogFile'] = \
+            "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
+        _prefs['LoggingLevel'] = 1
+        _prefs['InstallAppleSoftwareUpdates'] = False
+        _prefs['SoftwareUpdateServerURL'] = ''
+        _prefs['DaysBetweenNotifications'] = 1
+        _prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
+        # Added by bcw
+        _prefs['UseClientCertificate'] = False
         
-    prefsfile = "/Library/Preferences/ManagedInstalls.plist"
-    pl = {}
-    if os.path.exists(prefsfile):
-        try:
-            pl = FoundationPlist.readPlist(prefsfile)
-        except FoundationPlist.NSPropertyListSerializationException:
-            display_error("ERROR: Could not read preferences file %s." 
-                           % prefsfile)
-            raise Exception("Could not read preferences file %s." % prefsfile)
-        try:
-            for key in pl.keys():
-                if type(pl[key]).__name__ == "__NSCFDate":
-                    # convert NSDate/CFDates to strings
-                    prefs[key] = str(pl[key])
-                else:
-                    prefs[key] = pl[key]
-        except AttributeError:
-            display_error("ERROR: Preferences file %s contains invalid data." 
-                           % prefsfile)
-            raise Exception("Preferences file %s invalid." % prefsfile)
-    else:
-        # no prefs file, so we'll write out a "default" prefs file
-        del prefs['LastNotifiedDate']
-        FoundationPlist.writePlist(prefs, prefsfile)
+        prefsfile = "/Library/Preferences/ManagedInstalls.plist"
+        pl = {}
+        if os.path.exists(prefsfile):
+            try:
+                pl = FoundationPlist.readPlist(prefsfile)
+            except FoundationPlist.NSPropertyListSerializationException:
+                display_error("ERROR: Could not read preferences file %s." 
+                               % prefsfile)
+                raise Exception("Could not read preferences file %s." % 
+                                                                prefsfile)
+            try:
+                for key in pl.keys():
+                    if type(pl[key]).__name__ == "__NSCFDate":
+                        # convert NSDate/CFDates to strings
+                        _prefs[key] = str(pl[key])
+                    else:
+                        _prefs[key] = pl[key]
+            except AttributeError:
+                display_error("ERROR: Prefs file %s contains invalid data." 
+                                                        % prefsfile)
+                raise Exception("Preferences file %s invalid." % prefsfile)
+        else:
+            # no prefs file, so we'll write out a "default" prefs file
+            del _prefs['LastNotifiedDate']
+            FoundationPlist.writePlist(_prefs, prefsfile)
                             
-    return prefs
+    return _prefs
 
 
 def pref(prefname):
-    return getManagedInstallsPrefs().get(prefname,'')
-
-
-def prefs():
-    return getManagedInstallsPrefs()
+    return prefs().get(prefname,'')
     
     
 #####################################################    
@@ -1091,8 +1090,7 @@ debug = False
 verbose = 1
 munkistatusoutput = False
 tmpdir = tempfile.mkdtemp()
-logfile = pref('LogFile')
-logginglevel = pref('LoggingLevel')
+_prefs = {}
 report = {}
 report['Errors'] = []
 report['Warnings'] = []
