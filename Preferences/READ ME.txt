@@ -34,4 +34,7 @@ prefs['InstallAppleSoftwareUpdates'] = False
 # Number of days between user notifications from Managed Software Update.
 prefs['DaysBetweenNotifications'] = 1
 
+The example ManagedInstalls.plist in this directory is not meant to be used as-is, but rather as a starting point.
+You will need to modify it to match your needs.
+
 
