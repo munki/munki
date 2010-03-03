@@ -6,15 +6,23 @@
   <string>/Library/Managed Installs</string>
   <key>ManifestURL</key>
   <string>http://webserver/repo/manifests/</string>
+  <key>CatalogURL</key>
+  <string>http://webserver/repo/catalogs/</string>
+  <key>PackageURL</key>
+  <string>http://webserver/repo/pkgs/</string>
   <key>ClientIdentifier</key>
-  <string>arbitrary_catalog_name</string>
-  <key>SoftwareRepoURL</key>
-  <string>http://webserver/repo</string>
+  <string>arbitrary_manifest_name</string>
   <key>UseClientCertificate</key>
   <false/>
-  <key>LoggingLevel</key>
-  <integer>1</integer>
   <key>DaysBetweenNotifications</key>
+  <integer>1</integer>
+  <key>InstallAppleSoftwareUpdates</key>
+  <false/>
+  <key>SoftwareUpdateServerURL</key>
+  <string></string>
+  <key>LogFile</key>
+  <string>/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log</string>
+  <key>LoggingLevel</key>
   <integer>1</integer>
 </dict>
 </plist>
