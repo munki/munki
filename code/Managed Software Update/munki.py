@@ -23,7 +23,7 @@ import subprocess
 import FoundationPlist
 import time
 
-from Foundation import NSDate
+from Foundation import NSDate, NSURL
 from ScriptingBridge import SBApplication
 
 _updatechecklaunchfile = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
@@ -109,6 +109,11 @@ def updateInProgress():
         _MunkiStatusApp = SBApplication.applicationWithBundleIdentifier_(_MunkiStatusIdentifier)
     if not _MunkiStatusApp:
         # LaunchServices can't find MunkiStatus.app
+        # Maybe it's never been launched. Let's look by path
+        fileurl = NSURL.fileURLWithPath_("/Applications/Utilities/Managed Software Update.app/Contents/Resources/MunkiStatus.app")
+        _MunkiStatusApp = SBApplication.applicationWithURL_(fileurl)
+    if not _MunkiStatusApp:
+        # OK, now we're screwed. Can't find MunkiStatus.app at all.
         return -1
     # if MunkiStatus is running, we're doing an update right now
     if _MunkiStatusApp.isRunning():
