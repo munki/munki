@@ -318,6 +318,44 @@ def parseDist(filename):
                 description += line + "\n"
                 
     return title, vers, description
+    
+
+def getRestartInfo(installitemdir):
+    # looks at all the RestartActions for all the items in the
+    # directory and returns the highest weighted of:
+    #   RequireRestart
+    #   RecommendRestart
+    #   RequireLogout
+    #   RecommendLogout
+    #   None
+    
+    weight = {}
+    weight['RequireRestart'] = 4
+    weight['RecommendRestart'] = 3
+    weight['RequireLogout'] = 2
+    weight['RecommendLogout'] = 1
+    weight['None'] = 0
+    
+    restartAction = "None"
+    for item in os.listdir(installitemdir):
+        if item.endswith(".dist") or item.endswith(".pkg") or \
+                item.endswith(".mpkg"):
+            installeritem = os.path.join(installitemdir, item)
+
+            p = subprocess.Popen(["/usr/sbin/installer",
+                                  "-query", "RestartAction", 
+                                  "-pkg", installeritem], 
+                                  bufsize=1, 
+                                  stdout=subprocess.PIPE, 
+                                  stderr=subprocess.PIPE)
+            (out, err) = p.communicate()
+            if out:
+                thisAction = out.rstrip('\n')
+                if thisAction in weight.keys():
+                    if weight[thisAction] > weight[restartAction]:
+                        restartAction = thisAction
+            
+    return restartAction
 
 
 def getSoftwareUpdateInfo():
@@ -348,17 +386,10 @@ def getSoftwareUpdateInfo():
                                                 "Updated Apple software."
                             iteminfo["version_to_install"] = vers
                             iteminfo['display_name'] = title
-                            p = subprocess.Popen(["/usr/sbin/installer",
-                                                  "-query", "RestartAction", 
-                                                  "-pkg", distfile], 
-                                                  bufsize=1, 
-                                                  stdout=subprocess.PIPE, 
-                                                  stderr=subprocess.PIPE)
-                            (out, err) = p.communicate()
-                            if out:
-                                restartAction = out.rstrip('\n')
-                                if restartAction != 'None':
-                                    iteminfo['RestartAction'] = restartAction
+                            restartAction = getRestartInfo(installitem)
+                            if restartAction != "None":
+                                iteminfo['RestartAction'] = restartAction
+                            
                             infoarray.append(iteminfo)
                             break
 
