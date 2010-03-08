@@ -49,7 +49,7 @@ if hostname == "":
     except:
         hostname = ip
         
-# the manifestdir is a local path to wherever you keep the master catalogs;
+# the manifestdir is a local path to wherever you keep the manifests;
 # must be readable by the webserver process
 manifestdir = "/Library/WebServer/Documents/repo/manifests"
 
