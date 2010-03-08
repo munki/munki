@@ -1691,7 +1691,7 @@ def getmanifest(partialurl, suppress_errors=False):
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 "manifests")
         
-    if partialurl.startswith("http://"):
+    if partialurl.startswith("http://") or partialurl.startswith("https://"):
         # then it's really a request for the client's primary manifest
         manifesturl = partialurl
         manifestname = "client_manifest.plist"
