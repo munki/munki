@@ -2161,6 +2161,7 @@ def check(id=''):
                     installinfo.get('managed_installs',[])
                 munkicommon.report['ItemsToRemove'] = \
                     installinfo.get('removals',[])
+            
                     
     installcount = len(installinfo.get("managed_installs",[]))
     removalcount = len(installinfo.get("removals",[]))
@@ -2169,7 +2170,7 @@ def check(id=''):
     if installcount: 
         munkicommon.display_info(
             "The following items will be installed or upgraded:")
-    for item in installinfo['managed_installs']:
+    for item in installinfo.get('managed_installs',[]):
         if item.get('installer_item'):
             munkicommon.display_info("    + %s-%s" % 
                                      (item.get('name',''),
@@ -2186,7 +2187,7 @@ def check(id=''):
                 
     if removalcount:
         munkicommon.display_info("The following items will be removed:")
-    for item in installinfo['removals']:
+    for item in installinfo.get('removals',[]):
         if item.get('installed'):
             munkicommon.display_info("    - %s" % item.get('name'))
             if item.get('RestartAction') == 'RequireRestart' or \
