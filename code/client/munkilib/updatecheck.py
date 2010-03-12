@@ -425,8 +425,11 @@ def compareBundleVersion(item):
     munkicommon.display_debug1("Checking %s for version %s..." % 
                                 (filepath, vers))
     if not os.path.exists(filepath):
-        munkicommon.display_debug1("\tNo Info.plist found at %s" % filepath)
-        return 0
+        filepath = os.path.join(item['path'], 'Resources', 'Info.plist')
+        if not os.path.exists(filepath):
+            munkicommon.display_debug1(
+                                "\tNo Info.plist found at %s" % filepath)
+            return 0
 
     try:
         pl = FoundationPlist.readPlist(filepath) 
@@ -1788,6 +1791,8 @@ def checkServer(url):
     # split into host and port if present
     netlocparts = netloc.split(":")
     host = netlocparts[0]
+    if host == "":
+        return (-1, "Bad URL")
     if len(netlocparts) == 2:
         port = int(netlocparts[1])
     s = socket.socket()
