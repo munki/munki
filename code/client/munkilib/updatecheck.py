@@ -416,21 +416,23 @@ def compareBundleVersion(item):
             -2 if there's an error in the input
     """
     if 'path' in item and 'CFBundleShortVersionString' in item:
-        filepath = os.path.join(item['path'], 'Contents', 'Info.plist')
         vers = item['CFBundleShortVersionString']
     else:
         munkicommon.display_error("Missing bundle path or version!")
         return -2
 
-    munkicommon.display_debug1("Checking %s for version %s..." % 
-                                (filepath, vers))
+    munkicommon.display_debug1("Checking bundle %s for version %s..." % 
+                                (item['path'], vers))
+    filepath = os.path.join(item['path'], 'Contents', 'Info.plist')
     if not os.path.exists(filepath):
+        munkicommon.display_debug1("\tNo Info.plist found at %s" % filepath)
         filepath = os.path.join(item['path'], 'Resources', 'Info.plist')
         if not os.path.exists(filepath):
             munkicommon.display_debug1(
                                 "\tNo Info.plist found at %s" % filepath)
             return 0
-
+    
+    munkicommon.display_debug1("\tFound Info.plist at %s" % filepath)
     try:
         pl = FoundationPlist.readPlist(filepath) 
     except FoundationPlist.NSPropertyListSerializationException:
