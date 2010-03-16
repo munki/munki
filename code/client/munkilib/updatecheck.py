@@ -30,16 +30,14 @@ import urllib2
 import urlparse
 import httplib
 import hashlib
-#import datetime
 import time
 import calendar
 import socket
 
-#our lib
+#our libs
 import munkicommon
 import munkistatus
 import FoundationPlist
-
 
 # global to hold our catalog DBs   
 catalog = {}
@@ -1818,7 +1816,9 @@ def checkServer(url):
         # (61, 'Connection refused')
         return tuple(err)
         
-
+############################################
+# Legacy HTTP download code; to be removed #
+############################################
 # HTTP download functions
 #
 #    Handles http downloads
@@ -1986,7 +1986,7 @@ def getfilefromhttpurl(url,filepath, ifmodifiedsince=None, message=None):
     return 0
 
 
-def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
+def OLDgetHTTPfileIfNewerAtomically(url,destinationpath, message=None):
     """
     Gets file from HTTP URL, only if newer on web server.
     Replaces pre-existing file only on success. (thus 'Atomically')
@@ -2028,6 +2028,238 @@ def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
     if os.path.exists(mytemppath):
         os.remove(mytemppath)
         
+    return destinationpath, err
+    
+################################################
+# End legacy HTTP download code; to be removed #
+################################################
+
+
+###########################################
+# New HTTP download code
+# using curl
+###########################################
+
+class CurlError(Exception):
+    pass
+
+
+class HTTPError(Exception):
+    pass
+
+
+def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
+         cacert=None, capath=None, cert=None, key=None, message=None):
+    """Gets an HTTP or HTTPS URL and stores it in
+    destination path. Returns a dictionary of headers, which includes 
+    http_result_code and http_result_description.
+    Will raise CurlError if curl returns an error.
+    Will raise HTTPError if HTTP Result code is not 2xx or 304.
+    If destinationpath already exists, you can set 'onlyifnewer' to true to
+    indicate you only want to download the file only if it's newer on the 
+    server.
+    If you have an ETag from the current destination path, you can pass that
+    to download the file only if it different.
+    Finally, if you set resume to True, curl will attempt to resume an
+    interrupted download. You'll get an error if the existing file is 
+    complete; if the file has changed since the first download attempt, you'll 
+    get a mess."""
+    
+    header = {}
+    header['http_result_code'] = "000"
+    header['http_result_description'] = ""
+    
+    tempdownloadpath = destinationpath + ".download"
+    
+    cmd = ['/usr/bin/curl', 
+           '-q',                    # don't read .curlrc file
+           '-D', '-',               # dump headers to stdout
+           '-s', '-S',              # silent except for error message
+           '--no-buffer',           # don't buffer output
+           '-y', '30',              # give up if too slow d/l for 30 secs
+           '-o', tempdownloadpath,   # output file to temp download path
+           url]
+           
+    if cacert:
+        if not os.path.isfile(cacert):
+            raise CurlError(-1, "No CA cert at %s" % cacert)
+        cmd.extend(['--cacert', cacert])
+    if capath:
+        if not os.path.isdir(capath):
+            raise CurlError(-2, "No CA directory at %s" % cadir)
+        cmd.extend(['--cadir', capath])
+    if cert:
+        if not os.path.isfile(cert):
+            raise CurlError(-3, "No client cert at %s" % cert)
+        cmd.extend(['--cert', cert])
+    if key:
+        if not os.path.isfile(cert):
+            raise CurlError(-4, "No client key at %s" % key)
+        cmd.extend(['--key', key])
+        
+    if os.path.exists(tempdownloadpath) and resume:
+        # let's try to resume
+        cmd.extend(['-C', '-'])
+           
+    if os.path.exists(destinationpath):
+        if onlyifnewer:
+            cmd.extend(['-z', destinationpath])
+        elif etag:
+            cmd.extend(['-H', "If-None-Match: %s" % etag])
+        else:
+            os.remove(destinationpath)
+            
+    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    contentlength = 0
+    downloadedpercent = -1
+    donewithheaders = False
+    
+    while True:
+        if not donewithheaders:
+            info =  p.stdout.readline().strip("\r\n")
+            if info:
+                if info.startswith("HTTP/"):
+                    header['http_result_code'] = info.split(None,2)[1]
+                    header['http_result_description'] = info.split(None,2)[2]
+                elif ": " in info:
+                    part = info.split(None,1)
+                    fieldname = part[0].rstrip(':').lower()
+                    header[fieldname] = part[1]
+            else:
+                # we got an empty line; end of headers (or curl exited)
+                donewithheaders = True
+                try:
+                    targetsize = int(header.get('content-length'))
+                except:
+                    targetsize = 0
+                if header.get('http_result_code') == "206":
+                    # partial content because we're resuming
+                    contentrange = header.get('content-range')
+                    if contentrange.startswith("bytes"):
+                        try:
+                            targetsize = int(contentrange.split("/")[1])
+                        except:
+                            targetsize = 0
+                        
+                if message and header['http_result_code'] != "304":
+                    if message:
+                        # log always, display if verbose is 2 or more
+                        munkicommon.display_detail(message)
+                        if munkicommon.munkistatusoutput:
+                            # send to detail field on MunkiStatus
+                            munkistatus.detail(message) 
+                    
+        elif targetsize and header['http_result_code'].startswith('2'):
+            # display progress if we get a 2xx result code
+            if os.path.exists(tempdownloadpath):
+                downloadedsize = os.path.getsize(tempdownloadpath)
+                percent = int(float(downloadedsize)
+                                    /float(targetsize)*100)
+                if percent != downloadedpercent:
+                    # percent changed; update display
+                    downloadedpercent = percent
+                    munkicommon.display_percent_done(downloadedpercent,100)
+                time.sleep(0.1)
+        
+        if (p.poll() != None):
+            break
+                
+    retcode = p.poll()
+    if retcode:
+        curlerr = p.stderr.read().rstrip('\n').split(None,2)[2]
+        raise CurlError(retcode, curlerr)
+    else:
+        http_result = header['http_result_code']
+        if downloadedpercent != 100 and \
+            http_result.startswith('2'):
+            downloadedsize = os.path.getsize(tempdownloadpath)
+            if downloadedsize >= targetsize:
+                munkicommon.display_percent_done(100,100)
+                os.rename(tempdownloadpath, destinationpath)
+                return header
+            else:
+                # not enough bytes retreived
+                raise CurlError(-5, "Expected %s bytes, got: %s" % 
+                                        (targetsize, downloadedsize))
+        elif http_result.startswith('2'):
+            os.rename(tempdownloadpath, destinationpath)
+            return header
+        elif http_result =="304":
+            return header
+        else:
+            raise HTTPError(http_result,
+                                header['http_result_description'])
+
+
+def getHTTPfileIfNewerAtomically(url, destinationpath, message=None):
+    
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    # get server CA cert if it exists so we can verify the munki server
+    ca_cert_path = None
+    ca_dir_path = None
+    if munkicommon.pref('SoftwareRepoCAPath'):
+        CA_path = munkicommon.pref('SoftwareRepoCAPath')
+        if os.path.isfile(CA_path):
+            ca_cert_path = CA_path
+        elif os.path.isdir(CA_path):
+            ca_dir_path = CA_path
+    if munkicommon.pref('SoftwareRepoCACertificate'):
+        ca_cert_path = munkicommon.pref('SoftwareRepoCACertificate')
+    if ca_cert_path == None:
+        ca_cert_path = os.path.join(ManagedInstallDir, "certs", "ca.pem")
+        if not os.path.exists(ca_cert_path):
+            ca_cert_path = None
+    
+    client_cert_path = None
+    client_key_path = None
+    # get client cert if it exists
+    if munkicommon.pref('UseClientCertificate'):
+        client_cert_path = munkicommon.pref('ClientCertificatePath') or None
+        client_key_path = munkicommon.pref('ClientKeyPath') or None
+        if not client_cert_path:
+            for name in ['cert.pem', 'client.pem', 'munki.pem']:
+                client_cert_path = os.path.join(ManagedInstallDir, "certs",                    
+                                                                    name)
+                if os.path.exists(client_cert_path):
+                    break
+        
+    try:
+        header = curl(url,
+                      destinationpath, 
+                      cert=client_cert_path,
+                      key=client_key_path,
+                      cacert=ca_cert_path,
+                      capath=ca_dir_path,
+                      onlyifnewer=os.path.exists(destinationpath),
+                      message=message)
+    except CurlError, err:
+        err = "Error %s: %s" % tuple(err)
+        if os.path.exists(destinationpath):
+            os.remove(destinationpath)
+        destinationpath = None
+    except HTTPError, err:
+        err = "HTTP result %s: %s" % tuple(err)
+        if os.path.exists(destinationpath):
+            os.remove(destinationpath)
+        destinationpath = None
+    else:
+        err = None
+        if header['http_result_code'] == "304":
+            # not modified, return existing file
+            munkicommon.display_debug1("%s already exists and is up-to-date." 
+                                            % destinationpath)
+        else:
+            if 'last-modified' in header:
+                # set the modtime of the downloaded file to the modtime of the
+                # file on the server
+                modtimestr = header['last-modified']
+                modtimetuple = time.strptime(modtimestr, 
+                                             "%a, %d %b %Y %H:%M:%S %Z")
+                modtimeint = calendar.timegm(modtimetuple)
+                os.utime(destinationpath, (time.time(), modtimeint))
+                
     return destinationpath, err
     
     

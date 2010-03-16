@@ -80,10 +80,10 @@ def display_percent_done(current,maximum):
         indicator = ['\t0','.','.','20','.','.','40','.','.',
                     '60','.','.','80','.','.','100\n']
         for i in range(0,16):
-            if current == step[i]:
+            if current >= step[i]:
                 output += indicator[i]
         if output:
-            sys.stdout.write(output)
+            sys.stdout.write("\r" + output)
             sys.stdout.flush()
 
 

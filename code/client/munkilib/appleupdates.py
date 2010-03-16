@@ -26,8 +26,6 @@ import os
 import stat
 import re
 import subprocess
-#import dateutil.parser
-#import datetime
 from xml.dom import minidom
 
 from Foundation import NSDate
