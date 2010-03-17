@@ -1759,7 +1759,9 @@ def getPrimaryManifest(alternate_id):
                     if os.path.exists(client_cert_path):
                         break
             if client_cert_path and os.path.exists(client_cert_path):
-                data = open(client_cert_path).read()
+                f = open(client_cert_path)
+                data = f.read()
+                f.close()
                 x509 = load_certificate(FILETYPE_PEM, data)
                 clientidentifier = x509.get_subject().commonName
                 
@@ -2091,50 +2093,63 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
     header['http_result_code'] = "000"
     header['http_result_description'] = ""
     
+    curldirectivepath = os.path.join(munkicommon.tmpdir,"curl_temp")
     tempdownloadpath = destinationpath + ".download"
     
-    cmd = ['/usr/bin/curl', 
-           '-q',                    # don't read .curlrc file
-           '-D', '-',               # dump headers to stdout
-           '-s', '-S',              # silent except for error message
-           '--no-buffer',           # don't buffer output
-           '-y', '30',              # give up if too slow d/l for 30 secs
-           '-o', tempdownloadpath,   # output file to temp download path
-           url]
-           
-    if cacert:
-        if not os.path.isfile(cacert):
-            raise CurlError(-1, "No CA cert at %s" % cacert)
-        cmd.extend(['--cacert', cacert])
-    if capath:
-        if not os.path.isdir(capath):
-            raise CurlError(-2, "No CA directory at %s" % cadir)
-        cmd.extend(['--cadir', capath])
-    if cert:
-        if not os.path.isfile(cert):
-            raise CurlError(-3, "No client cert at %s" % cert)
-        cmd.extend(['--cert', cert])
-    if key:
-        if not os.path.isfile(cert):
-            raise CurlError(-4, "No client key at %s" % key)
-        cmd.extend(['--key', key])
+    # we're writing all the curl options to a file and passing that to
+    # curl so we avoid the problem of URLs showing up in a process listing
+    try:
+        f = open(curldirectivepath, mode='w')
+        print >>f, "silent"         # no progress meter
+        print >>f, "show-error"     # print error msg to stderr
+        print >>f, "no-buffer"      # don't buffer output
+        print >>f, "fail"           # throw error if download fails
+        print >>f, "dump-header -"  # dump headers to stdout
+        print >>f, "speed-time = 30"# give up if too slow d/l for 30 secs
+        print >>f, 'output = "%s"' % tempdownloadpath
+        print >>f, 'url = "%s"' % url
+                   
+        if cacert:
+            if not os.path.isfile(cacert):
+                raise CurlError(-1, "No CA cert at %s" % cacert)
+            print >>f, 'cacert = "%s"' % cacert
+        if capath:
+            if not os.path.isdir(capath):
+                raise CurlError(-2, "No CA directory at %s" % cadir)
+            print >>f, 'capath = "%s"' % capath
+        if cert:
+            if not os.path.isfile(cert):
+                raise CurlError(-3, "No client cert at %s" % cert)
+            print >>f, 'cert = "%s"' % cert
+        if key:
+            if not os.path.isfile(cert):
+                raise CurlError(-4, "No client key at %s" % key)
+            print >>f, 'key = "%s"' % key
+        if os.path.exists(tempdownloadpath) and resume:
+            # let's try to resume this download
+            print >>f, 'continue-at -'
+            
+        if os.path.exists(destinationpath):
+            if onlyifnewer:
+                print >>f, 'time-cond = "%s"' % destinationpath
+            elif etag:
+                print >>f, 'header = "If-None-Match: %s"' % etag
+            else:
+                os.remove(destinationpath)
+                
+        f.close()
+    except:
+        raise CurlError(-5, "Error writing curl directive")
         
-    if os.path.exists(tempdownloadpath) and resume:
-        # let's try to resume
-        cmd.extend(['-C', '-'])
-           
-    if os.path.exists(destinationpath):
-        if onlyifnewer:
-            cmd.extend(['-z', destinationpath])
-        elif etag:
-            cmd.extend(['-H', "If-None-Match: %s" % etag])
-        else:
-            os.remove(destinationpath)
+    cmd = ['/usr/bin/curl', 
+            '-q',                    # don't read .curlrc file
+            '--config',              # use config file
+            curldirectivepath]
             
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    contentlength = 0
+    targetsize = 0
     downloadedpercent = -1
     donewithheaders = False
     
