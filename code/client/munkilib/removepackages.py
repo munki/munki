@@ -419,6 +419,18 @@ def ImportFromPkgutil(pkgname, c):
         if "install-location" in pl:
             ppath = pl["install-location"]
             ppath = ppath.lstrip('./').rstrip('/')
+        else:
+            # there _should_ be an install-location. If there's not, let's
+            # check the old /Library/Receipts. 
+            # (Workaround for QuarkXPress 8.1 packages)
+            receiptpath = findBundleReceiptFromID(pkgid)
+            if receiptpath:
+                infopath = os.path.join(receiptpath, 'Contents/Info.plist')
+                if os.path.exists(infopath):
+                    infopl = FoundationPlist.readPlist(infopath)
+                    if "IFPkgRelocatedPath" in infopl:
+                        ppath = infopl["IFPkgRelocatedPath"]
+                        ppath = ppath.lstrip('./').rstrip('/')
         if "pkg-version" in pl:
             vers = pl["pkg-version"]
         if "install-time" in pl:
@@ -507,11 +519,12 @@ def initDatabase(packagedb,forcerebuild=False):
         p = subprocess.Popen(cmd, shell=False, bufsize=1, 
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, 
-                             stderr=subprocess.STDOUT)
+                             stderr=subprocess.PIPE)
         while True: 
             line =  p.stdout.readline()
             if not line and (p.poll() != None):
                 break
+            
             pkglist.append(line.rstrip('\n'))
             pkgcount += 1
             
@@ -595,11 +608,15 @@ def getpkgkeys(pkgnames):
     pkgkeyslist = []
     for pkg in pkgnames:
         t = (pkg, )
-        pkg_keys = c.execute('select pkg_key from pkgs where pkgname = ?',
+        munkicommon.display_debug1(
+                    "select pkg_key from pkgs where pkgid = %s" % pkg)
+        pkg_keys = c.execute('select pkg_key from pkgs where pkgid = ?',
                              t).fetchall()
         if not pkg_keys:
-            # try pkgid
-            pkg_keys = c.execute('select pkg_key from pkgs where pkgid = ?',
+            # try pkgname
+            munkicommon.display_debug1(
+                        "select pkg_key from pkgs where pkgname = %s" % pkg)
+            pkg_keys = c.execute('select pkg_key from pkgs where pkgname = ?',
                                  t).fetchall()
         if not pkg_keys:
             munkicommon.display_error("%s not found in database." % pkg)
@@ -612,6 +629,7 @@ def getpkgkeys(pkgnames):
         pkgkeyslist = []
     c.close
     conn.close
+    munkicommon.display_debug1("pkgkeys: %s" % pkgkeyslist)
     return pkgkeyslist
 
 
@@ -665,6 +683,7 @@ def getpathstoremove(pkgkeylist):
     removalpaths = []
     for item in results:
         removalpaths.append(item[0])
+        
     return removalpaths
 
 
