@@ -26,13 +26,16 @@ import sys
 import os
 import subprocess
 from distutils import version
-import urllib2
 import urlparse
-import httplib
 import hashlib
 import time
 import calendar
 import socket
+from OpenSSL.crypto import load_certificate, FILETYPE_PEM
+
+# these two go away if we switch to using curl for downloads
+import urllib2
+import httplib
 
 #our libs
 import munkicommon
@@ -1738,9 +1741,28 @@ def getPrimaryManifest(alternate_id):
                   munkicommon.pref('SoftwareRepoURL') + "/manifests/"
     if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
         manifesturl = manifesturl + "/"
-    clientidentifier = alternate_id or munkicommon.pref('ClientIdentifier')
-
     munkicommon.display_debug2("Manifest base URL is: %s" % manifesturl)
+    
+    clientidentifier = alternate_id or munkicommon.pref('ClientIdentifier')
+    
+    if not alternate_id and munkicommon.pref('UseClientCertificate') and \
+        munkicommon.pref('UseClientCertificateCNAsClientIdentifier'):
+        # we're to use the client cert CN as the clientidentifier
+        if munkicommon.pref('UseClientCertificate'):
+            # find the client cert
+            client_cert_path = munkicommon.pref('ClientCertificatePath')
+            if not client_cert_path:
+                ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+                for name in ['cert.pem', 'client.pem', 'munki.pem']:
+                    client_cert_path = os.path.join(ManagedInstallDir,
+                                                    "certs", name)
+                    if os.path.exists(client_cert_path):
+                        break
+            if client_cert_path and os.path.exists(client_cert_path):
+                data = open(client_cert_path).read()
+                x509 = load_certificate(FILETYPE_PEM, data)
+                clientidentifier = x509.get_subject().commonName
+                
     if not clientidentifier:
         # no client identifier specified, so use the hostname
         hostname = os.uname()[1]
