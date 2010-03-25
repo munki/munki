@@ -56,7 +56,7 @@ def makeCatalogDB(catalogitems):
         name = item.get('name', "NO NAME")
         vers = item.get('version', "NO VERSION")
         
-        if name == "NO NAME" or version == "NO VERISON":
+        if name == "NO NAME" or version == "NO VERSION":
             munkicommon.display_warning("Bad pkginfo: %s" % item)
         
         # build indexes for items by name and version
