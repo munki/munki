@@ -162,7 +162,6 @@ def checkForUpdates():
             return -1
         else:
             return 0
-
     
 
 def getAppleUpdates():
@@ -170,7 +169,7 @@ def getAppleUpdates():
     managedinstallbase = prefs['ManagedInstallDir']
     pl = {}
     appleUpdatesFile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
-    if os.path.exists(appleUpdatesFile):
+    if os.path.exists(appleUpdatesFile) and prefs['InstallAppleSoftwareUpdates']:
         try:
             pl = FoundationPlist.readPlist(appleUpdatesFile)
         except FoundationPlist.NSPropertyListSerializationException:
