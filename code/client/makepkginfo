@@ -106,6 +106,7 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
     if not cataloginfo:
         # maybe this is an appdmg
         # look for an app at the top level of the dmg
+        appinfo = {}
         if appname:
             itempath = os.path.join(mountpoints[0], appname)
             if munkicommon.isApplication(itempath):
