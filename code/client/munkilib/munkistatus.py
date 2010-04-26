@@ -91,6 +91,10 @@ def readResponse():
             # our responses are really short
             data = s.recv(256)
             return int(data.rstrip('\n'))
+        except ValueError:
+            # MunkiStatus returned an illegal value
+            # ignore for now
+            return 0
         except socket.error, (err, errmsg):
             print err, errmsg
             s.close()

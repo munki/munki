@@ -456,7 +456,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
                 nextSUcheck = lastSUcheck.dateByAddingTimeInterval_(interval)
             except ValueError:
                 pass
-        if now.timeIntervalSinceDate_(nextSUcheck) > 0:
+        if now.timeIntervalSinceDate_(nextSUcheck) >= 0:
             retcode = checkForSoftwareUpdates()
         
     return writeAppleUpdatesFile()
