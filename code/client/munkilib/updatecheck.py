@@ -32,6 +32,7 @@ import time
 import calendar
 import socket
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
+import xattr
 
 # these two go away if we switch to using curl for downloads
 import urllib2
@@ -666,13 +667,15 @@ def download_installeritem(location):
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
     dl_message = "Downloading %s..." % pkgname
-    (path, err) = getHTTPfileIfNewerAtomically(pkgurl, destinationpath,
-                                               message=dl_message)
+    (path, err) = getHTTPfileIfChangedAtomically(pkgurl, destinationpath,
+                                                 resume=True, 
+                                                 message=dl_message)
     # set verboseness back.
     munkicommon.verbose = oldverbose
     
     if path:
         return True
+    
     else:
         munkicommon.display_error("Could not download %s from server." %
                                   pkgname)
@@ -1271,8 +1274,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
 def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
     """
     Processes manifests to build a list of items to install.
-    Can be recursive if manifests inlcude other manifests.
-    Probably doesn't handle circular manifest references well...
+    Can be recursive if manifests include other manifests.
+    Probably doesn't handle circular manifest references well.
     """
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
     if cataloglist:
@@ -1291,7 +1294,7 @@ def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
                 if nestedmanifestpath:
                     listofinstalls = processManifestForInstalls(
                                                         nestedmanifestpath, 
-                                                        installinfo,    
+                                                        installinfo, 
                                                         cataloglist)
                     
         installitems = getManifestValueForKey(manifestpath,
@@ -1663,7 +1666,7 @@ def getCatalogs(cataloglist):
             catalogpath = os.path.join(catalog_dir, catalogname)
             munkicommon.display_detail("Getting catalog %s..." % catalogname)
             message = "Retreiving catalog '%s'..." % catalogname
-            (newcatalog, err) = getHTTPfileIfNewerAtomically(catalogurl,
+            (newcatalog, err) = getHTTPfileIfChangedAtomically(catalogurl,
                                                              catalogpath,
                                                              message=message)
             if newcatalog:
@@ -1709,7 +1712,7 @@ def getmanifest(partialurl, suppress_errors=False):
         
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = "Retreiving list of software for this machine..."
-    (newmanifest, err) = getHTTPfileIfNewerAtomically(manifesturl, 
+    (newmanifest, err) = getHTTPfileIfChangedAtomically(manifesturl, 
                                                       manifestpath, 
                                                       message=message)
     if not newmanifest: 
@@ -2010,7 +2013,7 @@ def getfilefromhttpurl(url,filepath, ifmodifiedsince=None, message=None):
     return 0
 
 
-def OLDgetHTTPfileIfNewerAtomically(url,destinationpath, message=None):
+def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
     """
     Gets file from HTTP URL, only if newer on web server.
     Replaces pre-existing file only on success. (thus 'Atomically')
@@ -2083,7 +2086,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
     indicate you only want to download the file only if it's newer on the 
     server.
     If you have an ETag from the current destination path, you can pass that
-    to download the file only if it different.
+    to download the file only if it is different.
     Finally, if you set resume to True, curl will attempt to resume an
     interrupted download. You'll get an error if the existing file is 
     complete; if the file has changed since the first download attempt, you'll 
@@ -2130,14 +2133,16 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             print >>f, 'continue-at -'
             
         if os.path.exists(destinationpath):
-            if onlyifnewer:
+            if etag:
+                escaped_etag = etag.replace('"','\\"')
+                print >>f, 'header = "If-None-Match: %s"' % escaped_etag
+            elif onlyifnewer:
                 print >>f, 'time-cond = "%s"' % destinationpath
-            elif etag:
-                print >>f, 'header = "If-None-Match: %s"' % etag
             else:
                 os.remove(destinationpath)
                 
         f.close()
+        #result = subprocess.call(['cat', curldirectivepath])
     except:
         raise CurlError(-5, "Error writing curl directive")
         
@@ -2173,6 +2178,9 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     targetsize = 0
                 if header.get('http_result_code') == "206":
                     # partial content because we're resuming
+                    munkicommon.display_detail(
+                        "Resuming partial download for %s" %
+                                        os.path.basename(destinationpath))
                     contentrange = header.get('content-range')
                     if contentrange.startswith("bytes"):
                         try:
@@ -2206,6 +2214,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
     retcode = p.poll()
     if retcode:
         curlerr = p.stderr.read().rstrip('\n').split(None,2)[2]
+        if not resume and os.path.exists(tempdownloadpath):
+            os.unlink(tempdownloadpath)
         raise CurlError(retcode, curlerr)
     else:
         http_result = header['http_result_code']
@@ -2218,6 +2228,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 return header
             else:
                 # not enough bytes retreived
+                if not resume and os.path.exists(tempdownloadpath):
+                    os.unlink(tempdownloadpath)
                 raise CurlError(-5, "Expected %s bytes, got: %s" % 
                                         (targetsize, downloadedsize))
         elif http_result.startswith('2'):
@@ -2230,7 +2242,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                                 header['http_result_description'])
 
 
-def getHTTPfileIfNewerAtomically(url, destinationpath, message=None):
+def getHTTPfileIfChangedAtomically(url, destinationpath, 
+                                 message=None, resume=False):
     
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     # get server CA cert if it exists so we can verify the munki server
@@ -2261,6 +2274,16 @@ def getHTTPfileIfNewerAtomically(url, destinationpath, message=None):
                                                                     name)
                 if os.path.exists(client_cert_path):
                     break
+                    
+    etag = None
+    getonlyifnewer = False
+    if os.path.exists(destinationpath):
+        getonlyifnewer = True
+        # see if we have an etag attribute
+        if "com.googlecode.munki.etag" in xattr.listxattr(destinationpath):
+            getonlyifnewer = False
+            etag = xattr.getxattr(destinationpath,
+                                  "com.googlecode.munki.etag")
         
     try:
         header = curl(url,
@@ -2269,18 +2292,18 @@ def getHTTPfileIfNewerAtomically(url, destinationpath, message=None):
                       key=client_key_path,
                       cacert=ca_cert_path,
                       capath=ca_dir_path,
-                      onlyifnewer=os.path.exists(destinationpath),
+                      onlyifnewer=getonlyifnewer,
+                      etag=etag,
+                      resume=resume,
                       message=message)
     except CurlError, err:
         err = "Error %s: %s" % tuple(err)
-        if os.path.exists(destinationpath):
-            os.remove(destinationpath)
-        destinationpath = None
+        if not os.path.exists(destinationpath):
+            destinationpath = None
     except HTTPError, err:
         err = "HTTP result %s: %s" % tuple(err)
-        if os.path.exists(destinationpath):
-            os.remove(destinationpath)
-        destinationpath = None
+        if not os.path.exists(destinationpath):
+            destinationpath = None
     else:
         err = None
         if header['http_result_code'] == "304":
@@ -2288,7 +2311,7 @@ def getHTTPfileIfNewerAtomically(url, destinationpath, message=None):
             munkicommon.display_debug1("%s already exists and is up-to-date." 
                                             % destinationpath)
         else:
-            if 'last-modified' in header:
+            if header.get("last-modified"):
                 # set the modtime of the downloaded file to the modtime of the
                 # file on the server
                 modtimestr = header['last-modified']
@@ -2296,6 +2319,10 @@ def getHTTPfileIfNewerAtomically(url, destinationpath, message=None):
                                              "%a, %d %b %Y %H:%M:%S %Z")
                 modtimeint = calendar.timegm(modtimetuple)
                 os.utime(destinationpath, (time.time(), modtimeint))
+            if header.get("etag"):
+                # store etag in extended attribute for future use
+                xattr.setxattr(destinationpath, 
+                               "com.googlecode.munki.etag", header['etag'])
                 
     return destinationpath, err
     
@@ -2361,24 +2388,6 @@ def check(id=''):
         installinfo = processManifestForRemovals(mainmanifestpath,
                                                  installinfo)
         
-        # clean up cache dir
-        # remove any item in the cache that isn't scheduled
-        # to be used for an install or removal
-        # this could happen if an item is downloaded on one
-        # updatecheck run, but later removed from the manifest
-        # before it is installed or removed
-        cache_list = [item["installer_item"] 
-                      for item in installinfo.get('managed_installs',[]) 
-                      if item.get("installer_item")]
-        cache_list.extend([item["uninstaller_item"] 
-                           for item in installinfo.get('removals',[]) 
-                           if item.get("uninstaller_item")])
-        cachedir = os.path.join(ManagedInstallDir, "Cache")
-        for item in os.listdir(cachedir):
-            if item not in cache_list:
-                munkicommon.display_detail("Removing %s from cache" % item)
-                os.unlink(os.path.join(cachedir, item))
-                
         # filter managed_installs to get items already installed
         installed_items = [item 
                            for item in installinfo.get('managed_installs',[]) 
@@ -2407,6 +2416,40 @@ def check(id=''):
         munkicommon.report['RemovedItems'] = removed_items
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
         munkicommon.report['ItemsToRemove'] = installinfo['removals']
+        
+        # clean up cache dir
+        # remove any item in the cache that isn't scheduled
+        # to be used for an install or removal
+        # this could happen if an item is downloaded on one
+        # updatecheck run, but later removed from the manifest
+        # before it is installed or removed - so the cached item
+        # is no longer needed.
+        cache_list = [item["installer_item"] 
+                      for item in installinfo.get('managed_installs',[])]
+        cache_list.extend([item["uninstaller_item"] 
+                           for item in installinfo.get('removals',[])])
+        cachedir = os.path.join(ManagedInstallDir, "Cache")
+        for item in os.listdir(cachedir):
+            if item.endswith(".download"):
+                # we have a partial download here
+                # remove the ".download" from the end of the filename
+                fullitem = os.path.splitext(item)[0]
+                if os.path.exists(os.path.join(cachedir, fullitem)):
+                    # we have a partial and a full download
+                    # for the same item. (This shouldn't happen.)
+                    # remove the partial download.
+                    os.unlink(os.path.join(cachedir, item))
+                elif problem_items == []:
+                    # problem items is our list of items
+                    # that need to be installed but are missing
+                    # the installer_item; these might be partial
+                    # downloads. So if we have no problem items, it's
+                    # OK to get rid of any partial downloads hanging around.
+                    os.unlink(os.path.join(cachedir, item))
+            elif item not in cache_list:
+                munkicommon.display_detail("Removing %s from cache" % item)
+                os.unlink(os.path.join(cachedir, item))
+        
                 
         # write out install list so our installer
         # can use it to install things in the right order
