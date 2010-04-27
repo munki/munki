@@ -1715,7 +1715,7 @@ def getmanifest(partialurl, suppress_errors=False):
     (newmanifest, err) = getHTTPfileIfChangedAtomically(manifesturl, 
                                                       manifestpath, 
                                                       message=message)
-    if not newmanifest: 
+    if err or not newmanifest: 
         if not suppress_errors:
             munkicommon.display_error(
                 "Could not retrieve manifest %s from the server." %
@@ -2427,7 +2427,8 @@ def check(id=''):
         cache_list = [item["installer_item"] 
                       for item in installinfo.get('managed_installs',[])]
         cache_list.extend([item["uninstaller_item"] 
-                           for item in installinfo.get('removals',[])])
+                           for item in installinfo.get('removals',[])
+                           if item.get('uninstaller_item')])
         cachedir = os.path.join(ManagedInstallDir, "Cache")
         for item in os.listdir(cachedir):
             if item.endswith(".download"):
