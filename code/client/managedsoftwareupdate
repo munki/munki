@@ -390,17 +390,10 @@ def main():
                                       "server check for %s failed: %s" %
                                       (server, str(result)))
             if options.manualcheck:
-                # magic incantations so Managed Software Update.app will 
-                # display an appropriate message
-                # launch MunkiStatus so focus leaves 
-                # Managed Software Update.app
-                munkistatus.activate()
-                munkistatus.message("Checking for available updates...")
-                time.sleep(1)
+                # record our result
                 recordUpdateCheckResult(-1)
                 # activate Managed Software Update.app
                 notifyUserOfUpdates(True)
-                munkistatus.quit()
             exit(-1)
         
     # reset our errors and warnings files, rotate main log if needed
