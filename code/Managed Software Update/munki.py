@@ -24,11 +24,8 @@ import FoundationPlist
 import time
 
 from Foundation import NSDate, NSURL
-from ScriptingBridge import SBApplication
 
 _updatechecklaunchfile = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
-_MunkiStatusIdentifier = "com.googlecode.munki.MunkiStatus"
-_MunkiStatusApp = None
 
 def getManagedInstallsPrefs():
     # define default values
@@ -100,25 +97,14 @@ def startUpdateCheck():
                 pass
         return result
        
-
+    
 def updateInProgress():
-    global _MunkiStatusApp
-    if not _MunkiStatusApp:
-        # we record this in a module global so we don't have to call
-        # SBApplication.applicationWithBundleIdentifier_ more than once
-        _MunkiStatusApp = SBApplication.applicationWithBundleIdentifier_(_MunkiStatusIdentifier)
-    if not _MunkiStatusApp:
-        # LaunchServices can't find MunkiStatus.app
-        # Maybe it's never been launched. Let's look by path
-        fileurl = NSURL.fileURLWithPath_("/Applications/Utilities/Managed Software Update.app/Contents/Resources/MunkiStatus.app")
-        _MunkiStatusApp = SBApplication.applicationWithURL_(fileurl)
-    if not _MunkiStatusApp:
-        # OK, now we're screwed. Can't find MunkiStatus.app at all.
-        return -1
-    # if MunkiStatus is running, we're doing an update right now
-    if _MunkiStatusApp.isRunning():
-        # bring it back to the front
-        _MunkiStatusApp.activate()
+    cmd = ['/usr/bin/killall', '-s', 'MunkiStatus']
+    result = subprocess.call(cmd)
+    munkiStatusIsRunning = (result == 0)
+    if munkiStatusIsRunning:
+        # we're doing an update. Bring it back to the front
+        tellMunkiStatusToActivate()
         return 1
     elif os.path.exists(_updatechecklaunchfile):
         # we tried to trigger the update, but it failed?
@@ -126,8 +112,18 @@ def updateInProgress():
     else:
         # we're not updating right now
         return 0
+ 
     
-    
+def tellMunkiStatusToActivate():
+    # uses oscascript to run an AppleScript
+    # ugly, but it works.
+    cmd = ['/usr/bin/osascript', '-e', 
+           'tell application "MunkiStatus" to activate']
+    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+    (output, err) = p.communicate()
+
+        
 def checkForUpdates():
     # returns 1 if we've kicked off an update check (or one is in progress),
     # returns 0 if we're not going to check (because we just did)

@@ -35,11 +35,7 @@ class Managed_Software_UpdateAppDelegate(NSObject):
     restart_required = False
     logout_required = False
 
-    
     def applicationDidFinishLaunching_(self, sender):
-        pass
-                
-    def applicationDidBecomeActive_(self, sender):
         # display updates if available; if no available updates
         # trigger an update check
         if not self._listofupdates:
@@ -47,6 +43,7 @@ class Managed_Software_UpdateAppDelegate(NSObject):
         if self._listofupdates:
             self.buildTableData()
             self.window_controller.theWindow.makeKeyAndOrderFront_(self)
+            NSApp.requestUserAttention_(NSCriticalRequest)
         else:
             # no updates available. Should we check for some?
             result = munki.checkForUpdates()
@@ -63,6 +60,9 @@ class Managed_Software_UpdateAppDelegate(NSObject):
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Update check failed", u"Quit", objc.nil, objc.nil, "There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator.")
                 alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window_controller.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
                 
+    def applicationDidBecomeActive_(self, sender):
+        pass
+                        
     def getAvailableUpdates(self):
         updatelist = []
         installinfo = munki.getInstallInfo()
