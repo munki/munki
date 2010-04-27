@@ -212,8 +212,14 @@ def notifyUserOfUpdates(manualcheck=False):
                '/Library/Preferences/ManagedInstalls', 
                'LastNotifiedDate', '-date', str(now)]
         retcode = subprocess.call(cmd)
+        
+        # Kill Managed Software Update.app if it's already 
+        # open so it will update its display
+        cmd = ["/usr/bin/killall", "Managed Software Update"]
+        retcode = subprocess.call(cmd)
+        
         # notify user of available updates using LaunchAgent to start
-        # Managed Software Update.app in the user context
+        # Managed Software Update.app in the user context.        
         launchfile = "/var/run/com.googlecode.munki.ManagedSoftwareUpdate"
         cmd = ['/usr/bin/touch', launchfile]
         retcode = subprocess.call(cmd)
