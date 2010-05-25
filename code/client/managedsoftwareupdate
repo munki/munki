@@ -301,11 +301,20 @@ def main():
               "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"]
         for f in triggerfiles:
             if os.path.exists(f):
-                os.unlink(f)
                 user_triggered = True
+                if f.endswith("startup"):
+                    # HACK: sometimes this runs before the network is up.
+                    # we'll attempt to wait until network interfaces are up
+                    # before continuing
+                    cmd = ["/usr/sbin/ipconfig", "waitall"]
+                    retcode = subprocess.call(cmd)
                 if f.endswith("checkandinstallatstartup"):
+                    runtype = "checkandinstallatstartup"
                     options.installonly = False
                     options.auto = True
+                else:
+                    # delete triggerfile if _not_ checkandinstallatstartup
+                    os.unlink(f)
         if not user_triggered:
             exit(0)
             
@@ -485,6 +494,13 @@ def main():
         # no updates available
         if options.installonly and not options.quiet:
             print "Nothing to install or remove."
+        if runtype == "checkandinstallatstartup":
+            # we have nothing to do, so remove the trigger file 
+            # so we'll stop running at restart
+            triggerfile = \
+                "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
+            if os.path.exists(triggerfile):
+                os.unlink(triggerfile)
     
     # finish our report
     munkicommon.report['EndTime'] = time.ctime()      
