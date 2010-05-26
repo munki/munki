@@ -369,6 +369,56 @@ def runAdobeSetup(dmgpath, uninstalling=False):
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
+
+
+def runAdobeCS5Install(dmgpath, uninstalling=False):
+    # runs the Adobe CS5 Install tool in silent mode from
+    # a DMG
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
+    mountpoints = mountAdobeDmg(dmgpath)
+    if mountpoints:
+        install_path = findInstallApp(mountpoints[0])
+        if install_path:
+            # look for install.xml at root
+            deploymentfile = os.path.join(mountpoints[0], "install.xml")
+            overridefile = os.path.join(mountpoints[0],
+                                        "application.xml.override")
+            if os.path.exists(deploymentfile):
+                if uninstalling:
+                    action = "--action=uninistall"
+                else:
+                    action = "--action=install"
+
+                # try to find and count the number of payloads 
+                # so we can give a rough progress indicator
+                number_of_payloads = countPayloads(mountpoints[0])
+                munkicommon.display_status("Running Adobe Install")
+                adobe_install = [ install_path, 
+                                '--mode=silent',  
+                                '--skipProcessCheck=1',
+                                '--deploymentFile=%s' % deploymentfile,
+                                action ]
+                if os.path.exists(overridefile):
+                    adobe_install.append("--overrideFile=%s" % overridefile)
+
+                retcode = runAdobeInstallTool(adobe_install,
+                                              number_of_payloads)
+            else:
+                munkicommon.display_error("%s does not contain install.xml!" %
+                                         os.path.basename(dmgpath))
+                retcode = -1    
+        else:
+            munkicommon.display_error(
+                           "%s doesn't appear to contain Adobe Install.app." % 
+                           os.path.basename(dmgpath))
+            retcode = -1
+
+        munkicommon.unmountdmg(mountpoints[0])
+        return retcode
+    else:
+        munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
+        return -1
     
     
 def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
