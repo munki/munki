@@ -429,22 +429,27 @@ def main():
             munkicommon.savereport()
             exit(-1)
         
+    if updatecheckresult is not None:
+        recordUpdateCheckResult(updatecheckresult)
+        
     updatesavailable = munkiUpdatesAvailable()
-    if not updatesavailable and (options.auto or options.manualcheck):
+    #if not updatesavailable and (options.auto or options.manualcheck):
+    if not updatesavailable and not options.installonly:
         # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
         if munkicommon.pref('InstallAppleSoftwareUpdates'):
-            if options.manualcheck:
+            if options.munkistatusoutput:
                 munkistatus.message("Checking for available "
                                     "Apple Software Updates...")
                 munkistatus.detail("")
                 munkistatus.percent(-1)
+            else:
+                munkicommon.display_status("Checking for available "
+                                           "Apple Software Updates...")
             if appleupdates.appleSoftwareUpdatesAvailable(
-                                            forcecheck=options.manualcheck):
+                    forcecheck=(options.manualcheck or 
+                                runtype == "checkandinstallatstartup")):
                 updatesavailable = True
-    
-    if updatecheckresult is not None:
-        recordUpdateCheckResult(updatecheckresult)
     
     if not updatesavailable and options.installonly and \
        munkicommon.pref('InstallAppleSoftwareUpdates'):
@@ -452,7 +457,7 @@ def main():
         # to install; don't run softwareupdate to check with Apple
         if appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True):
             updatesavailable = True
-        
+
     if options.auto:
         # when --auto,  munkistatusoutput is false for checking, 
         # but true for installing
