@@ -499,6 +499,7 @@ def initDatabase(packagedb,forcerebuild=False):
                 "Could not remove out-of-date receipt database.")
             return False
             
+    osvers = int(os.uname()[2].split('.')[0])
     pkgcount = 0
     receiptsdir = "/Library/Receipts"
     bomsdir = "/Library/Receipts/boms"
@@ -512,8 +513,8 @@ def initDatabase(packagedb,forcerebuild=False):
         for item in bomslist:
             if item.endswith(".bom"):
                 pkgcount += 1
-    else:
-        #no boms dir in some versions of OS X
+    if osvers > 9:
+        # Snow Leopard or later
         pkglist = []
         cmd = ['/usr/sbin/pkgutil', '--pkgs']
         p = subprocess.Popen(cmd, shell=False, bufsize=1, 
@@ -569,8 +570,8 @@ def initDatabase(packagedb,forcerebuild=False):
                 ImportBom(bompath, c)
                 currentpkgindex += 1
                 local_display_percent_done(currentpkgindex, pkgcount)
-    else:
-        #no boms dir in some versions of OS X
+    if osvers > 9:
+        # Snow Leopard or later
         for pkg in pkglist:
             if munkicommon.stopRequested():
                 c.close()
