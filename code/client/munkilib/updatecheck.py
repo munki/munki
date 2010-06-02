@@ -1302,7 +1302,10 @@ def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
                                                  "included_manifests")
         if nestedmanifests:
             for item in nestedmanifests:
-                nestedmanifestpath = getmanifest(item)
+                try:
+                    nestedmanifestpath = getmanifest(item)
+                except ManifestException:
+                    nestedmanifestpath = None
                 if munkicommon.stopRequested():
                     return {}
                 if nestedmanifestpath:
@@ -1624,7 +1627,10 @@ def processManifestForRemovals(manifestpath, installinfo, parentcatalogs=[]):
             for item in nestedmanifests:
                 if munkicommon.stopRequested():
                     return {}
-                nestedmanifestpath = getmanifest(item)
+                try:
+                    nestedmanifestpath = getmanifest(item)
+                except ManifestException:
+                    nestedmanifestpath = None
                 if nestedmanifestpath:
                     listofremovals = processManifestForRemovals(
                                                 nestedmanifestpath,
@@ -1700,6 +1706,10 @@ def getCatalogs(cataloglist):
                      catalogname)
                 munkicommon.display_error(err)
 
+class ManifestException(Exception):
+    # lets us raise an exception when we get an invalid
+    # manifest.
+    pass
 
 def getmanifest(partialurl, suppress_errors=False):
     """
@@ -1740,13 +1750,13 @@ def getmanifest(partialurl, suppress_errors=False):
     if munkicommon.validPlist(newmanifest):
         return newmanifest
     else:
-        munkicommon.display_error("manifest returned for %s is invalid." %
-                                  partialurl)
+        errormsg = "manifest returned for %s is invalid." % partialurl
+        munkicommon.display_error(errormsg)
         try:
             os.unlink(newmanifest)
         except (OSError, IOError):
             pass
-        return None
+        raise ManifestException(errormsg)
 
 
 def getPrimaryManifest(alternate_id):
@@ -1782,34 +1792,40 @@ def getPrimaryManifest(alternate_id):
                 x509 = load_certificate(FILETYPE_PEM, data)
                 clientidentifier = x509.get_subject().commonName
     
-    if not clientidentifier:
-        # no client identifier specified, so use the hostname
-        hostname = os.uname()[1]
-        clientidentifier = hostname
-        munkicommon.display_detail("No client id specified. "
-                                   "Requesting %s..." % clientidentifier)
-        manifest = getmanifest(manifesturl + clientidentifier,
-                               suppress_errors=True)
-        if not manifest:
-            # try the short hostname
-            clientidentifier = hostname.split('.')[0]
-            munkicommon.display_detail("Request failed. Trying %s..." %
-                                        clientidentifier)
+    try:
+        if not clientidentifier:
+            # no client identifier specified, so use the hostname
+            hostname = os.uname()[1]
+            clientidentifier = hostname
+            munkicommon.display_detail("No client id specified. "
+                                       "Requesting %s..." % clientidentifier)
             manifest = getmanifest(manifesturl + clientidentifier,
-                                    suppress_errors=True)
+                                   suppress_errors=True)
             if not manifest:
-                # last resort - try for the site_default manifest
-                clientidentifier = "site_default"
+                # try the short hostname
+                clientidentifier = hostname.split('.')[0]
                 munkicommon.display_detail("Request failed. Trying %s..." %
                                             clientidentifier)
+                manifest = getmanifest(manifesturl + clientidentifier,
+                                        suppress_errors=True)
+                if not manifest:
+                    # last resort - try for the site_default manifest
+                    clientidentifier = "site_default"
+                    munkicommon.display_detail("Request failed. " +
+                                               "Trying %s..." %
+                                                clientidentifier)
     
-    if not manifest:
-        manifest = getmanifest(manifesturl + urllib2.quote(clientidentifier))
-    if manifest:
-        # record this info for later
-        munkicommon.report['ManifestName'] = clientidentifier
-        munkicommon.display_detail("Using manifest: %s" % clientidentifier)
-    
+        if not manifest:
+            manifest = getmanifest(manifesturl +
+                                   urllib2.quote(clientidentifier))
+        if manifest:
+            # record this info for later
+            munkicommon.report['ManifestName'] = clientidentifier
+            munkicommon.display_detail("Using manifest: %s" %
+                                        clientidentifier)
+    except ManifestException:
+        # bad manifests throw an exception
+        pass
     return manifest
 
 
@@ -1857,226 +1873,8 @@ def checkServer(url):
         # (61, 'Connection refused')
         return tuple(err)
 
-############################################
-# Legacy HTTP download code; to be removed #
-############################################
-# HTTP download functions
-#
-#    Handles http downloads
-#
-#    Supports Last-modified and If-modified-since headers so
-#    we download from the server only if we don't have it in the
-#    local cache, or the locally cached item is older than the
-#    one on the server.
-#
-#    Possible failure mode: if client's main catalog gets pointed
-#    to a different, older, catalog, we'll fail to retrieve it.
-#    Need to check content length as well, and if it changes, retrieve
-#    it anyway.
-#
-#    Should probably cleanup/unify
-#       httpDownload/getfilefromhttpurl/getHTTPfileIfNewerAtomically
-#
 
-# urllib2 has no handler for client certificates, so make one...
-# Subclass HTTPSClientAuthHandler adapted from the following sources:
-# http://www.osmonov.com/2009/04/client-certificates-with-urllib2.html
-# http://www.threepillarsoftware.com/soap_client_auth
-# http://bugs.python.org/issue3466
-# bcw
-class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
-   def __init__(self, key, cert):
-       urllib2.HTTPSHandler.__init__(self)
-       self.key = key
-       self.cert = cert
-   def https_open(self, req):
-       # Rather than pass in a reference to a connection class, we pass in
-       # a reference to a function which, for all intents and purposes,
-       # will behave as a constructor
-       return self.do_open(self.getConnection, req)
-   def getConnection(self, host, timeout=300):
-       return httplib.HTTPSConnection(host, key_file=self.key, cert_file=self.cert)
-
-# An empty subclass for identifying missing certs, bcw
-# Maybe there is a better place for this?
-class UseClientCertificateError(IOError):
-    pass
-
-def httpDownload(url, filename, headers={}, postData=None, reporthook=None, message=None):
-    
-    # The required name for combination certificate and private key
-    # File must be PEM formatted and include the client's private key
-    # bcw
-    pemfile = 'munki.pem'
-    
-    # Grab the prefs for UseClientCertificate and construct a loc for the
-    # cert, bcw
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    UseClientCertificate = munkicommon.pref('UseClientCertificate')
-    cert = os.path.join(ManagedInstallDir, 'certs', pemfile)
-    
-    # set default timeout so we don't hang if the server stops responding
-    socket.setdefaulttimeout(30)
-    reqObj = urllib2.Request(url, postData, headers)
-    
-    if UseClientCertificate == True:
-        # Check for the existence of the PEM file, bcw
-        if os.path.isfile(cert):
-            # Construct a secure urllib2 opener, bcw
-            secureopener = urllib2.build_opener(HTTPSClientAuthHandler(cert,
-                                                                       cert))
-            fp = secureopener.open(reqObj)
-        else:
-            # No x509 cert so fail -0x509 (decimal -1289). So amusing. bcw
-            raise UseClientCertificateError(-1289,
-                                            "PEM file missing, %s" % cert)
-    
-    else:
-        fp = urllib2.urlopen(reqObj)
-    
-    headers = fp.info()
-    
-    if message:
-        # log always, display if verbose is 2 or more
-        munkicommon.display_detail(message)
-        if munkicommon.munkistatusoutput:
-            # send to detail field on MunkiStatus
-            munkistatus.detail(message)
-    
-    #read & write fileObj to filename
-    tfp = open(filename, 'wb')
-    result = filename, headers
-    bs = 1024*8
-    size = -1
-    read = 0
-    blocknum = 0
-    
-    if reporthook:
-        if "content-length" in headers:
-            size = int(headers["Content-Length"])
-        reporthook(blocknum, bs, size)
-    
-    while 1:
-        block = fp.read(bs)
-        if block == "":
-            break
-        read += len(block)
-        tfp.write(block)
-        blocknum += 1
-        if reporthook:
-            reporthook(blocknum, bs, size)
-    
-    fp.close()
-    tfp.close()
-    
-    # raise exception if actual size does not match content-length header
-    if size >= 0 and read < size:
-        raise ContentTooShortError("retrieval incomplete: got only %i out "
-                                    "of %i bytes" % (read, size), result)
-    
-    return result
-
-
-def getfilefromhttpurl(url,filepath, ifmodifiedsince=None, message=None):
-    """
-    gets a file from a url.
-    If 'ifmodifiedsince' is specified, this header is set
-    and the file is not retrieved if it hasn't changed on the server.
-    Returns 0 if successful, or HTTP error code
-    """
-    def reporthook(block_count, block_size, file_size):
-         if (file_size > 0):
-            max_blocks = file_size/block_size
-            munkicommon.display_percent_done(block_count, max_blocks)
-    
-    try:
-        request_headers = {}
-        if ifmodifiedsince:
-            modtimestr = time.strftime("%a, %d %b %Y %H:%M:%S GMT",
-                                        time.gmtime(ifmodifiedsince))
-            request_headers["If-Modified-Since"] = modtimestr
-        (f,headers) = httpDownload(url, filename=filepath,
-                                    headers=request_headers,
-                                    reporthook=reporthook,
-                                    message=message)
-        if 'last-modified' in headers:
-            # set the modtime of the downloaded file to the modtime of the
-            # file on the server
-            modtimestr = headers['last-modified']
-            modtimetuple = time.strptime(modtimestr,
-                                         "%a, %d %b %Y %H:%M:%S %Z")
-            modtimeint = calendar.timegm(modtimetuple)
-            os.utime(filepath, (time.time(), modtimeint))
-    
-    except urllib2.HTTPError, err:
-        return err.code
-    # Uncommented the exception handler below and added str(err)
-    # This will catch missing or invalid certs/keys in
-    # getHTTPfileIfNewerAtomically
-    # bcw
-    except urllib2.URLError, err:
-        return str(err)
-    # This will catch missing certs in getHTTPfileIfNewerAtomically, bcw
-    except UseClientCertificateError, err:
-        return err
-    except IOError, err:
-        return err
-    except Exception, err:
-        return (-1, err)
-    
-    return 0
-
-
-def getHTTPfileIfNewerAtomically(url,destinationpath, message=None):
-    """
-    Gets file from HTTP URL, only if newer on web server.
-    Replaces pre-existing file only on success. (thus 'Atomically')
-    """
-    err = None
-    mytemppath = os.path.join(munkicommon.tmpdir,"TempDownload")
-    if os.path.exists(destinationpath):
-        modtime = os.stat(destinationpath).st_mtime
-    else:
-        modtime = None
-    result = getfilefromhttpurl(url, mytemppath, ifmodifiedsince=modtime,
-                                message=message)
-    if result == 0:
-        try:
-            os.rename(mytemppath, destinationpath)
-            return destinationpath, err
-        except (OSError, IOError):
-            err = "Could not write to %s" % destinationpath
-            destinationpath = None
-    elif result == 304:
-        # not modified, return existing file
-        munkicommon.display_debug1("%s already exists and is up-to-date." %
-                                    destinationpath)
-        return destinationpath, err
-    # Added to catch private key errors when the opener is constructed, bcw
-    elif result == '<urlopen error SSL_CTX_use_PrivateKey_file error>':
-        err = ("SSL_CTX_use_PrivateKey_file error: "
-               "PrivateKey Invalid or Missing")
-        destinationpath = None
-    # Added to catch certificate errors when the opener is constructed, bcw
-    elif result == '<urlopen error SSL_CTX_use_certificate_chain_file error>':
-        err = ("SSL_CTX_use_certificate_chain_file error: "
-               "Certificate Invalid or Missing")
-        destinationpath = None
-    else:
-        err = "Error code: %s retrieving %s" % (result, url)
-        destinationpath = None
-    
-    if os.path.exists(mytemppath):
-        os.remove(mytemppath)
-    
-    return destinationpath, err
-
-################################################
-# End legacy HTTP download code; to be removed #
-################################################
-
-
-###########################################
+ManifestException###########################################
 # New HTTP download code
 # using curl
 ###########################################
