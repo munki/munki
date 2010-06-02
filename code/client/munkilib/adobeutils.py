@@ -283,7 +283,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
     while (p.poll() == None): 
         time.sleep(1)
         loginfo = getAdobeInstallerLogInfo()
-        # installing
+        # CS3/CS4 installing
         if loginfo.startswith("Mounting payload image at "):
             # increment payload_completed_count
             payload_completed_count = payload_completed_count + 1
@@ -295,6 +295,17 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
             payloadname = os.path.splitext(payloadfilename)[0]
             munkicommon.display_status("Installing payload: %s" %
                                         payloadname)
+                                        
+        # CS5 installing
+        if loginfo.startswith("Beginning installation for payload at"):
+            # increment payload_completed_count
+            payload_completed_count = payload_completed_count + 1
+            if munkicommon.munkistatusoutput and number_of_payloads:
+                munkistatus.percent(getPercent(payload_completed_count,
+                                               number_of_payloads))
+            munkicommon.disney_status("Installed Adobe payload %s" %
+                                      payload_completed_count)
+            
         # uninstalling
         if loginfo.startswith("Physical payload uninstall result"):
             # increment payload_completed_count
@@ -661,6 +672,22 @@ def getBundleInfo(path):
 def getAdobeCatalogInfo(mountpoint, pkgname):
     '''Used by makepkginfo to build pkginfo data for Adobe
     installers/updaters'''
+    
+    # Look for Install.app (CS5 install)
+    installapp = os.path.join(mountpoint, "Install.app")
+    if os.path.exists(installapp):
+        # this is a CS5 installer disk image
+        cataloginfo = getAdobePackageInfo(mountpoint)
+        if cataloginfo:
+            # add some more data
+            cataloginfo['name'] = \
+                cataloginfo['display_name'].replace(" ",'')
+            cataloginfo['uninstallable'] = True
+            cataloginfo['uninstall_method'] = "AdobeCS5Installer"
+            cataloginfo['installer_type'] = "AdobeCS5Installer"
+            if pkgname:
+                cataloginfo['package_path'] = pkgname
+            return cataloginfo            
     
     # Look for AdobeUberInstaller items (CS4 install)
     pkgroot = os.path.join(mountpoint, pkgname)
