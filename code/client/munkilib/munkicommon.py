@@ -773,8 +773,30 @@ def getOnePackageInfo(pkgpath):
             pkginfo['packageid'] = "BAD PLIST in %s" % \
                                     os.path.basename(pkgpath)
             pkginfo['version'] = "0.0.0.0.0"
+    else:
+        # look for old-style .info files!
+        infopath = os.path.join(pkgpath, "Contents", "Resources",
+                                    "English.lproj")
+        for item in os.listdir(infopath):
+            if os.path.join(infopath, item).endswith(".info"):
+                pkginfo['filename'] = os.path.basename(pkgpath)
+                pkginfo['packageid'] = os.path.basename(pkgpath)
+                infofile = os.path.join(infopath, item)
+                f = open(infofile, mode='r')
+                info = f.read()
+                f.close()
+                infolines = info.splitlines()
+                for line in infolines:
+                    parts = line.split(None, 1)
+                    if parts:
+                        label = parts[0]
+                        if label == "Version":
+                            pkginfo['version'] = padVersionString(parts[1],5)
+                        if label == "Title":
+                            pkginfo["name"] = parts[1]
+                break
     return pkginfo
-    
+
 
 def getText(nodelist):
     '''Helper function to get text from XML child nodes'''
@@ -826,7 +848,7 @@ def getBundlePackageInfo(pkgpath):
                 dirsToSearch.append(componentdir)
             
         if dirsToSearch == []:     
-            dirsToSearch = ['Contents', 'Contents/Installers',
+            dirsToSearch = ['', 'Contents', 'Contents/Installers',
                             'Contents/Packages', 'Contents/Resources',
                             'Contents/Resources/Packages']
         for subdir in dirsToSearch:
