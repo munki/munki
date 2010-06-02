@@ -133,7 +133,8 @@ def checkForSoftwareUpdates():
                 break
         if not output and (p.poll() != None):
             break
-        munkicommon.log(output.rstrip('\n'))
+        # send the output to STDOUT or MunkiStatus as applicable
+        munkicommon.display_status(output.rstrip('\n'))
     
     retcode = p.poll()
     if retcode:
@@ -155,122 +156,6 @@ def checkForSoftwareUpdates():
     return retcode
     
     
-def setAllUpdatesToInstallAtRestart():
-    '''Copies all the updates in the index to the InstallAtLogout key,
-     which actually flags them to install at restart.
-     This function is currently unused.'''
-    index_file = "/Library/Updates/index.plist"
-    if os.path.exists(index_file):
-        index_pl = FoundationPlist.readPlist(index_file)
-        if 'ProductPaths' in index_pl:
-            index_pl['InstallAtLogout'] = index_pl['ProductPaths'].keys()
-            FoundationPlist.writePlist(index_pl, index_file)
-            # get the OS version 
-            osvers = int(os.uname()[2].split('.')[0])
-            if osvers == 10 or osvers == 9:
-                cmd = ['/usr/bin/touch', '/var/db/.SoftwareUpdateAtLogout']
-                retcode = subprocess.call(cmd)
-                newmode = stat.S_IRUSR | stat.S_IWUSR
-                os.chmod('/var/db/.SoftwareUpdateAtLogout', newmode)
-                return True
-            else:
-                # unsupported OS
-                pass
-            
-    return False
-
-
-def getPIDforProcessName(processname):
-    cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    while True: 
-        line =  p.stdout.readline().decode('UTF-8')
-        if not line and (p.poll() != None):
-            break
-        line = line.rstrip('\n');
-        (pid, proc) = line.split(None,1)
-        if proc.find(processname) != -1:
-            return str(pid)
-
-    return 0
-
-
-def kickOffUpdatesAndRestart():
-    '''Attempts to jumpstart the install-and-restart behavior
-    of Software Update. Currently is a very flawed implementation,
-    so we're not currently using it.'''
-    swupdateapp = "/System/Library/CoreServices/Software Update.app"
-    swupdate = os.path.join(swupdateapp, "Contents/MacOS/Software Update")
-    # get the OS version 
-    osvers = int(os.uname()[2].split('.')[0])
-    if munkicommon.getconsoleuser() == None:
-        if osvers == 100:
-            PID = getPIDforProcessName(
-                                 'loginwindow.app/Contents/MacOS/loginwindow')
-            cmd = ['/bin/launchctl', 'bsexec', PID, swupdate, 
-                   '-RootInstallMode', 'YES']
-            retcode = subprocess.call(cmd)
-            return
-        elif osvers == 9 or osvers == 10:
-            # big hack coming!
-            AccessibilityAPIFile = "/private/var/db/.AccessibilityAPIEnabled"
-            if not os.path.exists(AccessibilityAPIFile):
-                # need to turn on Accessibility API
-                cmd = [ '/usr/bin/touch', AccessibilityAPIFile ]
-                retcode = subprocess.call(cmd)
-                # need to restart loginwindow so it notices the change
-                cmd = [ '/usr/bin/killall', 'loginwindow' ]
-                retcode = subprocess.call(cmd)
-                # argh!  big problem.  
-                # killing loginwindow also kills us if we're
-                # running as a LaunchAgent in the LoginWindow context
-                # We'll get relaunched, but then we lose our place in the code
-                # and have to start over.
-                
-                # now we can remove the AccessibilityAPIFile
-                os.unlink(AccessibilityAPIFile)
-                
-            # before we kick off the update, 
-            # leave a trigger file so munki will install stuff
-            # after the restart
-            cmd = ['/usr/bin/touch', 
-                   '/Users/Shared/.com.googlecode.munki.installatstartup']
-            retcode = subprocess.call(cmd)
-                
-            # Try to click the back button on the loginwindow
-            cmd = ['/usr/bin/osascript', '-e',
-                   'tell application "System Events" ' + \
-                   'to tell process "SecurityAgent" ' + \
-                   'to click button "Back" of window 1']
-            retcode = subprocess.call(cmd)
-            # we don't care about the return code.
-            # Next, try to click the Restart button
-            # this will fail if the Restart button has been 
-            # disabled on the loginwindow.
-            cmd = ['/usr/bin/osascript', '-e', 
-                   'tell application "System Events" ' + \
-                   'to tell process "SecurityAgent" ' + \
-                   'to click button "Restart" of window 1']
-            p = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                 stdin=subprocess.PIPE, 
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT)
-                        
-            # now wait for the osascript to complete
-            while True: 
-                line =  p.stdout.readline()
-                if not line and (p.poll() != None):
-                    break            
-            return
-        else:
-            # unsupported OS version
-            return
-    else:
-        # someone is logged in; we should not do anything.
-        pass
-
-
 def parseDist(filename):
     '''Attempts to extract:
     SU_TITLE, SU_VERS, and SU_DESCRIPTION
@@ -460,26 +345,6 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
             retcode = checkForSoftwareUpdates()
         
     return writeAppleUpdatesFile()
-
-
-def OLDinstallAppleUpdates():
-    '''Returns True if installing Apple Updates
-    This relies on the install-and-restart mode of Apple's
-    Software Update. Since we cannot reliably invoke that 
-    behavior programmatically, we are not currently using this.'''
-    if os.path.exists(appleUpdatesFile):
-        if setAllUpdatesToInstallAtRestart():
-            # remove the appleupdatesfile 
-            # so we don't try to install again after restart
-            os.unlink(appleUpdatesFile)
-            # now invoke the install-and-restart behavior 
-            # from Apple's Software Update
-            kickOffUpdatesAndRestart()
-            # we're done for now, since the Apple updater 
-            # will restart the machine.
-            return True
-            
-    return False
 
 
 def clearAppleUpdateInfo():
