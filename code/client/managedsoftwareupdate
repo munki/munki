@@ -234,6 +234,9 @@ def main():
         print >>sys.stderr, "You must run this as root!"
         exit(-1)
         
+    # save this for later
+    scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+        
     p = optparse.OptionParser()
     p.set_usage("""Usage: %prog [options]""")
     p.add_option('--auto', '-a', action='store_true',
@@ -515,6 +518,14 @@ def main():
     munkicommon.report['ConsoleUser'] = munkicommon.getconsoleuser() or \
                                         "<None>"
     munkicommon.savereport()
+    
+    # run the postrun script if it exists
+    postrunscript = os.path.join(scriptdir, "postrun")
+    if os.path.exists(postrunscript) and os.access(postrunscript, os.X_OK):
+        p = subprocess.Popen(postrunscript, shell=False,
+                            stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, err) = p.communicate()
     
     if munkicommon.tmpdir:
         munkicommon.cleanUpTmpDir()
