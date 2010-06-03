@@ -643,6 +643,24 @@ def getExtendedVersion(bundlepath):
         if versionstring:
             return padVersionString(versionstring, 5)
             
+    # no version number in Info.plist. Maybe old-style package?
+    infopath = os.path.join(bundlepath, "Contents", "Resources",
+                                "English.lproj")
+    if os.path.exists(infopath):
+        for item in os.listdir(infopath):
+            if os.path.join(infopath, item).endswith(".info"):
+                infofile = os.path.join(infopath, item)
+                f = open(infofile, mode='r')
+                info = f.read()
+                f.close()
+                infolines = info.splitlines()
+                for line in infolines:
+                    parts = line.split(None, 1)
+                    if parts:
+                        label = parts[0]
+                        if label == "Version":
+                            return padVersionString(parts[1],5)
+            
     # didn't find a version number, so return 0...
     return "0.0.0.0.0"
   
@@ -777,24 +795,26 @@ def getOnePackageInfo(pkgpath):
         # look for old-style .info files!
         infopath = os.path.join(pkgpath, "Contents", "Resources",
                                     "English.lproj")
-        for item in os.listdir(infopath):
-            if os.path.join(infopath, item).endswith(".info"):
-                pkginfo['filename'] = os.path.basename(pkgpath)
-                pkginfo['packageid'] = os.path.basename(pkgpath)
-                infofile = os.path.join(infopath, item)
-                f = open(infofile, mode='r')
-                info = f.read()
-                f.close()
-                infolines = info.splitlines()
-                for line in infolines:
-                    parts = line.split(None, 1)
-                    if parts:
-                        label = parts[0]
-                        if label == "Version":
-                            pkginfo['version'] = padVersionString(parts[1],5)
-                        if label == "Title":
-                            pkginfo["name"] = parts[1]
-                break
+        if os.path.exists(infopath):
+            for item in os.listdir(infopath):
+                if os.path.join(infopath, item).endswith(".info"):
+                    pkginfo['filename'] = os.path.basename(pkgpath)
+                    pkginfo['packageid'] = os.path.basename(pkgpath)
+                    infofile = os.path.join(infopath, item)
+                    f = open(infofile, mode='r')
+                    info = f.read()
+                    f.close()
+                    infolines = info.splitlines()
+                    for line in infolines:
+                        parts = line.split(None, 1)
+                        if parts:
+                            label = parts[0]
+                            if label == "Version":
+                                pkginfo['version'] = \
+                                    padVersionString(parts[1],5)
+                            if label == "Title":
+                                pkginfo["name"] = parts[1]
+                    break
     return pkginfo
 
 

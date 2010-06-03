@@ -139,43 +139,8 @@ def getInstalledPackages():
     Builds a dictionary of installed receipts and their version number
     """
     installedpkgs = {}
-    # Check /Library/Receipts
-    receiptsdir = "/Library/Receipts"
-    if os.path.exists(receiptsdir):
-        installitems = os.listdir(receiptsdir)
-        for item in installitems:
-            if item.endswith(".pkg"):
-                infoplist = os.path.join(receiptsdir, item,
-                                         "Contents/Info.plist")
-                if os.path.exists(infoplist):
-                    try:
-                        pl = FoundationPlist.readPlist(infoplist)
-                        pkgid = pl.get('CFBundleIdentifier')
-                        if not pkgid:
-                            # special case JAMF Composer packages
-                            pkgid = pl.get('Bundle identifier')
-                        if pkgid:
-                            thisversion = \
-                                munkicommon.getExtendedVersion(
-                                            os.path.join(receiptsdir, item))
-                            if not pkgid in installedpkgs:
-                                installedpkgs[pkgid] = thisversion
-                            else:
-                                # pkgid is already in our list. There must be
-                                # multiple receipts with the same pkgid.
-                                # in this case, we want the highest version
-                                # number, since that's the one that's
-                                # installed, since presumably
-                                # the newer package replaced the older one
-                                storedversion = installedpkgs[pkgid]
-                                if version.LooseVersion(thisversion) > \
-                                   version.LooseVersion(storedversion):
-                                    installedpkgs[pkgid] = thisversion
-                    except (AttributeError,
-                        FoundationPlist.NSPropertyListSerializationException):
-                        pass
     
-    # Now check new (Leopard and later) package database
+    # Check new (Leopard and later) package database
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=1,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
@@ -194,6 +159,31 @@ def getInstalledPackages():
                 pl = FoundationPlist.readPlistFromString(out)
                 if "pkg-version" in pl:
                     installedpkgs[pkg] = pl["pkg-version"]
+                    
+    # Now check /Library/Receipts
+    receiptsdir = "/Library/Receipts"
+    if os.path.exists(receiptsdir):
+        installitems = os.listdir(receiptsdir)
+        for item in installitems:
+            if item.endswith(".pkg"):
+                pkginfo = munkicommon.getOnePackageInfo(
+                                        os.path.join(receiptsdir, item))
+                pkgid = pkginfo.get('packageid')
+                thisversion = pkginfo.get('version')
+                if pkgid:
+                    if not pkgid in installedpkgs:
+                        installedpkgs[pkgid] = thisversion
+                    else:
+                        # pkgid is already in our list. There must be
+                        # multiple receipts with the same pkgid.
+                        # in this case, we want the highest version
+                        # number, since that's the one that's
+                        # installed, since presumably
+                        # the newer package replaced the older one
+                        storedversion = installedpkgs[pkgid]
+                        if version.LooseVersion(thisversion) > \
+                           version.LooseVersion(storedversion):
+                            installedpkgs[pkgid] = thisversion
     
     return installedpkgs
 
