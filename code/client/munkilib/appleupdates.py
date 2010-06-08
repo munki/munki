@@ -66,7 +66,8 @@ def restoreSoftwareUpdateServer():
                    'CatalogURL', oldsuserver]
         else:
             cmd = ['/usr/bin/defaults', 'delete',
-                   '/Library/Preferences/com.apple.SoftwareUpdate']
+                   '/Library/Preferences/com.apple.SoftwareUpdate', 
+                   'CatalogURL']
         retcode = subprocess.call(cmd)
         
         
@@ -126,7 +127,7 @@ def checkForSoftwareUpdates():
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                          
     while True: 
-        output = p.stdout.readline()
+        output = p.stdout.readline().decode('UTF-8')
         if munkicommon.munkistatusoutput:
             if munkistatus.getStopButtonState() == 1:
                 os.kill(p.pid, 15) #15 is SIGTERM
@@ -143,9 +144,28 @@ def checkForSoftwareUpdates():
             # because we prevent the app from launching
             # so let's just ignore them
             retcode = 0
-        else:
-            # there was an error
-            munkicommon.display_error("softwareupdate error: %s" % retcode)
+            
+    if retcode == 0:      
+        # get last result code
+        cmd = ['/usr/bin/defaults', 'read',
+               '/Library/Preferences/com.apple.SoftwareUpdate', 
+               'LastResultCode']
+        p = subprocess.Popen(cmd, shell=False, bufsize=1,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, 
+                             stderr=subprocess.PIPE)
+        (out, err) = p.communicate()
+        if p.returncode == 0:
+            try:
+                LastResultCode = int(out.rstrip('\n'))
+                if LastResultCode > 2:
+                    retcode = LastResultCode
+            except:
+                retcode = 0
+            
+    if retcode:
+        # there was an error
+        munkicommon.display_error("softwareupdate error: %s" % retcode)
             
     if osvers == 9:
         # put mode back for Software Update.app

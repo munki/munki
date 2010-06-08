@@ -210,7 +210,10 @@ def log(msg, logname=''):
         logpath = os.path.join(os.path.dirname(pref("LogFile")), logname)
     try:
         f = open(logpath, mode='a', buffering=1)
-        print >>f, time.strftime(formatstr), msg.encode('UTF-8')
+        try:
+            print >>f, time.strftime(formatstr), msg.encode('UTF-8')
+        except:
+            pass
         f.close()
     except (OSError, IOError):
         pass

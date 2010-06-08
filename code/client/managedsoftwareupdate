@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# encoding: utf-8
 #
 # Copyright 2009-2010 Greg Neagle.
 #
@@ -449,17 +450,29 @@ def main():
             else:
                 munkicommon.display_status("Checking for available "
                                            "Apple Software Updates...")
-            if appleupdates.appleSoftwareUpdatesAvailable(
+            try:
+                if appleupdates.appleSoftwareUpdatesAvailable(
                     forcecheck=(options.manualcheck or 
                                 runtype == "checkandinstallatstartup")):
-                updatesavailable = True
+                    updatesavailable = True
+            except:
+                munkicommon.display_error("Unexpected error in appleupdates:")
+                munkicommon.display_error(traceback.format_exc())
+                munkicommon.savereport()
+                exit(-1)
     
     if not updatesavailable and options.installonly and \
        munkicommon.pref('InstallAppleSoftwareUpdates'):
         # just look and see if there are already downloaded Apple updates
         # to install; don't run softwareupdate to check with Apple
-        if appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True):
-            updatesavailable = True
+        try:
+            if appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True):
+                updatesavailable = True
+        except:
+            munkicommon.display_error("Unexpected error in appleupdates:")
+            munkicommon.display_error(traceback.format_exc())
+            munkicommon.savereport()
+            exit(-1)
 
     if options.auto:
         # when --auto,  munkistatusoutput is false for checking, 
@@ -519,10 +532,11 @@ def main():
                                         "<None>"
     munkicommon.savereport()
     
-    # run the postrun script if it exists
-    postrunscript = os.path.join(scriptdir, "postrun")
-    if os.path.exists(postrunscript) and os.access(postrunscript, os.X_OK):
-        p = subprocess.Popen(postrunscript, shell=False,
+    # run the postflight script if it exists
+    postflightscript = os.path.join(scriptdir, "postflight")
+    if (os.path.exists(postflightscript) and 
+        os.access(postflightscript, os.X_OK)):
+        p = subprocess.Popen(postflightscript, shell=False,
                             stdin=subprocess.PIPE, 
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (output, err) = p.communicate()
