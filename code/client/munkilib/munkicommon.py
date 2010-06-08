@@ -659,7 +659,7 @@ def getExtendedVersion(bundlepath):
                 infolines = info.splitlines()
                 for line in infolines:
                     parts = line.split(None, 1)
-                    if parts:
+                    if len(parts) == 2:
                         label = parts[0]
                         if label == "Version":
                             return padVersionString(parts[1],5)
@@ -810,7 +810,7 @@ def getOnePackageInfo(pkgpath):
                     infolines = info.splitlines()
                     for line in infolines:
                         parts = line.split(None, 1)
-                        if parts:
+                        if len(parts) == 2:
                             label = parts[0]
                             if label == "Version":
                                 pkginfo['version'] = \
