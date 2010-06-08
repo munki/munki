@@ -229,6 +229,25 @@ def notifyUserOfUpdates(manualcheck=False):
             os.unlink(launchfile)
 
 
+def runPreOrPostFlightScript(script, runtype="custom"):
+    if os.path.exists(script): 
+        if os.access(script, os.X_OK):
+            cmd = [script, runtype]
+            p = subprocess.Popen(cmd, shell=False,
+                                stdin=subprocess.PIPE, 
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+            (output, err) = p.communicate()
+            if output:
+                munkicommon.display_info(output)
+            if err:
+                munkicommon.display_info(output)
+            return p.returncode
+        else:
+            munkicommon.display_warning("%s not executable" % script)
+    return 0
+    
+
 def main():
     # check to see if we're root
     if os.geteuid() != 0:
@@ -357,9 +376,22 @@ def main():
               "--checkonly and --installonly options are mutually exclusive!"
         exit(-1)
         
+    # run the preflight script if it exists
+    preflightscript = os.path.join(scriptdir, "preflight")
+    result = runPreOrPostFlightScript(preflightscript, runtype)
+    if result:
+        # non-zero return code means don't run
+        munkicommon.display_info("managedsoftwareupdate run aborted by"
+                                 " preflight script")
+        exit(-1)
+        
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
+    
+    # create needed directories if necessary
+    if not initMunkiDirs():
+        exit(-1)
 
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])
@@ -387,11 +419,6 @@ def main():
             print >>sys.stderr, \
               "Another instance of %s is running. Exiting." % myname
         exit(0)
-
-    
-    # create needed directories if necessary
-    if not initMunkiDirs():
-        exit(-1)
         
     if not options.installonly:
         # check to see if we can talk to the manifest server
@@ -534,6 +561,9 @@ def main():
     
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, "postflight")
+    result = runPreOrPostFlightScript(postflightscript, runtype)
+    # we ignore the result
+    
     if (os.path.exists(postflightscript) and 
         os.access(postflightscript, os.X_OK)):
         p = subprocess.Popen(postflightscript, shell=False,
