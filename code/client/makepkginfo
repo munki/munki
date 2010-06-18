@@ -100,6 +100,7 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
                 break
                 
         if not cataloginfo:
+            # maybe an Adobe installer/updater/patcher?
             cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
                                                          pkgname) 
                     

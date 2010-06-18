@@ -271,13 +271,24 @@ def findSetupApp(dirpath):
     return ''
     
     
+def findInstallApp(dirpath):
+    # search dirpath and enclosed directories for Install.app
+    for (path, dirs, files) in os.walk(dirpath):
+        if path.endswith("Install.app"):
+            setup_path = os.path.join(path, "Contents", "MacOS", "Install")
+            if os.path.exists(setup_path):
+                return setup_path
+    return ''
+
+
 def runAdobeInstallTool(cmd, number_of_payloads=0):
     '''An abstraction of the tasks for running Adobe Setup,
-    AdobeUberInstaller ot AdobeUberUninstaller'''
+    AdobeUberInstaller or AdobeUberUninstaller'''
     if munkicommon.munkistatusoutput and not number_of_payloads:
         # indeterminate progress bar
         munkistatus.percent(-1)
     payload_completed_count = 0
+    print cmd
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while (p.poll() == None): 
@@ -303,7 +314,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
             if munkicommon.munkistatusoutput and number_of_payloads:
                 munkistatus.percent(getPercent(payload_completed_count,
                                                number_of_payloads))
-            munkicommon.disney_status("Installed Adobe payload %s" %
+            munkicommon.display_status("Installed Adobe payload %s" %
                                       payload_completed_count)
             
         # uninstalling
@@ -318,6 +329,20 @@ def runAdobeInstallTool(cmd, number_of_payloads=0):
                 
     # run of tool completed  
     retcode = p.poll()
+    
+    #check output for errors
+    output = p.stdout.readlines()
+    for line in output:
+        line = line.rstrip("\n")
+        if line.startswith("Error"):
+            munkicommon.display_error(line)
+        if line.startswith("Exit Code:"):
+            if retcode == 0:
+                try:
+                    retcode = int(line[11:])
+                except:
+                    retcode = -1
+        
     if retcode != 0 and retcode != 8:
         munkicommon.display_error("Adobe Setup error: %s: %s" % 
                                    (retcode, adobeSetupError(retcode)))
@@ -430,8 +455,37 @@ def runAdobeCS5Install(dmgpath, uninstalling=False):
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
-    
-    
+
+
+def runAdobeCS5PatchInstaller(dmgpath):
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
+    mountpoints = mountAdobeDmg(dmgpath)
+    if mountpoints:
+        patchinstaller = os.path.join(mountpoints[0],
+            "AdobePatchInstaller.app/Contents/MacOS/AdobePatchInstaller")
+        if os.path.exists(patchinstaller):
+            # try to find and count the number of payloads 
+            # so we can give a rough progress indicator
+            number_of_payloads = countPayloads(mountpoints[0])
+            munkicommon.display_status("Running Adobe Patch Installer")
+            install_cmd = [ patchinstaller, 
+                            '--mode=silent',  
+                            '--skipProcessCheck=1' ]
+            retcode = runAdobeInstallTool(install_cmd,
+                                          number_of_payloads)
+        else:
+            munkicommon.display_error(
+                    "%s doesn't appear to contain AdobePatchInstaller.app." % 
+                    os.path.basename(dmgpath))
+            retcode = -1
+        munkicommon.unmountdmg(mountpoints[0])
+        return retcode
+    else:
+        munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
+        return -1
+
+
 def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     # runs either AdobeUberInstaller or AdobeUberUninstaller
     # from a disk image and provides progress feedback
@@ -668,7 +722,6 @@ def getBundleInfo(path):
     return None
 
 
-
 def getAdobeCatalogInfo(mountpoint, pkgname):
     '''Used by makepkginfo to build pkginfo data for Adobe
     installers/updaters'''
@@ -687,7 +740,22 @@ def getAdobeCatalogInfo(mountpoint, pkgname):
             cataloginfo['installer_type'] = "AdobeCS5Installer"
             if pkgname:
                 cataloginfo['package_path'] = pkgname
-            return cataloginfo            
+            return cataloginfo
+            
+    # Look for AdobePatchInstaller.app (CS5 updater)
+    installapp = os.path.join(mountpoint, "AdobePatchInstaller.app")
+    if os.path.exists(installapp):
+        # this is a CS5 updater disk image
+        cataloginfo = getAdobePackageInfo(mountpoint)
+        if cataloginfo:
+            # add some more data
+            cataloginfo['name'] = \
+                cataloginfo['display_name'].replace(" ",'')
+            cataloginfo['uninstallable'] = False
+            cataloginfo['installer_type'] = "AdobeCS5PatchInstaller"
+            if pkgname:
+                cataloginfo['package_path'] = pkgname
+            return cataloginfo
     
     # Look for AdobeUberInstaller items (CS4 install)
     pkgroot = os.path.join(mountpoint, pkgname)
@@ -775,7 +843,34 @@ def adobeSetupError(errorcode):
     return errormessage.get(errorcode, "Unknown error")
 
 
-def install(dmgpath, pkgname=''):
+def doAdobeInstall(item, itempath):
+    # wrapper to handle all the Adobe installer methods
+    installer_type = item.get("installer_type","")
+    if installer_type == "AdobeUberInstaller":
+        # Adobe CS4 installer
+        pkgname = item.get("adobe_package_name") or \
+                  item.get("package_path","")
+        retcode = uberInstall(itempath, pkgname)
+        if retcode == 8:
+            # Adobe Setup says restart needed
+            restartflag = True
+            retcode = 0
+    elif installer_type == "AdobeSetup":
+        # Adobe updater or Adobe CS3 installer
+        retcode = runAdobeSetup(itempath)
+        if retcode == 8:
+            # Adobe Setup says restart needed
+            restartflag = True
+            retcode = 0
+    elif installer_type == "AdobeAcrobatUpdater":
+        # Acrobat Pro 9 updater
+        retcode = updateAcrobatPro(itempath)
+    elif installer_type == "AdobeCS5PatchInstaller":
+        # Adobe CS5 updater
+        retcode = runAdobeCS5PatchInstaller(itempath)
+    return retcode
+
+def uberInstall(dmgpath, pkgname=''):
     return runAdobeUberTool(dmgpath, pkgname)
 
 

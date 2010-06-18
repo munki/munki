@@ -124,7 +124,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
         restartneeded = True
         
     # get the OS version; we need it later when processing installer's output, 
-    # which varies depnding on OS version.    
+    # which varies depending on OS version.    
     osvers = int(os.uname()[2].split('.')[0])
     cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, 
                                   '-target', '/']
@@ -341,25 +341,8 @@ def installWithInfo(dirpath, installlist):
                                            item["installer_item"])
                 return restartflag
             installer_type = item.get("installer_type","")
-            if installer_type == "AdobeUberInstaller":
-                # Adobe CS4 installer
-                pkgname = item.get("adobe_package_name") or \
-                          item.get("package_path","")
-                retcode = adobeutils.install(itempath, pkgname)
-                if retcode == 8:
-                    # Adobe Setup says restart needed
-                    restartflag = True
-                    retcode = 0
-            elif installer_type == "AdobeSetup":
-                # Adobe updater or Adobe CS3 installer
-                retcode = adobeutils.runAdobeSetup(itempath)
-                if retcode == 8:
-                    # Adobe Setup says restart needed
-                    restartflag = True
-                    retcode = 0
-            elif installer_type == "AdobeAcrobatUpdater":
-                # Acrobat Pro 9 updater
-                retcode = adobeutils.updateAcrobatPro(itempath)
+            if installer_type.startswith("Adobe"):
+                retcode = adobeutils.doAdobeInstall(item, itempath)
             elif installer_type == "appdmg":
                 retcode = copyAppFromDMG(itempath)
             else:
