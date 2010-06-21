@@ -1064,7 +1064,7 @@ def doAdobeRemoval(item):
     
     if uninstallmethod == "AdobeSetup":
         # CS3 uninstall
-        retcode = adobeutils.runAdobeSetup(itempath, uninstalling=True)
+        retcode = runAdobeSetup(itempath, uninstalling=True)
 
     elif uninstallmethod == "AdobeUberUninstaller":
         # CS4 uninstall
