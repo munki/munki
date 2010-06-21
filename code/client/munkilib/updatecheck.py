@@ -880,6 +880,13 @@ def enoughDiskSpace(manifestitem_pl, installlist=[], uninstalling=False):
     fudgefactor = 102400
     installeritemsize = 0
     installedsize = 0
+    alreadydownloadedsize = 0
+    if 'installer_item_location' in manifestitem_pl:
+        cachedir = os.path.join(munkicommon.pref('ManagedInstallDir'),"Cache")
+        dl = os.path.join(cachedir,
+                                manifestitem_pl['installer_item_location'])
+        if os.path.exists(dl):
+            alreadydownloadedsize = os.path.getsize(dl)
     if 'installer_item_size' in manifestitem_pl:
         installeritemsize = int(manifestitem_pl['installer_item_size'])
     if 'installed_size' in manifestitem_pl:
@@ -891,7 +898,8 @@ def enoughDiskSpace(manifestitem_pl, installlist=[], uninstalling=False):
         installedsize = 0
         if 'uninstaller_item_size' in manifestitem_pl:
             installeritemsize = int(manifestitem_pl['uninstaller_item_size'])
-    diskspaceneeded = (installeritemsize + installedsize + fudgefactor)
+    diskspaceneeded = (installeritemsize - alreadydownloadedsize + 
+                                                installedsize + fudgefactor)
     
     # munkicommon.getAvailableDiskSpace() returns KB
     availablediskspace = munkicommon.getAvailableDiskSpace()
@@ -1218,6 +1226,9 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 if 'installer_choices_xml' in pl:
                     iteminfo['installer_choices_xml'] = \
                         pl['installer_choices_xml']
+                if 'adobe_install_info' in pl:
+                    iteminfo['adobe_install_info'] = \
+                        pl['adobe_install_info']
                 if 'RestartAction' in pl:
                     iteminfo['RestartAction'] = pl['RestartAction']
                 if 'installer_type' in pl:
@@ -1422,11 +1433,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             packagesToRemove = getReceiptsToRemove(item)
             if packagesToRemove:
                 uninstall_item = item
-        elif uninstallmethod == 'AdobeUberUninstaller':
-            # Adobe CS4 package
-            uninstall_item = item
-        elif uninstallmethod == 'AdobeSetup':
-            # Adobe CS3 package
+        elif uninstallmethod.startswith('Adobe'):
+            # Adobe CS3/CS4/CS5 product
             uninstall_item = item
         elif uninstallmethod == 'remove_app':
             uninstall_item = item
@@ -1556,23 +1564,26 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             return False
     
     iteminfo["uninstall_method"] = uninstallmethod
-    if uninstallmethod == "AdobeUberUninstaller" or \
-       uninstallmethod == "AdobeSetup":
-        if 'uninstaller_item_location' in item:
-            location = uninstall_item['uninstaller_item_location']
+    if uninstallmethod.startswith("Adobe"):
+        if 'adobe_install_info' in item:
+            iteminfo['adobe_install_info'] = item['adobe_install_info']
         else:
-            location = uninstall_item['installer_item_location']
-        if not enoughDiskSpace(uninstall_item, uninstalling=True):
-            return False
-        if download_installeritem(location):
-            filename = os.path.split(location)[1]
-            iteminfo['uninstaller_item'] = filename
-            iteminfo['adobe_package_name'] = \
-                uninstall_item.get('adobe_package_name','')
-        else:
-            munkicommon.display_warning("Failed to download the uninstaller "
-                                        "for %s" % iteminfo["name"])
-            return False
+            if 'uninstaller_item_location' in item:
+                location = uninstall_item['uninstaller_item_location']
+            else:
+                location = uninstall_item['installer_item_location']
+            if not enoughDiskSpace(uninstall_item, uninstalling=True):
+                return False
+            if download_installeritem(location):
+                filename = os.path.split(location)[1]
+                iteminfo['uninstaller_item'] = filename
+                iteminfo['adobe_package_name'] = \
+                    uninstall_item.get('adobe_package_name','')
+            else:
+                munkicommon.display_warning("Failed to download the "
+                                            "uninstaller for %s"
+                                            % iteminfo["name"])
+                return False
     elif uninstallmethod == "remove_app":
         if uninstall_item.get('installs',None):
             iteminfo['remove_app_info'] = uninstall_item['installs'][0]

@@ -342,7 +342,7 @@ def installWithInfo(dirpath, installlist):
                 return restartflag
             installer_type = item.get("installer_type","")
             if installer_type.startswith("Adobe"):
-                retcode = adobeutils.doAdobeInstall(item, itempath)
+                retcode = adobeutils.doAdobeInstall(item)
             elif installer_type == "appdmg":
                 retcode = copyAppFromDMG(itempath)
             else:
@@ -502,50 +502,10 @@ def processRemovals(removallist):
                             else:
                                 munkicommon.log("Uninstall of %s was "
                                                 "successful." % name)
-                                
-                    elif uninstallmethod[0] == "AdobeUberUninstaller":
-                        if "uninstaller_item" in item:
-                            managedinstallbase = \
-                                         munkicommon.pref('ManagedInstallDir')
-                            itempath = os.path.join(managedinstallbase,
-                                                    'Cache', 
-                                                    item["uninstaller_item"])
-                            if os.path.exists(itempath):
-                                pkgname = item.get("adobe_package_name") or \
-                                          item.get("pacakge_path","")
-                                retcode = adobeutils.uninstall(itempath,
-                                                               pkgname)
-                                if retcode:
-                                    munkicommon.display_error("Uninstall of "
-                                                              "%s failed." %
-                                                               name)
-                            else:
-                                munkicommon.display_error("Adobe"
-                                                          "UberUninstaller "
-                                                          "package for %s "          
-                                                          "was missing from " 
-                                                          "the Cache." % name)
-                                
-                    elif uninstallmethod[0] == "AdobeSetup":
-                        if "uninstaller_item" in item:
-                            managedinstallbase = \
-                                        munkicommon.pref('ManagedInstallDir')
-                            itempath = os.path.join(managedinstallbase,
-                                                    'Cache',
-                                                     item["uninstaller_item"])
-                            if os.path.exists(itempath):
-                                retcode = adobeutils.runAdobeSetup(itempath,
-                                                            uninstalling=True)
-                                if retcode:
-                                    munkicommon.display_error("Uninstall of "
-                                                              "%s failed." %
-                                                               name)
-                            else:
-                                munkicommon.display_error("Adobe Setup "
-                                                          "package for %s " 
-                                                          "was missing from " 
-                                                          "the Cache." % name)
-                                
+                        
+                    elif uninstallmethod[0].startswith("Adobe"):
+                        retcode = adobeutils.doAdobeRemoval(item)
+                        
                     elif uninstallmethod[0] == "remove_app":
                         remove_app_info = item.get('remove_app_info',None)
                         if remove_app_info:

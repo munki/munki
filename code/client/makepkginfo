@@ -243,12 +243,12 @@ def main():
                     
                     -If the installer item is a disk image containing
                     multiple packages, or the package to be installed
-                    is not at the root of the mounted disk image, this
+                    is not at the root of the mounted disk image, PKGNAME
                     is a relative path from the root of the mounted
                     disk image to the specific package to be installed.
                     
                     -If the installer item is a disk image containing
-                    an Adobe CS4 Deployment Toolkit installation, pkgname
+                    an Adobe CS4 Deployment Toolkit installation, PKGNAME
                     is the name of an Adobe CS4 Deployment Toolkit 
                     installer package folder at the top level of the 
                     mounted dmg.
@@ -257,24 +257,47 @@ def main():
                     be at the top level of the mounted dmg.''')
     p.add_option('--appname', '-a',
                     help='''Optional flag.
-                     
+                    
                     -If the installer item is a disk image with a 
-                    drag-and-drop application, this is the name or relative
-                    path of the application to be installed. Useful if there 
-                    is more than one application at the root of the dmg.''')
+                    drag-and-drop application, APPNAME is the name or 
+                    relative path of the application to be installed. 
+                    Useful if there is more than one application at the 
+                    root of the dmg.''')
     p.add_option('--uninstallerdmg', '-u',
-                    help='''If installer item is a DMG containing an Adobe CS4
-                    Deployment Toolkit installation package or Adobe CS3
-                    deployment package, uninstallerdmg is a path to a disk
-                    image containing an AdobeUberUninstaller for this
-                    item.''')
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image containing an
+                    Adobe CS4 Deployment Toolkit installation package or 
+                    Adobe CS3 deployment package, UNINSTALLERDMG is a path 
+                    to a disk image containing an AdobeUberUninstaller for
+                    this item.''')
+    p.add_option('--installxml',
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image containing an 
+                    Adobe CS5 product, INSTALLXML specifies the path to 
+                    an install.xml file containing installation data.''')
+    p.add_option('--uninstallxml',
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image containing an 
+                    Adobe CS5 product, UNINSTALLXML specifies the path to  
+                    an uninstall.xml containing uninstall data.''')
+    p.add_option('--serialnumber',
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image containing an 
+                    Adobe CS5 product, SERIALNUMBER is the product 
+                    serial number.''')
     
     options, arguments = p.parse_args()
     
-    if len(arguments) == 0 and not options.file:
+    if len(arguments) == 0 and \
+        not (options.file or options.installxml or options.uninstallxml 
+             or options.serialnumber):
         print >>sys.stderr, \
             ("Need to specify an installer item (.pkg, .mpkg, .dmg) "
-             "and/or --file options!")
+             "and/or --file and/or Adobe installer options!")
         exit(-1)
     
     if len(arguments) > 1:
@@ -312,7 +335,7 @@ def main():
                     print >>sys.stderr, \
                         "Could not find a supported installer item in %s!" % \
                          item
-                    exit(-1)
+                    exit(-1)                    
             
             elif item.endswith('.pkg') or item.endswith('.mpkg'):
                 catinfo = munkicommon.getPackageMetaData(item)
@@ -341,7 +364,7 @@ def main():
                 #just the filename
                 location = os.path.split(item)[1]
             catinfo['installer_item_location'] = location
-        
+            
             # ADOBE STUFF - though maybe generalizable in the future?
             if options.uninstallerdmg:
                 uninstallerpath = options.uninstallerdmg
@@ -402,7 +425,7 @@ def main():
                 installs.append(iteminfodict)
             else:
                 print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
-            
+                            
     if catinfo:
         catinfo['autoremove'] = False
         if minosversion:
@@ -417,7 +440,22 @@ def main():
         
     if installs:
         catinfo['installs'] = installs
-
+        
+    if options.installxml or options.uninstallxml or \
+        options.serialnumber:
+        more_info = adobeutils.getAdobeInstallInfo(
+                            mountpoint=None, 
+                            installxmlpath=options.installxml, 
+                            uninstallxmlpath=options.uninstallxml,
+                            serialnumber=options.serialnumber,
+                            suppressRegistration=True,
+                            suppressUpdates=True)
+                            
+        if not 'adobe_install_info' in catinfo:
+            catinfo['adobe_install_info'] = {}
+        for key in more_info.keys():
+            catinfo['adobe_install_info'][key] = more_info[key]
+    
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
 
