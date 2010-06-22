@@ -382,7 +382,12 @@ def main():
     if result:
         # non-zero return code means don't run
         munkicommon.display_info("managedsoftwareupdate run aborted by"
-                                 " preflight script")
+                                 " preflight script: %s" % result)
+        # record the check result for use by Managed Software Update.app
+        # right now, we'll return the same code as if the munki server
+        # was unavailable. We need to revisit this and define additional
+        # update check results.
+        recordUpdateCheckResult(-1)
         exit(-1)
         
     # set munkicommon globals
