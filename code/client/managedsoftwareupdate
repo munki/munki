@@ -46,6 +46,23 @@ def getIdleSeconds():
         if "Idle" in line:
             parts = line.split()
             return int(int(parts[3])/1000000000)
+            
+            
+def networkUp():
+    # Determine if the network is up by looking for any non-loopback
+    # internet network interfaces.
+    cmd = ['/sbin/ifconfig', "-a", "inet"]
+    p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = p.communicate()
+    lines = output.splitlines()
+    for line in lines:
+        if "inet" in line:
+            parts = line.split()
+            addr = parts[1]
+            if not addr in ["127.0.0.1", "0.0.0.0.0"]:
+                return True
+    return False
     
     
 def clearLastNotifiedDate():
@@ -325,16 +342,17 @@ def main():
         for f in triggerfiles:
             if os.path.exists(f):
                 user_triggered = True
-                if f.endswith("startup"):
-                    # HACK: sometimes this runs before the network is up.
-                    # we'll attempt to wait until network interfaces are up
-                    # before continuing
-                    cmd = ["/usr/sbin/ipconfig", "waitall"]
-                    retcode = subprocess.call(cmd)
                 if f.endswith("checkandinstallatstartup"):
                     runtype = "checkandinstallatstartup"
                     options.installonly = False
                     options.auto = True
+                    # HACK: sometimes this runs before the network is up.
+                    # we'll attempt to wait until network interfaces are up
+                    # before continuing
+                    for x in range(5):
+                        if networkUp():
+                            break
+                        time.sleep(2)
                 else:
                     # delete triggerfile if _not_ checkandinstallatstartup
                     os.unlink(f)
