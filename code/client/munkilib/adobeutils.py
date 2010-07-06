@@ -59,16 +59,23 @@ def mountAdobeDmg(dmgpath):
 
 
 def getCS5mediaSignature(dirpath):
-    '''Returns the CS5 media path for a CS5 install.
+    '''Returns the CS5 mediaSignature for a CS5 install.
     dirpath is typically the root of a mounted dmg'''
     installapp = findInstallApp(dirpath)
-    if not installapp:
-        return ""
-    # installapp is the path to the actual executable:
-    # IE Install.app/Contents/MacOS/Install. We need the
-    # parent directory of the Install app bundle.
-    parentdir = os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.dirname(installapp))))
+    if installapp:
+        # installapp is the path to the actual executable:
+        # IE Install.app/Contents/MacOS/Install. We need the
+        # parent directory of the Install app bundle.
+        parentdir = os.path.dirname(
+                    os.path.dirname(
+                    os.path.dirname(os.path.dirname(installapp))))
+    else:
+        deploymentmgr = findAdobeDeploymentManager(dirpath)
+        if deploymentmgr:
+            parentdir = os.path.join(os.path.dirname(deploymentmgr),
+                                        "Setup")
+        else:
+            return ""
     # now look for setup.xml
     setupxml = os.path.join(parentdir, "payloads", "Setup.xml")
     if os.path.exists(setupxml) and os.path.isfile(setupxml):
@@ -146,6 +153,7 @@ def getAdobeSetupInfo(installroot):
     for (path, dirs, files) in os.walk(installroot):
         if path.endswith("/payloads"):
             driverfolder = ''
+            mediaSignature = ''
             setupxml = os.path.join(path, "setup.xml")
             if os.path.exists(setupxml):
                 dom = minidom.parse(setupxml)
@@ -155,12 +163,26 @@ def getAdobeSetupInfo(installroot):
                     if 'folder' in driver.attributes.keys():
                         driverfolder = \
                              driver.attributes['folder'].value.encode('UTF-8')
+                if driverfolder == '':
+                    # look for mediaSignature (CS5 AAMEE install)
+                    setupElements = dom.getElementsByTagName("Setup")
+                    if setupElements:
+                        mediaSignatureElements = \
+                            setupElements[0].getElementsByTagName(
+                                                            "mediaSignature")
+                        if mediaSignatureElements:
+                            element = mediaSignatureElements[0]
+                            for node in element.childNodes:
+                                mediaSignature += node.nodeValue
+                            
             for item in os.listdir(path):
                 payloadpath = os.path.join(path, item)
                 payloadinfo = getPayloadInfo(payloadpath)
                 if payloadinfo:
                     payloads.append(payloadinfo)
-                    if driverfolder and item == driverfolder:
+                    if (driverfolder and item == driverfolder) or \
+                       (mediaSignature and 
+                            payloadinfo['AdobeCode'] == mediaSignature):
                         info['display_name'] = payloadinfo['display_name']
                         info['version'] = payloadinfo['version']
                         info['AdobeSetupType'] = "ProductInstall"
@@ -229,7 +251,20 @@ def getAdobePackageInfo(installroot):
             else:
                 info['description'] = ""
             return info
-            
+        else:
+            installerxml = os.path.join(installroot, "optionXML.xml")
+            if os.path.exists(installerxml):
+                dom = minidom.parse(installerxml)
+                installinfo = dom.getElementsByTagName("InstallInfo")
+                if installinfo:
+                    pn = installinfo[0].getElementsByTagName("PackageName")
+                    if pn:
+                        prop = pn[0]
+                        pkgname = ""
+                        for node in prop.childNodes:
+                            pkgname += node.nodeValue
+                        info['display_name'] = pkgname
+                        
     if not info.get('display_name'):
         info['display_name'] = os.path.basename(installroot)      
     return info
@@ -310,6 +345,28 @@ def findInstallApp(dirpath):
             setup_path = os.path.join(path, "Contents", "MacOS", "Install")
             if os.path.exists(setup_path):
                 return setup_path
+    return ''
+
+
+def findAdobePatchInstallerApp(dirpath):
+    # search dirpath and enclosed directories for Install.app
+    for (path, dirs, files) in os.walk(dirpath):
+        if path.endswith("AdobePatchInstaller.app"):
+            setup_path = os.path.join(path, "Contents", "MacOS",
+                                                    "AdobePatchInstaller")
+            if os.path.exists(setup_path):
+                return setup_path
+    return ''
+
+
+
+def findAdobeDeploymentManager(dirpath):
+    # search dirpath and enclosed directories for AdobeDeploymentManager
+    for (path, dirs, files) in os.walk(dirpath):
+        if path.endswith("pkg/Contents/Resources"):
+            dm_path = os.path.join(path, "AdobeDeploymentManager")
+            if os.path.exists(dm_path):
+                return dm_path
     return ''
 
 
@@ -578,9 +635,8 @@ def runAdobeCS5PatchInstaller(dmgpath):
                                 os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
-        patchinstaller = os.path.join(mountpoints[0],
-            "AdobePatchInstaller.app/Contents/MacOS/AdobePatchInstaller")
-        if os.path.exists(patchinstaller):
+        patchinstaller = findAdobePatchInstallerApp(mountpoints[0])
+        if patchinstaller:
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(mountpoints[0])
@@ -893,7 +949,38 @@ def getAdobeCatalogInfo(mountpoint, pkgname):
     '''Used by makepkginfo to build pkginfo data for Adobe
     installers/updaters'''
     
-    # Look for Install.app (CS5 install)
+    # look for AdobeDeploymentManager (AAMEE installer)
+    deploymentmanager = findAdobeDeploymentManager(mountpoint)
+    if deploymentmanager:
+        dirpath = os.path.dirname(deploymentmanager)
+        cataloginfo = getAdobePackageInfo(dirpath)
+        if cataloginfo:
+            # add some more data
+            cataloginfo['name'] = \
+                cataloginfo['display_name'].replace(" ",'')
+            cataloginfo['uninstallable'] = True
+            cataloginfo['uninstall_method'] = "AdobeCS5AAMEEPackage"
+            cataloginfo['installer_type'] = "AdobeCS5AAMEEPackage"
+            cataloginfo['minimum_os_version'] = "10.5.0"
+            cataloginfo['adobe_install_info'] = getAdobeInstallInfo(
+                                                        mountpoint=mountpoint)
+            mediasignature = cataloginfo['adobe_install_info'].get(
+                                                            "media_signature")
+            if mediasignature:
+                # make a default <key>installs</key> entry
+                uninstalldir = "/Library/Application Support/Adobe/Uninstall"
+                signaturefile = mediasignature + ".db"
+                filepath = os.path.join(uninstalldir, signaturefile)
+                installs = []
+                installitem = {}
+                installitem['path'] = filepath
+                installitem['type'] = 'file'
+                installs.append(installitem)
+                cataloginfo['installs'] = installs
+            
+            return cataloginfo
+            
+    # Look for Install.app (Bare metal CS5 install)
     installapp = findInstallApp(mountpoint)
     if installapp:
         # this is a CS5 installer disk image
@@ -929,7 +1016,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname):
             return cataloginfo
             
     # Look for AdobePatchInstaller.app (CS5 updater)
-    installapp = os.path.join(mountpoint, "AdobePatchInstaller.app")
+    installapp = findAdobePatchInstallerApp(mountpoint)
     if os.path.exists(installapp):
         # this is a CS5 updater disk image
         cataloginfo = getAdobePackageInfo(mountpoint)
