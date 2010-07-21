@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,9 +34,8 @@ import socket
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 import xattr
 
-# these two go away if we switch to using curl for downloads
 import urllib2
-import httplib
+#import httplib
 
 #our libs
 import munkicommon
@@ -134,6 +133,24 @@ def addPackageids(catalogitems, pkgid_table):
                         pkgid_table[name].append(receipt['packageid'])
     
 
+def getFirstPlist(textString):
+    '''Gets the next plist from a set of concatenated text-style plists.
+    Returns a tuple - the first plist (if any) and the remaining
+    string'''
+    plistStart = textString.find("<?xml version")
+    if plistStart == -1:
+        # not found
+        return ("", textString)
+    plistEnd = textString.find("</plist>",plistStart+13)
+    if plistEnd == -1:
+        # not found
+        return ("", textString)
+    # adjust end value
+    plistEnd = plistEnd + 8
+    return (textString[plistStart:plistEnd], textString[plistEnd:])
+    
+
+
 def getInstalledPackages():
     """
     Builds a dictionary of installed receipts and their version number
@@ -141,25 +158,41 @@ def getInstalledPackages():
     installedpkgs = {}
     
     # Check new (Leopard and later) package database
-    p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=1,
+    #p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=8192,
+    #                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #(out, err) = p.communicate()
+    #if out:
+    #    pkgs = out.split("\n")
+    #    for pkg in pkgs:
+    #        p = subprocess.Popen(["/usr/sbin/pkgutil",
+    #                              "--pkg-info-plist", pkg],
+    #                              bufsize=1024,
+    #                              stdout=subprocess.PIPE,
+    #                              stderr=subprocess.PIPE)
+    #        (out, err) = p.communicate()
+    #        
+    #        if out:
+    #            pl = FoundationPlist.readPlistFromString(out)
+    #            if "pkg-version" in pl:
+    #               installedpkgs[pkg] = pl["pkg-version"]
+    
+    # new method of getting receipt info from pkgutil; a single call
+    # we use the --regexp option to pkgutil to get it to return receipt
+    # info for all installed packages.  Huge speed up.
+    p = subprocess.Popen(["/usr/sbin/pkgutil", "--regexp", 
+                            "--pkg-info-plist", ".*"], bufsize=8192,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
+    while out:
+        (plist, out) = getFirstPlist(out)
+        if plist:
+            pl = FoundationPlist.readPlistFromString(plist)
+            if "pkg-version" in pl and "pkgid" in pl:
+                installedpkgs[pl["pkgid"]] = pl["pkg-version"]
+        else:
+            break
     
-    if out:
-        pkgs = out.split("\n")
-        for pkg in pkgs:
-            p = subprocess.Popen(["/usr/sbin/pkgutil",
-                                  "--pkg-info-plist", pkg],
-                                  bufsize=1,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
-            (out, err) = p.communicate()
-            
-            if out:
-                pl = FoundationPlist.readPlistFromString(out)
-                if "pkg-version" in pl:
-                    installedpkgs[pkg] = pl["pkg-version"]
-                    
+         
     # Now check /Library/Receipts
     receiptsdir = "/Library/Receipts"
     if os.path.exists(receiptsdir):
@@ -1074,6 +1107,60 @@ def lookForUpdates(manifestitem, cataloglist, installinfo):
     
     return update_list
     
+    
+def processOptionalInstall(manifestitem, cataloglist, installinfo):
+    '''
+    Process an optional install item to see if it should be added to
+    the list of optional installs.
+    '''
+    manifestitemname = os.path.split(manifestitem)[1]
+    pl = getItemDetail(manifestitem, cataloglist)
+    
+    if not pl:
+        munkicommon.display_warning(
+            "Could not process item %s for optional install: " % manifestitem)
+        munkicommon.display_warning(
+            "No pkginfo for %s found in catalogs: %s" %
+            (manifestitem, ', '.join(cataloglist)))
+        return
+    # check to see if item (any version) is already in the installlist:
+    if isItemInInstallInfo(pl, installinfo['managed_installs']):
+        munkicommon.display_debug1(
+            "%s has already been processed for install." % manifestitemname)
+        return
+    # check to see if item (any version) is already in the removallist:
+    if isItemInInstallInfo(pl, installinfo['removals']):
+        munkicommon.display_debug1(
+            "%s has already been processed for removal." % manifestitemname)
+        return
+    # check to see if item (any version) is already in the 
+    # optional_install list:
+    for item in installinfo['optional_installs']:
+        if pl['name'] == item['name']:
+            munkicommon.display_debug1(
+                "%s has already been processed for optional install." %
+                    manifestitemname)
+            return
+    # if we get to this point we can add this item 
+    # to the list of optional installs
+    iteminfo = {}
+    iteminfo["name"] = pl.get('name', '')
+    iteminfo["manifestitem"] = manifestitemname
+    iteminfo["description"] = pl.get('description', '')
+    iteminfo["version_to_install"] = pl.get('version',"UNKNOWN")
+    iteminfo['display_name'] = pl.get('display_name','')
+    iteminfo['installed'] = isInstalled(pl)
+    iteminfo['uninstallable'] = pl.get('uninstallable',False)
+    if not iteminfo['installed']:
+        iteminfo["installer_item_size"] = pl.get('installer_item_size',0)
+        iteminfo["installed_size"] = pl.get('installer_item_size',
+                                        iteminfo["installer_item_size"])
+        if not enoughDiskSpace(pl, installinfo.get('managed_installs',[])):
+            iteminfo['note'] = \
+                "Insufficient disk space to download and install."
+    
+    installinfo['optional_installs'].append(iteminfo)
+    
 
 def processInstall(manifestitem, cataloglist, installinfo):
     """
@@ -1285,6 +1372,46 @@ def processInstall(manifestitem, cataloglist, installinfo):
                                                          installinfo)
         return True
     
+
+def processManifestForOptionalInstalls(manifestpath, installinfo,
+                                                        parentcatalogs=[]):
+    """
+    Processes manifests to build a list of optional installs that
+    can be displayed by Managed Software Update.
+    Will be recursive is manifests include other manifests.
+    """
+    cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
+    if cataloglist:
+        getCatalogs(cataloglist)
+    elif parentcatalogs:
+        cataloglist = parentcatalogs
+    
+    if cataloglist:
+        nestedmanifests = getManifestValueForKey(manifestpath,
+                                                 "included_manifests")
+        if nestedmanifests:
+            for item in nestedmanifests:
+                try:
+                    nestedmanifestpath = getmanifest(item)
+                except ManifestException:
+                    nestedmanifestpath = None
+                if munkicommon.stopRequested():
+                    return {}
+                if nestedmanifestpath:
+                    listofinstalls = processManifestForOptionalInstalls(
+                                                        nestedmanifestpath,
+                                                        installinfo,
+                                                        cataloglist)
+        
+        optionalinstallitems = getManifestValueForKey(manifestpath,
+                                              "optional_installs")
+        if optionalinstallitems:
+            for item in optionalinstallitems:
+                if munkicommon.stopRequested():
+                    return {}
+                processOptionalInstall(item, cataloglist, installinfo)
+                
+    return installinfo             
 
 def processManifestForInstalls(manifestpath, installinfo, parentcatalogs=[]):
     """
@@ -2182,6 +2309,7 @@ def check(id=''):
         # initialize our installinfo record
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
+        installinfo['optional_installs'] = []
         munkicommon.display_detail("**Checking for installs**")
         installinfo = processManifestForInstalls(mainmanifestpath,
                                                  installinfo)
@@ -2196,32 +2324,72 @@ def check(id=''):
         
         # now generate a list of items to be uninstalled
         munkicommon.display_detail("**Checking for removals**")
-        if munkicommon.stopRequested():
-            return 0
         installinfo = processManifestForRemovals(mainmanifestpath,
                                                  installinfo)
+        if munkicommon.stopRequested():
+            return 0
+        
+        # build list of optional installs
+        installinfo = processManifestForOptionalInstalls(                                           
+                                                    mainmanifestpath,
+                                                    installinfo)
+        if munkicommon.stopRequested():
+            return 0
+            
+        # now process any self-serve choices
+        usermanifest = "/Users/Shared/.SelfServeManifest"
+        selfservemanifest = os.path.join(ManagedInstallDir, "manifests",
+                                                "SelfServeManifest")
+        if os.path.exists(usermanifest):
+            # copy user-generated SelfServeManifest to our
+            # ManagedInstallDir
+            try:
+                pl = FoundationPlist.readPlist(usermanifest)
+                if pl:
+                    FoundationPlist.writePlist(pl, selfservemanifest)
+                # now remove the user-generated manifest
+                os.unlink(usermanifest)
+            except:
+                pass
+        
+        # use catalogs from main manifest for self-serve manifest
+        cataloglist = getManifestValueForKey(mainmanifestpath, 'catalogs')
+        if os.path.exists(selfservemanifest):
+            munkicommon.display_detail("**Processing self-serve choices**")
+            installinfo = processManifestForInstalls(selfservemanifest,
+                                                     installinfo, cataloglist)
+            installinfo = processManifestForRemovals(selfservemanifest,
+                                                     installinfo, cataloglist)
+                                                     
+            # update optional installs with info from self-serve manifest
+            for item in installinfo['optional_installs']:
+                if isItemInInstallInfo(item, 
+                                        installinfo['managed_installs']):
+                    item['will_be_installed'] = True
+                elif isItemInInstallInfo(item, installinfo['removals']):
+                    item['will_be_removed'] = True
         
         # filter managed_installs to get items already installed
         installed_items = [item
-                           for item in installinfo.get('managed_installs',[])
+                           for item in installinfo['managed_installs']
                            if item.get('installed')]
         # filter managed_installs to get problem items:
         # not installed, but no installer item
         problem_items = [item
-                         for item in installinfo.get('managed_installs',[])
+                         for item in installinfo['managed_installs']
                          if item.get('installed') == False and
                             not item.get('installer_item')]
         # filter removals to get items already removed (or never installed)
-        removed_items = [item for item in installinfo.get('removals',[])
+        removed_items = [item for item in installinfo['removals']
                          if item.get('installed') == False]
         
         # filter managed_installs and removals lists
         # so they have only items that need action
         installinfo['managed_installs'] = \
-            [item for item in installinfo.get('managed_installs',[])
+            [item for item in installinfo['managed_installs']
              if item.get('installer_item')]
         installinfo['removals'] = \
-            [item for item in installinfo.get('removals',[])
+            [item for item in installinfo['removals']
              if item.get('installed')]
         
         munkicommon.report['ManagedInstalls'] = installed_items
@@ -2263,7 +2431,6 @@ def check(id=''):
             elif item not in cache_list:
                 munkicommon.display_detail("Removing %s from cache" % item)
                 os.unlink(os.path.join(cachedir, item))
-                
         
         # write out install list so our installer
         # can use it to install things in the right order
