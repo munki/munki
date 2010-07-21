@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,11 +50,16 @@ def launchMunkiStatus():
 def launchAndConnectToMunkiStatus():
     global s
     if not getMunkiStatusPID():
+        pass
         launchMunkiStatus()
     socketpath = getMunkiStatusSocket()
     if socketpath:
-        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s.connect(socketpath)
+        try:
+            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            s.connect(socketpath)
+        except:
+            # some problem; kill the socket
+            s = None
     #else:
         #raise Exception("Could not open connection to MunkiStatus.app")
 
@@ -71,17 +76,17 @@ def sendCommand(message):
         except socket.error, (err, errmsg):
             if err == 32 or err == 9:
                 # broken pipe
-                # MunkiStatus must have died; try relaunching
                 s.close()
                 s = None
-                launchAndConnectToMunkiStatus()
-                if s:
-                    # try again!
-                    try:
-                        s.send(messagelines[0].encode('UTF-8'))
-                    except socket.error, (err, errmsg):
-                        # ok, we give up.
-                        pass
+                # MunkiStatus must have died; try relaunching
+                #launchAndConnectToMunkiStatus()
+                #if s:
+                #    # try again!
+                #    try:
+                #        s.send(messagelines[0].encode('UTF-8'))
+                #    except socket.error, (err, errmsg):
+                #        # ok, we give up.
+                #        pass
 
 
 def readResponse():
@@ -121,7 +126,10 @@ def getPIDforProcessName(processname):
 
 
 def getMunkiStatusPID():
-    return getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
+    return \
+      getPIDforProcessName(
+    "Managed Software Update.app/Contents/MacOS/Managed Software Update") \
+     or getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
 
 
 def getMunkiStatusSocket():
@@ -226,12 +234,13 @@ def getStopButtonState():
 
 
 def quit():
-    '''Quits MunkiStatus.app.'''
+    '''Tells the status app that we're done.'''
     global s
     try:
         s.send(u"QUIT: \n")
         s.close()
         s = None
     except (AttributeError, IOError):
-        if getMunkiStatusPID():
-            retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
+        pass
+        #if getMunkiStatusPID():
+            #retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
