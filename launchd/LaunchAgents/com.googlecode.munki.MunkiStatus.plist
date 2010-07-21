@@ -9,10 +9,16 @@
     <string>LoginWindow</string>
     <string>Aqua</string>
   </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+      <key>ManagedSoftwareUpdateMode</key>
+      <string>MunkiStatus</string>
+  </dict>
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/munki/launchapp</string>
-    <string>/Applications/Utilities/Managed Software Update.app/Contents/Resources/MunkiStatus.app</string>
+    <string>-a</string>
+    <string>/Applications/Utilities/Managed Software Update.app</string>
   </array>
   <key>RunAtLoad</key>
   <false/>
