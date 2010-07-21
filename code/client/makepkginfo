@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -99,7 +99,19 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
                 # get out of fsitem loop
                 break
                 
-        if not cataloginfo:
+        if cataloginfo:
+            # we found a package, but let's see if it's an Adobe CS5 install 
+            # (AAMEE) package
+            if 'receipts' in cataloginfo:
+                pkgid = cataloginfo['receipts'][0].get('packageid')
+                if pkgid.startswith("com.adobe.Enterprise.install"):
+                    # we have an Adobe CS5 install package, process
+                    # as Adobe install
+                    pkgname = cataloginfo['receipts'][0].get('filename')
+                    cataloginfo = adobeutils.getAdobeCatalogInfo(
+                                                    mountpoints[0], pkgname)
+                
+        else:
             # maybe an Adobe installer/updater/patcher?
             cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
                                                          pkgname) 
@@ -335,7 +347,7 @@ def main():
                     print >>sys.stderr, \
                         "Could not find a supported installer item in %s!" % \
                          item
-                    exit(-1)                    
+                    exit(-1)
             
             elif item.endswith('.pkg') or item.endswith('.mpkg'):
                 catinfo = munkicommon.getPackageMetaData(item)
