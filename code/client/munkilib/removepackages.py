@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ only file removals are done.
 Callable directly from the command-line and as a python module.
 """
 
-
-import optparse
 import os
-import subprocess
 import sys
+import optparse
+import subprocess
 import sqlite3
 import time
 import munkistatus
@@ -296,6 +295,13 @@ def ImportPackage(packagepath, c):
             uidgid = item[2].split("/")
             uid = uidgid[0]
             gid = uidgid[1]
+        except IndexError:
+            # we really only care about the path
+            perms = "0000"
+            uid = "0"
+            gid = "0"
+
+        try:
             if path != ".":
                 # special case for MS Office 2008 installers
                 if ppath == "tmp/com.microsoft.updater/office_location":
@@ -370,12 +376,19 @@ def ImportBom(bompath, c):
         line =  p.stdout.readline().decode('UTF-8')
         if not line and (p.poll() != None):
             break
-        item = line.rstrip("\n").split("\t")
-        path = item[0]
-        perms = item[1]
-        uidgid = item[2].split("/")
-        uid = uidgid[0]
-        gid = uidgid[1]
+        try:
+            item = line.rstrip("\n").split("\t")
+            path = item[0]
+            perms = item[1]
+            uidgid = item[2].split("/")
+            uid = uidgid[0]
+            gid = uidgid[1]
+        except IndexError:
+            # we really only care about the path
+            perms = "0000"
+            uid = "0"
+            gid = "0"
+            
         if path != ".":
             # special case for MS Office 2008 installers
             if ppath == "tmp/com.microsoft.updater/office_location":
