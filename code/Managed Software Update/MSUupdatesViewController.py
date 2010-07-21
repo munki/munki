@@ -1,9 +1,9 @@
 #
-#  MSUWindowController.py
+#  MSUupdatesViewController.py
 #  Managed Software Update
 #
-#  Created by Greg Neagle on 2/11/10.
-#  Copyright 2009-2010 Greg Neagle.
+#  Created by Greg Neagle on 7/8/10.
+#  Copyright 2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,18 +17,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from objc import YES, NO, IBAction, IBOutlet
 from Foundation import *
 from AppKit import *
 
-class MSUWindowController(NSWindowController):
-
+class MSUupdatesViewController(NSViewController):
+    '''
+    Controls the updates view of the main window
+    '''
+    
     restartInfoFld = IBOutlet()
     restartImageFld = IBOutlet()
     descriptionView = IBOutlet()
     tableView = IBOutlet()
-    theWindow = IBOutlet()
+    optionalSoftwareBtn = IBOutlet()
+    array_controller = IBOutlet()
+    window_controller = IBOutlet()
+    updateNowBtn = IBOutlet()
     
     _updatelist = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), "name": "", "version": "", "description": ""}])
     
@@ -49,6 +54,17 @@ class MSUWindowController(NSWindowController):
         # alert the user to logout, proceed without logout, or cancel
         NSApp.delegate().confirmInstallUpdates()
         
-    def windowShouldClose_(self, sender):
-        # just quit
-        NSApp.terminate_(self)
+    @IBAction
+    def optionalSoftwareBtnClicked_(self, sender):
+        # switch to optional software pane
+        self.window_controller.theTabView.selectNextTabViewItem_(sender)
+        NSApp.delegate().optional_view_controller.AddRemoveBtn.setEnabled_(NO)
+        NSApp.delegate().buildOptionalInstallsData()
+        
+    def tableViewSelectionDidChange_(self, sender):
+        if self.array_controller.selectedObjects():
+            row = self.array_controller.selectedObjects()[0]
+            self.descriptionView.mainFrame().loadHTMLString_baseURL_(row.get("description",""), None)
+        else:
+            self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
+

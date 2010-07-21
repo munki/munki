@@ -9,11 +9,15 @@
 /* Begin PBXBuildFile section */
 		77631A270C06C501005415CB /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77631A260C06C501005415CB /* Python.framework */; };
 		77631A3F0C0748CF005415CB /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = 77631A3E0C0748CF005415CB /* main.py */; };
-		7790198F0C07548A00326F66 /* Managed_Software_UpdateAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = 7790198E0C07548A00326F66 /* Managed_Software_UpdateAppDelegate.py */; };
+		7790198F0C07548A00326F66 /* MSUAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = 7790198E0C07548A00326F66 /* MSUAppDelegate.py */; };
 		77C8C1F90C07829500965286 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 77C8C1F70C07829500965286 /* MainMenu.xib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		C0458B4B11EB888C001F1172 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C0458B4A11EB888C001F1172 /* BorderlessWindow.m */; };
+		C0458B4D11EB8899001F1172 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C0458B4C11EB8899001F1172 /* ScaledImageView.m */; };
+		C0458B5111EB88C0001F1172 /* MSUStatusWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0458B5011EB88C0001F1172 /* MSUStatusWindowController.py */; };
+		C062868911E677820009B44B /* MSUOptionalInstallsViewController.py in Resources */ = {isa = PBXBuildFile; fileRef = C062868811E677820009B44B /* MSUOptionalInstallsViewController.py */; };
 		C0828C801123DBC5003D5807 /* MSUWebViewPolicyDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828C7F1123DBC5003D5807 /* MSUWebViewPolicyDelegate.py */; };
 		C0828C901123DCFF003D5807 /* ShutDownReq.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0828C871123DCFF003D5807 /* ShutDownReq.tif */; };
 		C0828C911123DCFF003D5807 /* RestartRec.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0828C881123DCFF003D5807 /* RestartRec.tif */; };
@@ -24,9 +28,11 @@
 		C0828C961123DCFF003D5807 /* Restart.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0828C8D1123DCFF003D5807 /* Restart.tif */; };
 		C0828C971123DCFF003D5807 /* package.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0828C8E1123DCFF003D5807 /* package.tiff */; };
 		C0828C981123DCFF003D5807 /* Installer.tiff in Resources */ = {isa = PBXBuildFile; fileRef = C0828C8F1123DCFF003D5807 /* Installer.tiff */; };
-		C0828CA2112461C0003D5807 /* MSUWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828CA1112461C0003D5807 /* MSUWindowController.py */; };
+		C0828CA2112461C0003D5807 /* MSUMainWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828CA1112461C0003D5807 /* MSUMainWindowController.py */; };
 		C0828D1011247A37003D5807 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828D0E11247A37003D5807 /* FoundationPlist.py */; };
 		C0828D1211247B3A003D5807 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828D1111247B3A003D5807 /* munki.py */; };
+		C09D9A2D11E6DC7800B3E573 /* MSUupdatesViewController.py in Resources */ = {isa = PBXBuildFile; fileRef = C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */; };
+		C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */ = {isa = PBXBuildFile; fileRef = C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,10 +45,16 @@
 		32CA4F630368D1EE00C91783 /* Managed_Software_Update_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Managed_Software_Update_Prefix.pch; sourceTree = "<group>"; };
 		77631A260C06C501005415CB /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = /System/Library/Frameworks/Python.framework; sourceTree = "<absolute>"; };
 		77631A3E0C0748CF005415CB /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
-		7790198E0C07548A00326F66 /* Managed_Software_UpdateAppDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Managed_Software_UpdateAppDelegate.py; sourceTree = "<group>"; };
+		7790198E0C07548A00326F66 /* MSUAppDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUAppDelegate.py; sourceTree = "<group>"; };
 		77C8C1F80C07829500965286 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Managed Software Update.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Update.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0458B4A11EB888C001F1172 /* BorderlessWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BorderlessWindow.m; sourceTree = "<group>"; };
+		C0458B4C11EB8899001F1172 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
+		C0458B4E11EB88AD001F1172 /* BorderlessWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BorderlessWindow.h; sourceTree = "<group>"; };
+		C0458B4F11EB88AD001F1172 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
+		C0458B5011EB88C0001F1172 /* MSUStatusWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUStatusWindowController.py; sourceTree = "<group>"; };
+		C062868811E677820009B44B /* MSUOptionalInstallsViewController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUOptionalInstallsViewController.py; sourceTree = "<group>"; };
 		C0828C7F1123DBC5003D5807 /* MSUWebViewPolicyDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUWebViewPolicyDelegate.py; sourceTree = "<group>"; };
 		C0828C871123DCFF003D5807 /* ShutDownReq.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = ShutDownReq.tif; sourceTree = "<group>"; };
 		C0828C881123DCFF003D5807 /* RestartRec.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = RestartRec.tif; sourceTree = "<group>"; };
@@ -53,9 +65,11 @@
 		C0828C8D1123DCFF003D5807 /* Restart.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Restart.tif; sourceTree = "<group>"; };
 		C0828C8E1123DCFF003D5807 /* package.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = package.tiff; sourceTree = "<group>"; };
 		C0828C8F1123DCFF003D5807 /* Installer.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Installer.tiff; sourceTree = "<group>"; };
-		C0828CA1112461C0003D5807 /* MSUWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUWindowController.py; sourceTree = "<group>"; };
+		C0828CA1112461C0003D5807 /* MSUMainWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUMainWindowController.py; sourceTree = "<group>"; };
 		C0828D0E11247A37003D5807 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
 		C0828D1111247B3A003D5807 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = munki.py; sourceTree = "<group>"; };
+		C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUupdatesViewController.py; sourceTree = "<group>"; };
+		C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Solid Aqua Blue.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,8 +89,11 @@
 			isa = PBXGroup;
 			children = (
 				C0828C7F1123DBC5003D5807 /* MSUWebViewPolicyDelegate.py */,
-				7790198E0C07548A00326F66 /* Managed_Software_UpdateAppDelegate.py */,
-				C0828CA1112461C0003D5807 /* MSUWindowController.py */,
+				7790198E0C07548A00326F66 /* MSUAppDelegate.py */,
+				C0458B5011EB88C0001F1172 /* MSUStatusWindowController.py */,
+				C0828CA1112461C0003D5807 /* MSUMainWindowController.py */,
+				C062868811E677820009B44B /* MSUOptionalInstallsViewController.py */,
+				C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -123,6 +140,10 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				C0458B4E11EB88AD001F1172 /* BorderlessWindow.h */,
+				C0458B4F11EB88AD001F1172 /* ScaledImageView.h */,
+				C0458B4C11EB8899001F1172 /* ScaledImageView.m */,
+				C0458B4A11EB888C001F1172 /* BorderlessWindow.m */,
 				C0828D0E11247A37003D5807 /* FoundationPlist.py */,
 				32CA4F630368D1EE00C91783 /* Managed_Software_Update_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
@@ -142,6 +163,7 @@
 				C0828C8B1123DCFF003D5807 /* Empty.png */,
 				C0828C8C1123DCFF003D5807 /* RestartReq.tif */,
 				C0828C8D1123DCFF003D5807 /* Restart.tif */,
+				C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */,
 				C0828C8E1123DCFF003D5807 /* package.tiff */,
 				C0828C8F1123DCFF003D5807 /* Installer.tiff */,
 				77C8C1F70C07829500965286 /* MainMenu.xib */,
@@ -205,7 +227,7 @@
 			files = (
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				77631A3F0C0748CF005415CB /* main.py in Resources */,
-				7790198F0C07548A00326F66 /* Managed_Software_UpdateAppDelegate.py in Resources */,
+				7790198F0C07548A00326F66 /* MSUAppDelegate.py in Resources */,
 				77C8C1F90C07829500965286 /* MainMenu.xib in Resources */,
 				C0828C801123DBC5003D5807 /* MSUWebViewPolicyDelegate.py in Resources */,
 				C0828C901123DCFF003D5807 /* ShutDownReq.tif in Resources */,
@@ -217,9 +239,13 @@
 				C0828C961123DCFF003D5807 /* Restart.tif in Resources */,
 				C0828C971123DCFF003D5807 /* package.tiff in Resources */,
 				C0828C981123DCFF003D5807 /* Installer.tiff in Resources */,
-				C0828CA2112461C0003D5807 /* MSUWindowController.py in Resources */,
+				C0828CA2112461C0003D5807 /* MSUMainWindowController.py in Resources */,
 				C0828D1011247A37003D5807 /* FoundationPlist.py in Resources */,
 				C0828D1211247B3A003D5807 /* munki.py in Resources */,
+				C062868911E677820009B44B /* MSUOptionalInstallsViewController.py in Resources */,
+				C09D9A2D11E6DC7800B3E573 /* MSUupdatesViewController.py in Resources */,
+				C0458B5111EB88C0001F1172 /* MSUStatusWindowController.py in Resources */,
+				C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -231,6 +257,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
+				C0458B4B11EB888C001F1172 /* BorderlessWindow.m in Sources */,
+				C0458B4D11EB8899001F1172 /* ScaledImageView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

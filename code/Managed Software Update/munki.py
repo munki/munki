@@ -4,7 +4,7 @@
 #  Managed Software Update
 #
 #  Created by Greg Neagle on 2/11/10.
-#  Copyright 2009-2010 Greg Neagle.
+#  Copyright 2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,11 +21,20 @@
 import os
 import subprocess
 import FoundationPlist
-import time
+#import time
 
-from Foundation import NSDate, NSURL
+#from Foundation import NSDate, NSURL
 
 _updatechecklaunchfile = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
+
+def call(cmd):
+    # convenience function; works around an issue with subprocess.call
+    # in PyObjC in Snow Leopard
+    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+    (output, err) = p.communicate()
+    return p.returncode
+
 
 def getManagedInstallsPrefs():
     # define default values
@@ -54,6 +63,13 @@ def getManagedInstallsPrefs():
                         
     return prefs
     
+def writeSelfServiceManifest(optional_install_choices):
+    usermanifest = "/Users/Shared/.SelfServeManifest"
+    try:
+        FoundationPlist.writePlist(optional_install_choices, usermanifest)
+    except:
+        pass
+    
 def getRemovalDetailPrefs():
     return getManagedInstallsPrefs().get('ShowRemovalDetail', False)
     
@@ -76,88 +92,37 @@ def getInstallInfo():
 
 def startUpdateCheck():
     # does launchd magic to run managedsoftwareupdate as root
-    cmd = ["/usr/bin/touch", _updatechecklaunchfile]
-    if subprocess.call(cmd):
-        return -1
-    else:
-        for i in range(7):
-            time.sleep(1)
-            # check to see if we were successful in starting the update
-            result = updateInProgress()
-            if result == 1:
-                return 1
-            else:
-                # try again
-                pass
-        if result == -1:
-            try:
-                # this might fail if we don't own it
-                os.unlink(_updatechecklaunchfile)
-            except:
-                pass
-        return result
-       
-    
-def updateInProgress():
-    cmd = ['/usr/bin/killall', '-s', 'MunkiStatus']
-    result = subprocess.call(cmd)
-    munkiStatusIsRunning = (result == 0)
-    if munkiStatusIsRunning:
-        # we're doing an update. Bring it back to the front
-        tellMunkiStatusToActivate()
-        return 1
-    elif os.path.exists(_updatechecklaunchfile):
-        # we tried to trigger the update, but it failed?
-        return -1
-    else:
-        # we're not updating right now
-        return 0
- 
-    
-def tellMunkiStatusToActivate():
-    # uses oscascript to run an AppleScript
-    # ugly, but it works.
-    cmd = ['/usr/bin/osascript', '-e', 
-           'tell application "MunkiStatus" to activate']
-    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
-
+    result = call(["/usr/bin/touch", _updatechecklaunchfile])
+    return result
+     
         
-def checkForUpdates():
-    # returns 1 if we've kicked off an update check (or one is in progress),
-    # returns 0 if we're not going to check (because we just did)
-    # returns -1 if the munki server is unavailable
-    # returns -2 if there's an unexpected problem
-    
-    # are we checking right now (MunkiStatus.app is running)?
-    update = updateInProgress()
-    if update == 1:
-        return 1
-    elif update == -1:
-        return -2
-    
-    # when did we last check?
-    now = NSDate.new()
-    prefs = getManagedInstallsPrefs()
-    lastCheckedDateString = prefs.get("LastCheckDate")
-    if lastCheckedDateString:
-        lastCheckedDate = NSDate.dateWithString_(lastCheckedDateString)
-    if (not lastCheckedDateString) or now.timeIntervalSinceDate_(lastCheckedDate) > 10:
-        # we haven't checked in more than 10 seconds
-        result = startUpdateCheck()
-        if result == 1:
-            return 1
-        else:
-            return -2
-    else:
-        # we just finished checking
-        lastCheckResult = prefs.get("LastCheckResult")
-        if lastCheckResult == -1:
-            # check failed
-            return -1
-        else:
-            return 0
+#def checkForUpdates():
+#    # returns 1 if we've kicked off an update check (or one is in progress),
+#    # returns 0 if we're not going to check (because we just did)
+#    # returns -1 if the munki server is unavailable
+#    # returns -2 if there's an unexpected problem
+#    
+#    # when did we last check?
+#    now = NSDate.new()
+#    prefs = getManagedInstallsPrefs()
+#    lastCheckedDateString = prefs.get("LastCheckDate")
+#    if lastCheckedDateString:
+#        lastCheckedDate = NSDate.dateWithString_(lastCheckedDateString)
+#    if (not lastCheckedDateString) or now.timeIntervalSinceDate_(lastCheckedDate) > 5:
+#        # we haven't checked in more than 5 seconds
+#        result = startUpdateCheck()
+#        if result == 1:
+#            return 1
+#        else:
+#            return -2
+#    else:
+#        # we just finished checking
+#        lastCheckResult = prefs.get("LastCheckResult")
+#        if lastCheckResult == -1:
+#            # check failed
+#            return -1
+#        else:
+#            return 0
     
 
 def getAppleUpdates():
@@ -171,6 +136,15 @@ def getAppleUpdates():
         except FoundationPlist.NSPropertyListSerializationException:
             pass
     return pl
+    
+def humanReadable(kbytes):
+    """Returns sizes in human-readable units."""
+    units = [(" KB",2**10), (" MB",2**20), (" GB",2**30), (" TB",2**40)] 
+    for suffix, limit in units:
+        if kbytes > limit:
+            continue
+        else:
+            return str(round(kbytes/float(limit/2**10),1))+suffix
     
 def trimVersionString(versString,tupleCount):
     if versString == None or versString == "":
@@ -212,10 +186,7 @@ end ignoring
         if line:
             cmd.append("-e")
             cmd.append(line)
-        
-    p = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
+    result = call(cmd)
 
     
 
@@ -223,7 +194,7 @@ def logoutAndUpdate():
     # touch a flag so the process that runs after
 	# logout knows it's OK to install everything
     cmd = ["/usr/bin/touch",  "/private/tmp/com.googlecode.munki.installatlogout"]
-    result = subprocess.call(cmd)
+    result = call(cmd)
     if result == 0:
         logoutNow()
     else:
@@ -235,7 +206,7 @@ def justUpdate():
     # we touch a file that launchd is is watching
     # launchd, in turn, launches managedsoftwareupdate --installwithnologout as root
     cmd = ["/usr/bin/touch",  "/private/tmp/.com.googlecode.munki.managedinstall.launchd"]
-    return subprocess.call(cmd)
+    return call(cmd)
         
 
 

@@ -1,8 +1,8 @@
 #
-#  main.py
+#  MSUMainWindowController.py
 #  Managed Software Update
 #
-#  Created by Greg Neagle on 2/10/10.
+#  Created by Greg Neagle on 2/11/10.
 #  Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,20 +18,18 @@
 # limitations under the License.
 
 
-#import modules required by application
-import objc
-import Foundation
-import AppKit
+from objc import YES, NO, IBAction, IBOutlet
+from Foundation import *
+from AppKit import *
 
-from PyObjCTools import AppHelper
+class MSUMainWindowController(NSWindowController):
+    '''
+    Controls the main window
+    '''
 
-# import modules containing classes required to start application and load MainMenu.nib
-import MSUAppDelegate
-import MSUMainWindowController
-import MSUOptionalInstallsViewController
-import MSUupdatesViewController
-import MSUWebViewPolicyDelegate
-import MSUStatusWindowController
-
-# pass control to AppKit
-AppHelper.runEventLoop()
+    theTabView = IBOutlet()
+    theWindow = IBOutlet()
+    
+    def windowShouldClose_(self, sender):
+        # just quit
+        NSApp.terminate_(self)
