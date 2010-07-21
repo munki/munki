@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 import os
 import subprocess
 import sys
-import tempfile
+#import tempfile
 
 import adobeutils
 import munkicommon
@@ -294,7 +294,9 @@ def copyAppFromDMG(dmgpath):
                         err = subprocess.call(["/usr/bin/xattr", "-d", 
                                                "com.apple.quarantine", 
                                                destpath])
-                    
+                # let the user know we completed successfully
+                munkicommon.display_status(
+                                "The software was successfully installed.")
         munkicommon.unmountdmg(mountpoint)
         if not appfound:
             munkicommon.display_error("No application found on %s" %        
