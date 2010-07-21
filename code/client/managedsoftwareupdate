@@ -208,7 +208,8 @@ def recordUpdateCheckResult(result):
     return
    
     
-def notifyUserOfUpdates(manualcheck=False):
+def notifyUserOfUpdates():
+    # called when options.auto == True
     # someone is logged in, and we have updates.
     # if we haven't notified in a while, notify:
     lastNotifiedString = munkicommon.pref('LastNotifiedDate')
@@ -224,7 +225,7 @@ def notifyUserOfUpdates(manualcheck=False):
             # subtract 6 hours
             interval = interval - (6 * 60 * 60)
         nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
-    if now.timeIntervalSinceDate_(nextNotifyDate) > 0  or manualcheck:
+    if now.timeIntervalSinceDate_(nextNotifyDate) > 0:
         # record current notification date
         cmd = ['/usr/bin/defaults', 'write',
                '/Library/Preferences/ManagedInstalls', 
@@ -347,8 +348,10 @@ def main():
                     options.installonly = False
                     options.auto = True
                     # HACK: sometimes this runs before the network is up.
-                    # we'll attempt to wait until network interfaces are up
+                    # we'll attempt to wait up to 10 seconds for the
+                    # network interfaces to come up
                     # before continuing
+                    munkicommon.display_status("Waiting for network...")
                     for x in range(5):
                         if networkUp():
                             break
@@ -405,7 +408,11 @@ def main():
         # right now, we'll return the same code as if the munki server
         # was unavailable. We need to revisit this and define additional
         # update check results.
-        recordUpdateCheckResult(-1)
+        recordUpdateCheckResult(-2)
+        if options.munkistatusoutput:
+            # connect to socket and quit
+            munkistatus.activate()
+            munkistatus.quit()
         exit(-1)
         
     # set munkicommon globals
@@ -435,8 +442,6 @@ def main():
                     break
                 time.sleep(0.5)
                 
-            # activate Managed Software Update.app
-            notifyUserOfUpdates(True)
             munkistatus.quit()
         else:
             print >>sys.stderr, \
@@ -455,8 +460,9 @@ def main():
             if options.manualcheck:
                 # record our result
                 recordUpdateCheckResult(-1)
-                # activate Managed Software Update.app
-                notifyUserOfUpdates(True)
+                # connect to socket and quit
+                munkistatus.activate()
+                munkistatus.quit()
             exit(-1)
         
     # reset our errors and warnings files, rotate main log if needed
@@ -531,10 +537,8 @@ def main():
         
     mustrestart = False
     if options.manualcheck:
-        # let the user know the results of the check
-        if munkicommon.getconsoleuser():
-            notifyUserOfUpdates(True)
-            munkistatus.quit()
+        # just quit munkistatus; Managed Software Update will notify
+        munkistatus.quit()
     elif updatesavailable:
         if options.installonly:
             # just install
@@ -548,16 +552,14 @@ def main():
             else:
                 # there are GUI users
                 consoleuser = munkicommon.getconsoleuser()
-                if consoleuser:
-                    # someone is logged in.
-                    if consoleuser == u"loginwindow":
-                        # someone is logged in, but we're sitting at
-                        # the loginwindow due to fast user switching
-                        # so do nothing
-                        pass
-                    else:
-                        # notify the current console user
-                        notifyUserOfUpdates()
+                if consoleuser == u"loginwindow":
+                    # someone is logged in, but we're sitting at
+                    # the loginwindow due to fast user switching
+                    # so do nothing
+                    pass
+                else:
+                    # notify the current console user
+                    notifyUserOfUpdates()
         elif not options.quiet:
             print ("\nRun %s --installonly to install the downloaded "
                    "updates." % myname)
