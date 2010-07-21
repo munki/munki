@@ -15,6 +15,7 @@
 launchapp
 
 Created by Greg Neagle on 2010-02-05.
+Modified 2010-07-13 to pass all arguments to /usr/bin/open
 Launches an app only if we're called in the current
 GUI user's session.
 Prevents multiple copies of the app from being launched
@@ -24,7 +25,6 @@ Intended for use by a launchd LaunchAgent.
 
 import sys
 import os
-import optparse
 import subprocess
 import time
 
@@ -46,24 +46,17 @@ def main():
         
     if (consoleuser == thisuser) or \
         (consoleuser == None and thisuser == "root"):
-        p = optparse.OptionParser()
-        p.add_option('-a', action='store_true')
-        p.add_option('-b', action='store_true')
-        options, arguments = p.parse_args()
         cmd = ["/usr/bin/open"]
-        if options.b:
-            cmd.append("-b")
-        else:
-            cmd.append("-a")
         try:
-            cmd.append(arguments[0])
+            cmd.extend(sys.argv[1:])
         except:
             print >>sys.stderr, "Must specify an app to launch!"
             exit(-1)
         retcode = subprocess.call(cmd)
+        time.sleep(10)
         exit(retcode)
     else:
-        # sleep 10 seconds so we don't trigger launchd throttling
+        # we aren't in the current GUI session
         time.sleep(10)
         exit(0)
     
