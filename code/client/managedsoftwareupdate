@@ -250,6 +250,8 @@ def notifyUserOfUpdates():
 def runPreOrPostFlightScript(script, runtype="custom"):
     if os.path.exists(script): 
         if os.access(script, os.X_OK):
+            munkicommon.log("Running %s with runtype: %s..." %
+                                                    (script, runtype))
             cmd = [script, runtype]
             p = subprocess.Popen(cmd, shell=False,
                                 stdin=subprocess.PIPE, 
@@ -368,7 +370,7 @@ def main():
         launchdtriggerfile = \
             "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
         if os.path.exists(launchdtriggerfile):
-            # remove it so we aren't automatically relaunched 
+            # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
         runtype = "installwithnologout"
         options.munkistatusoutput = True
@@ -381,7 +383,7 @@ def main():
         launchdtriggerfile = \
             "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
         if os.path.exists(launchdtriggerfile):
-            # remove it so we aren't automatically relaunched 
+            # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
         runtype = "manualcheck"
         options.munkistatusoutput = True
@@ -588,14 +590,7 @@ def main():
     postflightscript = os.path.join(scriptdir, "postflight")
     result = runPreOrPostFlightScript(postflightscript, runtype)
     # we ignore the result
-    
-    if (os.path.exists(postflightscript) and 
-        os.access(postflightscript, os.X_OK)):
-        p = subprocess.Popen(postflightscript, shell=False,
-                            stdin=subprocess.PIPE, 
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (output, err) = p.communicate()
-    
+           
     if munkicommon.tmpdir:
         munkicommon.cleanUpTmpDir()
     if mustrestart:
