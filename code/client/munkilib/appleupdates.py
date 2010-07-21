@@ -6,7 +6,7 @@ appleupdates.py
 Utilities for dealing with Apple Software Update.
 
 """
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ Utilities for dealing with Apple Software Update.
 import sys
 import os
 import stat
-import re
+#import re
 import subprocess
 from xml.dom import minidom
 
