@@ -150,12 +150,12 @@ def getFirstPlist(textString):
     return (textString[plistStart:plistEnd], textString[plistEnd:])
     
 
-
+installedpkgs = {}
 def getInstalledPackages():
     """
     Builds a dictionary of installed receipts and their version number
     """
-    installedpkgs = {}
+    global installedpkgs
     
     # Check new (Leopard and later) package database
     #p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=8192,
@@ -229,7 +229,8 @@ def analyzeInstalledPkgs():
         catalogitems = catalog[catalogname]['items']
         addPackageids(catalogitems, managed_pkgids)
     
-    installedpkgs = getInstalledPackages()
+    if not installedpkgs:
+        getInstalledPackages()
     
     installed = []
     partiallyinstalled = []
@@ -565,6 +566,8 @@ def compareReceiptVersion(item):
              2 if the version is newer
             -2 if there's an error in the input
     """
+    if not installedpkgs:
+        getInstalledPackages()
     if 'packageid' in item and 'version' in item:
         pkgid = item['packageid']
         vers = item['version']
@@ -574,7 +577,7 @@ def compareReceiptVersion(item):
     
     munkicommon.display_debug1("Looking for package %s, version %s" %
                                 (pkgid, vers))
-    installedvers = munkicommon.getInstalledPackageVersion(pkgid)
+    installedvers = installedpkgs.get(pkgid)
     if installedvers:
         return compareVersions(installedvers, vers)
     else:
