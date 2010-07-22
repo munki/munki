@@ -93,8 +93,13 @@ class MSUOptionalInstallsViewController(NSViewController):
     def tableViewSelectionDidChange_(self, sender):
         if self.array_controller.selectedObjects():
             row = self.array_controller.selectedObjects()[0]
-            self.descriptionView.mainFrame().loadHTMLString_baseURL_(row.get("description",""), None)
+            description = row.get("description","")
+            if "</html>" in description or "</HTML>" in description:
+                self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
+            else:
+                self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
+                                                  buffer(description),
+                                                  u"text/plain", u"utf-8", None)
             self.updateRowStatus()
         else:
             self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
-

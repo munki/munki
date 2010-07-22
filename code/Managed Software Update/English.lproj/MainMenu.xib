@@ -21,8 +21,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="633"/>
 			<integer value="389"/>
+			<integer value="633"/>
 			<integer value="29"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -1076,6 +1076,7 @@
 																			<bool key="EncodedWithXMLCoder">YES</bool>
 																			<string>WebKitDefaultFixedFontSize</string>
 																			<string>WebKitDefaultFontSize</string>
+																			<string>WebKitFixedFont</string>
 																			<string>WebKitJavaEnabled</string>
 																			<string>WebKitJavaScriptCanOpenWindowsAutomatically</string>
 																			<string>WebKitJavaScriptEnabled</string>
@@ -1087,6 +1088,7 @@
 																			<bool key="EncodedWithXMLCoder">YES</bool>
 																			<integer value="12"/>
 																			<integer value="12"/>
+																			<string>Lucida Grande</string>
 																			<boolean value="NO"/>
 																			<boolean value="NO"/>
 																			<boolean value="NO"/>
@@ -1431,7 +1433,6 @@
 														<reference key="NSHScroller" ref="563381393"/>
 														<reference key="NSContentView" ref="720875694"/>
 														<reference key="NSHeaderClipView" ref="307161175"/>
-														<reference key="NSCornerView" ref="97640332"/>
 														<bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
 													</object>
 													<object class="WebView" id="800312662">
