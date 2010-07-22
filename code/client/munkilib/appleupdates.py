@@ -220,9 +220,6 @@ def parseDist(filename):
                 # append the line to the description
                 description += line + "\n"
                 
-    if description:
-        # flag this as HTML content so we can display it properly later
-        description = "Content-type: text/html\n\n" + description
     return title, vers, description
     
 
