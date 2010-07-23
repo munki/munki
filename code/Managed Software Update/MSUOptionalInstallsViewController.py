@@ -90,7 +90,7 @@ class MSUOptionalInstallsViewController(NSViewController):
         self.window_controller.theTabView.selectPreviousTabViewItem_(sender)
         NSApp.delegate().addOrRemoveOptionalSoftware()
         
-    def tableViewSelectionDidChange_(self, sender):
+    def updateDescriptionView(self):
         if self.array_controller.selectedObjects():
             row = self.array_controller.selectedObjects()[0]
             description = row.get("description","")
@@ -103,3 +103,7 @@ class MSUOptionalInstallsViewController(NSViewController):
             self.updateRowStatus()
         else:
             self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
+            
+    def tableViewSelectionDidChange_(self, sender):
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
+

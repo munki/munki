@@ -61,7 +61,7 @@ class MSUupdatesViewController(NSViewController):
         NSApp.delegate().optional_view_controller.AddRemoveBtn.setEnabled_(NO)
         NSApp.delegate().buildOptionalInstallsData()
         
-    def tableViewSelectionDidChange_(self, sender):
+    def updateDescriptionView(self):
         if self.array_controller.selectedObjects():
             row = self.array_controller.selectedObjects()[0]
             description = row.get("description","")
@@ -73,5 +73,8 @@ class MSUupdatesViewController(NSViewController):
                                                   u"text/plain", u"utf-8", None)
         else:
             self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
+        
+    def tableViewSelectionDidChange_(self, sender):
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
             
 
