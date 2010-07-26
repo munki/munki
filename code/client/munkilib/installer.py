@@ -362,7 +362,8 @@ def copyFromDMG(dmgpath, itemlist):
             destitem = os.path.join(destpath, itemname)
             if (retcode == 0) and ('user' in item):
                 munkicommon.display_detail(
-                                        "Setting owner for '%s'" % destitem)
+                                        "Setting owner for '%s' to '%s'" % 
+                                                    (destitem, item['user']))
                 cmd = ['/usr/sbin/chown', '-R', item['user'], destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
@@ -371,7 +372,8 @@ def copyFromDMG(dmgpath, itemlist):
 
             if (retcode == 0) and ('group' in item):
                 munkicommon.display_detail(
-                                        "Setting group for '%s'" % destitem)
+                                        "Setting group for '%s' to '%s'" % 
+                                                    (destitem, item['group']))
                 cmd = ['/usr/bin/chgrp', '-R', item['group'], destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
@@ -379,8 +381,10 @@ def copyFromDMG(dmgpath, itemlist):
                                                 (destitem))
 
             if (retcode == 0) and ('mode' in item):
-                munkicommon.display_detail("Setting mode for '%s'" % destitem)
-                cmd = ['/bin/chmod', '-R', options['mode'], destitem]
+                munkicommon.display_detail(
+                                        "Setting mode for '%s' to '%s'" % 
+                                                    (destitem, item['mode']))
+                cmd = ['/bin/chmod', '-R', item['mode'], destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
                     munkicommon.display_error("Error setting mode for %s" % 
