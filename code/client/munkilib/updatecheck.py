@@ -1327,6 +1327,9 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     iteminfo['adobe_package_name'] = pl['adobe_package_name']
                 if 'package_path' in pl:
                     iteminfo['package_path'] = pl['package_path']
+                if 'items_to_copy' in pl:
+                    # used with copy_from_dmg installer type
+                    iteminfo['items_to_copy'] = pl['items_to_copy']
                 installinfo['managed_installs'].append(iteminfo)
                 if nameAndVersion(manifestitemname)[1] == '':
                     # didn't specify a specific version, so
@@ -1566,6 +1569,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         elif uninstallmethod.startswith('Adobe'):
             # Adobe CS3/CS4/CS5 product
             uninstall_item = item
+        elif uninstallmethod == 'remove_copied_items':
+            uninstall_item = item
         elif uninstallmethod == 'remove_app':
             uninstall_item = item
         else:
@@ -1714,6 +1719,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                                             "uninstaller for %s"
                                             % iteminfo["name"])
                 return False
+    elif uninstallmethod == "remove_copied_items":
+        iteminfo['items_to_remove'] = item.get('items_to_copy',[])
     elif uninstallmethod == "remove_app":
         if uninstall_item.get('installs',None):
             iteminfo['remove_app_info'] = uninstall_item['installs'][0]

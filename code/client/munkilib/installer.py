@@ -23,7 +23,6 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 import os
 import subprocess
 import sys
-#import tempfile
 
 import adobeutils
 import munkicommon
@@ -309,7 +308,152 @@ def copyAppFromDMG(dmgpath):
                                     os.path.basename(dmgpath))
         return -1
     
+
+def copyFromDMG(dmgpath, itemlist):
+    # copies items from DMG
+    if not itemlist:
+        munkicommon.display_error("No items to copy!")
+        return -1
+        
+    munkicommon.display_status("Mounting disk image %s" %
+                                os.path.basename(dmgpath))
+    mountpoints = munkicommon.mountdmg(dmgpath)
+    if mountpoints:
+        mountpoint = mountpoints[0]
+        retcode = 0
+        for item in itemlist:
+            itemname = item.get("source_item")
+            if not itemname:
+                munkicommon.display_error("Missing name of item to copy!")
+                retcode = -1
+                
+            if retcode == 0:
+                itempath = os.path.join(mountpoint, itemname)
+                if os.path.exists(itempath):
+                    destpath = item.get("destination_path")
+                    if os.path.exists(destpath):
+                        # remove item if it already exists
+                        olditem = os.path.join(destpath, itemname)
+                        if os.path.exists(olditem):
+                            retcode = subprocess.call(
+                                                ["/bin/rm", "-rf", olditem])
+                            if retcode:
+                                munkicommon.display_error(
+                                    "Error removing existing %s" % olditem)
+                    else:
+                        munkicommon.display_error(
+                            "Destination path %s does not exist!" % destpath)
+                        retcode = -1
+                else:
+                    munkicommon.display_error(
+                        "Source item %s does not exist!" % itemname)
+                    retcode = -1
+                    
+            if retcode == 0:
+                munkicommon.display_status(
+                    "Copying %s to %s" % (itemname, destpath))
+                retcode = subprocess.call(["/bin/cp", "-R", 
+                                            itempath, destpath])
+                if retcode:
+                    munkicommon.display_error(
+                        "Error copying %s to %s" % 
+                                            (itempath, destpath))
+            
+            destitem = os.path.join(destpath, itemname)
+            if (retcode == 0) and ('user' in item):
+                munkicommon.display_detail(
+                                        "Setting owner for '%s'" % destitem)
+                cmd = ['/usr/sbin/chown', '-R', item['user'], destitem]
+                retcode = subprocess.call(cmd)
+                if retcode:
+                    munkicommon.display_error("Error setting owner for %s" % 
+                                                (destitem))
+
+            if (retcode == 0) and ('group' in item):
+                munkicommon.display_detail(
+                                        "Setting group for '%s'" % destitem)
+                cmd = ['/usr/bin/chgrp', '-R', item['group'], destitem]
+                retcode = subprocess.call(cmd)
+                if retcode:
+                    munkicommon.display_error("Error setting group for %s" % 
+                                                (destitem))
+
+            if (retcode == 0) and ('mode' in item):
+                munkicommon.display_detail("Setting mode for '%s'" % destitem)
+                cmd = ['/bin/chmod', '-R', options['mode'], destitem]
+                retcode = subprocess.call(cmd)
+                if retcode:
+                    munkicommon.display_error("Error setting mode for %s" % 
+                                                (destitem))
+
+            if retcode == 0:
+                # remove com.apple.quarantine attribute from copied item
+                cmd = ["/usr/bin/xattr", destitem]
+                p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                                     stdin=subprocess.PIPE, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE)
+                (out, err) = p.communicate()
+                if out:
+                    xattrs = out.splitlines()
+                    if "com.apple.quarantine" in xattrs:
+                        err = subprocess.call(["/usr/bin/xattr", "-d", 
+                                               "com.apple.quarantine", 
+                                               destitem])
+            
+            if retcode:
+                # we encountered an error on this iteration; 
+                # should not continue.
+                break
+                
+        if retcode == 0:
+            # let the user know we completed successfully
+            munkicommon.display_status(
+                                "The software was successfully installed.")
+        munkicommon.unmountdmg(mountpoint)
+        return retcode
+    else:
+        munkicommon.display_error("No mountable filesystems on %s" % 
+                                    os.path.basename(dmgpath))
+        return -1
+
+
+def removeCopiedItems(itemlist):
+    # removes filesystem items based on info in itemlist
+    # typically installed via DMG
     
+    retcode = 0
+    if not itemlist:
+        munkicommon.display_error("Nothing to remove!")
+        return -1
+        
+    for item in itemlist:
+        itemname = item.get("source_item")
+        if not itemname:
+            munkicommon.display_error("Missing item name to remove.")
+            retcode = -1
+            break
+        destpath = item.get("destination_path")
+        if not destpath:
+            munkicommon.display_error("Missing path for item to remove.")
+            retcode = -1
+            break
+        path_to_remove = os.path.join(destpath, itemname)
+        if os.path.exists(path_to_remove):
+            munkicommon.display_status("Removing %s" % path_to_remove)
+            retcode = subprocess.call(["/bin/rm", "-rf", path_to_remove])
+            if retcode:
+                munkicommon.display_error("Removal error for %s" %
+                                                            path_to_remove)
+                break
+        else:
+            # path_to_remove doesn't exist
+            # note it, but not an error
+            munkicommon.display_detail("Path %s doesn't exist." %
+                                                            path_to_remove)
+    
+    return retcode
+
 def installWithInfo(dirpath, installlist):
     """
     Uses the installlist to install items in the
@@ -345,8 +489,17 @@ def installWithInfo(dirpath, installlist):
             installer_type = item.get("installer_type","")
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.doAdobeInstall(item)
+            elif installer_type == "copy_from_dmg":
+                retcode = copyFromDMG(itempath, item.get('items_to_copy'))
             elif installer_type == "appdmg":
-                retcode = copyAppFromDMG(itempath)
+                retcode = copyAppFromDMG(itempath,
+                                            item.get('installer_options',{}))
+            elif installer_type != "":
+                # we've encountered an installer type 
+                # we don't know how to handle
+                munkicommon.log("Unsupported install type: %s" %
+                                                            installer_type)
+                retcode = -99
             else:
                 # must be Apple installer package
                 suppressBundleRelocation = item.get(
@@ -472,134 +625,139 @@ def processRemovals(removallist):
     for item in removallist:
         if munkicommon.stopRequested():
             return restartFlag
-        if 'installed' in item:
-            if item['installed']:
-                index += 1
-                name = item.get('display_name') or item.get('name') or \
-                       item.get('manifestitem')
-                if munkicommon.munkistatusoutput:
-                    munkistatus.message("Removing %s (%s of %s)..." % 
-                                        (name, index, len(removallist)))
-                    munkistatus.detail("")
-                    munkistatus.percent(-1)
-                else:
-                    munkicommon.display_status("Removing %s (%s of %s)..." %
-                                              (name, index, len(removallist)))
-                
-                if 'uninstall_method' in item:
-                    uninstallmethod = item['uninstall_method'].split(' ')
-                    if uninstallmethod[0] == "removepackages":
-                        if 'packages' in item:
-                            if item.get('RestartAction') == "RequireRestart":
-                                restartFlag = True
-                            retcode = removepackages(item['packages'],
-                                                     forcedeletebundles=True)
-                            if retcode:
-                                if retcode == -128:
-                                    message = ("Uninstall of %s was "
-                                               "cancelled." % name)
-                                else:
-                                    message = "Uninstall of %s failed." % name
-                                munkicommon.display_error(message)
-                            else:
-                                munkicommon.log("Uninstall of %s was "
-                                                "successful." % name)
-                        
-                    elif uninstallmethod[0].startswith("Adobe"):
-                        retcode = adobeutils.doAdobeRemoval(item)
-                        
-                    elif uninstallmethod[0] == "remove_app":
-                        remove_app_info = item.get('remove_app_info',None)
-                        if remove_app_info:
-                            path_to_remove = remove_app_info['path']
-                            munkicommon.display_status("Removing %s" %
-                                                        path_to_remove)
-                            retcode = subprocess.call(["/bin/rm", "-rf",
-                                                        path_to_remove])
-                            if retcode:
-                                munkicommon.display_error("Removal error "
-                                                          "for %s" %
-                                                           path_to_remove)
+        if not item.get('installed'):
+            # not installed, so skip it
+            continue
+            
+        index += 1
+        name = item.get('display_name') or item.get('name') or \
+               item.get('manifestitem')
+        if munkicommon.munkistatusoutput:
+            munkistatus.message("Removing %s (%s of %s)..." % 
+                                (name, index, len(removallist)))
+            munkistatus.detail("")
+            munkistatus.percent(-1)
+        else:
+            munkicommon.display_status("Removing %s (%s of %s)..." %
+                                      (name, index, len(removallist)))
+        
+        if 'uninstall_method' in item:
+            uninstallmethod = item['uninstall_method'].split(' ')
+            if uninstallmethod[0] == "removepackages":
+                if 'packages' in item:
+                    if item.get('RestartAction') == "RequireRestart":
+                        restartFlag = True
+                    retcode = removepackages(item['packages'],
+                                             forcedeletebundles=True)
+                    if retcode:
+                        if retcode == -128:
+                            message = ("Uninstall of %s was "
+                                       "cancelled." % name)
                         else:
-                            munkicommon.display_error("Application removal "
-                                                      "info missing from %s" % 
-                                                      name)
-                        
-                    elif os.path.exists(uninstallmethod[0]) and \
-                         os.access(uninstallmethod[0], os.X_OK):
-                        # it's a script or program to uninstall
-                        if munkicommon.munkistatusoutput:
-                            munkistatus.message("Running uninstall script "
-                                                "for %s..." % name)
-                            munkistatus.detail("")
-                            # set indeterminate progress bar 
-                            munkistatus.percent(-1)
-                        
-                        if item.get('RestartAction') == "RequireRestart":
-                            restartFlag = True
-                        
-                        cmd = uninstallmethod
-                        uninstalleroutput = []
-                        p = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                             stdin=subprocess.PIPE, 
-                                             stdout=subprocess.PIPE, 
-                                             stderr=subprocess.STDOUT)
-
-                        while (p.poll() == None): 
-                            msg =  p.stdout.readline().decode('UTF-8')
-                            # save all uninstaller output in case there is
-                            # an error so we can dump it to the log
-                            uninstalleroutput.append(msg)
-                            msg = msg.rstrip("\n")
-                            if munkicommon.munkistatusoutput:
-                                # do nothing with the output
-                                pass
-                            else:
-                                print msg
-                    
-                        retcode = p.poll()
-                        if retcode:
                             message = "Uninstall of %s failed." % name
-                            print >>sys.stderr, message
-                            munkicommon.log(message)
-                            message = \
-                           "-------------------------------------------------"
-                            print >>sys.stderr, message
-                            munkicommon.log(message)
-                            for line in uninstalleroutput:
-                                print >>sys.stderr, "     ", line.rstrip("\n")
-                                munkicommon.log(line.rstrip("\n"))
-                            message = \
-                           "-------------------------------------------------"
-                            print >>sys.stderr, message
-                            munkicommon.log(message)
-                        else:
-                            munkicommon.log("Uninstall of %s was "
-                                            "successful." % name)
-                            
-                        if munkicommon.munkistatusoutput:
-                            # clear indeterminate progress bar 
-                            munkistatus.percent(0)
-           
+                        munkicommon.display_error(message)
                     else:
-                        munkicommon.log("Uninstall of %s failed because "
-                                        "there was no valid uninstall "    
-                                        "method." % name)
-                        retcode = -99
+                        munkicommon.log("Uninstall of %s was "
+                                        "successful." % name)
+                
+            elif uninstallmethod[0].startswith("Adobe"):
+                retcode = adobeutils.doAdobeRemoval(item)
+                
+            elif uninstallmethod[0] == "remove_copied_items":
+                retcode = removeCopiedItems(item.get('items_to_remove'))
+                
+            elif uninstallmethod[0] == "remove_app":
+                remove_app_info = item.get('remove_app_info',None)
+                if remove_app_info:
+                    path_to_remove = remove_app_info['path']
+                    munkicommon.display_status("Removing %s" %
+                                                path_to_remove)
+                    retcode = subprocess.call(["/bin/rm", "-rf",
+                                                path_to_remove])
+                    if retcode:
+                        munkicommon.display_error("Removal error "
+                                                  "for %s" %
+                                                   path_to_remove)
+                else:
+                    munkicommon.display_error("Application removal "
+                                              "info missing from %s" % 
+                                              name)
+                
+            elif os.path.exists(uninstallmethod[0]) and \
+                 os.access(uninstallmethod[0], os.X_OK):
+                # it's a script or program to uninstall
+                if munkicommon.munkistatusoutput:
+                    munkistatus.message("Running uninstall script "
+                                        "for %s..." % name)
+                    munkistatus.detail("")
+                    # set indeterminate progress bar 
+                    munkistatus.percent(-1)
+                
+                if item.get('RestartAction') == "RequireRestart":
+                    restartFlag = True
+                
+                cmd = uninstallmethod
+                uninstalleroutput = []
+                p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                                     stdin=subprocess.PIPE, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.STDOUT)
+
+                while (p.poll() == None): 
+                    msg =  p.stdout.readline().decode('UTF-8')
+                    # save all uninstaller output in case there is
+                    # an error so we can dump it to the log
+                    uninstalleroutput.append(msg)
+                    msg = msg.rstrip("\n")
+                    if munkicommon.munkistatusoutput:
+                        # do nothing with the output
+                        pass
+                    else:
+                        print msg
+            
+                retcode = p.poll()
+                if retcode:
+                    message = "Uninstall of %s failed." % name
+                    print >>sys.stderr, message
+                    munkicommon.log(message)
+                    message = \
+                   "-------------------------------------------------"
+                    print >>sys.stderr, message
+                    munkicommon.log(message)
+                    for line in uninstalleroutput:
+                        print >>sys.stderr, "     ", line.rstrip("\n")
+                        munkicommon.log(line.rstrip("\n"))
+                    message = \
+                   "-------------------------------------------------"
+                    print >>sys.stderr, message
+                    munkicommon.log(message)
+                else:
+                    munkicommon.log("Uninstall of %s was "
+                                    "successful." % name)
                     
-                    # record removal success/failure
-                    if retcode == 0:
-                        success_msg = "Removal of %s: SUCCESSFUL" % name
-                        munkicommon.log(success_msg, "Install.log")
-                        munkicommon.report[
-                                         'RemovalResults'].append(success_msg)
-                    else:
-                        failure_msg = "Removal of %s: " % name + \
-                                      " FAILED with return code: %s" % retcode
-                        munkicommon.log(failure_msg, "Install.log")
-                        munkicommon.report[
-                                         'RemovalResults'].append(failure_msg)
-                        
+                if munkicommon.munkistatusoutput:
+                    # clear indeterminate progress bar 
+                    munkistatus.percent(0)
+   
+            else:
+                munkicommon.log("Uninstall of %s failed because "
+                                "there was no valid uninstall "    
+                                "method." % name)
+                retcode = -99
+            
+            # record removal success/failure
+            if retcode == 0:
+                success_msg = "Removal of %s: SUCCESSFUL" % name
+                munkicommon.log(success_msg, "Install.log")
+                munkicommon.report[
+                                 'RemovalResults'].append(success_msg)
+            else:
+                failure_msg = "Removal of %s: " % name + \
+                              " FAILED with return code: %s" % retcode
+                munkicommon.log(failure_msg, "Install.log")
+                munkicommon.report[
+                                 'RemovalResults'].append(failure_msg)
+                      
     return restartFlag
 
 

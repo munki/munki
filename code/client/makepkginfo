@@ -36,6 +36,7 @@ import sys
 import os
 import re
 import optparse
+from optparse import OptionValueError
 from distutils import version
 import subprocess
 import hashlib
@@ -63,7 +64,7 @@ def DMGhasSLA(dmgpath):
     return hasSLA
 
 
-def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
+def getCatalogInfoFromDmg(dmgpath, options):
     """
     * Mounts a disk image 
     * Gets catalog info for the first installer item found at the root level.
@@ -84,13 +85,13 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
         print >>sys.stderr, "Could not mount %s!" % dmgpath
         exit(-1)
         
-    if pkgname:
+    if options.pkgname:
         pkgpath = os.path.join(mountpoints[0], pkgname)
         if os.path.exists(pkgpath):
             cataloginfo = munkicommon.getPackageMetaData(pkgpath)
             if cataloginfo:
                 cataloginfo['package_path'] = pkgname
-    elif not appname:
+    elif not options.item:
         # search for first package at root
         for fsitem in os.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
@@ -114,39 +115,61 @@ def getCatalogInfoFromDmg(dmgpath, pkgname='', appname=''):
         else:
             # maybe an Adobe installer/updater/patcher?
             cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
-                                                         pkgname) 
+                                                        options.pkgname or '') 
                     
     if not cataloginfo:
-        # maybe this is an appdmg
-        # look for an app at the top level of the dmg
-        appinfo = {}
-        if appname:
-            itempath = os.path.join(mountpoints[0], appname)
-            if munkicommon.isApplication(itempath):
-                appinfo = getiteminfo(itempath)
+        # maybe this is a drag-n-drop dmg
+        # look for given item or an app at the top level of the dmg
+        iteminfo = {}
+        if options.item:
+            item = options.item
+            itempath = os.path.join(mountpoints[0], item)
+            if os.path.exists(itempath):
+                iteminfo = getiteminfo(itempath)
+            else:
+                print >>sys.stderr, \
+                    "%s not found on disk image." % item
         else:
-            appname = ''
-            for item in os.listdir(mountpoints[0]):
-                itempath = os.path.join(mountpoints[0], item)
+            # no item specified; look for an application at root of
+            # mounted dmg
+            item = ''
+            for itemname in os.listdir(mountpoints[0]):
+                itempath = os.path.join(mountpoints[0], itemname)
                 if munkicommon.isApplication(itempath):
-                    appname = item
-                    appinfo = getiteminfo(itempath)
-                    if appinfo:
+                    item = itemname
+                    iteminfo = getiteminfo(itempath)
+                    if iteminfo:
                         break
                         
-        if appinfo:                
-            appinfo['path'] = os.path.join("/Applications", appname)
+        if iteminfo:
+            if options.destinationpath:
+                iteminfo['path'] = os.path.join(options.destinationpath,
+                                                                    item)
+            else:          
+                iteminfo['path'] = os.path.join("/Applications", item)
             cataloginfo = {}
-            cataloginfo['name'] = appinfo.get('CFBundleName',
-                                            os.path.splitext(appname)[0])
+            cataloginfo['name'] = iteminfo.get('CFBundleName',
+                                            os.path.splitext(item)[0])
             cataloginfo['version'] = \
                         munkicommon.padVersionString(
-                        appinfo.get('CFBundleShortVersionString', "0")
+                        iteminfo.get('CFBundleShortVersionString', "0")
                         ,5)
-            cataloginfo['installs'] = [appinfo]
-            cataloginfo['installer_type'] = "appdmg"
+            cataloginfo['installs'] = [iteminfo]
+            cataloginfo['installer_type'] = "copy_from_dmg"
+            item_to_copy = {}
+            item_to_copy['source_item'] = item
+            item_to_copy['destination_path'] = options.destinationpath or \
+                                                    "/Applications"
+            if options.user:
+                item_to_copy['user'] = options.user
+            if options.user:
+                item_to_copy['group'] = options.group
+            if options.user:
+                item_to_copy['mode'] = options.mode
+            
+            cataloginfo['items_to_copy'] = [item_to_copy]
             cataloginfo['uninstallable'] = True
-            cataloginfo['uninstall_method'] = "remove_app"
+            cataloginfo['uninstall_method'] = "remove_copied_items"
                     
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
@@ -240,7 +263,20 @@ def getiteminfo(itempath):
         if os.path.isfile(itempath):
             infodict['md5checksum'] = getmd5hash(itempath)
     return infodict
-        
+
+
+def check_mode(option, opt, value, parser):
+    # callback to check --mode options
+    modes = value.lower().replace(',',' ').split()
+    value = None
+    rex = re.compile("[augo]+[=+-][rstwxXugo]+")
+    for mode in modes:
+        if rex.match(mode):
+            value = mode if not value else (value + "," + mode)
+        else:
+            raise OptionValueError("option %s: invalid mode: %s" % 
+                                                            (opt, mode))
+    setattr(parser.values, option.dest, value)
 
 
 def main():
@@ -267,14 +303,23 @@ def main():
                     
                     If this flag is missing, the AdobeUber* files should
                     be at the top level of the mounted dmg.''')
-    p.add_option('--appname', '-a',
+    p.add_option('--itemname', '-i', '--appname', '-a',
+                    metavar='ITEM',
+                    dest='item',
                     help='''Optional flag.
                     
                     -If the installer item is a disk image with a 
-                    drag-and-drop application, APPNAME is the name or 
-                    relative path of the application to be installed. 
-                    Useful if there is more than one application at the 
+                    drag-and-drop item, ITEMNAME is the name or 
+                    relative path of the item to be installed. 
+                    Useful if there is more than one item at the 
                     root of the dmg.''')
+    p.add_option('--destinationpath', '-d',
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image with a 
+                    drag-and-drop item, this is the path to which 
+                    the item should be copied. Defaults to 
+                    "/Applications".''')
     p.add_option('--uninstallerdmg', '-u',
                     help='''Optional flag.
                     
@@ -301,6 +346,46 @@ def main():
                     If the installer item is a disk image containing an 
                     Adobe CS5 product, SERIALNUMBER is the product 
                     serial number.''')
+    p.add_option('--catalog', '-c', action="append",
+                    help='''Optional flag.
+
+                    Specifies in which catalog the item should appear. The 
+                    default is 'testing'. Can be specified multiple times 
+                    to add the item to multiple catalogs.''')
+    p.add_option('-o','--owner',
+                    metavar='USER',
+                    dest='user',
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image with a
+                    drag-and-drop application, this sets the owner
+                    of the application. This flag may be either a
+                    UID or a symbolic name. The owner will be
+                    set recursively on the application.''')
+    p.add_option('-g','--group',
+                    metavar='GROUP',
+                    dest='group',
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image with a
+                    drag-and-drop application, this sets the group
+                    of the application. This flag may be either a
+                    GID or a symbolic name. The group will be
+                    set recursively on the application.''')
+    p.add_option('-m','--mode',
+                    metavar='MODE',
+                    dest='mode',
+                    action='callback',
+                    type='string',
+                    callback=check_mode,
+                    help='''Optional flag.
+                    
+                    If the installer item is a disk image with a
+                    drag-and-drop application, this sets the mode
+                    of the application. The specified mode must
+                    be in symbolic form, see the manpage for
+                    chmod(1) for more information. The mode is
+                    applied recursively.''')
     
     options, arguments = p.parse_args()
     
@@ -335,14 +420,7 @@ def main():
                         itemsize += int(os.lstat(filename).st_size)
         
             if item.endswith('.dmg'):
-                pkgname = ''
-                appname = ''
-                if options.pkgname:
-                    pkgname = options.pkgname
-                if options.appname:
-                    appname = options.appname
-                
-                catinfo = getCatalogInfoFromDmg(item, pkgname, appname)
+                catinfo = getCatalogInfoFromDmg(item, options)
                 if not catinfo:
                     print >>sys.stderr, \
                         "Could not find a supported installer item in %s!" % \
@@ -402,7 +480,10 @@ def main():
                                         uninstallerpath
                     
             # some metainfo
-            catinfo['catalogs'] = ['testing']
+            if options.catalog:
+                catinfo['catalogs'] = options.catalog
+            else:
+                catinfo['catalogs'] = ['testing']
             if catinfo.get('receipts',None):
                 catinfo['uninstallable'] = True
                 catinfo['uninstall_method'] = "removepackages"

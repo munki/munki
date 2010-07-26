@@ -945,7 +945,7 @@ def getAdobeInstallInfo(mountpoint=None,
     return adobeInstallInfo
     
 
-def getAdobeCatalogInfo(mountpoint, pkgname):
+def getAdobeCatalogInfo(mountpoint, pkgname=""):
     '''Used by makepkginfo to build pkginfo data for Adobe
     installers/updaters'''
     
