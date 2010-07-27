@@ -618,6 +618,7 @@ def main():
                 # no-one is logged in and the machine has been idle for a few
                 # seconds; kill the loginwindow 
                 # (which will cause us to run again)
+                munkicommon.log("Killing loginwindow so we will run again...")
                 cmd = ['/usr/bin/killall', 'loginwindow']
                 retcode = subprocess.call(cmd)
     
