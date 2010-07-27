@@ -501,8 +501,9 @@ def prefs():
         _prefs['SoftwareUpdateServerURL'] = ''
         _prefs['DaysBetweenNotifications'] = 1
         _prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
-        # Added by bcw
         _prefs['UseClientCertificate'] = False
+        _prefs['SuppressUserNotification'] = False
+        _prefs['SuppressAutoInstall'] = False
         
         prefsfile = "/Library/Preferences/ManagedInstalls.plist"
         pl = {}
