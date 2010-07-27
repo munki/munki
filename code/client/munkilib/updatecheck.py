@@ -35,7 +35,6 @@ from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 import xattr
 
 import urllib2
-#import httplib
 
 #our libs
 import munkicommon
@@ -1849,29 +1848,36 @@ class ManifestException(Exception):
     # manifest.
     pass
 
+manifests = {}
 def getmanifest(partialurl, suppress_errors=False):
     """
-    Gets a manifest from the server
+    Gets a manifest from the server.
+    Returns a local path to the downloaded manifest.
     """
+    global manifests
     manifestbaseurl = munkicommon.pref('ManifestURL') or \
                       munkicommon.pref('SoftwareRepoURL') + "/manifests/"
     if not manifestbaseurl.endswith('?') and \
        not manifestbaseurl.endswith('/'):
         manifestbaseurl = manifestbaseurl + "/"
-    munkicommon.display_debug2("Manifest base URL is: %s" % manifestbaseurl)
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 "manifests")
     
     if partialurl.startswith("http://") or partialurl.startswith("https://"):
         # then it's really a request for the client's primary manifest
         manifesturl = partialurl
+        partialurl = "client_manifest"
         manifestname = "client_manifest.plist"
     else:
         # request for nested manifest
-        munkicommon.display_detail("Getting manifest %s..." % partialurl)
         manifestname = os.path.split(partialurl)[1]
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
     
+    if manifestname in manifests:
+        return manifests[manifestname]
+        
+    munkicommon.display_debug2("Manifest base URL is: %s" % manifestbaseurl)
+    munkicommon.display_detail("Getting manifest %s..." % partialurl)
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = "Retreiving list of software for this machine..."
     (newmanifest, err) = getHTTPfileIfChangedAtomically(manifesturl,
@@ -1886,6 +1892,8 @@ def getmanifest(partialurl, suppress_errors=False):
         return None
     
     if munkicommon.validPlist(newmanifest):
+        # record it for future access
+        manifests[manifestname] = newmanifest
         return newmanifest
     else:
         errormsg = "manifest returned for %s is invalid." % partialurl
@@ -2338,7 +2346,7 @@ def check(id=''):
                                                  installinfo)
         if munkicommon.stopRequested():
             return 0
-        
+            
         # build list of optional installs
         installinfo = processManifestForOptionalInstalls(                                           
                                                     mainmanifestpath,
