@@ -555,7 +555,8 @@ def main():
             if not munkicommon.currentGUIusers():
                 # no GUI users
                 if getIdleSeconds() > 10:
-                    if not munkicommon.pref('SuppressAutoInstall'):
+                    if not munkicommon.pref('SuppressAutoInstall') or \
+                                        runtype == "checkandinstallatstartup":
                         # no GUI users, system is idle, so install
                         mustrestart = doInstallTasks()
                     else:
