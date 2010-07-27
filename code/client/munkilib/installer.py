@@ -496,8 +496,7 @@ def installWithInfo(dirpath, installlist):
             elif installer_type == "copy_from_dmg":
                 retcode = copyFromDMG(itempath, item.get('items_to_copy'))
             elif installer_type == "appdmg":
-                retcode = copyAppFromDMG(itempath,
-                                            item.get('installer_options',{}))
+                retcode = copyAppFromDMG(itempath)
             elif installer_type != "":
                 # we've encountered an installer type 
                 # we don't know how to handle
