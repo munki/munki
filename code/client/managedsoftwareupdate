@@ -314,6 +314,12 @@ def main():
     options, arguments = p.parse_args()
     runtype = "custom"
     
+    checkandinstallatstartupflag = \
+               "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
+    installatstartupflag = \
+               "/Users/Shared/.com.googlecode.munki.installatstartup"
+    installatlogoutflag = "/private/tmp/com.googlecode.munki.installatlogout"          
+    
     if options.version:
         print munkicommon.get_version()
         exit(0)
@@ -339,13 +345,13 @@ def main():
         # let's make sure the user triggered 
         # the update before logging out, or we triggered it before restarting.
         user_triggered = False
-        triggerfiles = ["/private/tmp/com.googlecode.munki.installatlogout",
-                    "/Users/Shared/.com.googlecode.munki.installatstartup",
-              "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"]
-        for f in triggerfiles:
+        flagfiles = [checkandinstallatstartupflag,
+                        installatstartupflag,
+                        installatlogoutflag]
+        for f in flagfiles:
             if os.path.exists(f):
                 user_triggered = True
-                if f.endswith("checkandinstallatstartup"):
+                if f == checkandinstallatstartupflag:
                     runtype = "checkandinstallatstartup"
                     options.installonly = False
                     options.auto = True
@@ -577,12 +583,11 @@ def main():
         if options.installonly and not options.quiet:
             print "Nothing to install or remove."
         if runtype == "checkandinstallatstartup":
-            # we have nothing to do, so remove the trigger file 
-            # so we'll stop running at restart
-            triggerfile = \
-                "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
-            if os.path.exists(triggerfile):
-                os.unlink(triggerfile)
+            # we have nothing to do, so remove the 
+            # checkandinstallatstartupflag file 
+            # so we'll stop running at startup/logout
+            if os.path.exists(checkandinstallatstartupflag):
+                os.unlink(checkandinstallatstartupflag)
     
     # finish our report
     munkicommon.report['EndTime'] = time.ctime()      
@@ -596,7 +601,7 @@ def main():
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, "postflight")
     result = runPreOrPostFlightScript(postflightscript, runtype)
-    # we ignore the result
+    # we ignore the result of the postflight
            
     if munkicommon.tmpdir:
         munkicommon.cleanUpTmpDir()
@@ -604,7 +609,17 @@ def main():
         doRestart()
     elif munkicommon.munkistatusoutput:
         munkistatus.quit()
-    
+        
+    if runtype == "checkandinstallatstartup" and not mustrestart:
+        if os.path.exists(checkandinstallatstartupflag):
+            # we installed things but did not need to restart; we need to run
+            # again to check for more updates.
+            if not munkicommon.currentGUIusers() and getIdleSeconds() > 10:
+                # no-one is logged in and the machine has been idle for a few
+                # seconds; kill the loginwindow 
+                # (which will cause us to run again)
+                cmd = ['/usr/bin/killall', 'loginwindow']
+                retcode = subprocess.call(cmd)
     
 if __name__ == '__main__':
     main()
