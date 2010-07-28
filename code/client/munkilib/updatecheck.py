@@ -187,7 +187,8 @@ def getInstalledPackages():
         if plist:
             pl = FoundationPlist.readPlistFromString(plist)
             if "pkg-version" in pl and "pkgid" in pl:
-                installedpkgs[pl["pkgid"]] = pl["pkg-version"]
+                version = pl["pkg-version"] or "0.0.0.0.0"
+                installedpkgs[pl["pkgid"]] = version
         else:
             break
     
