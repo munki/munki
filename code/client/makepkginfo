@@ -115,7 +115,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
         else:
             # maybe an Adobe installer/updater/patcher?
             cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
-                                                        options.pkgname or '') 
+                                                        options.pkgname or '')
                     
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
@@ -155,21 +155,25 @@ def getCatalogInfoFromDmg(dmgpath, options):
                         iteminfo.get('CFBundleShortVersionString', "0")
                         ,5)
             cataloginfo['installs'] = [iteminfo]
-            cataloginfo['installer_type'] = "copy_from_dmg"
-            item_to_copy = {}
-            item_to_copy['source_item'] = item
-            item_to_copy['destination_path'] = options.destinationpath or \
-                                                    "/Applications"
-            if options.user:
-                item_to_copy['user'] = options.user
-            if options.user:
-                item_to_copy['group'] = options.group
-            if options.user:
-                item_to_copy['mode'] = options.mode
-            
-            cataloginfo['items_to_copy'] = [item_to_copy]
-            cataloginfo['uninstallable'] = True
-            cataloginfo['uninstall_method'] = "remove_copied_items"
+            if options.appdmg:
+                cataloginfo['installer_type'] = "appdmg"
+                cataloginfo['uninstallable'] = True
+                cataloginfo['uninstall_method'] = "remove_app"
+            else:
+                cataloginfo['installer_type'] = "copy_from_dmg"
+                item_to_copy = {}
+                item_to_copy['source_item'] = item
+                item_to_copy['destination_path'] = \
+                            options.destinationpath or "/Applications"
+                if options.user:
+                    item_to_copy['user'] = options.user
+                if options.user:
+                    item_to_copy['group'] = options.group
+                if options.user:
+                    item_to_copy['mode'] = options.mode
+                cataloginfo['items_to_copy'] = [item_to_copy]
+                cataloginfo['uninstallable'] = True
+                cataloginfo['uninstall_method'] = "remove_copied_items"
                     
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
@@ -303,6 +307,14 @@ def main():
                     
                     If this flag is missing, the AdobeUber* files should
                     be at the top level of the mounted dmg.''')
+    p.add_option('--appdmg', action="store_true",
+                    help='''Optional flag.
+                    
+                    Causes %prog to create a pkginfo item describing an 
+                    appdmg install instead of the newer copy_from_dmg 
+                    installer type. Meant for use with older munki 
+                    clients,as copy_from_dmg replaces appdmg in munki 
+                    0.6.0 and later.''')
     p.add_option('--itemname', '-i', '--appname', '-a',
                     metavar='ITEM',
                     dest='item',
@@ -421,6 +433,15 @@ def main():
         
             if item.endswith('.dmg'):
                 catinfo = getCatalogInfoFromDmg(item, options)
+                if (catinfo and 
+                    catinfo.get('installer_type') == "AdobeCS5Installer"):
+                    print >>sys.stderr, (
+                        "This disk image appears to contain an Adobe CS5 "
+                        "product install.\n"
+                        "Please use Adobe Application Manager, Enterprise "
+                        "Edition (AAMEE) to create an installation package "
+                        "for this product.")
+                    exit(-1)
                 if not catinfo:
                     print >>sys.stderr, \
                         "Could not find a supported installer item in %s!" % \
