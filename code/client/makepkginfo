@@ -86,11 +86,11 @@ def getCatalogInfoFromDmg(dmgpath, options):
         exit(-1)
         
     if options.pkgname:
-        pkgpath = os.path.join(mountpoints[0], pkgname)
+        pkgpath = os.path.join(mountpoints[0], options.pkgname)
         if os.path.exists(pkgpath):
             cataloginfo = munkicommon.getPackageMetaData(pkgpath)
             if cataloginfo:
-                cataloginfo['package_path'] = pkgname
+                cataloginfo['package_path'] = options.pkgname
     elif not options.item:
         # search for first package at root
         for fsitem in os.listdir(mountpoints[0]):
@@ -108,9 +108,9 @@ def getCatalogInfoFromDmg(dmgpath, options):
                 if pkgid.startswith("com.adobe.Enterprise.install"):
                     # we have an Adobe CS5 install package, process
                     # as Adobe install
-                    pkgname = cataloginfo['receipts'][0].get('filename')
+                    adobepkgname = cataloginfo['receipts'][0].get('filename')
                     cataloginfo = adobeutils.getAdobeCatalogInfo(
-                                                    mountpoints[0], pkgname)
+                                                mountpoints[0], adobepkgname)
                 
         else:
             # maybe an Adobe installer/updater/patcher?
