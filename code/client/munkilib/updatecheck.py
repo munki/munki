@@ -55,7 +55,7 @@ def makeCatalogDB(catalogitems):
         name = item.get('name', "NO NAME")
         vers = item.get('version', "NO VERSION")
         
-        if name == "NO NAME" or version == "NO VERSION":
+        if name == "NO NAME" or vers == "NO VERSION":
             munkicommon.display_warning("Bad pkginfo: %s" % item)
         
         # build indexes for items by name and version
@@ -187,8 +187,7 @@ def getInstalledPackages():
         if plist:
             pl = FoundationPlist.readPlistFromString(plist)
             if "pkg-version" in pl and "pkgid" in pl:
-                version = pl["pkg-version"] or "0.0.0.0.0"
-                installedpkgs[pl["pkgid"]] = version
+                installedpkgs[pl["pkgid"]] = pl["pkg-version"] or "0.0.0.0.0"
         else:
             break
     
