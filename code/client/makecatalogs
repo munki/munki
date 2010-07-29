@@ -19,7 +19,11 @@ makecatalogs
 
 Created by Greg Neagle on 2009-03-30.
 
-Recursively scans a directory, looking for installer item info files.  Builds a repo catalog from these files.
+Recursively scans a directory, looking for installer item info files.  
+Builds a repo catalog from these files.
+
+Assumes a pkgsinfo directory under repopath.
+User calling this needs to be able to write to repo/catalogs.
 
 TO-DOs:
 Maybe generate a checksum so we can verify the installer item is the right one
@@ -31,7 +35,8 @@ import optparse
 import plistlib
 import subprocess
 
-def validPlist(path):
+def valid_plist(path):
+    '''Uses plutil to check a plist for validity'''
     cmd = ['/usr/bin/plutil', '-lint', '-s' , path]
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -41,10 +46,13 @@ def validPlist(path):
     else:
         return False
         
-def makeCatalogs(repopath):
+def makecatalogs(repopath):
+    '''Assembles all pkginfo files into catalogs.
+    Assumes a pkgsinfo directory under repopath.
+    User calling this needs to be able to write to repo/catalogs.'''
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
     if not os.path.exists(pkgsinfopath):
-        print >>sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
+        print >> sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
         exit(-1)
     
     catalogs = {}
@@ -52,39 +60,53 @@ def makeCatalogs(repopath):
     for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
         subdir = dirpath[len(pkgsinfopath):]
         for name in filenames:
-            if not name.startswith("._") and name != ".DS_Store":
-                filepath = os.path.join(dirpath,name)
-                if validPlist(filepath):
-                    #if it's a valid plist, assume it's a pkginfo file
-                    pkginfo = plistlib.readPlist(filepath)
-                    #simple sanity checking
-                    if 'installer_item_location' in pkginfo:
-                        installeritempath = os.path.join(repopath, "pkgs",
-                                        pkginfo['installer_item_location'])
-                        if os.path.exists(installeritempath):
-                            catalogs['all'].append(pkginfo)
-                            for catalogname in pkginfo.get("catalogs",[]):
-                                if not catalogname in catalogs:
-                                    catalogs[catalogname] = []
-                                catalogs[catalogname].append(pkginfo)
-                                print "Adding %s to %s..." % \
-                                (filepath[len(pkgsinfopath)+1:], catalogname)
-                        else:
-                            print >>sys.stderr, ("WARNING: Info file %s "
-                                                 "refers to missing "
-                                                 "installer item: %s" % 
-                                             (filepath[len(pkgsinfopath)+1:],
-                                          pkginfo['installer_item_location']))
-                else:
-                    print >>sys.stderr, \
-                            "WARNING: file %s is not a valid plist" % filepath
+            if name.startswith("._") or name == ".DS_Store":
+                # don't process these
+                continue
                 
+            filepath = os.path.join(dirpath, name)
+            
+            if not valid_plist(filepath):
+                print >> sys.stderr, \
+                        "WARNING: file %s is not a valid plist" % filepath
+                continue
+                
+            #if it's a valid plist, assume it's a pkginfo file
+            pkginfo = plistlib.readPlist(filepath)
+            
+            #simple sanity checking
+            if not 'installer_item_location' in pkginfo:
+                print >> sys.stderr, \
+                    ("WARNING: file %s is missing installer_item_location" % 
+                                                                    filepath)
+                continue
+                
+            installeritempath = os.path.join(repopath, "pkgs",
+                            pkginfo['installer_item_location'])
+            if not os.path.exists(installeritempath):
+                print >> sys.stderr, ("WARNING: Info file %s refers to "
+                                      "missing installer item: %s" % 
+                                        (filepath[len(pkgsinfopath)+1:],
+                                        pkginfo['installer_item_location']))
+                continue
+                
+            catalogs['all'].append(pkginfo)
+            for catalogname in pkginfo.get("catalogs", []):
+                if not catalogname in catalogs:
+                    catalogs[catalogname] = []
+                catalogs[catalogname].append(pkginfo)
+                print "Adding %s to %s..." % \
+                    (filepath[len(pkgsinfopath)+1:], catalogname)
+               
     # clear out old catalogs
-    path = os.path.join(repopath, "catalogs")
-    for item in os.listdir(path):
-        itempath = os.path.join(path,item)
-        if os.path.isfile(itempath):
-            os.remove(itempath)
+    catalogpath = os.path.join(repopath, "catalogs")
+    if not os.path.exists(catalogpath):
+        os.mkdir(catalogpath)
+    else:
+        for item in os.listdir(catalogpath):
+            itempath = os.path.join(catalogpath, item)
+            if os.path.isfile(itempath):
+                os.remove(itempath)
     
     # write the new catalogs
     for key in catalogs.keys():
@@ -93,19 +115,20 @@ def makeCatalogs(repopath):
         
 
 def main():
+    '''Main'''
     usage = "usage: %prog [options] /path/to/repo_root"
     p = optparse.OptionParser(usage=usage)
     options, arguments = p.parse_args()
     if len(arguments) == 0:
-        print >>sys.stderr, "Need to specify a path to the repo root!"
+        print >> sys.stderr, "Need to specify a path to the repo root!"
         exit(-1)
         
     repopath = arguments[0].rstrip("/")
     if not os.path.exists(repopath):
-        print >>sys.stderr, "Repo root path %s doesn't exist!" % repopath
+        print >> sys.stderr, "Repo root path %s doesn't exist!" % repopath
         exit(-1)
             
-    makeCatalogs(repopath)
+    makecatalogs(repopath)
 
 if __name__ == '__main__':
     main()
