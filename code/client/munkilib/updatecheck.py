@@ -639,6 +639,7 @@ def getInstalledVersion(pl):
                                     if ad_item['_name'] == name:
                                         appinfo.append(ad_item)
                     
+                    maxversion = "0.0.0.0.0"
                     for ai_item in appinfo:
                         if 'version' in ai_item:
                             if compareVersions(ai_item['version'],
@@ -2076,7 +2077,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             print >>f, 'cacert = "%s"' % cacert
         if capath:
             if not os.path.isdir(capath):
-                raise CurlError(-2, "No CA directory at %s" % cadir)
+                raise CurlError(-2, "No CA directory at %s" % capath)
             print >>f, 'capath = "%s"' % capath
         if cert:
             if not os.path.isfile(cert):
