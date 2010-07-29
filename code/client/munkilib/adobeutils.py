@@ -969,6 +969,20 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             cataloginfo['installer_type'] = "AdobeCS5PatchInstaller"
             if pkgname:
                 cataloginfo['package_path'] = pkgname
+                
+            # make some installs items from the payloads
+            installs = []
+            uninstalldir = "/Library/Application Support/Adobe/Uninstall"
+            for payload in cataloginfo.get('payloads',[]):
+                if 'AdobeCode' in payload:
+                    dbfile = payload['AdobeCode'] + ".db"
+                    filepath = os.path.join(uninstalldir, dbfile)
+                    installitem = {}
+                    installitem['path'] = filepath
+                    installitem['type'] = 'file'
+                    installs.append(installitem)
+            cataloginfo['installs'] = installs
+                    
             return cataloginfo
     
     # Look for AdobeUberInstaller items (CS4 install)
