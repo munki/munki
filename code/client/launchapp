@@ -29,17 +29,21 @@ import subprocess
 import time
 
 
-def getconsoleuser():    
+def getconsoleuser():
+    '''Uses Apple's SystemConfiguration framework to get the current
+    console user'''
     from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
 
 
 def main():
+    '''Pass arguments to /usr/bin/open only if we are the current
+    console user or no user and we're at the login window'''
     consoleuser = getconsoleuser()
     try:
         thisuser = os.environ['USER']
-    except:
+    except KeyError:
         # when run via launchd at loginwindow context, os.environ['USER']
         # is undefined, so we'll return root (the effective user)
         thisuser = "root"
@@ -47,20 +51,22 @@ def main():
     if (consoleuser == thisuser) or \
         (consoleuser == None and thisuser == "root"):
         cmd = ["/usr/bin/open"]
-        try:
+        if len(sys.argv) > 1:
             cmd.extend(sys.argv[1:])
-        except:
-            print >>sys.stderr, "Must specify an app to launch!"
+        else:
+            print >> sys.stderr, "Must specify an app to launch!"
             exit(-1)
         retcode = subprocess.call(cmd)
+        # sleep 10 secs to make launchd happy
         time.sleep(10)
         exit(retcode)
     else:
         # we aren't in the current GUI session
+        # sleep 10 secs to make launchd happy
         time.sleep(10)
         exit(0)
     
 
 if __name__ == '__main__':
-	main()
+    main()
 
