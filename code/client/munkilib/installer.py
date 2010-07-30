@@ -609,12 +609,15 @@ def installWithInfo(dirpath, installlist):
                             break
                         
             if not foundagain:
-                # now remove the item from the install cache
+                # now remove the item from the install cache 
+                # (if it's still there)
                 itempath = os.path.join(dirpath, current_installer_item)
-                if os.path.isdir(itempath):
-                    retcode = subprocess.call(["/bin/rm", "-rf", itempath])
-                else:
-                    retcode = subprocess.call(["/bin/rm", itempath])
+                if os.path.exists(itempath):
+                    if os.path.isdir(itempath):
+                        retcode = subprocess.call(
+                                                ["/bin/rm", "-rf", itempath])
+                    else:
+                        retcode = subprocess.call(["/bin/rm", itempath])
                 shadowfile = os.path.join(itempath,".shadow")
                 if os.path.exists(shadowfile):
                     retcode = subprocess.call(["/bin/rm", shadowfile])
