@@ -3,7 +3,8 @@
 """
 adobeutils.py
 
-Utilities to enable munki to install/uninstall Adobe CS3/CS4/CS5 products using the CS3/CS4/CS5 Deployment Toolkits.
+Utilities to enable munki to install/uninstall Adobe CS3/CS4/CS5 products
+using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
 # Copyright 2009-2010 Greg Neagle.
@@ -25,8 +26,6 @@ import os
 import subprocess
 import time
 from xml.dom import minidom
-import base64
-import random
 import tempfile
 
 import FoundationPlist
@@ -49,7 +48,7 @@ def mountAdobeDmg(dmgpath):
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (plist, err) = p.communicate()
     if err:
-        print >>sys.stderr, "Error %s mounting %s." % (err, dmgpath)
+        print >> sys.stderr, "Error %s mounting %s." % (err, dmgname)
     if plist:
         pl = FoundationPlist.readPlistFromString(plist)
         for entity in pl['system-entities']:
@@ -133,7 +132,7 @@ def getPayloadInfo(dirpath):
                                     payloadinfo['display_name'] = propvalue
                                 if propname == 'ProductVersion':
                                     payloadinfo['version'] = \
-                                     munkicommon.padVersionString(propvalue,5)    
+                                     munkicommon.padVersionString(propvalue,5)
                                      
                     installmetadata = \
                         payload_info[0].getElementsByTagName(
@@ -550,7 +549,7 @@ def doAdobeCS5Uninstall(adobeInstallInfo):
     if not uninstallxml:
         munkicommon.display_error("No uninstall.xml in adobe_install_info")
         return -1
-    payloadcount = adobeInstallInfo.get('payload_count',0)
+    payloadcount = adobeInstallInfo.get('payload_count', 0)
     path = os.path.join(munkicommon.tmpdir, "uninstall.xml")
     deploymentFile = writefile(uninstallxml, path)
     if not deploymentFile:
@@ -615,15 +614,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
         retcode = runAdobeInstallTool(cmd, number_of_payloads,
                                                             killAdobeAIR=True)
         # now clean up our symlink hackfest
-        try:
-            for item in os.listdir(tmpsetupdir):
-                os.remove(os.path.join(tmpsetupdir, item))
-            os.rmdir(tmpsetupdir)
-            os.remove(os.path.join(tmpdir, "ASU"))
-            os.remove(os.path.join(tmpdir, "ProvisioningTool"))
-            os.rmdir(tmpdir)
-        except OSError:
-            pass
+        ignoreresult = subprocess.call(["/bin/rm", "-rf", tmpdir])
     else:
         munkicommon.display_error(
                        "%s doesn't appear to contain AdobeDeploymentManager" %
@@ -634,16 +625,33 @@ def runAdobeCS5AAMEEInstall(dmgpath):
     return retcode
     
 
-def runAdobeCS5PatchInstaller(dmgpath):
+def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
     munkicommon.display_status("Mounting disk image %s" %
                                 os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
-        patchinstaller = findAdobePatchInstallerApp(mountpoints[0])
+        if copylocal:
+            # copy the update to the local disk before installing
+            updatedir = tempfile.mkdtemp()
+            retcode = subprocess.call(["/bin/cp", "-r", 
+                                            mountpoints[0], updatedir])
+            # unmount diskimage
+            munkicommon.unmountdmg(mountpoints[0])
+            if retcode:
+                munkicommon.display_error(
+                                "Error copying items from %s" % dmgpath)
+                return -1
+            # remove the dmg file to free up space, since we don't need it
+            # any longer
+            ignoreresult = subprocess.call(["/bin/rm", dmgpath])
+        else:
+            updatedir = mountpoints[0]
+            
+        patchinstaller = findAdobePatchInstallerApp(updatedir)
         if patchinstaller:
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
-            number_of_payloads = countPayloads(mountpoints[0])
+            number_of_payloads = countPayloads(updatedir)
             munkicommon.display_status("Running Adobe Patch Installer")
             install_cmd = [ patchinstaller, 
                             '--mode=silent',  
@@ -655,7 +663,11 @@ def runAdobeCS5PatchInstaller(dmgpath):
                     "%s doesn't appear to contain AdobePatchInstaller.app." % 
                     os.path.basename(dmgpath))
             retcode = -1
-        munkicommon.unmountdmg(mountpoints[0])
+        if copylocal:
+            # clean up our mess
+            ignoreresult = subprocess.call(["/bin/rm", "-rf", updatedir])
+        else:
+            munkicommon.unmountdmg(mountpoints[0])
         return retcode
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
@@ -973,7 +985,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             # make some installs items from the payloads
             installs = []
             uninstalldir = "/Library/Application Support/Adobe/Uninstall"
-            for payload in cataloginfo.get('payloads',[]):
+            for payload in cataloginfo.get('payloads', []):
                 if 'AdobeCode' in payload:
                     dbfile = payload['AdobeCode'] + ".db"
                     filepath = os.path.join(uninstalldir, dbfile)
@@ -1157,7 +1169,8 @@ def doAdobeInstall(item):
         retcode = runAdobeCS5AAMEEInstall(itempath)
     elif installer_type == "AdobeCS5PatchInstaller":
         # Adobe CS5 updater
-        retcode = runAdobeCS5PatchInstaller(itempath)
+        retcode = runAdobeCS5PatchInstaller(itempath,
+                                    copylocal=item.get("copy_local"))
     return retcode
 
 
@@ -1166,5 +1179,5 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+    main()
 
