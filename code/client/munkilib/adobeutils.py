@@ -982,11 +982,14 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             if pkgname:
                 cataloginfo['package_path'] = pkgname
                 
-            # make some installs items from the payloads
+            # make some (hopfully functional) installs items from the payloads
             installs = []
             uninstalldir = "/Library/Application Support/Adobe/Uninstall"
             for payload in cataloginfo.get('payloads', []):
                 if 'AdobeCode' in payload:
+                    if "LangPack" in payload.get("display_name"):
+                        # skip Language Packs
+                        continue
                     dbfile = payload['AdobeCode'] + ".db"
                     filepath = os.path.join(uninstalldir, dbfile)
                     installitem = {}
@@ -1148,19 +1151,11 @@ def doAdobeInstall(item):
     if installer_type == "AdobeSetup":
         # Adobe CS3/CS4 updater or Adobe CS3 installer
         retcode = runAdobeSetup(itempath)
-        if retcode == 8:
-            # Adobe Setup says restart needed
-            restartflag = True
-            retcode = 0
     elif installer_type == "AdobeUberInstaller":
         # Adobe CS4 installer
         pkgname = item.get("adobe_package_name") or \
                   item.get("package_path","")
         retcode = runAdobeUberTool(itempath, pkgname)
-        if retcode == 8:
-            # Adobe Setup says restart needed
-            restartflag = True
-            retcode = 0
     elif installer_type == "AdobeAcrobatUpdater":
         # Acrobat Pro 9 updater
         retcode = updateAcrobatPro(itempath)
