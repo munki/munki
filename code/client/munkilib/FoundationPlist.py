@@ -48,6 +48,9 @@ from Foundation import NSData, \
 
 class NSPropertyListSerializationException(Exception):
     pass
+    
+class NSPropertyListWriteException(Exception):
+    pass
 
 def readPlist(filepath):
     """
@@ -56,7 +59,7 @@ def readPlist(filepath):
     """
     plistData = NSData.dataWithContentsOfFile_(filepath)
     dataObject, plistFormat, error = \
-NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_( 
+NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(
                     plistData, NSPropertyListMutableContainers, None, None)
     if error:
         errmsg = "%s in file %s" % (error, filepath)
@@ -90,7 +93,8 @@ def writePlist(dataObject, filepath):
         if plistData.writeToFile_atomically_(filepath, True):
             return
         else:
-            raise Exception("Failed to write plist data to %s" % filepath)
+            raise NSPropertyListWriteException(
+                                "Failed to write plist data to %s" % filepath)
 
 
 def writePlistToString(rootObject):
