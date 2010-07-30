@@ -156,26 +156,6 @@ def getInstalledPackages():
     """
     global installedpkgs
     
-    # Check new (Leopard and later) package database
-    #p = subprocess.Popen(["/usr/sbin/pkgutil", "--pkgs"], bufsize=8192,
-    #                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #(out, err) = p.communicate()
-    #if out:
-    #    pkgs = out.split("\n")
-    #    for pkg in pkgs:
-    #        p = subprocess.Popen(["/usr/sbin/pkgutil",
-    #                              "--pkg-info-plist", pkg],
-    #                              bufsize=1024,
-    #                              stdout=subprocess.PIPE,
-    #                              stderr=subprocess.PIPE)
-    #        (out, err) = p.communicate()
-    #        
-    #        if out:
-    #            pl = FoundationPlist.readPlistFromString(out)
-    #            if "pkg-version" in pl:
-    #               installedpkgs[pkg] = pl["pkg-version"]
-    
-    # new method of getting receipt info from pkgutil; a single call
     # we use the --regexp option to pkgutil to get it to return receipt
     # info for all installed packages.  Huge speed up.
     p = subprocess.Popen(["/usr/sbin/pkgutil", "--regexp", 
@@ -190,8 +170,7 @@ def getInstalledPackages():
                 installedpkgs[pl["pkgid"]] = pl["pkg-version"] or "0.0.0.0.0"
         else:
             break
-    
-         
+            
     # Now check /Library/Receipts
     receiptsdir = "/Library/Receipts"
     if os.path.exists(receiptsdir):
@@ -1023,8 +1002,8 @@ def evidenceThisIsInstalled(pl):
         # this, so we should check for relevent receipts
         if pl.get('receipts'):
             if pkgdata == {}:
-               # build our database of installed packages
-               analyzeInstalledPkgs()
+                # build our database of installed packages
+                analyzeInstalledPkgs()
             if pl['name'] in pkgdata['installed_names']:
                 return True
             #if 'aliases' in pl:
@@ -1059,7 +1038,7 @@ def getAutoRemovalItems(installinfo, cataloglist):
     autoremovalnames = []
     for catalogname in cataloglist:
         if catalogname in catalog.keys():
-                autoremovalnames += catalog[catalogname]['autoremoveitems']
+            autoremovalnames += catalog[catalogname]['autoremoveitems']
 
     #print "Managed Installs: ", installinfo.get('managed_installs',[])
     already_processed_names = [item['name']
@@ -1330,6 +1309,9 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 if 'items_to_copy' in pl:
                     # used with copy_from_dmg installer type
                     iteminfo['items_to_copy'] = pl['items_to_copy']
+                if 'copy_local' in pl:
+                    # used with Adobe CS5 Updaters
+                    iteminfo['copy_local'] = pl['copy_local']
                 installinfo['managed_installs'].append(iteminfo)
                 if nameAndVersion(manifestitemname)[1] == '':
                     # didn't specify a specific version, so
@@ -2349,7 +2331,7 @@ def check(id=''):
             return 0
             
         # build list of optional installs
-        installinfo = processManifestForOptionalInstalls(                                           
+        installinfo = processManifestForOptionalInstalls(
                                                     mainmanifestpath,
                                                     installinfo)
         if munkicommon.stopRequested():
@@ -2495,7 +2477,7 @@ def check(id=''):
                                      (item.get('name',''),
                                       item.get('version_to_install','')))
             if item.get('description'):
-               munkicommon.display_info("        %s" % item['description'])
+                munkicommon.display_info("        %s" % item['description'])
             if item.get('RestartAction') == 'RequireRestart' or \
                item.get('RestartAction') == 'RecommendRestart':
                 munkicommon.display_info("       *Restart required")
