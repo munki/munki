@@ -6,7 +6,7 @@
 
 
 PKGID=com.googlecode.munki
-VERS=0.6.0.600.0
+VERS=0.6.0.640.0
 
 # set munkiroot to the root dir of your munki 'source'
 munkiroot="/Users/Shared/munki/munki"
@@ -35,6 +35,7 @@ mkdir -p ./usr/local/munki/munkilib
 chown -R root:wheel ./usr
 chmod -R 755 ./usr
 cp "$munkiroot/code/client/"* ./usr/local/munki/
+cp "$munkiroot"/code/client/munkilib/*.py ./usr/local/munki/munkilib/
 # no pre/postflight scripts in the package, please
 rm -f ./usr/local/munki/preflight
 rm -f ./usr/local/munki/postflight
