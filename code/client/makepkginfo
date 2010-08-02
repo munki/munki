@@ -288,7 +288,9 @@ def main():
     p = optparse.OptionParser(usage=usage)
     p.add_option('--file', '-f', action="append",
                     help='''Path to a filesystem item installed by this 
-                    package, typically an application. 
+                    package, typically an application. This generates an 
+                    "installs" item for the pkginfo, an item munki can 
+                    use to determine if this software has been installed.
                     Can be specified multiple times.''')
     p.add_option('--pkgname', '-p',
                     help='''Optional flag.
@@ -310,8 +312,8 @@ def main():
     p.add_option('--appdmg', action="store_true",
                     help='''Optional flag.
                     
-                    Causes %prog to create a pkginfo item describing an 
-                    appdmg install instead of the newer copy_from_dmg 
+                    Causes makepkginfo to create a pkginfo item describing 
+                    an appdmg install instead of the newer copy_from_dmg 
                     installer type. Meant for use with older munki 
                     clients,as copy_from_dmg replaces appdmg in munki 
                     0.6.0 and later.''')
@@ -342,7 +344,7 @@ def main():
                     this item.''')
     p.add_option('--catalog', '-c', action="append",
                     help='''Optional flag.
-
+                    
                     Specifies in which catalog the item should appear. The 
                     default is 'testing'. Can be specified multiple times 
                     to add the item to multiple catalogs.''')
@@ -351,21 +353,21 @@ def main():
                     dest='user',
                     help='''Optional flag.
                     
-                    If the installer item is a disk image with a
-                    drag-and-drop application, this sets the owner
-                    of the application. This flag may be either a
-                    UID or a symbolic name. The owner will be
-                    set recursively on the application.''')
+                    If the installer item is a disk image used with
+                    the copy_from_dmg installer type, this sets the 
+                    owner of the item specified by the --item flag. 
+                    The owner may be either a UID or a symbolic name. 
+                    The owner will be set recursively on the item.''')
     p.add_option('-g','--group',
                     metavar='GROUP',
                     dest='group',
                     help='''Optional flag.
                     
-                    If the installer item is a disk image with a
-                    drag-and-drop application, this sets the group
-                    of the application. This flag may be either a
-                    GID or a symbolic name. The group will be
-                    set recursively on the application.''')
+                    If the installer item is a disk image used with
+                    the copy_from_dmg installer type, this sets the 
+                    group of the item specified by the --item flag. 
+                    The group may be either a GID or a symbolic name. 
+                    The group will be set recursively on the item.''')
     p.add_option('-m','--mode',
                     metavar='MODE',
                     dest='mode',
@@ -374,12 +376,12 @@ def main():
                     callback=check_mode,
                     help='''Optional flag.
                     
-                    If the installer item is a disk image with a
-                    drag-and-drop application, this sets the mode
-                    of the application. The specified mode must
-                    be in symbolic form, see the manpage for
-                    chmod(1) for more information. The mode is
-                    applied recursively.''')
+                    If the installer item is a disk used with
+                    the copy_from_dmg installer type, this sets the 
+                    mode of the item specified by the --item flag. 
+                    The specified mode must be in symbolic form.
+                    See the manpage for chmod(1) for more information. 
+                    The mode is applied recursively.''')
     
     options, arguments = p.parse_args()
     
