@@ -24,7 +24,6 @@ Common functions used by the munki tools.
 
 import sys
 import os
-#import re
 import time
 import subprocess
 import tempfile
@@ -33,15 +32,13 @@ import urllib2
 from distutils import version
 from xml.dom import minidom
 
-#from Foundation import NSDictionary, NSDate
-#from CoreFoundation import CFPreferencesCopyAppValue
-
 import munkistatus
 import FoundationPlist
 
+
 def get_version():
     '''Returns version of munkitools'''
-    return "0.6.0"
+    return "0.6.0 Build 638"
 
 
 # output and logging functions
