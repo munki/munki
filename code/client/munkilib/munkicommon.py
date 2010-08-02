@@ -38,7 +38,7 @@ import FoundationPlist
 
 def get_version():
     '''Returns version of munkitools'''
-    return "0.6.0 Build 638"
+    return "0.6.0 Build 640"
 
 
 # output and logging functions
