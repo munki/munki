@@ -317,6 +317,7 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
                 
         if completedpayloads > previous_completedpayloads:
             # now try to get the name of the most recently completed payload
+            # this isn't 100% accurate, but it's mostly for show anyway...
             regex = " for payload \{.*\} "
             cmd = ['/usr/bin/grep', "-E", regex, logfile]
             p = subprocess.Popen(cmd, bufsize=1, 
