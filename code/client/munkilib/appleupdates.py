@@ -21,10 +21,8 @@ Utilities for dealing with Apple Software Update.
 # limitations under the License.
 
 
-import sys
 import os
 import stat
-#import re
 import subprocess
 from xml.dom import minidom
 
@@ -36,20 +34,20 @@ import munkistatus
 import installer
 
 
-oldsuserver = ''
+OLDSUSSERVER = ''
 def selectSoftwareUpdateServer():
-    # switch to our preferred Software Update Server if supplied
-    global oldsuserver
+    '''Switch to our preferred Software Update Server if supplied'''
+    global OLDSUSSERVER
     if munkicommon.pref('SoftwareUpdateServerURL'):
         cmd = ['/usr/bin/defaults', 'read',
                '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
-        p = subprocess.Popen(cmd, shell=False, bufsize=1,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, 
-                             stderr=subprocess.PIPE)
-        (out, err) = p.communicate()
-        if p.returncode == 0:
-            oldsusserver = out.rstrip('\n')
+        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        if proc.returncode == 0:
+            OLDSUSSERVER = str(out).rstrip('\n')
             
         cmd = ['/usr/bin/defaults', 'write',
                '/Library/Preferences/com.apple.SoftwareUpdate',
@@ -58,12 +56,12 @@ def selectSoftwareUpdateServer():
 
 
 def restoreSoftwareUpdateServer():
-    # switch back to original Software Update server
+    '''Switch back to original Software Update server'''
     if munkicommon.pref('SoftwareUpdateServerURL'):
-        if oldsuserver:
+        if OLDSUSSERVER:
             cmd = ['/usr/bin/defaults', 'write',
                    '/Library/Preferences/com.apple.SoftwareUpdate',
-                   'CatalogURL', oldsuserver]
+                   'CatalogURL', OLDSUSSERVER]
         else:
             cmd = ['/usr/bin/defaults', 'delete',
                    '/Library/Preferences/com.apple.SoftwareUpdate', 
@@ -72,29 +70,25 @@ def restoreSoftwareUpdateServer():
         
         
 def setupSoftwareUpdateCheck():
-    # set defaults for root user and current host
+    '''Set defaults for root user and current host.
+    Needed for Leopard.'''
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
            'com.apple.SoftwareUpdate', 'AgreedToLicenseAgreement', 
            '-bool', 'YES']
-    p = subprocess.Popen(cmd, bufsize=1, 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
+    retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
            'com.apple.SoftwareUpdate', 'AutomaticDownload', 
            '-bool', 'YES']
-    p = subprocess.Popen(cmd, bufsize=1, 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
+    retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
            'com.apple.SoftwareUpdate', 'LaunchAppInBackground', 
            '-bool', 'YES']
-    p = subprocess.Popen(cmd, bufsize=1, 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
+    retcode = subprocess.call(cmd)
     
     
 def checkForSoftwareUpdates():
-    # switch to a different SUS server if specified
+    '''Does our Apple Software Update check'''
+    #switch to a different SUS server if specified
     selectSoftwareUpdateServer()
     # get the OS version 
     osvers = int(os.uname()[2].split('.')[0])
@@ -123,21 +117,22 @@ def checkForSoftwareUpdates():
         return -1
        
     # now check for updates
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                         
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            
     while True: 
-        output = p.stdout.readline().decode('UTF-8')
+        output = proc.stdout.readline().decode('UTF-8')
         if munkicommon.munkistatusoutput:
             if munkistatus.getStopButtonState() == 1:
-                os.kill(p.pid, 15) #15 is SIGTERM
+                os.kill(proc.pid, 15) #15 is SIGTERM
                 break
-        if not output and (p.poll() != None):
+        if not output and (proc.poll() != None):
             break
         # send the output to STDOUT or MunkiStatus as applicable
         munkicommon.display_status(output.rstrip('\n'))
     
-    retcode = p.poll()
+    retcode = proc.poll()
     if retcode:
         if osvers == 9:
             # there's always an error on Leopard
@@ -150,17 +145,17 @@ def checkForSoftwareUpdates():
         cmd = ['/usr/bin/defaults', 'read',
                '/Library/Preferences/com.apple.SoftwareUpdate', 
                'LastResultCode']
-        p = subprocess.Popen(cmd, shell=False, bufsize=1,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, 
-                             stderr=subprocess.PIPE)
-        (out, err) = p.communicate()
-        if p.returncode == 0:
+        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        if proc.returncode == 0:
             try:
-                LastResultCode = int(out.rstrip('\n'))
+                LastResultCode = int(str(out).rstrip('\n'))
                 if LastResultCode > 2:
                     retcode = LastResultCode
-            except:
+            except ValueError:
                 retcode = 0
             
     if retcode:
@@ -224,13 +219,13 @@ def parseDist(filename):
     
 
 def getRestartInfo(installitemdir):
-    # looks at all the RestartActions for all the items in the
-    # directory and returns the highest weighted of:
-    #   RequireRestart
-    #   RecommendRestart
-    #   RequireLogout
-    #   RecommendLogout
-    #   None
+    '''Looks at all the RestartActions for all the items in the
+     directory and returns the highest weighted of:
+       RequireRestart
+       RecommendRestart
+       RequireLogout
+       RecommendLogout
+       None'''
     
     weight = {}
     weight['RequireRestart'] = 4
@@ -245,15 +240,15 @@ def getRestartInfo(installitemdir):
                 item.endswith(".mpkg"):
             installeritem = os.path.join(installitemdir, item)
 
-            p = subprocess.Popen(["/usr/sbin/installer",
-                                  "-query", "RestartAction", 
-                                  "-pkg", installeritem], 
-                                  bufsize=1, 
-                                  stdout=subprocess.PIPE, 
-                                  stderr=subprocess.PIPE)
-            (out, err) = p.communicate()
+            proc = subprocess.Popen(["/usr/sbin/installer",
+                                    "-query", "RestartAction", 
+                                    "-pkg", installeritem], 
+                                    bufsize=1, 
+                                    stdout=subprocess.PIPE, 
+                                    stderr=subprocess.PIPE)
+            (out, err) = proc.communicate()
             if out:
-                thisAction = out.rstrip('\n')
+                thisAction = str(out).rstrip('\n')
                 if thisAction in weight.keys():
                     if weight[thisAction] > weight[restartAction]:
                         restartAction = thisAction
@@ -269,9 +264,9 @@ def getSoftwareUpdateInfo():
     updatesdir = "/Library/Updates"
     updatesindex = os.path.join(updatesdir, "index.plist")
     if os.path.exists(updatesindex):
-        pl = FoundationPlist.readPlist(updatesindex)
-        if 'ProductPaths' in pl:
-            products = pl['ProductPaths']
+        plist = FoundationPlist.readPlist(updatesindex)
+        if 'ProductPaths' in plist:
+            products = plist['ProductPaths']
             for product_key in products.keys():
                 updatename = products[product_key]
                 installitem = os.path.join(updatesdir, updatename)
@@ -304,9 +299,9 @@ def writeAppleUpdatesFile():
     available updates'''
     appleUpdates = getSoftwareUpdateInfo()
     if appleUpdates:
-        pl = {}
-        pl['AppleUpdates'] = appleUpdates
-        FoundationPlist.writePlist(pl, appleUpdatesFile)
+        plist = {}
+        plist['AppleUpdates'] = appleUpdates
+        FoundationPlist.writePlist(plist, appleUpdatesFile)
         return True
     else:
         try:
@@ -348,12 +343,12 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         cmd = ['/usr/bin/defaults', 'read', 
                '/Library/Preferences/com.apple.softwareupdate',    
                'LastSuccessfulDate']
-        p = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        (out, err) = p.communicate()
-        lastSUcheckString = out.rstrip('\n')
+        proc = subprocess.Popen(cmd, bufsize=1, 
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        
+        lastSUcheckString = str(out).rstrip('\n')
         if lastSUcheckString:
             try:
                 lastSUcheck = NSDate.dateWithString_(lastSUcheckString)
@@ -393,8 +388,8 @@ def installAppleUpdates():
         updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
         if appleUpdatesFile_modtime > updatesindexfile_modtime:
             try:
-                pl = FoundationPlist.readPlist(appleUpdatesFile)
-                appleupdatelist = pl['AppleUpdates']
+                plist = FoundationPlist.readPlist(appleUpdatesFile)
+                appleupdatelist = plist['AppleUpdates']
             except FoundationPlist.NSPropertyListSerializationException:
                 appleupdatelist = []
     if appleupdatelist == []:
@@ -431,9 +426,10 @@ appleUpdatesFile = os.path.join(munkicommon.pref('ManagedInstallDir'),
 
 
 def main():
+    '''Placeholder'''
     pass
 
 
 if __name__ == '__main__':
-	main()
+    main()
 
