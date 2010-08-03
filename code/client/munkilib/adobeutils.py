@@ -276,12 +276,9 @@ def getAdobePackageInfo(installroot):
         info['display_name'] = os.path.basename(installroot)      
     return info
     
-
-lastlogline = ''
-def getAdobeInstallerLogInfo():
-    # Adobe Setup.app and AdobeUberInstaller don't provide progress output,
-    # so we're forced to do fancy log tailing...
-    global lastlogline
+    
+def getAdobeInstallLog():
+    '''Returns the current Adobe install log'''
     logpath = "/Library/Logs/Adobe/Installers"
     # find the most recently-modified log file
     p = subprocess.Popen(['/bin/ls', '-t1', logpath], 
@@ -291,16 +288,56 @@ def getAdobeInstallerLogInfo():
         firstitem = output.splitlines()[0]
         if firstitem.endswith(".log"):
             # get the last line of the most recently modified log
-            logfile = os.path.join(logpath, firstitem)
-            p = subprocess.Popen(['/usr/bin/tail', '-1', logfile], 
-                bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return os.path.join(logpath, firstitem)
+            
+    return None
+
+
+def getAdobeInstallProgressInfo(previous_completedpayloads,
+                                            previous_payloadname):
+    '''Returns the number of completed Adobe payloads'''
+    completedpayloads = previous_completedpayloads
+    lastpayloadname = previous_payloadname
+    
+    logfile = getAdobeInstallLog()
+    if logfile:
+        # get number of completed payloads
+        regex = "(Completing installation for payload at )"
+        regex += "|"
+        regex += "(Physical payload uninstall result)"
+        cmd = ['/usr/bin/grep', '-c', "-E", regex, logfile]
+        p = subprocess.Popen(cmd, bufsize=1, 
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, err) = p.communicate()
+        if output:
+            try:
+                completedpayloads = int(output.rstrip("\n"))
+            except ValueError:
+                completedpayloads = previous_completedpayloads
+                
+        if completedpayloads > previous_completedpayloads:
+            # now try to get the name of the most recently completed payload
+            regex = " for payload \{.*\} "
+            cmd = ['/usr/bin/grep', "-E", regex, logfile]
+            p = subprocess.Popen(cmd, bufsize=1, 
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
             (output, err) = p.communicate()
-            logline = output.rstrip('\n')
-            # is it different than the last time we checked?
-            if logline != lastlogline:
-                lastlogline = logline
-                return logline
-    return ''
+            if output:
+                # start with the last line of the output
+                # and work backwards until we find a name
+                lines = output.splitlines()
+                lines.reverse()
+                for line in lines:
+                    parts = line.split("}",1)
+                    if len(parts) == 2:
+                        if parts[1]:
+                            name = parts[1].lstrip()
+                            if not name.startswith("returned :"):
+                                lastpayloadname = name
+                                break
+            
+    return (completedpayloads, lastpayloadname)
 
 
 def countPayloads(dirpath):
@@ -324,7 +361,9 @@ def countPayloads(dirpath):
 
 def getPercent(current, maximum):
     # returns a value useful with MunkiStatus
-    if current < 0:
+    if maximum == 0:
+        percentdone = -1
+    elif current < 0:
         percentdone = -1
     elif current > maximum:
         percentdone = -1
@@ -386,7 +425,7 @@ def processRunning(processname):
         (pid, proc) = line.split(None,1)
         if proc.find(processname) != -1:
             return pid
-
+            
     return 0
 
 
@@ -396,45 +435,31 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
     if munkicommon.munkistatusoutput and not number_of_payloads:
         # indeterminate progress bar
         munkistatus.percent(-1)
-    payload_completed_count = 0
+    
     p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                         
+    payload_completed_count = 0
+    payloadname = ""
     while (p.poll() == None): 
         time.sleep(1)
-        loginfo = getAdobeInstallerLogInfo()
-        # CS3/CS4 installing
-        if loginfo.startswith("Mounting payload image at "):
-            # increment payload_completed_count
-            payload_completed_count = payload_completed_count + 1
-            if munkicommon.munkistatusoutput and number_of_payloads:
+        (payload_completed_count, payloadname) = \
+             getAdobeInstallProgressInfo(payload_completed_count, payloadname)
+        if payload_completed_count > 0:
+            if payloadname:
+                payloadinfo = " - " + payloadname
+            else:
+                payloadinfo = ""
+            if number_of_payloads:
+                munkicommon.display_status("Completed payload %s of %s%s" %
+                   (payload_completed_count, number_of_payloads, payloadinfo))
+            else:
+                munkicommon.display_status("Completed payload %s%s" %
+                                       (payload_completed_count, payloadinfo))
+            if munkicommon.munkistatusoutput:
                 munkistatus.percent(getPercent(payload_completed_count,
-                                               number_of_payloads))
-            payloadpath = loginfo[26:]
-            payloadfilename = os.path.basename(payloadpath)
-            payloadname = os.path.splitext(payloadfilename)[0]
-            munkicommon.display_status("Installing payload: %s" %
-                                        payloadname)
-                                        
-        # CS5 installing
-        if loginfo.startswith("Request to install payload"):
-            # increment payload_completed_count
-            payload_completed_count = payload_completed_count + 1
-            if munkicommon.munkistatusoutput and number_of_payloads:
-                munkistatus.percent(getPercent(payload_completed_count,
-                                               number_of_payloads))
-            munkicommon.display_status("Installing Adobe payload %s" %
-                                      payload_completed_count)
-            
-        # CS3/CS4 uninstalling
-        if loginfo.startswith("Physical payload uninstall result"):
-            # increment payload_completed_count
-            payload_completed_count = payload_completed_count + 1
-            if munkicommon.munkistatusoutput and number_of_payloads:
-                munkistatus.percent(getPercent(payload_completed_count,
-                                               number_of_payloads))
-            munkicommon.display_status("Removed Adobe payload %s" %
-                                        payload_completed_count)
-                                        
+                                                          number_of_payloads))
+        
         # Adobe AIR Installer workaround/hack
         # CSx installs at the loginwindow hang when Adobe AIR is installed.
         # So we check for this and kill the process. Ugly.
@@ -448,7 +473,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
                     munkicommon.log("Killing Adobe AIR Installer")
                     retcode = subprocess.call(
                         ["/usr/bin/killall", "-KILL", "Adobe AIR Installer"])
-            
+                        
     # run of tool completed  
     retcode = p.poll()
     
