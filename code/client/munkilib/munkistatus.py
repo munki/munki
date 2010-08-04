@@ -29,16 +29,16 @@ import socket
 import time
 
 # module socket variable
-s = None
+SOCK = None
 
 
 def launchMunkiStatus():
-    # use launchd KeepAlive path so it launches from a launchd agent
-    # in the correct context.
-    # this is more complicated to set up, but makes Apple (and launchservices)
-    # happier.
-    # there needs to be a launch agent that is triggered when the launchfile
-    # is created; and that launch agent then runs MunkiStatus.app.
+    '''Uses launchd KeepAlive path so it launches from a launchd agent
+    in the correct context.
+    This is more complicated to set up, but makes Apple (and launchservices)
+    happier.
+    There needs to be a launch agent that is triggered when the launchfile
+    is created; and that launch agent then runs MunkiStatus.app.'''
     launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     cmd = ['/usr/bin/touch', launchfile]
     retcode = subprocess.call(cmd)
@@ -48,53 +48,46 @@ def launchMunkiStatus():
 
 
 def launchAndConnectToMunkiStatus():
-    global s
+    '''Connects to the MunkiStatus socket, launching MunkiStatus if needed'''
+    global SOCK
     if not getMunkiStatusPID():
-        pass
         launchMunkiStatus()
     socketpath = getMunkiStatusSocket()
     if socketpath:
         try:
-            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            s.connect(socketpath)
-        except:
+            SOCK = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            SOCK.connect(socketpath)
+        except IOError:
             # some problem; kill the socket
-            s = None
+            SOCK = None
     #else:
         #raise Exception("Could not open connection to MunkiStatus.app")
 
 
-def sendCommand(message):
-    global s
-    if s == None:
+def sendCommand(command_text):
+    '''Send a command to MunkiStatus'''
+    global SOCK
+    if SOCK == None:
         launchAndConnectToMunkiStatus()
-    if s:        
+    if SOCK:        
         try:
             # we can send only a single line.
-            messagelines = message.splitlines(True)
-            s.send(messagelines[0].encode('UTF-8'))
+            messagelines = command_text.splitlines(True)
+            SOCK.send(messagelines[0].encode('UTF-8'))
         except socket.error, (err, errmsg):
             if err == 32 or err == 9:
                 # broken pipe
-                s.close()
-                s = None
-                # MunkiStatus must have died; try relaunching
-                #launchAndConnectToMunkiStatus()
-                #if s:
-                #    # try again!
-                #    try:
-                #        s.send(messagelines[0].encode('UTF-8'))
-                #    except socket.error, (err, errmsg):
-                #        # ok, we give up.
-                #        pass
+                SOCK.close()
+                SOCK = None
 
 
 def readResponse():
-    global s
-    if s:
+    '''Read a response from MunkiStatsu'''
+    global SOCK
+    if SOCK:
         try:
             # our responses are really short
-            data = s.recv(256)
+            data = SOCK.recv(256)
             return int(data.rstrip('\n'))
         except ValueError:
             # MunkiStatus returned an illegal value
@@ -102,37 +95,40 @@ def readResponse():
             return 0
         except socket.error, (err, errmsg):
             print err, errmsg
-            s.close()
-            s = None
+            SOCK.close()
+            SOCK = None
             
     return ''
 
 
 def getPIDforProcessName(processname):
+    '''Returns a process ID for processname'''
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                            stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True: 
-        line =  p.stdout.readline().decode('UTF-8')
-        if not line and (p.poll() != None):
+        line =  proc.stdout.readline().decode('UTF-8')
+        if not line and (proc.poll() != None):
             break
-        line = line.rstrip('\n');
+        line = line.rstrip('\n')
         if line:
-            (pid, proc) = line.split(None,1)
-            if proc.find(processname) != -1:
+            (pid, process) = line.split(None, 1)
+            if process.find(processname) != -1:
                 return str(pid)
-
+                
     return 0
 
 
 def getMunkiStatusPID():
-    return \
-      getPIDforProcessName(
-    "Managed Software Update.app/Contents/MacOS/Managed Software Update") \
-     or getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
+    '''Gets the process ID for Managed Software Update'''
+    return getPIDforProcessName(
+      "Managed Software Update.app/Contents/MacOS/Managed Software Update") \
+      or getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
 
 
 def getMunkiStatusSocket():
+    '''Returns the path to the MunkiStatus socket'''
     pid = None
     for i in range(8):
         pid = getMunkiStatusPID()
@@ -210,6 +206,7 @@ def enableStopButton():
 
 
 def restartAlert():
+    '''Tells MunkiStatus to display a restart alert.'''
     try:
         sendCommand(u"ACTIVATE: \n")
         sendCommand(u"RESTARTALERT: \n")
@@ -220,10 +217,10 @@ def restartAlert():
 
 def getStopButtonState():
     '''Returns 1 if the stop button has been clicked, 0 otherwise.'''
-    if not s:
+    if not SOCK:
         return 0
     try:
-        s.send(u"GETSTOPBUTTONSTATE: \n")
+        SOCK.send(u"GETSTOPBUTTONSTATE: \n")
         state = readResponse()
         if state:
             return state
@@ -235,12 +232,10 @@ def getStopButtonState():
 
 def quit():
     '''Tells the status app that we're done.'''
-    global s
+    global SOCK
     try:
-        s.send(u"QUIT: \n")
-        s.close()
-        s = None
+        SOCK.send(u"QUIT: \n")
+        SOCK.close()
+        SOCK = None
     except (AttributeError, IOError):
         pass
-        #if getMunkiStatusPID():
-            #retcode = subprocess.call(["/usr/bin/killall", "MunkiStatus"])
