@@ -38,10 +38,10 @@ from munkilib import FoundationPlist
 def getIdleSeconds():
     '''Gets the number of seconds since the last mouse or keyboard event'''
     cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4']
-    p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
-    ioreglines = output.splitlines()
+    proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = proc.communicate()
+    ioreglines = str(output).splitlines()
     for line in ioreglines:
         if "Idle" in line:
             parts = line.split()
@@ -49,13 +49,13 @@ def getIdleSeconds():
             
             
 def networkUp():
-    # Determine if the network is up by looking for any non-loopback
-    # internet network interfaces.
+    '''Determine if the network is up by looking for any non-loopback
+       internet network interfaces.'''
     cmd = ['/sbin/ifconfig', "-a", "inet"]
-    p = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
-    lines = output.splitlines()
+    proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = proc.communicate()
+    lines = str(output).splitlines()
     for line in lines:
         if "inet" in line:
             parts = line.split()
@@ -66,11 +66,12 @@ def networkUp():
     
     
 def clearLastNotifiedDate():
+    '''Clear the last date the user was notified of updates.'''
     try:
-        pl = FoundationPlist.readPlist(
+        plist = FoundationPlist.readPlist(
                                 "/Library/Preferences/ManagedInstalls.plist")
-        if pl:
-            if 'LastNotifiedDate' in pl:
+        if plist:
+            if 'LastNotifiedDate' in plist:
                 cmd = ['/usr/bin/defaults', 'delete',
                        '/Library/Preferences/ManagedInstalls', 
                        'LastNotifiedDate']
@@ -80,18 +81,21 @@ def clearLastNotifiedDate():
         
         
 def createDirsIfNeeded(dirlist):
+    '''Create any missing directories needed by the munki tools'''
     for directory in dirlist:
         if not os.path.exists(directory):
             try:
                 os.mkdir(directory)
             except (OSError, IOError):
-                print >>sys.stderr, "ERROR: Could not create %s" % directory
+                print >> sys.stderr, "ERROR: Could not create %s" % directory
                 return False
 
     return True
         
         
 def initMunkiDirs():
+    '''Figure out where our data directories should be and create them
+       if needed.'''
     managedinstallprefs = munkicommon.prefs()
     ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
     manifestsdir = os.path.join(ManagedInstallDir, "manifests")
@@ -99,7 +103,7 @@ def initMunkiDirs():
     cachedir = os.path.join(ManagedInstallDir, "Cache")
     logdir = os.path.join(ManagedInstallDir, "Logs")
     
-    if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir,        
+    if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir,
                                cachedir, logdir]):
         munkicommon.display_error("Could not create needed directories "
                                   "in %s" % ManagedInstallDir)
@@ -108,7 +112,8 @@ def initMunkiDirs():
         return True
 
 
-def doInstallTasks():    
+def doInstallTasks():
+    '''Perform our installation/removal tasks.'''
     # first, clear the last notified date
     # so we can get notified of new changes after this round
     # of installs
@@ -151,6 +156,7 @@ def doInstallTasks():
 
         
 def doRestart():
+    '''Handle the need for a restart.'''
     restartMessage = "Software installed or removed requires a restart."
     munkicommon.log(restartMessage)
     if munkicommon.munkistatusoutput:
@@ -179,14 +185,15 @@ def doRestart():
 
 
 def munkiUpdatesAvailable():
+    '''Return True if there are available updates.'''
     updatesavailable = False
     installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'), 
                                'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
-            pl = FoundationPlist.readPlist(installinfo)
-            updatesavailable = len(pl.get('removals',[])) or \
-                               len(pl.get('managed_installs',[]))
+            plist = FoundationPlist.readPlist(installinfo)
+            updatesavailable = len(plist.get('removals', [])) or \
+                               len(plist.get('managed_installs', []))
         except (AttributeError,         
                 FoundationPlist.NSPropertyListSerializationException):
             munkicommon.display_error("Install info at %s is invalid." %
@@ -195,7 +202,7 @@ def munkiUpdatesAvailable():
 
 
 def recordUpdateCheckResult(result):
-    # record last check date and result
+    '''Record last check date and result'''
     now = NSDate.new()
     cmd = ['/usr/bin/defaults', 'write', 
            '/Library/Preferences/ManagedInstalls', 
@@ -205,10 +212,10 @@ def recordUpdateCheckResult(result):
            '/Library/Preferences/ManagedInstalls', 
            'LastCheckResult', '-int', str(result)]
     retcode = subprocess.call(cmd)
-    return
    
     
 def notifyUserOfUpdates():
+    '''Notify the logged-in user of available updates.'''
     # called when options.auto == True
     # someone is logged in, and we have updates.
     # if we haven't notified in a while, notify:
@@ -248,30 +255,32 @@ def notifyUserOfUpdates():
 
 
 def runPreOrPostFlightScript(script, runtype="custom"):
+    '''Run a pre- or postflight script and return its exit status.'''
     if os.path.exists(script): 
         if os.access(script, os.X_OK):
             munkicommon.log("Running %s with runtype: %s..." %
                                                     (script, runtype))
             cmd = [script, runtype]
-            p = subprocess.Popen(cmd, shell=False,
-                                stdin=subprocess.PIPE, 
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-            (output, err) = p.communicate()
+            proc = subprocess.Popen(cmd, shell=False,
+                                    stdin=subprocess.PIPE, 
+                                    stdout=subprocess.PIPE, 
+                                    stderr=subprocess.PIPE)
+            (output, err) = proc.communicate()
             if output:
                 munkicommon.display_info(output)
             if err:
                 munkicommon.display_info(output)
-            return p.returncode
+            return proc.returncode
         else:
             munkicommon.display_warning("%s not executable" % script)
     return 0
     
 
 def main():
+    '''Main'''
     # check to see if we're root
     if os.geteuid() != 0:
-        print >>sys.stderr, "You must run this as root!"
+        print >> sys.stderr, "You must run this as root!"
         exit(-1)
         
     # save this for later
@@ -318,7 +327,7 @@ def main():
                "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
     installatstartupflag = \
                "/Users/Shared/.com.googlecode.munki.installatstartup"
-    installatlogoutflag = "/private/tmp/com.googlecode.munki.installatlogout"          
+    installatlogoutflag = "/private/tmp/com.googlecode.munki.installatlogout"
     
     if options.version:
         print munkicommon.get_version()
@@ -348,10 +357,10 @@ def main():
         flagfiles = [checkandinstallatstartupflag,
                         installatstartupflag,
                         installatlogoutflag]
-        for f in flagfiles:
-            if os.path.exists(f):
+        for filename in flagfiles:
+            if os.path.exists(filename):
                 user_triggered = True
-                if f == checkandinstallatstartupflag:
+                if filename == checkandinstallatstartupflag:
                     runtype = "checkandinstallatstartup"
                     options.installonly = False
                     options.auto = True
@@ -360,13 +369,13 @@ def main():
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status("Waiting for network...")
-                    for x in range(5):
+                    for i in range(5):
                         if networkUp():
                             break
                         time.sleep(2)
                 else:
                     # delete triggerfile if _not_ checkandinstallatstartup
-                    os.unlink(f)
+                    os.unlink(filename)
         if not user_triggered:
             exit(0)
             
@@ -401,7 +410,7 @@ def main():
         options.verbose = 0
                            
     if options.checkonly and options.installonly:
-        print >>sys.stderr, \
+        print >> sys.stderr, \
               "--checkonly and --installonly options are mutually exclusive!"
         exit(-1)
         
@@ -452,7 +461,7 @@ def main():
                 
             munkistatus.quit()
         else:
-            print >>sys.stderr, \
+            print >> sys.stderr, \
               "Another instance of %s is running. Exiting." % myname
         exit(0)
         
@@ -490,7 +499,7 @@ def main():
     updatecheckresult = None
     if not options.installonly:
         try:
-            updatecheckresult = updatecheck.check(id=options.id)
+            updatecheckresult = updatecheck.check(client_id=options.id)
         except:
             munkicommon.display_error("Unexpected error in updatecheck:")
             munkicommon.display_error(traceback.format_exc())
