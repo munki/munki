@@ -56,18 +56,18 @@ def removeBundleRelocationInfo(pkgpath):
             except OSError:
                 pass
                 
-        pl = {}
+        plist = {}
         infoplist = os.path.join(pkgpath, "Contents/Info.plist")
         if os.path.exists(infoplist):
             try:
-                pl = FoundationPlist.readPlist(infoplist)
+                plist = FoundationPlist.readPlist(infoplist)
             except FoundationPlist.NSPropertyListSerializationException:
                 pass
                 
-        if 'IFPkgPathMappings' in pl:
-            del pl['IFPkgPathMappings']
+        if 'IFPkgPathMappings' in plist:
+            del plist['IFPkgPathMappings']
             try:
-                FoundationPlist.writePlist(pl, infoplist)
+                FoundationPlist.writePlist(plist, infoplist)
                 munkicommon.display_debug1(
                         "Removed IFPkgPathMappings")
             except FoundationPlist.NSPropertyListWriteException:
@@ -112,10 +112,11 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = p.communicate()
-    restartaction = output.decode('UTF-8').rstrip("\n")
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                            stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = proc.communicate()
+    restartaction = str(output).decode('UTF-8').rstrip("\n")
     if restartaction == "RequireRestart" or \
        restartaction == "RecommendRestart":
         munkicommon.display_status("%s requires a restart after installation."
@@ -129,12 +130,13 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
                                   '-target', '/']
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    p = subprocess.Popen(cmd, shell=False, bufsize=1, stdin=subprocess.PIPE, 
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                            stdin=subprocess.PIPE, 
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     while True: 
-        installinfo =  p.stdout.readline().decode('UTF-8')
-        if not installinfo and (p.poll() != None):
+        installinfo =  proc.stdout.readline().decode('UTF-8')
+        if not installinfo and (proc.poll() != None):
             break
         if installinfo.startswith("installer:"):
             # save all installer output in case there is
@@ -182,7 +184,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
             else:
                 munkicommon.log(msg)
 
-    retcode = p.poll()
+    retcode = proc.poll()
     if retcode:
         munkicommon.display_status("Install of %s failed." % packagename)
         munkicommon.display_error("-"*78)
@@ -282,13 +284,13 @@ def copyAppFromDMG(dmgpath):
             if retcode == 0:
                 # remove com.apple.quarantine attribute from copied app
                 cmd = ["/usr/bin/xattr", destpath]
-                p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
                                      stderr=subprocess.PIPE)
-                (out, err) = p.communicate()
+                (out, err) = proc.communicate()
                 if out:
-                    xattrs = out.splitlines()
+                    xattrs = str(out).splitlines()
                     if "com.apple.quarantine" in xattrs:
                         err = subprocess.call(["/usr/bin/xattr", "-d", 
                                                "com.apple.quarantine", 
@@ -393,13 +395,13 @@ def copyFromDMG(dmgpath, itemlist):
             if retcode == 0:
                 # remove com.apple.quarantine attribute from copied item
                 cmd = ["/usr/bin/xattr", destitem]
-                p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
                                      stderr=subprocess.PIPE)
-                (out, err) = p.communicate()
+                (out, err) = proc.communicate()
                 if out:
-                    xattrs = out.splitlines()
+                    xattrs = str(out).splitlines()
                     if "com.apple.quarantine" in xattrs:
                         err = subprocess.call(["/usr/bin/xattr", "-d", 
                                                "com.apple.quarantine", 
@@ -716,13 +718,13 @@ def processRemovals(removallist):
                 
                 cmd = uninstallmethod
                 uninstalleroutput = []
-                p = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
                                      stderr=subprocess.STDOUT)
 
-                while (p.poll() == None): 
-                    msg =  p.stdout.readline().decode('UTF-8')
+                while (proc.poll() == None): 
+                    msg =  proc.stdout.readline().decode('UTF-8')
                     # save all uninstaller output in case there is
                     # an error so we can dump it to the log
                     uninstalleroutput.append(msg)
@@ -733,7 +735,7 @@ def processRemovals(removallist):
                     else:
                         print msg
                 
-                retcode = p.poll()
+                retcode = proc.poll()
                 if retcode:
                     message = "Uninstall of %s failed." % name
                     print >> sys.stderr, message
@@ -790,7 +792,7 @@ def run():
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
-            pl = FoundationPlist.readPlist(installinfo)
+            plist = FoundationPlist.readPlist(installinfo)
         except FoundationPlist.NSPropertyListSerializationException:
             print >> sys.stderr, "Invalid %s" % installinfo
             return -1
@@ -802,9 +804,9 @@ def run():
         except (OSError, IOError):
             munkicommon.display_warning("Could not remove %s" % installinfo)
         
-        if "removals" in pl:
+        if "removals" in plist:
             # filter list to items that need to be removed
-            removallist = [item for item in pl['removals'] 
+            removallist = [item for item in plist['removals'] 
                                 if item.get('installed')]
             munkicommon.report['ItemsToRemove'] = removallist
             if removallist:
@@ -819,10 +821,10 @@ def run():
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
                 removals_need_restart = processRemovals(removallist)
-        if "managed_installs" in pl:
+        if "managed_installs" in plist:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
-                installlist = [item for item in pl['managed_installs'] 
+                installlist = [item for item in plist['managed_installs'] 
                                     if item.get('installed') == False]
                 munkicommon.report['ItemsToInstall'] = installlist
                 if installlist:
