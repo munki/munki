@@ -34,34 +34,37 @@ import munkistatus
 import installer
 
 
-OLDSUSSERVER = ''
+def getCurrentSoftwareUpdateServer():
+    '''Returns the current Apple SUS CatalogURL'''
+    cmd = ['/usr/bin/defaults', 'read',
+           '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if proc.returncode == 0:
+        return str(out).rstrip('\n')
+    else:
+        return ''
+        
+        
 def selectSoftwareUpdateServer():
     '''Switch to our preferred Software Update Server if supplied'''
-    global OLDSUSSERVER
     if munkicommon.pref('SoftwareUpdateServerURL'):
-        cmd = ['/usr/bin/defaults', 'read',
-               '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-        (out, err) = proc.communicate()
-        if proc.returncode == 0:
-            OLDSUSSERVER = str(out).rstrip('\n')
-            
         cmd = ['/usr/bin/defaults', 'write',
                '/Library/Preferences/com.apple.SoftwareUpdate',
                'CatalogURL', munkicommon.pref('SoftwareUpdateServerURL')]
         retcode = subprocess.call(cmd)
 
 
-def restoreSoftwareUpdateServer():
-    '''Switch back to original Software Update server'''
+def restoreSoftwareUpdateServer(theurl):
+    '''Switch back to original Software Update server (if there was one)'''
     if munkicommon.pref('SoftwareUpdateServerURL'):
-        if OLDSUSSERVER:
+        if theurl:
             cmd = ['/usr/bin/defaults', 'write',
                    '/Library/Preferences/com.apple.SoftwareUpdate',
-                   'CatalogURL', OLDSUSSERVER]
+                   'CatalogURL', theurl]
         else:
             cmd = ['/usr/bin/defaults', 'delete',
                    '/Library/Preferences/com.apple.SoftwareUpdate', 
@@ -88,7 +91,9 @@ def setupSoftwareUpdateCheck():
     
 def checkForSoftwareUpdates():
     '''Does our Apple Software Update check'''
-    #switch to a different SUS server if specified
+    # save the current SUS URL
+    original_url = getCurrentSoftwareUpdateServer()
+    # switch to a different SUS server if specified
     selectSoftwareUpdateServer()
     # get the OS version 
     osvers = int(os.uname()[2].split('.')[0])
@@ -167,7 +172,7 @@ def checkForSoftwareUpdates():
         os.chmod(softwareupdateapp, oldmode)
     
     # switch back to the original SUS server
-    restoreSoftwareUpdateServer()
+    restoreSoftwareUpdateServer(original_url)
     return retcode
     
     
