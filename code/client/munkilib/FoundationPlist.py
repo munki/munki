@@ -45,11 +45,14 @@ from Foundation import NSData, \
                        NSPropertyListSerialization, \
                        NSPropertyListMutableContainers, \
                        NSPropertyListXMLFormat_v1_0
+                       
+class FoundationPlistException(Exception):
+    pass
 
-class NSPropertyListSerializationException(Exception):
+class NSPropertyListSerializationException(FoundationPlistException):
     pass
     
-class NSPropertyListWriteException(Exception):
+class NSPropertyListWriteException(FoundationPlistException):
     pass
 
 def readPlist(filepath):
