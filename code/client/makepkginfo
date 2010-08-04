@@ -39,7 +39,6 @@ import optparse
 from optparse import OptionValueError
 from distutils import version
 import subprocess
-import hashlib
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
@@ -50,16 +49,21 @@ def DMGhasSLA(dmgpath):
     '''Returns true if dmg has a Software License Agreement.
     These dmgs cannot be attached without user intervention'''
     hasSLA = False
-    p = subprocess.Popen(['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
-            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (plist, err) = p.communicate()
+    proc = subprocess.Popen(
+                ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
+                bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (pliststr, err) = proc.communicate()
     if err:
-        print >>sys.stderr, "hdiutil error %s with image %s." % (err, dmgpath)
-    if plist:
-        pl = FoundationPlist.readPlistFromString(plist)
-        properties = pl.get('Properties')
-        if properties:
-            hasSLA = properties.get('Software License Agreement',False)
+        print >> sys.stderr, ("hdiutil error %s with image %s." 
+                                                         % (err, dmgpath))
+    if pliststr:
+        try:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            properties = plist.get('Properties')
+            if properties:
+                hasSLA = properties.get('Software License Agreement', False)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
     
     return hasSLA
 
@@ -73,16 +77,16 @@ def getCatalogInfoFromDmg(dmgpath, options):
     To-do: handle multiple installer items on a disk image(?)
     """
     if DMGhasSLA(dmgpath):
-        print >>sys.stderr, \
-        "%s has an attached Software License Agreement." % dmgpath
-        print >>sys.stderr, \
+        print >> sys.stderr, \
+            "%s has an attached Software License Agreement." % dmgpath
+        print >> sys.stderr, \
         "It cannot be automatically mounted. You'll need to create a new dmg."
         exit(-1)
         
     cataloginfo = None
     mountpoints = munkicommon.mountdmg(dmgpath)
     if not mountpoints:
-        print >>sys.stderr, "Could not mount %s!" % dmgpath
+        print >> sys.stderr, "Could not mount %s!" % dmgpath
         exit(-1)
         
     if options.pkgname:
@@ -127,7 +131,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
             if os.path.exists(itempath):
                 iteminfo = getiteminfo(itempath)
             else:
-                print >>sys.stderr, \
+                print >> sys.stderr, \
                     "%s not found on disk image." % item
         else:
             # no item specified; look for an application at root of
@@ -191,30 +195,12 @@ def getBundleInfo(path):
         
     if os.path.exists(infopath):
         try:
-            pl = FoundationPlist.readPlist(infopath)
-            return pl
+            plist = FoundationPlist.readPlist(infopath)
+            return plist
         except FoundationPlist.NSPropertyListSerializationException:
             pass
 
     return None
-
-
-def getmd5hash(filename):
-    """
-    Returns hex of MD5 checksum of a file
-    """
-    if not os.path.isfile(filename):
-        return "NOT A FILE"
-
-    f = open(filename, 'rb')
-    m = hashlib.md5()
-    while 1:
-        chunk = f.read(2**16)
-        if not chunk:
-            break
-        m.update(chunk)
-    f.close()
-    return m.hexdigest()
 
 
 def getiteminfo(itempath):
@@ -265,7 +251,7 @@ def getiteminfo(itempath):
         infodict['type'] = 'file'
         infodict['path'] = itempath
         if os.path.isfile(itempath):
-            infodict['md5checksum'] = getmd5hash(itempath)
+            infodict['md5checksum'] = munkicommon.getmd5hash(itempath)
     return infodict
 
 
@@ -544,5 +530,5 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+    main()
 

@@ -29,6 +29,7 @@ import subprocess
 import tempfile
 import shutil
 import urllib2
+import hashlib
 from distutils import version
 from xml.dom import minidom
 
@@ -445,6 +446,24 @@ def unmountdmg(mountpoint):
         if retcode:
             display_warning("Failed to unmount %s" % mountpoint)
         
+
+def getmd5hash(filename):
+    """
+    Returns hex of MD5 checksum of a file
+    """
+    if not os.path.isfile(filename):
+        return "NOT A FILE"
+
+    fileobj = open(filename, 'rb')
+    md5hash = hashlib.md5()
+    while 1:
+        chunk = fileobj.read(2**16)
+        if not chunk:
+            break
+        md5hash.update(chunk)
+    fileobj.close()
+    return md5hash.hexdigest()
+
         
 def isApplication(pathname):
     '''Returns true if path appears to be an OS X application'''
