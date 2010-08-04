@@ -160,7 +160,7 @@ def checkForSoftwareUpdates():
                 LastResultCode = int(str(out).rstrip('\n'))
                 if LastResultCode > 2:
                     retcode = LastResultCode
-            except ValueError:
+            except (ValueError, TypeError):
                 retcode = 0
             
     if retcode:
@@ -359,7 +359,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
                 lastSUcheck = NSDate.dateWithString_(lastSUcheckString)
                 interval = 24 * 60 * 60
                 nextSUcheck = lastSUcheck.dateByAddingTimeInterval_(interval)
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         if now.timeIntervalSinceDate_(nextSUcheck) >= 0:
             retcode = checkForSoftwareUpdates()
