@@ -89,7 +89,7 @@ def readResponse():
             # our responses are really short
             data = SOCK.recv(256)
             return int(data.rstrip('\n'))
-        except ValueError:
+        except (ValueError, TypeError):
             # MunkiStatus returned an illegal value
             # ignore for now
             return 0
