@@ -321,7 +321,7 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
         if output:
             try:
                 completedpayloads = int(str(output).rstrip("\n"))
-            except ValueError:
+            except (ValueError, TypeError):
                 completedpayloads = previous_completedpayloads
                 
         if completedpayloads > previous_completedpayloads:
@@ -445,8 +445,8 @@ def processRunning(processname):
             return pid
             
     return 0
-
-
+    
+    
 def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
     '''An abstraction of the tasks for running Adobe Setup,
     AdobeUberInstaller, AdobeUberUninstaller, AdobeDeploymentManager, etc'''
@@ -506,7 +506,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
             if retcode == 0:
                 try:
                     retcode = int(line[11:])
-                except ValueError:
+                except (ValueError, TypeError):
                     retcode = -1
         
     if retcode != 0 and retcode != 8:
