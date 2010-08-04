@@ -214,35 +214,35 @@ def getiteminfo(itempath):
     if munkicommon.isApplication(itempath):
         infodict['type'] = 'application'
         infodict['path'] = itempath
-        pl = getBundleInfo(itempath)
-        if 'CFBundleName' in pl:
-            infodict['CFBundleName'] = pl['CFBundleName']
-        if 'CFBundleIdentifier' in pl:
-            infodict['CFBundleIdentifier'] = pl['CFBundleIdentifier']
+        plist = getBundleInfo(itempath)
+        if 'CFBundleName' in plist:
+            infodict['CFBundleName'] = plist['CFBundleName']
+        if 'CFBundleIdentifier' in plist:
+            infodict['CFBundleIdentifier'] = plist['CFBundleIdentifier']
         infodict['CFBundleShortVersionString'] = \
-            munkicommon.getVersionString(pl)
-        if 'LSMinimumSystemVersion' in pl:
-            infodict['minosversion'] = pl['LSMinimumSystemVersion']
-        elif 'SystemVersionCheck:MinimumSystemVersion' in pl:
+            munkicommon.getVersionString(plist)
+        if 'LSMinimumSystemVersion' in plist:
+            infodict['minosversion'] = plist['LSMinimumSystemVersion']
+        elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
             infodict['minosversion'] = \
-                pl['SystemVersionCheck:MinimumSystemVersion']
+                plist['SystemVersionCheck:MinimumSystemVersion']
             
-    elif os.path.exists(os.path.join(itempath,'Contents','Info.plist')) or \
-         os.path.exists(os.path.join(itempath,'Resources','Info.plist')):
+    elif os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or \
+         os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist')):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
-        pl = getBundleInfo(itempath)
+        plist = getBundleInfo(itempath)
         infodict['CFBundleShortVersionString'] = \
-            munkicommon.getVersionString(pl)
+            munkicommon.getVersionString(plist)
             
     elif itempath.endswith("Info.plist") or \
          itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
         infodict['path'] = itempath
         try:
-            pl = FoundationPlist.readPlist(itempath)
+            plist = FoundationPlist.readPlist(itempath)
             infodict['CFBundleShortVersionString'] = \
-                munkicommon.getVersionString(pl)
+                munkicommon.getVersionString(plist)
         except FoundationPlist.NSPropertyListSerializationException:
             pass
         
@@ -256,8 +256,8 @@ def getiteminfo(itempath):
 
 
 def check_mode(option, opt, value, parser):
-    # callback to check --mode options
-    modes = value.lower().replace(',',' ').split()
+    '''Callback to check --mode options'''
+    modes = value.lower().replace(',', ' ').split()
     value = None
     rex = re.compile("[augo]+[=+-][rstwxXugo]+")
     for mode in modes:
@@ -270,6 +270,7 @@ def check_mode(option, opt, value, parser):
 
 
 def main():
+    '''Main routine'''
     usage = "usage: %prog [options] [/path/to/installeritem]"
     p = optparse.OptionParser(usage=usage)
     p.add_option('--file', '-f', action="append",
@@ -334,7 +335,7 @@ def main():
                     Specifies in which catalog the item should appear. The 
                     default is 'testing'. Can be specified multiple times 
                     to add the item to multiple catalogs.''')
-    p.add_option('-o','--owner',
+    p.add_option('-o', '--owner',
                     metavar='USER',
                     dest='user',
                     help='''Optional flag.
@@ -344,7 +345,7 @@ def main():
                     owner of the item specified by the --item flag. 
                     The owner may be either a UID or a symbolic name. 
                     The owner will be set recursively on the item.''')
-    p.add_option('-g','--group',
+    p.add_option('-g', '--group',
                     metavar='GROUP',
                     dest='group',
                     help='''Optional flag.
@@ -354,7 +355,7 @@ def main():
                     group of the item specified by the --item flag. 
                     The group may be either a GID or a symbolic name. 
                     The group will be set recursively on the item.''')
-    p.add_option('-m','--mode',
+    p.add_option('-m', '--mode',
                     metavar='MODE',
                     dest='mode',
                     action='callback',
@@ -374,13 +375,13 @@ def main():
     if len(arguments) == 0 and \
         not (options.file or options.installxml or options.uninstallxml 
              or options.serialnumber):
-        print >>sys.stderr, \
+        print >> sys.stderr, \
             ("Need to specify an installer item (.pkg, .mpkg, .dmg) "
              "and/or --file and/or Adobe installer options!")
         exit(-1)
     
     if len(arguments) > 1:
-        print >>sys.stderr, \
+        print >> sys.stderr, \
             ("Can process only one installer item at a time. "
              "Ignoring additional installer items.")
     
@@ -396,8 +397,8 @@ def main():
             if os.path.isdir(item):
                 # need to walk the dir and add it all up
                 for (path, dirs, files) in os.walk(item):
-                    for f in files:
-                        filename = os.path.join(path, f)
+                    for name in files:
+                        filename = os.path.join(path, name)
                         # use os.lstat so we don't follow symlinks
                         itemsize += int(os.lstat(filename).st_size)
         
@@ -405,7 +406,7 @@ def main():
                 catinfo = getCatalogInfoFromDmg(item, options)
                 if (catinfo and 
                     catinfo.get('installer_type') == "AdobeCS5Installer"):
-                    print >>sys.stderr, (
+                    print >> sys.stderr, (
                         "This disk image appears to contain an Adobe CS5 "
                         "product install.\n"
                         "Please use Adobe Application Manager, Enterprise "
@@ -413,7 +414,7 @@ def main():
                         "for this product.")
                     exit(-1)
                 if not catinfo:
-                    print >>sys.stderr, \
+                    print >> sys.stderr, \
                         "Could not find a supported installer item in %s!" % \
                          item
                     exit(-1)
@@ -421,13 +422,13 @@ def main():
             elif item.endswith('.pkg') or item.endswith('.mpkg'):
                 catinfo = munkicommon.getPackageMetaData(item)
                 if not catinfo:
-                    print >>sys.stderr, \
+                    print >> sys.stderr, \
                         "%s doesn't appear to be a valid installer item!" % \
                          item
                     exit(-1)
             
             else:
-                print >>sys.stderr, "%s is not an installer package!" % item
+                print >> sys.stderr, "%s is not an installer package!" % item
                 exit(-1)
             
             catinfo['installer_item_size'] = int(itemsize/1024)
@@ -467,7 +468,7 @@ def main():
                     itemsize = int(os.path.getsize(uninstallerpath))
                     catinfo['uninstaller_item_size'] = int(itemsize/1024)
                 else:
-                    print >>sys.stderr, "No uninstaller at %s" % \
+                    print >> sys.stderr, "No uninstaller at %s" % \
                                         uninstallerpath
                     
             # some metainfo
@@ -475,7 +476,7 @@ def main():
                 catinfo['catalogs'] = options.catalog
             else:
                 catinfo['catalogs'] = ['testing']
-            if catinfo.get('receipts',None):
+            if catinfo.get('receipts', None):
                 catinfo['uninstallable'] = True
                 catinfo['uninstall_method'] = "removepackages"
         
@@ -487,7 +488,7 @@ def main():
             fitem = fitem.rstrip('/')
             if fitem.startswith('/Library/Receipts'):
                 # no receipts, please!
-                print >>sys.stderr, \
+                print >> sys.stderr, \
                     "Item %s appears to be a receipt. Skipping." % fitem
                 continue
             if os.path.exists(fitem):
@@ -508,7 +509,8 @@ def main():
                         maxfileversion = thisitemversion
                 installs.append(iteminfodict)
             else:
-                print >>sys.stderr, "Item %s doesn't exist. Skipping." % fitem
+                print >> sys.stderr, (
+                                "Item %s doesn't exist. Skipping." % fitem)
                             
     if catinfo:
         catinfo['autoremove'] = False
