@@ -458,18 +458,21 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
                             stdin=subprocess.PIPE, 
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                          
-    payload_completed_count = 0
+    old_payload_completed_count = 0
     payloadname = ""
     while (proc.poll() == None): 
         time.sleep(1)
         (payload_completed_count, payloadname) = \
-             getAdobeInstallProgressInfo(payload_completed_count, payloadname)
-        if payload_completed_count > 0:
+             getAdobeInstallProgressInfo(old_payload_completed_count,
+                                                                payloadname)
+        if payload_completed_count > old_payload_completed_count:
+            old_payload_completed_count = payload_completed_count
             if payloadname:
                 payloadinfo = " - " + payloadname
             else:
                 payloadinfo = ""
             if number_of_payloads:
+                
                 munkicommon.display_status("Completed payload %s of %s%s" %
                    (payload_completed_count, number_of_payloads, payloadinfo))
             else:
