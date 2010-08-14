@@ -579,7 +579,7 @@ def main():
                     # the loginwindow due to fast user switching
                     # so do nothing
                     pass
-                elif munkicommon.pref('SuppressUserNotification'):
+                elif not munkicommon.pref('SuppressUserNotification'):
                     # notify the current console user
                     notifyUserOfUpdates()
                 else:
