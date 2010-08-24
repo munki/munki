@@ -430,8 +430,8 @@ def findAdobeDeploymentManager(dirpath):
     return ''
     
     
-def processRunning(processname):
-    '''Returns process ID for a process name'''
+def getPID(processname):
+    '''Returns process ID for a command string'''
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
     proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
                             stdin=subprocess.PIPE, 
@@ -446,7 +446,33 @@ def processRunning(processname):
             
     return 0
     
-    
+
+secondsToLive = {}
+def killStupidProcesses():
+    '''A nasty bit of hackery to get Adobe CS5 AAMEE packages to install
+    when at the loginwindow.'''
+    stupid_processes = ["Adobe AIR Installer",
+                        "Adobe AIR Application Installer",
+                        "InstallAdobeHelp",
+                        "open -a /Library/Application Support/Adobe/SwitchBoard/SwitchBoard.app"]
+                        
+    for procname in stupid_processes:
+        pid = getPID(procname)
+        if pid:
+            if not pid in secondsToLive:
+                secondsToLive[pid] = 30
+            else:
+                secondsToLive[pid] = secondsToLive[pid] - 1
+                if secondsToLive[pid] == 0:
+                    # it's been running too long; kill it
+                    munkicommon.log("Killing PID %s: %s" % (pid, procname))
+                    os.kill(pid, 9)
+                    # remove this PID from our list
+                    del secondsToLive[pid]
+                    # only kill one process per invocation
+                    return
+
+
 def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
     '''An abstraction of the tasks for running Adobe Setup,
     AdobeUberInstaller, AdobeUberUninstaller, AdobeDeploymentManager, etc'''
@@ -489,13 +515,9 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
         if killAdobeAIR:
             if (not munkicommon.getconsoleuser() or
                    munkicommon.getconsoleuser() == u"loginwindow"):
-                # we're at the loginwindow. 
-                if processRunning("Adobe AIR Installer"):
-                    # Adobe AIR Installer is running, we should kill it
-                    munkicommon.log("Killing Adobe AIR Installer")
-                    retcode = subprocess.call(
-                        ["/usr/bin/killall", "-KILL", "Adobe AIR Installer"])
-                        
+                # we're at the loginwindow.
+                killStupidProcesses()
+                
     # run of tool completed  
     retcode = proc.poll()
     
@@ -653,9 +675,18 @@ def runAdobeCS5AAMEEInstall(dmgpath):
                                             os.path.join(tmpsetupdir, item))
                                             
         optionXMLfile = os.path.join(basepath, "optionXML.xml")
-        cmd = [deploymentmanager, '--optXMLPath=%s' % optionXMLfile,
+        if (not munkicommon.getconsoleuser() or
+               munkicommon.getconsoleuser() == u"loginwindow"):
+            # we're at the loginwindow, so we need to run the deployment
+            # manager in the loginwindow context using launchctl bsexec
+            loginwindowPID = getPID("loginwindow")
+            cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
+        else:
+            cmd = []
+               
+        cmd.extend([deploymentmanager, '--optXMLPath=%s' % optionXMLfile,
                 '--setupBasePath=%s' % tmpdir, '--installDirPath=/',
-                '--mode=install']
+                '--mode=install'])
                 
         munkicommon.display_status("Starting Adobe CS5 installer...")
         retcode = runAdobeInstallTool(cmd, number_of_payloads,
