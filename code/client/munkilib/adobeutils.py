@@ -466,7 +466,7 @@ def killStupidProcesses():
                 if secondsToLive[pid] == 0:
                     # it's been running too long; kill it
                     munkicommon.log("Killing PID %s: %s" % (pid, procname))
-                    os.kill(pid, 9)
+                    os.kill(int(pid), 9)
                     # remove this PID from our list
                     del secondsToLive[pid]
                     # only kill one process per invocation
