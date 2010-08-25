@@ -108,7 +108,10 @@ def getCatalogInfoFromDmg(dmgpath, options):
             # we found a package, but let's see if it's an Adobe CS5 install 
             # (AAMEE) package
             if 'receipts' in cataloginfo:
-                pkgid = cataloginfo['receipts'][0].get('packageid')
+                try:
+                    pkgid = cataloginfo['receipts'][0].get('packageid')
+                except IndexError:
+                    pkgid = ""
                 if pkgid.startswith("com.adobe.Enterprise.install"):
                     # we have an Adobe CS5 install package, process
                     # as Adobe install
