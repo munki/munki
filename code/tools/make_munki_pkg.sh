@@ -4,9 +4,11 @@
 # Builds an installer package for munki tools
 #
 
-
+# if you are building your own version of munki, you might
+# want to change the pkgid to reflect your organization
 PKGID=com.googlecode.munki
-VERS=0.6.0.640.0
+# set this to the version of your package
+VERS=0.6.0.664.0
 
 # set munkiroot to the root dir of your munki 'source'
 munkiroot="/Users/Shared/munki/munki"
@@ -65,7 +67,8 @@ mkdir -m 750 -p ./Library/Managed\ Installs/catalogs
 mkdir -m 755 -p ./Library/Managed\ Installs/manifests
 chown -R root:admin ./Library/Managed\ Installs
 
-/Developer/usr/bin/packagemaker --root . --id "$PKGID" --version "$VERS"  --no-recommend --out "$packagedir/munkitools-$VERS.pkg" --verbose --scripts "$munkiroot/code/other/munkipkgscripts"
+/Developer/usr/bin/packagemaker --root . --id "$PKGID" --version "$VERS"  --no-recommend --out "$packagedir/munkitools-$VERS.pkg" --verbose
+
 rm -f "$packagedir/munkitools-$VERS.pkg/Contents/Resources/TokenDefinitions.plist"
 defaults delete "$packagedir/munkitools-$VERS.pkg/Contents/Info" IFPkgPathMappings
 defaults write "$packagedir/munkitools-$VERS.pkg/Contents/Info" IFPkgFlagRestartAction "RequiredRestart"
