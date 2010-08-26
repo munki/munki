@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2010 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,8 +45,14 @@ from Foundation import NSData, \
                        NSPropertyListSerialization, \
                        NSPropertyListMutableContainers, \
                        NSPropertyListXMLFormat_v1_0
+                       
+class FoundationPlistException(Exception):
+    pass
 
-class NSPropertyListSerializationException(Exception):
+class NSPropertyListSerializationException(FoundationPlistException):
+    pass
+    
+class NSPropertyListWriteException(FoundationPlistException):
     pass
 
 def readPlist(filepath):
@@ -56,7 +62,7 @@ def readPlist(filepath):
     """
     plistData = NSData.dataWithContentsOfFile_(filepath)
     dataObject, plistFormat, error = \
-NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_( 
+NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(
                     plistData, NSPropertyListMutableContainers, None, None)
     if error:
         errmsg = "%s in file %s" % (error, filepath)
@@ -90,7 +96,8 @@ def writePlist(dataObject, filepath):
         if plistData.writeToFile_atomically_(filepath, True):
             return
         else:
-            raise Exception("Failed to write plist data to %s" % filepath)
+            raise NSPropertyListWriteException(
+                                "Failed to write plist data to %s" % filepath)
 
 
 def writePlistToString(rootObject):

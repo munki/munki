@@ -21,9 +21,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="390"/>
 			<integer value="29"/>
 			<integer value="633"/>
+			<integer value="390"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1102,7 +1102,7 @@
 																			<boolean value="NO"/>
 																			<integer value="1"/>
 																			<boolean value="NO"/>
-																			<string>Lucida Sans</string>
+																			<string>Lucida Grande</string>
 																			<string>Lucida Grande</string>
 																			<string>Lucida Grande</string>
 																		</object>
@@ -1669,7 +1669,7 @@
 				<string key="NSWindowTitle">Managed Software Update</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3000, 123}</string>
+				<string key="NSWindowContentMaxSize">{1024, 123}</string>
 				<string key="NSWindowContentMinSize">{532, 123}</string>
 				<object class="NSView" key="NSWindowView" id="218108844">
 					<reference key="NSNextResponder"/>
@@ -1684,14 +1684,14 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="837338071">
 								<int key="NSCellFlags">-2080244224</int>
-								<int key="NSCellFlags2">134217728</int>
+								<int key="NSCellFlags2">167772160</int>
 								<string key="NSContents">Stop</string>
 								<reference key="NSSupport" ref="901400326"/>
 								<reference key="NSControlView" ref="638537864"/>
 								<int key="NSButtonFlags">-2038284033</int>
-								<int key="NSButtonFlags2">129</int>
+								<int key="NSButtonFlags2">268435585</int>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent"/>
+								<string key="NSKeyEquivalent">s</string>
 								<int key="NSPeriodicDelay">200</int>
 								<int key="NSPeriodicInterval">25</int>
 							</object>
@@ -1773,7 +1773,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{532, 145}</string>
-				<string key="NSMaxSize">{3000, 145}</string>
+				<string key="NSMaxSize">{1024, 145}</string>
 			</object>
 			<object class="NSCustomObject" id="937962446">
 				<string key="NSClassName">MSUStatusWindowController</string>
@@ -4202,9 +4202,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{154, 252}, {512, 518}}</string>
+					<string>{{104, 236}, {512, 518}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{154, 252}, {512, 518}}</string>
+					<string>{{104, 236}, {512, 518}}</string>
 					<boolean value="NO"/>
 					<string>{{238, 285}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -4300,14 +4300,14 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{134, 543}, {532, 123}}</string>
+					<string>{{345, 612}, {532, 123}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{134, 543}, {532, 123}}</string>
+					<string>{{345, 612}, {532, 123}}</string>
 					<boolean value="NO"/>
 					<string>{{238, 285}, {480, 360}}</string>
 					<boolean value="YES"/>
 					<boolean value="YES"/>
-					<string>{3000, 123}</string>
+					<string>{1024, 123}</string>
 					<string>{532, 123}</string>
 					<string>{{40, 137}, {480, 270}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
