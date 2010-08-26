@@ -21,9 +21,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="389"/>
-			<integer value="633"/>
+			<integer value="390"/>
 			<integer value="29"/>
+			<integer value="633"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1074,26 +1074,36 @@
 																		<bool key="EncodedWithXMLCoder">YES</bool>
 																		<object class="NSArray" key="dict.sortedKeys">
 																			<bool key="EncodedWithXMLCoder">YES</bool>
+																			<string>WebKitAllowAnimatedImageLoopingPreferenceKey</string>
+																			<string>WebKitAllowAnimatedImagesPreferenceKey</string>
 																			<string>WebKitDefaultFixedFontSize</string>
 																			<string>WebKitDefaultFontSize</string>
+																			<string>WebKitDisplayImagesKey</string>
 																			<string>WebKitFixedFont</string>
 																			<string>WebKitJavaEnabled</string>
 																			<string>WebKitJavaScriptCanOpenWindowsAutomatically</string>
 																			<string>WebKitJavaScriptEnabled</string>
 																			<string>WebKitMinimumFontSize</string>
 																			<string>WebKitPluginsEnabled</string>
+																			<string>WebKitSansSerifFont</string>
+																			<string>WebKitSerifFont</string>
 																			<string>WebKitStandardFont</string>
 																		</object>
 																		<object class="NSMutableArray" key="dict.values">
 																			<bool key="EncodedWithXMLCoder">YES</bool>
+																			<boolean value="NO"/>
+																			<boolean value="NO"/>
 																			<integer value="12"/>
 																			<integer value="12"/>
+																			<boolean value="NO"/>
 																			<string>Lucida Grande</string>
 																			<boolean value="NO"/>
 																			<boolean value="NO"/>
 																			<boolean value="NO"/>
 																			<integer value="1"/>
 																			<boolean value="NO"/>
+																			<string>Lucida Sans</string>
+																			<string>Lucida Grande</string>
 																			<string>Lucida Grande</string>
 																		</object>
 																	</object>
@@ -1652,14 +1662,15 @@
 				<bool key="NSClearsFilterPredicateOnInsertion">YES</bool>
 			</object>
 			<object class="NSWindowTemplate" id="128003383">
-				<int key="NSWindowStyleMask">1</int>
+				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{335, 627}, {532, 123}}</string>
+				<string key="NSWindowRect">{{441, 543}, {532, 123}}</string>
 				<int key="NSWTFlags">1946157056</int>
 				<string key="NSWindowTitle">Managed Software Update</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3000, 123}</string>
+				<string key="NSWindowContentMinSize">{532, 123}</string>
 				<object class="NSView" key="NSWindowView" id="218108844">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -1761,7 +1772,8 @@
 					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMinSize">{532, 145}</string>
+				<string key="NSMaxSize">{3000, 145}</string>
 			</object>
 			<object class="NSCustomObject" id="937962446">
 				<string key="NSClassName">MSUStatusWindowController</string>
@@ -4038,6 +4050,10 @@
 					<string>633.IBWindowTemplateEditedContentRect</string>
 					<string>633.NSWindowTemplate.visibleAtLaunch</string>
 					<string>633.editorWindowContentRectSynchronizationRect</string>
+					<string>633.windowTemplate.hasMaxSize</string>
+					<string>633.windowTemplate.hasMinSize</string>
+					<string>633.windowTemplate.maxSize</string>
+					<string>633.windowTemplate.minSize</string>
 					<string>635.IBEditorWindowLastContentRect</string>
 					<string>635.IBPluginDependency</string>
 					<string>635.IBWindowTemplateEditedContentRect</string>
@@ -4186,9 +4202,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{398, 252}, {512, 518}}</string>
+					<string>{{154, 252}, {512, 518}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{398, 252}, {512, 518}}</string>
+					<string>{{154, 252}, {512, 518}}</string>
 					<boolean value="NO"/>
 					<string>{{238, 285}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -4284,11 +4300,15 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{364, 506}, {532, 123}}</string>
+					<string>{{134, 543}, {532, 123}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{364, 506}, {532, 123}}</string>
+					<string>{{134, 543}, {532, 123}}</string>
 					<boolean value="NO"/>
 					<string>{{238, 285}, {480, 360}}</string>
+					<boolean value="YES"/>
+					<boolean value="YES"/>
+					<string>{3000, 123}</string>
+					<string>{532, 123}</string>
 					<string>{{40, 137}, {480, 270}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{40, 137}, {480, 270}}</string>

@@ -21,9 +21,6 @@
 import os
 import subprocess
 import FoundationPlist
-#import time
-
-#from Foundation import NSDate, NSURL
 
 _updatechecklaunchfile = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 
@@ -94,35 +91,6 @@ def startUpdateCheck():
     # does launchd magic to run managedsoftwareupdate as root
     result = call(["/usr/bin/touch", _updatechecklaunchfile])
     return result
-     
-        
-#def checkForUpdates():
-#    # returns 1 if we've kicked off an update check (or one is in progress),
-#    # returns 0 if we're not going to check (because we just did)
-#    # returns -1 if the munki server is unavailable
-#    # returns -2 if there's an unexpected problem
-#    
-#    # when did we last check?
-#    now = NSDate.new()
-#    prefs = getManagedInstallsPrefs()
-#    lastCheckedDateString = prefs.get("LastCheckDate")
-#    if lastCheckedDateString:
-#        lastCheckedDate = NSDate.dateWithString_(lastCheckedDateString)
-#    if (not lastCheckedDateString) or now.timeIntervalSinceDate_(lastCheckedDate) > 5:
-#        # we haven't checked in more than 5 seconds
-#        result = startUpdateCheck()
-#        if result == 1:
-#            return 1
-#        else:
-#            return -2
-#    else:
-#        # we just finished checking
-#        lastCheckResult = prefs.get("LastCheckResult")
-#        if lastCheckResult == -1:
-#            # check failed
-#            return -1
-#        else:
-#            return 0
     
 
 def getAppleUpdates():
