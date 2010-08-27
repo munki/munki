@@ -39,7 +39,7 @@ import FoundationPlist
 
 def get_version():
     '''Returns version of munkitools'''
-    return "0.6.0 Build 640"
+    return "0.6.0 Build 664"
 
 
 # output and logging functions
@@ -522,6 +522,7 @@ def prefs():
         _prefs['UseClientCertificate'] = False
         _prefs['SuppressUserNotification'] = False
         _prefs['SuppressAutoInstall'] = False
+        _prefs['SuppressStopButtonOnInstall'] = False
         
         prefsfile = "/Library/Preferences/ManagedInstalls.plist"
         plist = {}

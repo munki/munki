@@ -803,6 +803,10 @@ def run():
             os.unlink(installinfo)
         except (OSError, IOError):
             munkicommon.display_warning("Could not remove %s" % installinfo)
+            
+        if (munkicommon.munkistatusoutput and   
+            munkicommon.pref('SuppressStopButtonOnInstall')):
+            munkistatus.hideStopButton()
         
         if "removals" in plist:
             # filter list to items that need to be removed
