@@ -511,7 +511,8 @@ def main():
         
     updatesavailable = munkiUpdatesAvailable()
     #if not updatesavailable and (options.auto or options.manualcheck):
-    if not updatesavailable and not options.installonly:
+    if not updatesavailable and not options.installonly and \
+       not munkicommon.stopRequested():
         # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
         if munkicommon.pref('InstallAppleSoftwareUpdates'):
