@@ -26,7 +26,7 @@ import os
 import subprocess
 from distutils import version
 import urlparse
-import hashlib
+#import hashlib
 import time
 import calendar
 import socket
@@ -2316,20 +2316,23 @@ def check(client_id=''):
                 plist = FoundationPlist.readPlist(usermanifest)
                 if plist:
                     FoundationPlist.writePlist(plist, selfservemanifest)
-                # now remove the user-generated manifest
-                os.unlink(usermanifest)
+                    # now remove the user-generated manifest
+                    try:
+                        os.unlink(usermanifest)
+                    except OSErr:
+                        pass
             except FoundationPlist.FoundationPlistException:
                 pass
         
-        # use catalogs from main manifest for self-serve manifest
-        cataloglist = getManifestValueForKey(mainmanifestpath, 'catalogs')
         if os.path.exists(selfservemanifest):
+            # use catalogs from main manifest for self-serve manifest
+            cataloglist = getManifestValueForKey(mainmanifestpath, 'catalogs')
             munkicommon.display_detail("**Processing self-serve choices**")
             processManifestForInstalls(selfservemanifest,
                                                      installinfo, cataloglist)
             processManifestForRemovals(selfservemanifest,
                                                      installinfo, cataloglist)
-                                                     
+            
             # update optional installs with info from self-serve manifest
             for item in installinfo['optional_installs']:
                 if isItemInInstallInfo(item, 
@@ -2340,26 +2343,46 @@ def check(client_id=''):
         
         # filter managed_installs to get items already installed
         installed_items = [item
-                           for item in installinfo['managed_installs']
-                           if item.get('installed')]
+                            for item in installinfo['managed_installs']
+                                if item.get('installed')]
         # filter managed_installs to get problem items:
         # not installed, but no installer item
         problem_items = [item
-                         for item in installinfo['managed_installs']
-                         if item.get('installed') == False and
-                            not item.get('installer_item')]
+                            for item in installinfo['managed_installs']
+                                if item.get('installed') == False and
+                                    not item.get('installer_item')]
         # filter removals to get items already removed (or never installed)
-        removed_items = [item for item in installinfo['removals']
-                         if item.get('installed') == False]
+        removed_items = [item.get('manifestitem') 
+                            for item in installinfo['removals']
+                                if item.get('installed') == False]
+                                
+        if os.path.exists(selfservemanifest):
+            # for any item in the managed_uninstalls in the self-serve
+            # manifest that is not installed, we should remove it from
+            # the list
+            try:
+                plist = FoundationPlist.readPlist(selfservemanifest)
+            except FoundationPlist.FoundationPlistException:
+                pass
+            else:
+                managed_uninstalls = plist.get('managed_uninstalls',[])
+                for item in managed_uninstalls:
+                    if item in removed_items:
+                        managed_uninstalls.remove(item)
+                plist['managed_uninstalls'] = managed_uninstalls
+                try:
+                    FoundationPlist.writePlist(plist, selfservemanifest)
+                except FoundationPlist.FoundationPlistException:
+                    pass
         
         # filter managed_installs and removals lists
         # so they have only items that need action
         installinfo['managed_installs'] = \
             [item for item in installinfo['managed_installs']
-             if item.get('installer_item')]
+                    if item.get('installer_item')]
         installinfo['removals'] = \
             [item for item in installinfo['removals']
-             if item.get('installed')]
+                if item.get('installed')]
         
         munkicommon.report['ManagedInstalls'] = installed_items
         munkicommon.report['ProblemInstalls'] = problem_items
