@@ -2365,11 +2365,9 @@ def check(client_id=''):
             except FoundationPlist.FoundationPlistException:
                 pass
             else:
-                managed_uninstalls = plist.get('managed_uninstalls',[])
-                for item in managed_uninstalls:
-                    if item in removed_items:
-                        managed_uninstalls.remove(item)
-                plist['managed_uninstalls'] = managed_uninstalls
+                plist['managed_uninstalls'] = \
+                    [item for item in plist.get('managed_uninstalls',[])
+                        if item not in removed_items]
                 try:
                     FoundationPlist.writePlist(plist, selfservemanifest)
                 except FoundationPlist.FoundationPlistException:
