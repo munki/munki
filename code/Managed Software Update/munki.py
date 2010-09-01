@@ -80,6 +80,8 @@ def readSelfServiceManifest():
             return FoundationPlist.readPlist(SelfServeManifest)
         except FoundationPlist.NSPropertyListSerializationException:
             return {}
+    else:
+        return {}
             
     
 def writeSelfServiceManifest(optional_install_choices):
