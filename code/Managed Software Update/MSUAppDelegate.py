@@ -217,6 +217,10 @@ class MSUAppDelegate(NSObject):
     
     def buildOptionalInstallsData(self):
         table = []
+        selfservedata = munki.readSelfServiceManifest()
+        selfserve_installs = selfservedata.get('managed_installs',[])
+        selfserve_uninstalls = selfservedata.get('managed_uninstalls',[])
+        
         for item in self._optionalInstalls:
             row = {}
             row['enabled'] = objc.YES
@@ -228,21 +232,25 @@ class MSUAppDelegate(NSObject):
                 will_be_state = objc.YES
             if item.get("will_be_removed"):
                 will_be_state = objc.NO
-            row['install'] = will_be_state
+            row['managed'] = (item['name'] in selfserve_installs)
+            row['original_managed'] = (item['name'] in selfserve_installs)
             row['itemname'] = item['name']
             row['name'] = item.get("display_name") or item['name']
             row['version'] = munki.trimVersionString(item.get("version_to_install"),3)
             row['description'] = item.get("description","")
+            row['size'] = munki.humanReadable(item.get("installer_item_size",0))
             if row['installed']:
-                row['size'] = "-"
-                status = "Installed"
+                if item.get("needs_update"):
+                    status = "Update available"
+                else:
+                    row['size'] = "-"
+                    status = "Installed"
                 if item.get("will_be_removed"):
                     status = "Will be removed"
                 elif not item.get('uninstallable'):
                     status = "Not removable"
                     row['enabled'] = objc.NO
             else:
-                row['size'] = munki.humanReadable(item.get("installer_item_size",0))
                 status = "Not installed"
                 if item.get("will_be_installed"):
                     status = "Will be installed"
@@ -267,9 +275,11 @@ class MSUAppDelegate(NSObject):
         optional_install_choices['managed_installs'] = []
         optional_install_choices['managed_uninstalls'] = []
         for row in self.optional_array_controller.arrangedObjects():
-            if row['status'] == "Installed" or row['status'] == "Will be installed":
+            if row['managed']:
+                # user selected for install
                 optional_install_choices['managed_installs'].append(row['itemname'])
-            if row['status'] == "Will be removed":
+            elif row['original_managed']:
+                # was managed, but user deselected it; we should remove it if possible
                 optional_install_choices['managed_uninstalls'].append(row['itemname'])
         munki.writeSelfServiceManifest(optional_install_choices)
         self.checkForUpdates()

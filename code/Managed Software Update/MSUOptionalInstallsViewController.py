@@ -53,27 +53,31 @@ class MSUOptionalInstallsViewController(NSViewController):
     def updateRowStatus(self):
         if self.array_controller.selectedObjects():
             row = self.array_controller.selectedObjects()[0]
-            if row['enabled']:
-                if row['installed']:
-                    if row['install']:
-                        row['status'] = "Installed"
-                    else:
-                        row['status'] = "Will be removed"
-                else:
-                    # not row['installed']
-                    if row['install']:
-                        row['status'] = "Will be installed"
-                    else:
-                        row['status'] = "Not installed"
-            if row['status'] != row['original_status']:
-                self.AddRemoveBtn.setEnabled_(YES)
-            else:
+            if row['managed'] == row['original_managed']:
+                # restore original status
+                row['status'] = row['original_status']
                 self.updateAddRemoveBtnState()
-        
+            else:
+                # we've inverted the management state
+                self.AddRemoveBtn.setEnabled_(YES)
+                if row['managed']:
+                    # user checked this one
+                    if row['original_status'] == "Not installed":
+                        row['status'] = "Will be installed"
+                    elif row['original_status'] == "Update available":
+                        row['status'] = "Will be updated"
+                else:
+                    # not row['managed']
+                    if row['original_status'] == "Installed":
+                        row['status'] = "Will be removed"
+                    elif row['original_status'] == "Will be installed":
+                        row['status'] = "Will not be installed"
+
+                        
     def updateAddRemoveBtnState(self):
         userChanges = NO
         for row in self.array_controller.arrangedObjects():
-            if row['status'] != row['original_status']:
+            if row['managed'] != row['original_managed']:
                 userChanges = YES
                 break                      
         self.AddRemoveBtn.setEnabled_(userChanges)

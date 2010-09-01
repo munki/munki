@@ -64,6 +64,24 @@ def getManagedInstallsPrefs():
                         
     return prefs
     
+    
+def readSelfServiceManifest():
+    '''Read the SelfServeManifest if it exists'''
+    # read our working copy if it exists
+    SelfServeManifest = "/Users/Shared/.SelfServeManifest"
+    if not os.path.exists(SelfServeManifest):
+        # no working copy, look for system copy
+        prefs = getManagedInstallsPrefs()
+        managedinstallbase = prefs['ManagedInstallDir']
+        SelfServeManifest = os.path.join(managedinstallbase, "manifests",
+                                            "SelfServeManifest")
+    if os.path.exists(SelfServeManifest):
+        try:
+            return FoundationPlist.readPlist(SelfServeManifest)
+        except FoundationPlist.NSPropertyListSerializationException:
+            return {}
+            
+    
 def writeSelfServiceManifest(optional_install_choices):
     '''Write out our self-serve manifest 
     so managedsoftwareupdate can use it'''
