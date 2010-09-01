@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -112,8 +112,8 @@ def display_info(msg):
     elif verbose > 0:
         print msg.encode('UTF-8')
         sys.stdout.flush()
-        
-        
+
+
 def display_detail(msg):
     """
     Displays minor info messages, formatting as needed
@@ -128,8 +128,8 @@ def display_detail(msg):
         sys.stdout.flush()
     if pref('LoggingLevel') > 0:
         log(msg)
-        
-        
+
+
 def display_debug1(msg):
     """
     Displays debug messages, formatting as needed
@@ -155,8 +155,8 @@ def display_debug2(msg):
         print msg.encode('UTF-8')
     if pref('LoggingLevel') > 2:
         log("DEBUG2: %s" % msg)
-        
-        
+
+
 def reset_warnings():
     '''Rotate our warnings log.'''
     warningsfile = os.path.join(os.path.dirname(pref("LogFile")),
@@ -216,8 +216,8 @@ def log(msg, logname=''):
         fileobj.close()
     except (OSError, IOError):
         pass
-        
-        
+
+
 def rotatelog(logname=''):
     '''Rotate a log'''
     if not logname:
@@ -267,19 +267,19 @@ def printreportitem(label, value, indent=0):
             printreportitem(subkey, value[subkey], indent+1)
     else:
         print indentspace*indent, "%s: %s" % (label, value)
-        
-            
+
+
 def printreport(reportdict):
     """Prints the report dictionary in a pretty(?) way"""
     for key in reportdict.keys():
         printreportitem(key, reportdict[key])
-        
+
 
 def savereport():
     '''Save our report'''
-    FoundationPlist.writePlist(report, 
+    FoundationPlist.writePlist(report,
         os.path.join(pref('ManagedInstallDir'), "ManagedInstallReport.plist"))
-    
+
 
 def archive_report():
     '''Archive a report'''
@@ -302,13 +302,13 @@ def archive_report():
         except (OSError, IOError):
             display_warning("Could not archive report.")
         # now keep number of archived reports to 100 or fewer
-        proc = subprocess.Popen(['/bin/ls', '-t1', archivepath], 
-                                bufsize=1, stdout=subprocess.PIPE, 
+        proc = subprocess.Popen(['/bin/ls', '-t1', archivepath],
+                                bufsize=1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         (output, err) = proc.communicate()
         if output:
-            archiveitems = [item 
-                            for item in str(output).splitlines() 
+            archiveitems = [item
+                            for item in str(output).splitlines()
                             if item.startswith("ManagedInstallReport-")]
             if len(archiveitems) > 100:
                 for item in archiveitems[100:]:
@@ -319,9 +319,9 @@ def archive_report():
                         except (OSError, IOError):
                             display_warning("Could not remove archive item %s"
                                              % itempath)
-            
-        
-        
+
+
+
 # misc functions
 
 def validPlist(path):
@@ -335,7 +335,7 @@ def validPlist(path):
 
 
 def stopRequested():
-    """Allows user to cancel operations when 
+    """Allows user to cancel operations when
     MunkiStatus is being used"""
     if munkistatusoutput:
         if munkistatus.getStopButtonState() == 1:
@@ -354,8 +354,8 @@ def getconsoleuser():
 def currentGUIusers():
     '''Gets a list of GUI users by parsing the output of /usr/bin/who'''
     gui_users = []
-    proc = subprocess.Popen("/usr/bin/who", shell=False, 
-                            stdin=subprocess.PIPE, 
+    proc = subprocess.Popen("/usr/bin/who", shell=False,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = proc.communicate()
     lines = str(output).splitlines()
@@ -363,15 +363,15 @@ def currentGUIusers():
         if "console" in line:
             parts = line.split()
             gui_users.append(parts[0])
-            
+
     return gui_users
 
 
 def pythonScriptRunning(scriptname):
     '''Returns Process ID for a running python script'''
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     mypid = os.getpid()
@@ -379,28 +379,28 @@ def pythonScriptRunning(scriptname):
     for line in lines:
         (pid, process) = line.split(None, 1)
         # first look for Python processes
-        if (process.find("MacOS/Python ") != -1 or 
+        if (process.find("MacOS/Python ") != -1 or
                                             process.find("python ") != -1):
             if process.find(scriptname) != -1:
                 if int(pid) != int(mypid):
                     return pid
 
     return 0
-    
-    
+
+
 def osascript(osastring):
     '''Wrapper to run AppleScript commands'''
     cmd = ['/usr/bin/osascript', '-e', osastring]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode != 0:
         print >> sys.stderr, "Error: ", err
     if out:
         return str(out).decode('UTF-8').rstrip("\n")
-        
-        
+
+
 # dmg helpers
 
 def mountdmg(dmgpath, use_shadow=False):
@@ -411,12 +411,12 @@ def mountdmg(dmgpath, use_shadow=False):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
-    cmd = ['/usr/bin/hdiutil', 'attach', dmgpath, 
+    cmd = ['/usr/bin/hdiutil', 'attach', dmgpath,
                 '-mountRandom', '/tmp', '-nobrowse', '-plist']
     if use_shadow:
         cmd.append('-shadow')
     proc = subprocess.Popen(cmd,
-                            bufsize=1, stdout=subprocess.PIPE, 
+                            bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
     if err:
@@ -435,17 +435,17 @@ def unmountdmg(mountpoint):
     Unmounts the dmg at mountpoint
     """
     proc = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint],
-                            bufsize=1, stdout=subprocess.PIPE, 
+                            bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (ouptut, err) = proc.communicate()
     if proc.returncode:
         display_warning("Attempting to force unmount %s" % mountpoint)
         # try forcing the unmount
-        retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint, 
+        retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint,
                                 '-force'])
         if retcode:
             display_warning("Failed to unmount %s" % mountpoint)
-        
+
 
 def getmd5hash(filename):
     """
@@ -464,7 +464,7 @@ def getmd5hash(filename):
     fileobj.close()
     return md5hash.hexdigest()
 
-        
+
 def isApplication(pathname):
     '''Returns true if path appears to be an OS X application'''
     # No symlinks, please
@@ -481,11 +481,11 @@ def isApplication(pathname):
             if 'CFBundlePackageType' in plist:
                 if plist['CFBundlePackageType'] != 'APPL':
                     return False
-            # get CFBundleExecutable, 
+            # get CFBundleExecutable,
             # falling back to bundle name if it's missing
-            bundleexecutable = plist.get('CFBundleExecutable',     
+            bundleexecutable = plist.get('CFBundleExecutable',
                                       os.path.basename(pathname))
-            bundleexecutablepath = os.path.join(pathname, "Contents", 
+            bundleexecutablepath = os.path.join(pathname, "Contents",
                                                 "MacOS", bundleexecutable)
             if os.path.exists(bundleexecutablepath):
                 return True
@@ -523,16 +523,16 @@ def prefs():
         _prefs['SuppressUserNotification'] = False
         _prefs['SuppressAutoInstall'] = False
         _prefs['SuppressStopButtonOnInstall'] = False
-        
+
         prefsfile = "/Library/Preferences/ManagedInstalls.plist"
         plist = {}
         if os.path.exists(prefsfile):
             try:
                 plist = FoundationPlist.readPlist(prefsfile)
             except FoundationPlist.NSPropertyListSerializationException:
-                display_error("ERROR: Could not read preferences file %s." 
+                display_error("ERROR: Could not read preferences file %s."
                                % prefsfile)
-                raise Exception("Could not read preferences file %s." % 
+                raise Exception("Could not read preferences file %s." %
                                                                 prefsfile)
             try:
                 for key in plist.keys():
@@ -542,33 +542,33 @@ def prefs():
                     else:
                         _prefs[key] = plist[key]
             except AttributeError:
-                display_error("ERROR: Prefs file %s contains invalid data." 
+                display_error("ERROR: Prefs file %s contains invalid data."
                                                         % prefsfile)
                 raise Exception("Preferences file %s invalid." % prefsfile)
         else:
             # no prefs file, so we'll write out a "default" prefs file
             del _prefs['LastNotifiedDate']
             FoundationPlist.writePlist(_prefs, prefsfile)
-                            
+
     return _prefs
 
 
 def pref(prefname):
     '''Return a prefernce'''
     return prefs().get(prefname,'')
-    
-    
-#####################################################    
+
+
+#####################################################
 # Apple package utilities
 #####################################################
 
 def getInstallerPkgInfo(filename):
-    """Uses Apple's installer tool to get basic info 
+    """Uses Apple's installer tool to get basic info
     about an installer item."""
     installerinfo = {}
-    proc = subprocess.Popen(["/usr/sbin/installer", "-pkginfo", "-verbose", 
-                             "-plist", "-pkg", filename], 
-                             bufsize=1, stdout=subprocess.PIPE, 
+    proc = subprocess.Popen(["/usr/sbin/installer", "-pkginfo", "-verbose",
+                             "-plist", "-pkg", filename],
+                             bufsize=1, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
 
@@ -584,7 +584,7 @@ def getInstallerPkgInfo(filename):
                 pass
             if plist:
                 break
-        if plist:            
+        if plist:
             if 'Size' in plist:
                 installerinfo['installed_size'] = int(plist['Size'])
             installerinfo['description'] = plist.get('Description',"")
@@ -592,21 +592,21 @@ def getInstallerPkgInfo(filename):
                 installerinfo['RestartAction'] = "RequireRestart"
             if "Title" in plist:
                 installerinfo['display_name'] = plist['Title']
-                
-    proc = subprocess.Popen(["/usr/sbin/installer", 
-                            "-query", "RestartAction", 
-                            "-pkg", filename], 
-                            bufsize=1, 
-                            stdout=subprocess.PIPE, 
+
+    proc = subprocess.Popen(["/usr/sbin/installer",
+                            "-query", "RestartAction",
+                            "-pkg", filename],
+                            bufsize=1,
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if out:
         restartAction = str(out).rstrip('\n')
         if restartAction != 'None':
             installerinfo['RestartAction'] = restartAction
-                
+
     return installerinfo
-    
+
 
 def padVersionString(versString, tupleCount):
     '''Normalize the format of a version string'''
@@ -619,7 +619,7 @@ def padVersionString(versString, tupleCount):
         while len(components) < tupleCount :
             components.append("0")
     return ".".join(components)
-    
+
 
 def getVersionString(plist):
     '''Gets a version string from the plist.
@@ -650,7 +650,7 @@ def getVersionString(plist):
             # replace commas with periods
             CFBundleVersion = CFBundleVersion.replace(',','.')
             return CFBundleVersion
-            
+
     return ''
 
 
@@ -665,9 +665,9 @@ def getExtendedVersion(bundlepath):
         versionstring = getVersionString(plist)
         if versionstring:
             return padVersionString(versionstring, 5)
-            
+
     # no version number in Info.plist. Maybe old-style package?
-    infopath = os.path.join(bundlepath, "Contents", "Resources", 
+    infopath = os.path.join(bundlepath, "Contents", "Resources",
                                 "English.lproj")
     if os.path.exists(infopath):
         for item in os.listdir(infopath):
@@ -683,13 +683,13 @@ def getExtendedVersion(bundlepath):
                         label = parts[0]
                         if label == "Version":
                             return padVersionString(parts[1], 5)
-            
+
     # didn't find a version number, so return 0...
     return "0.0.0.0.0"
-  
-                
+
+
 def parsePkgRefs(filename):
-    """Parses a .dist or PackageInfo file looking for pkg-ref or pkg-info tags 
+    """Parses a .dist or PackageInfo file looking for pkg-ref or pkg-info tags
     to get info on included sub-packages"""
     info = []
     dom = minidom.parse(filename)
@@ -702,7 +702,7 @@ def parsePkgRefs(filename):
                 #    for key in keys:
                 #        print key, "=>", \
                 #              ref.attributes[key].value.encode('UTF-8')
-                
+
                 pkginfo = {}
                 pkginfo['packageid'] = \
                              ref.attributes['id'].value.encode('UTF-8')
@@ -724,7 +724,7 @@ def parsePkgRefs(filename):
                     #    for key in keys:
                     #        print key, "=>", \
                     #              ref.attributes[key].value.encode('UTF-8')
-                    
+
                     pkginfo = {}
                     pkginfo['packageid'] = \
                            ref.attributes['identifier'].value.encode('UTF-8')
@@ -751,14 +751,14 @@ def getFlatPackageInfo(pkgpath):
     cwd = os.getcwd()
     # change into our tmpdir so we can use xar to unarchive the flat package
     os.chdir(pkgtmp)
-    returncode = subprocess.call(["/usr/bin/xar", "-xf", abspkgpath, 
+    returncode = subprocess.call(["/usr/bin/xar", "-xf", abspkgpath,
                                   "--exclude", "Payload"])
     if returncode == 0:
         currentdir = pkgtmp
         packageinfofile = os.path.join(currentdir, "PackageInfo")
         if os.path.exists(packageinfofile):
             infoarray = parsePkgRefs(packageinfofile)
-                
+
         if not infoarray:
             # didn't get any packageid info or no PackageInfo file
             # look for subpackages at the top level
@@ -768,14 +768,14 @@ def getFlatPackageInfo(pkgpath):
                     packageinfofile = os.path.join(itempath, "PackageInfo")
                     if os.path.exists(packageinfofile):
                         infoarray.extend(parsePkgRefs(packageinfofile))
-                        
+
         if not infoarray:
             # found no PackageInfo files and no subpackages,
             # so let's look at the Distribution file
             distributionfile = os.path.join(currentdir, "Distribution")
             if os.path.exists(distributionfile):
                 infoarray = parsePkgRefs(distributionfile)
-                
+
     # change back to original working dir
     os.chdir(cwd)
     shutil.rmtree(pkgtmp)
@@ -797,15 +797,15 @@ def getOnePackageInfo(pkgpath):
                 pkginfo['packageid'] = plist["Bundle identifier"]
             else:
                 pkginfo['packageid'] = os.path.basename(pkgpath)
-            
+
             if "CFBundleName" in plist:
                 pkginfo['name'] = plist["CFBundleName"]
-        
+
             if "IFPkgFlagInstalledSize" in plist:
                 pkginfo['installed_size'] = plist["IFPkgFlagInstalledSize"]
-        
+
             pkginfo['version'] = getExtendedVersion(pkgpath)
-        except (AttributeError, 
+        except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             pkginfo['packageid'] = "BAD PLIST in %s" % \
                                     os.path.basename(pkgpath)
@@ -849,7 +849,7 @@ def getText(nodelist):
 def getBundlePackageInfo(pkgpath):
     '''Get metadata from a bundle-style package'''
     infoarray = []
-    
+
     if pkgpath.endswith(".pkg"):
         pkginfo = getOnePackageInfo(pkgpath)
         if pkginfo:
@@ -860,7 +860,7 @@ def getBundlePackageInfo(pkgpath):
     if os.path.exists(bundlecontents):
         for item in os.listdir(bundlecontents):
             if item.endswith(".dist"):
-                filename = os.path.join(bundlecontents, item)                
+                filename = os.path.join(bundlecontents, item)
                 dom = minidom.parse(filename)
                 pkgrefs = dom.getElementsByTagName("pkg-ref")
                 if pkgrefs:
@@ -874,10 +874,10 @@ def getBundlePackageInfo(pkgpath):
                                 pkginfo = getBundlePackageInfo(subpkgpath)
                                 if pkginfo:
                                     infoarray.extend(pkginfo)
-            
+
                     if infoarray:
                         return infoarray
-                
+
         # no .dist file found, look for packages in subdirs
         dirsToSearch = []
         plistpath = os.path.join(pkgpath, "Contents", "Info.plist")
@@ -886,8 +886,8 @@ def getBundlePackageInfo(pkgpath):
             if 'IFPkgFlagComponentDirectory' in plist:
                 componentdir = plist['IFPkgFlagComponentDirectory']
                 dirsToSearch.append(componentdir)
-            
-        if dirsToSearch == []:     
+
+        if dirsToSearch == []:
             dirsToSearch = ['', 'Contents', 'Contents/Installers',
                             'Contents/Packages', 'Contents/Resources',
                             'Contents/Resources/Packages']
@@ -905,18 +905,18 @@ def getBundlePackageInfo(pkgpath):
                             pkginfo = getBundlePackageInfo(itempath)
                             if pkginfo:
                                 infoarray.extend(pkginfo)
-                    
+
         if infoarray:
             return infoarray
         else:
-            # couldn't find any subpackages, 
+            # couldn't find any subpackages,
             # just return info from the .dist file
             # if it exists
             for item in os.listdir(bundlecontents):
                 if item.endswith(".dist"):
                     distfile = os.path.join(bundlecontents, item)
                     infoarray.extend(parsePkgRefs(distfile))
-                    
+
     return infoarray
 
 
@@ -930,10 +930,10 @@ def getReceiptInfo(pkgname):
 
         if os.path.isdir(pkgname):        # bundle-style package?
             info = getBundlePackageInfo(pkgname)
-            
+
     elif pkgname.endswith('.dist'):
         info = parsePkgRefs(pkgname)
-            
+
     return info
 
 
@@ -944,13 +944,13 @@ def getInstalledPackageVersion(pkgid):
     Returns the version string of the installed pkg
     if it exists, or an empty string if it does not
     """
-        
+
     # First check (Leopard and later) package database
-   
-    proc = subprocess.Popen(["/usr/sbin/pkgutil", 
-                             "--pkg-info-plist", pkgid], 
-                             bufsize=1, 
-                             stdout=subprocess.PIPE, 
+
+    proc = subprocess.Popen(["/usr/sbin/pkgutil",
+                             "--pkg-info-plist", pkgid],
+                             bufsize=1,
+                             stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
 
@@ -962,16 +962,16 @@ def getInstalledPackageVersion(pkgid):
                 foundbundleid = plist["pkgid"]
             if "pkg-version" in plist:
                 foundvers = plist["pkg-version"]
-            
+
             if pkgid == foundbundleid:
-                display_debug2("\tThis machine has %s, version %s" % 
+                display_debug2("\tThis machine has %s, version %s" %
                                 (pkgid, foundvers))
             return padVersionString(foundvers, 5)
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             pass
-            
-    # If we got to this point, we haven't found the pkgid yet. 
+
+    # If we got to this point, we haven't found the pkgid yet.
     # Check /Library/Receipts
     receiptsdir = "/Library/Receipts"
     if os.path.exists(receiptsdir):
@@ -988,18 +988,18 @@ def getInstalledPackageVersion(pkgid):
                         if version.LooseVersion(foundvers) > \
                            version.LooseVersion(highestversion):
                             highestversion = foundvers
-                            
+
         if highestversion != "0":
-            display_debug2("\tThis machine has %s, version %s" % 
+            display_debug2("\tThis machine has %s, version %s" %
                             (pkgid, highestversion))
             return highestversion
-   
-    
+
+
     # This package does not appear to be currently installed
     display_debug2("\tThis machine does not have %s" % pkgid)
     return ""
-    
-    
+
+
 def nameAndVersion(aString):
     """
     Splits a string into the name and version numbers:
@@ -1031,7 +1031,7 @@ def findInstallerItem(path):
             for item in os.listdir(path):
                 if item.endswith('.pkg'):
                     return path
-                    
+
             # we didn't find a pkg at this level
             # look for a Packages dir
             path = os.path.join(path,"Packages")
@@ -1058,19 +1058,19 @@ def getPackageMetaData(pkgitem):
     name
     version
     description
-    receipts: an array of packageids that may be installed 
+    receipts: an array of packageids that may be installed
               (some may not be installed on some machines)
     """
-    
+
     pkgitem = findInstallerItem(pkgitem)
     if pkgitem == None:
         return {}
-    
-    # first get the data /usr/sbin/installer will give us   
+
+    # first get the data /usr/sbin/installer will give us
     installerinfo = getInstallerPkgInfo(pkgitem)
     # now look for receipt/subpkg info
     receiptinfo = getReceiptInfo(pkgitem)
-    
+
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
     metaversion = getExtendedVersion(pkgitem)
@@ -1086,43 +1086,43 @@ def getPackageMetaData(pkgitem):
             if "installed_size" in infoitem:
                 # note this is in KBytes
                 installedsize += infoitem['installed_size']
-    
+
     if metaversion == "0.0.0.0.0":
         metaversion = highestpkgversion
     elif len(receiptinfo) == 1:
         # there is only one package in this item
         metaversion = highestpkgversion
     elif highestpkgversion.startswith(metaversion):
-        # for example, highestpkgversion is 2.0.3124.0, 
+        # for example, highestpkgversion is 2.0.3124.0,
         # version in filename is 2.0
         metaversion = highestpkgversion
-            
+
     cataloginfo = {}
     cataloginfo['name'] = nameAndVersion(shortname)[0]
     cataloginfo['version'] = metaversion
     for key in ('display_name', 'RestartAction', 'description'):
         if key in installerinfo:
             cataloginfo[key] = installerinfo[key]
-    
+
     if 'installed_size' in installerinfo:
         if installerinfo['installed_size'] > 0:
             cataloginfo['installed_size'] = installerinfo['installed_size']
     elif installedsize:
         cataloginfo['installed_size'] = installedsize
-           
-    cataloginfo['receipts'] = receiptinfo        
-           
+
+    cataloginfo['receipts'] = receiptinfo
+
     return cataloginfo
-    
-    
+
+
 # some utility functions
 
 def getAvailableDiskSpace(volumepath="/"):
     '''Returns available diskspace in KBytes.'''
     cmd = ["/usr/sbin/diskutil", "info", "-plist", volumepath]
-    proc = subprocess.Popen(cmd, 
+    proc = subprocess.Popen(cmd,
                             bufsize=1,
-                            stdout=subprocess.PIPE, 
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if out:
@@ -1132,7 +1132,7 @@ def getAvailableDiskSpace(volumepath="/"):
             if "FreeSpace" in plist:
                 # plist["FreeSpace"] is in bytes
                 return int(plist["FreeSpace"]/1024)
-                
+
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             pass
@@ -1146,12 +1146,12 @@ def cleanUpTmpDir():
     global tmpdir
     if tmpdir:
         try:
-            shutil.rmtree(tmpdir) 
+            shutil.rmtree(tmpdir)
         except (OSError, IOError):
             pass
         tmpdir = None
-        
-        
+
+
 # module globals
 #debug = False
 verbose = 1
