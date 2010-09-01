@@ -771,6 +771,7 @@ def processRemovals(removallist):
                 munkicommon.log(success_msg, "Install.log")
                 munkicommon.report[
                                  'RemovalResults'].append(success_msg)
+                removeItemFromSelfServeUninstallList(item.get('name'))
             else:
                 failure_msg = "Removal of %s: " % name + \
                               " FAILED with return code: %s" % retcode
@@ -780,6 +781,27 @@ def processRemovals(removallist):
                       
     return restartFlag
 
+
+def removeItemFromSelfServeUninstallList(itemname):
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    selfservemanifest = os.path.join(ManagedInstallDir, "manifests",
+                                            "SelfServeManifest")
+    if os.path.exists(selfservemanifest):
+         # if item_name is in the managed_uninstalls in the self-serve
+         # manifest, we should remove it from the list
+         try:
+             plist = FoundationPlist.readPlist(selfservemanifest)
+         except FoundationPlist.FoundationPlistException:
+             pass
+         else:
+             plist['managed_uninstalls'] = \
+                 [item for item in plist.get('managed_uninstalls',[])
+                     if item != itemname]
+             try:
+                 FoundationPlist.writePlist(plist, selfservemanifest)
+             except FoundationPlist.FoundationPlistException:
+                 pass    
+    
 
 def run():
     '''Runs the install/removal session'''
