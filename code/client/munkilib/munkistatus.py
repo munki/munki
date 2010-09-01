@@ -82,7 +82,7 @@ def sendCommand(command_text):
 
 
 def readResponse():
-    '''Read a response from MunkiStatsu'''
+    '''Read a response from MunkiStatus'''
     global SOCK
     if SOCK:
         try:
