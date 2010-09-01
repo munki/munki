@@ -62,7 +62,7 @@ class MSUupdatesViewController(NSViewController):
         NSApp.delegate().buildOptionalInstallsData()
         
     def updateDescriptionView(self):
-        if self.array_controller.selectedObjects():
+        if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
             description = row.get("description","")
             if "</html>" in description or "</HTML>" in description:

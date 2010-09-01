@@ -51,7 +51,7 @@ class MSUOptionalInstallsViewController(NSViewController):
         #self.updateAddRemoveBtnState()
         
     def updateRowStatus(self):
-        if self.array_controller.selectedObjects():
+        if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
             if row['managed'] == row['original_managed']:
                 # restore original status
@@ -66,6 +66,8 @@ class MSUOptionalInstallsViewController(NSViewController):
                         row['status'] = "Will be installed"
                     elif row['original_status'] == "Update available":
                         row['status'] = "Will be updated"
+                    elif row['original_status'] == "Will be removed":
+                        row['status'] = "Will not be removed"
                 else:
                     # not row['managed']
                     if row['original_status'] == "Installed":
@@ -95,7 +97,7 @@ class MSUOptionalInstallsViewController(NSViewController):
         NSApp.delegate().addOrRemoveOptionalSoftware()
         
     def updateDescriptionView(self):
-        if self.array_controller.selectedObjects():
+        if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
             description = row.get("description","")
             if "</html>" in description or "</HTML>" in description:
