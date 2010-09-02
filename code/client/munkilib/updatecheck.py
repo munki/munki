@@ -1053,13 +1053,14 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
     '''
     Verifies the integrity of the given software package.
 
-    The feature can be controlled through the PackageVerificationMode key in
+    The feature is controlled through the PackageVerificationMode key in
     the ManagedInstalls.plist. Following modes currently exist:
         none: No integrity check is performed.
         hash: Integrity check is performed by calcualting a SHA-256 hash of
             the given file and comparing it against the reference value in
-            catalog. Only applies for package plists that contain the item_key;
-            for packages without the item_key, verifcation always returns True.
+            catalog. Only applies for package plists that contain the 
+            item_key; for packages without the item_key, verifcation always 
+            returns True.
         hash_strict: Same as hash, but returns False for package plists that
             do not contain the item_key.
 
@@ -1086,7 +1087,7 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
                 return True
             else:
                 munkicommon.display_error(
-                    "Hash value integrity check for %s failed." % manifestitem)
+                 "Hash value integrity check for %s failed." % manifestitem)
                 return False
         else:
             if mode.lower() == 'hash_strict':
@@ -1119,16 +1120,13 @@ def getAutoRemovalItems(installinfo, cataloglist):
         if catalogname in catalog.keys():
             autoremovalnames += catalog[catalogname]['autoremoveitems']
 
-    #print "Managed Installs: ", installinfo.get('managed_installs',[])
     already_processed_names = [item['name']
                               for item in
                                   installinfo.get('managed_installs',[])]
-    #print "Removals: ", installinfo.get('removals',[])
     already_processed_names += [item['manifestitem']
                                 for item in installinfo.get('removals',[])]
     autoremovalnames = [item for item in autoremovalnames
                              if item not in already_processed_names]
-    #print "Auto removal names: ", autoremovalnames
     return autoremovalnames
 
 
@@ -2381,10 +2379,6 @@ def check(client_id=''):
     0 if there are no available updates, and -1 if there were errors.'''
     getMachineFacts()
     munkicommon.report['MachineInfo'] = machine
-
-    if not munkicommon.pref('PackageVerificationMode')
-        munkicommon.display_warning("The PackageVerificationMode key is "
-            "missing in the ManagedInstalls.plist. If you wish to have packages"            " verified, please add it.")
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
 
