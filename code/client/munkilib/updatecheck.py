@@ -1039,9 +1039,6 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
     '''
     mode = munkicommon.pref('PackageVerificationMode')
     if not mode:
-        munkicommon.display_warning("The PackageVerificationMode key is "
-            "missing in the ManagedInstalls.plist. Please add it.")
-        munkicommon.display_warning("Package integrity checking is disabled.")
         return True
     elif mode.lower() == 'none':
         munkicommon.display_warning("Package integrity checking is disabled.")
@@ -1064,8 +1061,8 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
                 return False
             else:
                 munkicommon.display_warning(
-                    "Package integrity checking is disabled for %s."
-                    % manifestitem)
+                    "Reference hash value missing for %s -- package integrity "
+                    "verification skipped." % manifestitem)
                 return True
 
     else:
@@ -2347,6 +2344,10 @@ def check(client_id=''):
     0 if there are no available updates, and -1 if there were errors.'''
     getMachineFacts()
     munkicommon.report['MachineInfo'] = machine
+
+    if not munkicommon.pref('PackageVerificationMode')
+        munkicommon.display_warning("The PackageVerificationMode key is "
+            "missing in the ManagedInstalls.plist. If you wish to have packages"            " verified, please add it.")
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
 
