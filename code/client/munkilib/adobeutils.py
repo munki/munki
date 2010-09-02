@@ -1077,7 +1077,8 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             uninstalldir = "/Library/Application Support/Adobe/Uninstall"
             for payload in cataloginfo.get('payloads', []):
                 if 'AdobeCode' in payload:
-                    if "LangPack" in payload.get("display_name"):
+                    if ("LangPack" in payload.get("display_name") or
+                        "Language Files" in payload.get("display_name")):
                         # skip Language Packs
                         continue
                     dbfile = payload['AdobeCode'] + ".db"
