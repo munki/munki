@@ -189,13 +189,16 @@ def parseDist(filename):
             string_elements = localizations[0].getElementsByTagName("strings")
             if string_elements:
                 strings = string_elements[0]
-                if 'language' in strings.attributes.keys():
-                    if strings.attributes['language'
-                                             ].value.encode(
-                                                        'UTF-8') == "English":
-                        for node in strings.childNodes:
-                            text += node.nodeValue
-                            
+                for node in strings.childNodes:
+                    text += node.nodeValue
+                    
+                #if 'language' in strings.attributes.keys():
+                #    if strings.attributes['language'
+                #                             ].value.encode(
+                #                                   'UTF-8') == "English":
+                #        for node in strings.childNodes:
+                #            text += node.nodeValue
+                           
     title = vers = description = ""
     keep = False
     for line in text.split('\n'):
@@ -314,6 +317,30 @@ def writeAppleUpdatesFile():
         except (OSError, IOError):
             pass
         return False
+        
+def displayAppleUpdateInfo():
+    '''Prints Apple update information'''
+    try:
+        updatelist = FoundationPlist.readPlist(appleUpdatesFile)
+    except FoundationPlist.FoundationPlistException:
+        return
+    else:
+        appleupdates = updatelist.get('AppleUpdates', [])
+        if len(appleupdates):
+            munkicommon.display_info(
+            "The following Apple Software Updates are available to install:")
+        for item in appleupdates:
+            munkicommon.display_info("    + %s-%s" %
+                                        (item.get('display_name',''),
+                                         item.get('version_to_install','')))
+            if item.get('RestartAction') == 'RequireRestart' or \
+               item.get('RestartAction') == 'RecommendRestart':
+                munkicommon.display_info("       *Restart required")
+                munkicommon.report['RestartRequired'] = True
+            if item.get('RestartAction') == 'RequireLogout':
+                munkicommon.display_info("       *Logout required")
+                munkicommon.report['LogoutRequired'] = True
+    
 
 
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
@@ -325,11 +352,16 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         appleUpdatesFile_modtime = os.stat(appleUpdatesFile).st_mtime
         updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
         if appleUpdatesFile_modtime > updatesindexfile_modtime:
+            displayAppleUpdateInfo()
             return True
         else:
             # updatesindexfile is newer, use it to generate a new
             # appleUpdatesFile
-            return writeAppleUpdatesFile()
+            if writeAppleUpdatesFile():
+                displayAppleUpdateInfo()
+                return True
+            else:
+                return False
     
     if forcecheck:
         # typically because user initiated the check from
@@ -364,7 +396,11 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         if now.timeIntervalSinceDate_(nextSUcheck) >= 0:
             retcode = checkForSoftwareUpdates()
         
-    return writeAppleUpdatesFile()
+    if writeAppleUpdatesFile():
+        displayAppleUpdateInfo()
+        return True
+    else:
+        return False
 
 
 def clearAppleUpdateInfo():
