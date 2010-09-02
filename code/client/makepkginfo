@@ -395,8 +395,10 @@ def main():
         if item and os.path.exists(item):
             # get size of installer item
             itemsize = 0 
+            itemhash = "N/A"
             if os.path.isfile(item):
                 itemsize = int(os.path.getsize(item))
+                itemhash = munkicommon.getsha256hash(item)
             if os.path.isdir(item):
                 # need to walk the dir and add it all up
                 for (path, dirs, files) in os.walk(item):
@@ -435,6 +437,8 @@ def main():
                 exit(-1)
             
             catinfo['installer_item_size'] = int(itemsize/1024)
+            catinfo['installer_item_hash'] = itemhash
+
             # try to generate the correct item location
             temppath = item
             location = ""
@@ -469,7 +473,9 @@ def main():
                         location = os.path.split(uninstallerpath)[1]
                     catinfo['uninstaller_item_location'] = location
                     itemsize = int(os.path.getsize(uninstallerpath))
+                    itemhash = munkicommon.getsha256hash(uninstallerpath)
                     catinfo['uninstaller_item_size'] = int(itemsize/1024)
+                    catinfo['uninstaller_item_hash'] = itemhash
                 else:
                     print >> sys.stderr, "No uninstaller at %s" % \
                                         uninstallerpath

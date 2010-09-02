@@ -22,14 +22,14 @@ Created by Greg Neagle on 2008-11-18.
 Common functions used by the munki tools.
 """
 
-import sys
-import os
-import time
-import subprocess
-import tempfile
-import shutil
-import urllib2
 import hashlib
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib2
 from distutils import version
 from xml.dom import minidom
 
@@ -447,22 +447,45 @@ def unmountdmg(mountpoint):
             display_warning("Failed to unmount %s" % mountpoint)
 
 
-def getmd5hash(filename):
+def gethash(filename, hash_function):
     """
-    Returns hex of MD5 checksum of a file
+    Calculates the hashvalue of the given file with the given hash_function.
+
+    Args:
+      filename: The file name to calculate the hash value of.
+      hash_function: The hash function object to use, which was instanciated
+          before calling this function, e.g. hashlib.md5().
+
+    Returns:
+      The hashvalue of the given file as hex string.
     """
     if not os.path.isfile(filename):
         return "NOT A FILE"
 
-    fileobj = open(filename, 'rb')
-    md5hash = hashlib.md5()
+    f = open(filename, 'rb')
     while 1:
-        chunk = fileobj.read(2**16)
+        chunk = f.read(2**16)
         if not chunk:
             break
-        md5hash.update(chunk)
-    fileobj.close()
-    return md5hash.hexdigest()
+        hash_function.update(chunk)
+    f.close()
+    return hash_function.hexdigest()
+
+
+def getmd5hash(filename):
+    """
+    Returns hex of MD5 checksum of a file
+    """
+    hash_function = hashlib.md5()
+    return gethash(filename, hash_function)
+
+
+def getsha256hash(filename):
+    """
+    Returns the SHA-256 hash value of a file as a hex string.
+    """
+    hash_function = hashlib.sha256()
+    return gethash(filename, hash_function)
 
 
 def isApplication(pathname):
