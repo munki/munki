@@ -399,14 +399,7 @@ def main():
             if os.path.isfile(item):
                 itemsize = int(os.path.getsize(item))
                 itemhash = munkicommon.getsha256hash(item)
-            if os.path.isdir(item):
-                # need to walk the dir and add it all up
-                for (path, dirs, files) in os.walk(item):
-                    for name in files:
-                        filename = os.path.join(path, name)
-                        # use os.lstat so we don't follow symlinks
-                        itemsize += int(os.lstat(filename).st_size)
-        
+            
             if item.endswith('.dmg'):
                 catinfo = getCatalogInfoFromDmg(item, options)
                 if (catinfo and 
@@ -431,10 +424,23 @@ def main():
                         "%s doesn't appear to be a valid installer item!" % \
                          item
                     exit(-1)
+                if os.path.isdir(item):
+                    print >> sys.stderr, (
+                        "WARNING: %s is a bundle-style package!\n"
+                        "To use it with munki, you should encapsulate it "
+                        "in a disk image.\n")  % item
+                    # need to walk the dir and add it all up
+                    for (path, dirs, files) in os.walk(item):
+                        for name in files:
+                            filename = os.path.join(path, name)
+                            # use os.lstat so we don't follow symlinks
+                            itemsize += int(os.lstat(filename).st_size)
+                
             
             else:
                 print >> sys.stderr, "%s is not an installer package!" % item
                 exit(-1)
+                
             
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash
