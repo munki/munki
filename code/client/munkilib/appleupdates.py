@@ -216,13 +216,19 @@ def parseDist(filename):
             line = line[line.find("'")+1:]
             
         if keep:
+            # replace escaped single quotes
+            line = line.replace("\\'","'")
             if line == "';":
                 # we're done
+                break
+            elif line.endswith("';"):
+                # done
+                description += line[0:-2]
                 break
             else:
                 # append the line to the description
                 description += line + "\n"
-                
+                 
     return title, vers, description
     
 
