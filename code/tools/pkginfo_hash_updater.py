@@ -39,8 +39,8 @@ import hashlib
 try:
   import plistlib
 except ImportError:
-  print 'ERROR: could not import module "plistlib." Please install it and try '
-        'again.'
+  print ('ERROR: could not import module "plistlib." Please install it and try '
+         'again.')
   import sys
   sys.exit(1)
 
