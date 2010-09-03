@@ -209,6 +209,7 @@ def parseDist(filename):
             vers = line[9:]
             vers = vers[vers.find('"')+1:-2]
         if line.startswith('"SU_DESCRIPTION"'):
+            description = ""
             keep = True
             # lop off "SU_DESCRIPTION"
             line = line[16:]
