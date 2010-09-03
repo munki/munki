@@ -22,7 +22,13 @@ pkginfo plists in the pkgsinfo directory of a Munki repo with a SHA-256 hash of
 the corresponding package.
 
 This script will run from Mac OSX or Linux alike, and it is safe to run more
-than once on any pkginfo plist(s).
+than once on any pkginfo plist(s). However, it is recommended that you backup
+your plists before running this script!
+
+Dependencies:
+- Linux: Python2.6 or higher, or 2.4/2.5 with python-plistlib manually
+         installed: http://docs.python.org/library/plistlib.html
+- Mac OSX: Python2.4 or higher.
 
 Created on 2010-09-02.
 """
@@ -30,7 +36,13 @@ Created on 2010-09-02.
 import optparse
 import os
 import hashlib
-import plistlib
+try:
+  import plistlib
+except ImportError:
+  print 'ERROR: could not import module "plistlib." Please install it and try '
+        'again.'
+  import sys
+  sys.exit(1)
 
 
 MUNKI_ROOT_PATH = '/var/www/munki/repo'
