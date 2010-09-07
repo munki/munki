@@ -305,7 +305,7 @@ def archive_report():
         proc = subprocess.Popen(['/bin/ls', '-t1', archivepath],
                                 bufsize=1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, err) = proc.communicate()
+        (output, unused_err) = proc.communicate()
         if output:
             archiveitems = [item
                             for item in str(output).splitlines()
@@ -357,7 +357,7 @@ def currentGUIusers():
     proc = subprocess.Popen("/usr/bin/who", shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = proc.communicate()
+    (output, unused_err) = proc.communicate()
     lines = str(output).splitlines()
     for line in lines:
         if "console" in line:
@@ -373,7 +373,7 @@ def pythonScriptRunning(scriptname):
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    (out, unused_err) = proc.communicate()
     mypid = os.getpid()
     lines = str(out).splitlines()
     for line in lines:
@@ -419,8 +419,8 @@ def mountdmg(dmgpath, use_shadow=False):
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
-    if err:
-        display_error("Error %s mounting %s." % (err, dmgname))
+    if proc.returncode:
+        display_error("Error: '%s' while mounting %s." % (err, dmgname))
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         for entity in plist['system-entities']:
@@ -434,12 +434,10 @@ def unmountdmg(mountpoint):
     """
     Unmounts the dmg at mountpoint
     """
-    proc = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint],
-                            bufsize=1, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (ouptut, err) = proc.communicate()
-    if proc.returncode:
-        display_warning("Attempting to force unmount %s" % mountpoint)
+    retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint])
+    if retcode:
+        display_warning("Polite unmount failed. "
+                        "Attempting to force unmount %s" % mountpoint)
         # try forcing the unmount
         retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint,
                                 '-force'])
@@ -594,7 +592,7 @@ def getInstallerPkgInfo(filename):
                              "-plist", "-pkg", filename],
                              bufsize=1, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    (out, unused_err) = proc.communicate()
 
     if out:
         # discard any lines at the beginning that aren't part of the plist
@@ -722,11 +720,6 @@ def parsePkgRefs(filename):
         for ref in pkgrefs:
             keys = ref.attributes.keys()
             if 'id' in keys and 'version' in keys:
-                #if debug:
-                #    for key in keys:
-                #        print key, "=>", \
-                #              ref.attributes[key].value.encode('UTF-8')
-
                 pkginfo = {}
                 pkginfo['packageid'] = \
                              ref.attributes['id'].value.encode('UTF-8')
@@ -744,11 +737,6 @@ def parsePkgRefs(filename):
             for ref in pkgrefs:
                 keys = ref.attributes.keys()
                 if 'identifier' in keys and 'version' in keys:
-                    #if debug:
-                    #    for key in keys:
-                    #        print key, "=>", \
-                    #              ref.attributes[key].value.encode('UTF-8')
-
                     pkginfo = {}
                     pkginfo['packageid'] = \
                            ref.attributes['identifier'].value.encode('UTF-8')
@@ -976,24 +964,20 @@ def getInstalledPackageVersion(pkgid):
                              bufsize=1,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    (out, unused_err) = proc.communicate()
 
     if out:
         try:
             plist = FoundationPlist.readPlistFromString(out)
-
-            if "pkgid" in plist:
-                foundbundleid = plist["pkgid"]
-            if "pkg-version" in plist:
-                foundvers = plist["pkg-version"]
-
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass      
+        else:
+            foundbundleid = plist.get("pkgid")
+            foundvers = plist.get("pkg-version","0.0.0.0.0")
             if pkgid == foundbundleid:
                 display_debug2("\tThis machine has %s, version %s" %
                                 (pkgid, foundvers))
             return padVersionString(foundvers, 5)
-        except (AttributeError,
-                FoundationPlist.NSPropertyListSerializationException):
-            pass
 
     # If we got to this point, we haven't found the pkgid yet.
     # Check /Library/Receipts
@@ -1148,7 +1132,7 @@ def getAvailableDiskSpace(volumepath="/"):
                             bufsize=1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    (out, unused_err) = proc.communicate()
     if out:
         try:
             plist = FoundationPlist.readPlistFromString(out)

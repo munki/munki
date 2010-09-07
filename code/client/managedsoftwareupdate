@@ -516,14 +516,6 @@ def main():
         # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
         if munkicommon.pref('InstallAppleSoftwareUpdates'):
-            if options.munkistatusoutput:
-                munkistatus.message("Checking for available "
-                                    "Apple Software Updates...")
-                munkistatus.detail("")
-                munkistatus.percent(-1)
-            else:
-                munkicommon.display_status("Checking for available "
-                                           "Apple Software Updates...")
             try:
                 if appleupdates.appleSoftwareUpdatesAvailable(
                     forcecheck=(options.manualcheck or 

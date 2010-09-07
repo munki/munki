@@ -435,12 +435,12 @@ def main():
                             filename = os.path.join(path, name)
                             # use os.lstat so we don't follow symlinks
                             itemsize += int(os.lstat(filename).st_size)
-                
-            
+                    # convert to kbytes
+                    itemsize = int(itemsize/1024)
+           
             else:
                 print >> sys.stderr, "%s is not an installer package!" % item
                 exit(-1)
-                
             
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash

@@ -42,7 +42,7 @@ def getCurrentSoftwareUpdateServer():
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    (out, unused_err) = proc.communicate()
     if proc.returncode == 0:
         return str(out).rstrip('\n')
     else:
@@ -55,7 +55,7 @@ def selectSoftwareUpdateServer():
         cmd = ['/usr/bin/defaults', 'write',
                '/Library/Preferences/com.apple.SoftwareUpdate',
                'CatalogURL', munkicommon.pref('SoftwareUpdateServerURL')]
-        retcode = subprocess.call(cmd)
+        unused_retcode = subprocess.call(cmd)
 
 
 def restoreSoftwareUpdateServer(theurl):
@@ -69,7 +69,7 @@ def restoreSoftwareUpdateServer(theurl):
             cmd = ['/usr/bin/defaults', 'delete',
                    '/Library/Preferences/com.apple.SoftwareUpdate', 
                    'CatalogURL']
-        retcode = subprocess.call(cmd)
+        unused_retcode = subprocess.call(cmd)
         
         
 def setupSoftwareUpdateCheck():
@@ -78,19 +78,27 @@ def setupSoftwareUpdateCheck():
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
            'com.apple.SoftwareUpdate', 'AgreedToLicenseAgreement', 
            '-bool', 'YES']
-    retcode = subprocess.call(cmd)
+    unused_retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
            'com.apple.SoftwareUpdate', 'AutomaticDownload', 
            '-bool', 'YES']
-    retcode = subprocess.call(cmd)
+    unused_retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
            'com.apple.SoftwareUpdate', 'LaunchAppInBackground', 
            '-bool', 'YES']
-    retcode = subprocess.call(cmd)
+    unused_retcode = subprocess.call(cmd)
     
     
 def checkForSoftwareUpdates():
     '''Does our Apple Software Update check'''
+    if munkicommon.munkistatusoutput:
+        munkistatus.message("Checking for available "
+                            "Apple Software Updates...")
+        munkistatus.detail("")
+        munkistatus.percent(-1)
+    else:
+        munkicommon.display_status("Checking for available "
+                                   "Apple Software Updates...")
     # save the current SUS URL
     original_url = getCurrentSoftwareUpdateServer()
     # switch to a different SUS server if specified
@@ -135,7 +143,9 @@ def checkForSoftwareUpdates():
         if not output and (proc.poll() != None):
             break
         # send the output to STDOUT or MunkiStatus as applicable
-        munkicommon.display_status(output.rstrip('\n'))
+        # But first, filter out some noise...
+        if not output.contains("Missing bundle identifier"):
+            munkicommon.display_status(output.rstrip('\n'))
     
     retcode = proc.poll()
     if retcode:
@@ -154,7 +164,7 @@ def checkForSoftwareUpdates():
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, 
                                 stderr=subprocess.PIPE)
-        (out, err) = proc.communicate()
+        (out, unused_err) = proc.communicate()
         if proc.returncode == 0:
             try:
                 LastResultCode = int(str(out).rstrip('\n'))
@@ -215,7 +225,7 @@ def parseDist(filename):
             line = line[16:]
             # lop off everything up through '
             line = line[line.find("'")+1:]
-            
+        
         if keep:
             # replace escaped single quotes
             line = line.replace("\\'","'")
@@ -229,8 +239,30 @@ def parseDist(filename):
             else:
                 # append the line to the description
                 description += line + "\n"
+            
+    # now try to extract the size
+    itemsize = 0
+    if gui_scripts:
+        pkgrefs = gui_scripts[0].getElementsByTagName("pkg-ref")
+        if pkgrefs:
+            for ref in pkgrefs:
+                keys = ref.attributes.keys()
+                if 'installKBytes' in keys:
+                    itemsize = int(
+                            ref.attributes[
+                            'installKBytes'].value.encode('UTF-8'))
+                    break
+            
+    if itemsize == 0:
+        for (path, dirs, files) in os.walk(os.path.dirname(filename)):
+            for name in files:
+                pathname = os.path.join(path, name)
+                # use os.lstat so we don't follow symlinks
+                itemsize += int(os.lstat(pathname).st_size)
+        # convert to kbytes
+        itemsize = int(itemsize/1024)   
                  
-    return title, vers, description
+    return title, vers, description, itemsize
     
 
 def getRestartInfo(installitemdir):
@@ -261,7 +293,7 @@ def getRestartInfo(installitemdir):
                                     bufsize=1, 
                                     stdout=subprocess.PIPE, 
                                     stderr=subprocess.PIPE)
-            (out, err) = proc.communicate()
+            (out, unused_err) = proc.communicate()
             if out:
                 thisAction = str(out).rstrip('\n')
                 if thisAction in weight.keys():
@@ -289,7 +321,9 @@ def getSoftwareUpdateInfo():
                     for subitem in os.listdir(installitem):
                         if subitem.endswith('.dist'):
                             distfile = os.path.join(installitem, subitem)
-                            (title, vers, description) = parseDist(distfile)
+                            (title, vers, 
+                                description, 
+                                installedsize) = parseDist(distfile)
                             iteminfo = {}
                             iteminfo["installer_item"] = updatename
                             iteminfo["name"] = title
@@ -299,6 +333,7 @@ def getSoftwareUpdateInfo():
                                                 "Updated Apple software."
                             iteminfo["version_to_install"] = vers
                             iteminfo['display_name'] = title
+                            iteminfo['installed_size'] = installedsize
                             restartAction = getRestartInfo(installitem)
                             if restartAction != "None":
                                 iteminfo['RestartAction'] = restartAction
@@ -373,7 +408,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     if forcecheck:
         # typically because user initiated the check from
         # Managed Software Update.app
-        retcode = checkForSoftwareUpdates()
+        unused_retcode = checkForSoftwareUpdates()
     elif suppresscheck:
         # typically because we're doing a logout install; if
         # there are no waiting Apple Updates we shouldn't 
@@ -390,7 +425,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         proc = subprocess.Popen(cmd, bufsize=1, 
                                 stdout=subprocess.PIPE, 
                                 stderr=subprocess.PIPE)
-        (out, err) = proc.communicate()
+        (out, unused_err) = proc.communicate()
         
         lastSUcheckString = str(out).rstrip('\n')
         if lastSUcheckString:
@@ -401,7 +436,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
             except (ValueError, TypeError):
                 pass
         if now.timeIntervalSinceDate_(nextSUcheck) >= 0:
-            retcode = checkForSoftwareUpdates()
+            unused_retcode = checkForSoftwareUpdates()
         
     if writeAppleUpdatesFile():
         displayAppleUpdateInfo()
