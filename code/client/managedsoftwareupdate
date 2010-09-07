@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,9 @@ from munkilib import FoundationPlist
 
 
 def getIdleSeconds():
-    '''Gets the number of seconds since the last mouse or keyboard event'''
+    """Returns the number of seconds since the last mouse or keyboard event."""
     cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4']
-    proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
+    proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = proc.communicate()
     ioreglines = str(output).splitlines()
@@ -46,42 +46,52 @@ def getIdleSeconds():
         if "Idle" in line:
             parts = line.split()
             return int(int(parts[3])/1000000000)
-            
-            
+
+
 def networkUp():
-    '''Determine if the network is up by looking for any non-loopback
-       internet network interfaces.'''
-    cmd = ['/sbin/ifconfig', "-a", "inet"]
-    proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, 
+    """Determine if the network is up by looking for any non-loopback
+       internet network interfaces.
+
+    Returns:
+      Boolean. True if loopback is found (network is up), False otherwise.
+    """
+    cmd = ['/sbin/ifconfig', '-a', 'inet']
+    proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = proc.communicate()
     lines = str(output).splitlines()
     for line in lines:
-        if "inet" in line:
+        if 'inet' in line:
             parts = line.split()
             addr = parts[1]
-            if not addr in ["127.0.0.1", "0.0.0.0.0"]:
+            if not addr in ['127.0.0.1', '0.0.0.0.0']:
                 return True
     return False
-    
-    
+
+
 def clearLastNotifiedDate():
-    '''Clear the last date the user was notified of updates.'''
+    """Clear the last date the user was notified of updates."""
     try:
         plist = FoundationPlist.readPlist(
                                 "/Library/Preferences/ManagedInstalls.plist")
         if plist:
             if 'LastNotifiedDate' in plist:
                 cmd = ['/usr/bin/defaults', 'delete',
-                       '/Library/Preferences/ManagedInstalls', 
+                       '/Library/Preferences/ManagedInstalls',
                        'LastNotifiedDate']
-                retcode = subprocess.call(cmd)
+                unused_retcode = subprocess.call(cmd)
     except FoundationPlist.NSPropertyListSerializationException:
         pass
-        
-        
+
+
 def createDirsIfNeeded(dirlist):
-    '''Create any missing directories needed by the munki tools'''
+    """Create any missing directories needed by the munki tools.
+
+    Args:
+      dirlist: a sequence of directories.
+    Returns:
+      Boolean. True if all directories existed or were created, False otherwise.
+    """
     for directory in dirlist:
         if not os.path.exists(directory):
             try:
@@ -91,18 +101,21 @@ def createDirsIfNeeded(dirlist):
                 return False
 
     return True
-        
-        
+
+
 def initMunkiDirs():
-    '''Figure out where our data directories should be and create them
-       if needed.'''
+    """Figure out where data directories should be and create them if needed.
+
+    Returns:
+      Boolean. True if all data dirs existed or were created, False otherwise.
+    """
     managedinstallprefs = munkicommon.prefs()
     ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
     manifestsdir = os.path.join(ManagedInstallDir, "manifests")
     catalogsdir = os.path.join(ManagedInstallDir, "catalogs")
     cachedir = os.path.join(ManagedInstallDir, "Cache")
     logdir = os.path.join(ManagedInstallDir, "Logs")
-    
+
     if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir,
                                cachedir, logdir]):
         munkicommon.display_error("Could not create needed directories "
@@ -113,19 +126,23 @@ def initMunkiDirs():
 
 
 def doInstallTasks():
-    '''Perform our installation/removal tasks.'''
+    """Perform our installation/removal tasks.
+
+    Returns:
+      Boolean. True if a restart is required, False otherwise.
+    """
     # first, clear the last notified date
     # so we can get notified of new changes after this round
     # of installs
     clearLastNotifiedDate()
     need_to_restart = False
     # munki updates take priority over Apple Updates, because
-    # a munki install or (especially) removal could make a 
+    # a munki install or (especially) removal could make a
     # pending Apple update no longer necessary or even complicate
     # or prevent the removal of another item.
     # Therefore we only install Apple updates if there are no
     # pending munki updates.
-    
+
     if munkiUpdatesAvailable():
         # install munki updates
         try:
@@ -136,7 +153,7 @@ def doInstallTasks():
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
-        
+
         # clear any Apple update info since it may no longer
         # be relevant
         appleupdates.clearAppleUpdateInfo()
@@ -150,13 +167,13 @@ def doInstallTasks():
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
-        
+
     munkicommon.savereport()
     return need_to_restart
 
-        
+
 def doRestart():
-    '''Handle the need for a restart.'''
+    """Handle the need for a restart."""
     restartMessage = "Software installed or removed requires a restart."
     munkicommon.log(restartMessage)
     if munkicommon.munkistatusoutput:
@@ -167,11 +184,11 @@ def doRestart():
     else:
         print restartMessage
         sys.stdout.flush()
-    
+
     if not munkicommon.currentGUIusers():
         # no-one is logged in and we're at the loginwindow
         time.sleep(5)
-        retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
+        unused_retcode = subprocess.call(["/sbin/shutdown", "-r", "now"])
     else:
         if munkicommon.munkistatusoutput:
             # someone is logged in and we're using munkistatus
@@ -185,16 +202,16 @@ def doRestart():
 
 
 def munkiUpdatesAvailable():
-    '''Return True if there are available updates.'''
+    """Return True if there are available updates, False otherwise."""
     updatesavailable = False
-    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'), 
+    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
             plist = FoundationPlist.readPlist(installinfo)
             updatesavailable = len(plist.get('removals', [])) or \
                                len(plist.get('managed_installs', []))
-        except (AttributeError,         
+        except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             munkicommon.display_error("Install info at %s is invalid." %
                                        installinfo)
@@ -202,20 +219,20 @@ def munkiUpdatesAvailable():
 
 
 def recordUpdateCheckResult(result):
-    '''Record last check date and result'''
+    """Record last check date and result"""
     now = NSDate.new()
-    cmd = ['/usr/bin/defaults', 'write', 
-           '/Library/Preferences/ManagedInstalls', 
+    cmd = ['/usr/bin/defaults', 'write',
+           '/Library/Preferences/ManagedInstalls',
            'LastCheckDate', '-date', str(now)]
-    retcode = subprocess.call(cmd)
-    cmd = ['/usr/bin/defaults', 'write', 
-           '/Library/Preferences/ManagedInstalls', 
+    unused_retcode = subprocess.call(cmd)
+    cmd = ['/usr/bin/defaults', 'write',
+           '/Library/Preferences/ManagedInstalls',
            'LastCheckResult', '-int', str(result)]
-    retcode = subprocess.call(cmd)
-   
-    
+    unused_retcode = subprocess.call(cmd)
+
+
 def notifyUserOfUpdates():
-    '''Notify the logged-in user of available updates.'''
+    """Notify the logged-in user of available updates."""
     # called when options.auto == True
     # someone is logged in, and we have updates.
     # if we haven't notified in a while, notify:
@@ -235,35 +252,45 @@ def notifyUserOfUpdates():
     if now.timeIntervalSinceDate_(nextNotifyDate) > 0:
         # record current notification date
         cmd = ['/usr/bin/defaults', 'write',
-               '/Library/Preferences/ManagedInstalls', 
+               '/Library/Preferences/ManagedInstalls',
                'LastNotifiedDate', '-date', str(now)]
-        retcode = subprocess.call(cmd)
-        
-        # Kill Managed Software Update.app if it's already 
+        unused_retcode = subprocess.call(cmd)
+
+        # Kill Managed Software Update.app if it's already
         # open so it will update its display
-        cmd = ["/usr/bin/killall", "Managed Software Update"]
-        retcode = subprocess.call(cmd)
-        
+        cmd = ['/usr/bin/killall', 'Managed Software Update']
+        unused_retcode = subprocess.call(cmd)
+
         # notify user of available updates using LaunchAgent to start
-        # Managed Software Update.app in the user context.        
-        launchfile = "/var/run/com.googlecode.munki.ManagedSoftwareUpdate"
+        # Managed Software Update.app in the user context.
+        launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         cmd = ['/usr/bin/touch', launchfile]
-        retcode = subprocess.call(cmd)
+        unused_retcode = subprocess.call(cmd)
         time.sleep(0.1)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
 
 
-def runPreOrPostFlightScript(script, runtype="custom"):
-    '''Run a pre- or postflight script and return its exit status.'''
-    if os.path.exists(script): 
+def runPreOrPostFlightScript(script, runtype='custom'):
+    """Run a pre- or postflight script and return its exit status.
+
+    Run a pre- or postflight script and return its exit status.
+
+    Args:
+      script: string path to the pre/postflight script to execute.
+      runtype: string mode managedsoftwareupdate was executed with. For more see
+          http://code.google.com/p/munki/wiki/PreflightAndPostflightScripts
+    Returns:
+      Integer exit status from preflight or postflight script.
+    """
+    if os.path.exists(script):
         if os.access(script, os.X_OK):
-            munkicommon.log("Running %s with runtype: %s..." %
+            munkicommon.log('Running %s with runtype: %s...' %
                                                     (script, runtype))
             cmd = [script, runtype]
             proc = subprocess.Popen(cmd, shell=False,
-                                    stdin=subprocess.PIPE, 
-                                    stdout=subprocess.PIPE, 
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             (output, err) = proc.communicate()
             if output:
@@ -274,30 +301,30 @@ def runPreOrPostFlightScript(script, runtype="custom"):
         else:
             munkicommon.display_warning("%s not executable" % script)
     return 0
-    
+
 
 def main():
-    '''Main'''
+    """Main"""
     # check to see if we're root
     if os.geteuid() != 0:
         print >> sys.stderr, "You must run this as root!"
         exit(-1)
-        
+
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-        
+
     p = optparse.OptionParser()
     p.set_usage("""Usage: %prog [options]""")
     p.add_option('--auto', '-a', action='store_true',
                     help='''Used by launchd LaunchAgent for scheduled runs.
-                    No user feedback or intervention. All other options     
+                    No user feedback or intervention. All other options
                     ignored.''')
     p.add_option('--logoutinstall', '-l', action='store_true',
-                    help='''Used by launchd LaunchAgent when running at the 
+                    help='''Used by launchd LaunchAgent when running at the
                     loginwindow.''')
     p.add_option('--installwithnologout', action='store_true',
-                    help='''Used by Managed Software Update.app when user 
-                            triggers an install without logging out.''')    
+                    help='''Used by Managed Software Update.app when user
+                            triggers an install without logging out.''')
     p.add_option('--manualcheck', action='store_true',
                     help='''Used by launchd LaunchAgent when checking
                     manually.''')
@@ -307,68 +334,68 @@ def main():
     p.add_option('--id', default='',
                     help='Alternate identifier for catalog retreival')
     p.add_option('--quiet', '-q', action='store_true',
-                    help='''Quiet mode. Logs messages, but nothing to stdout. 
+                    help='''Quiet mode. Logs messages, but nothing to stdout.
                     --verbose is ignored if --quiet is used.''')
     p.add_option('--verbose', '-v', action='count', default=1,
                     help='''More verbose output. May be specified multiple
                      times.''')
     p.add_option('--checkonly', action='store_true',
-                       help='''Check for updates, but don't install them. 
+                       help='''Check for updates, but don't install them.
                        This is the default behavior.''')
     p.add_option('--installonly', action='store_true',
                        help='Skip checking and install any pending updates.')
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
-        
+
     options, arguments = p.parse_args()
-    runtype = "custom"
-    
+    runtype = 'custom'
+
     checkandinstallatstartupflag = \
                "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
     installatstartupflag = \
                "/Users/Shared/.com.googlecode.munki.installatstartup"
     installatlogoutflag = "/private/tmp/com.googlecode.munki.installatlogout"
-    
+
     if options.version:
         print munkicommon.get_version()
         exit(0)
-    
+
     if options.auto:
         # typically invoked by a launch daemon periodically.
         # munkistatusoutput is false for checking, but true for installing
-        runtype = "auto"
+        runtype = 'auto'
         options.munkistatusoutput = False
         options.quiet = True
         options.checkonly = False
         options.installonly = False
-        
+
     if options.logoutinstall:
         # typically invoked by launchd agent
         # running in the LoginWindow context
-        runtype = "logoutinstall"
+        runtype = 'logoutinstall'
         options.munkistatusoutput = True
         options.quiet = True
         options.checkonly = False
         options.installonly = True
-        # if we're running at the loginwindow, 
-        # let's make sure the user triggered 
+        # if we're running at the loginwindow,
+        # let's make sure the user triggered
         # the update before logging out, or we triggered it before restarting.
         user_triggered = False
         flagfiles = [checkandinstallatstartupflag,
-                        installatstartupflag,
-                        installatlogoutflag]
+                     installatstartupflag,
+                     installatlogoutflag]
         for filename in flagfiles:
             if os.path.exists(filename):
                 user_triggered = True
                 if filename == checkandinstallatstartupflag:
-                    runtype = "checkandinstallatstartup"
+                    runtype = 'checkandinstallatstartup'
                     options.installonly = False
                     options.auto = True
                     # HACK: sometimes this runs before the network is up.
                     # we'll attempt to wait up to 10 seconds for the
                     # network interfaces to come up
                     # before continuing
-                    munkicommon.display_status("Waiting for network...")
+                    munkicommon.display_status('Waiting for network...')
                     for i in range(5):
                         if networkUp():
                             break
@@ -378,21 +405,21 @@ def main():
                     os.unlink(filename)
         if not user_triggered:
             exit(0)
-            
+
     if options.installwithnologout:
         # typically invoked by Managed Software Update.app
         # by user who decides not to logout
         launchdtriggerfile = \
-            "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
+            '/private/tmp/.com.googlecode.munki.managedinstall.launchd'
         if os.path.exists(launchdtriggerfile):
             # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
-        runtype = "installwithnologout"
+        runtype = 'installwithnologout'
         options.munkistatusoutput = True
         options.quiet = True
         options.checkonly = False
         options.installonly = True
-        
+
     if options.manualcheck:
         # triggered by Managed Software Update.app
         launchdtriggerfile = \
@@ -400,27 +427,27 @@ def main():
         if os.path.exists(launchdtriggerfile):
             # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
-        runtype = "manualcheck"
+        runtype = 'manualcheck'
         options.munkistatusoutput = True
         options.quiet = True
         options.checkonly = True
         options.installonly = False
-        
+
     if options.quiet:
         options.verbose = 0
-                           
+
     if options.checkonly and options.installonly:
         print >> sys.stderr, \
               "--checkonly and --installonly options are mutually exclusive!"
         exit(-1)
-        
+
     # run the preflight script if it exists
-    preflightscript = os.path.join(scriptdir, "preflight")
+    preflightscript = os.path.join(scriptdir, 'preflight')
     result = runPreOrPostFlightScript(preflightscript, runtype)
     if result:
         # non-zero return code means don't run
-        munkicommon.display_info("managedsoftwareupdate run aborted by"
-                                 " preflight script: %s" % result)
+        munkicommon.display_info('managedsoftwareupdate run aborted by'
+                                 ' preflight script: %s' % result)
         # record the check result for use by Managed Software Update.app
         # right now, we'll return the same code as if the munki server
         # was unavailable. We need to revisit this and define additional
@@ -431,11 +458,11 @@ def main():
             munkistatus.activate()
             munkistatus.quit()
         exit(-1)
-        
+
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
-    
+
     # create needed directories if necessary
     if not initMunkiDirs():
         exit(-1)
@@ -445,11 +472,11 @@ def main():
     if munkicommon.pythonScriptRunning(myname):
         # another instance of this script is running, so we should quit
         if options.manualcheck:
-            # a manual update check was triggered 
+            # a manual update check was triggered
             # (probably by Managed Software Update), but managedsoftwareupdate
             # is already running. We should provide user feedback
             munkistatus.activate()
-            munkistatus.message("Checking for available updates...")
+            munkistatus.message('Checking for available updates...')
             while True:
                 # loop til the other instance exits
                 if not munkicommon.pythonScriptRunning(myname):
@@ -458,13 +485,13 @@ def main():
                 if munkistatus.getStopButtonState() == 1:
                     break
                 time.sleep(0.5)
-                
+
             munkistatus.quit()
         else:
             print >> sys.stderr, \
-              "Another instance of %s is running. Exiting." % myname
+              'Another instance of %s is running. Exiting.' % myname
         exit(0)
-        
+
     if not options.installonly:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
@@ -481,7 +508,7 @@ def main():
                 munkistatus.activate()
                 munkistatus.quit()
             exit(-1)
-        
+
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
     munkicommon.reset_warnings()
@@ -490,12 +517,12 @@ def main():
     # start a new report
     munkicommon.report['StartTime'] = time.ctime()
     munkicommon.report['RunType'] = runtype
-    
-    if options.verbose: 
+
+    if options.verbose:
         print "Managed Software Update Tool"
         print "Copyright 2010 The Munki Project"
         print "http://code.google.com/p/munki\n"
-        
+
     updatecheckresult = None
     if not options.installonly:
         try:
@@ -505,10 +532,10 @@ def main():
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
-        
+
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-        
+
     updatesavailable = munkiUpdatesAvailable()
     #if not updatesavailable and (options.auto or options.manualcheck):
     if not updatesavailable and not options.installonly and \
@@ -518,7 +545,7 @@ def main():
         if munkicommon.pref('InstallAppleSoftwareUpdates'):
             try:
                 if appleupdates.appleSoftwareUpdatesAvailable(
-                    forcecheck=(options.manualcheck or 
+                    forcecheck=(options.manualcheck or
                                 runtype == "checkandinstallatstartup")):
                     updatesavailable = True
             except:
@@ -526,7 +553,7 @@ def main():
                 munkicommon.display_error(traceback.format_exc())
                 munkicommon.savereport()
                 exit(-1)
-    
+
     if not updatesavailable and options.installonly and \
        munkicommon.pref('InstallAppleSoftwareUpdates'):
         # just look and see if there are already downloaded Apple updates
@@ -541,10 +568,10 @@ def main():
             exit(-1)
 
     if options.auto:
-        # when --auto,  munkistatusoutput is false for checking, 
+        # when --auto,  munkistatusoutput is false for checking,
         # but true for installing
-        munkicommon.munkistatusoutput = True         
-        
+        munkicommon.munkistatusoutput = True
+
     mustrestart = False
     if options.manualcheck:
         # just quit munkistatus; Managed Software Update will notify
@@ -586,44 +613,44 @@ def main():
         if options.installonly and not options.quiet:
             print "Nothing to install or remove."
         if runtype == "checkandinstallatstartup":
-            # we have nothing to do, so remove the 
-            # checkandinstallatstartupflag file 
+            # we have nothing to do, so remove the
+            # checkandinstallatstartupflag file
             # so we'll stop running at startup/logout
             if os.path.exists(checkandinstallatstartupflag):
                 os.unlink(checkandinstallatstartupflag)
-    
+
     # finish our report
-    munkicommon.report['EndTime'] = time.ctime()      
+    munkicommon.report['EndTime'] = time.ctime()
     munkicommon.report['ManagedInstallVersion'] = munkicommon.get_version()
     munkicommon.report['AvailableDiskSpace'] = \
                                         munkicommon.getAvailableDiskSpace()
     munkicommon.report['ConsoleUser'] = munkicommon.getconsoleuser() or \
                                         "<None>"
     munkicommon.savereport()
-    
+
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, "postflight")
     result = runPreOrPostFlightScript(postflightscript, runtype)
     # we ignore the result of the postflight
-           
+
     if munkicommon.tmpdir:
         munkicommon.cleanUpTmpDir()
     if mustrestart:
         doRestart()
     elif munkicommon.munkistatusoutput:
         munkistatus.quit()
-        
+
     if runtype == "checkandinstallatstartup" and not mustrestart:
         if os.path.exists(checkandinstallatstartupflag):
             # we installed things but did not need to restart; we need to run
             # again to check for more updates.
             if not munkicommon.currentGUIusers() and getIdleSeconds() > 10:
                 # no-one is logged in and the machine has been idle for a few
-                # seconds; kill the loginwindow 
+                # seconds; kill the loginwindow
                 # (which will cause us to run again)
                 munkicommon.log("Killing loginwindow so we will run again...")
                 cmd = ['/usr/bin/killall', 'loginwindow']
-                retcode = subprocess.call(cmd)
-    
+                unused_retcode = subprocess.call(cmd)
+
 if __name__ == '__main__':
     main()
