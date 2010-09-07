@@ -238,7 +238,13 @@ class MSUAppDelegate(NSObject):
             row['name'] = item.get("display_name") or item['name']
             row['version'] = munki.trimVersionString(item.get("version_to_install"),3)
             row['description'] = item.get("description","")
-            row['size'] = munki.humanReadable(item.get("installer_item_size",0))
+            if item.get("installer_item_size"):
+                row['size'] = munki.humanReadable(item.get("installer_item_size"))
+            elif item.get("installed_size"):
+                row['size'] = munki.humanReadable(item.get("installed_size"))
+            else:
+                row['size'] = ""
+
             if row['installed']:
                 if item.get("needs_update"):
                     status = "Update available"
@@ -303,6 +309,8 @@ class MSUAppDelegate(NSObject):
             row['version'] = munki.trimVersionString(item.get("version_to_install"),3)
             if item.get("installer_item_size"):
                 row['size'] = munki.humanReadable(item.get("installer_item_size"))
+            elif item.get("installed_size"):
+                row['size'] = munki.humanReadable(item.get("installed_size"))
             else:
                 row['size'] = ""
             row['description'] = item.get("description","")
