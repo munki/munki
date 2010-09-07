@@ -90,7 +90,8 @@ def createDirsIfNeeded(dirlist):
     Args:
       dirlist: a sequence of directories.
     Returns:
-      Boolean. True if all directories existed or were created, False otherwise.
+      Boolean. True if all directories existed or were created, 
+      False otherwise.
     """
     for directory in dirlist:
         if not os.path.exists(directory):
@@ -274,12 +275,12 @@ def notifyUserOfUpdates():
 def runPreOrPostFlightScript(script, runtype='custom'):
     """Run a pre- or postflight script and return its exit status.
 
-    Run a pre- or postflight script and return its exit status.
-
     Args:
       script: string path to the pre/postflight script to execute.
-      runtype: string mode managedsoftwareupdate was executed with. For more see
+      runtype: string mode managedsoftwareupdate was executed with. 
+      For more info see
           http://code.google.com/p/munki/wiki/PreflightAndPostflightScripts
+          
     Returns:
       Integer exit status from preflight or postflight script.
     """
