@@ -434,10 +434,13 @@ def unmountdmg(mountpoint):
     """
     Unmounts the dmg at mountpoint
     """
-    retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint])
-    if retcode:
-        display_warning("Polite unmount failed. "
-                        "Attempting to force unmount %s" % mountpoint)
+    proc = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint],
+                                bufsize=1, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    (unused_output, err) = proc.communicate()
+    if proc.returncode:
+        display_warning("Polite unmount failed: %s" % err)
+        display_info("Attempting to force unmount %s" % mountpoint)
         # try forcing the unmount
         retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint,
                                 '-force'])
