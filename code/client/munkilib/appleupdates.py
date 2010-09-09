@@ -144,7 +144,7 @@ def checkForSoftwareUpdates():
             break
         # send the output to STDOUT or MunkiStatus as applicable
         # But first, filter out some noise...
-        if not output.contains("Missing bundle identifier"):
+        if "Missing bundle identifier" not in output:
             munkicommon.display_status(output.rstrip('\n'))
     
     retcode = proc.poll()
