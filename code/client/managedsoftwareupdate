@@ -278,13 +278,20 @@ def runPreOrPostFlightScript(script, runtype='custom'):
     Args:
       script: string path to the pre/postflight script to execute.
       runtype: string mode managedsoftwareupdate was executed with. 
-      For more info see
+          For more info see
           http://code.google.com/p/munki/wiki/PreflightAndPostflightScripts
           
     Returns:
       Integer exit status from preflight or postflight script.
     """
     if os.path.exists(script):
+        try:
+            munkicommon.verifyFileOnlyWritableByMunkiAndRoot(script)
+        except munkicommon.VerifyFilePermissionsError, e:
+            msg = ("Skipping execution due to failed file permissions "
+                   "verification: %s\n%s" % (script, str(e)))
+            munkicommon.display_warning(msg)
+            return 0  # preflight/postflight does not get run 
         if os.access(script, os.X_OK):
             munkicommon.log('Running %s with runtype: %s...' %
                                                     (script, runtype))
