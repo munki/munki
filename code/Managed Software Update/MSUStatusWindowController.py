@@ -23,6 +23,8 @@
 import os
 import socket
 import objc
+import munki
+import FoundationPlist
 from Foundation import *
 from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 from AppKit import *
@@ -33,24 +35,11 @@ debug = False
 class NSPropertyListSerializationException(Exception):
     pass
 
-def readPlist(filepath):
-    """
-    Read a .plist file from filepath.  Return the unpacked root object
-    (which usually is a dictionary).
-    """
-    plistData = NSData.dataWithContentsOfFile_(filepath)
-    dataObject, plistFormat, error = NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(plistData, NSPropertyListMutableContainers, None, None)
-    if error:
-        raise NSPropertyListSerializationException(error)
-    else:
-        return dataObject
-        
-        
 def getLoginwindowPicture():
     desktopPicturePath = ''
     loginwindowPrefsPath = "/Library/Preferences/com.apple.loginwindow.plist"
     if os.path.exists(loginwindowPrefsPath):
-        loginwindowPrefs = readPlist(loginwindowPrefsPath)
+        loginwindowPrefs = FoundationPlist.readPlist(loginwindowPrefsPath)
         if loginwindowPrefs:
             desktopPicturePath = loginwindowPrefs.get('DesktopPicture', '')
             if desktopPicturePath:
@@ -68,12 +57,7 @@ def getLoginwindowPicture():
     else:
         return NSImage.imageNamed_("Solid Aqua Blue")
     
-                
-def getconsoleuser():
-    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
-    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
-    return cfuser[0]
-    
+
     
 class MSUStatusWindowController(NSObject):
     '''
@@ -107,7 +91,7 @@ class MSUStatusWindowController(NSObject):
     
     def startMunkiStatusSession(self):
         NSLog(u"Managed Software Update.app PID: %s" % os.getpid())
-        consoleuser = getconsoleuser()
+        consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
             if self.backdropWindow:
                 self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)

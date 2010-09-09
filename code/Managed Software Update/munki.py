@@ -154,6 +154,13 @@ def trimVersionString(versString, tupleCount):
         components = components[0:tupleCount]
     return ".".join(components)
 
+    
+def getconsoleuser():
+    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+    return cfuser[0]
+
+
 def currentGUIusers():
     '''Gets a list of GUI users by parsing the output of /usr/bin/who'''
     gui_users = []

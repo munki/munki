@@ -24,12 +24,6 @@ import os
 import munki
 import PyObjCTools
 
-def getconsoleuser():
-    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
-    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
-    return cfuser[0]
-
-
 class MSUAppDelegate(NSObject):
 
     munkiStatusController = objc.IBOutlet()
@@ -61,7 +55,7 @@ class MSUAppDelegate(NSObject):
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
                     
-        consoleuser = getconsoleuser()
+        consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
             # Status Window only
             NSMenu.setMenuBarVisible_(NO)
@@ -84,7 +78,7 @@ class MSUAppDelegate(NSObject):
                 self.checkForUpdates()
     
     def munkiStatusSessionEnded_(self, socketSessionResult):
-        consoleuser = getconsoleuser()
+        consoleuser = munki.getconsoleuser()
         if self.runmode == "MunkiStatus" or consoleuser == None or consoleuser == u"loginwindow":
             # Status Window only, so we should just quit
             NSApp.terminate_(self)
@@ -227,11 +221,11 @@ class MSUAppDelegate(NSObject):
             # current install state
             row['installed'] = item.get("installed", objc.NO)
             # user desired state
-            will_be_state = objc.NO
-            if item.get("installed") or item.get("will_be_installed"):
-                will_be_state = objc.YES
-            if item.get("will_be_removed"):
-                will_be_state = objc.NO
+            #will_be_state = objc.NO
+            #if item.get("installed") or item.get("will_be_installed"):
+            #    will_be_state = objc.YES
+            #if item.get("will_be_removed"):
+            #    will_be_state = objc.NO
             row['managed'] = (item['name'] in selfserve_installs)
             row['original_managed'] = (item['name'] in selfserve_installs)
             row['itemname'] = item['name']
@@ -269,8 +263,7 @@ class MSUAppDelegate(NSObject):
             row_dict = NSMutableDictionary.dictionaryWithDictionary_(row)
             table.append(row_dict)
             
-        if table:
-            self.optional_view_controller.setOptionallist_(table)
+        self.optional_view_controller.setOptionallist_(table)
         self.optional_view_controller.tableView.deselectAll_(self)
         
     
