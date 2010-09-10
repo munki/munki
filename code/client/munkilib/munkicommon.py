@@ -38,6 +38,10 @@ import munkistatus
 import FoundationPlist
 
 
+MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/ManagedInstalls.plist'
+MANAGED_INSTALLS_PLIST_PATH_NO_EXT = '/Library/Preferences/ManagedInstalls'
+
+
 class Error(Exception):
     """Class for domain specific exceptions."""
 
@@ -51,7 +55,7 @@ class InsecureFilePermissionsError(VerifyFilePermissionsError):
 
 
 def get_version():
-    '''Returns version of munkitools'''
+    """Returns version of munkitools"""
     return "0.6.0 Build 709"
 
 
@@ -171,7 +175,7 @@ def display_debug2(msg):
 
 
 def reset_warnings():
-    '''Rotate our warnings log.'''
+    """Rotate our warnings log."""
     warningsfile = os.path.join(os.path.dirname(pref("LogFile")),
                                                 "warnings.log")
     if os.path.exists(warningsfile):
@@ -192,7 +196,7 @@ def display_warning(msg):
 
 
 def reset_errors():
-    '''Rotate our errors.log'''
+    """Rotate our errors.log"""
     errorsfile = os.path.join(os.path.dirname(pref("LogFile")), "errors.log")
     if os.path.exists(errorsfile):
         rotatelog(errorsfile)
@@ -212,7 +216,7 @@ def display_error(msg):
 
 
 def log(msg, logname=''):
-    '''Generic logging function'''
+    """Generic logging function"""
     # date/time format string
     formatstr = "%b %d %H:%M:%S"
     if not logname:
@@ -232,7 +236,7 @@ def log(msg, logname=''):
 
 
 def rotatelog(logname=''):
-    '''Rotate a log'''
+    """Rotate a log"""
     if not logname:
         # use our regular logfile
         logpath = pref("LogFile")
@@ -255,14 +259,14 @@ def rotatelog(logname=''):
 
 
 def rotate_main_log():
-    '''Rotate our main log'''
+    """Rotate our main log"""
     if os.path.exists(pref("LogFile")):
         if os.path.getsize(pref("LogFile")) > 1000000:
             rotatelog(pref("LogFile"))
 
 
 def printreportitem(label, value, indent=0):
-    '''Prints a report item in an "attractive" way'''
+    """Prints a report item in an "attractive" way"""
     indentspace = "    "
     if type(value) == type(None):
         print indentspace*indent, "%s: !NONE!" % label
@@ -289,13 +293,13 @@ def printreport(reportdict):
 
 
 def savereport():
-    '''Save our report'''
+    """Save our report"""
     FoundationPlist.writePlist(report,
         os.path.join(pref('ManagedInstallDir'), "ManagedInstallReport.plist"))
 
 
 def archive_report():
-    '''Archive a report'''
+    """Archive a report"""
     reportfile = os.path.join(pref('ManagedInstallDir'),
                               "ManagedInstallReport.plist")
     if os.path.exists(reportfile):
@@ -338,8 +342,8 @@ def archive_report():
 # misc functions
 
 def validPlist(path):
-    '''Uses plutil to determine if path contains a valid plist.
-    Returns True or False.'''
+    """Uses plutil to determine if path contains a valid plist.
+    Returns True or False."""
     retcode = subprocess.call(['/usr/bin/plutil', '-lint', '-s' , path])
     if retcode == 0:
         return True
@@ -358,14 +362,14 @@ def stopRequested():
 
 
 def getconsoleuser():
-    '''Return console user'''
+    """Return console user"""
     from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
 
 
 def currentGUIusers():
-    '''Gets a list of GUI users by parsing the output of /usr/bin/who'''
+    """Gets a list of GUI users by parsing the output of /usr/bin/who"""
     gui_users = []
     proc = subprocess.Popen("/usr/bin/who", shell=False,
                             stdin=subprocess.PIPE,
@@ -381,7 +385,7 @@ def currentGUIusers():
 
 
 def pythonScriptRunning(scriptname):
-    '''Returns Process ID for a running python script'''
+    """Returns Process ID for a running python script"""
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
@@ -402,7 +406,7 @@ def pythonScriptRunning(scriptname):
 
 
 def osascript(osastring):
-    '''Wrapper to run AppleScript commands'''
+    """Wrapper to run AppleScript commands"""
     cmd = ['/usr/bin/osascript', '-e', osastring]
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
@@ -503,7 +507,7 @@ def getsha256hash(filename):
 
 
 def isApplication(pathname):
-    '''Returns true if path appears to be an OS X application'''
+    """Returns true if path appears to be an OS X application"""
     # No symlinks, please
     if os.path.islink(pathname):
         return False
@@ -535,7 +539,7 @@ def isApplication(pathname):
 
 
 def prefs():
-    '''Set up munki preferences'''
+    """Set up munki preferences"""
     # define default values
     global _prefs
     if not _prefs:
@@ -562,7 +566,7 @@ def prefs():
         _prefs['SuppressStopButtonOnInstall'] = False
         _prefs['PackageVerificationMode'] = "hash"
 
-        prefsfile = "/Library/Preferences/ManagedInstalls.plist"
+        prefsfile = MANAGED_INSTALLS_PLIST_PATH
         plist = {}
         if os.path.exists(prefsfile):
             try:
@@ -592,7 +596,7 @@ def prefs():
 
 
 def pref(prefname):
-    '''Return a prefernce'''
+    """Return a prefernce"""
     return prefs().get(prefname,'')
 
 
@@ -647,7 +651,7 @@ def getInstallerPkgInfo(filename):
 
 
 def padVersionString(versString, tupleCount):
-    '''Normalize the format of a version string'''
+    """Normalize the format of a version string"""
     if versString == None:
         versString = "0"
     components = str(versString).split(".")
@@ -660,10 +664,10 @@ def padVersionString(versString, tupleCount):
 
 
 def getVersionString(plist):
-    '''Gets a version string from the plist.
+    """Gets a version string from the plist.
     If there's a valid CFBundleShortVersionString, returns that.
     else if there's a CFBundleVersion, returns that
-    else returns an empty string.'''
+    else returns an empty string."""
     CFBundleShortVersionString = ''
     if plist.get('CFBundleShortVersionString'):
         CFBundleShortVersionString = \
@@ -866,7 +870,7 @@ def getOnePackageInfo(pkgpath):
 
 
 def getText(nodelist):
-    '''Helper function to get text from XML child nodes'''
+    """Helper function to get text from XML child nodes"""
     text = ""
     for node in nodelist:
         if node.nodeType == node.TEXT_NODE:
@@ -875,7 +879,7 @@ def getText(nodelist):
 
 
 def getBundlePackageInfo(pkgpath):
-    '''Get metadata from a bundle-style package'''
+    """Get metadata from a bundle-style package"""
     infoarray = []
 
     if pkgpath.endswith(".pkg"):
@@ -949,7 +953,7 @@ def getBundlePackageInfo(pkgpath):
 
 
 def getReceiptInfo(pkgname):
-    '''Get receipt info from a package'''
+    """Get receipt info from a package"""
     info = []
     if pkgname.endswith(".pkg") or pkgname.endswith(".mpkg"):
         display_debug2("Examining %s" % pkgname)
@@ -1044,7 +1048,7 @@ def nameAndVersion(aString):
 
 
 def findInstallerItem(path):
-    '''Find an installer item in the directory given by path'''
+    """Find an installer item in the directory given by path"""
     if path.endswith('.pkg') or path.endswith('.mpkg') or \
        path.endswith('.dmg'):
         return path
@@ -1180,7 +1184,7 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
 
 
 def getAvailableDiskSpace(volumepath="/"):
-    '''Returns available diskspace in KBytes.'''
+    """Returns available diskspace in KBytes."""
     cmd = ["/usr/sbin/diskutil", "info", "-plist", volumepath]
     proc = subprocess.Popen(cmd,
                             bufsize=1,
@@ -1204,7 +1208,7 @@ def getAvailableDiskSpace(volumepath="/"):
 
 
 def cleanUpTmpDir():
-    '''Cleans up our temporary directory.'''
+    """Cleans up our temporary directory."""
     global tmpdir
     if tmpdir:
         try:
@@ -1226,7 +1230,7 @@ report['Warnings'] = []
 
 
 def main():
-    '''Placeholder'''
+    """Placeholder"""
     print "This is a library of support tools for the Munki Suite."
 
 if __name__ == '__main__':

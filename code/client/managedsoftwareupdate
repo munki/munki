@@ -73,11 +73,11 @@ def clearLastNotifiedDate():
     """Clear the last date the user was notified of updates."""
     try:
         plist = FoundationPlist.readPlist(
-                                "/Library/Preferences/ManagedInstalls.plist")
+            munkicommon.MANAGED_INSTALLS_PLIST_PATH)
         if plist:
             if 'LastNotifiedDate' in plist:
                 cmd = ['/usr/bin/defaults', 'delete',
-                       '/Library/Preferences/ManagedInstalls',
+                       munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
                        'LastNotifiedDate']
                 unused_retcode = subprocess.call(cmd)
     except FoundationPlist.NSPropertyListSerializationException:
@@ -223,11 +223,11 @@ def recordUpdateCheckResult(result):
     """Record last check date and result"""
     now = NSDate.new()
     cmd = ['/usr/bin/defaults', 'write',
-           '/Library/Preferences/ManagedInstalls',
+           munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
            'LastCheckDate', '-date', str(now)]
     unused_retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', 'write',
-           '/Library/Preferences/ManagedInstalls',
+           munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
            'LastCheckResult', '-int', str(result)]
     unused_retcode = subprocess.call(cmd)
 
@@ -253,7 +253,7 @@ def notifyUserOfUpdates():
     if now.timeIntervalSinceDate_(nextNotifyDate) > 0:
         # record current notification date
         cmd = ['/usr/bin/defaults', 'write',
-               '/Library/Preferences/ManagedInstalls',
+               munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
                'LastNotifiedDate', '-date', str(now)]
         unused_retcode = subprocess.call(cmd)
 
