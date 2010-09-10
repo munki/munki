@@ -1156,6 +1156,36 @@ def lookForUpdates(manifestitem, cataloglist):
     return update_list
 
 
+def processManagedUpdate(manifestitem, cataloglist, installinfo):
+    """Process a managed_updates item to see if it is installed, and if so,
+    if it needs an update.
+    """
+    manifestitemname = os.path.split(manifestitem)[1]
+    item_pl = getItemDetail(manifestitem, cataloglist)
+
+    if not item_pl:
+        munkicommon.display_warning(
+            'Could not process item %s for update: ' % manifestitem)
+        munkicommon.display_warning(
+            'No pkginfo for %s found in catalogs: %s' %
+            (manifestitem, ', '.join(cataloglist)))
+        return
+    # check to see if item (any version) is already in the installlist:
+    if isItemInInstallInfo(item_pl, installinfo['managed_installs']):
+        munkicommon.display_debug1(
+            '%s has already been processed for install.' % manifestitemname)
+        return
+    # check to see if item (any version) is already in the removallist:
+    if isItemInInstallInfo(item_pl, installinfo['removals']):
+        munkicommon.display_debug1(
+            '%s has already been processed for removal.' % manifestitemname)
+        return            
+    # we only offer to update if some version of the item is already
+    # installed, so let's check
+    if someVersionInstalled(item_pl):
+        processInstall(manifestitem, cataloglist, installinfo)
+    
+
 def processOptionalInstall(manifestitem, cataloglist, installinfo):
     """Process an optional install item to see if it should be added to
     the list of optional installs.
@@ -1467,6 +1497,52 @@ def processManifestForOptionalInstalls(
                 if munkicommon.stopRequested():
                     return {}
                 processOptionalInstall(item, cataloglist, installinfo)
+
+
+def processManifestForManagedUpdates(
+    manifestpath, installinfo, parentcatalogs=None):
+    """Looks for updates for items that are installed, but not listed
+    in managed_installs for any applicable manifest.
+
+    Can be recursive if manifests include other manifests.
+    """
+    cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
+    if cataloglist:
+        getCatalogs(cataloglist)
+    elif parentcatalogs:
+        cataloglist = parentcatalogs
+
+    if cataloglist:
+        nestedmanifests = getManifestValueForKey(manifestpath,
+                                                 'included_manifests')
+        if nestedmanifests:
+            for item in nestedmanifests:
+                try:
+                    nestedmanifestpath = getmanifest(item)
+                except ManifestException:
+                    nestedmanifestpath = None
+                if munkicommon.stopRequested():
+                    return {}
+                if nestedmanifestpath:
+                    processManifestForManagedUpdates(nestedmanifestpath,
+                                                     installinfo, cataloglist)
+
+        installitems = getManifestValueForKey(manifestpath,
+                                              'managed_updates')
+        if installitems:
+            for item in installitems:
+                if munkicommon.stopRequested():
+                    return {}
+                is_or_will_be_installed = processManagedUpdate(item,
+                                                               cataloglist,
+                                                               installinfo)
+
+    else:
+        munkicommon.display_warning('Manifest %s has no catalogs' %
+                                    manifestpath)
+
+    return installinfo
+
 
 
 def processManifestForInstalls(
@@ -2420,7 +2496,13 @@ def check(client_id=''):
         processManifestForRemovals(mainmanifestpath, installinfo)
         if munkicommon.stopRequested():
             return 0
-
+            
+        # look for additional updates
+        munkicommon.display_detail('**Checking for managed updates**')
+        processManifestForManagedUpdates(mainmanifestpath, installinfo)
+        if munkicommon.stopRequested():
+            return 0
+        
         # build list of optional installs
         processManifestForOptionalInstalls(mainmanifestpath, installinfo)
         if munkicommon.stopRequested():
@@ -2440,7 +2522,7 @@ def check(client_id=''):
                     # now remove the user-generated manifest
                     try:
                         os.unlink(usermanifest)
-                    except OSErr:
+                    except OSError:
                         pass
             except FoundationPlist.FoundationPlistException:
                 pass
