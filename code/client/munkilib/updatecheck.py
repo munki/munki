@@ -22,18 +22,17 @@ Created by Greg Neagle on 2008-11-13.
 """
 
 #standard libs
-import os
-import subprocess
-from distutils import version
-import urlparse
-#import hashlib
-import time
 import calendar
+import os
+import re
+import subprocess
 import socket
-from OpenSSL.crypto import load_certificate, FILETYPE_PEM
-import xattr
-
+import time
 import urllib2
+import urlparse
+import xattr
+from distutils import version
+from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 #our libs
 import munkicommon
@@ -43,8 +42,8 @@ import FoundationPlist
 # global to hold our catalog DBs
 catalog = {}
 def makeCatalogDB(catalogitems):
-    '''Takes an array of catalog items and builds some indexes so we can
-    get our common data faster. Returns a dict we can use like a database'''
+    """Takes an array of catalog items and builds some indexes so we can
+    get our common data faster. Returns a dict we can use like a database"""
     name_table = {}
     pkgid_table = {}
 
@@ -105,9 +104,7 @@ def makeCatalogDB(catalogitems):
 
 
 def addPackageids(catalogitems, pkgid_table):
-    '''
-    Adds packageids from each catalogitem to a dictionary
-    '''
+    """Adds packageids from each catalogitem to a dictionary"""
     for item in catalogitems:
         name = item.get('name')
         if not name:
@@ -123,9 +120,9 @@ def addPackageids(catalogitems, pkgid_table):
 
 
 def getFirstPlist(textString):
-    '''Gets the next plist from a set of concatenated text-style plists.
+    """Gets the next plist from a set of concatenated text-style plists.
     Returns a tuple - the first plist (if any) and the remaining
-    string'''
+    string"""
     plistStart = textString.find("<?xml version")
     if plistStart == -1:
         # not found
@@ -141,9 +138,7 @@ def getFirstPlist(textString):
 
 installedpkgs = {}
 def getInstalledPackages():
-    """
-    Builds a dictionary of installed receipts and their version number
-    """
+    """Builds a dictionary of installed receipts and their version number"""
     global installedpkgs
 
     # we use the --regexp option to pkgutil to get it to return receipt
@@ -192,8 +187,8 @@ def getInstalledPackages():
 # global pkgdata
 pkgdata = {}
 def analyzeInstalledPkgs():
-    '''Analyzed installed packages in an attempt to determine what is
-       installed.'''
+    """Analyzed installed packages in an attempt to determine what is
+       installed."""
     global pkgdata
     managed_pkgids = {}
     for catalogname in catalog.keys():
@@ -260,10 +255,7 @@ def analyzeInstalledPkgs():
 # more than once per session
 appdict = {}
 def getAppData():
-    """
-    Queries system_profiler and returns a dict
-    of app info items
-    """
+    """Queries system_profiler and returns a dict of app info items."""
     global appdict
     if appdict == {}:
         munkicommon.display_debug1(
@@ -285,10 +277,7 @@ def getAppData():
 
 
 def getAppBundleID(path):
-    """
-    Returns CFBundleIdentifier if available
-    for application at path
-    """
+    """Returns CFBundleIdentifier if available for application at path."""
     infopath = os.path.join(path, "Contents", "Info.plist")
     if os.path.exists(infopath):
         try:
@@ -303,10 +292,13 @@ def getAppBundleID(path):
 
 
 def compareVersions(thisvers, thatvers):
-    """
-    Returns -1 if thisvers is older than thatvers
-    Returns 1 if thisvers is the same as thatvers
-    Returns 2 if thisvers is newer than thatvers
+    """Compares two version numbers to one another.
+
+    Returns:
+      Boolean.
+      -1 if thisvers is older than thatvers
+      1 if thisvers is the same as thatvers
+      2 if thisvers is newer than thatvers
     """
     thisvers = munkicommon.padVersionString(thisvers, 5)
     thatvers = munkicommon.padVersionString(thatvers, 5)
@@ -319,14 +311,15 @@ def compareVersions(thisvers, thatvers):
 
 
 def compareApplicationVersion(app):
-    """
-    app is a dict with application
-    bundle info
-
-    First checks the given path if it's available,
+    """First checks the given path if it's available,
     then uses system profiler data to look for the app
 
-    Returns  0 if the app isn't installed
+    Args:
+      app: dict with application bundle info
+
+    Returns:
+      Boolean.
+             0 if the app isn't installed
                 or doesn't have valid Info.plist
             -1 if it's older
              1 if the version is the same
@@ -404,7 +397,8 @@ def compareApplicationVersion(app):
 
 
 def compareBundleVersion(item):
-    """
+    """Compares a bundle version passed item dict.
+
     Returns  0 if the bundle isn't installed
                 or doesn't have valid Info.plist
             -1 if it's older
@@ -445,9 +439,8 @@ def compareBundleVersion(item):
 
 
 def comparePlistVersion(item):
-    """
-    Gets the version string from the plist
-    at filepath and compares versions.
+    """Gets the version string from the plist at path and compares versions.
+
     Returns  0 if the plist isn't installed
             -1 if it's older
              1 if the version is the same
@@ -482,9 +475,9 @@ def comparePlistVersion(item):
 
 
 def filesystemItemExists(item):
-    """
-    Checks to see if a filesystem item exists
-    If item has m5checksum attribute, compares ondisk file's checksum
+    """Checks to see if a filesystem item exists.
+
+    If item has md5checksum attribute, compares ondisk file's checksum.
     """
     if 'path' in item:
         filepath = item['path']
@@ -513,9 +506,11 @@ def filesystemItemExists(item):
 
 
 def compareReceiptVersion(item):
-    """
-    Determines if the given package is already installed.
-    packageid is a 'com.apple.pkg.ServerAdminTools' style id
+    """Determines if the given package is already installed.
+
+    Args:
+      item: dict with packageid; a 'com.apple.pkg.ServerAdminTools' style id
+
     Returns  0 if the receipt isn't present
             -1 if it's older
              1 if the version is the same
@@ -543,9 +538,13 @@ def compareReceiptVersion(item):
 
 
 def getInstalledVersion(item_plist):
-    """
-    Attempts to determine the currently installed version of the item
-    described by item_plist
+    """Attempts to determine the currently installed version an item.
+
+    Args:
+      item_plist: plist of an item to get the version for.
+
+    Returns:
+      String version of the item, or "UNKNOWN" if unable to determine.
     """
     if 'receipts' in item_plist:
         for receipt in item_plist['receipts']:
@@ -625,9 +624,7 @@ def getInstalledVersion(item_plist):
 
 
 def download_installeritem(location):
-    """
-    Downloads a installer item.
-    """
+    """Downloads a installer item."""
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     downloadbaseurl = munkicommon.pref('PackageURL') or \
                       munkicommon.pref('SoftwareRepoURL') + "/pkgs/"
@@ -666,14 +663,14 @@ def download_installeritem(location):
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
-    """
+    """Determines if an item is in a manifest plist.
+
     Returns True if the manifest item has already
     been processed (it's in the list) and, optionally,
     the version is the same or greater.
     """
     names = []
     names.append(manifestitem_pl.get('name'))
-    #names.extend(manifestitem_pl.get('aliases',[]))
     for item in thelist:
         if item.get('name') in names:
             if not vers:
@@ -690,8 +687,8 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
 
 
 def nameAndVersion(aString):
-    """
-    Splits a string into the name and version number.
+    """Splits a string into the name and version number.
+
     Name and version must be seperated with a hyphen ('-')
     or double hyphen ('--').
     'TextWrangler-2.3b1' becomes ('TextWrangler', '2.3b1')
@@ -710,13 +707,11 @@ def nameAndVersion(aString):
 
 
 def getAllItemsWithName(name, cataloglist):
-    """
-    Searches the catalogs in cataloglist for all items matching
-    the given name. Returns a list of pkginfo items.
+    """Searches the catalogs in a list for all items matching a given name.
 
-    The returned list is sorted with newest version first. No precedence is
-    given to catalog order.
-
+    Returns:
+      list of pkginfo items; sorted with newest version first. No precedence is
+      given to catalog order.
     """
     def compare_item_versions(a, b):
         return cmp(version.LooseVersion(b['version']),
@@ -753,10 +748,10 @@ def getAllItemsWithName(name, cataloglist):
 
 
 def getItemDetail(name, cataloglist, vers=''):
-    """
-    Searches the catalogs in cataloglist for an item matching
-    the given name and version. If no version is supplied, but the version
-    is appended to the name ('TextWrangler--2.3.0.0.0') that version is used.
+    """Searches the catalogs in list for an item matching the given name.
+
+    If no version is supplied, but the version is appended to the name
+    ('TextWrangler--2.3.0.0.0') that version is used.
     If no version is given at all, the latest version is assumed.
     Returns a pkginfo item.
     """
@@ -865,10 +860,7 @@ def getItemDetail(name, cataloglist, vers=''):
 
 
 def enoughDiskSpace(manifestitem_pl, installlist=None, uninstalling=False):
-    """
-    Used to determine if there is enough disk space
-    to be able to download and install the manifestitem
-    """
+    """Determine if there is enough disk space to download the manifestitem."""
     # fudgefactor is set to 100MB
     fudgefactor = 102400
     installeritemsize = 0
@@ -921,9 +913,9 @@ def enoughDiskSpace(manifestitem_pl, installlist=None, uninstalling=False):
 
 
 def isInstalled(item_pl):
-    """
-    Checks to see if the item described by item_pl
-    (or a newer version) is currently installed
+    """Checks to see if the item described by item_pl (or a newer version) is
+    currently installed
+
     All tests must pass to be considered installed.
     Returns True if it looks like this or a newer version
     is installed; False otherwise.
@@ -967,10 +959,11 @@ def isInstalled(item_pl):
 
 
 def someVersionInstalled(item_pl):
-    '''
-    Checks to see if some version of the item described by
-    item-pl is installed
-    '''
+    """Checks to see if some version of an item is installed.
+
+    Args:
+      item_pl: item plist for the item to check for version of.
+    """
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
@@ -1010,10 +1003,9 @@ def someVersionInstalled(item_pl):
 
 
 def evidenceThisIsInstalled(item_pl):
-    """
-    Checks to see if there is evidence that
-    the item described by item_pl
+    """Checks to see if there is evidence that the item described by item_pl
     (any version) is currently installed.
+
     If any tests pass, the item might be installed.
     So this isn't the same as isInstalled()
     This is used when determining if we can remove the item, thus
@@ -1050,8 +1042,7 @@ def evidenceThisIsInstalled(item_pl):
 
 
 def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
-    '''
-    Verifies the integrity of the given software package.
+    """Verifies the integrity of the given software package.
 
     The feature is controlled through the PackageVerificationMode key in
     the ManagedInstalls.plist. Following modes currently exist:
@@ -1072,7 +1063,7 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
 
     Returns:
         True if the package integrity could be validated. Otherwise, False.
-    '''
+    """
     mode = munkicommon.pref('PackageVerificationMode')
     if not mode:
         return True
@@ -1110,11 +1101,10 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
 
 
 def getAutoRemovalItems(installinfo, cataloglist):
-    '''
-    Gets a list of items marked for automatic removal from the catalogs
+    """Gets a list of items marked for automatic removal from the catalogs
     in cataloglist. Filters those against items in the managed_installs
     list, which should contain everything that is supposed to be installed.
-    '''
+    """
     autoremovalnames = []
     for catalogname in cataloglist:
         if catalogname in catalog.keys():
@@ -1131,8 +1121,7 @@ def getAutoRemovalItems(installinfo, cataloglist):
 
 
 def lookForUpdates(manifestitem, cataloglist):
-    """
-    Looks for updates for a given manifest item that is either
+    """Looks for updates for a given manifest item that is either
     installed or scheduled to be installed. This handles not only
     specific application updates, but also updates that aren't simply
     later versions of the manifest item.
@@ -1168,10 +1157,9 @@ def lookForUpdates(manifestitem, cataloglist):
 
 
 def processOptionalInstall(manifestitem, cataloglist, installinfo):
-    '''
-    Process an optional install item to see if it should be added to
+    """Process an optional install item to see if it should be added to
     the list of optional installs.
-    '''
+    """
     manifestitemname = os.path.split(manifestitem)[1]
     item_pl = getItemDetail(manifestitem, cataloglist)
 
@@ -1226,8 +1214,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
 
 
 def processInstall(manifestitem, cataloglist, installinfo):
-    """
-    Processes a manifest item. Determines if it needs to be
+    """Processes a manifest item. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Items to be installed are added to
     installinfo['managed_installs']
@@ -1444,11 +1431,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
         return True
 
 
-def processManifestForOptionalInstalls(manifestpath, installinfo,
-                                                        parentcatalogs=None):
-    """
-    Processes manifests to build a list of optional installs that
+def processManifestForOptionalInstalls(
+    manifestpath, installinfo, parentcatalogs=None):
+    """Processes manifests to build a list of optional installs that
     can be displayed by Managed Software Update.
+
     Will be recursive if manifests include other manifests.
     """
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
@@ -1482,10 +1469,10 @@ def processManifestForOptionalInstalls(manifestpath, installinfo,
                 processOptionalInstall(item, cataloglist, installinfo)
 
 
-def processManifestForInstalls(manifestpath, installinfo,
-                                                        parentcatalogs=None):
-    """
-    Processes manifests to build a list of items to install.
+def processManifestForInstalls(
+    manifestpath, installinfo, parentcatalogs=None):
+    """Processes manifests to build a list of items to install.
+
     Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well.
     """
@@ -1527,7 +1514,7 @@ def processManifestForInstalls(manifestpath, installinfo,
 
 
 def getReceiptsToRemove(item):
-    '''Returns a list of receipts to remove for item'''
+    """Returns a list of receipts to remove for item"""
     name = item['name']
     if name in pkgdata['receipts_for_name']:
         return pkgdata['receipts_for_name'][name]
@@ -1535,8 +1522,7 @@ def getReceiptsToRemove(item):
 
 
 def processRemoval(manifestitem, cataloglist, installinfo):
-    """
-    Processes a manifest item; attempts to determine if it
+    """Processes a manifest item; attempts to determine if it
     needs to be removed, and if it can be removed.
 
     Unlike installs, removals aren't really version-specific -
@@ -1815,11 +1801,11 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     return True
 
 
-def processManifestForRemovals(manifestpath, installinfo,
-                                                        parentcatalogs=None):
-    """
-    Processes manifests for removals. Can be recursive if manifests include
+def processManifestForRemovals(
+    manifestpath, installinfo, parentcatalogs=None):
+    """Processes manifests for removals. Can be recursive if manifests include
     other manifests.
+
     Probably doesn't handle circular manifest references well...
     """
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
@@ -1860,7 +1846,7 @@ def processManifestForRemovals(manifestpath, installinfo,
 
 
 def getManifestValueForKey(manifestpath, keyname):
-    '''Returns a value for keyname in manifestpath'''
+    """Returns a value for keyname in manifestpath"""
     try:
         plist = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
@@ -1873,9 +1859,8 @@ def getManifestValueForKey(manifestpath, keyname):
 
 
 def getCatalogs(cataloglist):
-    """
-    Retreives the catalogs from the server and populates our catalogs
-    dictionary
+    """Retreives the catalogs from the server and populates our catalogs
+    dictionary.
     """
     global catalog
     catalogbaseurl = munkicommon.pref('CatalogURL') or \
@@ -1919,9 +1904,10 @@ class ManifestException(Exception):
 
 manifests = {}
 def getmanifest(partialurl, suppress_errors=False):
-    """
-    Gets a manifest from the server.
-    Returns a local path to the downloaded manifest.
+    """Gets a manifest from the server.
+
+    Returns:
+      string local path to the downloaded manifest.
     """
     global manifests
     manifestbaseurl = munkicommon.pref('ManifestURL') or \
@@ -1975,9 +1961,7 @@ def getmanifest(partialurl, suppress_errors=False):
 
 
 def getPrimaryManifest(alternate_id):
-    """
-    Gets the client manifest from the server
-    """
+    """Gets the client manifest from the server."""
     manifest = ""
     manifesturl = munkicommon.pref('ManifestURL') or \
                   munkicommon.pref('SoftwareRepoURL') + "/manifests/"
@@ -2045,9 +2029,9 @@ def getPrimaryManifest(alternate_id):
 
 
 def checkServer(url):
-    '''A function we can call to check to see if the server is
+    """A function we can call to check to see if the server is
     available before we kick off a full run. This can be fooled by
-    ISPs that return results for non-existent web servers...'''
+    ISPs that return results for non-existent web servers..."""
     # deconstruct URL so we can check availability
     (scheme, netloc, path, query, fragment) = urlparse.urlsplit(url)
     if scheme == "http":
@@ -2180,6 +2164,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         custom_headers = munkicommon.pref('AdditionalHttpHeaders')
         if custom_headers:
             for custom_header in custom_headers:
+                custom_header = custom_header.strip()
                 if re.search(r'^[\w-]+:.+', custom_header):
                     print >> fileobj, ('header = "%s"' % custom_header)
                 else:
@@ -2187,8 +2172,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                         "Skipping invalid HTTP header: %s" % custom_header)
 
         fileobj.close()
-    except:
-        raise CurlError(-5, "Error writing curl directive")
+    except Exception, e:
+        raise CurlError(-5, "Error writing curl directive: %s" % str(e))
 
     cmd = ['/usr/bin/curl',
             '-q',                    # don't read .curlrc file
@@ -2289,8 +2274,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                  message=None, resume=False):
-    '''Gets file from HTTP URL, checking first to see if it has changed on the
-       server.'''
+    """Gets file from HTTP URL, checking first to see if it has changed on the
+       server."""
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     # get server CA cert if it exists so we can verify the munki server
     ca_cert_path = None
@@ -2391,9 +2376,9 @@ def getMachineFacts():
 # some globals
 machine = {}
 def check(client_id=''):
-    '''Checks for available new or updated managed software, downloading
+    """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
-    0 if there are no available updates, and -1 if there were errors.'''
+    0 if there are no available updates, and -1 if there were errors."""
     getMachineFacts()
     munkicommon.report['MachineInfo'] = machine
 
@@ -2640,7 +2625,7 @@ def check(client_id=''):
 
 
 def main():
-    '''Placeholder'''
+    """Placeholder"""
     pass
 
 
