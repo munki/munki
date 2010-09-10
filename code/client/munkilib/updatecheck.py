@@ -1058,8 +1058,8 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
         none: No integrity check is performed.
         hash: Integrity check is performed by calcualting a SHA-256 hash of
             the given file and comparing it against the reference value in
-            catalog. Only applies for package plists that contain the 
-            item_key; for packages without the item_key, verifcation always 
+            catalog. Only applies for package plists that contain the
+            item_key; for packages without the item_key, verifcation always
             returns True.
         hash_strict: Same as hash, but returns False for package plists that
             do not contain the item_key.
@@ -2168,6 +2168,23 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 print >> fileobj, 'time-cond = "%s"' % destinationpath
             else:
                 os.remove(destinationpath)
+
+        # Add any additional headers specified in ManagedInstalls.plist.
+        # AdditionalHttpHeaders must be an array of strings with valid HTTP
+        # header format. For example:
+        # <key>AdditionalHttpHeaders</key>
+        # <array>
+        #   <string>Key-With-Optional-Dahes: Foo Value</string>
+        #   <string>another-custom-header: bar value</string>
+        # </array>
+        custom_headers = munkicommon.pref('AdditionalHttpHeaders')
+        if custom_headers:
+            for custom_header in custom_headers:
+                if re.search(r'^[\w-]+:.+', custom_header):
+                    print >> fileobj, ('header = "%s"' % custom_header)
+                else:
+                    munkicommon.display_warning(
+                        "Skipping invalid HTTP header: %s" % custom_header)
 
         fileobj.close()
     except:
