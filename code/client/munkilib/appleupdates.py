@@ -254,7 +254,7 @@ def parseDist(filename):
                     break
             
     if itemsize == 0:
-        for (path, dirs, files) in os.walk(os.path.dirname(filename)):
+        for (path, unused_dirs, files) in os.walk(os.path.dirname(filename)):
             for name in files:
                 pathname = os.path.join(path, name)
                 # use os.lstat so we don't follow symlinks
