@@ -466,6 +466,8 @@ def main():
             munkistatus.activate()
             munkistatus.quit()
         exit(-1)
+    # Force a prefs refresh, in case preflight modified the prefs file.
+    munkicommon.prefs(force_refresh=True)
 
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput

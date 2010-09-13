@@ -539,11 +539,19 @@ def isApplication(pathname):
 #####################################################
 
 
-def prefs():
-    """Set up munki preferences"""
-    # define default values
+def prefs(force_refresh=False):
+    """Loads and caches preferences from ManagedInstalls.plist.
+
+    Args:
+      force_refresh: Boolean. If True, wipe prefs and reload from scratch. If
+          False (default), load from cache if it's already set.
+
+    Returns:
+      Dict of preferences.
+    """
     global _prefs
-    if not _prefs:
+    if not _prefs or force_refresh:
+        _prefs = {}  # start with a clean state.
         _prefs['ManagedInstallDir'] = '/Library/Managed Installs'
         # convenience; to be replaced with CatalogURL and PackageURL
         _prefs['SoftwareRepoURL'] = 'http://munki/repo'
@@ -570,6 +578,8 @@ def prefs():
         prefsfile = MANAGED_INSTALLS_PLIST_PATH
         plist = {}
         if os.path.exists(prefsfile):
+            # Load preferences from ManagedInstalls.plist preferences file.
+            # Note: these will likely stomp on the defaults defined above.
             try:
                 plist = FoundationPlist.readPlist(prefsfile)
             except FoundationPlist.NSPropertyListSerializationException:
@@ -1224,7 +1234,7 @@ def cleanUpTmpDir():
 verbose = 1
 munkistatusoutput = False
 tmpdir = tempfile.mkdtemp()
-_prefs = {}
+_prefs = {}  # never access this directly; use prefs() instead.
 report = {}
 report['Errors'] = []
 report['Warnings'] = []
