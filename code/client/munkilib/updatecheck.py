@@ -322,7 +322,7 @@ def compareApplicationVersion(app):
             -1 if it's older
              1 if the version is the same
              2 if the version is newer
-             
+
     Raises munkicommon.Error if there's an error in the input
     """
     if 'path' in app and 'CFBundleShortVersionString' in app:
@@ -402,7 +402,7 @@ def compareBundleVersion(item):
             -1 if it's older
              1 if the version is the same
              2 if the version is newer
-             
+
     Raises munkicommon.Error if there's an error in the input
     """
     if 'path' in item and 'CFBundleShortVersionString' in item:
@@ -443,7 +443,7 @@ def comparePlistVersion(item):
             -1 if it's older
              1 if the version is the same
              2 if the version is newer
-             
+
     Raises munkicommon.Error if there's an error in the input
     """
     if 'path' in item and 'CFBundleShortVersionString' in item:
@@ -476,13 +476,13 @@ def filesystemItemExists(item):
     """Checks to see if a filesystem item exists.
 
     If item has md5checksum attribute, compares on disk file's checksum.
-    
+
     Returns 0 if the filesystem item does not exist on disk,
     Returns 1 if the filesystem item exists and the checksum matches
                 (or there is no checksum)
     Returns -1 if the filesystem item exists but the checksum does not match.
-    
-    
+
+
     Raises munkicommon.Error is there's a problem with the input.
     """
     if 'path' in item:
@@ -521,7 +521,7 @@ def compareReceiptVersion(item):
             -1 if it's older
              1 if the version is the same
              2 if the version is newer
-             
+
     Raises munkicommon.Error if there's an error in the input
     """
     if not INSTALLEDPKGS:
@@ -551,7 +551,7 @@ def getInstalledVersion(item_plist):
 
     Returns:
       String version of the item, or 'UNKNOWN' if unable to determine.
-      
+
     NOTE:
       This function is too slow, and slows down the update check process so
       much that we stopped trying to figure out the currently installed
@@ -953,7 +953,7 @@ def isInstalled(item_pl):
                 if itemtype == 'file':
                     if filesystemItemExists(item) in (-1, 0):
                         # not there, or wrong checksum
-                        return False       
+                        return False
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
                 munkicommon.display_error(errmsg)
@@ -971,7 +971,7 @@ def isInstalled(item_pl):
             except munkicommon.Error, errmsg:
                 # some problem with the receipts data
                 munkicommon.display_error(errmsg)
-                return False    
+                return False
 
     # if we got this far, we passed all the tests, so the item
     # must be installed (or we don't have enough info...)
@@ -992,11 +992,11 @@ def someVersionInstalled(item_pl):
             try:
                 if itemtype == 'application':
                     if compareApplicationVersion(item) == 0:
-                        # not there 
+                        # not there
                         return False
                 if itemtype == 'bundle':
                     if compareBundleVersion(item) == 0:
-                        # not there 
+                        # not there
                         return False
                 if itemtype == 'plist':
                     if comparePlistVersion(item) == 0:
@@ -1207,12 +1207,12 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     if isItemInInstallInfo(item_pl, installinfo['removals']):
         munkicommon.display_debug1(
             '%s has already been processed for removal.' % manifestitemname)
-        return            
+        return
     # we only offer to update if some version of the item is already
     # installed, so let's check
     if someVersionInstalled(item_pl):
         unused_result = processInstall(manifestitem, cataloglist, installinfo)
-    
+
 
 def processOptionalInstall(manifestitem, cataloglist, installinfo):
     """Process an optional install item to see if it should be added to
@@ -1314,7 +1314,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     #  package A requires package B be installed first.
     #  if package A is removed, package B is unaffected.
     #  requires can be a one to many relationship.
-    #  
+    #
     #  The second type of relationship is 'update_for'.
     #  This signifies that that current package should be considered an update
     #  for the packages listed in the 'update_for' array. When processing a
@@ -1401,7 +1401,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                         for update_item in update_list:
                             # call processInstall recursively so we get the
                             # latest version and dependencies
-                            unused_result = processInstall(update_item, 
+                            unused_result = processInstall(update_item,
                                                            cataloglist,
                                                            installinfo)
                     return True
@@ -1444,14 +1444,14 @@ def processInstall(manifestitem, cataloglist, installinfo):
             for update_item in update_list:
                 # call processInstall recursively so we get the latest version
                 # and any dependencies
-                unused_result = processInstall(update_item, cataloglist, 
+                unused_result = processInstall(update_item, cataloglist,
                                                installinfo)
         return True
 
 
-def processManifestForKey(manifestpath, manifest_key, installinfo, 
+def processManifestForKey(manifestpath, manifest_key, installinfo,
                           parentcatalogs=None):
-    """Processes keys in manifests to build the lists of items to install and 
+    """Processes keys in manifests to build the lists of items to install and
     remove.
 
     Can be recursive if manifests include other manifests.
@@ -1477,21 +1477,21 @@ def processManifestForKey(manifestpath, manifest_key, installinfo,
                 if nestedmanifestpath:
                     processManifestForKey(nestedmanifestpath, manifest_key,
                                           installinfo, cataloglist)
-                                          
+
         items = getManifestValueForKey(manifestpath, manifest_key)
         if items:
             for item in items:
                 if munkicommon.stopRequested():
                     return {}
                 if manifest_key == 'managed_installs':
-                    unused_result = processInstall(item, cataloglist, 
+                    unused_result = processInstall(item, cataloglist,
                                                    installinfo)
                 elif manifest_key == 'managed_updates':
                     processManagedUpdate(item, cataloglist, installinfo)
                 elif manifest_key == 'optional_installs':
                     processOptionalInstall(item, cataloglist, installinfo)
                 elif manifest_key == 'managed_uninstalls':
-                    unused_result = processRemoval(item, cataloglist, 
+                    unused_result = processRemoval(item, cataloglist,
                                                    installinfo)
 
     else:
@@ -1950,7 +1950,7 @@ def checkServer(url):
     available before we kick off a full run. This can be fooled by
     ISPs that return results for non-existent web servers..."""
     # deconstruct URL so we can check availability
-    (scheme, netloc, 
+    (scheme, netloc,
      unused_path, unused_query, unused_fragment) = urlparse.urlsplit(url)
     if scheme == 'http':
         port = 80
@@ -2079,7 +2079,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         #   <string>Key-With-Optional-Dahes: Foo Value</string>
         #   <string>another-custom-header: bar value</string>
         # </array>
-        custom_headers = munkicommon.pref('AdditionalHttpHeaders')
+        custom_headers = munkicommon.pref(
+            munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
         if custom_headers:
             for custom_header in custom_headers:
                 custom_header = custom_header.strip()
@@ -2280,7 +2281,7 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
 # change often, we store the info in MACHINE.
 MACHINE = {}
 def getMachineFacts():
-    """Gets some facts about this machine we use to determine if a given 
+    """Gets some facts about this machine we use to determine if a given
     installer is applicable to this OS or hardware"""
     #global MACHINE
 
@@ -2325,7 +2326,7 @@ def check(client_id=''):
         installinfo['removals'] = []
         installinfo['optional_installs'] = []
         munkicommon.display_detail('**Checking for installs**')
-        processManifestForKey(mainmanifestpath, 'managed_installs', 
+        processManifestForKey(mainmanifestpath, 'managed_installs',
                               installinfo)
         if munkicommon.stopRequested():
             return 0
@@ -2338,7 +2339,7 @@ def check(client_id=''):
 
         # now generate a list of items to be uninstalled
         munkicommon.display_detail('**Checking for removals**')
-        processManifestForKey(mainmanifestpath, 'managed_uninstalls', 
+        processManifestForKey(mainmanifestpath, 'managed_uninstalls',
                               installinfo)
         if munkicommon.stopRequested():
             return 0
@@ -2350,16 +2351,16 @@ def check(client_id=''):
             if munkicommon.stopRequested():
                 return 0
             unused_result = processRemoval(item, cataloglist, installinfo)
-            
+
         # look for additional updates
         munkicommon.display_detail('**Checking for managed updates**')
-        processManifestForKey(mainmanifestpath, 'managed_updates', 
+        processManifestForKey(mainmanifestpath, 'managed_updates',
                               installinfo)
         if munkicommon.stopRequested():
             return 0
-        
+
         # build list of optional installs
-        processManifestForKey(mainmanifestpath, 'optional_installs', 
+        processManifestForKey(mainmanifestpath, 'optional_installs',
                               installinfo)
         if munkicommon.stopRequested():
             return 0
@@ -2389,18 +2390,18 @@ def check(client_id=''):
             munkicommon.display_detail('**Processing self-serve choices**')
             selfserveinstalls = getManifestValueForKey(selfservemanifest,
                                                        'managed_installs')
-            available_optional_installs = [item['name'] 
+            available_optional_installs = [item['name']
                         for item in installinfo.get('optional_installs',[])]
             # filter the list, removing any items not in the current list of
             # available self-serve installs
-            selfserveinstalls = [item for item in selfserveinstalls 
+            selfserveinstalls = [item for item in selfserveinstalls
                                  if item in available_optional_installs]
             for item in selfserveinstalls:
                 unused_result = processInstall(item, cataloglist, installinfo)
             # we don't need to filter uninstalls
-            processManifestForKey(selfservemanifest, 'managed_uninstalls', 
+            processManifestForKey(selfservemanifest, 'managed_uninstalls',
                                   installinfo, cataloglist)
-                                  
+
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
                 if (not item.get('installed') and

@@ -40,6 +40,7 @@ import FoundationPlist
 
 MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/ManagedInstalls.plist'
 MANAGED_INSTALLS_PLIST_PATH_NO_EXT = '/Library/Preferences/ManagedInstalls'
+ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
 class Error(Exception):
