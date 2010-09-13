@@ -115,7 +115,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
                             stdin=subprocess.PIPE, 
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = proc.communicate()
+    (output, unused_err) = proc.communicate()
     restartaction = str(output).decode('UTF-8').rstrip("\n")
     if restartaction == "RequireRestart" or \
        restartaction == "RecommendRestart":
@@ -285,16 +285,17 @@ def copyAppFromDMG(dmgpath):
                 # remove com.apple.quarantine attribute from copied app
                 cmd = ["/usr/bin/xattr", destpath]
                 proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE)
-                (out, err) = proc.communicate()
+                                        stdin=subprocess.PIPE, 
+                                        stdout=subprocess.PIPE, 
+                                        stderr=subprocess.PIPE)
+                (out, unused_err) = proc.communicate()
                 if out:
                     xattrs = str(out).splitlines()
                     if "com.apple.quarantine" in xattrs:
-                        err = subprocess.call(["/usr/bin/xattr", "-d", 
-                                               "com.apple.quarantine", 
-                                               destpath])
+                        unused_result = subprocess.call(
+                                            ["/usr/bin/xattr", "-d", 
+                                             "com.apple.quarantine", 
+                                              destpath])
                 # let the user know we completed successfully
                 munkicommon.display_status(
                                 "The software was successfully installed.")
@@ -399,13 +400,14 @@ def copyFromDMG(dmgpath, itemlist):
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
                                      stderr=subprocess.PIPE)
-                (out, err) = proc.communicate()
+                (out, unused_err) = proc.communicate()
                 if out:
                     xattrs = str(out).splitlines()
                     if "com.apple.quarantine" in xattrs:
-                        err = subprocess.call(["/usr/bin/xattr", "-d", 
-                                               "com.apple.quarantine", 
-                                               destitem])
+                        unused_result = subprocess.call(
+                                                ["/usr/bin/xattr", "-d", 
+                                                 "com.apple.quarantine", 
+                                                 destitem])
             
             if retcode:
                 # we encountered an error on this iteration; 
@@ -783,24 +785,26 @@ def processRemovals(removallist):
 
 
 def removeItemFromSelfServeUninstallList(itemname):
+    """Remove the given itemname from the self-serve manifest's
+    managed_uninstalls list"""
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     selfservemanifest = os.path.join(ManagedInstallDir, "manifests",
                                             "SelfServeManifest")
     if os.path.exists(selfservemanifest):
-         # if item_name is in the managed_uninstalls in the self-serve
-         # manifest, we should remove it from the list
-         try:
-             plist = FoundationPlist.readPlist(selfservemanifest)
-         except FoundationPlist.FoundationPlistException:
-             pass
-         else:
-             plist['managed_uninstalls'] = \
-                 [item for item in plist.get('managed_uninstalls',[])
-                     if item != itemname]
-             try:
-                 FoundationPlist.writePlist(plist, selfservemanifest)
-             except FoundationPlist.FoundationPlistException:
-                 pass    
+        # if item_name is in the managed_uninstalls in the self-serve
+        # manifest, we should remove it from the list
+        try:
+            plist = FoundationPlist.readPlist(selfservemanifest)
+        except FoundationPlist.FoundationPlistException:
+            pass
+        else:
+            plist['managed_uninstalls'] = \
+              [item for item in plist.get('managed_uninstalls',[])
+                 if item != itemname]
+            try:
+                FoundationPlist.writePlist(plist, selfservemanifest)
+            except FoundationPlist.FoundationPlistException:
+                pass    
     
 
 def run():
