@@ -363,7 +363,7 @@ def ImportBom(bompath, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, err) = proc.communicate()
+    (pliststr, unused_err) = proc.communicate()
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "install-location" in plist:
@@ -444,7 +444,7 @@ def ImportFromPkgutil(pkgname, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, err) = proc.communicate()
+    (pliststr, unused_err) = proc.communicate()
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "pkg-version" in plist:
@@ -771,7 +771,8 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                 
             if receiptpath and os.path.exists(receiptpath):
                 munkicommon.display_detail("Removing %s..." % receiptpath)
-                retcode = subprocess.call(["/bin/rm", "-rf", receiptpath])
+                unused_retcode = subprocess.call(
+                                            ["/bin/rm", "-rf", receiptpath])
             
         # remove pkg info from our database
         if munkicommon.verbose > 1:
@@ -813,7 +814,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                 proc = subprocess.Popen(cmd, bufsize=1, 
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
-                (output, err) = proc.communicate()
+                (output, unused_err) = proc.communicate()
                 if munkicommon.verbose > 1:
                     if output: 
                         print str(output).decode('UTF-8').rstrip('\n')
@@ -882,7 +883,7 @@ def isBundle(pathname):
                        ".wdgt" ]
     if os.path.isdir(pathname):
         basename = os.path.basename(pathname)
-        (filename, extension) = os.path.splitext(basename)
+        extension = os.path.splitext(basename)[1]
         if extension in bundle_extensions:
             return True
         else:
