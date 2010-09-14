@@ -57,7 +57,7 @@ class InsecureFilePermissionsError(VerifyFilePermissionsError):
 
 def get_version():
     """Returns version of munkitools"""
-    return '0.6.0 Build 709'
+    return '0.6.0 Build 755'
 
 
 # output and logging functions
