@@ -36,12 +36,12 @@ Created on 2010-09-02.
 import optparse
 import os
 import hashlib
+import sys
 try:
   import plistlib
 except ImportError:
-  print ('ERROR: could not import module "plistlib." Please install it and try '
-         'again.')
-  import sys
+  print ('ERROR: could not import module "plistlib." Please install it and '
+         'try again.')
   sys.exit(1)
 
 
@@ -52,18 +52,18 @@ MUNKI_PKGSINFO_DIR_NAME = 'pkgsinfo'
 
 def GetHash(filename, hash_function):
   """Calculates the hashvalue of the given file with the given hash_function.
-
+  
   Args:
     filename: The file name to calculate the hash value of.
     hash_function: The hash function object to use, which was instanciated
         before calling this function, e.g. hashlib.md5().
-
+  
   Returns:
     The hashvalue of the given file as hex string.
   """
   if not os.path.isfile(filename):
     return None
-
+  
   f = open(filename, 'rb')
   while 1:
     chunk = f.read(2**16)
@@ -80,14 +80,17 @@ def GetSHA256Hash(filename):
   return GetHash(filename, hash_function)
 
 
-def AddHashesToPkginfoPlists(pkgsinfo_path, pkgs_path):
+def AddHashesToPkginfoPlists(pkgsinfo_path, pkgs_path, update_existing=False):
   """Recursively updates plists' '(un)installer_item_hash' kay with pkg hash.
-
+  
   Args:
     pkgsinfo_path: root dir to start updating from.
     pkgs_path: root dir where Munki pkgs live.
   """
   for f_path in os.listdir(pkgsinfo_path):
+    if f_path.startswith("._") or f_path == ".DS_Store":
+      # don't process these
+      continue
     f_path = os.path.join(pkgsinfo_path, f_path)
     # if a directory is found, recursively call this function on that dir.
     if os.path.isdir(f_path):
@@ -100,27 +103,44 @@ def AddHashesToPkginfoPlists(pkgsinfo_path, pkgs_path):
       try:
         plist = plistlib.readPlist(f_path)
       except IOError, e:
-        print 'WARNING: pkginfo plist failed to open: %s\n%s' % (f_path, str(e))
+        print 'WARNING: pkginfo plist failed to open: %s\n%s' % (f_path,
+                                                                 str(e))
         continue
-      # generate the package path from the pkginfo plist intaller_item_location.
-      pkg_path = os.path.join(pkgs_path, plist['installer_item_location'])
-      # display warning for packages that cannot be found.
-      if not os.path.isfile(pkg_path):
-        print 'WARNING: Package (%s) not found as specified in %s' % (
-            pkg_path, f_path)
-        continue
-      # generate the package hash, update plist dict, and write the plist file.
-      pkg_hash = GetSHA256Hash(pkg_path)
-      # Update plist dict based on if it's a install or uninstall pkginfo.
-      if 'installer_item_size' in plist:
-        plist['installer_item_hash'] = pkg_hash
-      elif 'uninstaller_item_size' in plist:
-        plist['uninstaller_item_hash'] = pkg_hash
-      else:
-        print 'WARNING: pkginfo plist type is not known: %s' % f_path
-        continue
-      plistlib.writePlist(plist, f_path)
-      print '- Wrote hash to plist: %s' % f_path
+      
+      updated_hash = False
+      # generate the package path from the pkginfo plist
+      # installer_item_location.
+      if not 'installer_item_hash' in plist or update_existing:
+          pkg_path = os.path.join(pkgs_path, plist['installer_item_location'])
+          # display warning for items that cannot be found.
+          if not os.path.isfile(pkg_path):
+            print >> sys.stderr, ('WARNING: Installer item (%s) not found '
+                                  'as specified in %s') % (pkg_path, f_path)
+            continue
+          # generate the package hash
+          plist['installer_item_hash'] = GetSHA256Hash(pkg_path)
+          updated_hash = True
+      
+      # check for and update uninstaller_item_hash if needed
+      if 'uninstaller_item_location' in plist:
+        if not 'uninstaller_item_hash' in plist or update_existing:
+          pkg_path = os.path.join(pkgs_path,
+                                  plist['uninstaller_item_location'])
+          # display warning for items that cannot be found.
+          if not os.path.isfile(pkg_path):
+              print >> sys.stderr, ('WARNING: Uninstaller item (%s) not '
+                                    'found as specified in %s') % (pkg_path,
+                                                                   f_path)
+              continue
+          
+          # generate the package hash
+          plist['uninstaller_item_hash'] = GetSHA256Hash(pkg_path)
+          updated_hash = True
+          
+      # write the plist file.
+      if updated_hash:
+        plistlib.writePlist(plist, f_path)
+        print '- Wrote hash to plist: %s' % f_path
 
 
 def main():
@@ -133,8 +153,10 @@ def main():
                help='Munki pkgsinfo dir name; default "pkgsinfo".')
   p.add_option('-f', '--pkgs_dir_name', default=MUNKI_PKGS_DIR_NAME,
                help='Munki packages dir name; default "pkgs".')
+  p.add_option('-u', "--update_existing", action='store_true',
+                help='Update existing hashes.')
   options, unused_arguments = p.parse_args()
-
+  
   pkgsinfo_path = os.path.join(options.munki_root, options.pkgsinfo_dir_name)
   pkgs_path = os.path.join(options.munki_root, options.pkgs_dir_name)
   if not os.path.isdir(pkgsinfo_path) or not os.listdir(pkgsinfo_path):
@@ -142,7 +164,8 @@ def main():
   elif not os.path.isdir(pkgs_path) or not os.listdir(pkgs_path):
     print 'Pkgs directory not found or is empty: %s' % pkgs_path
   else:
-    AddHashesToPkginfoPlists(pkgsinfo_path, pkgs_path)
+    AddHashesToPkginfoPlists(pkgsinfo_path, pkgs_path,
+                             options.update_existing)
     print '\nYou must run makecatalogs to update catalogs with pkginfo changes.'
 
 
