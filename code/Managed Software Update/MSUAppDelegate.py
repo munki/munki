@@ -109,8 +109,10 @@ class MSUAppDelegate(NSObject):
             self.managedsoftwareupdate_task = None
             self._listofupdates = []
             self.getAvailableUpdates()
+            #NSLog(u"Building table of available updates.")
             self.buildUpdateTableData()
             if self._optionalInstalls:
+                #NSLog(u"Building table of optional software.")
                 self.buildOptionalInstallsData()
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
             if self._listofupdates:

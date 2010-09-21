@@ -33,7 +33,8 @@ class MSUOptionalInstallsViewController(NSViewController):
     window_controller = IBOutlet()
     AddRemoveBtn = IBOutlet()
 
-    _optionallist = NSArray.arrayWithArray_([{"installed": NO, "install": NO, "name": "", "version": "", 
+    _optionallist = NSArray.arrayWithArray_([{"installed": NO, "managed": NO, "original_managed": NO,
+                                              "name": "", "version": "", 
                                               "description": "", "size": "", "enabled": NO, 
                                               "status": "", "original_status": ""}])
     

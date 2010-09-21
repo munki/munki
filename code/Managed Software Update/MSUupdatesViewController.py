@@ -35,7 +35,9 @@ class MSUupdatesViewController(NSViewController):
     window_controller = IBOutlet()
     updateNowBtn = IBOutlet()
     
-    _updatelist = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), "name": "", "version": "", "description": ""}])
+    _updatelist = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), 
+                                            "name": "", "version": "", "size": "",
+                                            "description": ""}])
     
     def updatelist(self):
         return self._updatelist

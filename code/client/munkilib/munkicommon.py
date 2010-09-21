@@ -57,7 +57,7 @@ class InsecureFilePermissionsError(VerifyFilePermissionsError):
 
 def get_version():
     """Returns version of munkitools"""
-    return '0.6.0 Build 755'
+    return '0.6.0 Build 757'
 
 
 # output and logging functions
@@ -652,7 +652,7 @@ def getInstallerPkgInfo(filename):
                             bufsize=1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    (out, unused_err) = proc.communicate()
     if out:
         restartAction = str(out).rstrip('\n')
         if restartAction != 'None':
@@ -774,6 +774,13 @@ def parsePkgRefs(filename):
                     pkginfo['version'] = \
                            padVersionString(
                             ref.attributes['version'].value.encode('UTF-8'),5)
+                    payloads = ref.getElementsByTagName('payload')
+                    if payloads:
+                        keys = payloads[0].attributes.keys()
+                        if 'installKBytes' in keys:
+                            pkginfo['installed_size'] = int(
+                                payloads[0].attributes[
+                                    'installKBytes'].value.encode('UTF-8'))
                     if not pkginfo in info:
                         info.append(pkginfo)
     return info
@@ -1187,7 +1194,7 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
             raise InsecureFilePermissionsError(
                 'group does not match munki process!')
         # verify other users cannot write to the file.
-        elif file_stat.st_mode & stat.S_IWOTH!= 0:
+        elif file_stat.st_mode & stat.S_IWOTH != 0:
             raise InsecureFilePermissionsError('world writable!')
     except InsecureFilePermissionsError, e:
         raise InsecureFilePermissionsError(
