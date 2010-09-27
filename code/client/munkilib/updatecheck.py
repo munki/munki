@@ -634,9 +634,24 @@ def getInstalledVersion(item_plist):
     # if we fall through to here we have no idea what version we have
     return 'UNKNOWN'
 
-
-def download_installeritem(location):
-    """Downloads a installer item."""
+class MunkiDownloadError(Exception):
+    '''Base exception for download errors'''
+    pass
+    
+class CurlDownloadError(MunkiDownloadError):
+    '''Curl failed to download the item'''
+    pass
+    
+class PackageVerificationError(MunkiDownloadError):
+    '''Download failed because it coud not be verified'''
+    pass
+    
+def download_installeritem(item_pl):
+    """Downloads a installer item. Raises an error if there are issues..."""
+    location = item_pl.get('installer_item_location')
+    if not location:
+        raise MunkiDownloadError("No installer_item_location in item info.")
+        
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     downloadbaseurl = munkicommon.pref('PackageURL') or \
                       munkicommon.pref('SoftwareRepoURL') + '/pkgs/'
@@ -659,19 +674,20 @@ def download_installeritem(location):
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
     dl_message = 'Downloading %s...' % pkgname
-    (path, err) = getHTTPfileIfChangedAtomically(pkgurl, destinationpath,
+    try:
+        changed = getHTTPfileIfChangedAtomically(pkgurl, destinationpath,
                                                  resume=True,
                                                  message=dl_message)
+    except CurlDownloadError:
+        munkicommon.verbose = oldverbose
+        raise
+        
     # set verboseness back.
     munkicommon.verbose = oldverbose
-
-    if path:
-        return (True, destinationpath)
-    else:
-        munkicommon.display_error('Could not download %s from server.' %
-                                  pkgname)
-        munkicommon.display_error(err)
-        return (False, destinationpath)
+    if changed:
+        if not verifySoftwarePackageIntegrity(destinationpath, item_pl,
+                                              'installer_item_hash'):
+            raise PackageVerificationError()
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
@@ -1067,7 +1083,7 @@ def evidenceThisIsInstalled(item_pl):
     return False
 
 
-def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
+def verifySoftwarePackageIntegrity(file_path, item_pl, item_key):
     """Verifies the integrity of the given software package.
 
     The feature is controlled through the PackageVerificationMode key in
@@ -1082,7 +1098,6 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
             do not contain the item_key.
 
     Args:
-        mainfestitem: The name of the manifest item.
         file_path: The file to check integrity on.
         item_pl: The item plist which contains the reference values.
         item_key: The name of the key in plist which contains the hash.
@@ -1104,18 +1119,19 @@ def verifySoftwarePackageIntegrity(manifestitem, file_path, item_pl, item_key):
                 return True
             else:
                 munkicommon.display_error(
-                 'Hash value integrity check for %s failed.' % manifestitem)
+                    'Hash value integrity check for %s failed.' %
+                    item_pl.get('name'))
                 return False
         else:
             if mode.lower() == 'hash_strict':
                 munkicommon.display_error(
                     'Reference hash value for %s is missing in catalog.'
-                    % manifestitem)
+                    % item_pl.get('name'))
                 return False
             else:
                 munkicommon.display_warning(
-                    'Reference hash value missing for %s -- package integrity '
-                    'verification skipped.' % manifestitem)
+                    'Reference hash value missing for %s -- package '
+                    'integrity verification skipped.' % item_pl.get('name'))
                 return True
 
     else:
@@ -1362,70 +1378,63 @@ def processInstall(manifestitem, cataloglist, installinfo):
             installinfo['managed_installs'].append(iteminfo)
             return False
 
-        if 'installer_item_location' in item_pl:
-            location = item_pl['installer_item_location']
-            (download_successful, download_path) = download_installeritem(
-                location)
-            if download_successful:
-                filename = os.path.split(location)[1]
-                if verifySoftwarePackageIntegrity(
-                    manifestitem, download_path, item_pl,
-                    'installer_item_hash'):
-                    # required keys
-                    iteminfo['installer_item'] = filename
-                    iteminfo['installed'] = False
-                    iteminfo['version_to_install'] = item_pl.get(
-                                                         'version','UNKNOWN')
-                    iteminfo['description'] = item_pl.get('description','')
-                    iteminfo['display_name'] = item_pl.get('display_name','')
-                    # optional keys
-                    optional_keys = ['suppress_bundle_relocation',
-                                     'installer_choices_xml',
-                                     'adobe_install_info',
-                                     'RestartAction',
-                                     'installer_type',
-                                     'adobe_package_name',
-                                     'package_path',
-                                     'items_to_copy', # used w/ copy_from_dmg
-                                     'copy_local'] # used w/ AdobeCS5 Updaters
-                    for key in optional_keys:
-                        if key in item_pl:
-                            iteminfo[key] = item_pl[key]
-
-                    installinfo['managed_installs'].append(iteminfo)
-                    if nameAndVersion(manifestitemname)[1] == '':
-                        # didn't specify a specific version, so
-                        # now look for updates for this item
-                        update_list = lookForUpdates(iteminfo['name'],
-                                                     cataloglist)
-                        for update_item in update_list:
-                            # call processInstall recursively so we get the
-                            # latest version and dependencies
-                            unused_result = processInstall(update_item,
-                                                           cataloglist,
-                                                           installinfo)
-                    return True
-                else:
-                    munkicommon.display_warning(
-                        'Can\'t install %s because the integrity check failed.'
-                        % manifestitem)
-                    iteminfo['installed'] = False
-                    iteminfo['note'] = 'Integrity check failed'
-                    installinfo['managed_installs'].append(iteminfo)
-                    return False
-            else:
-                munkicommon.display_warning(
-                    'Download of %s failed.' % manifestitem)
-                iteminfo['installed'] = False
-                iteminfo['note'] = 'Download failed'
-                installinfo['managed_installs'].append(iteminfo)
-                return False
-        else:
-            munkicommon.display_warning('Can\'t install %s because there\'s '
-                                        'no download info for the installer '
-                                        'item' % manifestitemname)
+        try:
+            download_installeritem(item_pl)
+            filename = os.path.split(item_pl['installer_item_location'])[1]
+            # required keys
+            iteminfo['installer_item'] = filename
             iteminfo['installed'] = False
-            iteminfo['note'] = 'Download info missing'
+            iteminfo['version_to_install'] = item_pl.get(
+                                                 'version','UNKNOWN')
+            iteminfo['description'] = item_pl.get('description','')
+            iteminfo['display_name'] = item_pl.get('display_name','')
+            # optional keys
+            optional_keys = ['suppress_bundle_relocation',
+                             'installer_choices_xml',
+                             'adobe_install_info',
+                             'RestartAction',
+                             'installer_type',
+                             'adobe_package_name',
+                             'package_path',
+                             'items_to_copy', # used w/ copy_from_dmg
+                             'copy_local'] # used w/ AdobeCS5 Updaters
+            for key in optional_keys:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
+
+            installinfo['managed_installs'].append(iteminfo)
+            if nameAndVersion(manifestitemname)[1] == '':
+                # didn't specify a specific version, so
+                # now look for updates for this item
+                update_list = lookForUpdates(iteminfo['name'],
+                                             cataloglist)
+                for update_item in update_list:
+                    # call processInstall recursively so we get the
+                    # latest version and dependencies
+                    unused_result = processInstall(update_item,
+                                                   cataloglist,
+                                                   installinfo)
+            return True
+        except PackageVerificationError:
+            munkicommon.display_warning(
+                'Can\'t install %s because the integrity check failed.'
+                % manifestitem)
+            iteminfo['installed'] = False
+            iteminfo['note'] = 'Integrity check failed'
+            installinfo['managed_installs'].append(iteminfo)
+            return False
+        except CurlDownloadError:
+            munkicommon.display_warning(
+                'Download of %s failed.' % manifestitem)
+            iteminfo['installed'] = False
+            iteminfo['note'] = 'Download failed'
+            installinfo['managed_installs'].append(iteminfo)
+            return False
+        except MunkiDownloadError, errmsg:
+            munkicommon.display_warning('Can\'t install %s because of: %s' 
+                                        % (manifestitemname, errmsg))
+            iteminfo['installed'] = False
+            iteminfo['note'] = errmsg
             installinfo['managed_installs'].append(iteminfo)
             return False
     else:
@@ -1714,22 +1723,18 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             if not enoughDiskSpace(uninstall_item, uninstalling=True):
                 return False
 
-            (download_successful, download_path) = (
-                download_installeritem(location))
-            if download_successful:
-                if verifySoftwarePackageIntegrity(
-                    iteminfo['name'], download_path, item_pl,
-                    'uninstaller_item_hash'):
-                    filename = os.path.split(location)[1]
-                    iteminfo['uninstaller_item'] = filename
-                    iteminfo['adobe_package_name'] = \
+            try:
+                download_installeritem(item)
+                filename = os.path.split(location)[1]
+                iteminfo['uninstaller_item'] = filename
+                iteminfo['adobe_package_name'] = \
                         uninstall_item.get('adobe_package_name','')
-                else:
-                    munkicommon.display_warning(
-                        'Can\'t uninstall %s because the integrity check '
-                        'failed.' % iteminfo['name'])
-                    return False
-            else:
+            except PackageVerificationError:
+                munkicommon.display_warning(
+                    'Can\'t uninstall %s because the integrity check '
+                    'failed.' % iteminfo['name'])
+                return False
+            except MunkiDownloadError:
                 munkicommon.display_warning('Failed to download the '
                                             'uninstaller for %s'
                                             % iteminfo['name'])
@@ -1794,25 +1799,28 @@ def getCatalogs(cataloglist):
             catalogpath = os.path.join(catalog_dir, catalogname)
             munkicommon.display_detail('Getting catalog %s...' % catalogname)
             message = 'Retreiving catalog "%s"...' % catalogname
-            (newcatalog, err) = getHTTPfileIfChangedAtomically(catalogurl,
-                                                             catalogpath,
-                                                             message=message)
-            if newcatalog:
-                if munkicommon.validPlist(newcatalog):
-                    CATALOG[catalogname] = makeCatalogDB(
-                                        FoundationPlist.readPlist(newcatalog))
-                else:
-                    munkicommon.display_error(
-                        'Retreived catalog %s is invalid.' % catalogname)
-                    try:
-                        os.unlink(newcatalog)
-                    except (OSError, IOError):
-                        pass
-            else:
+            try:
+                unused_value = getHTTPfileIfChangedAtomically(catalogurl,
+                                                              catalogpath,
+                                                              message=message)
+            except MunkiDownloadError, err:
                 munkicommon.display_error(
                     'Could not retrieve catalog %s from server.' %
                      catalogname)
                 munkicommon.display_error(err)
+                
+            else:
+                if munkicommon.validPlist(catalogpath):
+                    CATALOG[catalogname] = makeCatalogDB(
+                        FoundationPlist.readPlist(catalogpath))
+                else:
+                    munkicommon.display_error(
+                        'Retreived catalog %s is invalid.' % catalogname)
+                    try:
+                        os.unlink(catalogpath)
+                    except (OSError, IOError):
+                        pass
+                
 
 class ManifestException(Exception):
     """Lets us raise an exception when we get an invalid
@@ -1852,10 +1860,11 @@ def getmanifest(partialurl, suppress_errors=False):
     munkicommon.display_detail('Getting manifest %s...' % partialurl)
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = 'Retreiving list of software for this machine...'
-    (newmanifest, err) = getHTTPfileIfChangedAtomically(manifesturl,
+    try:
+        unused_value = getHTTPfileIfChangedAtomically(manifesturl,
                                                       manifestpath,
                                                       message=message)
-    if err or not newmanifest:
+    except MunkiDownloadError, err:
         if not suppress_errors:
             munkicommon.display_error(
                 'Could not retrieve manifest %s from the server.' %
@@ -1863,15 +1872,15 @@ def getmanifest(partialurl, suppress_errors=False):
             munkicommon.display_error(err)
         return None
 
-    if munkicommon.validPlist(newmanifest):
+    if munkicommon.validPlist(manifestpath):
         # record it for future access
-        MANIFESTS[manifestname] = newmanifest
-        return newmanifest
+        MANIFESTS[manifestname] = manifestpath
+        return manifestpath
     else:
         errormsg = 'manifest returned for %s is invalid.' % partialurl
         munkicommon.display_error(errormsg)
         try:
-            os.unlink(newmanifest)
+            os.unlink(manifestpath)
         except (OSError, IOError):
             pass
         raise ManifestException(errormsg)
@@ -2194,7 +2203,13 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                  message=None, resume=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the
-       server."""
+       server. 
+       
+       Returns True if a new download was required; False if the
+       item is already in the local cache.
+       
+       Raises CurlDownloadError if there is an error."""
+       
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     # get server CA cert if it exists so we can verify the munki server
     ca_cert_path = None
@@ -2246,35 +2261,37 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
                       etag=etag,
                       resume=resume,
                       message=message)
+
     except CurlError, err:
         err = 'Error %s: %s' % tuple(err)
-        if not os.path.exists(destinationpath):
-            destinationpath = None
+        raise CurlDownloadError(err)
+
     except HTTPError, err:
         err = 'HTTP result %s: %s' % tuple(err)
-        if not os.path.exists(destinationpath):
-            destinationpath = None
-    else:
-        err = None
-        if header['http_result_code'] == '304':
-            # not modified, return existing file
-            munkicommon.display_debug1('%s already exists and is up-to-date.'
-                                            % destinationpath)
-        else:
-            if header.get('last-modified'):
-                # set the modtime of the downloaded file to the modtime of the
-                # file on the server
-                modtimestr = header['last-modified']
-                modtimetuple = time.strptime(modtimestr,
-                                             '%a, %d %b %Y %H:%M:%S %Z')
-                modtimeint = calendar.timegm(modtimetuple)
-                os.utime(destinationpath, (time.time(), modtimeint))
-            if header.get('etag'):
-                # store etag in extended attribute for future use
-                xattr.setxattr(destinationpath,
-                               'com.googlecode.munki.etag', header['etag'])
+        raise CurlDownloadError(err)
 
-    return destinationpath, err
+    err = None
+    if header['http_result_code'] == '304':
+        # not modified, return existing file
+        munkicommon.display_debug1('%s already exists and is up-to-date.'
+                                        % destinationpath)
+        # file is in cache and is unchanged, so we return False
+        return False
+    else:
+        if header.get('last-modified'):
+            # set the modtime of the downloaded file to the modtime of the
+            # file on the server
+            modtimestr = header['last-modified']
+            modtimetuple = time.strptime(modtimestr,
+                                         '%a, %d %b %Y %H:%M:%S %Z')
+            modtimeint = calendar.timegm(modtimetuple)
+            os.utime(destinationpath, (time.time(), modtimeint))
+        if header.get('etag'):
+            # store etag in extended attribute for future use
+            xattr.setxattr(destinationpath,
+                           'com.googlecode.munki.etag', header['etag'])
+
+    return True
 
 
 # we only want to call sw_vers and the like once. Since these values don't
