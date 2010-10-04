@@ -40,11 +40,17 @@ import FoundationPlist
 
 MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/ManagedInstalls.plist'
 MANAGED_INSTALLS_PLIST_PATH_NO_EXT = '/Library/Preferences/ManagedInstalls'
+# Relative path of secure config plist file to root of ManagedInstallDir.
+SECURE_CONFIG_PLIST_REL_PATH = 'Secure/SecureConfig.plist'
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
 class Error(Exception):
     """Class for domain specific exceptions."""
+
+
+class PreferencesError(Error):
+    """There was an error reading the preferences plist."""
 
 
 class VerifyFilePermissionsError(Error):
@@ -575,35 +581,53 @@ def prefs(force_refresh=False):
         _prefs['SuppressStopButtonOnInstall'] = False
         _prefs['PackageVerificationMode'] = 'hash'
 
-        prefsfile = MANAGED_INSTALLS_PLIST_PATH
-        plist = {}
-        if os.path.exists(prefsfile):
-            # Load preferences from ManagedInstalls.plist preferences file.
-            # Note: these will likely stomp on the defaults defined above.
-            try:
-                plist = FoundationPlist.readPlist(prefsfile)
-            except FoundationPlist.NSPropertyListSerializationException:
-                display_error('ERROR: Could not read preferences file %s.'
-                               % prefsfile)
-                raise Exception('Could not read preferences file %s.' %
-                                                                prefsfile)
-            try:
-                for key in plist.keys():
-                    if type(plist[key]).__name__ == '__NSCFDate':
-                        # convert NSDate/CFDates to strings
-                        _prefs[key] = str(plist[key])
-                    else:
-                        _prefs[key] = plist[key]
-            except AttributeError:
-                display_error('ERROR: Prefs file %s contains invalid data.'
-                                                        % prefsfile)
-                raise Exception('Preferences file %s invalid.' % prefsfile)
-        else:
+        # Load configs from ManagedInstalls.plist file
+        if not loadPrefsFromFile(_prefs, MANAGED_INSTALLS_PLIST_PATH):
             # no prefs file, so we'll write out a 'default' prefs file
             del _prefs['LastNotifiedDate']
             FoundationPlist.writePlist(_prefs, prefsfile)
 
+        # Load configs from SecureConfig.plist file; overwrite existing configs
+        secure_config_file_path = os.path.join(
+            _prefs['ManagedInstallDir'], SECURE_CONFIG_PLIST_REL_PATH)
+        if loadPrefsFromFile(_prefs, secure_config_file_path):
+          _prefs['SecureConfigFile'] = secure_config_file_path
+
     return _prefs
+
+
+def loadPrefsFromFile(prefs, filepath):
+    """Loads preferences from a file into the passed prefs dictionary.
+
+    Args:
+      prefs: dictionary of configurations to update.
+      filepath: str path of file to read configurations from.
+    Returns:
+      Boolean. True if the file exists and prefs was updated, False otherwise.
+    Raises:
+      Error: there was an error reading the specified preferences file.
+    """
+    if not os.path.exists(filepath):
+        return False
+
+    plist = {}
+    try:
+        plist = FoundationPlist.readPlist(filepath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        display_error('ERROR: Could not read preferences file %s.' % filepath)
+        raise PreferencesError(
+            'Could not read preferences file %s.' % filepath)
+    try:
+        for key in plist.keys():
+            if type(plist[key]).__name__ == '__NSCFDate':
+                # convert NSDate/CFDates to strings
+                _prefs[key] = str(plist[key])
+            else:
+                _prefs[key] = plist[key]
+    except AttributeError:
+        display_error('ERROR: Prefs file %s contains invalid data.' % filepath)
+        raise PreferencesError('Preferences file %s invalid.' % filepath)
+    return True
 
 
 def pref(prefname):
