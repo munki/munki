@@ -174,9 +174,9 @@ def getCatalogInfoFromDmg(dmgpath, options):
                             options.destinationpath or "/Applications"
                 if options.user:
                     item_to_copy['user'] = options.user
-                if options.user:
+                if options.group:
                     item_to_copy['group'] = options.group
-                if options.user:
+                if options.mode:
                     item_to_copy['mode'] = options.mode
                 cataloginfo['items_to_copy'] = [item_to_copy]
                 cataloginfo['uninstallable'] = True
