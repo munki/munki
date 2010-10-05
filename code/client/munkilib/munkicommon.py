@@ -40,8 +40,8 @@ import FoundationPlist
 
 MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/ManagedInstalls.plist'
 MANAGED_INSTALLS_PLIST_PATH_NO_EXT = '/Library/Preferences/ManagedInstalls'
-# Relative path of secure config plist file to root of ManagedInstallDir.
-SECURE_CONFIG_PLIST_REL_PATH = 'Secure/SecureConfig.plist'
+SECURE_MANAGED_INSTALLS_PLIST_PATH = (
+    '/private/var/root/Library/Preferences/ManagedInstalls.plist')
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
@@ -587,11 +587,9 @@ def prefs(force_refresh=False):
             del _prefs['LastNotifiedDate']
             FoundationPlist.writePlist(_prefs, prefsfile)
 
-        # Load configs from SecureConfig.plist file; overwrite existing configs
-        secure_config_file_path = os.path.join(
-            _prefs['ManagedInstallDir'], SECURE_CONFIG_PLIST_REL_PATH)
-        if loadPrefsFromFile(_prefs, secure_config_file_path):
-          _prefs['SecureConfigFile'] = secure_config_file_path
+        # Load configs from secure ManagedInstalls.plist file.
+        # Note: this overwrites existing configs.
+        loadPrefsFromFile(_prefs, SECURE_MANAGED_INSTALLS_PLIST_PATH)
 
     return _prefs
 
