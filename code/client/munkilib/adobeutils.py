@@ -1075,20 +1075,38 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             # make some (hopfully functional) installs items from the payloads
             installs = []
             uninstalldir = "/Library/Application Support/Adobe/Uninstall"
+            # first look for a payload with a display_name matching the
+            # overall display_name
             for payload in cataloginfo.get('payloads', []):
-                if 'AdobeCode' in payload:
-                    if ("LangPack" in payload.get("display_name") or
-                        "Language Files" in payload.get("display_name")):
-                        # skip Language Packs
-                        continue
-                    dbfile = payload['AdobeCode'] + ".db"
-                    filepath = os.path.join(uninstalldir, dbfile)
-                    installitem = {}
-                    installitem['path'] = filepath
-                    installitem['type'] = 'file'
-                    installs.append(installitem)
-            cataloginfo['installs'] = installs
-                    
+                if (payload.get('display_name','') ==
+                                           cataloginfo['display_name']):
+                    if 'AdobeCode' in payload:
+                        dbfile = payload['AdobeCode'] + ".db"
+                        filepath = os.path.join(uninstalldir, dbfile)
+                        installitem = {}
+                        installitem['path'] = filepath
+                        installitem['type'] = 'file'
+                        installs.append(installitem)
+                        break
+                        
+            if installs == []:
+                # didn't find a payload with matching name
+                # just add all of the non-LangPack payloads
+                # to the installs list.
+                for payload in cataloginfo.get('payloads', []):
+                    if 'AdobeCode' in payload:
+                        if ("LangPack" in payload.get("display_name") or
+                            "Language Files" in payload.get("display_name")):
+                            # skip Language Packs
+                            continue
+                        dbfile = payload['AdobeCode'] + ".db"
+                        filepath = os.path.join(uninstalldir, dbfile)
+                        installitem = {}
+                        installitem['path'] = filepath
+                        installitem['type'] = 'file'
+                        installs.append(installitem)
+                        
+            cataloginfo['installs'] = installs 
             return cataloginfo
     
     # Look for AdobeUberInstaller items (CS4 install)
