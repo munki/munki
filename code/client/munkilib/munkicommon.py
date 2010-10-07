@@ -1181,7 +1181,32 @@ def getPackageMetaData(pkgitem):
     cataloginfo['receipts'] = receiptinfo
 
     return cataloginfo
+    
+    
+# appdict is a global so we don't call system_profiler
+# more than once per session because it is slow...
+APPDICT = {}
+def getAppData():
+    """Queries system_profiler and returns a dict of app info items."""
+    global APPDICT
+    if APPDICT == {}:
+        munkicommon.display_debug1(
+            'Getting info on currently installed applications...')
+        cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
+        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        (pliststr, unused_err) = proc.communicate()
+        if proc.returncode == 0:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            # top level is an array instead of a dict, so get dict
+            spdict = plist[0]
+            if '_items' in spdict:
+                APPDICT = spdict['_items']
 
+    return APPDICT
+    
 
 # some utility functions
 

@@ -248,32 +248,6 @@ def analyzeInstalledPkgs():
     PKGDATA['installed_names'] = installed
     PKGDATA['pkg_references'] = references
 
-
-# appdict is a global so we don't call system_profiler
-# more than once per session
-APPDICT = {}
-def getAppData():
-    """Queries system_profiler and returns a dict of app info items."""
-    global APPDICT
-    if APPDICT == {}:
-        munkicommon.display_debug1(
-            'Getting info on currently installed applications...')
-        cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (pliststr, unused_err) = proc.communicate()
-        if proc.returncode == 0:
-            plist = FoundationPlist.readPlistFromString(pliststr)
-            # top level is an array instead of a dict, so get dict
-            spdict = plist[0]
-            if '_items' in spdict:
-                APPDICT = spdict['_items']
-
-    return APPDICT
-
-
 def getAppBundleID(path):
     """Returns CFBundleIdentifier if available for application at path."""
     infopath = os.path.join(path, 'Contents', 'Info.plist')
@@ -349,7 +323,7 @@ def compareApplicationVersion(app):
         'Looking for application %s with bundleid: %s, version %s...' %
         (name, bundleid, versionstring))
     appinfo = []
-    appdata = getAppData()
+    appdata = munkicommon.getAppData()
     if appdata:
         for item in appdata:
             if 'path' in item:
@@ -556,7 +530,7 @@ def getInstalledVersion(item_plist):
       This function is too slow, and slows down the update check process so
       much that we stopped trying to figure out the currently installed
       version -- leaving this function currently unused. Maybe we can revisit
-      in the future and speed it up so it's useable.
+      in the future and speed it up so it's usable.
     """
     if 'receipts' in item_plist:
         for receipt in item_plist['receipts']:
@@ -594,7 +568,7 @@ def getInstalledVersion(item_plist):
                     # that didn't work, fall through to the slow way
                     # using System Profiler
                     appinfo = []
-                    appdata = getAppData()
+                    appdata = munkicommon.getAppData()
                     if appdata:
                         for ad_item in appdata:
                             if bundleid:

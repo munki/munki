@@ -806,34 +806,6 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
         return -1
 
 
-# APPDICT is a global so we don't call system_profiler 
-# more than once per session because it's very slow.
-APPDICT = {}
-def getAppData():
-    """
-    Queries system_profiler and returns a dict
-    of app info items
-    """
-    global APPDICT
-    if APPDICT == {}:
-        munkicommon.display_debug1(
-            "Getting info on currently installed applications...")
-        cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-        (pliststr, unused_err) = proc.communicate()
-        if proc.returncode == 0:
-            plist = FoundationPlist.readPlistFromString(pliststr)
-            # top level is an array instead of a dict, so get dict
-            spdict = plist[0]
-            if '_items' in spdict:
-                APPDICT = spdict['_items']
-
-    return APPDICT
-
-
 #lastpatchlogline = ''
 #def getAcrobatPatchLogInfo(logpath):
 #    '''Gets info from the Adobe Acrobat patch log'''
@@ -920,7 +892,7 @@ def updateAcrobatPro(dmgpath):
         
         (appname, status) = line.split("\t")
         munkicommon.display_status("Searching for %s" % appname)
-        candidates = [item for item in getAppData()
+        candidates = [item for item in munkicommon.getAppData()
                       if item.get("path","").endswith("/" + appname) and 
                       not item.get("path","").startswith("/Volumes")]
         # hope there's only one!
