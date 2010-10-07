@@ -609,23 +609,23 @@ def getInstalledVersion(item_plist):
     return 'UNKNOWN'
 
 class MunkiDownloadError(Exception):
-    '''Base exception for download errors'''
+    """Base exception for download errors"""
     pass
-    
+
 class CurlDownloadError(MunkiDownloadError):
-    '''Curl failed to download the item'''
+    """Curl failed to download the item"""
     pass
-    
+
 class PackageVerificationError(MunkiDownloadError):
-    '''Download failed because it coud not be verified'''
+    """Download failed because it coud not be verified"""
     pass
-    
+
 def download_installeritem(item_pl):
     """Downloads a installer item. Raises an error if there are issues..."""
     location = item_pl.get('installer_item_location')
     if not location:
         raise MunkiDownloadError("No installer_item_location in item info.")
-        
+
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     downloadbaseurl = munkicommon.pref('PackageURL') or \
                       munkicommon.pref('SoftwareRepoURL') + '/pkgs/'
@@ -655,7 +655,7 @@ def download_installeritem(item_pl):
     except CurlDownloadError:
         munkicommon.verbose = oldverbose
         raise
-        
+
     # set verboseness back.
     munkicommon.verbose = oldverbose
     if changed:
@@ -1205,7 +1205,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
         unused_result = processInstall(manifestitem, cataloglist, installinfo)
     else:
         munkicommon.display_debug1(
-            '%s does not appear to be installed, so no managed updates...' 
+            '%s does not appear to be installed, so no managed updates...'
             % manifestitemname)
 
 
@@ -1412,7 +1412,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             installinfo['managed_installs'].append(iteminfo)
             return False
         except MunkiDownloadError, errmsg:
-            munkicommon.display_warning('Can\'t install %s because of: %s' 
+            munkicommon.display_warning('Can\'t install %s because of: %s'
                                         % (manifestitemname, errmsg))
             iteminfo['installed'] = False
             iteminfo['note'] = errmsg
@@ -1789,7 +1789,7 @@ def getCatalogs(cataloglist):
                     'Could not retrieve catalog %s from server.' %
                      catalogname)
                 munkicommon.display_error(err)
-                
+
             else:
                 if munkicommon.validPlist(catalogpath):
                     CATALOG[catalogname] = makeCatalogDB(
@@ -1801,7 +1801,7 @@ def getCatalogs(cataloglist):
                         os.unlink(catalogpath)
                     except (OSError, IOError):
                         pass
-                
+
 
 class ManifestException(Exception):
     """Lets us raise an exception when we get an invalid
@@ -2157,9 +2157,11 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             os.unlink(tempdownloadpath)
         raise CurlError(retcode, curlerr)
     else:
+        temp_download_exists = os.path.isfile(tempdownloadpath)
         http_result = header['http_result_code']
         if downloadedpercent != 100 and \
-            http_result.startswith('2'):
+            http_result.startswith('2') and \
+            temp_download_exists:
             downloadedsize = os.path.getsize(tempdownloadpath)
             if downloadedsize >= targetsize:
                 munkicommon.display_percent_done(100, 100)
@@ -2167,16 +2169,23 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 return header
             else:
                 # not enough bytes retreived
-                if not resume and os.path.exists(tempdownloadpath):
+                if not resume and temp_download_exists:
                     os.unlink(tempdownloadpath)
                 raise CurlError(-5, 'Expected %s bytes, got: %s' %
                                         (targetsize, downloadedsize))
-        elif http_result.startswith('2'):
+        elif http_result.startswith('2') and temp_download_exists:
             os.rename(tempdownloadpath, destinationpath)
             return header
         elif http_result == '304':
             return header
         else:
+            # there was a download error of some sort; clean all relevant
+            # downloads that may be in a bad state.
+            for f in [tempdownloadpath, destinationpath]:
+                try:
+                    os.unlink(f)
+                except OSError:
+                    pass
             raise HTTPError(http_result,
                                 header['http_result_description'])
 
@@ -2184,13 +2193,13 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                  message=None, resume=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the
-       server. 
-       
+       server.
+
        Returns True if a new download was required; False if the
        item is already in the local cache.
-       
+
        Raises CurlDownloadError if there is an error."""
-       
+
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     # get server CA cert if it exists so we can verify the munki server
     ca_cert_path = None
