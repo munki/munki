@@ -892,9 +892,18 @@ def updateAcrobatPro(dmgpath):
         
         (appname, status) = line.split("\t")
         munkicommon.display_status("Searching for %s" % appname)
-        candidates = [item for item in munkicommon.getAppData()
+        # first look in the obvious place
+        pathname = os.path.join("/Applications/Adobe Acrobat 9 Pro", appname)
+        if os.path.exists(pathname):
+            item = {}
+            item['path'] = pathname
+            candidates = [item]
+        else:
+            # use system_profiler to search for the app
+            candidates = [item for item in munkicommon.getAppData()
                       if item.get("path","").endswith("/" + appname) and 
                       not item.get("path","").startswith("/Volumes")]
+                      
         # hope there's only one!
         if len(candidates) == 0:
             if status == "optional":
