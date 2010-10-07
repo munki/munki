@@ -1113,6 +1113,7 @@ def verifySoftwarePackageIntegrity(file_path, item_pl, item_key):
         return True
     elif mode.lower() == 'hash' or mode.lower() == 'hash_strict':
         if item_key in item_pl:
+            munkicommon.display_status('Verifying package integrity...')
             item_hash = item_pl[item_key]
             if (item_hash is not 'N/A' and
                 item_hash == munkicommon.getsha256hash(file_path)):
@@ -1228,6 +1229,10 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     # installed, so let's check
     if someVersionInstalled(item_pl):
         unused_result = processInstall(manifestitem, cataloglist, installinfo)
+    else:
+        munkicommon.display_debug1(
+            '%s does not appear to be installed, so no managed updates...' 
+            % manifestitemname)
 
 
 def processOptionalInstall(manifestitem, cataloglist, installinfo):
@@ -1396,8 +1401,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'installer_type',
                              'adobe_package_name',
                              'package_path',
-                             'items_to_copy', # used w/ copy_from_dmg
-                             'copy_local'] # used w/ AdobeCS5 Updaters
+                             'items_to_copy',  # used w/ copy_from_dmg
+                             'copy_local',     # used w/ AdobeCS5 Updaters
+                             'silent_install'] # just install without
+                                               # bothering the user
             for key in optional_keys:
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
