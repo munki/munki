@@ -32,20 +32,16 @@ Maybe generate a checksum so we can verify the installer item is the right one
 import sys
 import os
 import optparse
-import plistlib
-import subprocess
-
-def valid_plist(path):
-    '''Uses plutil to check a plist for validity'''
-    cmd = ['/usr/bin/plutil', '-lint', '-s' , path]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
-    if proc.returncode == 0:
-        return True
-    else:
-        return False
+try:
+    from munkilib import FoundationPlist as plistlib
+except ImportError:
+    try:
+        import FoundationPlist as plistlib
+    except ImportError:
+        print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
+                              "using plistlib instead.")
+        import plistlib
+    
         
 def makecatalogs(repopath):
     '''Assembles all pkginfo files into catalogs.
@@ -67,13 +63,16 @@ def makecatalogs(repopath):
                 
             filepath = os.path.join(dirpath, name)
             
-            if not valid_plist(filepath):
-                print >> sys.stderr, \
-                        "WARNING: file %s is not a valid plist" % filepath
+            try:
+                pkginfo = plistlib.readPlist(filepath)
+            except IOError as inst:
+                print >> sys.stderr, ("IO error for %s: %s" % 
+                                        (filepath, inst))
                 continue
-                
-            #if it's a valid plist, assume it's a pkginfo file
-            pkginfo = plistlib.readPlist(filepath)
+            except Exception as inst:
+                print >> sys.stderr, ("Unexpected error for %s: %s" % 
+                                        (filepath, inst))
+                continue
             
             #simple sanity checking
             if not 'installer_item_location' in pkginfo:
