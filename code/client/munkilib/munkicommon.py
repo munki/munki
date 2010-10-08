@@ -1190,8 +1190,7 @@ def getAppData():
     """Queries system_profiler and returns a dict of app info items."""
     global APPDICT
     if APPDICT == {}:
-        munkicommon.display_debug1(
-            'Getting info on currently installed applications...')
+        display_debug1('Getting info on currently installed applications...')
         cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                                 stdin=subprocess.PIPE,
