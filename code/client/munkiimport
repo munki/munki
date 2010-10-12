@@ -1,0 +1,413 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# Copyright 2009-2010 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+munkiimport
+
+Created by Greg Neagle on 2010-09-29.
+
+Assists with importing installer items into the munki repo
+"""
+
+import sys
+import os
+import optparse
+import subprocess
+import time
+
+from munkilib import munkicommon
+from munkilib import FoundationPlist
+
+def makeDMG(pkgpath):
+    '''Wraps a non-flat package into a disk image.
+    Returns path to newly-created disk image.'''
+    
+    pkgname = os.path.basename(pkgpath)
+    print "Making disk image containing %s..." % pkgname
+    diskimagename = os.path.splitext(pkgname)[0] + ".dmg"
+    diskimagepath = os.path.join(munkicommon.tmpdir, diskimagename)
+    cmd = ["/usr/bin/hdiutil", "create", "-srcfolder", pkgpath, diskimagepath]
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+    while True: 
+        output =  proc.stdout.readline()
+        if not output and (proc.poll() != None):
+            break
+        print output.rstrip("\n")
+        sys.stdout.flush()        
+    retcode = proc.poll()
+    if retcode:
+        print >> sys.stderr, "Disk image creation failed."
+        return ""
+    else:
+        print "Disk image created at: %s" % diskimagepath
+        return diskimagepath
+        
+
+def repoAvailable(promptuser=False):
+    """Checks the repo path for proper directory structure.
+    If the directories look wrong we probably don't have a
+    valid repo path. Returns True if things look OK."""
+    repo_path = pref("repo_path")
+    if not repo_path:
+        print >> sys.stderr, "No repo path specified."
+        return False
+    if not os.path.exists(repo_path):
+        mountRepoGUI()
+    if not os.path.exists(repo_path):
+        return False
+    for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
+        if not os.path.exists(os.path.join(repo_path, subdir)):
+            return False
+    # if we get this far, the repo path looks OK
+    return True
+    
+
+def mountRepoGUI():
+    """Attempts to connect to the repo fileshare
+    Returns nothing whether we succeed or fail"""
+    repo_path = pref("repo_path")
+    repo_url = pref("repo_url")
+    if not repo_path or not repo_url:
+        return
+    print "Attempting to connect to munki repo..."
+    cmd = ['/usr/bin/open', repo_url]
+    unused_retcode = subprocess.call(cmd)
+    for i in range(60):
+        # wait up to 60 seconds to connect to repo
+        if os.path.exists(repo_path):
+            break
+        time.sleep(1)
+
+
+def mountRepoCLI():
+    """Attempts to connect to the repo fileshare"""
+    repo_path = pref("repo_path")
+    repo_url = pref("repo_url")
+    if os.path.exists(repo_path):
+        return
+    os.mkdir(repo_path)
+    cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
+    retcode = subprocess.call(cmd)
+    if retcode:
+        os.rmdir(repo_path)
+
+
+class RepoCopyError(Exception):
+    """Error copying installer item to repo"""
+    pass   
+
+
+def copyItemToRepo(itempath, version, subdirectory=""):
+    """Copies an item to the appropriate place in the repo.
+    Renames the item if an item already exists with that name.
+    Returns the relative path to the item."""
+    repo_path = pref("repo_path")
+    if not os.path.exists(repo_path):
+        raise RepoCopyError("Could not connect to munki repo.")
+        
+    destination_path = os.path.join(repo_path, 'pkgs', subdirectory)
+    if not os.path.exists(destination_path):
+        try:
+            os.makedirs(destination_path)
+        except OSError, errmsg:
+            raise RepoCopyError("Could not create %s: %s" %
+                                    (destination_path, errmsg))
+                                    
+    item_name = os.path.basename(itempath)
+    destination_path_name = os.path.join(destination_path, item_name)
+    if os.path.exists(destination_path_name) and version:
+        if not version in item_name:
+            # try adding the version
+            item_name = '%s-%s%s' % (os.path.splitext(item_name)[0],
+                                     version,
+                                     os.path.splitext(item_name)[1])
+            destination_path_name = os.path.join(destination_path, item_name)
+                     
+    index = 0
+    while os.path.exists(destination_path_name):
+        print "File %s already exists..." % destination_path_name
+        index += 1
+        original_name = os.path.basename(itempath)
+        item_name = "%s__%s%s" % (os.path.splitext(original_name)[0],
+                                  index, os.path.splitext(original_name)[1])                                         
+        destination_path_name = os.path.join(destination_path, item_name)
+ 
+    print "Copying %s to %s..." % (os.path.basename(itempath), 
+                                   destination_path_name)
+                                   
+    cmd = ['/bin/cp', itempath, destination_path_name]
+    retcode = subprocess.call(cmd)
+    if retcode:
+        raise RepoCopyError("Unable to copy %s to %s" %
+                                (itempath, destination_path_name))
+    else:
+        return os.path.join(subdirectory, item_name)
+                                    
+    
+def copyPkginfoToRepo(pkginfo, subdirectory=""):
+    '''Saves pkginfo to munki_repo_path/pkgsinfo/subdirectory'''
+    # less error checking because we copy the installer_item
+    # first and bail if it fails...
+    repo_path = pref("repo_path")
+    destination_path = os.path.join(repo_path, 'pkgsinfo', subdirectory)
+    if not os.path.exists(destination_path):
+        try:
+            os.makedirs(destination_path)
+        except OSError, errmsg:
+            raise RepoCopyError("Could not create %s: %s" %
+                                   (destination_path, errmsg))
+    pkginfo_name = "%s-%s" % (pkginfo['name'], pkginfo['version'])
+    pkginfo_path = os.path.join(destination_path, pkginfo_name)
+    index = 0
+    while os.path.exists(pkginfo_path):
+        index += 1
+        pkginfo_name = "%s-%s__%s" % (pkginfo['name'], pkginfo['version'], 
+                                     index)
+        pkginfo_path = os.path.join(destination_path, pkginfo_name)
+        
+    print "Saving pkginfo to %s..." % pkginfo_path
+    try:
+        FoundationPlist.writePlist(pkginfo, pkginfo_path)
+    except FoundationPlist.NSPropertyListWriteException, errmsg:
+        raise RepoCopyError(errmsg)
+    return pkginfo_path
+    
+    
+def openPkginfoInEditor(pkginfo_path):
+    """Opens pkginfo list in the user's chose editor."""
+    editor = pref('editor')
+    if editor:
+        if editor.endswith('.app'):
+            cmd = ['/usr/bin/open', '-a', editor, pkginfo_path]
+        else:
+            cmd = [editor, pkginfo_path]
+        unused_returncode = subprocess.call(cmd)
+        
+        
+def promptForSubdirectory(subdirectory):
+    """Prompts the user for a subdirectory for the pkg and pkginfo"""
+    while True:
+        newdir = raw_input(
+                    "Upload installer item to subdirectory path [None]: ")
+        if newdir:
+            repo_path = pref('repo_path')
+            if not os.path.exists(repo_path):
+                mountRepoGUI()
+            if not os.path.exists(repo_path):
+                raise RepoCopyError("Could not connect to munki repo.")
+            destination_path = os.path.join(repo_path, 'pkgs', newdir)
+            if not os.path.exists(destination_path):
+                answer = raw_input(
+                            "Path %s doesn't exist. Create it? [y/n] " %
+                                destination_path)
+                if answer.lower().startswith("y"):
+                    break
+            else:
+                break
+        else:
+            break  
+    return newdir
+    
+   
+def makePkgInfo(item_path):
+    """Calls makepkginfo to generate the pkginfo for item_path.
+    Currently the path to makepkginfo is hard-coded."""
+    proc = subprocess.Popen(['/usr/local/munki/makepkginfo', item_path],
+                            bufsize=1, stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE)
+    (pliststr, err) = proc.communicate()
+    if proc.returncode:
+        print >> sys.stderr, err
+        return {}
+    return FoundationPlist.readPlistFromString(pliststr)
+    
+
+def pref(prefname):
+    """Returns a preference for prefname"""
+    try:
+        _prefs = FoundationPlist.readPlist(PREFSPATH)
+    except FoundationPlist.NSPropertyListSerializationException:
+        return None
+    if prefname in _prefs:
+        return _prefs[prefname]
+    else:
+        return None
+
+
+def configure():
+    """Configures munkiimport for use"""
+    _prefs = {}
+    for (key, prompt) in [
+        ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+        ('repo_url', 'Repo URL (example: afp://munki.pretendco.com/repo)'),
+        ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
+        
+        newvalue = raw_input("%15s [%s]: " % (prompt, pref(key)))
+        _prefs[key] = newvalue or pref(key)
+    
+    try:
+        FoundationPlist.writePlist(_prefs, PREFSPATH)
+    except FoundationPlist.NSPropertyListWriteException:
+        print >> sys.stderr, "Could not save configuration to %s" % PREFSPATH
+    
+    
+PREFSNAME = "com.googlecode.munki.munkiimport.plist"
+PREFSPATH = os.path.expanduser(os.path.join("~/Library/Preferences",    
+                                            PREFSNAME))
+
+def main():
+    """Main routine"""
+    usage = """usage: %prog [options] [/path/to/installer_item]
+       Imports an installer item into a munki repo.
+       Installer item can be a pkg, mpkg, dmg, or app.
+       Bundle-style pkgs and apps are wrapped in a dmg
+       file before upload."""
+    
+    p = optparse.OptionParser(usage=usage)
+    p.add_option('--configure', action='store_true',
+                    help='''Configure munkiimport with details about your
+                    munki repo, preferred editor, and the like. Any other
+                    options and arguments are ignored.''')
+    p.add_option('--subdirectory', '-d', default='',
+                    help='''When importing an installer item, item will be 
+                    uploaded to this subdirectory path in the repo pkgs
+                    directory, and the pkginfo file will be stored under 
+                    this subdirectory under the pkgsinfo directory.''')
+    p.add_option('--nointeractive', '-n', action='store_true',
+                    help='''No interactive prompts. May cause a failure
+                    if repo path is unavailable.''')
+    options, arguments = p.parse_args()
+    
+    if options.configure:
+        configure()
+        exit(0)
+    
+    if len(arguments) == 0:
+        p.print_usage()
+        exit(0)
+        
+    if len(arguments) > 1:
+        print >> sys.stderr, \
+            "This tool supports importing only one item at a time."
+        exit(-1)
+    
+    installer_item = arguments[0]
+    if not os.path.exists(installer_item):
+        print >> sys.stderr, "%s does not exist!" % installer_item
+        exit(-1)
+        
+    if not pref('repo_path'):
+        print >> sys.stderr, ("Path to munki repo has not been defined. "
+                              "Run with --configure option to configure this "
+                              "tool.")
+        exit(-1)
+    
+    if not repoAvailable():
+        print >> sys.stderr, ("Could not connect to munki repo. Check the "
+                              "configuration and try again.")
+        exit(-1)
+                
+    item_ext = os.path.splitext(installer_item)[1]
+    if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
+        print >> sys.stderr, "%s is an unknown type." % installer_item
+        exit(-1)
+    
+    if os.path.isdir(installer_item):
+        if item_ext == ".dmg":
+            # a directory named foo.dmg!
+            print >> sys.stderr, "%s is an unknown type." % installer_item
+            exit(-1)
+        else:
+            # we need to convert to dmg
+            dmg_path = makeDMG(installer_item)
+            if dmg_path:
+                installer_item = dmg_path
+            else:
+                print >> sys.stderr, ("Could not convert %s to a disk image." 
+                                        % installer_item)
+                exit(-1)
+                
+    # generate pkginfo for the item
+    pkginfo = makePkgInfo(installer_item)
+    
+    if not options.nointeractive:
+        # now let user do some basic editing
+        editfields = (('Item name', 'name'), 
+                      ('Display name', 'display_name'),
+                      ('Description', 'description'),
+                      ('Version', 'version'))
+        for (name, key) in editfields:
+            newvalue = raw_input("%15s [%s]: " % (name, pkginfo.get(key,'')))
+            if newvalue:
+                pkginfo[key] = newvalue
+        
+        newvalue = raw_input("%15s [%s]: " % ("Catalogs",
+                                              ", ".join(pkginfo['catalogs'])))
+        if newvalue:
+            pkginfo['catalogs'] = [item.strip() 
+                                   for item in newvalue.split(",")]
+        
+        if 'receipts' not in pkginfo and 'installs' not in pkginfo:
+            print >> sys.stderr, ("WARNING: There are no receipts and no "
+                                  "\'installs\' items for this installer item. "
+                                  "You will need to add at least one item to "
+                                  "the \'installs\' list.")
+        #TO-DO: provide a way to add 'installs' items right here
+    
+        print
+        for (name, key) in editfields:
+            print "%15s: %s" % (name, pkginfo.get(key,''))
+        print "%15s: %s" % ('Catalogs: ', ", ".join(pkginfo['catalogs']))
+        print
+        answer = raw_input("Import this item? [y/n] ")
+        if not answer.lower().startswith("y"):
+            exit(0)
+        
+        if options.subdirectory == '':
+            options.subdirectory = promptForSubdirectory(options.subdirectory)
+        
+    # fix in case user accidentally starts subdirectory with a slash
+    if options.subdirectory.startswith("/"):
+        options.subdirectory = options.subdirectory[1:]
+            
+    try:
+        uploaded_pkgpath = copyItemToRepo(installer_item,
+                                          pkginfo.get('version'),
+                                          options.subdirectory)
+    except RepoCopyError, errmsg:
+        print >> sys.stderr, errmsg
+        exit(-1)
+        
+    # adjust the installer_item_location to match the actual location and name
+    pkginfo['installer_item_location'] = uploaded_pkgpath
+        
+    # installer_item upload was successful, so upload pkginfo to repo
+    try:
+        pkginfo_path = copyPkginfoToRepo(pkginfo, options.subdirectory)
+    except RepoCopyError, errmsg:
+        print >> sys.stderr, errmsg
+        exit(-1)
+    
+    if not options.nointeractive:
+        # open the pkginfo file in the user's editor
+        openPkginfoInEditor(pkginfo_path)
+    
+if __name__ == '__main__':
+    main()
+
