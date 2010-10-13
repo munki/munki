@@ -36,6 +36,7 @@ from xml.dom import minidom
 
 import munkistatus
 import FoundationPlist
+import LaunchServices
 
 
 MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/ManagedInstalls.plist'
@@ -1182,30 +1183,57 @@ def getPackageMetaData(pkgitem):
 
     return cataloginfo
     
-    
-# appdict is a global so we don't call system_profiler
-# more than once per session because it is slow...
-APPDICT = {}
-def getAppData():
-    """Queries system_profiler and returns a dict of app info items."""
-    global APPDICT
-    if APPDICT == {}:
-        display_debug1('Getting info on currently installed applications...')
-        cmd = ['/usr/sbin/system_profiler', '-XML', 'SPApplicationsDataType']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (pliststr, unused_err) = proc.communicate()
-        if proc.returncode == 0:
-            plist = FoundationPlist.readPlistFromString(pliststr)
-            # top level is an array instead of a dict, so get dict
-            spdict = plist[0]
-            if '_items' in spdict:
-                APPDICT = spdict['_items']
+        
+def _unsigned(i):
+    """Translate a signed int into an unsigned int.  Int type returned
+    is longer than the original since Python has no unsigned int."""
+    return i & 0xFFFFFFFF
 
-    return APPDICT
+
+def getLSInstalledApplications():
+    """Get paths of currently installed applications per LaunchServices.
+    Return value is list of paths.
+    Ignores apps installed on other volumes
+    """
+    apps = LaunchServices._LSCopyAllApplicationURLs(None)
+    applist = []
+    for app in apps:
+        (status, fsobj, url) = LaunchServices.LSGetApplicationForURL(
+            app, _unsigned(LaunchServices.kLSRolesAll), None, None)
+        if status != 0:
+            continue
+        app_path = fsobj.as_pathname()
+        if not app_path.startswith('/Volumes'):
+            applist.append(app_path)
+
+    return applist
     
+# we save APPDATA in a global to avoid querying LaunchServices more than
+# once per session    
+APPDATA = []
+def getAppData():
+    """Gets info on currently installed apps.
+    Returns a list of dicts containing path, name, version and bundleid"""
+    if APPDATA == []:
+        display_debug1('Getting info on currently installed applications...')
+        applist = getLSInstalledApplications()
+        for pathname in applist:
+            iteminfo = {}
+            iteminfo['name'] = os.path.splitext(os.path.basename(pathname))[0]
+            iteminfo['path'] = pathname
+            plistpath = os.path.join(pathname, 'Contents', 'Info.plist')
+            if os.path.exists(plistpath):
+                try:
+                    plist = FoundationPlist.readPlist(plistpath)
+                    iteminfo['bundleid' ] = plist.get('CFBundleIdentifier','')
+                    if 'CFBundleName' in plist:
+                        iteminfo['name'] = plist['CFBundleName']
+                    iteminfo['version'] = getExtendedVersion(pathname)
+                    APPDATA.append(iteminfo)
+                except Exception:
+                    pass
+    return APPDATA
+
 
 # some utility functions
 

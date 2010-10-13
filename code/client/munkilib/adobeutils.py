@@ -901,8 +901,7 @@ def updateAcrobatPro(dmgpath):
         else:
             # use system_profiler to search for the app
             candidates = [item for item in munkicommon.getAppData()
-                      if item.get("path","").endswith("/" + appname) and 
-                      not item.get("path","").startswith("/Volumes")]
+                          if item['path'].endswith('/' + appname)]
                       
         # hope there's only one!
         if len(candidates) == 0:

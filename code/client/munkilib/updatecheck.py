@@ -326,16 +326,10 @@ def compareApplicationVersion(app):
     appdata = munkicommon.getAppData()
     if appdata:
         for item in appdata:
-            if 'path' in item:
-                # in case we get items from other disks
-                if not item['path'].startswith('/Volumes/'):
-                    if bundleid:
-                        if getAppBundleID(item['path']) == bundleid:
-                            appinfo.append(item)
-                    elif name:
-                        if '_name' in item:
-                            if item['_name'] == name:
-                                appinfo.append(item)
+            if bundleid and item['bundleid'] == bundleid:
+                appinfo.append(item)
+            elif name and item['name'] == name:
+                appinfo.append(item)
 
     if not appinfo:
         # app isn't present!
@@ -344,14 +338,15 @@ def compareApplicationVersion(app):
         return 0
 
     for item in appinfo:
-        if '_name' in item:
+        if 'name' in item:
             munkicommon.display_debug2(
-                '\tName: \t %s' % item['_name'].encode('UTF-8'))
+                '\tName: \t %s' % item['name'].encode('UTF-8'))
         if 'path' in item:
             munkicommon.display_debug2(
                 '\tPath: \t %s' % item['path'].encode('UTF-8'))
             munkicommon.display_debug2(
-                '\tCFBundleIdentifier: \t %s' % getAppBundleID(item['path']))
+                '\tCFBundleIdentifier: \t %s' %
+                                        item['bundleid'].encode('UTF-8'))
         if 'version' in item:
             munkicommon.display_debug2(
                 '\tVersion: \t %s' % item['version'].encode('UTF-8'))
@@ -571,15 +566,10 @@ def getInstalledVersion(item_plist):
                     appdata = munkicommon.getAppData()
                     if appdata:
                         for ad_item in appdata:
-                            if bundleid:
-                                if 'path' in ad_item:
-                                    if getAppBundleID(ad_item['path']) == \
-                                       bundleid:
-                                        appinfo.append(ad_item)
-                            elif name:
-                                if '_name' in ad_item:
-                                    if ad_item['_name'] == name:
-                                        appinfo.append(ad_item)
+                            if bundleid and ad_item['bundleid'] == bundleid:
+                                appinfo.append(ad_item)
+                            elif name and ad_item['name'] == name:
+                                appinfo.append(ad_item)
 
                     maxversion = '0.0.0.0.0'
                     for ai_item in appinfo:
