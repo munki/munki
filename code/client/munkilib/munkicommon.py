@@ -1203,7 +1203,7 @@ def getLSInstalledApplications():
         if status != 0:
             continue
         app_path = fsobj.as_pathname()
-        if not app_path.startswith('/Volumes'):
+        if not app_path.startswith('/Volumes/'):
             applist.append(app_path)
 
     return applist
