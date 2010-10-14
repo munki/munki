@@ -9,9 +9,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,22 +30,22 @@ UPDATECHECKLAUNCHFILE = \
 def call(cmd):
     '''Convenience function; works around an issue with subprocess.call
     in PyObjC in Snow Leopard'''
-    proc = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE, 
+    proc = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
     (output, err) = proc.communicate()
     return proc.returncode
 
 
 def getManagedInstallsPrefs():
-    '''Define default preference values; 
+    '''Define default preference values;
     Read preference values from ManagedInstalls.plist if it exists.'''
-    
+
     prefs = {}
     prefs['ManagedInstallDir'] = "/Library/Managed Installs"
     prefs['InstallAppleSoftwareUpdates'] = False
     prefs['ShowRemovalDetail'] = False
     prefs['InstallRequiresLogout'] = False
-        
+
     prefsfile = "/Library/Preferences/ManagedInstalls.plist"
     if os.path.exists(prefsfile):
         try:
@@ -61,10 +61,10 @@ def getManagedInstallsPrefs():
                     prefs[key] = plist[key]
         except AttributeError:
             pass
-                        
+
     return prefs
-    
-    
+
+
 def readSelfServiceManifest():
     '''Read the SelfServeManifest if it exists'''
     # read our working copy if it exists
@@ -82,21 +82,21 @@ def readSelfServiceManifest():
             return {}
     else:
         return {}
-            
-    
+
+
 def writeSelfServiceManifest(optional_install_choices):
-    '''Write out our self-serve manifest 
+    '''Write out our self-serve manifest
     so managedsoftwareupdate can use it'''
     usermanifest = "/Users/Shared/.SelfServeManifest"
     try:
         FoundationPlist.writePlist(optional_install_choices, usermanifest)
     except FoundationPlist.FoundationPlistException:
         pass
-    
+
 def getRemovalDetailPrefs():
     '''Returns preference to control display of removal detail'''
     return getManagedInstallsPrefs().get('ShowRemovalDetail', False)
-    
+
 def installRequiresLogout():
     '''Returns preference to force logout for all installs'''
     return getManagedInstallsPrefs().get('InstallRequiresLogout', False)
@@ -114,13 +114,13 @@ def getInstallInfo():
         except FoundationPlist.NSPropertyListSerializationException:
             pass
     return plist
-    
+
 
 def startUpdateCheck():
     '''Does launchd magic to run managedsoftwareupdate as root.'''
     result = call(["/usr/bin/touch", UPDATECHECKLAUNCHFILE])
     return result
-    
+
 
 def getAppleUpdates():
     '''Returns any available Apple updates'''
@@ -128,33 +128,42 @@ def getAppleUpdates():
     managedinstallbase = prefs['ManagedInstallDir']
     plist = {}
     appleUpdatesFile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
-    if (os.path.exists(appleUpdatesFile) and 
+    if (os.path.exists(appleUpdatesFile) and
             prefs['InstallAppleSoftwareUpdates']):
         try:
             plist = FoundationPlist.readPlist(appleUpdatesFile)
         except FoundationPlist.NSPropertyListSerializationException:
             pass
     return plist
-    
+
 def humanReadable(kbytes):
     """Returns sizes in human-readable units."""
-    units = [(" KB", 2**10), (" MB", 2**20), (" GB", 2**30), (" TB", 2**40)] 
+    units = [(" KB", 2**10), (" MB", 2**20), (" GB", 2**30), (" TB", 2**40)]
     for suffix, limit in units:
         if kbytes > limit:
             continue
         else:
             return str(round(kbytes/float(limit/2**10), 1)) + suffix
-    
-def trimVersionString(versString, tupleCount):
-    '''Trims the version string to no more than tupleCount parts'''
-    if versString == None or versString == "":
-        return ""
-    components = str(versString).split(".")
-    if len(components) > tupleCount:
-        components = components[0:tupleCount]
-    return ".".join(components)
 
-    
+
+def trimVersionString(version_string):
+    """Trims all lone trailing zeros in the version string after major/minor.
+
+    Examples:
+      10.0.0.0 -> 10.0
+      10.0.0.1 -> 10.0.0.1
+      10.0.0-abc1 -> 10.0.0-abc1
+      10.0.0-abc1.0 -> 10.0.0-abc1
+    """
+    if version_string == None or version_string == '':
+        return ''
+    version_parts = version_string.split('.')
+    # strip off all trailing 0's in the version, while over 2 parts.
+    while len(version_parts) > 2 and version_parts[-1] == '0':
+        del(version_parts[-1])
+    return '.'.join(version_parts)
+
+
 def getconsoleuser():
     from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
@@ -164,8 +173,8 @@ def getconsoleuser():
 def currentGUIusers():
     '''Gets a list of GUI users by parsing the output of /usr/bin/who'''
     gui_users = []
-    proc = subprocess.Popen("/usr/bin/who", shell=False, 
-                            stdin=subprocess.PIPE, 
+    proc = subprocess.Popen("/usr/bin/who", shell=False,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = proc.communicate()
     lines = str(output).splitlines()
@@ -175,12 +184,12 @@ def currentGUIusers():
             gui_users.append(parts[0])
 
     return gui_users
-    
+
 def logoutNow():
     '''Uses oscascript to run an AppleScript
     to tell loginwindow to logout.
-    Ugly, but it works.''' 
-    
+    Ugly, but it works.'''
+
     script = """
 ignoring application responses
     tell application "loginwindow"
@@ -200,7 +209,7 @@ end ignoring
 def logoutAndUpdate():
     '''Touch a flag so the process that runs after
     logout knows it's OK to install everything'''
-    cmd = ["/usr/bin/touch", 
+    cmd = ["/usr/bin/touch",
            "/private/tmp/com.googlecode.munki.installatlogout"]
     result = call(cmd)
     if result == 0:
@@ -212,12 +221,12 @@ def logoutAndUpdate():
 def justUpdate():
     '''Trigger managedinstaller via launchd KeepAlive path trigger
     We touch a file that launchd is is watching
-    launchd, in turn, 
+    launchd, in turn,
     launches managedsoftwareupdate --installwithnologout as root'''
-    cmd = ["/usr/bin/touch", 
+    cmd = ["/usr/bin/touch",
            "/private/tmp/.com.googlecode.munki.managedinstall.launchd"]
     return call(cmd)
-        
+
 
 
 
