@@ -317,6 +317,14 @@ def main():
                     relative path of the item to be installed. 
                     Useful if there is more than one item at the 
                     root of the dmg.''')
+    p.add_option('--displayname',
+                    help='''Optional flag.
+
+                    String display name of the package.''')
+    p.add_option('--description',
+                    help='''Optional flag.
+
+                    String description of the package.''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -442,6 +450,11 @@ def main():
                 print >> sys.stderr, "%s is not an installer package!" % item
                 exit(-1)
             
+            if options.description:
+              catinfo['description'] = options.description
+            if options.displayname:
+              catinfo['display_name'] = options.displayname
+
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash
 
