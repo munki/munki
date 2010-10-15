@@ -320,11 +320,13 @@ def main():
     p.add_option('--displayname',
                     help='''Optional flag.
 
-                    String display name of the package.''')
+                    String display name of the package.
+                    Note: overrides any display_name in the package itself''')
     p.add_option('--description',
                     help='''Optional flag.
 
-                    String description of the package.''')
+                    String description of the package.
+                    Note: overrides any description in the package itself''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
