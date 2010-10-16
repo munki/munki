@@ -305,7 +305,7 @@ def main():
                     Causes makepkginfo to create a pkginfo item describing 
                     an appdmg install instead of the newer copy_from_dmg 
                     installer type. Meant for use with older munki 
-                    clients,as copy_from_dmg replaces appdmg in munki 
+                    clients, as copy_from_dmg replaces appdmg in munki 
                     0.6.0 and later.''')
     p.add_option('--itemname', '-i', '--appname', '-a',
                     metavar='ITEM',

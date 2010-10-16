@@ -30,7 +30,7 @@ import tempfile
 
 # change these to suit yourself
 packagemaker = "/Developer/usr/bin/packagemaker"
-pkgidprefix = "com.myorg.pkg."
+pkgidprefix = "com.disneyanimation.pkg."
 pkgoutputdir = "/Users/Shared/pkgs"
 
 
@@ -123,8 +123,8 @@ def copyItemsFromList(filelist, packageroot):
 def main():
 	# command-line options
     p = optparse.OptionParser()
-    p.add_option('--makedmg', '-d', action='store_true',
-                    help='Makes a disk image containing the package.')
+    p.add_option('--nomakedmg', action='store_true',
+                    help='Don\'t make a disk image containing the package.')
     p.add_option('--name', '-n',
                        help='Specify a name for the package.')
     p.add_option('--version', '-v',
@@ -327,15 +327,23 @@ def main():
         plistlib.writePlist(pl, infoplist)
         
         if options.displayname or options.description:
-            descriptionplist = os.path.join(outputname, 
-                              "Contents/Resources/en.lproj/Description.plist")
-            pl = {}
-            pl['IFPkgDescriptionTitle'] = options.displayname or pkgname
-            pl['IFPkgDescriptionDescription'] = options.description or ""
-            plistlib.writePlist(pl, descriptionplist)
+            languages = ['en.lproj', 'English.lproj']
+            for item in languages:
+                lprojpath = os.path.join(outputname, 
+                                        'Contents/Resources', item)
+                if os.path.exists(lprojpath):
+                    descriptionplist = os.path.join(lprojpath,
+                                                    "Description.plist")
+                    pl = {}
+                    pl['IFPkgDescriptionTitle'] = (options.displayname or 
+                                                    pkgname)
+                    pl['IFPkgDescriptionDescription'] = (options.description        
+                                                            or "")
+                    plistlib.writePlist(pl, descriptionplist)
+                    break
         
         print "Completed package is at %s" % outputname
-        if options.makedmg:
+        if not options.nomakedmg:
             makeDMG(outputname)
     
     #cleanup temp dir

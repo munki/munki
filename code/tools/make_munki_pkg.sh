@@ -8,7 +8,7 @@
 # want to change the pkgid to reflect your organization
 PKGID=com.googlecode.munki
 # set this to the version of your package
-VERS=0.6.0.664.0
+VERS=0.6.0.759.0
 
 # set munkiroot to the root dir of your munki 'source'
 munkiroot="/Users/Shared/munki/munki"
@@ -74,7 +74,7 @@ defaults delete "$packagedir/munkitools-$VERS.pkg/Contents/Info" IFPkgPathMappin
 defaults write "$packagedir/munkitools-$VERS.pkg/Contents/Info" IFPkgFlagRestartAction "RequiredRestart"
 plutil -convert xml1 "$packagedir/munkitools-$VERS.pkg/Contents/Info.plist"
 chmod 664 "$packagedir/munkitools-$VERS.pkg/Contents/Info.plist"
-cat > "$packagedir/munkitools-$VERS.pkg/Contents/Resources/en.lproj/Description.plist" <<EOF
+cat > "$packagedir/munkitools-$VERS.pkg/Contents/Resources/English.lproj/Description.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
