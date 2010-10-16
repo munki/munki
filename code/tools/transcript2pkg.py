@@ -31,7 +31,7 @@ import tempfile
 # change these to suit yourself
 packagemaker = "/Developer/usr/bin/packagemaker"
 t2pkg = "/Users/Shared/bin/t2pkg"
-pkgidprefix = "com.disneyanimation.pkg."
+pkgidprefix = "com.myorg.pkg."
 pkgoutputdir = "/Users/Shared/pkgs"
 
 
