@@ -172,13 +172,17 @@ def copyPkginfoToRepo(pkginfo, subdirectory=""):
         except OSError, errmsg:
             raise RepoCopyError("Could not create %s: %s" %
                                    (destination_path, errmsg))
-    pkginfo_name = "%s-%s" % (pkginfo['name'], pkginfo['version'])
+    pkginfo_ext = pref('pkginfo_extension') or ''
+    if pkginfo_ext and not pkginfo_ext.startswith('.'):
+        pkginfo_ext = '.' + pkginfo_ext
+    pkginfo_name = "%s-%s%s" % (pkginfo['name'], pkginfo['version'],
+                                pkginfo_ext)
     pkginfo_path = os.path.join(destination_path, pkginfo_name)
     index = 0
     while os.path.exists(pkginfo_path):
         index += 1
         pkginfo_name = "%s-%s__%s" % (pkginfo['name'], pkginfo['version'], 
-                                     index)
+                                     index, pkginfo_ext)
         pkginfo_path = os.path.join(destination_path, pkginfo_name)
         
     print "Saving pkginfo to %s..." % pkginfo_path
@@ -256,6 +260,7 @@ def configure():
     for (key, prompt) in [
         ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
         ('repo_url', 'Repo URL (example: afp://munki.pretendco.com/repo)'),
+        ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
         ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
         
         newvalue = raw_input("%15s [%s]: " % (prompt, pref(key)))
