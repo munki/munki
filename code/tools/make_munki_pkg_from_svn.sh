@@ -109,10 +109,6 @@ mkdir -m 750 -p ./Library/Managed\ Installs/catalogs
 mkdir -m 755 -p ./Library/Managed\ Installs/manifests
 chown -R root:admin ./Library/Managed\ Installs
 
-if [ -e "$PKGDIR/munkitools-$VERS.pkg" ]; then
-    rm -r "$PKGDIR/munkitools-$VERS.pkg"
-fi
-
 PKGID=com.googlecode.munki
 /Developer/usr/bin/packagemaker --root . --id "$PKGID" --version "$VERS"  --no-recommend --out "$PKGDIR/munkitools-$VERS.pkg" --verbose
 
