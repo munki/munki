@@ -550,11 +550,12 @@ def main():
         
     updatesavailable = munkiUpdatesAvailable()
     #if not updatesavailable and (options.auto or options.manualcheck):
-    if not updatesavailable and not options.installonly and \
-       not munkicommon.stopRequested():
+    if (not updatesavailable and not options.installonly and
+        not munkicommon.stopRequested()):
         # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
-        if munkicommon.pref('InstallAppleSoftwareUpdates'):
+        if (munkicommon.pref('InstallAppleSoftwareUpdates') or 
+            munkicommon.pref('AppleSoftwareUpdatesOnly')):
             try:
                 if appleupdates.appleSoftwareUpdatesAvailable(
                     forcecheck=(options.manualcheck or
@@ -566,8 +567,9 @@ def main():
                 munkicommon.savereport()
                 exit(-1)
 
-    if not updatesavailable and options.installonly and \
-       munkicommon.pref('InstallAppleSoftwareUpdates'):
+    if (not updatesavailable and options.installonly and
+        (munkicommon.pref('InstallAppleSoftwareUpdates') or
+         munkicommon.pref('AppleSoftwareUpdatesOnly'))):
         # just look and see if there are already downloaded Apple updates
         # to install; don't run softwareupdate to check with Apple
         try:
