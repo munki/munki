@@ -1335,7 +1335,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
     iteminfo['installer_item_size'] = item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get('installer_item_size',
                                         iteminfo['installer_item_size'])
-    iteminfo['unattended'] = item_pl.get('unattended', False)
+    iteminfo['forced_install'] = item_pl.get('forced_install', False)
+    iteminfo['forced_uninstall'] = item_pl.get('forced_uninstall', False)
 
     if not isInstalled(item_pl):
         munkicommon.display_detail('Need to install %s' % manifestitemname)
@@ -1367,9 +1368,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'adobe_package_name',
                              'package_path',
                              'items_to_copy',  # used w/ copy_from_dmg
-                             'copy_local',     # used w/ AdobeCS5 Updaters
-                             'unattended']  # just install without
-                                            # notifying the user
+                             'copy_local']     # used w/ AdobeCS5 Updaters
+
             for key in optional_keys:
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]

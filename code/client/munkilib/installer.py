@@ -807,19 +807,19 @@ def removeItemFromSelfServeUninstallList(itemname):
                 pass
 
 
-def run(only_unattended=False):
+def run(only_forced=False):
     """Runs the install/removal session.
 
     Args:
-      only_unattended: Boolean. If True, only do unattended installs/removals.
+      only_forced: Boolean. If True, only do forced installs/removals.
     """
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
 
     removals_need_restart = installs_need_restart = False
 
-    if only_unattended:
-        munkicommon.log("### Beginning unattended installer session ###")
+    if only_forced:
+        munkicommon.log("### Beginning forced installer session ###")
     else:
         munkicommon.log("### Beginning managed installer session ###")
 
@@ -830,9 +830,6 @@ def run(only_unattended=False):
         except FoundationPlist.NSPropertyListSerializationException:
             print >> sys.stderr, "Invalid %s" % installinfo
             return -1
-
-        # TODO(ogle): if unattended, remove installed items from
-        # InstallInfo.plist but preserve the rest. Only rm if not unattended.
 
         # remove the install info file
         # it's no longer valid once we start running
@@ -848,10 +845,10 @@ def run(only_unattended=False):
 
         if "removals" in plist:
             # filter list to items that need to be removed
-            if only_unattended:
+            if only_forced:
                 removallist = [item for item in plist['removals']
                                if item.get('installed') and \
-                                  item.get('unattended', False) == True]
+                                  item.get('forced_uninstall', False)]
             else:
                 removallist = [item for item in plist['removals']
                                if item.get('installed')]
@@ -871,10 +868,10 @@ def run(only_unattended=False):
         if "managed_installs" in plist:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
-                if only_unattended:
+                if only_forced:
                     installlist = [item for item in plist['managed_installs']
-                                   if item.get('installed') == False and \
-                                      item.get('unattended', False) == True]
+                                   if not item.get('installed') and \
+                                      item.get('forced_install', False)]
                 else:
                     installlist = [item for item in plist['managed_installs']
                                    if item.get('installed') == False]
@@ -894,11 +891,11 @@ def run(only_unattended=False):
                                                             installlist)
 
     else:
-        if not only_unattended:  # not need to log that no unattended found.
+        if not only_forced:  # not need to log that no forced found.
             munkicommon.log("No %s found." % installinfo)
 
-    if only_unattended:
-        munkicommon.log("###    End unattended installer session    ###")
+    if only_forced:
+        munkicommon.log("###    End forced installer session    ###")
     else:
         munkicommon.log("###    End managed installer session    ###")
 

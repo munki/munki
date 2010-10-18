@@ -126,16 +126,16 @@ def initMunkiDirs():
         return True
 
 
-def doInstallTasks(only_unattended=False):
+def doInstallTasks(only_forced=False):
     """Perform our installation/removal tasks.
 
     Args:
-      only_unattended: Boolean. If True, only do unattended installs/removals.
+      only_forced: Boolean. If True, only do forced installs/removals.
 
     Returns:
       Boolean. True if a restart is required, False otherwise.
     """
-    if not only_unattended:
+    if not only_forced:
         # first, clear the last notified date
         # so we can get notified of new changes after this round
         # of installs
@@ -152,7 +152,7 @@ def doInstallTasks(only_unattended=False):
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            need_to_restart = installer.run(only_unattended=only_unattended)
+            need_to_restart = installer.run(only_forced=only_forced)
         except:
             munkicommon.display_error('Unexpected error in '
                                       ' munkilib.installer:')
@@ -162,10 +162,10 @@ def doInstallTasks(only_unattended=False):
 
         # clear any Apple update info since it may no longer
         # be relevant
-        if not only_unattended:
+        if not only_forced:
             appleupdates.clearAppleUpdateInfo()
     elif munkicommon.pref('InstallAppleSoftwareUpdates') and \
-         not only_unattended:
+         not only_forced:
         # are we supposed to handle Apple Software Updates?
         try:
             need_to_restart = appleupdates.installAppleUpdates()
@@ -591,11 +591,6 @@ def main():
             munkicommon.savereport()
             exit(-1)
 
-    if options.auto:
-        # when --auto,  munkistatusoutput is false for checking,
-        # but true for installing
-        munkicommon.munkistatusoutput = True
-
     mustrestart = False
     if options.manualcheck:
         # just quit munkistatus; Managed Software Update will notify
@@ -605,18 +600,19 @@ def main():
             # just install
             mustrestart = doInstallTasks()
         elif options.auto:
-            if not munkicommon.currentGUIusers():
-                # no GUI users
+            if not munkicommon.currentGUIusers():  # no GUI users
                 if getIdleSeconds() > 10:
                     if not munkicommon.pref('SuppressAutoInstall') or \
                                         runtype == 'checkandinstallatstartup':
                         # no GUI users, system is idle, so install
+                        # enable status output over login window
+                        munkicommon.munkistatusoutput = True
                         mustrestart = doInstallTasks()
                     else:
                         munkicommon.log('Skipping auto install because '
                                         'SuppressAutoInstall is true.')
-            else:
-                # there are GUI users
+            else:  # there are GUI users
+                doInstallTasks(only_forced=True)
                 consoleuser = munkicommon.getconsoleuser()
                 if consoleuser == u'loginwindow':
                     # someone is logged in, but we're sitting at
@@ -624,19 +620,10 @@ def main():
                     # so do nothing
                     pass
                 elif not munkicommon.pref('SuppressUserNotification'):
-                    # Disable status output and run unattended installs. 
-                    munkicommon.munkistatusoutput = False
-                    doInstallTasks(only_unattended=True)
-                    # Reenable status output and notify user of any remaining
-                    # updates.
-                    munkicommon.munkistatusoutput = True
                     notifyUserOfUpdates()
                 else:
                     munkicommon.log('Skipping user notification because '
                                     'SuppressUserNotification is true.')
-                    # Disable status output and install unattended installs.
-                    munkicommon.munkistatusoutput = False
-                    doInstallTasks(only_unattended=True)
 
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
