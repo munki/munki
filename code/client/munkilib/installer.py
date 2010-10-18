@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,7 +55,7 @@ def removeBundleRelocationInfo(pkgpath):
                         "Removed Contents/Resources/TokenDefinitions.plist")
             except OSError:
                 pass
-                
+
         plist = {}
         infoplist = os.path.join(pkgpath, "Contents/Info.plist")
         if os.path.exists(infoplist):
@@ -63,7 +63,7 @@ def removeBundleRelocationInfo(pkgpath):
                 plist = FoundationPlist.readPlist(infoplist)
             except FoundationPlist.NSPropertyListSerializationException:
                 pass
-                
+
         if 'IFPkgPathMappings' in plist:
             del plist['IFPkgPathMappings']
             try:
@@ -72,26 +72,26 @@ def removeBundleRelocationInfo(pkgpath):
                         "Removed IFPkgPathMappings")
             except FoundationPlist.NSPropertyListWriteException:
                 pass
-        
+
 
 def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
-    Returns a tuple: 
+    Returns a tuple:
     the installer return code and restart needed as a boolean.
     """
-    
+
     restartneeded = False
     installeroutput = []
-    
+
     if os.path.islink(pkgpath):
         # resolve links before passing them to /usr/bin/installer
         pkgpath = os.path.realpath(pkgpath)
-        
+
     if suppressBundleRelocation:
         removeBundleRelocationInfo(pkgpath)
-    
+
     packagename = ''
     restartaction = 'None'
     pkginfo = munkicommon.getInstallerPkgInfo(pkgpath)
@@ -100,20 +100,20 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
         restartaction = pkginfo.get('RestartAction','None')
     if not packagename:
         packagename = os.path.basename(pkgpath)
-    
+
     if munkicommon.munkistatusoutput:
         munkistatus.message("Installing %s..." % packagename)
         munkistatus.detail("")
-        # clear indeterminate progress bar 
+        # clear indeterminate progress bar
         munkistatus.percent(0)
-        
+
     munkicommon.log("Installing %s from %s" % (packagename,
                                                os.path.basename(pkgpath)))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, unused_err) = proc.communicate()
     restartaction = str(output).decode('UTF-8').rstrip("\n")
@@ -122,19 +122,19 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
         munkicommon.display_status("%s requires a restart after installation."
                                     % packagename)
         restartneeded = True
-        
-    # get the OS version; we need it later when processing installer's output, 
-    # which varies depending on OS version.    
+
+    # get the OS version; we need it later when processing installer's output,
+    # which varies depending on OS version.
     osvers = int(os.uname()[2].split('.')[0])
-    cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, 
+    cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath,
                                   '-target', '/']
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    while True: 
+    while True:
         installinfo =  proc.stdout.readline().decode('UTF-8')
         if not installinfo and (proc.poll() != None):
             break
@@ -196,7 +196,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
         munkicommon.log("Install of %s was successful." % packagename)
         if munkicommon.munkistatusoutput:
             munkistatus.percent(100)
-            
+
     return (retcode, restartneeded)
 
 
@@ -234,22 +234,22 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False):
                 if retcode:
                     # ran into error; should unmount and stop.
                     munkicommon.unmountdmg(mountpoints[0])
-                    return (retcode, restartflag)  
-                                  
+                    return (retcode, restartflag)
+
             munkicommon.unmountdmg(mountpoints[0])
-        
+
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
-            (retcode, needsrestart) = install(itempath, choicesXMLpath, 
+            (retcode, needsrestart) = install(itempath, choicesXMLpath,
                                                 suppressBundleRelocation)
             if needsrestart:
                 restartflag = True
             if retcode:
                 # ran into error; should stop.
                 return (retcode, restartflag)
-                
+
     return (retcode, restartflag)
-    
-    
+
+
 def copyAppFromDMG(dmgpath):
     '''copies application from DMG to /Applications'''
     munkicommon.display_status("Mounting disk image %s" %
@@ -265,8 +265,8 @@ def copyAppFromDMG(dmgpath):
             if munkicommon.isApplication(itempath):
                 appname = item
                 break
-                
-        if appname:        
+
+        if appname:
             destpath = os.path.join("/Applications", appname)
             if os.path.exists(destpath):
                 retcode = subprocess.call(["/bin/rm", "-r", destpath])
@@ -276,48 +276,48 @@ def copyAppFromDMG(dmgpath):
             if retcode == 0:
                 munkicommon.display_status(
                             "Copying %s to Applications folder" % appname)
-                retcode = subprocess.call(["/bin/cp", "-R", 
+                retcode = subprocess.call(["/bin/cp", "-R",
                                             itempath, destpath])
                 if retcode:
-                    munkicommon.display_error("Error copying %s to %s" % 
+                    munkicommon.display_error("Error copying %s to %s" %
                                                 (itempath, destpath))
             if retcode == 0:
                 # remove com.apple.quarantine attribute from copied app
                 cmd = ["/usr/bin/xattr", destpath]
-                proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                        stdin=subprocess.PIPE, 
-                                        stdout=subprocess.PIPE, 
+                proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
                 (out, unused_err) = proc.communicate()
                 if out:
                     xattrs = str(out).splitlines()
                     if "com.apple.quarantine" in xattrs:
                         unused_result = subprocess.call(
-                                            ["/usr/bin/xattr", "-d", 
-                                             "com.apple.quarantine", 
+                                            ["/usr/bin/xattr", "-d",
+                                             "com.apple.quarantine",
                                               destpath])
                 # let the user know we completed successfully
                 munkicommon.display_status(
                                 "The software was successfully installed.")
         munkicommon.unmountdmg(mountpoint)
         if not appname:
-            munkicommon.display_error("No application found on %s" %        
+            munkicommon.display_error("No application found on %s" %
                                         os.path.basename(dmgpath))
             retcode = -2
-            
+
         return retcode
     else:
-        munkicommon.display_error("No mountable filesystems on %s" % 
+        munkicommon.display_error("No mountable filesystems on %s" %
                                     os.path.basename(dmgpath))
         return -1
-    
+
 
 def copyFromDMG(dmgpath, itemlist):
     '''copies items from DMG to local disk'''
     if not itemlist:
         munkicommon.display_error("No items to copy!")
         return -1
-        
+
     munkicommon.display_status("Mounting disk image %s" %
                                 os.path.basename(dmgpath))
     mountpoints = munkicommon.mountdmg(dmgpath)
@@ -329,7 +329,7 @@ def copyFromDMG(dmgpath, itemlist):
             if not itemname:
                 munkicommon.display_error("Missing name of item to copy!")
                 retcode = -1
-                
+
             if retcode == 0:
                 itempath = os.path.join(mountpoint, itemname)
                 if os.path.exists(itempath):
@@ -351,69 +351,69 @@ def copyFromDMG(dmgpath, itemlist):
                     munkicommon.display_error(
                         "Source item %s does not exist!" % itemname)
                     retcode = -1
-                    
+
             if retcode == 0:
                 munkicommon.display_status(
                     "Copying %s to %s" % (itemname, destpath))
-                retcode = subprocess.call(["/bin/cp", "-R", 
+                retcode = subprocess.call(["/bin/cp", "-R",
                                             itempath, destpath])
                 if retcode:
                     munkicommon.display_error(
-                        "Error copying %s to %s" % 
+                        "Error copying %s to %s" %
                                             (itempath, destpath))
-            
+
             destitem = os.path.join(destpath, itemname)
             if (retcode == 0) and ('user' in item):
                 munkicommon.display_detail(
-                                        "Setting owner for '%s' to '%s'" % 
+                                        "Setting owner for '%s' to '%s'" %
                                                     (destitem, item['user']))
                 cmd = ['/usr/sbin/chown', '-R', item['user'], destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
-                    munkicommon.display_error("Error setting owner for %s" % 
+                    munkicommon.display_error("Error setting owner for %s" %
                                                 (destitem))
 
             if (retcode == 0) and ('group' in item):
                 munkicommon.display_detail(
-                                        "Setting group for '%s' to '%s'" % 
+                                        "Setting group for '%s' to '%s'" %
                                                     (destitem, item['group']))
                 cmd = ['/usr/bin/chgrp', '-R', item['group'], destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
-                    munkicommon.display_error("Error setting group for %s" % 
+                    munkicommon.display_error("Error setting group for %s" %
                                                 (destitem))
 
             if (retcode == 0) and ('mode' in item):
                 munkicommon.display_detail(
-                                        "Setting mode for '%s' to '%s'" % 
+                                        "Setting mode for '%s' to '%s'" %
                                                     (destitem, item['mode']))
                 cmd = ['/bin/chmod', '-R', item['mode'], destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
-                    munkicommon.display_error("Error setting mode for %s" % 
+                    munkicommon.display_error("Error setting mode for %s" %
                                                 (destitem))
 
             if retcode == 0:
                 # remove com.apple.quarantine attribute from copied item
                 cmd = ["/usr/bin/xattr", destitem]
-                proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
+                proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                     stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 (out, unused_err) = proc.communicate()
                 if out:
                     xattrs = str(out).splitlines()
                     if "com.apple.quarantine" in xattrs:
                         unused_result = subprocess.call(
-                                                ["/usr/bin/xattr", "-d", 
-                                                 "com.apple.quarantine", 
+                                                ["/usr/bin/xattr", "-d",
+                                                 "com.apple.quarantine",
                                                  destitem])
-            
+
             if retcode:
-                # we encountered an error on this iteration; 
+                # we encountered an error on this iteration;
                 # should not continue.
                 break
-                
+
         if retcode == 0:
             # let the user know we completed successfully
             munkicommon.display_status(
@@ -421,7 +421,7 @@ def copyFromDMG(dmgpath, itemlist):
         munkicommon.unmountdmg(mountpoint)
         return retcode
     else:
-        munkicommon.display_error("No mountable filesystems on %s" % 
+        munkicommon.display_error("No mountable filesystems on %s" %
                                     os.path.basename(dmgpath))
         return -1
 
@@ -433,7 +433,7 @@ def removeCopiedItems(itemlist):
     if not itemlist:
         munkicommon.display_error("Nothing to remove!")
         return -1
-        
+
     for item in itemlist:
         itemname = item.get("source_item")
         if not itemname:
@@ -458,7 +458,7 @@ def removeCopiedItems(itemlist):
             # note it, but not an error
             munkicommon.display_detail("Path %s doesn't exist." %
                                                             path_to_remove)
-    
+
     return retcode
 
 def installWithInfo(dirpath, installlist):
@@ -477,14 +477,14 @@ def installWithInfo(dirpath, installlist):
                            item.get('manifestitem')
             version_to_install = item.get('version_to_install','')
             if munkicommon.munkistatusoutput:
-                munkistatus.message("Installing %s (%s of %s)..." % 
-                                    (display_name, itemindex, 
+                munkistatus.message("Installing %s (%s of %s)..." %
+                                    (display_name, itemindex,
                                      len(installlist)))
                 munkistatus.detail("")
                 munkistatus.percent(-1)
             else:
-                munkicommon.display_status("Installing %s (%s of %s)" % 
-                                            (display_name, itemindex, 
+                munkicommon.display_status("Installing %s (%s of %s)" %
+                                            (display_name, itemindex,
                                             len(installlist)))
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
@@ -513,7 +513,7 @@ def installWithInfo(dirpath, installlist):
             elif installer_type == "appdmg":
                 retcode = copyAppFromDMG(itempath)
             elif installer_type != "":
-                # we've encountered an installer type 
+                # we've encountered an installer type
                 # we don't know how to handle
                 munkicommon.log("Unsupported install type: %s" %
                                                             installer_type)
@@ -525,7 +525,7 @@ def installWithInfo(dirpath, installlist):
                 munkicommon.display_debug1("suppress_bundle_relocation: %s" %
                                                     suppressBundleRelocation )
                 if 'installer_choices_xml' in item:
-                    choicesXMLfile = os.path.join(munkicommon.tmpdir, 
+                    choicesXMLfile = os.path.join(munkicommon.tmpdir,
                                                   "choices.xml")
                     FoundationPlist.writePlist(item['installer_choices_xml'],
                                                choicesXMLfile)
@@ -538,7 +538,7 @@ def installWithInfo(dirpath, installlist):
                     # we need to mount the diskimage as read/write to
                     # be able to modify the package to suppress bundle
                     # relocation
-                    mountpoints = munkicommon.mountdmg(itempath, 
+                    mountpoints = munkicommon.mountdmg(itempath,
                                                 use_shadow=mountWithShadow)
                     if mountpoints == []:
                         munkicommon.display_error("No filesystems mounted "
@@ -551,9 +551,9 @@ def installWithInfo(dirpath, installlist):
                     needtorestart = False
                     if item.get('package_path','').endswith('.pkg') or \
                        item.get('package_path','').endswith('.mpkg'):
-                        # admin has specified the relative path of the pkg 
+                        # admin has specified the relative path of the pkg
                         # on the DMG
-                        # this is useful if there is more than one pkg on 
+                        # this is useful if there is more than one pkg on
                         # the DMG, or the actual pkg is not at the root
                         # of the DMG
                         fullpkgpath = os.path.join(mountpoints[0],
@@ -582,17 +582,17 @@ def installWithInfo(dirpath, installlist):
                         if needtorestart:
                             restartflag = True
                     elif os.path.isdir(itempath):
-                        # directory of packages, 
+                        # directory of packages,
                         # like what we get from Software Update
                         (retcode, needtorestart) = installall(itempath,
                                                               choicesXMLfile,
                                                     suppressBundleRelocation)
                         if needtorestart:
                             restartflag = True
-                            
+
             # record install success/failure
             if retcode == 0:
-                success_msg = ("Install of %s-%s: SUCCESSFUL" % 
+                success_msg = ("Install of %s-%s: SUCCESSFUL" %
                                (display_name, version_to_install))
                 munkicommon.log(success_msg, "Install.log")
                 munkicommon.report['InstallResults'].append(success_msg)
@@ -602,10 +602,10 @@ def installWithInfo(dirpath, installlist):
                                (display_name, version_to_install, retcode))
                 munkicommon.log(failure_msg, "Install.log")
                 munkicommon.report['InstallResults'].append(failure_msg)
-                
-            # check to see if this installer item is needed by any additional 
+
+            # check to see if this installer item is needed by any additional
             # items in installinfo
-            # this might happen if there are multiple things being installed 
+            # this might happen if there are multiple things being installed
             # with choicesXML files applied to a metapackage or
             # multiple packages being installed from a single DMG
             foundagain = False
@@ -622,9 +622,9 @@ def installWithInfo(dirpath, installlist):
                                     current_installer_item:
                             foundagain = True
                             break
-                        
+
             if not foundagain:
-                # now remove the item from the install cache 
+                # now remove the item from the install cache
                 # (if it's still there)
                 itempath = os.path.join(dirpath, current_installer_item)
                 if os.path.exists(itempath):
@@ -636,7 +636,7 @@ def installWithInfo(dirpath, installlist):
                 shadowfile = os.path.join(itempath,".shadow")
                 if os.path.exists(shadowfile):
                     retcode = subprocess.call(["/bin/rm", shadowfile])
-    
+
     return restartflag
 
 
@@ -650,19 +650,19 @@ def processRemovals(removallist):
         if not item.get('installed'):
             # not installed, so skip it
             continue
-            
+
         index += 1
         name = item.get('display_name') or item.get('name') or \
                item.get('manifestitem')
         if munkicommon.munkistatusoutput:
-            munkistatus.message("Removing %s (%s of %s)..." % 
+            munkistatus.message("Removing %s (%s of %s)..." %
                                 (name, index, len(removallist)))
             munkistatus.detail("")
             munkistatus.percent(-1)
         else:
             munkicommon.display_status("Removing %s (%s of %s)..." %
                                       (name, index, len(removallist)))
-        
+
         if 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method'].split(' ')
             if uninstallmethod[0] == "removepackages":
@@ -681,13 +681,13 @@ def processRemovals(removallist):
                     else:
                         munkicommon.log("Uninstall of %s was "
                                         "successful." % name)
-                
+
             elif uninstallmethod[0].startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
-                
+
             elif uninstallmethod[0] == "remove_copied_items":
                 retcode = removeCopiedItems(item.get('items_to_remove'))
-                
+
             elif uninstallmethod[0] == "remove_app":
                 remove_app_info = item.get('remove_app_info', None)
                 if remove_app_info:
@@ -702,9 +702,9 @@ def processRemovals(removallist):
                                                    path_to_remove)
                 else:
                     munkicommon.display_error("Application removal "
-                                              "info missing from %s" % 
+                                              "info missing from %s" %
                                               name)
-                
+
             elif os.path.exists(uninstallmethod[0]) and \
                  os.access(uninstallmethod[0], os.X_OK):
                 # it's a script or program to uninstall
@@ -712,20 +712,20 @@ def processRemovals(removallist):
                     munkistatus.message("Running uninstall script "
                                         "for %s..." % name)
                     munkistatus.detail("")
-                    # set indeterminate progress bar 
+                    # set indeterminate progress bar
                     munkistatus.percent(-1)
-                
+
                 if item.get('RestartAction') == "RequireRestart":
                     restartFlag = True
-                
+
                 cmd = uninstallmethod
                 uninstalleroutput = []
-                proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
+                proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                     stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
 
-                while (proc.poll() == None): 
+                while (proc.poll() == None):
                     msg =  proc.stdout.readline().decode('UTF-8')
                     # save all uninstaller output in case there is
                     # an error so we can dump it to the log
@@ -736,7 +736,7 @@ def processRemovals(removallist):
                         pass
                     else:
                         print msg
-                
+
                 retcode = proc.poll()
                 if retcode:
                     message = "Uninstall of %s failed." % name
@@ -756,17 +756,17 @@ def processRemovals(removallist):
                 else:
                     munkicommon.log("Uninstall of %s was "
                                     "successful." % name)
-                    
+
                 if munkicommon.munkistatusoutput:
-                    # clear indeterminate progress bar 
+                    # clear indeterminate progress bar
                     munkistatus.percent(0)
-   
+
             else:
                 munkicommon.log("Uninstall of %s failed because "
-                                "there was no valid uninstall "    
+                                "there was no valid uninstall "
                                 "method." % name)
                 retcode = -99
-            
+
             # record removal success/failure
             if retcode == 0:
                 success_msg = "Removal of %s: SUCCESSFUL" % name
@@ -780,7 +780,7 @@ def processRemovals(removallist):
                 munkicommon.log(failure_msg, "Install.log")
                 munkicommon.report[
                                  'RemovalResults'].append(failure_msg)
-                      
+
     return restartFlag
 
 
@@ -804,17 +804,21 @@ def removeItemFromSelfServeUninstallList(itemname):
             try:
                 FoundationPlist.writePlist(plist, selfservemanifest)
             except FoundationPlist.FoundationPlistException:
-                pass    
-    
+                pass
 
-def run():
-    '''Runs the install/removal session'''
+
+def run(only_unattended=False):
+    """Runs the install/removal session.
+
+    Args:
+      only_unattended: Boolean. If True, only do unattended installs/removals.
+    """
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
-    
+
     removals_need_restart = installs_need_restart = False
     munkicommon.log("### Beginning managed installer session ###")
-    
+
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
@@ -822,40 +826,52 @@ def run():
         except FoundationPlist.NSPropertyListSerializationException:
             print >> sys.stderr, "Invalid %s" % installinfo
             return -1
-        
-        # remove the install info file
-        # it's no longer valid once we start running
-        try:
-            os.unlink(installinfo)
-        except (OSError, IOError):
-            munkicommon.display_warning("Could not remove %s" % installinfo)
-            
-        if (munkicommon.munkistatusoutput and   
+
+        if not only_unattended:
+            # remove the install info file
+            # it's no longer valid once we start running
+            try:
+                os.unlink(installinfo)
+            except (OSError, IOError):
+                munkicommon.display_warning(
+                    "Could not remove %s" % installinfo)
+
+        if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
             munkistatus.hideStopButton()
-        
+
         if "removals" in plist:
             # filter list to items that need to be removed
-            removallist = [item for item in plist['removals'] 
-                                if item.get('installed')]
+            if only_unattended:
+                removallist = [item for item in plist['removals']
+                               if item.get('installed') and \
+                                  item.get('unattended', False) == True]
+            else:
+                removallist = [item for item in plist['removals']
+                               if item.get('installed')]
             munkicommon.report['ItemsToRemove'] = removallist
             if removallist:
                 if munkicommon.munkistatusoutput:
                     if len(removallist) == 1:
                         munkistatus.message("Removing 1 item...")
                     else:
-                        munkistatus.message("Removing %i items..." % 
+                        munkistatus.message("Removing %i items..." %
                                             len(removallist))
                     munkistatus.detail("")
-                    # set indeterminate progress bar 
+                    # set indeterminate progress bar
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
                 removals_need_restart = processRemovals(removallist)
         if "managed_installs" in plist:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
-                installlist = [item for item in plist['managed_installs'] 
-                                    if item.get('installed') == False]
+                if only_unattended:
+                    installlist = [item for item in plist['managed_installs']
+                                   if item.get('installed') == False and \
+                                      item.get('unattended', False) == True]
+                else:
+                    installlist = [item for item in plist['managed_installs']
+                                   if item.get('installed') == False]
                 munkicommon.report['ItemsToInstall'] = installlist
                 if installlist:
                     if munkicommon.munkistatusoutput:
@@ -865,17 +881,18 @@ def run():
                             munkistatus.message("Installing %i items..." %
                                                 len(installlist))
                         munkistatus.detail("")
-                        # set indeterminate progress bar 
+                        # set indeterminate progress bar
                         munkistatus.percent(-1)
                     munkicommon.log("Processing installs")
                     installs_need_restart = installWithInfo(installdir,
                                                             installlist)
-                                    
+
     else:
-        munkicommon.log("No %s found." % installinfo)
-    
+        if not only_unattended:
+            munkicommon.log("No %s found." % installinfo)
+
     munkicommon.log("###    End managed installer session    ###")
     munkicommon.savereport()
-    
+
     return (removals_need_restart or installs_need_restart)
-    
+

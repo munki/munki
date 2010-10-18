@@ -126,16 +126,21 @@ def initMunkiDirs():
         return True
 
 
-def doInstallTasks():
+def doInstallTasks(only_unattended=False):
     """Perform our installation/removal tasks.
+
+    Args:
+      only_unattended: Boolean. If True, only do unattended installs/removals.
 
     Returns:
       Boolean. True if a restart is required, False otherwise.
     """
-    # first, clear the last notified date
-    # so we can get notified of new changes after this round
-    # of installs
-    clearLastNotifiedDate()
+    if not only_unattended:
+        # first, clear the last notified date
+        # so we can get notified of new changes after this round
+        # of installs
+        clearLastNotifiedDate()
+
     need_to_restart = False
     # munki updates take priority over Apple Updates, because
     # a munki install or (especially) removal could make a
@@ -147,7 +152,7 @@ def doInstallTasks():
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            need_to_restart = installer.run()
+            need_to_restart = installer.run(only_unattended=only_unattended)
         except:
             munkicommon.display_error('Unexpected error in '
                                       ' munkilib.installer:')
@@ -157,8 +162,10 @@ def doInstallTasks():
 
         # clear any Apple update info since it may no longer
         # be relevant
-        appleupdates.clearAppleUpdateInfo()
-    elif munkicommon.pref('InstallAppleSoftwareUpdates'):
+        if not only_unattended:
+            appleupdates.clearAppleUpdateInfo()
+    elif munkicommon.pref('InstallAppleSoftwareUpdates') and \
+         not only_unattended:
         # are we supposed to handle Apple Software Updates?
         try:
             need_to_restart = appleupdates.installAppleUpdates()
@@ -233,10 +240,15 @@ def recordUpdateCheckResult(result):
 
 
 def notifyUserOfUpdates():
-    """Notify the logged-in user of available updates."""
+    """Notify the logged-in user of available updates.
+
+    Returns:
+      Boolean.  True if the user was notified, False otherwise.
+    """
     # called when options.auto == True
     # someone is logged in, and we have updates.
     # if we haven't notified in a while, notify:
+    user_was_notified = False
     lastNotifiedString = munkicommon.pref('LastNotifiedDate')
     daysBetweenNotifications = munkicommon.pref('DaysBetweenNotifications')
     now = NSDate.new()
@@ -270,6 +282,8 @@ def notifyUserOfUpdates():
         time.sleep(0.1)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
+        user_was_notified = True
+    return user_was_notified
 
 
 def runPreOrPostFlightScript(script, runtype='custom'):
@@ -611,10 +625,18 @@ def main():
                     pass
                 elif not munkicommon.pref('SuppressUserNotification'):
                     # notify the current console user
-                    notifyUserOfUpdates()
+                    user_was_notified = notifyUserOfUpdates()
+                    # if the user was not notified, do unattended installs.
+                    if not user_was_notified:
+                        munkicommon.munkistatusoutput = False
+                        doInstallTasks(only_unattended=True)
                 else:
                     munkicommon.log('Skipping user notification because '
                                     'SuppressUserNotification is true.')
+                    # Disable status output and install unattended installs.
+                    munkicommon.munkistatusoutput = False
+                    doInstallTasks(only_unattended=True)
+
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
                    'updates.' % myname)
