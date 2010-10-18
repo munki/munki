@@ -624,12 +624,13 @@ def main():
                     # so do nothing
                     pass
                 elif not munkicommon.pref('SuppressUserNotification'):
-                    # notify the current console user
-                    user_was_notified = notifyUserOfUpdates()
-                    # if the user was not notified, do unattended installs.
-                    if not user_was_notified:
-                        munkicommon.munkistatusoutput = False
-                        doInstallTasks(only_unattended=True)
+                    # Disable status output and run unattended installs. 
+                    munkicommon.munkistatusoutput = False
+                    doInstallTasks(only_unattended=True)
+                    # Reenable status output and notify user of any remaining
+                    # updates.
+                    munkicommon.munkistatusoutput = True
+                    notifyUserOfUpdates()
                 else:
                     munkicommon.log('Skipping user notification because '
                                     'SuppressUserNotification is true.')

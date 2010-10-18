@@ -817,7 +817,11 @@ def run(only_unattended=False):
     installdir = os.path.join(managedinstallbase , 'Cache')
 
     removals_need_restart = installs_need_restart = False
-    munkicommon.log("### Beginning managed installer session ###")
+
+    if only_unattended:
+        munkicommon.log("### Beginning unattended installer session ###")
+    else:
+        munkicommon.log("### Beginning managed installer session ###")
 
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
@@ -827,14 +831,16 @@ def run(only_unattended=False):
             print >> sys.stderr, "Invalid %s" % installinfo
             return -1
 
-        if not only_unattended:
-            # remove the install info file
-            # it's no longer valid once we start running
-            try:
-                os.unlink(installinfo)
-            except (OSError, IOError):
-                munkicommon.display_warning(
-                    "Could not remove %s" % installinfo)
+        # TODO(ogle): if unattended, remove installed items from
+        # InstallInfo.plist but preserve the rest. Only rm if not unattended.
+
+        # remove the install info file
+        # it's no longer valid once we start running
+        try:
+            os.unlink(installinfo)
+        except (OSError, IOError):
+            munkicommon.display_warning(
+                "Could not remove %s" % installinfo)
 
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
@@ -888,10 +894,14 @@ def run(only_unattended=False):
                                                             installlist)
 
     else:
-        if not only_unattended:
+        if not only_unattended:  # not need to log that no unattended found.
             munkicommon.log("No %s found." % installinfo)
 
-    munkicommon.log("###    End managed installer session    ###")
+    if only_unattended:
+        munkicommon.log("###    End unattended installer session    ###")
+    else:
+        munkicommon.log("###    End managed installer session    ###")
+
     munkicommon.savereport()
 
     return (removals_need_restart or installs_need_restart)
