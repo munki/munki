@@ -502,7 +502,8 @@ def main():
               'Another instance of %s is running. Exiting.' % myname
         exit(0)
 
-    if not options.installonly:
+    if (not options.installonly and
+        not munkicommon.pref('AppleSoftwareUpdatesOnly')):
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
@@ -534,7 +535,8 @@ def main():
         print 'http://code.google.com/p/munki\n'
 
     updatecheckresult = None
-    if not options.installonly:
+    if (not options.installonly and 
+        not munkicommon.pref('AppleSoftwareUpdatesOnly')):
         try:
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
@@ -545,7 +547,7 @@ def main():
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-
+        
     updatesavailable = munkiUpdatesAvailable()
     #if not updatesavailable and (options.auto or options.manualcheck):
     if not updatesavailable and not options.installonly and \
