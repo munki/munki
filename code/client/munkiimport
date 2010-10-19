@@ -264,7 +264,7 @@ def configure():
         ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
         
         newvalue = raw_input("%15s [%s]: " % (prompt, pref(key)))
-        _prefs[key] = newvalue or pref(key)
+        _prefs[key] = newvalue or pref(key) or ''
     
     try:
         FoundationPlist.writePlist(_prefs, PREFSPATH)
