@@ -191,8 +191,7 @@ def doRestart():
         munkistatus.detail('')
         munkistatus.percent(-1)
     else:
-        print restartMessage
-        sys.stdout.flush()
+        munkicommon.display_info(restartMessage)
 
     if not munkicommon.currentGUIusers():
         # no-one is logged in and we're at the loginwindow
@@ -201,7 +200,8 @@ def doRestart():
     else:
         if munkicommon.munkistatusoutput:
             # someone is logged in and we're using munkistatus
-            print 'Notifying currently logged-in user to restart.'
+            munkicommon.display_info(
+                'Notifying currently logged-in user to restart.')
             munkistatus.activate()
             munkistatus.restartAlert()
             munkicommon.osascript(

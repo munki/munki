@@ -22,7 +22,6 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 
 import os
 import subprocess
-import sys
 
 import adobeutils
 import munkicommon
@@ -719,28 +718,16 @@ def processRemovals(removallist):
                     # an error so we can dump it to the log
                     uninstalleroutput.append(msg)
                     msg = msg.rstrip("\n")
-                    if munkicommon.munkistatusoutput:
-                        # do nothing with the output
-                        pass
-                    else:
-                        print msg
+                    munkicommon.display_info(msg)
 
                 retcode = proc.poll()
                 if retcode:
-                    message = "Uninstall of %s failed." % name
-                    print >> sys.stderr, message
-                    munkicommon.log(message)
-                    message = \
-                   "-------------------------------------------------"
-                    print >> sys.stderr, message
-                    munkicommon.log(message)
+                    munkicommon.display_error(
+                                    "Uninstall of %s failed." % name)
+                    munkicommon.display_error("-"*78)
                     for line in uninstalleroutput:
-                        print >> sys.stderr, "     ", line.rstrip("\n")
-                        munkicommon.log(line.rstrip("\n"))
-                    message = \
-                   "-------------------------------------------------"
-                    print >> sys.stderr, message
-                    munkicommon.log(message)
+                        munkicommon.display_error("\t%s" % line.rstrip("\n"))
+                    munkicommon.display_error("-"*78)
                 else:
                     munkicommon.log("Uninstall of %s was "
                                     "successful." % name)
