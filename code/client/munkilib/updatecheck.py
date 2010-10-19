@@ -1335,8 +1335,13 @@ def processInstall(manifestitem, cataloglist, installinfo):
     iteminfo['installer_item_size'] = item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get('installer_item_size',
                                         iteminfo['installer_item_size'])
-    iteminfo['forced_install'] = item_pl.get('forced_install', False)
-    iteminfo['forced_uninstall'] = item_pl.get('forced_uninstall', False)
+                                        
+    # currently we will ignore the forced_install and forced_uninstall key if
+    # the item is part of a dependency graph or needs a restart or logout...
+    if (not item_pl.get('requires') and not item_pl.get('update_for') and
+        not item_pl.get('RestartAction')):
+        iteminfo['forced_install'] = item_pl.get('forced_install', False)
+        iteminfo['forced_uninstall'] = item_pl.get('forced_uninstall', False)
 
     if not isInstalled(item_pl):
         munkicommon.display_detail('Need to install %s' % manifestitemname)
