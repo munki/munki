@@ -775,8 +775,8 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                                             ["/bin/rm", "-rf", receiptpath])
             
         # remove pkg info from our database
-        if munkicommon.verbose > 1:
-            print "Removing package data from internal database..."
+        munkicommon.display_detail(
+            "Removing package data from internal database...")
         curs.execute('DELETE FROM pkgs_paths where pkg_key = ?', pkgkey_t)
         curs.execute('DELETE FROM pkgs where pkg_key = ?', pkgkey_t)
         
@@ -815,9 +815,9 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
                 (output, unused_err) = proc.communicate()
-                if munkicommon.verbose > 1:
-                    if output: 
-                        print str(output).decode('UTF-8').rstrip('\n')
+                if output: 
+                    munkicommon.display_detail(
+                        str(output).decode('UTF-8').rstrip('\n'))
                     
     local_display_percent_done(2, 4)
     

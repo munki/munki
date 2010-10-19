@@ -48,7 +48,7 @@ def mountAdobeDmg(dmgpath):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
     if err:
-        print >> sys.stderr, "Error %s mounting %s." % (err, dmgname)
+        munkicommon.display_error("Error %s mounting %s." % (err, dmgname))
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         for entity in plist['system-entities']:
