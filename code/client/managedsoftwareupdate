@@ -618,17 +618,20 @@ def main():
                                         'SuppressAutoInstall is true.')
             else:  # there are GUI users
                 doInstallTasks(only_forced=True)
-                consoleuser = munkicommon.getconsoleuser()
-                if consoleuser == u'loginwindow':
-                    # someone is logged in, but we're sitting at
-                    # the loginwindow due to fast user switching
-                    # so do nothing
-                    pass
-                elif not munkicommon.pref('SuppressUserNotification'):
-                    notifyUserOfUpdates()
-                else:
-                    munkicommon.log('Skipping user notification because '
-                                    'SuppressUserNotification is true.')
+                # it's possible that we no longer have any available updates
+                # so we need to check InstallInfo.plist again
+                if munkiUpdatesAvailable():
+                    consoleuser = munkicommon.getconsoleuser()
+                    if consoleuser == u'loginwindow':
+                        # someone is logged in, but we're sitting at
+                        # the loginwindow due to fast user switching
+                        # so do nothing
+                        pass
+                    elif not munkicommon.pref('SuppressUserNotification'):
+                        notifyUserOfUpdates()
+                    else:
+                        munkicommon.log('Skipping user notification because '
+                                        'SuppressUserNotification is true.')
 
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
