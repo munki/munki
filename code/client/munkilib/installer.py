@@ -823,34 +823,54 @@ def run(only_forced=False):
     else:
         munkicommon.log("### Beginning managed installer session ###")
 
-    installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
-    if os.path.exists(installinfo):
+    installinfopath = os.path.join(managedinstallbase, 'InstallInfo.plist')
+    if os.path.exists(installinfopath):
         try:
-            plist = FoundationPlist.readPlist(installinfo)
+            installinfo = FoundationPlist.readPlist(installinfopath)
         except FoundationPlist.NSPropertyListSerializationException:
-            print >> sys.stderr, "Invalid %s" % installinfo
+            munkicommon.display_error("Invalid %s" % installinfopath)
             return -1
 
-        # remove the install info file
-        # it's no longer valid once we start running
-        try:
-            os.unlink(installinfo)
-        except (OSError, IOError):
-            munkicommon.display_warning(
-                "Could not remove %s" % installinfo)
+        if only_forced:
+            # remove forced_* items from installinfo and write 
+            # installinfo back out
+            installlist = installinfo.get('managed_installs', [])
+            removallist = installinfo.get('removals', [])
+            optionallist = installinfo.get('optional_installs', [])
+            newinstallinfo = {}
+            newinstallinfo['optional_installs'] = optionallist
+            newinstallinfo['managed_installs'] = \
+                [item for item in installlist 
+                 if not item.get('forced_install')]
+            newinstallinfo['removals'] = \
+                [item for item in removallist 
+                 if not item.get('forced_uninstall')]
+            try:
+                FoundationPlist.writePlist(newinstallinfo, installinfopath)
+            except FoundationPlist.NSPropertyListWriteException:
+                munkicommon.display_warning(
+                    "Could not update %s" % installinfopath)
+        else:
+            # remove the install info file
+            # it's no longer valid once we start running
+            try:
+                os.unlink(installinfopath)
+            except (OSError, IOError):
+                munkicommon.display_warning(
+                    "Could not remove %s" % installinfopath)
 
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
             munkistatus.hideStopButton()
 
-        if "removals" in plist:
+        if "removals" in installinfo:
             # filter list to items that need to be removed
             if only_forced:
-                removallist = [item for item in plist['removals']
+                removallist = [item for item in installinfo['removals']
                                if item.get('installed') and \
                                   item.get('forced_uninstall', False)]
             else:
-                removallist = [item for item in plist['removals']
+                removallist = [item for item in installinfo['removals']
                                if item.get('installed')]
             munkicommon.report['ItemsToRemove'] = removallist
             if removallist:
@@ -865,15 +885,17 @@ def run(only_forced=False):
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
                 removals_need_restart = processRemovals(removallist)
-        if "managed_installs" in plist:
+        if "managed_installs" in installinfo:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
                 if only_forced:
-                    installlist = [item for item in plist['managed_installs']
+                    installlist = [item for item in 
+                                   installinfo['managed_installs']
                                    if not item.get('installed') and \
                                       item.get('forced_install', False)]
                 else:
-                    installlist = [item for item in plist['managed_installs']
+                    installlist = [item for item in 
+                                   installinfo['managed_installs']
                                    if item.get('installed') == False]
                 munkicommon.report['ItemsToInstall'] = installlist
                 if installlist:
