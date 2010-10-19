@@ -272,14 +272,21 @@ def notifyUserOfUpdates():
 
         # Kill Managed Software Update.app if it's already
         # open so it will update its display
+        # using subprocess.Popen instead of subprocess.call
+        # so stderr doesn't get output to the terminal
+        # when there is no Managed Software Update process running
         cmd = ['/usr/bin/killall', 'Managed Software Update']
-        unused_retcode = subprocess.call(cmd)
-
+        proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE)
+        (unused_output, unused_err) = proc.communicate()
+        
         # notify user of available updates using LaunchAgent to start
         # Managed Software Update.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         cmd = ['/usr/bin/touch', launchfile]
         unused_retcode = subprocess.call(cmd)
+        
         time.sleep(0.1)
         if os.path.exists(launchfile):
             os.unlink(launchfile)

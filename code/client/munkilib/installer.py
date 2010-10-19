@@ -146,19 +146,11 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
             if msg.startswith("PHASE:"):
                 phase = msg[6:]
                 if phase:
-                    if munkicommon.munkistatusoutput:
-                        munkistatus.detail(phase)
-                    else:
-                        print phase.encode('UTF-8')
-                        sys.stdout.flush()
+                    munkicommon.display_status(phase)
             elif msg.startswith("STATUS:"):
                 status = msg[7:]
                 if status:
-                    if munkicommon.munkistatusoutput:
-                        munkistatus.detail(status)
-                    else:
-                        print status.encode('UTF-8')
-                        sys.stdout.flush()
+                    munkicommon.display_status(status)
             elif msg.startswith("%"):
                 percent = float(msg[1:])
                 if osvers < 10:
@@ -167,20 +159,16 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
                 if munkicommon.munkistatusoutput:
                     munkistatus.percent(percent)
                 else:
-                    print "%s percent complete" % percent
-                    sys.stdout.flush()
+                    munkicommon.display_status(
+                        "%s percent complete" % percent)
             elif msg.startswith(" Error"):
+                munkicommon.display_error(msg)
                 if munkicommon.munkistatusoutput:
                     munkistatus.detail(msg)
-                    munkicommon.log(msg)
-                else:
-                    munkicommon.display_error(msg)
             elif msg.startswith(" Cannot install"):
+                munkicommon.display_error(msg)
                 if munkicommon.munkistatusoutput:
                     munkistatus.detail(msg)
-                    munkicommon.log(msg)
-                else:
-                    munkicommon.display_error(msg)
             else:
                 munkicommon.log(msg)
 
