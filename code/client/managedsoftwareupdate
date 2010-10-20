@@ -40,7 +40,7 @@ def getIdleSeconds():
     cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = proc.communicate()
+    (output, unused_err) = proc.communicate()
     ioreglines = str(output).splitlines()
     for line in ioreglines:
         if 'Idle' in line:
@@ -58,7 +58,7 @@ def networkUp():
     cmd = ['/sbin/ifconfig', '-a', 'inet']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = proc.communicate()
+    (output, unused_err) = proc.communicate()
     lines = str(output).splitlines()
     for line in lines:
         if 'inet' in line:
@@ -165,8 +165,7 @@ def doInstallTasks(only_forced=False):
         if not only_forced:
             appleupdates.clearAppleUpdateInfo()
     elif ((munkicommon.pref('InstallAppleSoftwareUpdates') or
-           munkicommon.pref('AppleSoftwareUpdatesOnly')) and 
-           not only_forced):
+           applesoftwareupdatesonly) and not only_forced):
         # are we supposed to handle Apple Software Updates?
         try:
             need_to_restart = appleupdates.installAppleUpdates()
@@ -523,9 +522,9 @@ def main():
             print >> sys.stderr, \
               'Another instance of %s is running. Exiting.' % myname
         exit(0)
-
-    if (not options.installonly and
-        not munkicommon.pref('AppleSoftwareUpdatesOnly')):
+    
+    applesoftwareupdatesonly = munkicommon.pref('AppleSoftwareUpdatesOnly')
+    if not options.installonly and not applesoftwareupdatesonly:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
@@ -551,14 +550,18 @@ def main():
     munkicommon.report['StartTime'] = time.ctime()
     munkicommon.report['RunType'] = runtype
 
+    munkicommon.log("### Starting managedsoftwareupdate run ###")
     if options.verbose:
         print 'Managed Software Update Tool'
         print 'Copyright 2010 The Munki Project'
         print 'http://code.google.com/p/munki\n'
+        
+    if applesoftwareupdatesonly and options.verbose:
+        print ('NOTE: managedsoftwareupdate is configured to process Apple '
+               'Software Updates only.')
 
     updatecheckresult = None
-    if (not options.installonly and 
-        not munkicommon.pref('AppleSoftwareUpdatesOnly')):
+    if not options.installonly and not applesoftwareupdatesonly:
         try:
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
@@ -571,13 +574,12 @@ def main():
         recordUpdateCheckResult(updatecheckresult)
         
     updatesavailable = munkiUpdatesAvailable()
-    #if not updatesavailable and (options.auto or options.manualcheck):
     if (not updatesavailable and not options.installonly and
         not munkicommon.stopRequested()):
         # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
-        if (munkicommon.pref('InstallAppleSoftwareUpdates') or 
-            munkicommon.pref('AppleSoftwareUpdatesOnly')):
+        if (munkicommon.pref('InstallAppleSoftwareUpdates') or
+            applesoftwareupdatesonly):
             try:
                 if appleupdates.appleSoftwareUpdatesAvailable(
                     forcecheck=(options.manualcheck or
@@ -591,7 +593,7 @@ def main():
 
     if (not updatesavailable and options.installonly and
         (munkicommon.pref('InstallAppleSoftwareUpdates') or
-         munkicommon.pref('AppleSoftwareUpdatesOnly'))):
+         applesoftwareupdatesonly)):
         # just look and see if there are already downloaded Apple updates
         # to install; don't run softwareupdate to check with Apple
         try:
@@ -608,14 +610,13 @@ def main():
         # just quit munkistatus; Managed Software Update will notify
         munkistatus.quit()
     elif updatesavailable:
-        if options.installonly:
+        if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks()
         elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
                 if getIdleSeconds() > 10:
-                    if not munkicommon.pref('SuppressAutoInstall') or \
-                                        runtype == 'checkandinstallatstartup':
+                    if not munkicommon.pref('SuppressAutoInstall'):
                         # no GUI users, system is idle, so install
                         # enable status output over login window
                         munkicommon.munkistatusoutput = True
@@ -623,6 +624,9 @@ def main():
                     else:
                         munkicommon.log('Skipping auto install because '
                                         'SuppressAutoInstall is true.')
+                else:
+                    munkicommon.log('Skipping auto install because system is '
+                                    'not idle (keyboard or mouse activity).')
             else:  # there are GUI users
                 doInstallTasks(only_forced=True)
                 # it's possible that we no longer have any available updates
@@ -654,6 +658,7 @@ def main():
             if os.path.exists(checkandinstallatstartupflag):
                 os.unlink(checkandinstallatstartupflag)
 
+    munkicommon.log("### Ending managedsoftwareupdate run ###")
     # finish our report
     munkicommon.report['EndTime'] = time.ctime()
     munkicommon.report['ManagedInstallVersion'] = munkicommon.get_version()
