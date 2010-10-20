@@ -64,7 +64,7 @@ class InsecureFilePermissionsError(VerifyFilePermissionsError):
 
 def get_version():
     """Returns version of munkitools"""
-    return '0.6.0 Build 759'
+    return '0.7.0 Build 8xx'
 
 
 # output and logging functions
@@ -586,7 +586,7 @@ def prefs(force_refresh=False):
         if not loadPrefsFromFile(_prefs, MANAGED_INSTALLS_PLIST_PATH):
             # no prefs file, so we'll write out a 'default' prefs file
             del _prefs['LastNotifiedDate']
-            FoundationPlist.writePlist(_prefs, prefsfile)
+            FoundationPlist.writePlist(_prefs, MANAGED_INSTALLS_PLIST_PATH)
 
         # Load configs from secure ManagedInstalls.plist file.
         # Note: this overwrites existing configs.
