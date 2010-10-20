@@ -437,6 +437,9 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
                 pass
         if now.timeIntervalSinceDate_(nextSUcheck) >= 0:
             unused_retcode = checkForSoftwareUpdates()
+        else:
+            munkicommon.log("Skipping Apple Software Update check because "
+                            "we last checked on %s..." % lastSUcheck)
         
     if writeAppleUpdatesFile():
         displayAppleUpdateInfo()
