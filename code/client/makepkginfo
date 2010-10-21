@@ -274,7 +274,8 @@ def check_mode(option, opt, value, parser):
 
 def main():
     '''Main routine'''
-    usage = "usage: %prog [options] [/path/to/installeritem]"
+    usage = """usage: %prog [options] [/path/to/installeritem]
+       %prog --help for more information."""
     p = optparse.OptionParser(usage=usage)
     p.add_option('--file', '-f', action="append",
                     help='''Path to a filesystem item installed by this 
@@ -385,12 +386,8 @@ def main():
     
     options, arguments = p.parse_args()
     
-    if len(arguments) == 0 and \
-        not (options.file or options.installxml or options.uninstallxml 
-             or options.serialnumber):
-        print >> sys.stderr, \
-            ("Need to specify an installer item (.pkg, .mpkg, .dmg) "
-             "and/or --file and/or Adobe installer options!")
+    if len(arguments) == 0 and not options.file:
+        p.print_usage()
         exit(-1)
     
     if len(arguments) > 1:
