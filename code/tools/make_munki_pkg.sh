@@ -26,7 +26,7 @@ fi
 pushd "$munkiroot/code/client/munkilib" >/dev/null
 munkivers=`python -c "import munkicommon; print munkicommon.get_version()" | cut -d" " -f1`
 popd >/dev/null
-svnrev=`svnversion | tr -cd '[:digit:]'`
+svnrev=`svnversion $munkiroot | cut -d: -f2 | tr -cd '[:digit:]'`
 VERS=$munkivers.$svnrev.0
 
 
