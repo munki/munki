@@ -182,7 +182,7 @@ class MSUAppDelegate(NSObject):
                     if item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
                         restartNeeded = True
                     if showRemovalDetail:
-                        if display_name in item:
+                        if 'display_name' in item:
                             item["display_name"] = item["display_name"] + " (will be removed)"
                         elif name in item:
                             item["display_name"] = item["name"] + " (will be removed)"
