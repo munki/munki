@@ -184,7 +184,7 @@ class MSUAppDelegate(NSObject):
                     if showRemovalDetail:
                         if 'display_name' in item:
                             item["display_name"] = item["display_name"] + " (will be removed)"
-                        elif name in item:
+                        elif 'name' in item:
                             item["display_name"] = item["name"] + " (will be removed)"
                         updatelist.append(item)
                 if not showRemovalDetail:
