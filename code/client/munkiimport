@@ -181,7 +181,7 @@ def copyPkginfoToRepo(pkginfo, subdirectory=""):
     index = 0
     while os.path.exists(pkginfo_path):
         index += 1
-        pkginfo_name = "%s-%s__%s" % (pkginfo['name'], pkginfo['version'], 
+        pkginfo_name = "%s-%s__%s%s" % (pkginfo['name'], pkginfo['version'], 
                                      index, pkginfo_ext)
         pkginfo_path = os.path.join(destination_path, pkginfo_name)
         
