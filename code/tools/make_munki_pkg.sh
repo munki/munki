@@ -7,6 +7,8 @@
 # if you are building your own version of munki, you might
 # want to change the pkgid to reflect your organization
 PKGID=com.googlecode.munki
+# set FLAT to YES if you want a flat package
+FLAT=NO
 
 # set munkiroot to the root dir of your munki 'source'
 munkiroot="/Users/Shared/munki/munki"
@@ -158,16 +160,35 @@ if [ -d ./Library ]; then
     sudo chown -hR root:admin ./Library/Managed\ Installs
 fi
 
-# Update Info.plist
 MAJOR=`echo $VERS | cut -d. -f1`
 MINOR=`echo $VERS | cut -d. -f2`
 SIZE=`du -sk /tmp/munkitools | cut -f1`
-INFO="$munkiroot/code/pkgtemplate/Info.plist"
-/usr/libexec/PlistBuddy -c "set :CFBundleShortVersionString $VERS" "$INFO"
-/usr/libexec/PlistBuddy -c "set :IFMajorVersion $MAJOR" "$INFO"
-/usr/libexec/PlistBuddy -c "set :IFMinorVersion $MINOR" "$INFO"
-/usr/libexec/PlistBuddy -c "set :IFPkgFlagInstalledSize $SIZE" "$INFO"
-/usr/libexec/PlistBuddy -c "set :IFPkgFlagRestartAction RequiredRestart" "$INFO"
+NFILES=$(echo `find /tmp/munkitools/ | wc -l`)
+MSUVERS=`defaults read "$munkiroot/code/Managed Software Update/build/Release/Managed Software Update.app/Contents/Info" CFBundleShortVersionString`
+INFO=`mktemp -t packageinfo`
+
+if [ "$FLAT" == "YES" ]; then
+    TARGET=10.5
+    # create PackageInfo
+    cat > "$INFO" <<EOF
+<pkg-info format-version="2" identifier="$PKGID" version="$VERS" install-location="/" auth="root" postinstall-action="restart">
+    <payload installKBytes="$SIZE" numberOfFiles="$NFILES"/>
+    <bundle id="com.googlecode.munki.ManagedSoftwareUpdate" CFBundleIdentifier="com.googlecode.munki.ManagedSoftwareUpdate" path="./Applications/Utilities/Managed Software Update.app" CFBundleVersion="$MSUVERS"/>
+    <bundle-version>
+        <bundle id="com.googlecode.munki.ManagedSoftwareUpdate"/>
+    </bundle-version>
+</pkg-info>
+EOF
+else
+    TARGET=10.4
+    # create Info.plist
+    cat "$munkiroot/code/pkgtemplate/Info.plist" > "$INFO"
+    /usr/libexec/PlistBuddy -c "set :CFBundleShortVersionString $VERS" "$INFO"
+    /usr/libexec/PlistBuddy -c "set :IFMajorVersion $MAJOR" "$INFO"
+    /usr/libexec/PlistBuddy -c "set :IFMinorVersion $MINOR" "$INFO"
+    /usr/libexec/PlistBuddy -c "set :IFPkgFlagInstalledSize $SIZE" "$INFO"
+    /usr/libexec/PlistBuddy -c "set :IFPkgFlagRestartAction RequiredRestart" "$INFO"
+fi
 
 /Developer/usr/bin/packagemaker \
     --root . \
@@ -177,7 +198,8 @@ INFO="$munkiroot/code/pkgtemplate/Info.plist"
     --version "$VERS" \
     --no-recommend \
     --no-relocate \
-    --target 10.4 \
+    --target $TARGET \
     --out "$packagedir/munkitools-$VERS.pkg" \
     --verbose
+rm -f "$INFO"
 sudo rm -rf /tmp/munkitools
