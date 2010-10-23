@@ -383,8 +383,14 @@ def main():
                     The specified mode must be in symbolic form.
                     See the manpage for chmod(1) for more information. 
                     The mode is applied recursively.''')
+    p.add_option('--version', '-V', action='store_true',
+                      help='Print the version of the munki tools and exit.')
     
     options, arguments = p.parse_args()
+    
+    if options.version:
+        print munkicommon.get_version()
+        exit(0)
     
     if len(arguments) == 0 and not options.file:
         p.print_usage()

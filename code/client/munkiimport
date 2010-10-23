@@ -297,7 +297,14 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help='''No interactive prompts. May cause a failure
                     if repo path is unavailable.''')
+    p.add_option('--version', '-V', action='store_true',
+                      help='Print the version of the munki tools and exit.')
+    
     options, arguments = p.parse_args()
+    
+    if options.version:
+        print munkicommon.get_version()
+        exit(0)
     
     if options.configure:
         configure()

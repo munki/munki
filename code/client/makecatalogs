@@ -32,6 +32,7 @@ Maybe generate a checksum so we can verify the installer item is the right one
 import sys
 import os
 import optparse
+from munkilib import munkicommon
 try:
     from munkilib import FoundationPlist as plistlib
 except ImportError:
@@ -118,7 +119,14 @@ def main():
     '''Main'''
     usage = "usage: %prog [options] /path/to/repo_root"
     p = optparse.OptionParser(usage=usage)
+    p.add_option('--version', '-V', action='store_true',
+                      help='Print the version of the munki tools and exit.')
     options, arguments = p.parse_args()
+    
+    if options.version:
+        print munkicommon.get_version()
+        exit(0)
+    
     if len(arguments) == 0:
         print >> sys.stderr, "Need to specify a path to the repo root!"
         exit(-1)
