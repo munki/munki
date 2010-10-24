@@ -54,6 +54,9 @@ def makeCatalogDB(catalogitems):
 
         if name == 'NO NAME' or vers == 'NO VERSION':
             munkicommon.display_warning('Bad pkginfo: %s' % item)
+            
+        # normalize the version number
+        vers = munkicommon.padVersionString(vers, 5)
 
         # build indexes for items by name and version
         if not name in name_table:
@@ -661,19 +664,21 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
     been processed (it's in the list) and, optionally,
     the version is the same or greater.
     """
-    names = []
-    names.append(manifestitem_pl.get('name'))
     for item in thelist:
-        if item.get('name') in names:
-            if not vers:
-                return True
-            if item.get('installed'):
-                return True
-            #if the version already processed is the same or greater,
-            #then we're good
-            if (compareVersions(item.get('version_to_install'), vers)
-                                                                in (1, 2)):
-                return True
+        try:
+            if item['name'] == manifestitem_pl['name']:
+                if not vers:
+                    return True
+                if item.get('installed'):
+                    return True
+                #if the version already processed is the same or greater,
+                #then we're good
+                if (compareVersions(
+                        item.get('version_to_install'), vers) in (1, 2)):
+                    return True
+        except KeyError:
+            # item is missing 'name', so doesn't match
+            pass
 
     return False
 
@@ -1178,6 +1183,11 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
         munkicommon.display_warning(
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
+        return
+    # check to see if item (any version) is already in the update list:
+    if isItemInInstallInfo(item_pl, installinfo['managed_updates']):
+        munkicommon.display_debug1(
+            '%s has already been processed for update.' % manifestitemname)
         return
     # check to see if item (any version) is already in the installlist:
     if isItemInInstallInfo(item_pl, installinfo['managed_installs']):
@@ -1846,7 +1856,7 @@ def getmanifest(partialurl, suppress_errors=False):
             munkicommon.display_error(
                 'Could not retrieve manifest %s from the server.' %
                  partialurl)
-            munkicommon.display_error(err)
+            munkicommon.display_error(str(err))
         return None
 
     if munkicommon.validPlist(manifestpath):
@@ -2300,7 +2310,7 @@ def getMachineFacts():
                                                 str(output).rstrip('\n'),3)
 
 
-def check(client_id=''):
+def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
@@ -2317,7 +2327,10 @@ def check(client_id=''):
 
     munkicommon.log('### Beginning managed software check ###')
 
-    mainmanifestpath = getPrimaryManifest(client_id)
+    if localmanifestpath:
+        mainmanifestpath = localmanifestpath
+    else:
+        mainmanifestpath = getPrimaryManifest(client_id)
     if munkicommon.stopRequested():
         return 0
 
@@ -2327,6 +2340,7 @@ def check(client_id=''):
         # initialize our installinfo record
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
+        installinfo['managed_updates'] = []
         installinfo['optional_installs'] = []
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
