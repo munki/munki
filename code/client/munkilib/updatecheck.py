@@ -865,7 +865,8 @@ def getItemDetail(name, cataloglist, vers=''):
     return None
 
 
-def enoughDiskSpace(manifestitem_pl, installlist=None, uninstalling=False):
+def enoughDiskSpace(manifestitem_pl, installlist=None, 
+                    uninstalling=False, warn=True):
     """Determine if there is enough disk space to download the manifestitem."""
     # fudgefactor is set to 100MB
     fudgefactor = 102400
@@ -903,7 +904,7 @@ def enoughDiskSpace(manifestitem_pl, installlist=None, uninstalling=False):
 
     if availablediskspace > diskspaceneeded:
         return True
-    else:
+    elif warn:
         if uninstalling:
             munkicommon.display_warning('There is insufficient disk space to '
                                         'download the uninstaller for %s.' %
@@ -915,7 +916,7 @@ def enoughDiskSpace(manifestitem_pl, installlist=None, uninstalling=False):
         munkicommon.display_warning('    %sMB needed; %sMB available' %
                                                   (diskspaceneeded/1024,
                                                    availablediskspace/1024))
-        return False
+    return False
 
 
 def isInstalled(item_pl):
@@ -1267,7 +1268,8 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
         iteminfo['installed_size'] = item_pl.get('installer_item_size',
                                         iteminfo['installer_item_size'])
         if not enoughDiskSpace(item_pl,
-                                    installinfo.get('managed_installs', [])):
+                                    installinfo.get('managed_installs', []),
+                                    warn=False):
             iteminfo['note'] = \
                 'Insufficient disk space to download and install.'
 
