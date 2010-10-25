@@ -223,6 +223,31 @@ def display_error(msg):
     report['Errors'].append(msg)
 
 
+def format_time(t=None, tz=None, alttz=None):
+    """Return struct_time as an ISO 8601 formatted string, with timezone information.
+If t is not given the current local time is used. If timezone information is
+not given, the local timezone and alternate timezone is used."""
+    # get the current local time
+    if t is None:
+        t = time.localtime()
+    # get the current local timezone offset
+    if tz is None:
+        tz = time.timezone
+    if alttz is None:
+        alttz = time.altzone
+    # calculate UTC offset. NOTE: POSIX uses inverted UTC offset as timezone
+    if t.tm_isdst:
+        utcoffset = -alttz
+    else:
+        utcoffset = -tz
+    # convert UTC offset in seconds to hours and minutes
+    utcoffset_h = (utcoffset / 60) / 60
+    utcoffset_m = (utcoffset / 60) % 60
+    utcoffset_sign = "+" if utcoffset >= 0 else "-"
+    utcoffset_string = " %s%02d%02d" % (utcoffset_sign, utcoffset_h, utcoffset_m)
+    return time.strftime("%Y-%m-%d %H:%M:%S", t) + utcoffset_string
+
+
 def log(msg, logname=''):
     """Generic logging function"""
     # date/time format string

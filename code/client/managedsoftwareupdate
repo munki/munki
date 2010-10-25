@@ -547,7 +547,7 @@ def main():
     munkicommon.rotate_main_log()
     munkicommon.archive_report()
     # start a new report
-    munkicommon.report['StartTime'] = time.ctime()
+    munkicommon.report['StartTime'] = munkicommon.format_time()
     munkicommon.report['RunType'] = runtype
 
     munkicommon.log("### Starting managedsoftwareupdate run ###")
@@ -660,7 +660,7 @@ def main():
 
     munkicommon.log("### Ending managedsoftwareupdate run ###")
     # finish our report
-    munkicommon.report['EndTime'] = time.ctime()
+    munkicommon.report['EndTime'] = munkicommon.format_time()
     munkicommon.report['ManagedInstallVersion'] = munkicommon.get_version()
     munkicommon.report['AvailableDiskSpace'] = \
                                         munkicommon.getAvailableDiskSpace()
