@@ -34,21 +34,21 @@ import munkistatus
 import installer
 
 
+def softwareUpdatePrefs():
+    """Returns a dictionary of prefs from
+    /Library/Preferences/com.apple.SoftwareUpdate.plist"""
+    try:
+        return FoundationPlist.readPlist(
+                   '/Library/Preferences/com.apple.SoftwareUpdate.plist')
+    except FoundationPlist.NSPropertyListSerializationException:
+        return {}
+
+
 def getCurrentSoftwareUpdateServer():
     '''Returns the current Apple SUS CatalogURL'''
-    cmd = ['/usr/bin/defaults', 'read',
-           '/Library/Preferences/com.apple.SoftwareUpdate', 'CatalogURL']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, 
-                            stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
-    if proc.returncode == 0:
-        return str(out).rstrip('\n')
-    else:
-        return ''
-        
-        
+    return softwareUpdatePrefs().get('CatalogURL','')
+
+
 def selectSoftwareUpdateServer():
     '''Switch to our preferred Software Update Server if supplied'''
     if munkicommon.pref('SoftwareUpdateServerURL'):
@@ -156,22 +156,10 @@ def checkForSoftwareUpdates():
             retcode = 0
             
     if retcode == 0:      
-        # get last result code
-        cmd = ['/usr/bin/defaults', 'read',
-               '/Library/Preferences/com.apple.SoftwareUpdate', 
-               'LastResultCode']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-        (out, unused_err) = proc.communicate()
-        if proc.returncode == 0:
-            try:
-                LastResultCode = int(str(out).rstrip('\n'))
-                if LastResultCode > 2:
-                    retcode = LastResultCode
-            except (ValueError, TypeError):
-                retcode = 0
+        # get SoftwareUpdate's LastResultCode
+        LastResultCode = softwareUpdatePrefs().get('LastResultCode', 0)
+        if LastResultCode > 2:
+            retcode = LastResultCode
             
     if retcode:
         # there was an error
@@ -382,7 +370,6 @@ def displayAppleUpdateInfo():
             if item.get('RestartAction') == 'RequireLogout':
                 munkicommon.display_info("       *Logout required")
                 munkicommon.report['LogoutRequired'] = True
-    
 
 
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
@@ -419,15 +406,8 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         # Apple Software Update server too frequently
         now = NSDate.new()
         nextSUcheck = now
-        cmd = ['/usr/bin/defaults', 'read', 
-               '/Library/Preferences/com.apple.softwareupdate',    
-               'LastSuccessfulDate']
-        proc = subprocess.Popen(cmd, bufsize=1, 
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE)
-        (out, unused_err) = proc.communicate()
-        
-        lastSUcheckString = str(out).rstrip('\n')
+        lastSUcheckString = str(
+            softwareUpdatePrefs().get('LastSuccessfulDate'))
         if lastSUcheckString:
             try:
                 lastSUcheck = NSDate.dateWithString_(lastSUcheckString)
@@ -504,7 +484,7 @@ def installAppleUpdates():
             munkicommon.report['RestartRequired'] = True
         munkicommon.savereport()
     return restartneeded
-    
+
 
 # define this here so we can access it in multiple functions
 appleUpdatesFile = os.path.join(munkicommon.pref('ManagedInstallDir'),
