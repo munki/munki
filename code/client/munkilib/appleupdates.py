@@ -407,7 +407,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         now = NSDate.new()
         nextSUcheck = now
         lastSUcheckString = str(
-            softwareUpdatePrefs().get('LastSuccessfulDate'))
+            softwareUpdatePrefs().get('LastSuccessfulDate', ''))
         if lastSUcheckString:
             try:
                 lastSUcheck = NSDate.dateWithString_(lastSUcheckString)
