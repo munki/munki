@@ -22,10 +22,14 @@ Created by Greg Neagle on 2008-11-18.
 Common functions used by the munki tools.
 """
 
+import ctypes
+import ctypes.util
 import hashlib
 import os
+import platform
 import shutil
 import stat
+import struct
 import subprocess
 import sys
 import tempfile
@@ -1200,6 +1204,180 @@ def _unsigned(i):
     return i & 0xFFFFFFFF
 
 
+def _asciizToStr(s):
+    """Transform a null-terminated string of any length into a Python str.
+    Returns a normal Python str that has been terminated.
+    """
+    i = s.find('\0')
+    if i > -1:
+        s = s[0:i]
+    return s
+
+
+def _fFlagsToSet(f_flags):
+    """Transform an int f_flags parameter into a set of mount options.
+    Returns a set.
+    """
+    # see /usr/include/sys/mount.h for the bitmask constants.
+    flags = set()
+    if f_flags & 0x1:
+        flags.add('read-only')
+    if f_flags & 0x1000:
+        flags.add('local')
+    if f_flags & 0x4000:
+        flags.add('rootfs')
+    if f_flags & 0x4000000:
+        flags.add('automounted')
+    return flags
+
+
+def getFilesystems():
+    """Get a list of all mounted filesystems on this system.
+
+    Return value is dict, e.g. {
+        int st_dev: {
+            'f_fstypename': 'nfs',
+            'f_mntonname': '/mountedpath',
+            'f_mntfromname': 'homenfs:/path',
+        },
+    }
+
+    Note: st_dev values are static for potentially only one boot, but
+    static for multiple mount instances.
+    """
+    MNT_NOWAIT = 2
+
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+    # see man GETFSSTAT(2) for struct
+    statfs_32_struct = '=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
+    statfs_64_struct = '=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
+    os_ver = map(int, platform.mac_ver()[0].split('.'))
+    if os_ver[0] <= 10 and os_ver[1] <= 5:
+      mode = 32
+    else:
+      mode = 64
+
+    if mode == 64:
+      statfs_struct = statfs_64_struct
+    else:
+      statfs_struct = statfs_32_struct
+
+    sizeof_statfs_struct = struct.calcsize(statfs_struct)
+    bufsize = 30 * sizeof_statfs_struct  # only supports 30 mounted fs
+    buf = ctypes.create_string_buffer(bufsize)
+
+    if mode == 64:
+      # some 10.6 boxes return 64-bit structures on getfsstat(), some do not.
+      # forcefully call the 64-bit version in cases where we think
+      # a 64-bit struct will be returned.
+      n = libc.getfsstat64(ctypes.byref(buf), bufsize, MNT_NOWAIT)
+    else:
+      n = libc.getfsstat(ctypes.byref(buf), bufsize, MNT_NOWAIT)
+
+    if n < 0:
+      display_debug1('getfsstat() returned errno %d' % n)
+      return {}
+
+    ofs = 0
+    output = {}
+    for i in xrange(0, n):
+        if mode == 64:
+            (f_bsize, f_iosize, f_blocks, f_bfree, f_bavail, f_files,
+            f_ffree, f_fsid_0, f_fsid_1, f_owner, f_type, f_flags,
+            f_fssubtype,
+            f_fstypename, f_mntonname, f_mntfromname) = struct.unpack(
+              statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
+        elif mode == 32:
+            (f_otype, f_oflags, f_bsize, f_iosize, f_blocks, f_bfree, f_bavail,
+            f_files, f_ffree, f_fsid, f_owner, f_reserved1, f_type, f_flags,
+            f_reserved2_0, f_reserved2_1, f_fstypename, f_mntonname,
+            f_mntfromname) = struct.unpack(
+                statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
+
+        try:
+            st = os.stat(_asciizToStr(f_mntonname))
+            output[st.st_dev] = {
+                'f_flags_set': _fFlagsToSet(f_flags),
+                'f_fstypename': _asciizToStr(f_fstypename),
+                'f_mntonname': _asciizToStr(f_mntonname),
+                'f_mntfromname': _asciizToStr(f_mntfromname),
+                }
+        except OSError:
+            pass
+
+        ofs += sizeof_statfs_struct
+
+    return output
+
+
+FILESYSTEMS = {}
+def isExcludedFilesystem(path, _retry=False):
+    """Gets filesystem information for a path and determine if it should be
+    excluded from application searches.
+
+    Returns True if path is located on NFS, is read only, or
+    is not marked local.
+    Returns False if none of these conditions are true.
+    Returns None if it cannot be determined.
+    """
+    global FILESYSTEMS
+
+    if not path:
+        return None
+
+    if not FILESYSTEMS or _retry:
+        FILESYSTEMS = getFilesystems()
+
+    try:
+        st = os.stat(path)
+    except OSError:
+        st = None
+
+    if st is None or st.st_dev not in FILESYSTEMS:
+        if not _retry:
+            # perhaps the stat() on the path caused autofs to mount
+            # the required filesystem and now it will be available.
+            # try one more time to look for it after flushing the cache.
+            display_debug1('Trying isExcludedFilesystem again for %s' % path)
+            return isExcludedFilesystem(path, True)
+        else:
+            display_debug1('Could not match path %s to a filesystem' % path)
+            return None
+
+    exc_flags = ('read-only' in FILESYSTEMS[st.st_dev]['f_flags_set'] or
+        'local' not in FILESYSTEMS[st.st_dev]['f_flags_set'])
+    is_nfs = FILESYSTEMS[st.st_dev]['f_fstypename'] == 'nfs'
+
+    if is_nfs or exc_flags:
+        display_debug1(
+            'Excluding %s (flags %s, nfs %s)' % (path, exc_flags, is_nfs))
+
+    return is_nfs or exc_flags
+
+
+def getSpotlightInstalledApplications():
+    """Get paths of currenty installed applications per Spotlight.
+    Return value is lost of paths.
+    Ignores apps installed on other volumes
+    """
+    argv = ['/usr/bin/mdfind', '-0', 'kMDItemKind = \'Application\'']
+    p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (stdout, stderr) = p.communicate()
+    rc = p.wait()
+
+    applist = []
+
+    if rc != 0:
+      return applist
+
+    for app_path in stdout.split('\0'):
+        if (not app_path.startswith('/Volumes/') and not
+        isExcludedFilesystem(app_path)):
+            applist.append(app_path)
+
+    return applist
+
+
 def getLSInstalledApplications():
     """Get paths of currently installed applications per LaunchServices.
     Return value is list of paths.
@@ -1213,7 +1391,8 @@ def getLSInstalledApplications():
         if status != 0:
             continue
         app_path = fsobj.as_pathname()
-        if not app_path.startswith('/Volumes/'):
+        if (not app_path.startswith('/Volumes/') and not
+        isExcludedFilesystem(app_path)):
             applist.append(app_path)
 
     return applist
@@ -1226,7 +1405,8 @@ def getAppData():
     Returns a list of dicts containing path, name, version and bundleid"""
     if APPDATA == []:
         display_debug1('Getting info on currently installed applications...')
-        applist = getLSInstalledApplications()
+        applist = set(getLSInstalledApplications())
+        applist.update(getSpotlightInstalledApplications())
         for pathname in applist:
             iteminfo = {}
             iteminfo['name'] = os.path.splitext(os.path.basename(pathname))[0]

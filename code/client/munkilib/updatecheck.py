@@ -329,6 +329,14 @@ def compareApplicationVersion(app):
     appdata = munkicommon.getAppData()
     if appdata:
         for item in appdata:
+            # Skip applications in /Users but not /Users/Shared, for now.
+            if 'path' in item:
+                if item['path'].startswith('/Users/') and \
+                    not item['path'].startswith('/Users/Shared/'):
+                        munkicommon.display_debug2(('Skipped '
+                            'app %s with path %s') % (
+                            item['name'], item['path']))
+                        continue
             if bundleid and item['bundleid'] == bundleid:
                 appinfo.append(item)
             elif name and item['name'] == name:
