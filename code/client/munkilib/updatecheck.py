@@ -1264,7 +1264,8 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
         iteminfo['needs_update'] = not isInstalled(item_pl)
     iteminfo['uninstallable'] = item_pl.get('uninstallable', False)
     if (not iteminfo['installed']) or (iteminfo.get('needs_update')):
-        iteminfo['installer_item_size'] = item_pl.get('installer_item_size', 0)
+        iteminfo['installer_item_size'] = \
+            item_pl.get('installer_item_size', 0)
         iteminfo['installed_size'] = item_pl.get('installer_item_size',
                                         iteminfo['installer_item_size'])
         if not enoughDiskSpace(item_pl,
