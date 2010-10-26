@@ -18,11 +18,12 @@
 managedsoftwareupdate
 """
 
-import sys
-import os
+import grp
 import optparse
+import os
 import stat
 import subprocess
+import sys
 import time
 import traceback
 
@@ -117,13 +118,16 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
             '%s does not exist. \n %s' % (file_path, str(e)))
 
     try:
+        admin_gid = grp.getgrnam('admin').gr_gid
+        wheel_gid = grp.getgrnam('wheel').gr_gid
+        user_gid = os.getegid()
         # verify the munki process uid matches the file owner uid.
         if os.geteuid() != file_stat.st_uid:
             raise InsecureFilePermissionsError(
                 'owner does not match munki process!')
         # verify the munki process gid matches the file owner gid, or the file
-        # owner gid is 80 (which is the admin group root is a member of).
-        elif os.getegid() != file_stat.st_gid and file_stat.st_gid != 80:
+        # owner gid is wheel or admin gid. 
+        elif file_stat.st_gid not in [admin_gid, wheel_gid, user_gid]:
             raise InsecureFilePermissionsError(
                 'group does not match munki process!')
         # verify other users cannot write to the file.
