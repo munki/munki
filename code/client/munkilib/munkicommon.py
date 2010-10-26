@@ -28,7 +28,6 @@ import hashlib
 import os
 import platform
 import shutil
-import stat
 import struct
 import subprocess
 import sys
@@ -57,14 +56,6 @@ class Error(Exception):
 
 class PreferencesError(Error):
     """There was an error reading the preferences plist."""
-
-
-class VerifyFilePermissionsError(Error):
-    """There was an error verifying file permissions."""
-
-
-class InsecureFilePermissionsError(VerifyFilePermissionsError):
-    """The permissions of the specified file are insecure."""
 
 
 def get_version():
@@ -1223,8 +1214,8 @@ def getPackageMetaData(pkgitem):
     cataloginfo['receipts'] = receiptinfo
 
     return cataloginfo
-    
-        
+
+
 def _unsigned(i):
     """Translate a signed int into an unsigned int.  Int type returned
     is longer than the original since Python has no unsigned int."""
@@ -1423,9 +1414,9 @@ def getLSInstalledApplications():
             applist.append(app_path)
 
     return applist
-    
+
 # we save APPDATA in a global to avoid querying LaunchServices more than
-# once per session    
+# once per session
 APPDATA = []
 def getAppData():
     """Gets info on currently installed apps.
@@ -1453,43 +1444,6 @@ def getAppData():
 
 
 # some utility functions
-
-
-def verifyFileOnlyWritableByMunkiAndRoot(file_path):
-    """
-    Check the permissions on a given file path; fail if owner or group
-    does not match the munki process (default: root/admin) or the group is not
-    'wheel', or if other users are able to write to the file. This prevents
-    escalated execution of arbitrary code.
-
-    Args:
-      file_path: str path of file to verify permissions on.
-    Raises:
-      VerifyFilePermissionsError: there was an error verifying file permissions.
-      InsecureFilePermissionsError: file permissions were found to be insecure.
-    """
-    try:
-        file_stat = os.stat(file_path)
-    except OSError, e:
-        raise VerifyFilePermissionsError(
-            '%s does not exist. \n %s' % (file_path, str(e)))
-
-    try:
-        # verify the munki process uid matches the file owner uid.
-        if os.geteuid() != file_stat.st_uid:
-            raise InsecureFilePermissionsError(
-                'owner does not match munki process!')
-        # verify the munki process gid matches the file owner gid, or the file
-        # owner gid is 80 (which is the admin group root is a member of).
-        elif os.getegid() != file_stat.st_gid and file_stat.st_gid != 80:
-            raise InsecureFilePermissionsError(
-                'group does not match munki process!')
-        # verify other users cannot write to the file.
-        elif file_stat.st_mode & stat.S_IWOTH != 0:
-            raise InsecureFilePermissionsError('world writable!')
-    except InsecureFilePermissionsError, e:
-        raise InsecureFilePermissionsError(
-            '%s is not secure! %s' % (file_path, e.args[0]))
 
 
 def getAvailableDiskSpace(volumepath='/'):
