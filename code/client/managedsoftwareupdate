@@ -37,7 +37,8 @@ except:
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     script = os.path.join(scriptdir, 'report_broken_client')
     try:
-        utils.runExternalScript(script)
+        result, output = utils.runExternalScript(script)
+        print >> sys.stderr, result, output
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:
@@ -459,7 +460,7 @@ def main():
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:
         result = 0
-        munkicommon.display_warning(msg)
+        munkicommon.display_warning(str(e))
 
     if result:
         # non-zero return code means don't run
@@ -664,7 +665,7 @@ def main():
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:
-        munkicommon.display_warning(msg)
+        munkicommon.display_warning(str(e))
     # we ignore the result of the postflight
 
     if munkicommon.tmpdir:
