@@ -68,8 +68,35 @@ class InsecureFilePermissionsError(VerifyFilePermissionsError):
 
 
 def get_version():
-    """Returns version of munkitools"""
-    return '0.7.0 Build 8xx'
+    """Returns version of munkitools, reading version.plist
+    and svnversion"""
+    version = "UNKNOWN"
+    build = ""
+    # find the munkilib directory, and the version files
+    munkilibdir = os.path.dirname(os.path.abspath(__file__))
+    versionfile = os.path.join(munkilibdir, "version.plist")
+    if os.path.exists(versionfile):
+        try:
+            vers_plist = FoundationPlist.readPlist(versionfile)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+        else:
+            try:
+                version = vers_plist['CFBundleShortVersionString']
+            except KeyError:
+                pass
+    svnversionfile = os.path.join(munkilibdir, "svnversion")
+    if os.path.exists(svnversionfile):
+        try:
+            fileobj = open(svnversionfile, mode='r')
+            contents = fileobj.read()
+            fileobj.close()
+            build = contents.splitlines()[0]
+        except OSError:
+            pass
+    if build:
+        version = version + " Build " + build
+    return version
 
 
 # output and logging functions
