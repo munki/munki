@@ -129,7 +129,7 @@ if [ "$BUILD_USR" == "YES" ]; then
     cp "$munkiroot/code/client/"* ./usr/local/munki/ 2>&1 | grep -v "munkilib is a directory"
     cp "$munkiroot"/code/client/munkilib/*.py ./usr/local/munki/munkilib/
     cp "$munkiroot"/code/client/munkilib/version.plist ./usr/local/munki/munkilib/
-    echo $svnrev > ./code/client/munkilib/svnversion
+    echo $svnrev > ./usr/local/munki/munkilib/svnversion
     # no pre/postflight scripts in the package, please
     rm -f ./usr/local/munki/preflight
     rm -f ./usr/local/munki/postflight
