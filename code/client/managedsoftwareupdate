@@ -30,38 +30,27 @@ import traceback
 # Do not place any imports with ObjC bindings above this!
 try:
     from Foundation import NSDate
-    from munkilib import munkicommon
-    from munkilib import updatecheck
-    from munkilib import installer
-    from munkilib import munkistatus
-    from munkilib import appleupdates
-    from munkilib import FoundationPlist
-    OBJ_C_OK = True
 except:
-    # this version of Python is missing the ObjC bindings.
-    class munkicommon:  # mock munkicommon so runExternalScript can run.
-        @classmethod
-        def display_warning(cls, msg):
-            print msg
-        @classmethod
-        def display_info(cls, msg):
-            print msg
-        @classmethod
-        def log(cls, msg):
-            print msg
-    OBJ_C_OK = False
+    # Python is missing ObjC bindings. Run external report script.
+    from munkilib import utils
+    print >> sys.stderr, 'Python is missing ObjC bindings.'
+    scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    script = os.path.join(scriptdir, 'report_broken_client')
+    try:
+        utils.runExternalScript(script)
+    except utils.ScriptNotFoundError:
+        pass  # script is not required, so pass
+    except utils.RunExternalScriptError, e:
+        print >> sys.stderr, str(e)
+    sys.exit(1)
 
-  
-class Error(Exception):
-    """Class for domain specific exceptions."""
-
-
-class VerifyFilePermissionsError(Error):
-    """There was an error verifying file permissions."""
-
-
-class InsecureFilePermissionsError(VerifyFilePermissionsError):
-    """The permissions of the specified file are insecure."""
+from munkilib import munkicommon
+from munkilib import updatecheck
+from munkilib import installer
+from munkilib import munkistatus
+from munkilib import appleupdates
+from munkilib import FoundationPlist
+from munkilib import utils
 
 
 def getIdleSeconds():
@@ -113,53 +102,13 @@ def clearLastNotifiedDate():
         pass
 
 
-def verifyFileOnlyWritableByMunkiAndRoot(file_path):
-    """
-    Check the permissions on a given file path; fail if owner or group
-    does not match the munki process (default: root/admin) or the group is not
-    'wheel', or if other users are able to write to the file. This prevents
-    escalated execution of arbitrary code.
-
-    Args:
-      file_path: str path of file to verify permissions on.
-    Raises:
-      VerifyFilePermissionsError: there was an error verifying file permissions.
-      InsecureFilePermissionsError: file permissions were found to be insecure.
-    """
-    try:
-        file_stat = os.stat(file_path)
-    except OSError, e:
-        raise VerifyFilePermissionsError(
-            '%s does not exist. \n %s' % (file_path, str(e)))
-
-    try:
-        admin_gid = grp.getgrnam('admin').gr_gid
-        wheel_gid = grp.getgrnam('wheel').gr_gid
-        user_gid = os.getegid()
-        # verify the munki process uid matches the file owner uid.
-        if os.geteuid() != file_stat.st_uid:
-            raise InsecureFilePermissionsError(
-                'owner does not match munki process!')
-        # verify the munki process gid matches the file owner gid, or the file
-        # owner gid is wheel or admin gid. 
-        elif file_stat.st_gid not in [admin_gid, wheel_gid, user_gid]:
-            raise InsecureFilePermissionsError(
-                'group does not match munki process!')
-        # verify other users cannot write to the file.
-        elif file_stat.st_mode & stat.S_IWOTH != 0:
-            raise InsecureFilePermissionsError('world writable!')
-    except InsecureFilePermissionsError, e:
-        raise InsecureFilePermissionsError(
-            '%s is not secure! %s' % (file_path, e.args[0]))
-
-
 def createDirsIfNeeded(dirlist):
     """Create any missing directories needed by the munki tools.
 
     Args:
       dirlist: a sequence of directories.
     Returns:
-      Boolean. True if all directories existed or were created, 
+      Boolean. True if all directories existed or were created,
       False otherwise.
     """
     for directory in dirlist:
@@ -345,60 +294,21 @@ def notifyUserOfUpdates():
         # when there is no Managed Software Update process running
         cmd = ['/usr/bin/killall', 'Managed Software Update']
         proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, 
+                                stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         (unused_output, unused_err) = proc.communicate()
-        
+
         # notify user of available updates using LaunchAgent to start
         # Managed Software Update.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         cmd = ['/usr/bin/touch', launchfile]
         unused_retcode = subprocess.call(cmd)
-        
+
         time.sleep(0.1)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
     return user_was_notified
-
-
-def runExternalScript(script, runtype='custom'):
-    """Run an script (e.g. preflight/postflight) and return its exit status.
-
-    Args:
-      script: string path to the script to execute.
-      runtype: string mode managedsoftwareupdate was executed with. 
-          For more info see
-          http://code.google.com/p/munki/wiki/PreflightAndPostflightScripts
-          
-    Returns:
-      Integer exit status from script.
-    """
-    if os.path.exists(script):
-        try:
-            verifyFileOnlyWritableByMunkiAndRoot(script)
-        except VerifyFilePermissionsError, e:
-            msg = ('Skipping execution due to failed file permissions '
-                   'verification: %s\n%s' % (script, str(e)))
-            munkicommon.display_warning(msg)
-            return 0  # script does not get run 
-        if os.access(script, os.X_OK):
-            munkicommon.log('Running %s with runtype: %s...' %
-                                                    (script, runtype))
-            cmd = [script, runtype]
-            proc = subprocess.Popen(cmd, shell=False,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            (output, err) = proc.communicate()
-            if output:
-                munkicommon.display_info(output)
-            if err:
-                munkicommon.display_info(output)
-            return proc.returncode
-        else:
-            munkicommon.display_warning('%s not executable' % script)
-    return 0
 
 
 def main():
@@ -410,13 +320,6 @@ def main():
 
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-
-    # Do not place any ObjC or munkilib.* calls above this line.
-    if not OBJ_C_OK:
-      print >> sys.stderr, 'Python is missing ObjC bindings.'
-      script = os.path.join(scriptdir, 'report_broken_client')
-      runExternalScript(script)
-      sys.exit(1)
 
     p = optparse.OptionParser()
     p.set_usage("""Usage: %prog [options]""")
@@ -548,7 +451,16 @@ def main():
 
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
-    result = runExternalScript(preflightscript, runtype)
+    try:
+        result, output = utils.runExternalScript(preflightscript, runtype)
+        munkicommon.display_info(output)
+    except utils.ScriptNotFoundError:
+        result = 0
+        pass  # script is not required, so pass
+    except utils.RunExternalScriptError, e:
+        result = 0
+        munkicommon.display_warning(msg)
+
     if result:
         # non-zero return code means don't run
         munkicommon.display_info('managedsoftwareupdate run aborted by'
@@ -598,7 +510,7 @@ def main():
             print >> sys.stderr, \
               'Another instance of %s is running. Exiting.' % myname
         exit(0)
-    
+
     applesoftwareupdatesonly = munkicommon.pref('AppleSoftwareUpdatesOnly')
     if not options.installonly and not applesoftwareupdatesonly:
         # check to see if we can talk to the manifest server
@@ -631,7 +543,7 @@ def main():
         print 'Managed Software Update Tool'
         print 'Copyright 2010 The Munki Project'
         print 'http://code.google.com/p/munki\n'
-        
+
     if applesoftwareupdatesonly and options.verbose:
         print ('NOTE: managedsoftwareupdate is configured to process Apple '
                'Software Updates only.')
@@ -648,7 +560,7 @@ def main():
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-        
+
     updatesavailable = munkiUpdatesAvailable()
     if (not updatesavailable and not options.installonly and
         not munkicommon.stopRequested()):
@@ -746,7 +658,13 @@ def main():
 
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
-    result = runExternalScript(postflightscript, runtype)
+    try:
+        unused_r, output = utils.runExternalScript(postflightscript, runtype)
+        munkicommon.display_info(output)
+    except utils.ScriptNotFoundError:
+        pass  # script is not required, so pass
+    except utils.RunExternalScriptError, e:
+        munkicommon.display_warning(msg)
     # we ignore the result of the postflight
 
     if munkicommon.tmpdir:
