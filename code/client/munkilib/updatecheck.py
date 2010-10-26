@@ -1184,6 +1184,9 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     if it needs an update.
     """
     manifestitemname = os.path.split(manifestitem)[1]
+    munkicommon.display_debug1(
+        '* Processing manifest item %s for update' % manifestitemname)
+    
     item_pl = getItemDetail(manifestitem, cataloglist)
 
     if not item_pl:
@@ -1194,7 +1197,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
             (manifestitem, ', '.join(cataloglist)))
         return
     # check to see if item (any version) is already in the update list:
-    if isItemInInstallInfo(item_pl, installinfo['managed_updates']):
+    if manifestitemname in installinfo['managed_updates']:
         munkicommon.display_debug1(
             '%s has already been processed for update.' % manifestitemname)
         return
@@ -1211,6 +1214,8 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     # we only offer to update if some version of the item is already
     # installed, so let's check
     if someVersionInstalled(item_pl):
+        # add to the list of processed managed_updates
+        installinfo['managed_updates'].append(manifestitemname)
         unused_result = processInstall(manifestitem, cataloglist, installinfo)
     else:
         munkicommon.display_debug1(
@@ -1223,6 +1228,9 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     the list of optional installs.
     """
     manifestitemname = os.path.split(manifestitem)[1]
+    munkicommon.display_debug1(
+        "* Processing manifest item %s for optional install" %
+        manifestitemname)
     item_pl = getItemDetail(manifestitem, cataloglist)
 
     if not item_pl:
@@ -1232,16 +1240,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
         return
-    # check to see if item (any version) is already in the installlist:
-    if isItemInInstallInfo(item_pl, installinfo['managed_installs']):
-        munkicommon.display_debug1(
-            '%s has already been processed for install.' % manifestitemname)
-        return
-    # check to see if item (any version) is already in the removallist:
-    if isItemInInstallInfo(item_pl, installinfo['removals']):
-        munkicommon.display_debug1(
-            '%s has already been processed for removal.' % manifestitemname)
-        return
+        
     # check to see if item (any version) is already in the
     # optional_install list:
     for item in installinfo['optional_installs']:
@@ -1250,6 +1249,19 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                 '%s has already been processed for optional install.' %
                     manifestitemname)
             return
+    # check to see if item (any version) is already in the installlist:
+    if isItemInInstallInfo(item_pl, installinfo['managed_installs']):
+        # unless it was added because it's a managed_update
+        if not manifestitemname in installinfo['managed_updates']:
+            munkicommon.display_debug1(
+                '%s has already been processed for install.' % 
+                manifestitemname)
+            return
+    # check to see if item (any version) is already in the removallist:
+    if isItemInInstallInfo(item_pl, installinfo['removals']):
+        munkicommon.display_debug1(
+            '%s has already been processed for removal.' % manifestitemname)
+        return
 
     # if we get to this point we can add this item
     # to the list of optional installs
@@ -1273,7 +1285,9 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                                     warn=False):
             iteminfo['note'] = \
                 'Insufficient disk space to download and install.'
-
+    
+    munkicommon.display_debug1(
+        "Adding %s to the optional install list" %   iteminfo['name'])
     installinfo['optional_installs'].append(iteminfo)
 
 
@@ -1293,7 +1307,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
         munkistatus.detail('')
 
     manifestitemname = os.path.split(manifestitem)[1]
-    #munkicommon.display_info('Getting detail on %s...' % manifestitemname)
+    munkicommon.display_debug1(
+        '* Processing manifest item %s for install' % manifestitemname)
     item_pl = getItemDetail(manifestitem, cataloglist)
 
     if not item_pl:
@@ -1464,6 +1479,10 @@ def processManifestForKey(manifestpath, manifest_key, installinfo,
     Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well.
     """
+    munkicommon.display_debug1(
+        "** Processing manifest %s for %s" % 
+        (os.path.basename(manifestpath), manifest_key))
+        
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
     if cataloglist:
         getCatalogs(cataloglist)
@@ -1533,9 +1552,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     will stop the removal of a dependent item.
     """
     manifestitemname_withversion = os.path.split(manifestitem)[1]
-
-    munkicommon.display_detail('Processing manifest item %s...' %
-                                manifestitemname_withversion)
+    munkicommon.display_debug1(
+        '* Processing manifest item %s for removal' %     
+        manifestitemname_withversion)
+        
     (manifestitemname, includedversion) = nameAndVersion(
                                             manifestitemname_withversion)
     infoitems = []
