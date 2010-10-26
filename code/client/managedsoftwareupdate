@@ -687,7 +687,7 @@ def main():
                     # simply briefly touched the mouse to see progress.
                     time.sleep(15)
                     idleseconds = getIdleSeconds()
-                if not idleseconds > 10:
+                if idleseconds > 10:
                     # no-one is logged in and the machine has been idle 
                     # for a few seconds; kill the loginwindow
                     # (which will cause us to run again)
