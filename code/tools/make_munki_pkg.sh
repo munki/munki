@@ -25,48 +25,56 @@ fi
 
 
 # get the version for the package
-pushd "$munkiroot/code/client/munkilib" >/dev/null
-#munkivers=`python -c "import munkicommon; print munkicommon.get_version()" | cut -d" " -f1`
 munkivers=`defaults read "$munkiroot/code/client/munkilib/version" CFBundleShortVersionString`
-popd >/dev/null
 svnrev=`svnversion $munkiroot | cut -d: -f2 | tr -cd '[:digit:]'`
 echo $svnrev > "$munkiroot/code/client/munkilib/svnversion"
 VERS=$munkivers.$svnrev.0
 
 
 usage() {
-    echo "Usage: `basename \"$0\"` [Applications|Library|usr]"
+    echo "Usage: `basename \"$0\"` [all|Applications|Library|usr]"
     echo
     echo "By default all components are included in the package."
 }
 
 
+BUILD_APP=
+BUILD_LIB=
+BUILD_USR=
+IDSUFFIX=
+FILESUFFIX=
 if [ $# -eq 0 ]; then
-    BUILD_APP=YES
-    BUILD_LIB=YES
-    BUILD_USR=YES
+    conf="all"
 else
-    BUILD_APP=
-    BUILD_LIB=
-    BUILD_USR=
-    while [ $# -gt 0 ]; do 
-        case "$1" in
-            "Applications")
-                BUILD_APP=YES
-                ;;
-            "Library")
-                BUILD_LIB=YES
-                ;;
-            "usr")
-                BUILD_USR=YES
-                ;;
-            *)
-                usage
-                exit -1
-                ;;
-        esac
-        shift
-    done
+    conf="$1"
+fi
+case "$conf" in
+    "all")
+        BUILD_APP=YES
+        BUILD_LIB=YES
+        BUILD_USR=YES
+        ;;
+    "Applications")
+        BUILD_APP=YES
+        IDSUFFIX=applications
+        ;;
+    "Library")
+        BUILD_LIB=YES
+        IDSUFFIX=library
+        ;;
+    "usr")
+        BUILD_USR=YES
+        IDSUFFIX=usr
+        ;;
+    *)
+        usage
+        exit -1
+        ;;
+esac
+
+if [ ! -z "$IDSUFFIX" ]; then
+    PKGID="${PKGID}.${IDSUFFIX}"
+    FILESUFFIX="-${IDSUFFIX}"
 fi
 
 
@@ -176,16 +184,23 @@ if [ "$FLAT" == "YES" ]; then
     cat > "$INFO" <<EOF
 <pkg-info format-version="2" identifier="$PKGID" version="$VERS" install-location="/" auth="root" postinstall-action="restart">
     <payload installKBytes="$SIZE" numberOfFiles="$NFILES"/>
+EOF
+    if [ "$BUILD_APP" == "YES" ]; then
+        cat >> "$INFO" <<EOF
     <bundle id="com.googlecode.munki.ManagedSoftwareUpdate" CFBundleIdentifier="com.googlecode.munki.ManagedSoftwareUpdate" path="./Applications/Utilities/Managed Software Update.app" CFBundleVersion="$MSUVERS"/>
     <bundle-version>
         <bundle id="com.googlecode.munki.ManagedSoftwareUpdate"/>
     </bundle-version>
+EOF
+    fi
+    cat >> "$INFO" <<EOF
 </pkg-info>
 EOF
 else
     TARGET=10.4
     # create Info.plist
     cat "$munkiroot/code/pkgtemplate/Info.plist" > "$INFO"
+    /usr/libexec/PlistBuddy -c "set :CFBundleIdentifier $PKGID" "$INFO"
     /usr/libexec/PlistBuddy -c "set :CFBundleShortVersionString $VERS" "$INFO"
     /usr/libexec/PlistBuddy -c "set :IFMajorVersion $MAJOR" "$INFO"
     /usr/libexec/PlistBuddy -c "set :IFMinorVersion $MINOR" "$INFO"
@@ -202,7 +217,7 @@ fi
     --no-recommend \
     --no-relocate \
     --target $TARGET \
-    --out "$packagedir/munkitools-$VERS.pkg" \
+    --out "$packagedir/munkitools-${VERS}${FILESUFFIX}.pkg" \
     --verbose
 rm -f "$INFO"
 sudo rm -rf /tmp/munkitools

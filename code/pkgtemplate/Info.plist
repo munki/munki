@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.googlecode.munki</string>
+	<string>__PKGID__</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.7.0.835.0</string>
+	<string>__VERSIONSTR__</string>
 	<key>IFMajorVersion</key>
-	<integer>0</integer>
+	<integer>-1</integer>
 	<key>IFMinorVersion</key>
-	<integer>7</integer>
+	<integer>-1</integer>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
@@ -21,7 +21,7 @@
 	<key>IFPkgFlagInstallFat</key>
 	<false/>
 	<key>IFPkgFlagInstalledSize</key>
-	<integer>1012</integer>
+	<integer>-1</integer>
 	<key>IFPkgFlagIsRequired</key>
 	<false/>
 	<key>IFPkgFlagOverwritePermissions</key>
@@ -29,7 +29,7 @@
 	<key>IFPkgFlagRelocatable</key>
 	<false/>
 	<key>IFPkgFlagRestartAction</key>
-	<string>RequiredRestart</string>
+	<string>__REQRESTART__</string>
 	<key>IFPkgFlagRootVolumeOnly</key>
 	<false/>
 	<key>IFPkgFlagUpdateInstalledLanguages</key>
