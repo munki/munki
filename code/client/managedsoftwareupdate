@@ -27,16 +27,31 @@ import sys
 import time
 import traceback
 
-from Foundation import NSDate
+# Do not place any imports with ObjC bindings above this!
+try:
+    from Foundation import NSDate
+    from munkilib import munkicommon
+    from munkilib import updatecheck
+    from munkilib import installer
+    from munkilib import munkistatus
+    from munkilib import appleupdates
+    from munkilib import FoundationPlist
+    OBJ_C_OK = True
+except:
+    # this version of Python is missing the ObjC bindings.
+    class munkicommon:  # mock munkicommon so runExternalScript can run.
+        @classmethod
+        def display_warning(cls, msg):
+            print msg
+        @classmethod
+        def display_info(cls, msg):
+            print msg
+        @classmethod
+        def log(cls, msg):
+            print msg
+    OBJ_C_OK = False
 
-from munkilib import munkicommon
-from munkilib import updatecheck
-from munkilib import installer
-from munkilib import munkistatus
-from munkilib import appleupdates
-from munkilib import FoundationPlist
-
-
+  
 class Error(Exception):
     """Class for domain specific exceptions."""
 
@@ -347,26 +362,26 @@ def notifyUserOfUpdates():
     return user_was_notified
 
 
-def runPreOrPostFlightScript(script, runtype='custom'):
-    """Run a pre- or postflight script and return its exit status.
+def runExternalScript(script, runtype='custom'):
+    """Run an script (e.g. preflight/postflight) and return its exit status.
 
     Args:
-      script: string path to the pre/postflight script to execute.
+      script: string path to the script to execute.
       runtype: string mode managedsoftwareupdate was executed with. 
           For more info see
           http://code.google.com/p/munki/wiki/PreflightAndPostflightScripts
           
     Returns:
-      Integer exit status from preflight or postflight script.
+      Integer exit status from script.
     """
     if os.path.exists(script):
         try:
             verifyFileOnlyWritableByMunkiAndRoot(script)
-        except munkicommon.VerifyFilePermissionsError, e:
+        except VerifyFilePermissionsError, e:
             msg = ('Skipping execution due to failed file permissions '
                    'verification: %s\n%s' % (script, str(e)))
             munkicommon.display_warning(msg)
-            return 0  # preflight/postflight does not get run 
+            return 0  # script does not get run 
         if os.access(script, os.X_OK):
             munkicommon.log('Running %s with runtype: %s...' %
                                                     (script, runtype))
@@ -395,6 +410,13 @@ def main():
 
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+
+    # Do not place any ObjC or munkilib.* calls above this line.
+    if not OBJ_C_OK:
+      print >> sys.stderr, 'Python is missing ObjC bindings.'
+      script = os.path.join(scriptdir, 'report_broken_client')
+      runExternalScript(script)
+      sys.exit(1)
 
     p = optparse.OptionParser()
     p.set_usage("""Usage: %prog [options]""")
@@ -526,7 +548,7 @@ def main():
 
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
-    result = runPreOrPostFlightScript(preflightscript, runtype)
+    result = runExternalScript(preflightscript, runtype)
     if result:
         # non-zero return code means don't run
         munkicommon.display_info('managedsoftwareupdate run aborted by'
@@ -724,7 +746,7 @@ def main():
 
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
-    result = runPreOrPostFlightScript(postflightscript, runtype)
+    result = runExternalScript(postflightscript, runtype)
     # we ignore the result of the postflight
 
     if munkicommon.tmpdir:
