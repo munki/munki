@@ -247,8 +247,9 @@ def display_error(msg):
 
 
 def format_time(timestamp=None):
-    """Return timestamp as an ISO 8601 formatted string, in the current timezone.
-If timestamp isn't given the current time is used."""
+    """Return timestamp as an ISO 8601 formatted string, in the current 
+    timezone.
+    If timestamp isn't given the current time is used."""
     if timestamp is None:
         return str(NSDate.new())
     else:

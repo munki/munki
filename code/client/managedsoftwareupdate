@@ -679,13 +679,25 @@ def main():
         if os.path.exists(checkandinstallatstartupflag):
             # we installed things but did not need to restart; we need to run
             # again to check for more updates.
-            if not munkicommon.currentGUIusers() and getIdleSeconds() > 10:
-                # no-one is logged in and the machine has been idle for a few
-                # seconds; kill the loginwindow
-                # (which will cause us to run again)
-                munkicommon.log('Killing loginwindow so we will run again...')
-                cmd = ['/usr/bin/killall', 'loginwindow']
-                unused_retcode = subprocess.call(cmd)
+            if not munkicommon.currentGUIusers():
+                # no-one is logged in
+                idleseconds = getIdleSeconds()
+                if not idleseconds > 10:
+                    # system is not idle, but check again in case someone has
+                    # simply briefly touched the mouse to see progress.
+                    time.sleep(15)
+                    idleseconds = getIdleSeconds()
+                if not idleseconds > 10:
+                    # no-one is logged in and the machine has been idle 
+                    # for a few seconds; kill the loginwindow
+                    # (which will cause us to run again)
+                    munkicommon.log(
+                        'Killing loginwindow so we will run again...')
+                    cmd = ['/usr/bin/killall', 'loginwindow']
+                    unused_retcode = subprocess.call(cmd)
+                else:
+                    munkicommon.log(
+                        'System not idle -- skipping killing loginwindow')
 
 if __name__ == '__main__':
     main()
