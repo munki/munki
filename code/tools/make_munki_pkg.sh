@@ -26,9 +26,11 @@ fi
 
 # get the version for the package
 pushd "$munkiroot/code/client/munkilib" >/dev/null
-munkivers=`python -c "import munkicommon; print munkicommon.get_version()" | cut -d" " -f1`
+#munkivers=`python -c "import munkicommon; print munkicommon.get_version()" | cut -d" " -f1`
+munkivers=`defaults read "$munkiroot/code/client/munkilib/version" CFBundleShortVersionString`
 popd >/dev/null
 svnrev=`svnversion $munkiroot | cut -d: -f2 | tr -cd '[:digit:]'`
+echo $svnrev > "$munkiroot/code/client/munkilib/svnversion"
 VERS=$munkivers.$svnrev.0
 
 
@@ -119,6 +121,7 @@ if [ "$BUILD_USR" == "YES" ]; then
     chmod -R 755 ./usr
     cp "$munkiroot/code/client/"* ./usr/local/munki/ 2>&1 | grep -v "munkilib is a directory"
     cp "$munkiroot"/code/client/munkilib/*.py ./usr/local/munki/munkilib/
+    cp "$munkiroot"/code/client/munkilib/version.plist ./usr/local/munki/munkilib/
     # no pre/postflight scripts in the package, please
     rm -f ./usr/local/munki/preflight
     rm -f ./usr/local/munki/postflight
