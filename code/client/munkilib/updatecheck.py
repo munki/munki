@@ -333,10 +333,10 @@ def compareApplicationVersion(app):
             if 'path' in item:
                 if item['path'].startswith('/Users/') and \
                     not item['path'].startswith('/Users/Shared/'):
-                        munkicommon.display_debug2(('Skipped '
-                            'app %s with path %s') % (
-                            item['name'], item['path']))
-                        continue
+                    munkicommon.display_debug2(('Skipped '
+                        'app %s with path %s') % (
+                        item['name'], item['path']))
+                    continue
             if bundleid and item['bundleid'] == bundleid:
                 appinfo.append(item)
             elif name and item['name'] == name:
@@ -621,11 +621,19 @@ class PackageVerificationError(MunkiDownloadError):
     """Download failed because it coud not be verified"""
     pass
 
-def download_installeritem(item_pl):
-    """Downloads a installer item. Raises an error if there are issues..."""
-    location = item_pl.get('installer_item_location')
+def download_installeritem(item_pl, uninstalling=False):
+    """Downloads an (un)installer item. 
+    Raises an error if there are issues..."""
+    
+    download_item_key = 'installer_item_location'
+    item_hash_key = 'installer_item_hash'
+    if uninstalling and 'uninstaller_item_location' in item_pl:
+        download_item_key = 'uninstaller_item_location'
+        item_hash_key = 'uninstaller_item_hash'
+        
+    location = item_pl.get(download_item_key)
     if not location:
-        raise MunkiDownloadError("No installer_item_location in item info.")
+        raise MunkiDownloadError("No %s in item info." % download_item_key)
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     downloadbaseurl = munkicommon.pref('PackageURL') or \
@@ -661,7 +669,7 @@ def download_installeritem(item_pl):
     munkicommon.verbose = oldverbose
     if changed:
         if not verifySoftwarePackageIntegrity(destinationpath, item_pl,
-                                              'installer_item_hash'):
+                                              item_hash_key):
             raise PackageVerificationError()
 
 
@@ -1742,7 +1750,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 return False
 
             try:
-                download_installeritem(item)
+                download_installeritem(item, uninstalling=True)
                 filename = os.path.split(location)[1]
                 iteminfo['uninstaller_item'] = filename
                 iteminfo['adobe_package_name'] = \
