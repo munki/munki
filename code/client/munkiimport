@@ -238,9 +238,14 @@ def promptForSubdirectory(subdirectory):
     
    
 def makePkgInfo(item_path):
-    """Calls makepkginfo to generate the pkginfo for item_path.
-    Currently the path to makepkginfo is hard-coded."""
-    proc = subprocess.Popen(['/usr/local/munki/makepkginfo', item_path],
+    """Calls makepkginfo to generate the pkginfo for item_path."""
+    # first look for a makepkginfo in the same dir as us
+    mydir = os.path.dirname(os.path.abspath(__file__))
+    makepkginfo_path = os.path.join(mydir, 'makepkginfo')
+    if not os.path.exists(makepkginfo_path):
+        # didn't find it; assume the default install path
+        makepkginfo_path = '/usr/local/munki/makepkginfo'
+    proc = subprocess.Popen([makepkginfo_path, item_path],
                             bufsize=1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
