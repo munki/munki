@@ -202,7 +202,7 @@ def copyPkginfoToRepo(pkginfo, subdirectory=''):
     
     
 def openPkginfoInEditor(pkginfo_path):
-    """Opens pkginfo list in the user's chose editor."""
+    """Opens pkginfo list in the user's chosen editor."""
     editor = pref('editor')
     if editor:
         if editor.endswith('.app'):
@@ -300,7 +300,8 @@ def configure():
     _prefs = {}
     for (key, prompt) in [
         ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-        ('repo_url', 'Repo URL (example: afp://munki.pretendco.com/repo)'),
+        ('repo_url', 
+         'Repo fileshare URL (example: afp://munki.pretendco.com/repo)'),
         ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
         ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
         
@@ -426,7 +427,7 @@ def main():
         print
         for (name, key) in editfields:
             print '%15s: %s' % (name, pkginfo.get(key,''))
-        print '%15s: %s' % ('Catalogs: ', ', '.join(pkginfo['catalogs']))
+        print '%15s: %s' % ('Catalogs', ', '.join(pkginfo['catalogs']))
         print
         answer = raw_input('Import this item? [y/n] ')
         if not answer.lower().startswith('y'):
