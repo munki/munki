@@ -2,9 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>IFPkgDescriptionDescription</key>
-	<string>Managed software installation tools.</string>
 	<key>IFPkgDescriptionTitle</key>
-	<string>munki tools</string>
+	<string>Munki - Managed software installation for OS X</string>
+	<key>IFPkgDescriptionDescription</key>
+	<string>Munki is a set of tools that, used together with a webserver-based
+repository of packages and package metadata, can be used by OS X
+administrators to manage software installs (and in many cases removals)
+on OS X client machines.</string>
 </dict>
 </plist>
