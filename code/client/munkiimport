@@ -407,7 +407,8 @@ def main():
                       ('Description', 'description'),
                       ('Version', 'version'))
         for (name, key) in editfields:
-            newvalue = raw_input('%15s [%s]: ' % (name, pkginfo.get(key,'')))
+            newvalue = raw_input('%15s [%s]: ' % (name,
+                                        pkginfo.get(key,'').encode('UTF-8')))
             if newvalue:
                 pkginfo[key] = newvalue
         
