@@ -2074,6 +2074,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         print >> fileobj, 'dump-header -'  # dump headers to stdout
         print >> fileobj, 'speed-time = 30' # give up if too slow d/l
         print >> fileobj, 'output = "%s"' % tempdownloadpath
+        print >> fileobj, 'ciphers = HIGH' # use only secure >=128 bit SSL
         print >> fileobj, 'url = "%s"' % url
 
         if cacert:
