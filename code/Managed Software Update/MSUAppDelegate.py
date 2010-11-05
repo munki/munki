@@ -169,6 +169,10 @@ class MSUAppDelegate(NSObject):
             self.update_view_controller.optionalSoftwareBtn.setHidden_(YES)
 
 
+    def enableUpdateNowBtn_(self, enable):
+        self.update_view_controller.updateNowBtn.setEnabled_(enable)
+
+
     def getAvailableUpdates(self):
         updatelist = []
         installinfo = munki.getInstallInfo()
@@ -198,7 +202,8 @@ class MSUAppDelegate(NSObject):
 
         if updatelist:
             self._listofupdates = updatelist
-            self.update_view_controller.updateNowBtn.setEnabled_(YES)
+            self.enableUpdateNowBtn_(NO)
+            self.performSelector_withObject_afterDelay_("enableUpdateNowBtn:", YES, 4)
             self.getOptionalInstalls()
         else:
             appleupdates = munki.getAppleUpdates()
