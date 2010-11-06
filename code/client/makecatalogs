@@ -66,11 +66,11 @@ def makecatalogs(repopath):
             
             try:
                 pkginfo = plistlib.readPlist(filepath)
-            except IOError as inst:
+            except IOError, inst:
                 print >> sys.stderr, ("IO error for %s: %s" % 
                                         (filepath, inst))
                 continue
-            except Exception as inst:
+            except Exception, inst:
                 print >> sys.stderr, ("Unexpected error for %s: %s" % 
                                         (filepath, inst))
                 continue
