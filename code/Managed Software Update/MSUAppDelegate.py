@@ -186,10 +186,7 @@ class MSUAppDelegate(NSObject):
                     if item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
                         restartNeeded = True
                     if showRemovalDetail:
-                        if 'display_name' in item:
-                            item["display_name"] = item["display_name"] + " (will be removed)"
-                        elif 'name' in item:
-                            item["display_name"] = item["name"] + " (will be removed)"
+                        item["display_name"] = (item.get("display_name") or item.get("name", "")) + " (will be removed)"
                         updatelist.append(item)
                 if not showRemovalDetail:
                     row = {}
@@ -202,8 +199,8 @@ class MSUAppDelegate(NSObject):
 
         if updatelist:
             self._listofupdates = updatelist
-            self.enableUpdateNowBtn_(NO)
-            self.performSelector_withObject_afterDelay_("enableUpdateNowBtn:", YES, 4)
+            self.enableUpdateNowBtn_(YES)
+            #self.performSelector_withObject_afterDelay_("enableUpdateNowBtn:", YES, 4)
             self.getOptionalInstalls()
         else:
             appleupdates = munki.getAppleUpdates()
@@ -228,11 +225,6 @@ class MSUAppDelegate(NSObject):
             # current install state
             row['installed'] = item.get("installed", objc.NO)
             # user desired state
-            #will_be_state = objc.NO
-            #if item.get("installed") or item.get("will_be_installed"):
-            #    will_be_state = objc.YES
-            #if item.get("will_be_removed"):
-            #    will_be_state = objc.NO
             row['managed'] = (item['name'] in selfserve_installs)
             row['original_managed'] = (item['name'] in selfserve_installs)
             row['itemname'] = item['name']
@@ -337,7 +329,7 @@ class MSUAppDelegate(NSObject):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Restart Required", u"Log out and update", u"Cancel", objc.nil, "A restart is required after updating. Log out and update now?")
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         elif self.logout_required or munki.installRequiresLogout():
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Logout Required", u"Log out and update", u"Cancel", objc.nil, "A logout is required before updating. Log out and update now?")
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Logout Required", u"Log out and update", u"Cancel",  objc.nil, "A logout is required before updating. Log out and update now?")
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Logout Recommended", u"Log out and update", u"Cancel", u"Update without logging out", "A logout is recommended before updating. Log out and update now?")
