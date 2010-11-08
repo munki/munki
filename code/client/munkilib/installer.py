@@ -342,7 +342,7 @@ def copyFromDMG(dmgpath, itemlist):
             if retcode == 0:
                 munkicommon.display_status(
                     "Copying %s to %s" % (itemname, destpath))
-                retcode = subprocess.call(["/bin/cp", "-R",
+                retcode = subprocess.call(["/bin/cp", "-pR",
                                             itempath, destpath])
                 if retcode:
                     munkicommon.display_error(
@@ -350,31 +350,38 @@ def copyFromDMG(dmgpath, itemlist):
                                             (itempath, destpath))
 
             destitem = os.path.join(destpath, itemname)
-            if (retcode == 0) and ('user' in item):
+
+            if retcode == 0:
+                # set owner
+                user = item.get('user', 'root')
                 munkicommon.display_detail(
                                         "Setting owner for '%s' to '%s'" %
-                                                    (destitem, item['user']))
-                cmd = ['/usr/sbin/chown', '-R', item['user'], destitem]
+                                                    (destitem, user))
+                cmd = ['/usr/sbin/chown', '-R', user, destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
                     munkicommon.display_error("Error setting owner for %s" %
                                                 (destitem))
 
-            if (retcode == 0) and ('group' in item):
+            if retcode == 0:
+                # set group
+                group = item.get('group', 'admin')
                 munkicommon.display_detail(
                                         "Setting group for '%s' to '%s'" %
-                                                    (destitem, item['group']))
-                cmd = ['/usr/bin/chgrp', '-R', item['group'], destitem]
+                                                    (destitem, group))
+                cmd = ['/usr/bin/chgrp', '-R', group, destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
                     munkicommon.display_error("Error setting group for %s" %
                                                 (destitem))
 
-            if (retcode == 0) and ('mode' in item):
+            if retcode == 0:
+                # set mode
+                mode  = item.get('mode', 'o-w')
                 munkicommon.display_detail(
                                         "Setting mode for '%s' to '%s'" %
-                                                    (destitem, item['mode']))
-                cmd = ['/bin/chmod', '-R', item['mode'], destitem]
+                                                    (destitem, mode))
+                cmd = ['/bin/chmod', '-R', mode, destitem]
                 retcode = subprocess.call(cmd)
                 if retcode:
                     munkicommon.display_error("Error setting mode for %s" %
