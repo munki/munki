@@ -73,6 +73,7 @@ def repoAvailable():
         return False
     for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
         if not os.path.exists(os.path.join(repo_path, subdir)):
+            print >> sys.stderr, "%s is missing %s" % (repo_path, subdir)
             return False
     # if we get this far, the repo path looks OK
     return True
