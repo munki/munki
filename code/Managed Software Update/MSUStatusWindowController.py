@@ -10,9 +10,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,9 +56,9 @@ def getLoginwindowPicture():
         return theImage
     else:
         return NSImage.imageNamed_("Solid Aqua Blue")
-    
 
-    
+
+
 class MSUStatusWindowController(NSObject):
     '''
     Controls the status window. This was formerly part of a
@@ -71,24 +71,24 @@ class MSUStatusWindowController(NSObject):
     progressIndicator = objc.IBOutlet()
     stopBtn = objc.IBOutlet()
     imageFld = objc.IBOutlet()
-    
+
     backdropWindow = objc.IBOutlet()
     backdropImageFld = objc.IBOutlet()
-    
+
     stopBtnState = 0
     restartAlertDismissed = 0
     session_started = False
     session_connected = False
-    
-    
+
+
     @objc.IBAction
     def stopBtnClicked_(self, sender):
-        if debug: 
+        if debug:
             NSLog(u"Stop button was clicked.")
         sender.setState_(1)
         self.stopBtnState = 1
         sender.setEnabled_(False)
-    
+
     def startMunkiStatusSession(self):
         NSLog(u"Managed Software Update.app PID: %s" % os.getpid())
         consoleuser = munki.getconsoleuser()
@@ -102,14 +102,13 @@ class MSUStatusWindowController(NSObject):
                     bgImage = getLoginwindowPicture()
                     self.backdropImageFld.setImage_(bgImage)
                 self.backdropWindow.orderFrontRegardless()
-    
+
         if self.window:
             if consoleuser == None or consoleuser == u"loginwindow":
                 # needed so the window can show over the loginwindow
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
                 self.window.setLevel_(NSScreenSaverWindowLevel - 1)
             self.window.center()
-            self.window.setTitle_(u"Managed Software Update")
             self.messageFld.setStringValue_(u"Starting…")
             self.detailFld.setStringValue_(u"")
             self.stopBtn.setHidden_(False)
@@ -126,23 +125,23 @@ class MSUStatusWindowController(NSObject):
             self.window.orderFrontRegardless()
             # start our message processing thread
             NSThread.detachNewThreadSelector_toTarget_withObject_(
-                                                        self.handleSocket, 
-                                                        self, 
+                                                        self.handleSocket,
+                                                        self,
                                                         None)
 
             self.session_started = True
             #NSApp.activateIgnoringOtherApps_(True)
 
-            
+
     def sessionStarted(self):
         return self.session_started
-    
-    def handleSocket(self):        
+
+    def handleSocket(self):
         # Autorelease pool for memory management
         pool = NSAutoreleasePool.alloc().init()
-        
+
         socketSessionResult = 0
-        
+
         socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % os.getpid()
         try:
             os.remove(socketpath)
@@ -190,7 +189,7 @@ class MSUStatusWindowController(NSObject):
                         else:
                             buffer = line
                             break
-                
+
             conn.close()
         except socket.timeout:
             NSLog("Socket timed out before connection.")
@@ -207,10 +206,10 @@ class MSUStatusWindowController(NSObject):
         self.session_started = False
         self.session_connected = False
         NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
-        
+
         # Clean up autorelease pool
         del pool
-        
+
     def processSocketMsg_(self, message):
         if message.startswith(u"ACTIVATE: "):
             NSApp.activateIgnoringOtherApps_(True)
@@ -255,7 +254,7 @@ class MSUStatusWindowController(NSObject):
             return "1\n"
 
         return ""
-        
+
     def setPercentageDone(self, percent):
         if float(percent) < 0:
             if not self.progressIndicator.isIndeterminate():
@@ -270,9 +269,9 @@ class MSUStatusWindowController(NSObject):
     @PyObjCTools.AppHelper.endSheetMethod
     def alertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self.restartAlertDismissed = 1
-        
+
     def doRestartAlert(self):
         self.restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Restart Required", u"Restart", objc.nil, objc.nil, "Software installed or removed requires a restart. You will have a chance to save open documents.")
-        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil) 
-        
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil)
+
