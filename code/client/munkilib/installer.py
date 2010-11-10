@@ -455,7 +455,7 @@ def removeCopiedItems(itemlist):
 
     return retcode
 
-def installWithInfo(dirpath, installlist):
+def installWithInfo(dirpath, installlist, forced=False):
     """
     Uses the installlist to install items in the
     correct order.
@@ -463,6 +463,10 @@ def installWithInfo(dirpath, installlist):
     restartflag = False
     itemindex = 0
     for item in installlist:
+        if forced and blockingApplicationsRunning(item):
+            munkicommon.display_detail(
+                "Skipping forced install of %s" % item['name'])
+            continue
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
@@ -487,6 +491,7 @@ def installWithInfo(dirpath, installlist):
                 munkicommon.display_error("Installer item %s was not found." %
                                            item["installer_item"])
                 return restartflag
+                
             installer_type = item.get("installer_type","")
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.doAdobeInstall(item)
@@ -634,11 +639,15 @@ def installWithInfo(dirpath, installlist):
     return restartflag
 
 
-def processRemovals(removallist):
+def processRemovals(removallist, forced=False):
     '''processes removals from the removal list'''
     restartFlag = False
     index = 0
     for item in removallist:
+        if forced and blockingApplicationsRunning(item):
+            munkicommon.display_detail(
+                "Skipping forced removal of %s" % item['name'])
+            continue
         if munkicommon.stopRequested():
             return restartFlag
         if not item.get('installed'):
@@ -787,6 +796,27 @@ def removeItemFromSelfServeUninstallList(itemname):
                 FoundationPlist.writePlist(plist, selfservemanifest)
             except FoundationPlist.FoundationPlistException:
                 pass
+                
+                
+def blockingApplicationsRunning(pkginfoitem):
+    """Returns true if any application in the 
+    blocking_applications list is running or
+    any application in the installs list is running."""
+    
+    appnames = [item.get('CFBundleName') or os.path.basename(item.get('path'))
+                for item in pkginfoitem.get('installs', [])
+                if item['type'] == 'application']
+    appnames.extend(pkginfoitem.get('blocking_applications',[]))
+    munkicommon.display_debug1("Checking for %s" % appnames)
+    running_apps = [appname for appname in appnames
+                    if munkicommon.isAppRunning(appname)]
+    if running_apps:
+        munkicommon.display_detail(
+            "Blocking apps for %s are running:" % pkginfoitem['name'])
+        munkicommon.display_detail(
+            "    %s" % running_apps)
+        return True
+    return False
 
 
 def run(only_forced=False):
@@ -866,7 +896,8 @@ def run(only_forced=False):
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
-                removals_need_restart = processRemovals(removallist)
+                removals_need_restart = processRemovals(removallist,
+                                                        forced=only_forced)
         if "managed_installs" in installinfo:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
@@ -892,7 +923,8 @@ def run(only_forced=False):
                         munkistatus.percent(-1)
                     munkicommon.log("Processing installs")
                     installs_need_restart = installWithInfo(installdir,
-                                                            installlist)
+                                                            installlist,
+                                                        forced=only_forced)
 
     else:
         if not only_forced:  # not need to log that no forced found.

@@ -1435,6 +1435,8 @@ def getAppData():
                 try:
                     plist = FoundationPlist.readPlist(plistpath)
                     iteminfo['bundleid' ] = plist.get('CFBundleIdentifier','')
+                    iteminfo['CFBundleExecutable'] = \
+                                            plist.get('CFBundleExecutable','')
                     if 'CFBundleName' in plist:
                         iteminfo['name'] = plist['CFBundleName']
                     iteminfo['version'] = getExtendedVersion(pathname)
@@ -1445,6 +1447,47 @@ def getAppData():
 
 
 # some utility functions
+
+def isAppRunning(appname):
+    """Tries to determine if the application in appname is currently 
+    running"""
+    display_detail('Checking if %s is running...' % appname)
+    applist = getAppData()
+    executable_names = []
+    if appname.endswith('.app'):
+        # search by filename
+        executable_names = [item['CFBundleExecutable'] for item in applist
+                            if 'CFBundleExecutable' in item and
+                            item['path'].endswith(appname)]
+    else:
+        # check name and executable names
+        executable_names = [item['CFBundleExecutable'] for item in applist
+                            if 'CFBundleExecutable' in item and
+                            item['name'] == appname or
+                            item['CFBundleExecutable'] == appname]
+
+    if executable_names:
+        # uniquify the list
+        executable_names = list(set(executable_names))
+    else:
+        # just use the appname as the executable name
+        executable_names = [appname]
+
+    display_debug1('Executable names: %s' % executable_names)
+    for executable in executable_names:
+        display_detail('Checking %s...' % executable)
+        retcode = subprocess.call(['/usr/bin/killall', '-s', executable],
+                                  shell=False, stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+        if retcode == 0:
+            # executable is running!
+            display_debug1('%s is running!' % executable)
+            display_detail('%s is running!' % appname)
+            return True
+
+    # if we get here, we have no evidence that appname is running
+    return False
 
 
 def getAvailableDiskSpace(volumepath='/'):

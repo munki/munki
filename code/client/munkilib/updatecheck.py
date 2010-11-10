@@ -1385,7 +1385,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     if (not item_pl.get('requires') and not item_pl.get('update_for') and
         not item_pl.get('RestartAction')):
         iteminfo['forced_install'] = item_pl.get('forced_install', False)
-        iteminfo['forced_uninstall'] = item_pl.get('forced_uninstall', False)
+        #iteminfo['forced_uninstall'] = item_pl.get('forced_uninstall', False)
 
     if not isInstalled(item_pl):
         munkicommon.display_detail('Need to install %s' % manifestitemname)
@@ -1416,6 +1416,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'installer_type',
                              'adobe_package_name',
                              'package_path',
+                             'blocking_applications',
+                             'installs',
                              'items_to_copy',  # used w/ copy_from_dmg
                              'copy_local']     # used w/ AdobeCS5 Updaters
 
@@ -1709,6 +1711,21 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
     iteminfo['manifestitem'] = manifestitemname_withversion
     iteminfo['description'] = 'Will be removed.'
+    
+    # currently we will ignore the forced_install and forced_uninstall key if
+    # the item is part of a dependency graph or needs a restart or logout...
+    if (not uninstall_item.get('requires') 
+        and not uninstall_item.get('update_for') 
+        and not uninstall_item.get('RestartAction')):
+        iteminfo['forced_uninstall'] = uninstall_item.get(
+                                                    'forced_uninstall', False)
+        
+    if 'blocking_applications' in uninstall_item:
+        iteminfo['blocking_applications'] = \
+            uninstall_item['blocking_applications']
+    if 'installs' in uninstall_item:
+        iteminfo['installs'] = uninstall_item['installs']
+    
     if packagesToRemove:
         # remove references for each package
         packagesToReallyRemove = []
