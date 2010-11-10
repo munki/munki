@@ -125,7 +125,7 @@ class MSUAppDelegate(NSObject):
             elif lastCheckResult == 1:
                 NSApp.requestUserAttention_(NSCriticalRequest)
             elif lastCheckResult == -1:
-                alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Cannot check for updates", u"Quit", objc.nil, objc.nil, "Managed Software Update cannot contact the update server at this time.\nIf this situtation continues, contact your systems administrator.")
+                alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Cannot check for updates", u"Quit", objc.nil, objc.nil, "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator.")
                 alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
             elif lastCheckResult == -2:
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Cannot check for updates", u"Quit", objc.nil, objc.nil, "Managed Software Update failed its preflight check.\nTry again later.")
