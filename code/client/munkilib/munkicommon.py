@@ -1375,8 +1375,8 @@ def isExcludedFilesystem(path, _retry=False):
 
 
 def getSpotlightInstalledApplications():
-    """Get paths of currenty installed applications per Spotlight.
-    Return value is lost of paths.
+    """Get paths of currently installed applications per Spotlight.
+    Return value is list of paths.
     Ignores apps installed on other volumes
     """
     argv = ['/usr/bin/mdfind', '-0', 'kMDItemKind = \'Application\'']
@@ -1435,8 +1435,6 @@ def getAppData():
                 try:
                     plist = FoundationPlist.readPlist(plistpath)
                     iteminfo['bundleid' ] = plist.get('CFBundleIdentifier','')
-                    iteminfo['CFBundleExecutable'] = \
-                                            plist.get('CFBundleExecutable','')
                     if 'CFBundleName' in plist:
                         iteminfo['name'] = plist['CFBundleName']
                     iteminfo['version'] = getExtendedVersion(pathname)
@@ -1444,6 +1442,37 @@ def getAppData():
                 except Exception:
                     pass
     return APPDATA
+    
+
+def getRunningProcesses():
+    """Returns a list of paths of running processes"""
+    proc = subprocess.Popen(['/bin/ps', '-axo' 'comm='],
+                            shell=False, stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    (output, unused_err) = proc.communicate()
+    if proc.returncode == 0:
+        proc_list = [item for item in output.splitlines()
+                     if item.startswith('/')]
+        LaunchCFMApp = ('/System/Library/Frameworks/Carbon.framework'
+                        '/Versions/A/Support/LaunchCFMApp')
+        if LaunchCFMApp in proc_list:
+            # we have a really old Carbon app
+            proc = subprocess.Popen(['/bin/ps', '-axwwwo' 'args='],
+                                    shell=False, stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            (output, unused_err) = proc.communicate()
+            if proc.returncode == 0:
+                carbon_apps = [item[len(LaunchCFMApp)+1:] 
+                               for item in output.splitlines()
+                               if item.startswith(LaunchCFMApp)]
+                if carbon_apps:
+                    proc_list.extend(carbon_apps)
+        return proc_list
+    else:
+        return []
+
 
 
 # some utility functions
@@ -1452,39 +1481,26 @@ def isAppRunning(appname):
     """Tries to determine if the application in appname is currently 
     running"""
     display_detail('Checking if %s is running...' % appname)
-    applist = getAppData()
-    executable_names = []
+    proc_list = getRunningProcesses()
+    matching_items = []
     if appname.endswith('.app'):
         # search by filename
-        executable_names = [item['CFBundleExecutable'] for item in applist
-                            if 'CFBundleExecutable' in item and
-                            item['path'].endswith(appname)]
+        matching_items = [item for item in proc_list
+                          if '/'+ appname + '/' in item]
     else:
-        # check name and executable names
-        executable_names = [item['CFBundleExecutable'] for item in applist
-                            if 'CFBundleExecutable' in item and
-                            item['name'] == appname or
-                            item['CFBundleExecutable'] == appname]
-
-    if executable_names:
-        # uniquify the list
-        executable_names = list(set(executable_names))
-    else:
-        # just use the appname as the executable name
-        executable_names = [appname]
-
-    display_debug1('Executable names: %s' % executable_names)
-    for executable in executable_names:
-        display_detail('Checking %s...' % executable)
-        retcode = subprocess.call(['/usr/bin/killall', '-s', executable],
-                                  shell=False, stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
-        if retcode == 0:
-            # executable is running!
-            display_debug1('%s is running!' % executable)
-            display_detail('%s is running!' % appname)
-            return True
+        # check executable name
+        matching_items = [item for item in proc_list
+                          if item.endswith('/' + appname)]
+    if not matching_items:
+        # try adding '.app' to the name and check again
+        matching_items = [item for item in proc_list
+                          if '/'+ appname + '.app/' in item]
+                          
+    if matching_items:
+        # it's running!
+        display_debug1('Matching process list: %s' % matching_items)
+        display_detail('%s is running!' % appname)
+        return True
 
     # if we get here, we have no evidence that appname is running
     return False

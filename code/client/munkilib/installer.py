@@ -790,7 +790,7 @@ def removeItemFromSelfServeUninstallList(itemname):
             pass
         else:
             plist['managed_uninstalls'] = \
-              [item for item in plist.get('managed_uninstalls',[])
+                [item for item in plist.get('managed_uninstalls',[])
                  if item != itemname]
             try:
                 FoundationPlist.writePlist(plist, selfservemanifest)
@@ -806,7 +806,7 @@ def blockingApplicationsRunning(pkginfoitem):
     appnames = [item.get('CFBundleName') or os.path.basename(item.get('path'))
                 for item in pkginfoitem.get('installs', [])
                 if item['type'] == 'application']
-    appnames.extend(pkginfoitem.get('blocking_applications',[]))
+    appnames.extend(pkginfoitem.get('blocking_applications', []))
     munkicommon.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
                     if munkicommon.isAppRunning(appname)]
