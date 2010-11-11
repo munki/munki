@@ -682,7 +682,8 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
     """
     for item in thelist:
         try:
-            if item['name'] == manifestitem_pl['name']:
+            if (item.get('name', item['manifestitem']) == 
+                manifestitem_pl['name']):
                 if not vers:
                     return True
                 if item.get('installed'):
@@ -1333,6 +1334,13 @@ def processInstall(manifestitem, cataloglist, installinfo):
         munkicommon.display_debug1(
             '%s has already been processed for install.' % manifestitemname)
         return True
+
+    # check to see if item is already in the removal list
+    if isItemInInstallInfo(item_pl, installinfo['removals']):
+        munkicommon.display_warning(
+            ('Will not attempt to install %s because '
+             'it is already in the removal list!') % manifestitemname)
+        return False
 
     # check dependencies
     dependenciesMet = True
