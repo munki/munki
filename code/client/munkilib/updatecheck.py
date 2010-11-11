@@ -1623,6 +1623,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         munkicommon.display_detail('%s doesn\'t appear to be installed.' %
                                     manifestitemname_withversion)
         iteminfo = {}
+        iteminfo['name'] = manifestitemname
         iteminfo['manifestitem'] = manifestitemname_withversion
         iteminfo['installed'] = False
         installinfo['removals'].append(iteminfo)

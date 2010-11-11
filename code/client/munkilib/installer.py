@@ -799,14 +799,20 @@ def removeItemFromSelfServeUninstallList(itemname):
                 
                 
 def blockingApplicationsRunning(pkginfoitem):
-    """Returns true if any application in the 
-    blocking_applications list is running or
-    any application in the installs list is running."""
+    """Returns true if any application in the blocking_applications list
+    is running or if there is no blocking_applications list, if any
+    application in the installs list is running."""
     
-    appnames = [item.get('CFBundleName') or os.path.basename(item.get('path'))
-                for item in pkginfoitem.get('installs', [])
-                if item['type'] == 'application']
-    appnames.extend(pkginfoitem.get('blocking_applications', []))
+    if 'blocking_applications' in pkginfoitem:
+        appnames = pkginfoitem['blocking_applications']
+    else:
+        # if no blocking_applications specified, get appnames
+        # from 'installs' list if it exists
+        appnames = [item.get('CFBundleName') or
+                    os.path.basename(item.get('path'))
+                    for item in pkginfoitem.get('installs', [])
+                    if item['type'] == 'application']
+    
     munkicommon.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
                     if munkicommon.isAppRunning(appname)]

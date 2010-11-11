@@ -1474,7 +1474,6 @@ def getRunningProcesses():
         return []
 
 
-
 # some utility functions
 
 def isAppRunning(appname):
