@@ -708,7 +708,12 @@ def getInstallerPkgInfo(filename):
                             bufsize=1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
+    (out, err) = proc.communicate()
+    if proc.returncode:
+        display_error("installer -query failed: %s" % (
+                                    out.decode('UTF-8') + err.decode('UTF-8')))
+        return None
+    
     if out:
         restartAction = str(out).rstrip('\n')
         if restartAction != 'None':
@@ -1170,6 +1175,8 @@ def getPackageMetaData(pkgitem):
 
     # first get the data /usr/sbin/installer will give us
     installerinfo = getInstallerPkgInfo(pkgitem)
+    if not installerinfo:
+        return None
     # now look for receipt/subpkg info
     receiptinfo = getReceiptInfo(pkgitem)
 
