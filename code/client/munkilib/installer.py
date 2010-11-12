@@ -808,8 +808,7 @@ def blockingApplicationsRunning(pkginfoitem):
     else:
         # if no blocking_applications specified, get appnames
         # from 'installs' list if it exists
-        appnames = [item.get('CFBundleName') or
-                    os.path.basename(item.get('path'))
+        appnames = [os.path.basename(item.get('path'))
                     for item in pkginfoitem.get('installs', [])
                     if item['type'] == 'application']
     

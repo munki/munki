@@ -23,6 +23,7 @@
 import os
 import subprocess
 import FoundationPlist
+from Foundation import NSFileManager
 
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
@@ -93,9 +94,11 @@ def writeSelfServiceManifest(optional_install_choices):
     except FoundationPlist.FoundationPlistException:
         pass
 
+
 def getRemovalDetailPrefs():
     '''Returns preference to control display of removal detail'''
     return getManagedInstallsPrefs().get('ShowRemovalDetail', False)
+
 
 def installRequiresLogout():
     '''Returns preference to force logout for all installs'''
@@ -185,6 +188,7 @@ def currentGUIusers():
 
     return gui_users
 
+
 def logoutNow():
     '''Uses oscascript to run an AppleScript
     to tell loginwindow to logout.
@@ -226,6 +230,69 @@ def justUpdate():
     cmd = ["/usr/bin/touch",
            "/private/tmp/.com.googlecode.munki.managedinstall.launchd"]
     return call(cmd)
+    
+    
+def getRunningProcesses():
+    """Returns a list of paths of running processes"""
+    proc = subprocess.Popen(['/bin/ps', '-axo' 'comm='],
+                            shell=False, stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    (output, unused_err) = proc.communicate()
+    if proc.returncode == 0:
+        proc_list = [item for item in output.splitlines()
+                     if item.startswith('/')]
+        LaunchCFMApp = ('/System/Library/Frameworks/Carbon.framework'
+                        '/Versions/A/Support/LaunchCFMApp')
+        if LaunchCFMApp in proc_list:
+            # we have a really old Carbon app
+            proc = subprocess.Popen(['/bin/ps', '-axwwwo' 'args='],
+                                    shell=False, stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            (output, unused_err) = proc.communicate()
+            if proc.returncode == 0:
+                carbon_apps = [item[len(LaunchCFMApp)+1:] 
+                               for item in output.splitlines()
+                               if item.startswith(LaunchCFMApp)]
+                if carbon_apps:
+                    proc_list.extend(carbon_apps)
+        return proc_list
+    else:
+        return []
+
+
+def getRunningBlockingApps(appnames):
+    """Given a list of app names, return a list of friendly names
+    for apps in the list that are running"""
+    proc_list = getRunningProcesses()
+    running_apps = []
+    filemanager = NSFileManager.alloc().init()
+    for appname in appnames:
+        matching_items = []
+        if appname.endswith('.app'):
+            # search by filename
+            matching_items = [item for item in proc_list
+                              if '/'+ appname + '/' in item]
+        else:
+            # check executable name
+            matching_items = [item for item in proc_list
+                              if item.endswith('/' + appname)]
+
+        if not matching_items:
+            # try adding '.app' to the name and check again
+            matching_items = [item for item in proc_list
+                              if '/'+ appname + '.app/' in item]
+
+        matching_items = set(matching_items)
+        for path in matching_items:
+            while '/Contents/' in path or path.endswith('/Contents'):
+                path = os.path.dirname(path)
+            # ask NSFileManager for localized name since end-users
+            # will see this name
+            running_apps.append(filemanager.displayNameAtPath_(path))
+
+    return list(set(running_apps))
 
 
 

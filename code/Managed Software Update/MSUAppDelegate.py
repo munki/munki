@@ -335,10 +335,34 @@ class MSUAppDelegate(NSObject):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Logout Recommended", u"Log out and update", u"Cancel", u"Update without logging out", "A logout is recommended before updating. Log out and update now?")
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
+    
+    def alertIfBlockingAppsRunning(self):
+        apps_to_check = []
+        for update_item in self._listofupdates:
+            if 'blocking_applications' in update_item:
+                apps_to_check.extend(update_item['blocking_applications'])
+            else:
+                apps_to_check.extend([os.path.basename(item.get('path'))
+                                     for item in update_item.get('installs', [])
+                                     if item['type'] == 'application'])
+                                     
+        running_apps = munki.getRunningBlockingApps(apps_to_check)
+        if running_apps:
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                    u"Conflicting applications running", u"OK", objc.nil, objc.nil, 
+                    u"You must quit the following applications before proceeding with installation:\n\n%s" % '\n'.join(running_apps))
+            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                self.mainWindowController.theWindow, self, self.blockingAppsRunningAlertDidEnd_returnCode_contextInfo_, objc.nil)
+            return True
+        else:
+            return False
 
     def installSessionErrorAlert(self):
-        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Cannot start installation session", u"Quit", objc.nil, objc.nil, "There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator.")
-        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                u"Cannot start installation session", u"Quit", objc.nil, objc.nil, 
+                u"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator.")
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+            self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
 
     @PyObjCTools.AppHelper.endSheetMethod
@@ -351,16 +375,25 @@ class MSUAppDelegate(NSObject):
             if result:
                 self.installSessionErrorAlert()
         elif returncode == -1:
-            NSLog("User chose to update without logging out")
-            result = munki.justUpdate()
-            if result:
-                self.installSessionErrorAlert()
+            # dismiss the alert sheet now because we might display
+            # another alert
+            alert.window().orderOut_(self)
+            if self.alertIfBlockingAppsRunning():
+                pass
             else:
-                self.managedsoftwareupdate_task = "installwithnologout"
-                self.mainWindowController.theWindow.orderOut_(self)
-                self.munkiStatusController.window.makeKeyAndOrderFront_(self)
-                self.munkiStatusController.startMunkiStatusSession()
+                NSLog("User chose to update without logging out")
+                result = munki.justUpdate()
+                if result:
+                    self.installSessionErrorAlert()
+                else:
+                    self.managedsoftwareupdate_task = "installwithnologout"
+                    self.mainWindowController.theWindow.orderOut_(self)
+                    self.munkiStatusController.window.makeKeyAndOrderFront_(self)
+                    self.munkiStatusController.startMunkiStatusSession()
 
+    @PyObjCTools.AppHelper.endSheetMethod
+    def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        pass
 
     @PyObjCTools.AppHelper.endSheetMethod
     def multipleUserAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
