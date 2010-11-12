@@ -441,10 +441,10 @@ def removeCopiedItems(itemlist):
             break
         path_to_remove = os.path.join(destpath, itemname)
         if os.path.exists(path_to_remove):
-            munkicommon.display_status("Removing %s" % path_to_remove)
-            retcode = subprocess.call(["/bin/rm", "-rf", path_to_remove])
+            munkicommon.display_status('Removing %s' % path_to_remove)
+            retcode = subprocess.call(['/bin/rm', '-rf', path_to_remove])
             if retcode:
-                munkicommon.display_error("Removal error for %s" %
+                munkicommon.display_error('Removal error for %s' %
                                                             path_to_remove)
                 break
         else:
@@ -455,18 +455,28 @@ def removeCopiedItems(itemlist):
 
     return retcode
 
-def installWithInfo(dirpath, installlist, forced=False):
+def installWithInfo(dirpath, installlist, only_forced=False):
     """
     Uses the installlist to install items in the
     correct order.
     """
     restartflag = False
     itemindex = 0
+    skipped_installs = []
     for item in installlist:
-        if forced and blockingApplicationsRunning(item):
-            munkicommon.display_detail(
-                "Skipping forced install of %s" % item['name'])
-            continue
+        if only_forced:
+            if not item.get('forced_install'):
+                skipped_installs.append(item)
+                munkicommon.display_detail(
+                    ('Skipping install of %s because it\'s not flagged for '
+                    'forced_install') % item['name'])
+                continue
+            elif blockingApplicationsRunning(item):
+                skipped_installs.append(item)
+                munkicommon.display_detail(
+                    "Skipping forced install of %s" % item['name'])
+                continue
+                
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
@@ -616,11 +626,18 @@ def installWithInfo(dirpath, installlist, forced=False):
             if itemindex < len(installlist):
                 # nope, let's check the remaining items
                 for lateritem in installlist[itemindex:]:
-                    if 'installer_item' in lateritem:
-                        if lateritem['installer_item'] == \
-                                    current_installer_item:
-                            foundagain = True
-                            break
+                    if (lateritem.get('installer_item') ==
+                        current_installer_item):
+                        foundagain = True
+                        break
+
+            # need to check skipped_installs as well
+            if not foundagain:
+                for skipped_item in skipped_installs:
+                    if (skipped_item.get('installer_item') ==
+                        current_installer_item):
+                        foundagain = True
+                        break
 
             if not foundagain:
                 # now remove the item from the install cache
@@ -635,23 +652,32 @@ def installWithInfo(dirpath, installlist, forced=False):
                 shadowfile = os.path.join(itempath,".shadow")
                 if os.path.exists(shadowfile):
                     retcode = subprocess.call(["/bin/rm", shadowfile])
+                    
+    return (restartflag, skipped_installs)
 
-    return restartflag
 
-
-def processRemovals(removallist, forced=False):
+def processRemovals(removallist, only_forced=False):
     '''processes removals from the removal list'''
     restartFlag = False
     index = 0
+    skipped_removals = []
     for item in removallist:
-        if forced and blockingApplicationsRunning(item):
-            munkicommon.display_detail(
-                "Skipping forced removal of %s" % item['name'])
-            continue
+        if only_forced:
+            if not item.get('forced_uninstall'):
+                skipped_removals.append(item)
+                munkicommon.display_detail(
+                    ('Skipping removal of %s because it\'s not flagged for '
+                    'forced_uninstall') % item['name'])
+                continue
+            elif blockingApplicationsRunning(item):
+                skipped_removals.append(item)
+                munkicommon.display_detail(
+                    'Skipping forced removal of %s ' % item['name'])
+                continue
         if munkicommon.stopRequested():
             return restartFlag
         if not item.get('installed'):
-            # not installed, so skip it
+            # not installed, so skip it (this shouldn't happen...)
             continue
 
         index += 1
@@ -772,7 +798,7 @@ def processRemovals(removallist, forced=False):
                 munkicommon.report[
                                  'RemovalResults'].append(failure_msg)
 
-    return restartFlag
+    return (restartFlag, skipped_removals)
 
 
 def removeItemFromSelfServeUninstallList(itemname):
@@ -800,7 +826,7 @@ def removeItemFromSelfServeUninstallList(itemname):
                 
 def blockingApplicationsRunning(pkginfoitem):
     """Returns true if any application in the blocking_applications list
-    is running or if there is no blocking_applications list, if any
+    is running or, if there is no blocking_applications list, if any
     application in the installs list is running."""
     
     if 'blocking_applications' in pkginfoitem:
@@ -848,33 +874,13 @@ def run(only_forced=False):
             munkicommon.display_error("Invalid %s" % installinfopath)
             return -1
 
-        if only_forced:
-            # remove forced_* items from installinfo and write 
-            # installinfo back out
-            installlist = installinfo.get('managed_installs', [])
-            removallist = installinfo.get('removals', [])
-            optionallist = installinfo.get('optional_installs', [])
-            newinstallinfo = {}
-            newinstallinfo['optional_installs'] = optionallist
-            newinstallinfo['managed_installs'] = \
-                [item for item in installlist 
-                 if not item.get('forced_install')]
-            newinstallinfo['removals'] = \
-                [item for item in removallist 
-                 if not item.get('forced_uninstall')]
-            try:
-                FoundationPlist.writePlist(newinstallinfo, installinfopath)
-            except FoundationPlist.NSPropertyListWriteException:
-                munkicommon.display_warning(
-                    "Could not update %s" % installinfopath)
-        else:
-            # remove the install info file
-            # it's no longer valid once we start running
-            try:
-                os.unlink(installinfopath)
-            except (OSError, IOError):
-                munkicommon.display_warning(
-                    "Could not remove %s" % installinfopath)
+        # remove the install info file
+        # it's no longer valid once we start running
+        try:
+            os.unlink(installinfopath)
+        except (OSError, IOError):
+            munkicommon.display_warning(
+                "Could not remove %s" % installinfopath)
 
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
@@ -882,13 +888,8 @@ def run(only_forced=False):
 
         if "removals" in installinfo:
             # filter list to items that need to be removed
-            if only_forced:
-                removallist = [item for item in installinfo['removals']
-                               if item.get('installed') and \
-                                  item.get('forced_uninstall', False)]
-            else:
-                removallist = [item for item in installinfo['removals']
-                               if item.get('installed')]
+            removallist = [item for item in installinfo['removals']
+                           if item.get('installed')]
             munkicommon.report['ItemsToRemove'] = removallist
             if removallist:
                 if munkicommon.munkistatusoutput:
@@ -901,20 +902,18 @@ def run(only_forced=False):
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
-                removals_need_restart = processRemovals(removallist,
-                                                        forced=only_forced)
+                (removals_need_restart, 
+                 skipped_removals) = processRemovals(removallist,
+                                                     only_forced=only_forced)
+                # if any removals were skipped, record them for later
+                installinfo['removals'] = skipped_removals
+                    
         if "managed_installs" in installinfo:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
-                if only_forced:
-                    installlist = [item for item in 
-                                   installinfo['managed_installs']
-                                   if not item.get('installed') and \
-                                      item.get('forced_install', False)]
-                else:
-                    installlist = [item for item in 
-                                   installinfo['managed_installs']
-                                   if item.get('installed') == False]
+                installlist = [item for item in 
+                               installinfo['managed_installs']
+                               if item.get('installed') == False]
                 munkicommon.report['ItemsToInstall'] = installlist
                 if installlist:
                     if munkicommon.munkistatusoutput:
@@ -927,12 +926,26 @@ def run(only_forced=False):
                         # set indeterminate progress bar
                         munkistatus.percent(-1)
                     munkicommon.log("Processing installs")
-                    installs_need_restart = installWithInfo(installdir,
-                                                            installlist,
-                                                        forced=only_forced)
+                    (installs_need_restart,
+                    skipped_installs) = installWithInfo(installdir,
+                                                        installlist,
+                                                    only_forced=only_forced)
+                    # if any installs were skipped record them for later
+                    installinfo['managed_installs'] = skipped_installs
+                                            
+        if (only_forced and 
+            installinfo['managed_installs'] or installinfo['removals']):
+            # need to write the installinfo back out minus the stuff we 
+            # actually installed
+            try:
+                FoundationPlist.writePlist(installinfo, installinfopath)
+            except FoundationPlist.NSPropertyListWriteException:
+                # not fatal
+                munkicommon.display_warning(
+                    "Could not write to %s" % installinfopath)
 
     else:
-        if not only_forced:  # not need to log that no forced found.
+        if not only_forced:  # no need to log that no forced found.
             munkicommon.log("No %s found." % installinfo)
 
     if only_forced:

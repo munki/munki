@@ -703,15 +703,15 @@ def getInstallerPkgInfo(filename):
                 installerinfo['display_name'] = plist['Title']
 
     proc = subprocess.Popen(['/usr/sbin/installer',
-                            '-query', 'RestartAction',
-                            '-pkg', filename],
-                            bufsize=1,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                             '-query', 'RestartAction',
+                             '-pkg', filename],
+                             bufsize=1,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode:
-        display_error("installer -query failed: %s" % (
-                                    out.decode('UTF-8') + err.decode('UTF-8')))
+        display_error("installer -query failed: %s %s" % 
+                      (out.decode('UTF-8'), err.decode('UTF-8')))
         return None
     
     if out:
