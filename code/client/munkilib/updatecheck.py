@@ -821,7 +821,7 @@ def getItemDetail(name, cataloglist, vers=''):
                         'Considering item %s, ' % item['name'] +
                         'version %s ' % item['version'] +
                         'with minimum os version required %s' % min_os_vers)
-                    munkicommon.display_debug2('Our OS version is %s' %
+                    munkicommon.display_debug1('Our OS version is %s' %
                                                 MACHINE['os_vers'])
                     if version.LooseVersion(MACHINE['os_vers']) < \
                        version.LooseVersion(min_os_vers):
@@ -836,7 +836,7 @@ def getItemDetail(name, cataloglist, vers=''):
                         'Considering item %s, ' % item['name'] +
                         'version %s ' % item['version'] +
                         'with maximum os version supported %s' % max_os_vers)
-                    munkicommon.display_debug2('Our OS version is %s' %
+                    munkicommon.display_debug1('Our OS version is %s' %
                                                 MACHINE['os_vers'])
                     if version.LooseVersion(MACHINE['os_vers']) > \
                        version.LooseVersion(max_os_vers):
@@ -850,6 +850,8 @@ def getItemDetail(name, cataloglist, vers=''):
                         'version %s ' % item['version'] +
                         'with supported architectures: %s' %
                                             item['supported_architectures'])
+                    munkicommon.display_debug1('Our architecture is %s' %
+                                                MACHINE['arch'])
                     for arch in item['supported_architectures']:
                         if arch == MACHINE['arch']:
                             # we found a supported architecture that matches
