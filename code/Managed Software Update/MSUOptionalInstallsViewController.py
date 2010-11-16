@@ -63,18 +63,18 @@ class MSUOptionalInstallsViewController(NSViewController):
                 self.AddRemoveBtn.setEnabled_(YES)
                 if row['managed']:
                     # user checked this one
-                    if row['original_status'] == "Not installed":
-                        row['status'] = "Will be installed"
-                    elif row['original_status'] == "Update available":
-                        row['status'] = "Will be updated"
-                    elif row['original_status'] == "Will be removed":
-                        row['status'] = "Will not be removed"
+                    if row['original_status'] == NSLocalizedString(u"Not installed", None):
+                        row['status'] = NSLocalizedString(u"Will be installed", None)
+                    elif row['original_status'] == NSLocalizedString(u"Update available", None):
+                        row['status'] = NSLocalizedString(u"Will be updated", None)
+                    elif row['original_status'] == NSLocalizedString(u"Will be removed", None):
+                        row['status'] = NSLocalizedString(u"Will not be removed", None)
                 else:
                     # not row['managed']
-                    if row['original_status'] == "Installed":
-                        row['status'] = "Will be removed"
-                    elif row['original_status'] == "Will be installed":
-                        row['status'] = "Will not be installed"
+                    if row['original_status'] == NSLocalizedString(u"Installed", None):
+                        row['status'] = NSLocalizedString(u"Will be removed", None)
+                    elif row['original_status'] == NSLocalizedString(u"Will be installed", None):
+                        row['status'] = NSLocalizedString(u"Will not be installed", None)
 
                         
     def updateAddRemoveBtnState(self):

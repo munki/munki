@@ -109,7 +109,7 @@ class MSUStatusWindowController(NSObject):
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
                 self.window.setLevel_(NSScreenSaverWindowLevel - 1)
             self.window.center()
-            self.messageFld.setStringValue_(u"Starting…")
+            self.messageFld.setStringValue_(NSLocalizedString(u"Starting…", None))
             self.detailFld.setStringValue_(u"")
             self.stopBtn.setHidden_(False)
             self.stopBtn.setEnabled_(True)
@@ -272,6 +272,12 @@ class MSUStatusWindowController(NSObject):
 
     def doRestartAlert(self):
         self.restartAlertDismissed = 0
-        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(u"Restart Required", u"Restart", objc.nil, objc.nil, "Software installed or removed requires a restart. You will have a chance to save open documents.")
-        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil)
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+            NSLocalizedString(u"Restart Required", None), 
+            NSLocalizedString(u"Restart", None), 
+            objc.nil, 
+            objc.nil, 
+            NSLocalizedString(u"Software installed or removed requires a restart. You will have a chance to save open documents.", None))
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+            self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil)
 
