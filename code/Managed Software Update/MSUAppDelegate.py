@@ -103,8 +103,14 @@ class MSUAppDelegate(NSObject):
         elif socketSessionResult == -2:
             # socket timed out before connection
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertMessageText, u"Quit", objc.nil, objc.nil, "There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.")
-            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                alertMessageText, 
+                NSLocalizedString(u"Quit", None),
+                objc.nil, 
+                objc.nil, 
+                NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.", None))
+            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
             return
 
         if self.managedsoftwareupdate_task == "installwithnologout":
@@ -186,7 +192,8 @@ class MSUAppDelegate(NSObject):
                 objc.nil, 
                 objc.nil, 
                 NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator.", None))
-            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
     def applicationDidBecomeActive_(self, sender):
         pass
@@ -266,7 +273,7 @@ class MSUAppDelegate(NSObject):
             row['itemname'] = item['name']
             row['name'] = item.get("display_name") or item['name']
             row['version'] = munki.trimVersionString(item.get("version_to_install"))
-            row['description'] = item.get("description","")
+            row['description'] = item.get("description", "")
             if item.get("installer_item_size"):
                 row['size'] = munki.humanReadable(item.get("installer_item_size"))
             elif item.get("installed_size"):
