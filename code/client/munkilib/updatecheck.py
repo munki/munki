@@ -786,6 +786,7 @@ def getItemDetail(name, cataloglist, vers=''):
 
     munkicommon.display_debug1('Looking for detail for: %s, version %s...' %
                                 (name, vers))
+    rejected_items = []
     for catalogname in cataloglist:
         if not catalogname in CATALOG.keys():
             # in case the list refers to a non-existent catalog
@@ -826,6 +827,13 @@ def getItemDetail(name, cataloglist, vers=''):
                     if version.LooseVersion(MACHINE['os_vers']) < \
                        version.LooseVersion(min_os_vers):
                         # skip this one, go to the next
+                        reason = (('Rejected item %s, version %s '
+                                  'with minimum os version required %s. '
+                                  "Our OS version is %s.")
+                                  % (item['name'], item['version'],
+                                     item['minimum_os_version'],
+                                     MACHINE['os_vers']))
+                        rejected_items.append(reason)
                         continue
 
                 if 'maximum_os_version' in item:
@@ -841,6 +849,13 @@ def getItemDetail(name, cataloglist, vers=''):
                     if version.LooseVersion(MACHINE['os_vers']) > \
                        version.LooseVersion(max_os_vers):
                         # skip this one, go to the next
+                        reason = (('Rejected item %s, version %s '
+                                  'with maximum os version required %s. '
+                                  'Our OS version is %s.')
+                                  % (item['name'], item['version'],
+                                     item['maximum_os_version'].
+                                     MACHINE['os_vers']))
+                        rejected_items.append(reason)
                         continue
 
                 if 'supported_architectures' in item:
@@ -862,6 +877,13 @@ def getItemDetail(name, cataloglist, vers=''):
                     if not supported_arch_found:
                         # we didn't find a supported architecture that
                         # matches this machine
+                        reason = (('Rejected item %s, version %s '
+                                  'with supported architectures: %s. '
+                                  'Our architecture is %s.')
+                                  % (item['name'], item['version'],
+                                     item['supported_architectures'],
+                                     MACHINE['arch']))
+                        rejected_items.append(reason)
                         continue
 
                 # item name, version, minimum_os_version, and
@@ -872,7 +894,11 @@ def getItemDetail(name, cataloglist, vers=''):
                 return item
 
     # if we got this far, we didn't find it.
-    munkicommon.display_debug1('Nothing found')
+    munkicommon.display_debug1('Not found')
+    if rejected_items:
+        for reason in rejected_items:
+            munkicommon.display_warning(reason)
+            
     return None
 
 

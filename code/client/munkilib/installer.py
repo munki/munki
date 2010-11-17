@@ -476,7 +476,6 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                 munkicommon.display_detail(
                     "Skipping forced install of %s" % item['name'])
                 continue
-                
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
@@ -557,6 +556,8 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag
+                        
+                    retcode = -99 # in case we find nothing to install
                     needtorestart = False
                     if item.get('package_path','').endswith('.pkg') or \
                        item.get('package_path','').endswith('.mpkg'):
