@@ -223,7 +223,7 @@ def display_warning(msg):
     # append this warning to our warnings log
     log(warning, 'warnings.log')
     # collect the warning for later reporting
-    report['Warnings'].append(msg)
+    report['Warnings'].append(str(msg))
 
 
 def reset_errors():
@@ -243,7 +243,7 @@ def display_error(msg):
     # append this error to our errors log
     log(errmsg, 'errors.log')
     # collect the errors for later reporting
-    report['Errors'].append(msg)
+    report['Errors'].append(str(msg))
 
 
 def format_time(timestamp=None):

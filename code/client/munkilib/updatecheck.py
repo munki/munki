@@ -853,7 +853,7 @@ def getItemDetail(name, cataloglist, vers=''):
                                   'with maximum os version required %s. '
                                   'Our OS version is %s.')
                                   % (item['name'], item['version'],
-                                     item['maximum_os_version'].
+                                     item['maximum_os_version'],
                                      MACHINE['os_vers']))
                         rejected_items.append(reason)
                         continue
