@@ -450,8 +450,14 @@ def main():
               '--checkonly and --installonly options are mutually exclusive!'
         exit(-1)
 
+    # set munkicommon globals
+    munkicommon.munkistatusoutput = options.munkistatusoutput
+    munkicommon.verbose = options.verbose
+
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
+    if os.path.exists(preflightscript):
+        munkicommon.display_status('Perfoming preflight tasks...')
     try:
         result, output = utils.runExternalScript(preflightscript, runtype)
         munkicommon.display_info(output)
@@ -478,10 +484,6 @@ def main():
         exit(-1)
     # Force a prefs refresh, in case preflight modified the prefs file.
     munkicommon.prefs(force_refresh=True)
-
-    # set munkicommon globals
-    munkicommon.munkistatusoutput = options.munkistatusoutput
-    munkicommon.verbose = options.verbose
 
     # create needed directories if necessary
     if not initMunkiDirs():
