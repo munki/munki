@@ -124,9 +124,11 @@ class MSUAppDelegate(NSObject):
             #NSLog(u"Building table of available updates.")
             self.buildUpdateTableData()
             if self._optionalInstalls:
-                #NSLog(u"Building table of optional software.")
+                NSLog(u"Building table of optional software.")
                 self.buildOptionalInstallsData()
+            #NSLog(u"Showing main window.")
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
+            #NSLog(u"Main window was made key and ordered front")
             if self._listofupdates:
                 return
             # no list of updates; let's check the LastCheckResult for more info
@@ -230,6 +232,7 @@ class MSUAppDelegate(NSObject):
                     if showRemovalDetail:
                         item["display_name"] = ((item.get("display_name") or item.get("name", "")) 
                                                 + NSLocalizedString(u" (will be removed)", None))
+                        item["description"] = NSLocalizedString(u"This item will be removed.", None)
                         updatelist.append(item)
                 if not showRemovalDetail:
                     row = {}

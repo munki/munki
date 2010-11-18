@@ -36,14 +36,18 @@ class MSUupdatesViewController(NSViewController):
     updateNowBtn = IBOutlet()
     
     _updatelist = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), 
-                                            "name": "", "version": "", "size": "",
+                                            "name": "", 
+                                            "version": "", 
+                                            "size": "",
                                             "description": ""}])
     
     def updatelist(self):
+        #NSLog(u"MSUupdatesViewController.updatelist")
         return self._updatelist
     objc.accessor(updatelist) # PyObjC KVO hack
     
     def setUpdatelist_(self, newlist):
+        #NSLog(u"MSUupdatesViewController.setUpdatelist_")
         self._updatelist = NSArray.arrayWithArray_(newlist)
     objc.accessor(setUpdatelist_) # PyObjC KVO hack
     
@@ -64,6 +68,7 @@ class MSUupdatesViewController(NSViewController):
         NSApp.delegate().buildOptionalInstallsData()
         
     def updateDescriptionView(self):
+        #NSLog(u"MSUupdatesViewController.updateDescriptionView")
         if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
             description = row.get("description","")
@@ -77,6 +82,7 @@ class MSUupdatesViewController(NSViewController):
             self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
         
     def tableViewSelectionDidChange_(self, sender):
+        #NSLog(u"MSUupdatesViewController.tableViewSelectionDidChange_")
         self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
             
 

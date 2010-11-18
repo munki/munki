@@ -221,13 +221,13 @@ class MSUStatusWindowController(NSObject):
             self.window.orderFront_(self)
             return ""
         if message.startswith(u"TITLE: "):
-            self.window.setTitle_(message[7:])
+            self.window.setTitle_(NSLocalizedString(message[7:], None))
             return ""
         if message.startswith(u"MESSAGE: "):
-            self.messageFld.setStringValue_(message[9:])
+            self.messageFld.setStringValue_(NSLocalizedString(message[9:], None))
             return ""
         if message.startswith(u"DETAIL: "):
-            self.detailFld.setStringValue_(message[8:])
+            self.detailFld.setStringValue_(NSLocalizedString(message[8:], None))
             return ""
         if message.startswith(u"PERCENT: "):
             self.setPercentageDone(message[9:])

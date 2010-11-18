@@ -39,10 +39,12 @@ class MSUOptionalInstallsViewController(NSViewController):
                                               "status": "", "original_status": ""}])
     
     def optionallist(self):
+        #NSLog(u"MSUOptionalInstallsViewController.optionallist")
         return self._optionallist
     objc.accessor(optionallist) # PyObjC KVO hack
     
     def setOptionallist_(self, newlist):
+        #NSLog(u"MSUOptionalInstallsViewController.setOptionallist_")
         self._optionallist = NSArray.arrayWithArray_(newlist)
     objc.accessor(setOptionallist_) # PyObjC KVO hack
     
@@ -52,6 +54,7 @@ class MSUOptionalInstallsViewController(NSViewController):
         #self.updateAddRemoveBtnState()
         
     def updateRowStatus(self):
+        #NSLog(u"MSUOptionalInstallsViewController.updateRowStatus")
         if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
             if row['managed'] == row['original_managed']:
@@ -98,6 +101,7 @@ class MSUOptionalInstallsViewController(NSViewController):
         NSApp.delegate().addOrRemoveOptionalSoftware()
         
     def updateDescriptionView(self):
+        #NSLog(u"MSUOptionalInstallsViewController.updateDescriptionView")
         if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
             description = row.get("description","")
@@ -112,5 +116,6 @@ class MSUOptionalInstallsViewController(NSViewController):
             self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
             
     def tableViewSelectionDidChange_(self, sender):
+        #NSLog(u"MSUOptionalInstallsViewController.tableViewSelectionDidChange_")
         self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
 
