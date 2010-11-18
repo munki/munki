@@ -54,7 +54,7 @@ def makeCatalogDB(catalogitems):
 
         if name == 'NO NAME' or vers == 'NO VERSION':
             munkicommon.display_warning('Bad pkginfo: %s' % item)
-            
+
         # normalize the version number
         vers = munkicommon.padVersionString(vers, 5)
 
@@ -333,9 +333,9 @@ def compareApplicationVersion(app):
             if 'path' in item:
                 if item['path'].startswith('/Users/') and \
                     not item['path'].startswith('/Users/Shared/'):
-                    munkicommon.display_debug2(('Skipped '
-                        'app %s with path %s') % (
-                        item['name'], item['path']))
+                    munkicommon.display_debug2(
+                        'Skipped app %s with path %s',
+                        item['name'], item['path'])
                     continue
             if bundleid and item['bundleid'] == bundleid:
                 appinfo.append(item)
@@ -622,15 +622,15 @@ class PackageVerificationError(MunkiDownloadError):
     pass
 
 def download_installeritem(item_pl, uninstalling=False):
-    """Downloads an (un)installer item. 
+    """Downloads an (un)installer item.
     Raises an error if there are issues..."""
-    
+
     download_item_key = 'installer_item_location'
     item_hash_key = 'installer_item_hash'
     if uninstalling and 'uninstaller_item_location' in item_pl:
         download_item_key = 'uninstaller_item_location'
         item_hash_key = 'uninstaller_item_hash'
-        
+
     location = item_pl.get(download_item_key)
     if not location:
         raise MunkiDownloadError("No %s in item info." % download_item_key)
@@ -682,7 +682,7 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
     """
     for item in thelist:
         try:
-            if (item.get('name', item['manifestitem']) == 
+            if (item.get('name', item['manifestitem']) ==
                 manifestitem_pl['name']):
                 if not vers:
                     return True
@@ -898,11 +898,11 @@ def getItemDetail(name, cataloglist, vers=''):
     if rejected_items:
         for reason in rejected_items:
             munkicommon.display_warning(reason)
-            
+
     return None
 
 
-def enoughDiskSpace(manifestitem_pl, installlist=None, 
+def enoughDiskSpace(manifestitem_pl, installlist=None,
                     uninstalling=False, warn=True):
     """Determine if there is enough disk space to download the manifestitem."""
     # fudgefactor is set to 100MB
@@ -1223,7 +1223,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     manifestitemname = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
         '* Processing manifest item %s for update' % manifestitemname)
-    
+
     item_pl = getItemDetail(manifestitem, cataloglist)
 
     if not item_pl:
@@ -1277,7 +1277,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
         return
-        
+
     # check to see if item (any version) is already in the
     # optional_install list:
     for item in installinfo['optional_installs']:
@@ -1291,7 +1291,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
         # unless it was added because it's a managed_update
         if not manifestitemname in installinfo['managed_updates']:
             munkicommon.display_debug1(
-                '%s has already been processed for install.' % 
+                '%s has already been processed for install.' %
                 manifestitemname)
             return
     # check to see if item (any version) is already in the removallist:
@@ -1322,7 +1322,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                                     warn=False):
             iteminfo['note'] = \
                 'Insufficient disk space to download and install.'
-    
+
     munkicommon.display_debug1(
         "Adding %s to the optional install list" %   iteminfo['name'])
     installinfo['optional_installs'].append(iteminfo)
@@ -1415,7 +1415,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     iteminfo['installer_item_size'] = item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get('installer_item_size',
                                         iteminfo['installer_item_size'])
-                                        
+
     # currently we will ignore the forced_install and forced_uninstall key if
     # the item is part of a dependency graph or needs a restart or logout...
     if (not item_pl.get('requires') and not item_pl.get('update_for') and
@@ -1526,9 +1526,9 @@ def processManifestForKey(manifestpath, manifest_key, installinfo,
     Probably doesn't handle circular manifest references well.
     """
     munkicommon.display_debug1(
-        "** Processing manifest %s for %s" % 
+        "** Processing manifest %s for %s" %
         (os.path.basename(manifestpath), manifest_key))
-        
+
     cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
     if cataloglist:
         getCatalogs(cataloglist)
@@ -1599,9 +1599,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     """
     manifestitemname_withversion = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
-        '* Processing manifest item %s for removal' %     
+        '* Processing manifest item %s for removal' %
         manifestitemname_withversion)
-        
+
     (manifestitemname, includedversion) = nameAndVersion(
                                             manifestitemname_withversion)
     infoitems = []
@@ -1748,21 +1748,21 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
     iteminfo['manifestitem'] = manifestitemname_withversion
     iteminfo['description'] = 'Will be removed.'
-    
+
     # currently we will ignore the forced_install and forced_uninstall key if
     # the item is part of a dependency graph or needs a restart or logout...
-    if (not uninstall_item.get('requires') 
-        and not uninstall_item.get('update_for') 
+    if (not uninstall_item.get('requires')
+        and not uninstall_item.get('update_for')
         and not uninstall_item.get('RestartAction')):
         iteminfo['forced_uninstall'] = uninstall_item.get(
                                                     'forced_uninstall', False)
-        
+
     if 'blocking_applications' in uninstall_item:
         iteminfo['blocking_applications'] = \
             uninstall_item['blocking_applications']
     if 'installs' in uninstall_item:
         iteminfo['installs'] = uninstall_item['installs']
-    
+
     if packagesToRemove:
         # remove references for each package
         packagesToReallyRemove = []

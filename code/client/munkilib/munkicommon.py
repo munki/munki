@@ -34,6 +34,7 @@ import sys
 import tempfile
 import time
 import urllib2
+import warnings
 from distutils import version
 from xml.dom import minidom
 from Foundation import NSDate
@@ -133,11 +134,39 @@ def display_percent_done(current, maximum):
             sys.stdout.flush()
 
 
-def display_status(msg):
+def str_to_ascii(s):
+    """Given str (unicode, latin-1, or not) return ascii.
+
+    Args:
+      s: str, likely in Unicode-16BE, UTF-8, or Latin-1 charset
+    Returns:
+      str, ascii form, no >7bit chars
+    """
+    try:
+      return unicode(s).encode('ascii', 'ignore')
+    except UnicodeDecodeError:
+      return s.decode('ascii', 'ignore')
+
+
+def concat_log_message(msg, *args):
+    """Concatenates a string with any additional arguments; drops unicode."""
+    if args:
+      args = [str_to_ascii(arg) for arg in args]
+      try:
+        msg = msg % tuple(args)
+      except TypeError, e:
+        warnings.warn(
+            'String format does not match concat args: %s' % (
+                str(sys.exc_info())))
+    return msg
+
+
+def display_status(msg, *args):
     """
     Displays major status messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
+    msg = concat_log_message(msg, *args)
     log(msg)
     if munkistatusoutput:
         munkistatus.detail(msg)
@@ -149,11 +178,12 @@ def display_status(msg):
         sys.stdout.flush()
 
 
-def display_info(msg):
+def display_info(msg, *args):
     """
     Displays info messages.
     Not displayed in MunkiStatus.
     """
+    msg = concat_log_message(msg, *args)
     log(msg)
     if munkistatusoutput:
         pass
@@ -162,13 +192,14 @@ def display_info(msg):
         sys.stdout.flush()
 
 
-def display_detail(msg):
+def display_detail(msg, *args):
     """
     Displays minor info messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     These are usually logged only, but can be printed to
     stdout if verbose is set to 2 or higher
     """
+    msg = concat_log_message(msg, *args)
     if munkistatusoutput:
         pass
     elif verbose > 1:
@@ -178,11 +209,12 @@ def display_detail(msg):
         log(msg)
 
 
-def display_debug1(msg):
+def display_debug1(msg, *args):
     """
     Displays debug messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
+    msg = concat_log_message(msg, *args)
     if munkistatusoutput:
         pass
     elif verbose > 2:
@@ -192,11 +224,12 @@ def display_debug1(msg):
         log('DEBUG1: %s' % msg)
 
 
-def display_debug2(msg):
+def display_debug2(msg, *args):
     """
     Displays debug messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
+    msg = concat_log_message(msg, *args)
     if munkistatusoutput:
         pass
     elif verbose > 3:
@@ -213,10 +246,11 @@ def reset_warnings():
         rotatelog(warningsfile)
 
 
-def display_warning(msg):
+def display_warning(msg, *args):
     """
     Prints warning msgs to stderr and the log
     """
+    msg = concat_log_message(msg, *args)
     warning = 'WARNING: %s' % msg
     print >> sys.stderr, warning.encode('UTF-8')
     log(warning)
@@ -233,10 +267,11 @@ def reset_errors():
         rotatelog(errorsfile)
 
 
-def display_error(msg):
+def display_error(msg, *args):
     """
     Prints msg to stderr and the log
     """
+    msg = concat_log_message(msg, *args)
     errmsg = 'ERROR: %s' % msg
     print >> sys.stderr, errmsg.encode('UTF-8')
     log(errmsg)
@@ -247,7 +282,7 @@ def display_error(msg):
 
 
 def format_time(timestamp=None):
-    """Return timestamp as an ISO 8601 formatted string, in the current 
+    """Return timestamp as an ISO 8601 formatted string, in the current
     timezone.
     If timestamp isn't given the current time is used."""
     if timestamp is None:
@@ -710,10 +745,10 @@ def getInstallerPkgInfo(filename):
                              stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode:
-        display_error("installer -query failed: %s %s" % 
+        display_error("installer -query failed: %s %s" %
                       (out.decode('UTF-8'), err.decode('UTF-8')))
         return None
-    
+
     if out:
         restartAction = str(out).rstrip('\n')
         if restartAction != 'None':
@@ -1449,7 +1484,7 @@ def getAppData():
                 except Exception:
                     pass
     return APPDATA
-    
+
 
 def getRunningProcesses():
     """Returns a list of paths of running processes"""
@@ -1471,7 +1506,7 @@ def getRunningProcesses():
                                     stderr=subprocess.PIPE)
             (output, unused_err) = proc.communicate()
             if proc.returncode == 0:
-                carbon_apps = [item[len(LaunchCFMApp)+1:] 
+                carbon_apps = [item[len(LaunchCFMApp)+1:]
                                for item in output.splitlines()
                                if item.startswith(LaunchCFMApp)]
                 if carbon_apps:
@@ -1484,7 +1519,7 @@ def getRunningProcesses():
 # some utility functions
 
 def isAppRunning(appname):
-    """Tries to determine if the application in appname is currently 
+    """Tries to determine if the application in appname is currently
     running"""
     display_detail('Checking if %s is running...' % appname)
     proc_list = getRunningProcesses()
@@ -1501,7 +1536,7 @@ def isAppRunning(appname):
         # try adding '.app' to the name and check again
         matching_items = [item for item in proc_list
                           if '/'+ appname + '.app/' in item]
-                          
+
     if matching_items:
         # it's running!
         display_debug1('Matching process list: %s' % matching_items)
