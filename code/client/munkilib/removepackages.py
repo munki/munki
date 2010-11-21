@@ -616,6 +616,8 @@ def initDatabase(forcerebuild=False):
                 conn.close()
                 #our package db isn't valid, so we should delete it
                 os.remove(packagedb)
+                return False
+                
             munkicommon.display_detail("Importing %s..." % pkg)
             ImportFromPkgutil(pkg, curs)
             currentpkgindex += 1
