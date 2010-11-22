@@ -251,7 +251,7 @@ def parseDist(filename):
         itemsize = int(itemsize/1024)   
                  
     return title, vers, description, itemsize
-    
+
 
 def getRestartInfo(installitemdir):
     '''Looks at all the RestartActions for all the items in the
@@ -330,7 +330,7 @@ def getSoftwareUpdateInfo():
                             break
 
     return infoarray
-    
+
 
 def writeAppleUpdatesFile():
     '''Writes a file used by Managed Software Update.app to display
@@ -347,7 +347,8 @@ def writeAppleUpdatesFile():
         except (OSError, IOError):
             pass
         return False
-        
+
+
 def displayAppleUpdateInfo():
     '''Prints Apple update information'''
     try:
@@ -375,32 +376,16 @@ def displayAppleUpdateInfo():
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     '''Checks for available Apple Software Updates, trying not to hit the SUS
     more than needed'''
-    # have we already processed the list of Apple Updates?
-    updatesindexfile = '/Library/Updates/index.plist'
-    if os.path.exists(appleUpdatesFile) and os.path.exists(updatesindexfile):
-        appleUpdatesFile_modtime = os.stat(appleUpdatesFile).st_mtime
-        updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
-        if appleUpdatesFile_modtime > updatesindexfile_modtime:
-            displayAppleUpdateInfo()
-            return True
-        else:
-            # updatesindexfile is newer, use it to generate a new
-            # appleUpdatesFile
-            if writeAppleUpdatesFile():
-                displayAppleUpdateInfo()
-                return True
-            else:
-                return False
-    
-    if forcecheck:
-        # typically because user initiated the check from
-        # Managed Software Update.app
-        unused_retcode = checkForSoftwareUpdates()
-    elif suppresscheck:
+
+    if suppresscheck:
         # typically because we're doing a logout install; if
         # there are no waiting Apple Updates we shouldn't 
         # trigger a check for them
         return False
+    elif forcecheck:
+        # typically because user initiated the check from
+        # Managed Software Update.app
+        unused_retcode = checkForSoftwareUpdates()
     else:
         # have we checked recently?  Don't want to check with
         # Apple Software Update server too frequently
@@ -420,7 +405,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         else:
             munkicommon.log("Skipping Apple Software Update check because "
                             "we last checked on %s..." % lastSUcheck)
-        
+
     if writeAppleUpdatesFile():
         displayAppleUpdateInfo()
         return True
