@@ -758,7 +758,6 @@ def getAllItemsWithName(name, cataloglist):
     if itemlist:
         # sort so latest version is first
         itemlist.sort(compare_item_versions)
-
     return itemlist
 
 
@@ -1070,16 +1069,8 @@ def evidenceThisIsInstalled(item_pl):
     This is used when determining if we can remove the item, thus
     the attention given to the uninstall method.
     """
-    if item_pl.get('uninstall_method') == 'removepackages':
-        # we're supposed to use receipt info to remove
-        # this, so we should check for relevent receipts
-        if item_pl.get('receipts'):
-            if PKGDATA == {}:
-                # build our database of installed packages
-                analyzeInstalledPkgs()
-            if item_pl['name'] in PKGDATA['installed_names']:
-                return True
-    elif 'installs' in item_pl:
+    if ('installs' in item_pl and 
+          item_pl.get('uninstall_method') != 'removepackages'):
         installitems = item_pl['installs']
         foundallinstallitems = True
         for item in installitems:
@@ -1091,6 +1082,12 @@ def evidenceThisIsInstalled(item_pl):
                     # this item isn't on disk
                     foundallinstallitems = False
         if foundallinstallitems:
+            return True
+    if item_pl.get('receipts'):
+        if PKGDATA == {}:
+            # build our database of installed packages
+            analyzeInstalledPkgs()
+        if item_pl['name'] in PKGDATA['installed_names']:
             return True
 
     # if we got this far, we failed all the tests, so the item
@@ -1643,9 +1640,14 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     installEvidence = False
     for item in infoitems:
+        munkicommon.display_debug2('Considering item %s-%s for removal info'
+                                    % (item['name'], item['version']))
         if evidenceThisIsInstalled(item):
             installEvidence = True
             break
+        else:
+            munkicommon.display_debug2('%s-%s not installed.'
+                                       % (item['name'], item['version']))
 
     if not installEvidence:
         munkicommon.display_detail('%s doesn\'t appear to be installed.' %
@@ -1673,9 +1675,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         elif uninstallmethod.startswith('Adobe'):
             # Adobe CS3/CS4/CS5 product
             uninstall_item = item
-        elif uninstallmethod == 'remove_copied_items':
-            uninstall_item = item
-        elif uninstallmethod == 'remove_app':
+        elif uninstallmethod in ['remove_copied_items',
+                                 'remove_app',
+                                 'uninstall_script']:
             uninstall_item = item
         else:
             # uninstall_method is a local script.
@@ -1824,6 +1826,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     elif uninstallmethod == 'remove_app':
         if uninstall_item.get('installs', None):
             iteminfo['remove_app_info'] = uninstall_item['installs'][0]
+    elif uninstallmethod == 'uninstall_script':
+        iteminfo['uninstall_script'] = item.get('uninstall_script','')
 
     # before we add this removal to the list,
     # check for installed updates and add them to the

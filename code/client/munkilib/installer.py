@@ -657,6 +657,60 @@ def installWithInfo(dirpath, installlist, only_forced=False):
     return (restartflag, skipped_installs)
 
 
+def writefile(stringdata, path):
+    '''Writes string data to path.
+    Returns the path on success, empty string on failure.'''
+    try:
+        fileobject = open(path, mode='w', buffering=1)
+        print >> fileobject, stringdata.encode('UTF-8')
+        fileobject.close()
+        return path
+    except (OSError, IOError):
+        munkicommon.display_error("Couldn't write %s" % stringdata)
+        return ""
+
+
+def runUninstallScript(name, path):
+    if munkicommon.munkistatusoutput:
+        munkistatus.message("Running uninstall script "
+                            "for %s..." % name)
+        munkistatus.detail("")
+        # set indeterminate progress bar
+        munkistatus.percent(-1)
+
+    uninstalleroutput = []
+    proc = subprocess.Popen(path, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+
+    while (proc.poll() == None):
+        msg = proc.stdout.readline().decode('UTF-8')
+        # save all uninstaller output in case there is
+        # an error so we can dump it to the log
+        uninstalleroutput.append(msg)
+        msg = msg.rstrip("\n")
+        munkicommon.display_info(msg)
+
+    retcode = proc.poll()
+    if retcode:
+        munkicommon.display_error(
+                        "Uninstall of %s failed." % name)
+        munkicommon.display_error("-"*78)
+        for line in uninstalleroutput:
+            munkicommon.display_error("\t%s" % line.rstrip("\n"))
+        munkicommon.display_error("-"*78)
+    else:
+        munkicommon.log("Uninstall of %s was "
+                        "successful." % name)
+
+    if munkicommon.munkistatusoutput:
+        # clear indeterminate progress bar
+        munkistatus.percent(0)
+
+    return retcode
+
+
 def processRemovals(removallist, only_forced=False):
     '''processes removals from the removal list'''
     restartFlag = False
@@ -735,49 +789,37 @@ def processRemovals(removallist, only_forced=False):
                                               "info missing from %s" %
                                               name)
 
+            elif uninstallmethod[0] == "uninstall_script":
+                uninstall_script = item.get('uninstall_script')
+                if uninstall_script:
+                    scriptpath = os.path.join(munkicommon.tmpdir,
+                                              "uninstallscript")
+                    if writefile(uninstall_script, scriptpath):
+                        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
+                        retcode = subprocess.call(cmd)
+                        if retcode:
+                            munkicommon.display_error("Error setting mode "
+                                                      "for %s" % scriptpath)
+                        else:
+                            retcode = runUninstallScript(name, scriptpath)
+                            if (retcode == 0 and item.get(
+                                        'RestartAction') == "RequireRestart"):
+                                restartFlag = True
+                                os.unlink(scriptpath)
+                    else:
+                        munkicommon.display_error("Cannot write uninstall "
+                                                  "script for %s" % name)
+                else:
+                    munkicommon.display_error("Uninstall script missing "
+                                              "from %s" % name)
+
             elif os.path.exists(uninstallmethod[0]) and \
                  os.access(uninstallmethod[0], os.X_OK):
                 # it's a script or program to uninstall
-                if munkicommon.munkistatusoutput:
-                    munkistatus.message("Running uninstall script "
-                                        "for %s..." % name)
-                    munkistatus.detail("")
-                    # set indeterminate progress bar
-                    munkistatus.percent(-1)
-
-                if item.get('RestartAction') == "RequireRestart":
+                retcode = runUninstallScript(name, uninstallmethod[0])
+                if (retcode == 0 and 
+                    item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
-
-                cmd = uninstallmethod
-                uninstalleroutput = []
-                proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                     stdin=subprocess.PIPE,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
-
-                while (proc.poll() == None):
-                    msg =  proc.stdout.readline().decode('UTF-8')
-                    # save all uninstaller output in case there is
-                    # an error so we can dump it to the log
-                    uninstalleroutput.append(msg)
-                    msg = msg.rstrip("\n")
-                    munkicommon.display_info(msg)
-
-                retcode = proc.poll()
-                if retcode:
-                    munkicommon.display_error(
-                                    "Uninstall of %s failed." % name)
-                    munkicommon.display_error("-"*78)
-                    for line in uninstalleroutput:
-                        munkicommon.display_error("\t%s" % line.rstrip("\n"))
-                    munkicommon.display_error("-"*78)
-                else:
-                    munkicommon.log("Uninstall of %s was "
-                                    "successful." % name)
-
-                if munkicommon.munkistatusoutput:
-                    # clear indeterminate progress bar
-                    munkistatus.percent(0)
 
             else:
                 munkicommon.log("Uninstall of %s failed because "
