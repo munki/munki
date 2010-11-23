@@ -805,7 +805,10 @@ def processRemovals(removallist, only_forced=False):
                             if (retcode == 0 and item.get(
                                         'RestartAction') == "RequireRestart"):
                                 restartFlag = True
+                            try:
                                 os.unlink(scriptpath)
+                            except OSError:
+                                pass
                     else:
                         munkicommon.display_error("Cannot write uninstall "
                                                   "script for %s" % name)
