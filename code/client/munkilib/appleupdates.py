@@ -293,41 +293,81 @@ def getRestartInfo(installitemdir):
 
 def getSoftwareUpdateInfo():
     '''Parses the Software Update index.plist and the downloaded updates,
-    extracting info in the format Munki expects. Returns an array of
+    extracting info in the format munki expects. Returns an array of
     installeritems like those found in munki's InstallInfo.plist'''
-    infoarray = []
+    
     updatesdir = "/Library/Updates"
     updatesindex = os.path.join(updatesdir, "index.plist")
-    if os.path.exists(updatesindex):
-        plist = FoundationPlist.readPlist(updatesindex)
-        if 'ProductPaths' in plist:
-            products = plist['ProductPaths']
-            for product_key in products.keys():
-                updatename = products[product_key]
-                installitem = os.path.join(updatesdir, updatename)
-                if os.path.exists(installitem) and os.path.isdir(installitem):
-                    for subitem in os.listdir(installitem):
-                        if subitem.endswith('.dist'):
-                            distfile = os.path.join(installitem, subitem)
-                            (title, vers, 
-                                description, 
-                                installedsize) = parseDist(distfile)
-                            iteminfo = {}
-                            iteminfo["installer_item"] = updatename
-                            iteminfo["name"] = title
-                            iteminfo["description"] = description
-                            if iteminfo["description"] == '':
-                                iteminfo["description"] = \
-                                                "Updated Apple software."
-                            iteminfo["version_to_install"] = vers
-                            iteminfo['display_name'] = title
-                            iteminfo['installed_size'] = installedsize
-                            restartAction = getRestartInfo(installitem)
-                            if restartAction != "None":
-                                iteminfo['RestartAction'] = restartAction
-                            
-                            infoarray.append(iteminfo)
-                            break
+    if not os.path.exists(updatesindex):
+        # no updates index, so bail
+        return []
+    
+    suLastResultCode = softwareUpdatePrefs().get('LastResultCode')
+    if suLastResultCode == 0:
+        # successful and updates found
+        pass
+    elif suLastResultCode == 2:
+        # no updates found/needed on last run
+        return []
+    elif suLastResultCode == 100:
+        # couldn't contact the SUS on the most recent attempt.
+        # see if the index.plist corresponds to the
+        # LastSuccessfulDate
+        lastSuccessfulDateString = str(
+            softwareUpdatePrefs().get('LastSuccessfulDate', ''))
+        if not lastSuccessfulDateString:
+            # was never successful
+            return []
+        try:
+            lastSuccessfulDate = NSDate.dateWithString_(
+                                                    lastSuccessfulDateString)
+        except (ValueError, TypeError):
+            # bad LastSuccessfulDate string, bail
+            return []
+        updatesIndexDate = NSDate.dateWithTimeIntervalSince1970_(
+                                              os.stat(updatesindex).st_mtime)
+        secondsDiff = updatesIndexDate.timeIntervalSinceDate_(
+                                                          lastSuccessfulDate)
+        if abs(secondsDiff) > 30:
+            # index.plist mod time doesn't correspond with LastSuccessfulDate
+            return []
+    else:
+        # unknown LastResultCode
+        return []
+
+    # if we get here, either the LastResultCode was 0 or
+    # the index.plist mod time was within 30 seconds of the LastSuccessfulDate
+    # so the index.plist is _probably_ valid...
+    infoarray = []
+    plist = FoundationPlist.readPlist(updatesindex)
+    if 'ProductPaths' in plist:
+        products = plist['ProductPaths']
+        for product_key in products.keys():
+            updatename = products[product_key]
+            installitem = os.path.join(updatesdir, updatename)
+            if os.path.exists(installitem) and os.path.isdir(installitem):
+                for subitem in os.listdir(installitem):
+                    if subitem.endswith('.dist'):
+                        distfile = os.path.join(installitem, subitem)
+                        (title, vers, 
+                            description, 
+                            installedsize) = parseDist(distfile)
+                        iteminfo = {}
+                        iteminfo["installer_item"] = updatename
+                        iteminfo["name"] = title
+                        iteminfo["description"] = description
+                        if iteminfo["description"] == '':
+                            iteminfo["description"] = \
+                                            "Updated Apple software."
+                        iteminfo["version_to_install"] = vers
+                        iteminfo['display_name'] = title
+                        iteminfo['installed_size'] = installedsize
+                        restartAction = getRestartInfo(installitem)
+                        if restartAction != "None":
+                            iteminfo['RestartAction'] = restartAction
+                        
+                        infoarray.append(iteminfo)
+                        break
 
     return infoarray
 
@@ -431,22 +471,7 @@ def installAppleUpdates():
     to install all downloaded updates'''
 
     restartneeded = False
-    appleupdatelist = []
-    # first check if appleUpdatesFile is current
-    updatesindexfile = '/Library/Updates/index.plist'
-    if os.path.exists(appleUpdatesFile) and os.path.exists(updatesindexfile):
-        appleUpdatesFile_modtime = os.stat(appleUpdatesFile).st_mtime
-        updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
-        if appleUpdatesFile_modtime > updatesindexfile_modtime:
-            try:
-                plist = FoundationPlist.readPlist(appleUpdatesFile)
-                appleupdatelist = plist['AppleUpdates']
-            except FoundationPlist.NSPropertyListSerializationException:
-                appleupdatelist = []
-    if appleupdatelist == []:
-        # we don't have any updates in appleUpdatesFile, 
-        # or appleUpdatesFile is out-of-date, so check updatesindexfile
-        appleupdatelist = getSoftwareUpdateInfo()
+    appleupdatelist = getSoftwareUpdateInfo()
     
     # did we find some Apple updates?        
     if appleupdatelist:
