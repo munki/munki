@@ -565,6 +565,7 @@ def main():
         recordUpdateCheckResult(updatecheckresult)
 
     updatesavailable = munkiUpdatesAvailable()
+    appleupdatesavailable = False 
     if (not updatesavailable and not options.installonly and
         not munkicommon.stopRequested()):
         # if there are no munki updates,
@@ -572,10 +573,10 @@ def main():
         if (munkicommon.pref('InstallAppleSoftwareUpdates') or
             applesoftwareupdatesonly):
             try:
-                if appleupdates.appleSoftwareUpdatesAvailable(
+                appleupdatesavailable = \
+                    appleupdates.appleSoftwareUpdatesAvailable(
                     forcecheck=(options.manualcheck or
-                                runtype == 'checkandinstallatstartup')):
-                    updatesavailable = True
+                                runtype == 'checkandinstallatstartup'))
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.display_error(traceback.format_exc())
@@ -588,8 +589,8 @@ def main():
         # just look and see if there are already downloaded Apple updates
         # to install; don't run softwareupdate to check with Apple
         try:
-            if appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True):
-                updatesavailable = True
+            appleupdatesavailable = \
+                appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True)
         except:
             munkicommon.display_error('Unexpected error in appleupdates:')
             munkicommon.display_error(traceback.format_exc())
@@ -600,7 +601,7 @@ def main():
     if options.manualcheck:
         # just quit munkistatus; Managed Software Update will notify
         munkistatus.quit()
-    elif updatesavailable:
+    elif updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks()
@@ -622,7 +623,9 @@ def main():
                 doInstallTasks(only_forced=True)
                 # it's possible that we no longer have any available updates
                 # so we need to check InstallInfo.plist again
-                if munkiUpdatesAvailable():
+                # however Apple Updates have not been affected by the forced
+                # install tasks (so that check is still valid).
+                if appleupdatesavailable or munkiUpdatesAvailable():
                     consoleuser = munkicommon.getconsoleuser()
                     if consoleuser == u'loginwindow':
                         # someone is logged in, but we're sitting at
