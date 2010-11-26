@@ -184,7 +184,8 @@ def doInstallTasks(only_forced=False):
         if not only_forced:
             appleupdates.clearAppleUpdateInfo()
     elif ((munkicommon.pref('InstallAppleSoftwareUpdates') or
-           applesoftwareupdatesonly) and not only_forced):
+           munkicommon.pref('AppleSoftwareUpdatesOnly'))
+           and not only_forced):
         # are we supposed to handle Apple Software Updates?
         try:
             need_to_restart = appleupdates.installAppleUpdates()
