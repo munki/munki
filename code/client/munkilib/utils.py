@@ -104,7 +104,7 @@ def runExternalScript(script, *args):
       RunExternalScriptError: there was an error running the script.
     """
     if not os.path.exists(script):
-      raise ScriptNotFoundError('script does not exist: %s' % script)
+        raise ScriptNotFoundError('script does not exist: %s' % script)
 
     try:
         verifyFileOnlyWritableByMunkiAndRoot(script)
@@ -116,7 +116,7 @@ def runExternalScript(script, *args):
     if os.access(script, os.X_OK):
         cmd = [script]
         if args:
-          cmd.extend(args)
+            cmd.extend(args)
         proc = subprocess.Popen(cmd, shell=False,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,

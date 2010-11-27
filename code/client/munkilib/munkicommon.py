@@ -143,20 +143,20 @@ def str_to_ascii(s):
       str, ascii form, no >7bit chars
     """
     try:
-      return unicode(s).encode('ascii', 'ignore')
+        return unicode(s).encode('ascii', 'ignore')
     except UnicodeDecodeError:
-      return s.decode('ascii', 'ignore')
+        return s.decode('ascii', 'ignore')
 
 
 def concat_log_message(msg, *args):
     """Concatenates a string with any additional arguments; drops unicode."""
     if args:
-      args = [str_to_ascii(arg) for arg in args]
-      try:
-        msg = msg % tuple(args)
-      except TypeError, e:
-        warnings.warn(
-            'String format does not match concat args: %s' % (
+        args = [str_to_ascii(arg) for arg in args]
+        try:
+            msg = msg % tuple(args)
+        except TypeError, e:
+            warnings.warn(
+                'String format does not match concat args: %s' % (
                 str(sys.exc_info())))
     return msg
 
@@ -288,7 +288,7 @@ def format_time(timestamp=None):
     if timestamp is None:
         return str(NSDate.new())
     else:
-        t = str(NSDate.alloc().initWithTimeIntervalSince1970_(timestamp))
+        return str(NSDate.alloc().initWithTimeIntervalSince1970_(timestamp))
 
 
 def log(msg, logname=''):
@@ -1314,30 +1314,30 @@ def getFilesystems():
     statfs_64_struct = '=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
     os_ver = map(int, platform.mac_ver()[0].split('.'))
     if os_ver[0] <= 10 and os_ver[1] <= 5:
-      mode = 32
+        mode = 32
     else:
-      mode = 64
+        mode = 64
 
     if mode == 64:
-      statfs_struct = statfs_64_struct
+        statfs_struct = statfs_64_struct
     else:
-      statfs_struct = statfs_32_struct
+        statfs_struct = statfs_32_struct
 
     sizeof_statfs_struct = struct.calcsize(statfs_struct)
     bufsize = 30 * sizeof_statfs_struct  # only supports 30 mounted fs
     buf = ctypes.create_string_buffer(bufsize)
 
     if mode == 64:
-      # some 10.6 boxes return 64-bit structures on getfsstat(), some do not.
-      # forcefully call the 64-bit version in cases where we think
-      # a 64-bit struct will be returned.
-      n = libc.getfsstat64(ctypes.byref(buf), bufsize, MNT_NOWAIT)
+        # some 10.6 boxes return 64-bit structures on getfsstat(), some do not.
+        # forcefully call the 64-bit version in cases where we think
+        # a 64-bit struct will be returned.
+        n = libc.getfsstat64(ctypes.byref(buf), bufsize, MNT_NOWAIT)
     else:
-      n = libc.getfsstat(ctypes.byref(buf), bufsize, MNT_NOWAIT)
+        n = libc.getfsstat(ctypes.byref(buf), bufsize, MNT_NOWAIT)
 
     if n < 0:
-      display_debug1('getfsstat() returned errno %d' % n)
-      return {}
+        display_debug1('getfsstat() returned errno %d' % n)
+        return {}
 
     ofs = 0
     output = {}
@@ -1429,7 +1429,7 @@ def getSpotlightInstalledApplications():
     applist = []
 
     if rc != 0:
-      return applist
+        return applist
 
     for app_path in stdout.split('\0'):
         if (not app_path.startswith('/Volumes/') and not
