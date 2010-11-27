@@ -420,8 +420,31 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     if suppresscheck:
         # typically because we're doing a logout install; if
         # there are no waiting Apple Updates we shouldn't 
-        # trigger a check for them
-        return False
+        # trigger a check for them. However we do need to
+        # return True if cached updates are waiting. This
+        # will allow logoutinstall / installonly operations
+        # to succeed.
+
+        updatesindexfile = '/Library/Updates/index.plist'
+        if os.path.exists(appleUpdatesFile) and \
+                os.path.exists(updatesindexfile):
+            appleUpdatesFile_modtime = os.stat(appleUpdatesFile).st_mtime
+            updatesindexfile_modtime = os.stat(updatesindexfile).st_mtime
+            if appleUpdatesFile_modtime > updatesindexfile_modtime:
+                # if munki's update summary is current
+                displayAppleUpdateInfo()
+                return True
+            else:
+                # updatesindexfile is newer, use it to generate a new
+                # appleUpdatesFile
+                if writeAppleUpdatesFile():
+                    displayAppleUpdateInfo()
+                    return True
+                else:
+                    return False
+        else:
+            # munki doesn't know of any cahced Apple updates
+            return False
     elif forcecheck:
         # typically because user initiated the check from
         # Managed Software Update.app
