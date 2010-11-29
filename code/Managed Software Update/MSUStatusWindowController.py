@@ -113,6 +113,7 @@ class MSUStatusWindowController(NSObject):
             self.detailFld.setStringValue_(u"")
             self.stopBtn.setHidden_(False)
             self.stopBtn.setEnabled_(True)
+            self.stopBtnState = 0
             if self.imageFld:
                 theImage = NSImage.imageNamed_("Managed Software Update")
                 self.imageFld.setImage_(theImage)
