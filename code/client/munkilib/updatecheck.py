@@ -903,7 +903,8 @@ def getItemDetail(name, cataloglist, vers=''):
 
 def enoughDiskSpace(manifestitem_pl, installlist=None,
                     uninstalling=False, warn=True):
-    """Determine if there is enough disk space to download the manifestitem."""
+    """Determine if there is enough disk space to 
+    download the manifestitem."""
     # fudgefactor is set to 100MB
     fudgefactor = 102400
     installeritemsize = 0
@@ -1157,7 +1158,7 @@ def verifySoftwarePackageIntegrity(file_path, item_pl, item_key):
 
 def getAutoRemovalItems(installinfo, cataloglist):
     """Gets a list of items marked for automatic removal from the catalogs
-    in cataloglist. Filters those against items in the managed_installs
+    in cataloglist. Filters those against items in the processed_installs
     list, which should contain everything that is supposed to be installed.
     Then filters against the removals list, which contains all the removals
     that have already been processed.
@@ -1167,13 +1168,9 @@ def getAutoRemovalItems(installinfo, cataloglist):
         if catalogname in CATALOG.keys():
             autoremovalnames += CATALOG[catalogname]['autoremoveitems']
 
-    already_processed_names = [item['name']
-                              for item in
-                                  installinfo.get('managed_installs',[])]
-    already_processed_names += [item['manifestitem']
-                                for item in installinfo.get('removals',[])]
     autoremovalnames = [item for item in autoremovalnames
-                             if item not in already_processed_names]
+                        if item not in installinfo['processed_installs']
+                        and item not in installinfo['processed_uninstalls']]
     return autoremovalnames
 
 
@@ -1221,8 +1218,23 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     munkicommon.display_debug1(
         '* Processing manifest item %s for update' % manifestitemname)
 
-    item_pl = getItemDetail(manifestitem, cataloglist)
+    # check to see if item (any version) is already in the update list:
+    if manifestitemname in installinfo['managed_updates']:
+        munkicommon.display_debug1(
+            '%s has already been processed for update.' % manifestitemname)
+        return
+    # check to see if item (any version) is already in the installlist:
+    if manifestitemname in installinfo['processed_installs']:
+        munkicommon.display_debug1(
+            '%s has already been processed for install.' % manifestitemname)
+        return
+    # check to see if item (any version) is already in the removallist:
+    if manifestitemname in installinfo['processed_uninstalls']:
+        munkicommon.display_debug1(
+            '%s has already been processed for uninstall.' % manifestitemname)
+        return
 
+    item_pl = getItemDetail(manifestitem, cataloglist)
     if not item_pl:
         munkicommon.display_warning(
             'Could not process item %s for update: ' % manifestitem)
@@ -1230,21 +1242,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
         return
-    # check to see if item (any version) is already in the update list:
-    if manifestitemname in installinfo['managed_updates']:
-        munkicommon.display_debug1(
-            '%s has already been processed for update.' % manifestitemname)
-        return
-    # check to see if item (any version) is already in the installlist:
-    if isItemInInstallInfo(item_pl, installinfo['managed_installs']):
-        munkicommon.display_debug1(
-            '%s has already been processed for install.' % manifestitemname)
-        return
-    # check to see if item (any version) is already in the removallist:
-    if isItemInInstallInfo(item_pl, installinfo['removals']):
-        munkicommon.display_debug1(
-            '%s has already been processed for removal.' % manifestitemname)
-        return
+
     # we only offer to update if some version of the item is already
     # installed, so let's check
     if someVersionInstalled(item_pl):
@@ -1265,36 +1263,39 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     munkicommon.display_debug1(
         "* Processing manifest item %s for optional install" %
         manifestitemname)
-    item_pl = getItemDetail(manifestitem, cataloglist)
+    
+    # have we already processed this?
+    if manifestitemname in installinfo['optional_installs']:
+        munkicommon.display_debug1(
+            '%s has already been processed for optional install.' %
+                manifestitemname)
+        return
+    elif manifestitemname in installinfo['processed_installs']:
+        munkicommon.display_debug1(
+            '%s has already been processed for install.' %
+            manifestitemname)
+        return
+    elif manifestitemname in installinfo['processed_uninstalls']:
+        munkicommon.display_debug1(
+            '%s has already been processed for uninstall.' % manifestitemname)
+        return
 
+    # check to see if item (any version) is already in the
+    # optional_install list:
+    for item in installinfo['optional_installs']:
+        if manifestitemname == item['name']:
+            munkicommon.display_debug1(
+                '%s has already been processed for optional install.' %
+                    manifestitemname)
+            return
+
+    item_pl = getItemDetail(manifestitem, cataloglist)
     if not item_pl:
         munkicommon.display_warning(
             'Could not process item %s for optional install: ' % manifestitem)
         munkicommon.display_warning(
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
-        return
-
-    # check to see if item (any version) is already in the
-    # optional_install list:
-    for item in installinfo['optional_installs']:
-        if item_pl['name'] == item['name']:
-            munkicommon.display_debug1(
-                '%s has already been processed for optional install.' %
-                    manifestitemname)
-            return
-    # check to see if item (any version) is already in the installlist:
-    if isItemInInstallInfo(item_pl, installinfo['managed_installs']):
-        # unless it was added because it's a managed_update
-        if not manifestitemname in installinfo['managed_updates']:
-            munkicommon.display_debug1(
-                '%s has already been processed for install.' %
-                manifestitemname)
-            return
-    # check to see if item (any version) is already in the removallist:
-    if isItemInInstallInfo(item_pl, installinfo['removals']):
-        munkicommon.display_debug1(
-            '%s has already been processed for removal.' % manifestitemname)
         return
 
     # if we get to this point we can add this item
@@ -1328,7 +1329,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
 def processInstall(manifestitem, cataloglist, installinfo):
     """Processes a manifest item. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
-    be installed first.  Items to be installed are added to
+    be installed first.  Installation detail is added to
     installinfo['managed_installs']
     Calls itself recursively as it processes dependencies.
     Returns a boolean; when processing dependencies, a false return
@@ -1343,28 +1344,32 @@ def processInstall(manifestitem, cataloglist, installinfo):
     manifestitemname = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
         '* Processing manifest item %s for install' % manifestitemname)
-    item_pl = getItemDetail(manifestitem, cataloglist)
 
+    # have we processed this already?
+    if manifestitemname in installinfo['processed_installs']:
+        munkicommon.display_debug1(
+                '%s has already been processed for install.' % 
+                manifestitemname)
+        return True
+    elif manifestitemname in installinfo['processed_uninstalls']:
+        munkicommon.display_warning(
+            ('Will not process %s for install because it has already '
+             'been processed for uninstall!') % manifestitemname)
+        return False
+    elif manifestitemname in installinfo['managed_updates']:
+        # we're processing this as a managed update, so don't
+        # add it to the processed_installs list
+        pass
+    else:
+        installinfo['processed_installs'].append(manifestitemname)
+
+    item_pl = getItemDetail(manifestitem, cataloglist)
     if not item_pl:
         munkicommon.display_warning(
             'Could not process item %s for install: ' % manifestitem)
         munkicommon.display_warning(
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
-        return False
-
-    # check to see if item is already in the installlist:
-    if isItemInInstallInfo(item_pl,
-            installinfo['managed_installs'], item_pl.get('version')):
-        munkicommon.display_debug1(
-            '%s has already been processed for install.' % manifestitemname)
-        return True
-
-    # check to see if item is already in the removal list
-    if isItemInInstallInfo(item_pl, installinfo['removals']):
-        munkicommon.display_warning(
-            ('Will not attempt to install %s because '
-             'it is already in the removal list!') % manifestitemname)
         return False
 
     # check dependencies
@@ -1423,8 +1428,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     if not isInstalled(item_pl):
         munkicommon.display_detail('Need to install %s' % manifestitemname)
         # check to see if there is enough free space to download and install
-        if not enoughDiskSpace(item_pl,
-                                    installinfo.get('managed_installs',[])):
+        if not enoughDiskSpace(item_pl, installinfo['managed_installs']):
             iteminfo['installed'] = False
             iteminfo['note'] = \
                 'Insufficient disk space to download and install'
@@ -1601,6 +1605,24 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     (manifestitemname, includedversion) = nameAndVersion(
                                             manifestitemname_withversion)
+
+    # have we processed this already?
+    if manifestitemname in installinfo['processed_installs']:
+        munkicommon.display_warning('Will not attempt to remove %s '
+                                    'because some version of it is in '
+                                    'the list of managed installs, or '
+                                    'it is required by another managed '
+                                    'install.' %
+                                    manifestitemname)
+        return False
+    elif manifestitemname in installinfo['processed_uninstalls']:
+        munkicommon.display_debug1(
+            '%s has already been processed for removal.' %
+            manifestitemname)
+        return True
+    else:
+        installinfo['processed_uninstalls'].append(manifestitemname)
+                                            
     infoitems = []
     if includedversion:
         # a specific version was specified
@@ -1616,27 +1638,6 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         munkicommon.display_warning('Could not get information for %s' %
                                      manifestitemname_withversion)
         return False
-
-    for item in infoitems:
-        # check to see if item is already in the installlist,
-        # if so, that's bad - it means it's scheduled to be installed
-        # _and_ removed.  We'll warn, and do nothing with this item.
-        if isItemInInstallInfo(item, installinfo['managed_installs']):
-            munkicommon.display_warning('Will not attempt to remove %s '
-                                        'because some version of it is in '
-                                        'the list of managed installs, or '
-                                        'it is required by another managed '
-                                        'install.' %
-                                         manifestitemname_withversion)
-            return False
-
-    for item in infoitems:
-        # check to see if item is already in the removallist:
-        if isItemInInstallInfo(item, installinfo['removals']):
-            munkicommon.display_debug1(
-                '%s has already been processed for removal.' %
-                manifestitemname_withversion)
-            return True
 
     installEvidence = False
     for item in infoitems:
@@ -2436,10 +2437,13 @@ def check(client_id='', localmanifestpath=None):
 
     if mainmanifestpath:
         # initialize our installinfo record
-        installinfo['managed_installs'] = []
-        installinfo['removals'] = []
+        installinfo['processed_installs'] = []
+        installinfo['processed_uninstalls'] = []
         installinfo['managed_updates'] = []
         installinfo['optional_installs'] = []
+        installinfo['managed_installs'] = []
+        installinfo['removals'] = []
+        
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
                               installinfo)
@@ -2520,15 +2524,16 @@ def check(client_id='', localmanifestpath=None):
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
                 if (not item.get('installed') and
-                        isItemInInstallInfo(item,
+                    isItemInInstallInfo(item,
                                         installinfo['managed_installs'])):
                     item['will_be_installed'] = True
                 elif (item.get('installed') and
-                        isItemInInstallInfo(item, installinfo['removals'])):
+                      isItemInInstallInfo(item,
+                                          installinfo['removals'])):
                     item['will_be_removed'] = True
 
         # filter managed_installs to get items already installed
-        installed_items = [item
+        installed_items = [item.get('manifestitem')
                             for item in installinfo['managed_installs']
                                 if item.get('installed')]
         # filter managed_installs to get problem items:
@@ -2567,8 +2572,13 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = \
             [item for item in installinfo['removals']
                 if item.get('installed')]
-
-        munkicommon.report['ManagedInstalls'] = installed_items
+        
+        munkicommon.report['ManagedInstalls'] = \
+                                            installinfo['processed_installs']
+        munkicommon.report['ManagedUninstalls'] = \
+                                          installinfo['processed_uninstalls']
+        munkicommon.report['ManagedUpdates'] = installinfo['managed_updates']
+        munkicommon.report['InstalledItems'] = installed_items
         munkicommon.report['ProblemInstalls'] = problem_items
         munkicommon.report['RemovedItems'] = removed_items
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
@@ -2582,9 +2592,9 @@ def check(client_id='', localmanifestpath=None):
         # before it is installed or removed - so the cached item
         # is no longer needed.
         cache_list = [item['installer_item']
-                      for item in installinfo.get('managed_installs',[])]
+                      for item in installinfo['managed_installs']]
         cache_list.extend([item['uninstaller_item']
-                           for item in installinfo.get('removals',[])
+                           for item in installinfo['removals']
                            if item.get('uninstaller_item')])
         cachedir = os.path.join(ManagedInstallDir, 'Cache')
         for item in os.listdir(cachedir):
@@ -2646,7 +2656,7 @@ def check(client_id='', localmanifestpath=None):
     if installcount:
         munkicommon.display_info(
             'The following items will be installed or upgraded:')
-    for item in installinfo.get('managed_installs', []):
+    for item in installinfo['managed_installs']:
         if item.get('installer_item'):
             munkicommon.display_info('    + %s-%s' %
                                      (item.get('name',''),
@@ -2663,7 +2673,7 @@ def check(client_id='', localmanifestpath=None):
 
     if removalcount:
         munkicommon.display_info('The following items will be removed:')
-    for item in installinfo.get('removals', []):
+    for item in installinfo['removals']:
         if item.get('installed'):
             munkicommon.display_info('    - %s' % item.get('name'))
             if item.get('RestartAction') == 'RequireRestart' or \
