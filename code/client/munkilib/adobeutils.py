@@ -107,7 +107,7 @@ def getPayloadInfo(dirpath):
     payloadinfo = {}
     # look for .proxy.xml file dir
     if os.path.isdir(dirpath):
-        for item in os.listdir(dirpath):
+        for item in munkicommon.listdir(dirpath):
             if item.endswith('.proxy.xml'):
                 xmlpath = os.path.join(dirpath, item)
                 dom = minidom.parse(xmlpath)
@@ -184,7 +184,7 @@ def getAdobeSetupInfo(installroot):
                             for node in element.childNodes:
                                 mediaSignature += node.nodeValue
                             
-            for item in os.listdir(path):
+            for item in munkicommon.listdir(path):
                 payloadpath = os.path.join(path, item)
                 payloadinfo = getPayloadInfo(payloadpath)
                 if payloadinfo:
@@ -204,7 +204,7 @@ def getAdobeSetupInfo(installroot):
         # look for an extensions folder; almost certainly this is an Updater
         for (path, unused_dirs, unused_files) in os.walk(installroot):
             if path.endswith("/extensions"):
-                for item in os.listdir(path):
+                for item in munkicommon.listdir(path):
                     #skip LanguagePacks
                     if item.find("LanguagePack") == -1:
                         itempath = os.path.join(path, item)
@@ -352,12 +352,12 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
 
 def countPayloads(dirpath):
     '''Attempts to count the payloads in the Adobe installation item'''
-    for item in os.listdir(dirpath):
+    for item in munkicommon.listdir(dirpath):
         itempath = os.path.join(dirpath, item)
         if os.path.isdir(itempath):
             if item == "payloads":
                 count = 0
-                for subitem in os.listdir(itempath):
+                for subitem in munkicommon.listdir(itempath):
                     subitempath = os.path.join(itempath, subitem)
                     if os.path.isdir(subitempath):
                         count = count + 1
@@ -673,7 +673,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
         realsetupdir = os.path.join(basepath,"Setup")
         tmpsetupdir = os.path.join(tmpdir, "Setup")
         os.mkdir(tmpsetupdir)
-        for item in os.listdir(realsetupdir):
+        for item in munkicommon.listdir(realsetupdir):
             os.symlink(os.path.join(realsetupdir, item), 
                                             os.path.join(tmpsetupdir, item))
                                             

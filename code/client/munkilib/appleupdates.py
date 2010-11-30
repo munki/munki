@@ -270,7 +270,7 @@ def getRestartInfo(installitemdir):
     weight['None'] = 0
     
     restartAction = "None"
-    for item in os.listdir(installitemdir):
+    for item in munkicommon.listdir(installitemdir):
         if item.endswith(".dist") or item.endswith(".pkg") or \
                 item.endswith(".mpkg"):
             installeritem = os.path.join(installitemdir, item)
@@ -346,7 +346,7 @@ def getSoftwareUpdateInfo():
             updatename = products[product_key]
             installitem = os.path.join(updatesdir, updatename)
             if os.path.exists(installitem) and os.path.isdir(installitem):
-                for subitem in os.listdir(installitem):
+                for subitem in munkicommon.listdir(installitem):
                     if subitem.endswith('.dist'):
                         distfile = os.path.join(installitem, subitem)
                         (title, vers, 

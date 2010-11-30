@@ -162,7 +162,7 @@ def getInstalledPackages():
     # Now check /Library/Receipts
     receiptsdir = '/Library/Receipts'
     if os.path.exists(receiptsdir):
-        installitems = os.listdir(receiptsdir)
+        installitems = munkicommon.listdir(receiptsdir)
         for item in installitems:
             if item.endswith('.pkg'):
                 pkginfo = munkicommon.getOnePackageInfo(
@@ -2597,7 +2597,7 @@ def check(client_id='', localmanifestpath=None):
                            for item in installinfo['removals']
                            if item.get('uninstaller_item')])
         cachedir = os.path.join(ManagedInstallDir, 'Cache')
-        for item in os.listdir(cachedir):
+        for item in munkicommon.listdir(cachedir):
             if item.endswith('.download'):
                 # we have a partial download here
                 # remove the '.download' from the end of the filename

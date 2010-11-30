@@ -97,7 +97,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
                 cataloginfo['package_path'] = options.pkgname
     elif not options.item:
         # search for first package at root
-        for fsitem in os.listdir(mountpoints[0]):
+        for fsitem in munkicommon.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
@@ -140,7 +140,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
             # no item specified; look for an application at root of
             # mounted dmg
             item = ''
-            for itemname in os.listdir(mountpoints[0]):
+            for itemname in munkicommon.listdir(mountpoints[0]):
                 itempath = os.path.join(mountpoints[0], itemname)
                 if munkicommon.isApplication(itempath):
                     item = itemname

@@ -104,7 +104,7 @@ def makecatalogs(repopath):
     if not os.path.exists(catalogpath):
         os.mkdir(catalogpath)
     else:
-        for item in os.listdir(catalogpath):
+        for item in munkicommon.listdir(catalogpath):
             itempath = os.path.join(catalogpath, item)
             if os.path.isfile(itempath):
                 os.remove(itempath)

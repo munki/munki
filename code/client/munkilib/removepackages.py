@@ -128,7 +128,7 @@ def shouldRebuildDB(pkgdbpath):
         receiptsdir_modtime = os.stat(receiptsdir).st_mtime
         if packagedb_modtime < receiptsdir_modtime:
             return True
-        receiptlist = os.listdir(receiptsdir)
+        receiptlist = munkicommon.listdir(receiptsdir)
         for item in receiptlist:
             if item.endswith(".pkg"):
                 pkgpath = os.path.join(receiptsdir, item)
@@ -140,7 +140,7 @@ def shouldRebuildDB(pkgdbpath):
         bomsdir_modtime = os.stat(bomsdir).st_mtime
         if packagedb_modtime < bomsdir_modtime:
             return True
-        bomlist = os.listdir(bomsdir)
+        bomlist = munkicommon.listdir(bomsdir)
         for item in bomlist:
             if item.endswith(".bom"):
                 bompath = os.path.join(bomsdir, item)
@@ -152,7 +152,7 @@ def shouldRebuildDB(pkgdbpath):
         receiptsdir_modtime = os.stat(sl_receiptsdir).st_mtime
         if packagedb_modtime < receiptsdir_modtime:
             return True
-        receiptlist = os.listdir(sl_receiptsdir)
+        receiptlist = munkicommon.listdir(sl_receiptsdir)
         for item in receiptlist:
             if item.endswith(".bom") or item.endswith(".plist"):
                 pkgpath = os.path.join(sl_receiptsdir, item)
@@ -206,7 +206,7 @@ def findBundleReceiptFromID(pkgid):
     if not pkgid:
         return ''
     receiptsdir = "/Library/Receipts"
-    for item in os.listdir(receiptsdir):
+    for item in munkicommon.listdir(receiptsdir):
         itempath = os.path.join(receiptsdir, item)
         if item.endswith('.pkg') and os.path.isdir(itempath):
             info = munkicommon.getOnePackageInfo(itempath)
@@ -542,12 +542,12 @@ def initDatabase(forcerebuild=False):
     receiptsdir = "/Library/Receipts"
     bomsdir = "/Library/Receipts/boms"
     if os.path.exists(receiptsdir):
-        receiptlist = os.listdir(receiptsdir)
+        receiptlist = munkicommon.listdir(receiptsdir)
         for item in receiptlist:
             if item.endswith(".pkg"):
                 pkgcount += 1
     if os.path.exists(bomsdir):
-        bomslist = os.listdir(bomsdir)
+        bomslist = munkicommon.listdir(bomsdir)
         for item in bomslist:
             if item.endswith(".bom"):
                 pkgcount += 1
@@ -576,7 +576,7 @@ def initDatabase(forcerebuild=False):
     local_display_percent_done(0, pkgcount)
     
     if os.path.exists(receiptsdir):
-        receiptlist = os.listdir(receiptsdir)
+        receiptlist = munkicommon.listdir(receiptsdir)
         for item in receiptlist:
             if munkicommon.stopRequested():
                 curs.close()
@@ -593,7 +593,7 @@ def initDatabase(forcerebuild=False):
                 local_display_percent_done(currentpkgindex, pkgcount)
                 
     if os.path.exists(bomsdir):
-        bomslist = os.listdir(bomsdir)
+        bomslist = munkicommon.listdir(bomsdir)
         for item in bomslist:
             if munkicommon.stopRequested():
                 curs.close()
@@ -930,7 +930,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
             munkicommon.display_detail("Removing: " + pathtoremove)
             if (os.path.isdir(pathtoremove) and \
                not os.path.islink(pathtoremove)):
-                diritems = os.listdir(pathtoremove)
+                diritems = munkicommon.listdir(pathtoremove)
                 if diritems == ['.DS_Store']:
                     # If there's only a .DS_Store file
                     # we'll consider it empty
@@ -939,7 +939,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                         os.remove(ds_storepath)
                     except (OSError, IOError):
                         pass
-                    diritems = os.listdir(pathtoremove)
+                    diritems = munkicommon.listdir(pathtoremove)
                 if diritems == []:
                     # directory is empty
                     try:

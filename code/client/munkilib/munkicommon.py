@@ -819,7 +819,7 @@ def getExtendedVersion(bundlepath):
     infopath = os.path.join(bundlepath, 'Contents', 'Resources',
                                 'English.lproj')
     if os.path.exists(infopath):
-        for item in os.listdir(infopath):
+        for item in listdir(infopath):
             if os.path.join(infopath, item).endswith('.info'):
                 infofile = os.path.join(infopath, item)
                 fileobj = open(infofile, mode='r')
@@ -908,7 +908,7 @@ def getFlatPackageInfo(pkgpath):
         if not infoarray:
             # didn't get any packageid info or no PackageInfo file
             # look for subpackages at the top level
-            for item in os.listdir(currentdir):
+            for item in listdir(currentdir):
                 itempath = os.path.join(currentdir, item)
                 if itempath.endswith('.pkg') and os.path.isdir(itempath):
                     packageinfofile = os.path.join(itempath, 'PackageInfo')
@@ -961,7 +961,7 @@ def getOnePackageInfo(pkgpath):
         infopath = os.path.join(pkgpath, 'Contents', 'Resources',
                                     'English.lproj')
         if os.path.exists(infopath):
-            for item in os.listdir(infopath):
+            for item in listdir(infopath):
                 if os.path.join(infopath, item).endswith('.info'):
                     pkginfo['filename'] = os.path.basename(pkgpath)
                     pkginfo['packageid'] = os.path.basename(pkgpath)
@@ -1004,7 +1004,7 @@ def getBundlePackageInfo(pkgpath):
 
     bundlecontents = os.path.join(pkgpath, 'Contents')
     if os.path.exists(bundlecontents):
-        for item in os.listdir(bundlecontents):
+        for item in listdir(bundlecontents):
             if item.endswith('.dist'):
                 filename = os.path.join(bundlecontents, item)
                 dom = minidom.parse(filename)
@@ -1040,7 +1040,7 @@ def getBundlePackageInfo(pkgpath):
         for subdir in dirsToSearch:
             searchdir = os.path.join(pkgpath, subdir)
             if os.path.exists(searchdir):
-                for item in os.listdir(searchdir):
+                for item in listdir(searchdir):
                     itempath = os.path.join(searchdir, item)
                     if os.path.isdir(itempath):
                         if itempath.endswith('.pkg'):
@@ -1058,7 +1058,7 @@ def getBundlePackageInfo(pkgpath):
             # couldn't find any subpackages,
             # just return info from the .dist file
             # if it exists
-            for item in os.listdir(bundlecontents):
+            for item in listdir(bundlecontents):
                 if item.endswith('.dist'):
                     distfile = os.path.join(bundlecontents, item)
                     infoarray.extend(parsePkgRefs(distfile))
@@ -1117,7 +1117,7 @@ def getInstalledPackageVersion(pkgid):
     # Check /Library/Receipts
     receiptsdir = '/Library/Receipts'
     if os.path.exists(receiptsdir):
-        installitems = os.listdir(receiptsdir)
+        installitems = listdir(receiptsdir)
         highestversion = '0'
         for item in installitems:
             if item.endswith('.pkg'):
@@ -1170,7 +1170,7 @@ def findInstallerItem(path):
         # Apple Software Updates download as directories
         # with .dist files and .pkgs
         if os.path.exists(path) and os.path.isdir(path):
-            for item in os.listdir(path):
+            for item in listdir(path):
                 if item.endswith('.pkg'):
                     return path
 
@@ -1178,7 +1178,7 @@ def findInstallerItem(path):
             # look for a Packages dir
             path = os.path.join(path,'Packages')
             if os.path.exists(path) and os.path.isdir(path):
-                for item in os.listdir(path):
+                for item in listdir(path):
                     if item.endswith('.pkg'):
                         return path
     # found nothing!
@@ -1580,6 +1580,36 @@ def cleanUpTmpDir():
         except (OSError, IOError):
             pass
         tmpdir = None
+
+
+def listdir(path):
+    """OSX HFS+ string encoding safe listdir().
+
+    Args:
+        path: str or unicode, path to list contents of
+    Returns:
+        list of contents, items as str or unicode types
+    """
+    # on python2.4-2.6 on OSX, if path supplied to listdir() is unicode, the
+    # return list items are unicode also.  so the behavior of this method
+    # will change as various paths are supplied to it, possibly concatenated
+    # from XML output of plists, etc.
+    l = os.listdir(path)
+
+    for i in xrange(len(l)):
+        # 'i' is possibly a decomposed UTF-8 string in a str instance.
+        # fix it before it is exposed to the rest of Python.
+        #
+        # for background info:
+        # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
+        # http://lists.zerezo.com/git/msg643117.html
+        # http://unicode.org/reports/tr15/    section 1.2
+
+        if type(l[i]) is not unicode:
+            u = unicode(l[i], 'utf-8')
+            l[i] = u
+
+    return l
 
 
 # module globals

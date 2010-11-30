@@ -195,7 +195,7 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False):
     """
     retcode = 0
     restartflag = False
-    installitems = os.listdir(dirpath)
+    installitems = munkicommon.listdir(dirpath)
     for item in installitems:
         if munkicommon.stopRequested():
             return (retcode, restartflag)
@@ -247,7 +247,7 @@ def copyAppFromDMG(dmgpath):
         appname = None
         mountpoint = mountpoints[0]
         # find an app at the root level, copy it to /Applications
-        for item in os.listdir(mountpoint):
+        for item in munkicommon.listdir(mountpoint):
             itempath = os.path.join(mountpoint, item)
             if munkicommon.isApplication(itempath):
                 appname = item
