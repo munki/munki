@@ -903,7 +903,7 @@ def getItemDetail(name, cataloglist, vers=''):
 
 def enoughDiskSpace(manifestitem_pl, installlist=None,
                     uninstalling=False, warn=True):
-    """Determine if there is enough disk space to 
+    """Determine if there is enough disk space to
     download the manifestitem."""
     # fudgefactor is set to 100MB
     fudgefactor = 102400
@@ -1070,7 +1070,7 @@ def evidenceThisIsInstalled(item_pl):
     This is used when determining if we can remove the item, thus
     the attention given to the uninstall method.
     """
-    if ('installs' in item_pl and 
+    if ('installs' in item_pl and
           item_pl.get('uninstall_method') != 'removepackages'):
         installitems = item_pl['installs']
         foundallinstallitems = True
@@ -1263,7 +1263,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     munkicommon.display_debug1(
         "* Processing manifest item %s for optional install" %
         manifestitemname)
-    
+
     # have we already processed this?
     if manifestitemname in installinfo['optional_installs']:
         munkicommon.display_debug1(
@@ -1348,7 +1348,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     # have we processed this already?
     if manifestitemname in installinfo['processed_installs']:
         munkicommon.display_debug1(
-                '%s has already been processed for install.' % 
+                '%s has already been processed for install.' %
                 manifestitemname)
         return True
     elif manifestitemname in installinfo['processed_uninstalls']:
@@ -1622,7 +1622,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         return True
     else:
         installinfo['processed_uninstalls'].append(manifestitemname)
-                                            
+
     infoitems = []
     if includedversion:
         # a specific version was specified
@@ -2026,8 +2026,8 @@ def getPrimaryManifest(alternate_id):
                                                 clientidentifier)
 
         if not manifest:
-            manifest = getmanifest(manifesturl +
-                                   urllib2.quote(clientidentifier))
+            manifest = getmanifest(
+                manifesturl + urllib2.quote(clientidentifier.encode('utf-8')))
         if manifest:
             # record this info for later
             munkicommon.report['ManifestName'] = clientidentifier
@@ -2443,7 +2443,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['optional_installs'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
-        
+
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
                               installinfo)
@@ -2572,7 +2572,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = \
             [item for item in installinfo['removals']
                 if item.get('installed')]
-        
+
         munkicommon.report['ManagedInstalls'] = \
                                             installinfo['processed_installs']
         munkicommon.report['ManagedUninstalls'] = \
