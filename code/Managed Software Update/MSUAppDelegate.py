@@ -68,14 +68,17 @@ class MSUAppDelegate(NSObject):
             if not self._listofupdates:
                 self.getAvailableUpdates()
             if self._listofupdates:
-                self.buildUpdateTableData()
-                self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
-                NSApp.requestUserAttention_(NSCriticalRequest)
-                if self._optionalInstalls:
-                    self.buildOptionalInstallsData()
+                self.displayUpdatesWindow()
             else:
                 # no updates available. Should we check for some?
                 self.checkForUpdates()
+                
+    def displayUpdatesWindow(self):
+        self.buildUpdateTableData()
+        if self._optionalInstalls:
+            self.buildOptionalInstallsData()
+        self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
+        NSApp.requestUserAttention_(NSCriticalRequest)
 
     def munkiStatusSessionEnded_(self, socketSessionResult):
         consoleuser = munki.getconsoleuser()
@@ -124,7 +127,7 @@ class MSUAppDelegate(NSObject):
             #NSLog(u"Building table of available updates.")
             self.buildUpdateTableData()
             if self._optionalInstalls:
-                NSLog(u"Building table of optional software.")
+                #NSLog(u"Building table of optional software.")
                 self.buildOptionalInstallsData()
             #NSLog(u"Showing main window.")
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
@@ -180,7 +183,18 @@ class MSUAppDelegate(NSObject):
 
     def checkForUpdates(self):
         # kick off an update check
+        
+        # close main window
         self.mainWindowController.theWindow.orderOut_(self)
+        # clear data structures
+        self._listofupdates = []
+        self._optionalInstalls = []
+        self.update_view_controller.tableView.deselectAll_(self)
+        self.update_view_controller.setUpdatelist_([])
+        self.optional_view_controller.tableView.deselectAll_(self)
+        self.optional_view_controller.setOptionallist_([])
+
+        # attempt to start the update check
         result = munki.startUpdateCheck()
         if result == 0:
             self.managedsoftwareupdate_task = "manualcheck"

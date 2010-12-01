@@ -32,15 +32,23 @@ class MSUOptionalInstallsViewController(NSViewController):
     array_controller = IBOutlet()
     window_controller = IBOutlet()
     AddRemoveBtn = IBOutlet()
+    
+    _EMPTYOPTIONALLIST = NSArray.arrayWithArray_([{"installed": NO, 
+                                                   "managed": NO, 
+                                                   "original_managed": NO,
+                                                   "name": "", 
+                                                   "version": "", 
+                                                   "description": "", 
+                                                   "size": "", 
+                                                   "enabled": NO, 
+                                                   "status": "", 
+                                                   "original_status": ""}])
 
-    _optionallist = NSArray.arrayWithArray_([{"installed": NO, "managed": NO, "original_managed": NO,
-                                              "name": "", "version": "", 
-                                              "description": "", "size": "", "enabled": NO, 
-                                              "status": "", "original_status": ""}])
+    _optionallist = []
     
     def optionallist(self):
         #NSLog(u"MSUOptionalInstallsViewController.optionallist")
-        return self._optionallist
+        return self._optionallist or self._EMPTYOPTIONALLIST
     objc.accessor(optionallist) # PyObjC KVO hack
     
     def setOptionallist_(self, newlist):
@@ -100,22 +108,24 @@ class MSUOptionalInstallsViewController(NSViewController):
         self.window_controller.theTabView.selectPreviousTabViewItem_(sender)
         NSApp.delegate().addOrRemoveOptionalSoftware()
         
+    def updateWebKitView_(self, description):
+        if "</html>" in description or "</HTML>" in description:
+            self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
+        else:
+            self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
+                                                  buffer(description),
+                                                  u"text/plain", u"utf-8", None)
     def updateDescriptionView(self):
         #NSLog(u"MSUOptionalInstallsViewController.updateDescriptionView")
         if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
-            description = row.get("description","")
-            if "</html>" in description or "</HTML>" in description:
-                self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
-            else:
-                self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
-                                                  buffer(description),
-                                                  u"text/plain", u"utf-8", None)
+            description = row.get("description", u"")
             self.updateRowStatus()
         else:
-            self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
+            description = u""
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateWebKitView_, description, NO)
             
     def tableViewSelectionDidChange_(self, sender):
         #NSLog(u"MSUOptionalInstallsViewController.tableViewSelectionDidChange_")
-        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
-
+        #self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
+        self.updateDescriptionView()

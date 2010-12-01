@@ -35,15 +35,16 @@ class MSUupdatesViewController(NSViewController):
     window_controller = IBOutlet()
     updateNowBtn = IBOutlet()
     
-    _updatelist = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), 
-                                            "name": "", 
-                                            "version": "", 
-                                            "size": "",
-                                            "description": ""}])
+    _EMPTYUPDATELIST = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), 
+                                                 "name": "", 
+                                                 "version": "", 
+                                                 "size": "",
+                                                 "description": ""}])
+    _updatelist = []
     
     def updatelist(self):
         #NSLog(u"MSUupdatesViewController.updatelist")
-        return self._updatelist
+        return self._updatelist or self._EMPTYUPDATELIST
     objc.accessor(updatelist) # PyObjC KVO hack
     
     def setUpdatelist_(self, newlist):
@@ -65,24 +66,27 @@ class MSUupdatesViewController(NSViewController):
         # switch to optional software pane
         self.window_controller.theTabView.selectNextTabViewItem_(sender)
         NSApp.delegate().optional_view_controller.AddRemoveBtn.setEnabled_(NO)
-        NSApp.delegate().buildOptionalInstallsData()
+        #NSApp.delegate().buildOptionalInstallsData()
+        
+    def updateWebKitView_(self, description):
+        if "</html>" in description or "</HTML>" in description:
+            self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
+        else:
+            self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
+                                                  buffer(description),
+                                                  u"text/plain", u"utf-8", None)
         
     def updateDescriptionView(self):
         #NSLog(u"MSUupdatesViewController.updateDescriptionView")
         if len(self.array_controller.selectedObjects()):
             row = self.array_controller.selectedObjects()[0]
-            description = row.get("description","")
-            if "</html>" in description or "</HTML>" in description:
-                self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
-            else:
-                self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
-                                                  buffer(description),
-                                                  u"text/plain", u"utf-8", None)
+            description = row.get("description", u"")
         else:
-            self.descriptionView.mainFrame().loadHTMLString_baseURL_(u"", None)
+            description = u""
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateWebKitView_, description, NO)
         
     def tableViewSelectionDidChange_(self, sender):
         #NSLog(u"MSUupdatesViewController.tableViewSelectionDidChange_")
-        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
-            
+        #self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
+        self.updateDescriptionView()
 
