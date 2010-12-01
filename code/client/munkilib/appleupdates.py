@@ -488,8 +488,9 @@ def installAppleUpdates():
         except (OSError, IOError):
             pass
         # now try to install the updates
-        restartneeded = installer.installWithInfo("/Library/Updates",
-                                                  appleupdatelist)
+        (restartneeded, unused_skipped_installs) = \
+                installer.installWithInfo("/Library/Updates",
+                                          appleupdatelist)
         if restartneeded:
             munkicommon.report['RestartRequired'] = True
         munkicommon.savereport()
