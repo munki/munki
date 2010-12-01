@@ -28,9 +28,11 @@ import os
 import optparse
 import subprocess
 import time
+from distutils import version
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
+
 
 def makeDMG(pkgpath):
     """Wraps a non-flat package into a disk image.
@@ -114,7 +116,7 @@ class RepoCopyError(Exception):
     pass   
 
 
-def copyItemToRepo(itempath, version, subdirectory=''):
+def copyItemToRepo(itempath, vers, subdirectory=''):
     """Copies an item to the appropriate place in the repo.
     If itempath is a path within the repo/pkgs directory, copies nothing.
     Renames the item if an item already exists with that name.
@@ -140,11 +142,11 @@ def copyItemToRepo(itempath, version, subdirectory=''):
         # just return the relative path
         return os.path.join(subdirectory, item_name)
     
-    if os.path.exists(destination_path_name) and version:
-        if not version in item_name:
+    if os.path.exists(destination_path_name) and vers:
+        if not vers in item_name:
             # try adding the version
             item_name = '%s-%s%s' % (os.path.splitext(item_name)[0],
-                                     version,
+                                     vers,
                                      os.path.splitext(item_name)[1])
             destination_path_name = os.path.join(destination_path, item_name)
                      
@@ -237,7 +239,152 @@ def promptForSubdirectory(subdirectory):
             return subdirectory 
     return newdir
     
-   
+    
+class CatalogDBException(Exception):
+    '''Exception to throw if we can't make a pkginfo DB'''
+    pass
+    
+    
+def makeCatalogDB():
+    """Returns a dict we can use like a database"""
+    
+    all_items_path = os.path.join(pref('repo_path'), 'catalogs', 'all')
+    if not os.path.exists(all_items_path):
+        raise CatalogDBException
+    try:
+        catalogitems = FoundationPlist.readPlist(all_items_path)
+    except FoundationPlist.NSPropertyListSerializationException:
+        raise CatalogDBException
+    
+    pkgid_table = {}
+    app_table = {}
+    installer_item_table = {}
+    hash_table = {}
+
+    itemindex = -1
+    for item in catalogitems:
+        itemindex = itemindex + 1
+        name = item.get('name', 'NO NAME')
+        vers = item.get('version', 'NO VERSION')
+
+        if name == 'NO NAME' or vers == 'NO VERSION':
+            munkicommon.display_warning('Bad pkginfo: %s' % item)
+
+        # normalize the version number
+        vers = munkicommon.padVersionString(vers, 5)
+        
+        # add to hash table
+        if 'installer_item_hash' in item:
+            if not item['installer_item_hash'] in hash_table:
+                hash_table[item['installer_item_hash']] = []
+            hash_table[item['installer_item_hash']].append(itemindex)
+        
+        # add to installer item table
+        if 'installer_item_location' in item:
+            installer_item_name = os.path.basename(
+                item['installer_item_location'])
+            if not installer_item_name in installer_item_table:
+                installer_item_table[installer_item_name] = {}
+            if not vers in installer_item_table[installer_item_name]:
+                installer_item_table[installer_item_name][vers] = []
+            installer_item_table[installer_item_name][vers].append(itemindex)
+
+        # add to table of receipts
+        for receipt in item.get('receipts', []):
+            if 'packageid' in receipt and 'version' in receipt:
+                if not receipt['packageid'] in pkgid_table:
+                    pkgid_table[receipt['packageid']] = {}
+                if not vers in pkgid_table[receipt['packageid']]:
+                    pkgid_table[receipt['packageid']][vers] = []
+                pkgid_table[receipt['packageid']][vers].append(itemindex)
+
+        # add to table of installed applications
+        for install in item.get('installs', []):
+            if install.get('type') == 'application':
+                if 'path' in install:
+                    if not install['path'] in app_table:
+                        app_table[install['path']] = {}
+                    if not vers in app_table[install['path']]:
+                        app_table[install['path']][vers] = []
+                    app_table[install['path']][vers].append(itemindex)
+
+    pkgdb = {}
+    pkgdb['hashes'] = hash_table
+    pkgdb['receipts'] = pkgid_table
+    pkgdb['applications'] = app_table
+    pkgdb['installer_items'] = installer_item_table
+    pkgdb['items'] = catalogitems
+
+    return pkgdb
+
+    
+def findMatchingPkginfo(pkginfo):
+    """Looks through repo catalogs looking for matching pkginfo
+    Returns a pkginfo dictionary, or an empty dict"""
+    
+    def compare_version_keys(a, b):
+        """Internal comparison function for use in sorting"""
+        return cmp(version.LooseVersion(b), version.LooseVersion(a))
+    
+    try:
+        db = makeCatalogDB()
+    except CatalogDBException:
+        return {}
+
+    if 'installer_item_hash' in pkginfo:
+        matchingindexes = db['hashes'].get(
+                          pkginfo['installer_item_hash'])
+        if matchingindexes:
+            matchingitem = db['items'][matchingindexes[0]] 
+    
+    if 'receipts' in pkginfo:
+        pkgids = [item['packageid'] 
+                  for item in pkginfo['receipts']
+                  if 'packageid' in item]
+        if pkgids:
+            possiblematches = db['receipts'].get(pkgids[0])
+            if possiblematches:
+                versionlist = possiblematches.keys()
+                versionlist.sort(compare_version_keys)
+                # go through possible matches, newest version first
+                for versionkey in versionlist:
+                    testpkgindexes = possiblematches[versionkey]
+                    for pkgindex in testpkgindexes:
+                        testpkginfo = db['items'][pkgindex]
+                        testpkgids = [item['packageid'] for item in
+                                      testpkginfo.get('receipts',[])
+                                      if 'packageid' in item]
+                        if set(testpkgids) == set(pkgids):
+                            return testpkginfo
+                        
+    if 'installs' in pkginfo:
+        applist = [item for item in pkginfo['installs']
+                   if item['type'] == 'application'
+                   and 'path' in item]
+        if applist:
+            app = applist[0]['path']
+            possiblematches = db['applications'].get(app)
+            if possiblematches:
+                versionlist = possiblematches.keys()
+                versionlist.sort(compare_version_keys)
+                indexes = db['applications'][app][versionlist[0]]
+                return db['items'][indexes[0]]
+
+    # no matches by receipts or installed applications, 
+    # let's try to match based on installer_item_name
+    installer_item_name = os.path.basename(pkginfo['installer_item_location'])
+    possiblematches = db['installer_items'].get(installer_item_name)
+    if possiblematches:
+        versionlist = possiblematches.keys()
+        versionlist.sort(compare_version_keys)
+        indexes = db['installer_items'][installer_item_name][
+                                                               versionlist[0]]
+        return pkgdb['items'][indexes[0]]
+        
+    # if we get here, we found no matches
+    return {}
+
+
 def makePkgInfo(item_path):
     """Calls makepkginfo to generate the pkginfo for item_path."""
     # first look for a makepkginfo in the same dir as us
@@ -254,7 +401,7 @@ def makePkgInfo(item_path):
         print >> sys.stderr, err
         return {}
     return FoundationPlist.readPlistFromString(pliststr)
-    
+
 
 def makeCatalogs():
     """Calls makecatalogs to rebuild our catalogs"""
@@ -402,6 +549,52 @@ def main():
     pkginfo = makePkgInfo(installer_item)
     
     if not options.nointeractive:
+        # try to find existing pkginfo items that match this one
+        matchingpkginfo = findMatchingPkginfo(pkginfo)
+        exactmatch = False
+        if matchingpkginfo:
+            if ('installer_item_hash' in matchingpkginfo and
+                matchingpkginfo['installer_item_hash'] ==
+                pkginfo.get('installer_item_hash')):
+                exactmatch = True
+                print ('***This item is identical to an existing item in '
+                       'the repo***:')
+            else:
+                print 'This item is similar to an existing item in the repo:'
+            fields = (('Item name', 'name'), 
+                      ('Display name', 'display_name'),
+                      ('Description', 'description'),
+                      ('Version', 'version'),
+                      ('Installer item path', 'installer_item_location'))
+            for (name, key) in fields:
+                print '%21s: %s' % (name, matchingpkginfo.get(
+                                                      key,'').encode('UTF-8'))
+            print
+            if exactmatch:
+                answer = raw_input('Import this item anyway? [y/n] ')
+                if not answer.lower().startswith('y'):
+                    exit(0)
+                    
+            answer = raw_input('Use existing item as a template? [y/n] ')
+            if answer.lower().startswith('y'):
+                pkginfo['name'] = matchingpkginfo['name']
+                pkginfo['display_name'] = pkginfo.get('display_name') or \
+                    matchingpkginfo.get('display_name',
+                                        matchingpkginfo['name'])
+                pkginfo['description'] = pkginfo.get('description') or \
+                    matchingpkginfo.get('description', '')
+                if (options.subdirectory == '' and 
+                    matchingpkginfo.get('installer_item_location')):
+                    options.subdirectory = os.path.dirname(
+                        matchingpkginfo['installer_item_location'])
+                for key in ['forced_install',
+                            'forced_uninstall',
+                            'requires',
+                            'update_for']:
+                    if key in matchingpkginfo:
+                        print 'Copying %s: %s' % (key, matchingpkginfo[key])
+                        pkginfo[key] = matchingpkginfo[key]
+                
         # now let user do some basic editing
         editfields = (('Item name', 'name'), 
                       ('Display name', 'display_name'),
