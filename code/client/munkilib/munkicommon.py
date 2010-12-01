@@ -1586,7 +1586,7 @@ def listdir(path):
     """OSX HFS+ string encoding safe listdir().
 
     Args:
-        path: str or unicode, path to list contents of
+        path: path to list contents of
     Returns:
         list of contents, items as str or unicode types
     """
@@ -1605,7 +1605,7 @@ def listdir(path):
     if type(path) is str:
         path = unicode(path, 'utf-8')
     elif type(path) is not unicode:
-        raise TypeError('path (%s) should be unicode or str' % str(path))
+        path = unicode(path)
     return os.listdir(path)
 
 
