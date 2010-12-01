@@ -1590,26 +1590,23 @@ def listdir(path):
     Returns:
         list of contents, items as str or unicode types
     """
-    # on python2.4-2.6 on OSX, if path supplied to listdir() is unicode, the
-    # return list items are unicode also.  so the behavior of this method
-    # will change as various paths are supplied to it, possibly concatenated
-    # from XML output of plists, etc.
-    l = os.listdir(path)
-
-    for i in xrange(len(l)):
-        # 'i' is possibly a decomposed UTF-8 string in a str instance.
-        # fix it before it is exposed to the rest of Python.
-        #
-        # for background info:
-        # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
-        # http://lists.zerezo.com/git/msg643117.html
-        # http://unicode.org/reports/tr15/    section 1.2
-
-        if type(l[i]) is not unicode:
-            u = unicode(l[i], 'utf-8')
-            l[i] = u
-
-    return l
+    # if os.listdir() is supplied a unicode object for the path,
+    # it will return unicode filenames instead of their raw fs-dependent
+    # version, which is decomposed utf-8 on OSX.
+    #
+    # we use this to our advantage here and have Python do the decoding
+    # work for us, instead of decoding each item in the output list.
+    #
+    # references:
+    # http://docs.python.org/howto/unicode.html#unicode-filenames
+    # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
+    # http://lists.zerezo.com/git/msg643117.html
+    # http://unicode.org/reports/tr15/    section 1.2    
+    if type(path) is str:
+        path = unicode(path, 'utf-8')
+    elif type(path) is not unicode:
+        raise TypeError('path (%s) should be unicode or str' % str(path))
+    return os.listdir(path)
 
 
 # module globals
