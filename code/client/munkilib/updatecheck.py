@@ -1218,17 +1218,17 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     munkicommon.display_debug1(
         '* Processing manifest item %s for update' % manifestitemname)
 
-    # check to see if item (any version) is already in the update list:
+    # check to see if item is already in the update list:
     if manifestitemname in installinfo['managed_updates']:
         munkicommon.display_debug1(
             '%s has already been processed for update.' % manifestitemname)
         return
-    # check to see if item (any version) is already in the installlist:
+    # check to see if item is already in the installlist:
     if manifestitemname in installinfo['processed_installs']:
         munkicommon.display_debug1(
             '%s has already been processed for install.' % manifestitemname)
         return
-    # check to see if item (any version) is already in the removallist:
+    # check to see if item is already in the removallist:
     if manifestitemname in installinfo['processed_uninstalls']:
         munkicommon.display_debug1(
             '%s has already been processed for uninstall.' % manifestitemname)
@@ -1344,14 +1344,16 @@ def processInstall(manifestitem, cataloglist, installinfo):
     manifestitemname = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
         '* Processing manifest item %s for install' % manifestitemname)
-
+    (manifestitemname_withoutversion, includedversion) = nameAndVersion(
+                                            manifestitemname)
     # have we processed this already?
     if manifestitemname in installinfo['processed_installs']:
         munkicommon.display_debug1(
                 '%s has already been processed for install.' %
                 manifestitemname)
         return True
-    elif manifestitemname in installinfo['processed_uninstalls']:
+    elif (manifestitemname_withoutversion in 
+          installinfo['processed_uninstalls']):
         munkicommon.display_warning(
             ('Will not process %s for install because it has already '
              'been processed for uninstall!') % manifestitemname)
@@ -1372,6 +1374,13 @@ def processInstall(manifestitem, cataloglist, installinfo):
             (manifestitem, ', '.join(cataloglist)))
         return False
 
+    if isItemInInstallInfo(item_pl, installinfo['managed_installs'], 
+                           vers=item_pl.get('version')):
+        # has this item already been added to the list of things to install?
+        munkicommon.display_debug1(
+                '%s is or will be installed.' % manifestitemname)
+        return True
+        
     # check dependencies
     dependenciesMet = True
 
@@ -1607,7 +1616,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                                             manifestitemname_withversion)
 
     # have we processed this already?
-    if manifestitemname in installinfo['processed_installs']:
+    if (manifestitemname in installinfo['processed_installs'] or
+        manifestitemname_withversion in installinfo['processed_installs']):
         munkicommon.display_warning('Will not attempt to remove %s '
                                     'because some version of it is in '
                                     'the list of managed installs, or '
