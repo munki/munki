@@ -88,6 +88,28 @@ def setupSoftwareUpdateCheck():
            '-bool', 'YES']
     unused_retcode = subprocess.call(cmd)
     
+
+CACHEDUPDATELIST = None
+def softwareUpdateList():
+    '''Returns a list of available updates
+    using `softwareupdate -l`'''
+    
+    global CACHEDUPDATELIST
+    if CACHEDUPDATELIST != None:
+        return CACHEDUPDATELIST
+
+    updates = []
+    cmd = ['/usr/sbin/softwareupdate', '-l']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                           stdin=subprocess.PIPE, 
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, unused_err) = proc.communicate()                     
+    if proc.returncode == 0:
+       updates = [str(item)[5:] for item in output.splitlines() 
+                       if str(item).startswith('   * ')]
+    CACHEDUPDATELIST = updates
+    return CACHEDUPDATELIST
+    
     
 def checkForSoftwareUpdates():
     '''Does our Apple Software Update check'''

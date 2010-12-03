@@ -37,6 +37,7 @@ from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 #our libs
 import munkicommon
 import munkistatus
+import appleupdates
 import FoundationPlist
 
 
@@ -964,6 +965,11 @@ def isInstalled(item_pl):
     Returns True if it looks like this or a newer version
     is installed; False otherwise.
     """
+    if item_pl.get('softwareupdatename'):
+        if item_pl['softwareupdatename'] in appleupdates.softwareUpdateList():
+            return False
+        else:
+            return True
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
