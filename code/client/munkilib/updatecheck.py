@@ -1622,8 +1622,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                                             manifestitemname_withversion)
 
     # have we processed this already?
-    if (manifestitemname in installinfo['processed_installs'] or
-        manifestitemname_withversion in installinfo['processed_installs']):
+    if manifestitemname in [nameAndVersion(item)[0] 
+                            for item in installinfo['processed_installs']]:
         munkicommon.display_warning('Will not attempt to remove %s '
                                     'because some version of it is in '
                                     'the list of managed installs, or '
@@ -2478,10 +2478,13 @@ def check(client_id='', localmanifestpath=None):
                               installinfo)
         if munkicommon.stopRequested():
             return 0
+
         # now check for implicit removals
         # use catalogs from main manifest
         cataloglist = getManifestValueForKey(mainmanifestpath, 'catalogs')
         autoremovalitems = getAutoRemovalItems(installinfo, cataloglist)
+        if autoremovalitems:
+            munkicommon.display_detail('**Checking for implicit removals**')
         for item in autoremovalitems:
             if munkicommon.stopRequested():
                 return 0
