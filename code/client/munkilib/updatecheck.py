@@ -1173,9 +1173,11 @@ def getAutoRemovalItems(installinfo, cataloglist):
     for catalogname in cataloglist:
         if catalogname in CATALOG.keys():
             autoremovalnames += CATALOG[catalogname]['autoremoveitems']
-
+            
+    processed_installs_names = [nameAndVersion(item)[0] 
+                                for item in installinfo['processed_installs']]
     autoremovalnames = [item for item in autoremovalnames
-                        if item not in installinfo['processed_installs']
+                        if item not in processed_installs_names
                         and item not in installinfo['processed_uninstalls']]
     return autoremovalnames
 
