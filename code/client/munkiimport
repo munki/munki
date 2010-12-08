@@ -548,6 +548,10 @@ def main():
     # generate pkginfo for the item
     pkginfo = makePkgInfo(installer_item)
     
+    if not pkginfo:
+        # makepkginfo returned an error
+        exit(-1)
+    
     if not options.nointeractive:
         # try to find existing pkginfo items that match this one
         matchingpkginfo = findMatchingPkginfo(pkginfo)
