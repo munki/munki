@@ -40,15 +40,12 @@ if [ "$CHECKOUT_RESULT" != "0" ]; then
     exit -1
 fi
 
-# get SVN revision number
-SVN_REV=`svn info http://munki.googlecode.com/svn/trunk/ | grep Revision: | cut -d " " -f2`
-# get version number from munkicommon
+# Get the munki version.
+MUNKIVERS=`defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString`
+SVNREV=`svnversion "$MUNKIROOT" | cut -d: -f2 | tr -cd '[:digit:]'`
+VERS=$MUNKIVERS.$SVNREV.0
 
-cd "$MUNKIROOT/code/client/munkilib"
-MUNKIVERS=`python -c "import munkicommon; print munkicommon.get_version()" | cut -d" " -f1`
-VERS="$MUNKIVERS.$SVN_REV.0"
-
-echo "Starting build for munki tools version $VERS"
+echo "Starting build for munki tools version $VERSION"
 
 cd "$MUNKIROOT/code/Managed Software Update"
 /usr/bin/xcodebuild -project Managed\ Software\ Update.xcodeproj -alltargets
@@ -80,6 +77,9 @@ chown -R root:wheel ./usr
 chmod -R 755 ./usr
 cp "$MUNKIROOT/code/client/"* ./usr/local/munki/
 cp "$MUNKIROOT"/code/client/munkilib/*.py ./usr/local/munki/munkilib/
+cp "$MUNKIROOT"/code/client/munkilib/version.plist ./usr/local/munki/munkilib/
+echo $SVNREV > ./usr/local/munki/munkilib/svnversion
+
 # no pre/postflight scripts in the package, please
 rm -f ./usr/local/munki/preflight
 rm -f ./usr/local/munki/postflight
