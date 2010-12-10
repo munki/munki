@@ -92,13 +92,15 @@ def setupSoftwareUpdateCheck():
 CACHEDUPDATELIST = None
 def softwareUpdateList():
     '''Returns a list of available updates
-    using `softwareupdate -l`'''
+    using `/usr/sbin/softwareupdate -l`'''
     
     global CACHEDUPDATELIST
     if CACHEDUPDATELIST != None:
         return CACHEDUPDATELIST
 
     updates = []
+    munkicommon.display_info(
+        'Getting list of available Apple Software Updates')
     cmd = ['/usr/sbin/softwareupdate', '-l']
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                            stdin=subprocess.PIPE, 
@@ -107,6 +109,8 @@ def softwareUpdateList():
     if proc.returncode == 0:
        updates = [str(item)[5:] for item in output.splitlines() 
                        if str(item).startswith('   * ')]
+    munkicommon.display_info(
+        'softwareupdate returned %s updates' % len(updates))
     CACHEDUPDATELIST = updates
     return CACHEDUPDATELIST
     

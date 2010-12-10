@@ -966,10 +966,20 @@ def isInstalled(item_pl):
     is installed; False otherwise.
     """
     if item_pl.get('softwareupdatename'):
-        if item_pl['softwareupdatename'] in appleupdates.softwareUpdateList():
+        availableAppleUpdates = appleupdates.softwareUpdateList()
+        munkicommon.display_debug2(
+            'Available Apple updates:\n%s' % availableAppleUpdates)
+        if item_pl['softwareupdatename'] in availableAppleUpdates:
+            munkicommon.display_debug1(
+                '%s is in available Apple Software Updates' % 
+                item_pl['softwareupdatename'])
             return False
         else:
             return True
+            munkicommon.display_debug1(
+                 '%s is not in available Apple Software Updates' % 
+                 item_pl['softwareupdatename'])
+            
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
