@@ -1548,27 +1548,22 @@ def isAppRunning(appname):
 
 
 def getAvailableDiskSpace(volumepath='/'):
-    """Returns available diskspace in KBytes."""
-    cmd = ['/usr/sbin/diskutil', 'info', '-plist', volumepath]
-    proc = subprocess.Popen(cmd,
-                            bufsize=1,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
-    if out:
-        try:
-            plist = FoundationPlist.readPlistFromString(out)
+    """Returns available diskspace in KBytes.
 
-            if 'FreeSpace' in plist:
-                # plist['FreeSpace'] is in bytes
-                return int(plist['FreeSpace']/1024)
+    Args:
+      volumepath: str, optional, default '/'
+    Returns:
+      int, KBytes in free space available
+    """
+    if volumepath is None:
+        volumepath = '/'
+    try:
+        st = os.statvfs(volumepath)
+    except OSError, e:
+        display_error('Error getting disk space in %s: %s', volumepath, str(e))
+        return 0
 
-        except (AttributeError,
-                FoundationPlist.NSPropertyListSerializationException):
-            pass
-
-    # Yikes
-    return 0
+    return st.f_frsize * st.f_bavail / 1024 # f_bavail matches df(1) output
 
 
 def cleanUpTmpDir():
@@ -1601,7 +1596,7 @@ def listdir(path):
     # http://docs.python.org/howto/unicode.html#unicode-filenames
     # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
-    # http://unicode.org/reports/tr15/    section 1.2    
+    # http://unicode.org/reports/tr15/    section 1.2
     if type(path) is str:
         path = unicode(path, 'utf-8')
     elif type(path) is not unicode:
