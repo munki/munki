@@ -464,6 +464,7 @@ def installWithInfo(dirpath, installlist, only_forced=False):
     itemindex = 0
     skipped_installs = []
     for item in installlist:
+        itemindex = itemindex + 1
         if only_forced:
             if not item.get('forced_install'):
                 skipped_installs.append(item)
@@ -479,7 +480,6 @@ def installWithInfo(dirpath, installlist, only_forced=False):
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
-            itemindex = itemindex + 1
             display_name = item.get('display_name') or item.get('name') or \
                            item.get('manifestitem')
             version_to_install = item.get('version_to_install','')
