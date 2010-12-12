@@ -414,6 +414,7 @@ def main():
                     # delete triggerfile if _not_ checkandinstallatstartup
                     os.unlink(filename)
         if not user_triggered:
+            munkicommon.cleanUpTmpDir()
             exit(0)
 
     if options.installwithnologout:
@@ -482,6 +483,7 @@ def main():
             # connect to socket and quit
             munkistatus.activate()
             munkistatus.quit()
+        munkicommon.cleanUpTmpDir()
         exit(-1)
     # Force a prefs refresh, in case preflight modified the prefs file.
     munkicommon.prefs(force_refresh=True)
@@ -513,6 +515,7 @@ def main():
         else:
             print >> sys.stderr, \
               'Another instance of %s is running. Exiting.' % myname
+        munkicommon.cleanUpTmpDir()
         exit(0)
 
     applesoftwareupdatesonly = munkicommon.pref('AppleSoftwareUpdatesOnly')
@@ -531,6 +534,7 @@ def main():
                 # connect to socket and quit
                 munkistatus.activate()
                 munkistatus.quit()
+            munkicommon.cleanUpTmpDir()
             exit(-1)
 
     # reset our errors and warnings files, rotate main log if needed
@@ -674,8 +678,7 @@ def main():
         munkicommon.display_warning(str(e))
     # we ignore the result of the postflight
 
-    if munkicommon.tmpdir:
-        munkicommon.cleanUpTmpDir()
+    munkicommon.cleanUpTmpDir()
     if mustrestart:
         doRestart()
     elif munkicommon.munkistatusoutput:
