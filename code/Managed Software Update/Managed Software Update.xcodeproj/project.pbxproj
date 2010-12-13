@@ -32,6 +32,9 @@
 		C0828D1011247A37003D5807 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828D0E11247A37003D5807 /* FoundationPlist.py */; };
 		C0828D1211247B3A003D5807 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828D1111247B3A003D5807 /* munki.py */; };
 		C09D9A2D11E6DC7800B3E573 /* MSUupdatesViewController.py in Resources */ = {isa = PBXBuildFile; fileRef = C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */; };
+		C0C548FC12B6E52B002C76CD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0C548F612B6E52B002C76CD /* InfoPlist.strings */; };
+		C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0C548F812B6E52B002C76CD /* Localizable.strings */; };
+		C0C548FE12B6E52B002C76CD /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0C548FA12B6E52B002C76CD /* MainMenu.xib */; };
 		C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */ = {isa = PBXBuildFile; fileRef = C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */; };
 /* End PBXBuildFile section */
 
@@ -69,6 +72,9 @@
 		C0828D0E11247A37003D5807 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
 		C0828D1111247B3A003D5807 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = munki.py; sourceTree = "<group>"; };
 		C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUupdatesViewController.py; sourceTree = "<group>"; };
+		C0C548F712B6E52B002C76CD /* German */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = German; path = InfoPlist.strings; sourceTree = "<group>"; };
+		C0C548F912B6E52B002C76CD /* German */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = German; path = Localizable.strings; sourceTree = "<group>"; };
+		C0C548FB12B6E52B002C76CD /* German */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = German; path = MainMenu.xib; sourceTree = "<group>"; };
 		C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Solid Aqua Blue.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -156,6 +162,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C0C548F512B6E52B002C76CD /* German.lproj */,
+				C0C548F212B6E4E9002C76CD /* English.lproj */,
 				C0828C871123DCFF003D5807 /* ShutDownReq.tif */,
 				C0828C881123DCFF003D5807 /* RestartRec.tif */,
 				C0828C891123DCFF003D5807 /* LogOutReq.tif */,
@@ -166,9 +174,7 @@
 				C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */,
 				C0828C8E1123DCFF003D5807 /* package.tiff */,
 				C0828C8F1123DCFF003D5807 /* Installer.tiff */,
-				77C8C1F70C07829500965286 /* MainMenu.xib */,
 				8D1107310486CEB800E47090 /* Info.plist */,
-				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -180,6 +186,25 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C0C548F212B6E4E9002C76CD /* English.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+				77C8C1F70C07829500965286 /* MainMenu.xib */,
+			);
+			name = English.lproj;
+			sourceTree = "<group>";
+		};
+		C0C548F512B6E52B002C76CD /* German.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				C0C548F612B6E52B002C76CD /* InfoPlist.strings */,
+				C0C548F812B6E52B002C76CD /* Localizable.strings */,
+				C0C548FA12B6E52B002C76CD /* MainMenu.xib */,
+			);
+			path = German.lproj;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -254,6 +279,9 @@
 				C09D9A2D11E6DC7800B3E573 /* MSUupdatesViewController.py in Resources */,
 				C0458B5111EB88C0001F1172 /* MSUStatusWindowController.py in Resources */,
 				C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */,
+				C0C548FC12B6E52B002C76CD /* InfoPlist.strings in Resources */,
+				C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */,
+				C0C548FE12B6E52B002C76CD /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,6 +329,30 @@
 			isa = PBXVariantGroup;
 			children = (
 				77C8C1F80C07829500965286 /* English */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		C0C548F612B6E52B002C76CD /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C0C548F712B6E52B002C76CD /* German */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		C0C548F812B6E52B002C76CD /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C0C548F912B6E52B002C76CD /* German */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		C0C548FA12B6E52B002C76CD /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C0C548FB12B6E52B002C76CD /* German */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

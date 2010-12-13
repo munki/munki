@@ -225,10 +225,11 @@ class MSUStatusWindowController(NSObject):
             self.window.setTitle_(NSLocalizedString(message[7:], None))
             return ""
         if message.startswith(u"MESSAGE: "):
-            self.messageFld.setStringValue_(NSLocalizedString(message[9:], None))
+            self.messageFld.setStringValue_(
+                                NSLocalizedString(message[9:], None))
             return ""
         if message.startswith(u"DETAIL: "):
-            self.detailFld.setStringValue_(NSLocalizedString(message[8:], None))
+            self.detailFld.setStringValue_(message[8:])
             return ""
         if message.startswith(u"PERCENT: "):
             self.setPercentageDone(message[9:])
