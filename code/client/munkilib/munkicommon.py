@@ -50,7 +50,16 @@ import FoundationPlist
 import LaunchServices
 
 
+# our preferences "bundle_id"
 BUNDLE_ID = 'ManagedInstalls'
+
+# the following two items are not used internally by munki
+# any longer, but remain for backwards compatibility with 
+# pre and postflight script that might access these files directly
+MANAGED_INSTALLS_PLIST_PATH = "/Library/Preferences/" + BUNDLE_ID + ".plist"
+SECURE_MANAGED_INSTALLS_PLIST_PATH = \
+    "/private/var/root/Library/Preferences/" + BUNDLE_ID + ".plist"
+    
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
