@@ -3,11 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>IFPkgDescriptionTitle</key>
-	<string>Munki - Managed software installation for OS X</string>
+	<string>munki tools</string>
 	<key>IFPkgDescriptionDescription</key>
-	<string>Munki is a set of tools that, used together with a webserver-based
-repository of packages and package metadata, can be used by OS X
-administrators to manage software installs (and in many cases removals)
-on OS X client machines.</string>
+	<string>Software installation tools for OS X</string>
 </dict>
 </plist>

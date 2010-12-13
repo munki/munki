@@ -37,17 +37,20 @@ import urllib2
 import warnings
 from distutils import version
 from xml.dom import minidom
+
 from Foundation import NSDate
+from Foundation import CFPreferencesCopyAppValue
+from Foundation import CFPreferencesSetValue
+from Foundation import CFPreferencesAppSynchronize
+from Foundation import kCFPreferencesAnyUser
+from Foundation import kCFPreferencesCurrentHost
 
 import munkistatus
 import FoundationPlist
 import LaunchServices
 
 
-MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/ManagedInstalls.plist'
-MANAGED_INSTALLS_PLIST_PATH_NO_EXT = '/Library/Preferences/ManagedInstalls'
-SECURE_MANAGED_INSTALLS_PLIST_PATH = (
-    '/private/var/root/Library/Preferences/ManagedInstalls.plist')
+BUNDLE_ID = 'ManagedInstalls'
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
@@ -288,7 +291,7 @@ def format_time(timestamp=None):
     if timestamp is None:
         return str(NSDate.new())
     else:
-        return str(NSDate.alloc().initWithTimeIntervalSince1970_(timestamp))
+        return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
 def log(msg, logname=''):
@@ -613,94 +616,65 @@ def isApplication(pathname):
 # managed installs preferences/metadata
 #####################################################
 
-
-def prefs(force_refresh=False):
-    """Loads and caches preferences from ManagedInstalls.plist.
-
-    Args:
-      force_refresh: Boolean. If True, wipe prefs and reload from scratch. If
-          False (default), load from cache if it's already set.
-
-    Returns:
-      Dict of preferences.
-    """
-    global _prefs
-    if not _prefs or force_refresh:
-        _prefs = {}  # start with a clean state.
-        _prefs['ManagedInstallDir'] = '/Library/Managed Installs'
-        # convenience; to be replaced with CatalogURL and PackageURL
-        _prefs['SoftwareRepoURL'] = 'http://munki/repo'
-        # effective defaults for the following three; though if they
-        # are not in the prefs plist, they are calculated relative
-        # to the SoftwareRepoURL (if it exists)
-        #prefs['ManifestURL'] = 'http://munki/repo/manifests/'
-        #prefs['CatalogURL'] = 'http://munki/repo/catalogs/'
-        #prefs['PackageURL'] = 'http://munki/repo/pkgs/'
-        _prefs['ClientIdentifier'] = ''
-        _prefs['LogFile'] = \
-            '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log'
-        _prefs['LoggingLevel'] = 1
-        _prefs['InstallAppleSoftwareUpdates'] = False
-        _prefs['SoftwareUpdateServerURL'] = ''
-        _prefs['DaysBetweenNotifications'] = 1
-        _prefs['LastNotifiedDate'] = '1970-01-01 00:00:00 -0000'
-        _prefs['UseClientCertificate'] = False
-        _prefs['SuppressUserNotification'] = False
-        _prefs['SuppressAutoInstall'] = False
-        _prefs['SuppressStopButtonOnInstall'] = False
-        _prefs['PackageVerificationMode'] = 'hash'
-
-        # Load configs from ManagedInstalls.plist file
-        if not loadPrefsFromFile(_prefs, MANAGED_INSTALLS_PLIST_PATH):
-            # no prefs file, so we'll write out a 'default' prefs file
-            del _prefs['LastNotifiedDate']
-            FoundationPlist.writePlist(_prefs, MANAGED_INSTALLS_PLIST_PATH)
-
-        # Load configs from secure ManagedInstalls.plist file.
-        # Note: this overwrites existing configs.
-        loadPrefsFromFile(_prefs, SECURE_MANAGED_INSTALLS_PLIST_PATH)
-
-    return _prefs
+def reload_prefs():
+    """Uses CFPreferencesAppSynchronize(BUNDLE_ID)
+    to make sure we have the latest prefs. Call this
+    if you have modified /Library/Preferences/ManagedInstalls.plist
+    or /var/root/Library/Preferences/ManagedInstalls.plist directly"""
+    CFPreferencesAppSynchronize(BUNDLE_ID)
 
 
-def loadPrefsFromFile(prefs, filepath):
-    """Loads preferences from a file into the passed prefs dictionary.
-
-    Args:
-      prefs: dictionary of configurations to update.
-      filepath: str path of file to read configurations from.
-    Returns:
-      Boolean. True if the file exists and prefs was updated, False otherwise.
-    Raises:
-      Error: there was an error reading the specified preferences file.
-    """
-    if not os.path.exists(filepath):
-        return False
-
-    plist = {}
+def set_pref(pref_name, pref_value):
+    """Sets a preference, writing it to 
+    /Library/Preferences/ManagedInstalls.plist. 
+    This should normally be used only for 'bookkeeping' values;
+    values that control the behavior of munki may be overridden
+    elsewhere (by MCX, for example)"""
     try:
-        plist = FoundationPlist.readPlist(filepath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        display_error('ERROR: Could not read preferences file %s.' % filepath)
-        raise PreferencesError(
-            'Could not read preferences file %s.' % filepath)
-    try:
-        for key in plist.keys():
-            if type(plist[key]).__name__ == '__NSCFDate':
-                # convert NSDate/CFDates to strings
-                _prefs[key] = str(plist[key])
-            else:
-                _prefs[key] = plist[key]
-    except AttributeError:
-        display_error('ERROR: Prefs file %s contains invalid data.' % filepath)
-        raise PreferencesError('Preferences file %s invalid.' % filepath)
-    return True
+        CFPreferencesSetValue(
+            pref_name, pref_value, BUNDLE_ID, 
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        CFPreferencesAppSynchronize(BUNDLE_ID)
+    except Exception:
+        pass
 
 
-def pref(prefname):
-    """Return a prefernce"""
-    return prefs().get(prefname,'')
-
+def pref(pref_name):
+    """Return a preference. Since this uses CFPreferencesCopyAppValue,
+    Preferences can be defined several places. Precedence is:
+        - MCX
+        - /var/root/Library/Preferences/ManagedInstalls.plist
+        - /Library/Preferences/ManagedInstalls.plist
+        - default_prefs defined here.
+    """
+    default_prefs = {
+        'ManagedInstallDir': '/Library/Managed Installs',
+        'SoftwareRepoURL': 'http://munki/repo',
+        'ClientIdentifier': '',
+        'LogFile': '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log',
+        'LoggingLevel': 1,
+        'InstallAppleSoftwareUpdates': False,
+        'AppleSoftwareUpdatesOnly': False,
+        'SoftwareUpdateServerURL': '',
+        'DaysBetweenNotifications': 1,
+        'LastNotifiedDate': NSDate.dateWithTimeIntervalSince1970_(0),
+        'UseClientCertificate': False,
+        'SuppressUserNotification': False,
+        'SuppressAutoInstall': False,
+        'SuppressStopButtonOnInstall': False,
+        'PackageVerificationMode': 'hash'
+    }
+    pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
+    if pref_value == None:
+        pref_value = default_prefs.get(pref_name)
+        # we're using a default value. We'll write it out to 
+        # /Library/Preferences/<BUNDLE_ID>.plist for admin
+        # discoverability
+        set_pref(pref_name, pref_value)
+    if type(pref_value).__name__ == '__NSCFDate':
+        # convert NSDate/CFDates to strings
+        pref_value = str(pref_value)
+    return pref_value
 
 #####################################################
 # Apple package utilities
@@ -1560,7 +1534,8 @@ def getAvailableDiskSpace(volumepath='/'):
     try:
         st = os.statvfs(volumepath)
     except OSError, e:
-        display_error('Error getting disk space in %s: %s', volumepath, str(e))
+        display_error(
+            'Error getting disk space in %s: %s', volumepath, str(e))
         return 0
 
     return st.f_frsize * st.f_bavail / 1024 # f_bavail matches df(1) output
@@ -1609,7 +1584,6 @@ def listdir(path):
 verbose = 1
 munkistatusoutput = False
 tmpdir = tempfile.mkdtemp()
-_prefs = {}  # never access this directly; use prefs() instead.
 report = {}
 report['Errors'] = []
 report['Warnings'] = []

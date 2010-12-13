@@ -99,7 +99,7 @@ def softwareUpdateList():
         return CACHEDUPDATELIST
 
     updates = []
-    munkicommon.display_info(
+    munkicommon.display_detail(
         'Getting list of available Apple Software Updates')
     cmd = ['/usr/sbin/softwareupdate', '-l']
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
@@ -109,7 +109,7 @@ def softwareUpdateList():
     if proc.returncode == 0:
        updates = [str(item)[5:] for item in output.splitlines() 
                        if str(item).startswith('   * ')]
-    munkicommon.display_info(
+    munkicommon.display_detail(
         'softwareupdate returned %s updates' % len(updates))
     CACHEDUPDATELIST = updates
     return CACHEDUPDATELIST

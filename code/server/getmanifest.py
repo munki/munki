@@ -25,7 +25,7 @@ http://webserver/cgi-bin/getmanifest.py?arbitrarystring
 arbitrarystring could be the hostname, a UUID, a username...
 
 This could be extended to do wildcard matching, or to
-read another file that mapped hostnames/strings to catalog
+read another file that mapped hostnames/strings to manifest
 files
 """
 

@@ -90,17 +90,7 @@ def networkUp():
 
 def clearLastNotifiedDate():
     """Clear the last date the user was notified of updates."""
-    try:
-        plist = FoundationPlist.readPlist(
-            munkicommon.MANAGED_INSTALLS_PLIST_PATH)
-        if plist:
-            if 'LastNotifiedDate' in plist:
-                cmd = ['/usr/bin/defaults', 'delete',
-                       munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
-                       'LastNotifiedDate']
-                unused_retcode = subprocess.call(cmd)
-    except FoundationPlist.NSPropertyListSerializationException:
-        pass
+    munkicommon.set_pref('LastNotifiedDate', None)
 
 
 def createDirsIfNeeded(dirlist):
@@ -129,8 +119,7 @@ def initMunkiDirs():
     Returns:
       Boolean. True if all data dirs existed or were created, False otherwise.
     """
-    managedinstallprefs = munkicommon.prefs()
-    ManagedInstallDir = managedinstallprefs['ManagedInstallDir']
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     manifestsdir = os.path.join(ManagedInstallDir, 'manifests')
     catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
     cachedir = os.path.join(ManagedInstallDir, 'Cache')
@@ -249,14 +238,8 @@ def munkiUpdatesAvailable():
 def recordUpdateCheckResult(result):
     """Record last check date and result"""
     now = NSDate.new()
-    cmd = ['/usr/bin/defaults', 'write',
-           munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
-           'LastCheckDate', '-date', str(now)]
-    unused_retcode = subprocess.call(cmd)
-    cmd = ['/usr/bin/defaults', 'write',
-           munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
-           'LastCheckResult', '-int', str(result)]
-    unused_retcode = subprocess.call(cmd)
+    munkicommon.set_pref('LastCheckDate', now)
+    munkicommon.set_pref('LastCheckResult', result)
 
 
 def notifyUserOfUpdates():
@@ -284,11 +267,8 @@ def notifyUserOfUpdates():
         nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
     if now.timeIntervalSinceDate_(nextNotifyDate) > 0:
         # record current notification date
-        cmd = ['/usr/bin/defaults', 'write',
-               munkicommon.MANAGED_INSTALLS_PLIST_PATH_NO_EXT,
-               'LastNotifiedDate', '-date', str(now)]
-        unused_retcode = subprocess.call(cmd)
-
+        munkicommon.set_pref('LastNotifiedDate', now)
+        
         # Kill Managed Software Update.app if it's already
         # open so it will update its display
         # using subprocess.Popen instead of subprocess.call
@@ -486,7 +466,7 @@ def main():
         munkicommon.cleanUpTmpDir()
         exit(-1)
     # Force a prefs refresh, in case preflight modified the prefs file.
-    munkicommon.prefs(force_refresh=True)
+    munkicommon.reload_prefs()
 
     # create needed directories if necessary
     if not initMunkiDirs():

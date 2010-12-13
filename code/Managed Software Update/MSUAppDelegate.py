@@ -135,8 +135,7 @@ class MSUAppDelegate(NSObject):
             if self._listofupdates:
                 return
             # no list of updates; let's check the LastCheckResult for more info
-            prefs = munki.getManagedInstallsPrefs()
-            lastCheckResult = prefs.get("LastCheckResult")
+            lastCheckResult = munki.pref("LastCheckResult")
             if lastCheckResult == 0:
                 self.noUpdatesAlert()
             elif lastCheckResult == 1:

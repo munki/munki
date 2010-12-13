@@ -24,6 +24,8 @@ import os
 import subprocess
 import FoundationPlist
 from Foundation import NSFileManager
+from Foundation import CFPreferencesCopyAppValue
+
 
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
@@ -37,33 +39,29 @@ def call(cmd):
     return proc.returncode
 
 
-def getManagedInstallsPrefs():
-    '''Define default preference values;
-    Read preference values from ManagedInstalls.plist if it exists.'''
+BUNDLE_ID = 'ManagedInstalls'
 
-    prefs = {}
-    prefs['ManagedInstallDir'] = "/Library/Managed Installs"
-    prefs['InstallAppleSoftwareUpdates'] = False
-    prefs['ShowRemovalDetail'] = False
-    prefs['InstallRequiresLogout'] = False
-
-    prefsfile = "/Library/Preferences/ManagedInstalls.plist"
-    if os.path.exists(prefsfile):
-        try:
-            plist = FoundationPlist.readPlist(prefsfile)
-        except FoundationPlist.NSPropertyListSerializationException:
-            return prefs
-        try:
-            for key in plist.keys():
-                if type(plist[key]).__name__ == "__NSCFDate":
-                    # convert NSDate/CFDates to strings
-                    prefs[key] = str(plist[key])
-                else:
-                    prefs[key] = plist[key]
-        except AttributeError:
-            pass
-
-    return prefs
+def pref(pref_name):
+    """Return a preference. Since this uses CFPreferencesCopyAppValue,
+    Preferences can be defined several places. Precedence is:
+        - MCX
+        - ~/Library/Preferences/ManagedInstalls.plist
+        - /Library/Preferences/ManagedInstalls.plist
+        - default_prefs defined here.
+    """
+    default_prefs = {
+        'ManagedInstallDir': '/Library/Managed Installs',
+        'InstallAppleSoftwareUpdates': False,
+        'ShowRemovalDetail': False,
+        'InstallRequiresLogout': False
+    }
+    pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
+    if pref_value == None:
+        pref_value = default_prefs.get(pref_name)
+    if type(pref_value).__name__ == "__NSCFDate":
+        # convert NSDate/CFDates to strings
+        pref_value = str(pref_value)
+    return pref_value
 
 
 def readSelfServiceManifest():
@@ -72,8 +70,7 @@ def readSelfServiceManifest():
     SelfServeManifest = "/Users/Shared/.SelfServeManifest"
     if not os.path.exists(SelfServeManifest):
         # no working copy, look for system copy
-        prefs = getManagedInstallsPrefs()
-        managedinstallbase = prefs['ManagedInstallDir']
+        managedinstallbase = pref('ManagedInstallDir')
         SelfServeManifest = os.path.join(managedinstallbase, "manifests",
                                             "SelfServeManifest")
     if os.path.exists(SelfServeManifest):
@@ -97,18 +94,17 @@ def writeSelfServiceManifest(optional_install_choices):
 
 def getRemovalDetailPrefs():
     '''Returns preference to control display of removal detail'''
-    return getManagedInstallsPrefs().get('ShowRemovalDetail', False)
+    return pref('ShowRemovalDetail')
 
 
 def installRequiresLogout():
     '''Returns preference to force logout for all installs'''
-    return getManagedInstallsPrefs().get('InstallRequiresLogout', False)
+    return pref('InstallRequiresLogout')
 
 
 def getInstallInfo():
     '''Returns the dictionary describing the managed installs and removals'''
-    prefs = getManagedInstallsPrefs()
-    managedinstallbase = prefs['ManagedInstallDir']
+    managedinstallbase = pref('ManagedInstallDir')
     plist = {}
     installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfo):
@@ -127,12 +123,11 @@ def startUpdateCheck():
 
 def getAppleUpdates():
     '''Returns any available Apple updates'''
-    prefs = getManagedInstallsPrefs()
-    managedinstallbase = prefs['ManagedInstallDir']
+    managedinstallbase = pref('ManagedInstallDir')
     plist = {}
     appleUpdatesFile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
     if (os.path.exists(appleUpdatesFile) and
-            prefs['InstallAppleSoftwareUpdates']):
+            pref('InstallAppleSoftwareUpdates')):
         try:
             plist = FoundationPlist.readPlist(appleUpdatesFile)
         except FoundationPlist.NSPropertyListSerializationException:
