@@ -34,7 +34,7 @@
 		C09D9A2D11E6DC7800B3E573 /* MSUupdatesViewController.py in Resources */ = {isa = PBXBuildFile; fileRef = C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */; };
 		C0C548FC12B6E52B002C76CD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0C548F612B6E52B002C76CD /* InfoPlist.strings */; };
 		C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0C548F812B6E52B002C76CD /* Localizable.strings */; };
-		C0C548FE12B6E52B002C76CD /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0C548FA12B6E52B002C76CD /* MainMenu.xib */; };
+		C0C5491F12B7F00D002C76CD /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0C5491D12B7F00D002C76CD /* MainMenu.xib */; };
 		C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */ = {isa = PBXBuildFile; fileRef = C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */; };
 /* End PBXBuildFile section */
 
@@ -74,7 +74,7 @@
 		C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUupdatesViewController.py; sourceTree = "<group>"; };
 		C0C548F712B6E52B002C76CD /* German */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = German; path = InfoPlist.strings; sourceTree = "<group>"; };
 		C0C548F912B6E52B002C76CD /* German */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = German; path = Localizable.strings; sourceTree = "<group>"; };
-		C0C548FB12B6E52B002C76CD /* German */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = German; path = MainMenu.xib; sourceTree = "<group>"; };
+		C0C5491E12B7F00D002C76CD /* German */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = German; path = MainMenu.xib; sourceTree = "<group>"; };
 		C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Solid Aqua Blue.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -200,9 +200,9 @@
 		C0C548F512B6E52B002C76CD /* German.lproj */ = {
 			isa = PBXGroup;
 			children = (
+				C0C5491D12B7F00D002C76CD /* MainMenu.xib */,
 				C0C548F612B6E52B002C76CD /* InfoPlist.strings */,
 				C0C548F812B6E52B002C76CD /* Localizable.strings */,
-				C0C548FA12B6E52B002C76CD /* MainMenu.xib */,
 			);
 			path = German.lproj;
 			sourceTree = "<group>";
@@ -214,8 +214,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Managed Software Update" */;
 			buildPhases = (
+				C0C5491712B7EEBA002C76CD /* Localize */,
 				8D1107290486CEB800E47090 /* Resources */,
-				C02BEBB212776D140066DB2C /* ShellScript */,
+				C02BEBB212776D140066DB2C /* Embed version info */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
 			);
@@ -281,25 +282,40 @@
 				C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */,
 				C0C548FC12B6E52B002C76CD /* InfoPlist.strings in Resources */,
 				C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */,
-				C0C548FE12B6E52B002C76CD /* MainMenu.xib in Resources */,
+				C0C5491F12B7F00D002C76CD /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		C02BEBB212776D140066DB2C /* ShellScript */ = {
+		C02BEBB212776D140066DB2C /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Embed version info";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "BASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\nREV=`svnversion -n | cut -d: -f2 | tr -cd '[:digit:]'`\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"";
+		};
+		C0C5491712B7EEBA002C76CD /* Localize */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = Localize;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./**/*.[hm]\" --utf8\n\n# localize nibs\n./Localize.py --from English --to German --utf8";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -349,10 +365,10 @@
 			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
-		C0C548FA12B6E52B002C76CD /* MainMenu.xib */ = {
+		C0C5491D12B7F00D002C76CD /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				C0C548FB12B6E52B002C76CD /* German */,
+				C0C5491E12B7F00D002C76CD /* German */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

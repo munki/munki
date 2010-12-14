@@ -1,0 +1,246 @@
+﻿
+/* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "5"; */
+"5.title" = "Alle nach vorne bringen";
+
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Fenster";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Minimieren";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Fenster";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "Managed Software Update"; ObjectID = "56"; */
+"56.title" = "Geführte Softwareaktualisierung";
+
+/* Class = "NSMenu"; title = "Managed Software Update"; ObjectID = "57"; */
+"57.title" = "Geführte Softwareaktualisierung";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Update"; ObjectID = "58"; */
+"58.title" = "Über Geführte Softwareaktualisierung";
+
+/* Class = "NSMenu"; title = "Update"; ObjectID = "81"; */
+"81.title" = "Aktualisierung";
+
+/* Class = "NSMenuItem"; title = "Update now "; ObjectID = "82"; */
+"82.title" = "Jetzt aktualisieren";
+
+/* Class = "NSMenuItem"; title = "Update"; ObjectID = "83"; */
+"83.title" = "Aktualisieren";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "Hilfe";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "Hilfe";
+
+/* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
+"111.title" = "Softwareaktualiserung-Hilfe";
+
+/* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "129"; */
+"129.title" = "Einstellungen…";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "Dienste";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "Dienste";
+
+/* Class = "NSMenuItem"; title = "Hide Managed Software Update"; ObjectID = "134"; */
+"134.title" = "Softwareaktualiserung ausblenden";
+
+/* Class = "NSMenuItem"; title = "Quit Managed Software Update"; ObjectID = "136"; */
+"136.title" = "Softwareaktualisierung beenden";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "Andere ausblenden";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "Alle einblenden";
+
+/* Class = "NSMenuItem"; title = "Stop Speaking"; ObjectID = "195"; */
+"195.title" = "Sprachausgabe starten";
+
+/* Class = "NSMenuItem"; title = "Start Speaking"; ObjectID = "196"; */
+"196.title" = "Sprachausgabe stoppen";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "Kopieren";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "Alles auswählen";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "Ausschneiden";
+
+/* Class = "NSMenu"; title = "Spelling and Grammar"; ObjectID = "200"; */
+"200.title" = "Rechtschreibung und Grammatik";
+
+/* Class = "NSMenuItem"; title = "Check Spelling"; ObjectID = "201"; */
+"201.title" = "Dokument jetzt prüfen";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "Löschen";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "Einfügen";
+
+/* Class = "NSMenuItem"; title = "Show Spelling…"; ObjectID = "204"; */
+"204.title" = "Rechtschreibung und Grammatik einblenden";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "Bearbeiten";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Widerrufen";
+
+/* Class = "NSMenuItem"; title = "Find Next"; ObjectID = "208"; */
+"208.title" = "Weitersuchen (vorwärts)";
+
+/* Class = "NSMenuItem"; title = "Find…"; ObjectID = "209"; */
+"209.title" = "Suchen";
+
+/* Class = "NSMenuItem"; title = "Jump to Selection"; ObjectID = "210"; */
+"210.title" = "Auswahl anzeigen";
+
+/* Class = "NSMenuItem"; title = "Speech"; ObjectID = "211"; */
+"211.title" = "Sprachausgabe";
+
+/* Class = "NSMenu"; title = "Speech"; ObjectID = "212"; */
+"212.title" = "Sprachausgabe";
+
+/* Class = "NSMenuItem"; title = "Find Previous"; ObjectID = "213"; */
+"213.title" = "Weitersuchen (rückwärts)";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Wiederholen";
+
+/* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "216"; */
+"216.title" = "Rechtschreibung und Grammatik";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Bearbeiten";
+
+/* Class = "NSMenuItem"; title = "Find"; ObjectID = "218"; */
+"218.title" = "Suchen";
+
+/* Class = "NSMenuItem"; title = "Check Spelling While Typing"; ObjectID = "219"; */
+"219.title" = "Rechtschreibung automatisch prüfen";
+
+/* Class = "NSMenu"; title = "Find"; ObjectID = "220"; */
+"220.title" = "Suchen";
+
+/* Class = "NSMenuItem"; title = "Use Selection for Find"; ObjectID = "221"; */
+"221.title" = "Auswahl suchen";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "Zoomen";
+
+/* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
+"346.title" = "Rechtschreib- und Grammatikprüfung";
+
+/* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "348"; */
+"348.title" = "Ersetzungen";
+
+/* Class = "NSMenu"; title = "Substitutions"; ObjectID = "349"; */
+"349.title" = "Ersetzungen";
+
+/* Class = "NSMenuItem"; title = "Smart Copy/Paste"; ObjectID = "350"; */
+"350.title" = "Intelligentes Kopieren/Einsetzen";
+
+/* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "351"; */
+"351.title" = "Intelligente Anführungszeichen";
+
+/* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "354"; */
+"354.title" = "Intelligente Links";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "371"; */
+"371.title" = "Geführte Softwareaktualisierung";
+
+/* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
+"378.title" = "Für Ihren Computer sind Aktualisierungen verfügbar.";
+
+/* Class = "NSTextFieldCell"; title = "Updating your software may take some time. If you're not ready to update now, you can choose to update later."; ObjectID = "380"; */
+"380.title" = "Eine Softwareaktualisierung kann etwas dauern. Sie können diese aber auch später ausführen.";
+
+/* Class = "NSButtonCell"; title = "Update now"; ObjectID = "382"; */
+"382.title" = "Aktualisieren";
+
+/* Class = "NSButtonCell"; title = "Later"; ObjectID = "384"; */
+"384.title" = "Später";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "397"; */
+"397.headerCell.title" = "Name";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "398"; */
+"398.title" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "400"; */
+"400.headerCell.title" = "Version";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "401"; */
+"401.title" = "Text Cell";
+
+/* Class = "NSTabViewItem"; label = "Updates"; ObjectID = "512"; */
+"512.label" = "Aktualisierungen";
+
+/* Class = "NSTabViewItem"; label = "Optional software"; ObjectID = "514"; */
+"514.label" = "Optionale Software";
+
+/* Class = "NSButtonCell"; title = "Add or Remove"; ObjectID = "519"; */
+"519.title" = "Hinzufügen oder Entfernen";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "520"; */
+"520.title" = "Abbrechen";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "527"; */
+"527.headerCell.title" = "Name";
+
+/* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "528"; */
+"528.headerCell.title" = "Version";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "531"; */
+"531.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "532"; */
+"532.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Check an item to have it installed. Uncheck an item to have it removed."; ObjectID = "546"; */
+"546.title" = "Elemente markieren um sie zu installieren. Abgewählte werden vom Rechner entfernt.";
+
+/* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
+"547.title" = "Optionale Software hinzufügen oder entfernen";
+
+/* Class = "NSButtonCell"; title = "Optional software..."; ObjectID = "550"; */
+"550.title" = "Optionale Software…";
+
+/* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "581"; */
+"581.headerCell.title" = "Größe";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "582"; */
+"582.title" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "585"; */
+"585.headerCell.title" = "Größe";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "586"; */
+"586.title" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Status"; ObjectID = "628"; */
+"628.headerCell.title" = "Status";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "629"; */
+"629.title" = "Text Cell";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "633"; */
+"633.title" = "Softwareaktualisierung";
+
+/* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "635"; */
+"635.title" = "BackdropWindow";
+
+/* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
+"645.title" = "Stoppen";
