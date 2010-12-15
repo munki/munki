@@ -386,6 +386,17 @@ def savereport():
         os.path.join(pref('ManagedInstallDir'), 'ManagedInstallReport.plist'))
 
 
+def readreport():
+    """Read report data from file"""
+    global report
+    reportfile = os.path.join(pref('ManagedInstallDir'),
+                              'ManagedInstallReport.plist')
+    try:
+        report = FoundationPlist.readPlist(reportfile)
+    except FoundationPlist.NSPropertyListSerializationException:
+        report = {}
+
+
 def archive_report():
     """Archive a report"""
     reportfile = os.path.join(pref('ManagedInstallDir'),

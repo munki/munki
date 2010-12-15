@@ -521,6 +521,12 @@ def main():
     munkicommon.reset_errors()
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
+    
+    if options.logoutinstall or options.installonly:
+        # we're only installing, not checking, so we should copy
+        # some report values from the prior run
+        munkicommon.readreport()
+        
     munkicommon.archive_report()
     # start a new report
     munkicommon.report['StartTime'] = munkicommon.format_time()
