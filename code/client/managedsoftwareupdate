@@ -439,7 +439,7 @@ def main():
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
     if os.path.exists(preflightscript):
-        munkicommon.display_status('Perfoming preflight tasks...')
+        munkicommon.display_status('Performing preflight tasks...')
     try:
         result, output = utils.runExternalScript(preflightscript, runtype)
         munkicommon.display_info(output)
