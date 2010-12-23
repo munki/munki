@@ -222,7 +222,7 @@ Set to 0 to have Managed Software Update notify every time a background check ru
               <key>pfm_description</key>
               <string>Set to true to cause munki to use an SSL client certificate when communicating with the munki server. 
 Requires an https:// URL for the munki repo. 
-Client cert should be named "munki.pem" and stored in a "certs" directory in the Managed Installs folder (typcially /Library/Managed Installs).</string>
+Client cert should be named "munki.pem" and stored in a "certs" directory in the Managed Installs folder (typically /Library/Managed Installs).</string>
               <key>pfm_targets</key>
               <array>
                   <string>system-managed</string>
@@ -243,6 +243,36 @@ Used in combination with the UseClientCertificate key.</string>
               <key>pfm_targets</key>
               <array>
                   <string>system-managed</string>
+              </array>
+          </dict>
+          <dict>
+              <key>pfm_name</key>
+              <string>AdditionalHttpHeaders</string>
+              <key>pfm_title</key>
+              <string>Additional HTTP Headers</string>
+              <key>pfm_type</key>
+              <string>array</string>
+              <key>pfm_default</key>
+              <array/>
+              <key>pfm_description</key>
+              <string>This key provides the ability to specify custom HTTP headers to be sent with all curl() HTTP requests.
+AdditionalHttpHeaders must be an array of strings with valid HTTP header format.</string>
+              <key>pfm_targets</key>
+              <array>
+                  <string>system-managed</string>
+              </array>
+              <key>pfm_subkeys</key>
+              <array>
+                  <dict>
+                      <key>pfm_description</key>
+                      <string>HTTP header string values.</string>
+                      <key>pfm_name</key>
+                      <string>headervalue</string>
+                      <key>pfm_title</key>
+                      <string>HTTP Header</string>
+                      <key>pfm_type</key>
+                      <string>string</string>
+                  </dict>
               </array>
           </dict>
           <dict>
