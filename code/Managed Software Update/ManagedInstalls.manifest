@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>pfm_version</key>
+    <real>1.0</real>
+    <key>pfm_domain</key>
+    <string>ManagedInstalls</string>
+    <key>pfm_description</key>
+    <string>Settings for munki</string>
+    <key>pfm_name</key>
+    <string>munki</string>
+    <key>pfm_title</key>
+    <string>Munki</string>
+    <key>pfm_subkeys</key>
+    <array>
+        <dict>
+            <key>pfm_name</key>
+            <string>AppleSoftwareUpdatesOnly</string>
+            <key>pfm_title</key>
+            <string>Install Only Apple Software Updates</string>
+            <key>pfm_type</key>
+            <string>boolean</string>
+            <key>pfm_default</key>
+            <false/>
+            <key>pfm_description</key>
+            <string>Set to true to only install updates from an Apple Software Update server. No munki repository is needed or used.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>InstallAppleSoftwareUpdates</string>
+            <key>pfm_title</key>
+            <string>Install Apple Software Updates</string>
+            <key>pfm_type</key>
+            <string>boolean</string>
+            <key>pfm_default</key>
+            <false/>
+            <key>pfm_description</key>
+            <string>Set to true to install updates from an Apple Software Update server, in addition to "regular" munki updates.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>SoftwareUpdateServerURL</string>
+            <key>pfm_title</key>
+            <string>Apple Software Update Catalog URL</string>
+            <key>pfm_type</key>
+            <string>string</string>
+            <key>pfm_default</key>
+            <string></string>
+            <key>pfm_description</key>
+            <string>Catalog URL for Apple Software Updates. Leave blank or remove this key to use Apple's server, or one defined elsewhere.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>SoftwareRepoURL</string>
+            <key>pfm_title</key>
+            <string>munki repository base URL</string>
+            <key>pfm_type</key>
+            <string>string</string>
+            <key>pfm_default</key>
+            <string>http://munki/repo</string>
+            <key>pfm_description</key>
+            <string>Base URL for munki repository</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>PackageURL</string>
+            <key>pfm_title</key>
+            <string>munki packages base URL</string>
+            <key>pfm_type</key>
+            <string>string</string>
+            <key>pfm_default</key>
+            <string>http://munki/repo/pkgs</string>
+            <key>pfm_description</key>
+            <string>Base URL for munki pkgs.
+Useful if your packages are served from a different server than your catalogs or manifests.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>CatalogURL</string>
+            <key>pfm_title</key>
+            <string>munki catalogs base URL</string>
+            <key>pfm_type</key>
+            <string>string</string>
+            <key>pfm_default</key>
+            <string>http://munki/repo/catalogs</string>
+            <key>pfm_description</key>
+            <string>Base URL for munki catalogs.
+Useful if your catalogs are served from a different server than your packages or manifests.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>ManifestURL</string>
+            <key>pfm_title</key>
+            <string>munki manifests base URL</string>
+            <key>pfm_type</key>
+            <string>string</string>
+            <key>pfm_default</key>
+            <string>http://munki/repo/manifests</string>
+            <key>pfm_description</key>
+            <string>Base URL for munki manifests. 
+Useful if your manifests are served from a different server than your catalogs or packages.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+            <key>pfm_name</key>
+            <string>ClientIdentifier</string>
+            <key>pfm_title</key>
+            <string>munki client identifier</string>
+            <key>pfm_type</key>
+            <string>string</string>
+            <key>pfm_default</key>
+            <string></string>
+            <key>pfm_description</key>
+            <string>Identifier for munki client. Usually is the same as a manifest name on the munki server.</string>
+            <key>pfm_targets</key>
+            <array>
+                <string>system-managed</string>
+            </array>
+        </dict>
+        <dict>
+             <key>pfm_name</key>
+             <string>ManagedInstallDir</string>
+             <key>pfm_title</key>
+             <string>Managed Installs folder</string>
+             <key>pfm_type</key>
+             <string>string</string>
+             <key>pfm_default</key>
+             <string>/Library/Managed Installs</string>
+             <key>pfm_description</key>
+             <string>Folder where munki keeps its data on the client.</string>
+             <key>pfm_targets</key>
+             <array>
+                 <string>system-managed</string>
+             </array>
+         </dict>
+         <dict>
+              <key>pfm_name</key>
+              <string>LogFile</string>
+              <key>pfm_title</key>
+              <string>Primary Log File</string>
+              <key>pfm_type</key>
+              <string>string</string>
+              <key>pfm_default</key>
+              <string>/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log</string>
+              <key>pfm_description</key>
+              <string>Primary log is written to this file. Other logs are written into the same directory as this file.</string>
+              <key>pfm_targets</key>
+              <array>
+                  <string>system-managed</string>
+              </array>
+          </dict>
+          <dict>
+               <key>pfm_name</key>
+               <string>LoggingLevel</string>
+               <key>pfm_title</key>
+               <string>Logging Level</string>
+               <key>pfm_type</key>
+               <string>integer</string>
+               <key>pfm_default</key>
+               <integer>1</integer>
+               <key>pfm_description</key>
+               <string>Higher values cause more detail to be written to the primary log.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+              <key>pfm_name</key>
+              <string>DaysBetweenNotifications</string>
+              <key>pfm_title</key>
+              <string>Days Between Notifications</string>
+              <key>pfm_type</key>
+              <string>integer</string>
+              <key>pfm_default</key>
+              <integer>1</integer>
+              <key>pfm_description</key>
+              <string>Number of days between user notifications from Managed Software Update.
+Set to 0 to have Managed Software Update notify every time a background check runs if there are available updates.</string>
+              <key>pfm_targets</key>
+              <array>
+                  <string>system-managed</string>
+              </array>
+          </dict>
+          <dict>
+              <key>pfm_name</key>
+              <string>UseClientCertificate</string>
+              <key>pfm_title</key>
+              <string>Use Client SSL Certificate</string>
+              <key>pfm_type</key>
+              <string>boolean</string>
+              <key>pfm_default</key>
+              <false/>
+              <key>pfm_description</key>
+              <string>Set to true to cause munki to use an SSL client certificate when communicating with the munki server. 
+Requires an https:// URL for the munki repo. 
+Client cert should be named "munki.pem" and stored in a "certs" directory in the Managed Installs folder (typcially /Library/Managed Installs).</string>
+              <key>pfm_targets</key>
+              <array>
+                  <string>system-managed</string>
+              </array>
+          </dict>
+          <dict>
+              <key>pfm_name</key>
+              <string>UseClientCertificateCNAsClientIdentifier</string>
+              <key>pfm_title</key>
+              <string>Use Client Certificate CN as Client Identifier</string>
+              <key>pfm_type</key>
+              <string>boolean</string>
+              <key>pfm_default</key>
+              <false/>
+              <key>pfm_description</key>
+              <string>Set to true to cause munki to use the CN of the client certificate as the Client Identifier.
+Used in combination with the UseClientCertificate key.</string>
+              <key>pfm_targets</key>
+              <array>
+                  <string>system-managed</string>
+              </array>
+          </dict>
+          <dict>
+               <key>pfm_name</key>
+               <string>PackageVerificationMode</string>
+               <key>pfm_title</key>
+               <string>Package Verification Mode</string>
+               <key>pfm_type</key>
+               <string>string</string>
+               <key>pfm_default</key>
+               <string>hash</string>
+               <key>pfm_range_list</key>
+               <array>
+                   <string>none</string>
+                   <string>hash</string>
+                   <string>hash-strict</string>
+               </array>
+               <key>pfm_description</key>
+               <string>Controls how munki verifies the integrity of downloaded packages.
+Possible values are:
+none: No integrity check is performed.
+hash: Integrity check is performed if package info contains checksum information.
+hash_strict: Integrity check is performed, and fails if package info does not contain checksum information.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+               <key>pfm_name</key>
+               <string>SuppressUserNotification</string>
+               <key>pfm_title</key>
+               <string>Suppress User Notification</string>
+               <key>pfm_type</key>
+               <string>boolean</string>
+               <key>pfm_default</key>
+               <false/>
+               <key>pfm_description</key>
+               <string>If true, Managed Software Update will never notify the user of available updates.
+Managed Software Update can still be manually invoked to discover and install updates.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+               <key>pfm_name</key>
+               <string>SuppressAutoInstall</string>
+               <key>pfm_title</key>
+               <string>Suppress Auto Install at loginwindow</string>
+               <key>pfm_type</key>
+               <string>boolean</string>
+               <key>pfm_default</key>
+               <false/>
+               <key>pfm_description</key>
+               <string>If true, munki will not automatically install when the machine has no users logged in.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+               <key>pfm_name</key>
+               <string>SuppressStopButtonOnInstall</string>
+               <key>pfm_title</key>
+               <string>Suppress Stop Button On Install</string>
+               <key>pfm_type</key>
+               <string>boolean</string>
+               <key>pfm_default</key>
+               <false/>
+               <key>pfm_description</key>
+               <string>If true, Managed Software Update will hide the stop button while installing or removing software, preventing users from interrupting the install.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+               <key>pfm_name</key>
+               <string>InstallRequiresLogout</string>
+               <key>pfm_title</key>
+               <string>Install Requires Logout</string>
+               <key>pfm_type</key>
+               <string>boolean</string>
+               <key>pfm_default</key>
+               <false/>
+               <key>pfm_description</key>
+               <string>If true, Managed Software Update will require a logout for all installs or removals.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+               <key>pfm_name</key>
+               <string>ShowRemovalDetail</string>
+               <key>pfm_title</key>
+               <string>Show Removal Detail</string>
+               <key>pfm_type</key>
+               <string>boolean</string>
+               <key>pfm_default</key>
+               <false/>
+               <key>pfm_description</key>
+               <string>If true, Managed Software Update will display detail for scheduled removals.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+    </array>
+</dict>
+</plist>
