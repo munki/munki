@@ -55,7 +55,8 @@ from munkilib import utils
 
 
 def getIdleSeconds():
-    """Returns the number of seconds since the last mouse or keyboard event."""
+    """Returns the number of seconds since the last mouse 
+    or keyboard event."""
     cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -162,8 +163,8 @@ def doInstallTasks(only_forced=False):
         try:
             need_to_restart = installer.run(only_forced=only_forced)
         except:
-            munkicommon.display_error('Unexpected error in '
-                                      ' munkilib.installer:')
+            munkicommon.display_error(
+                'Unexpected error in munkilib.installer:')
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
@@ -179,8 +180,8 @@ def doInstallTasks(only_forced=False):
         try:
             need_to_restart = appleupdates.installAppleUpdates()
         except:
-            munkicommon.display_error('Unexpected error in '
-                                      ' installAppleUpdates:')
+            munkicommon.display_error(
+                'Unexpected error in appleupdates.installAppleUpdates:')
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
@@ -213,7 +214,7 @@ def doRestart():
             munkistatus.activate()
             munkistatus.restartAlert()
             munkicommon.osascript(
-                            'tell application "System Events" to restart')
+                'tell application "System Events" to restart')
         else:
             print 'Please restart immediately.'
 
@@ -452,8 +453,9 @@ def main():
 
     if result:
         # non-zero return code means don't run
-        munkicommon.display_info('managedsoftwareupdate run aborted by'
-                                 ' preflight script: %s' % result)
+        munkicommon.display_info(
+            'managedsoftwareupdate run aborted by preflight script: %s' 
+            % result)
         # record the check result for use by Managed Software Update.app
         # right now, we'll return the same code as if the munki server
         # was unavailable. We need to revisit this and define additional
@@ -505,9 +507,9 @@ def main():
                  munkicommon.pref('SoftwareRepoURL')
         result = updatecheck.checkServer(server)
         if result != (0, 'OK'):
-            munkicommon.display_error('managedsoftwareupdate: '
-                                      'server check for %s failed: %s' %
-                                      (server, str(result)))
+            munkicommon.display_error(
+                'managedsoftwareupdate: server check for %s failed: %s' 
+                % (server, str(result)))
             if options.manualcheck:
                 # record our result
                 recordUpdateCheckResult(-1)
@@ -522,16 +524,19 @@ def main():
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
     
-    if options.logoutinstall or options.installonly:
+    if options.installonly:
         # we're only installing, not checking, so we should copy
         # some report values from the prior run
         munkicommon.readreport()
-        
+    
+    # archive the previous session's report
     munkicommon.archive_report()
     # start a new report
     munkicommon.report['StartTime'] = munkicommon.format_time()
     munkicommon.report['RunType'] = runtype
-
+    munkicommon.report['Errors'] = []
+    munkicommon.report['Warnings'] = []
+    
     munkicommon.log("### Starting managedsoftwareupdate run ###")
     if options.verbose:
         print 'Managed Software Update Tool'

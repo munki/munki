@@ -601,6 +601,8 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                             restartflag = True
 
             # record install success/failure
+            if not 'InstallResults' in munkicommon.report:
+                munkicommon.report['InstallResults'] = []
             if retcode == 0:
                 success_msg = ("Install of %s-%s: SUCCESSFUL" %
                                (display_name, version_to_install))
@@ -831,6 +833,8 @@ def processRemovals(removallist, only_forced=False):
                 retcode = -99
 
             # record removal success/failure
+            if not 'RemovalResults' in munkicommon.report:
+                munkicommon.report['RemovalResults'] = []
             if retcode == 0:
                 success_msg = "Removal of %s: SUCCESSFUL" % name
                 munkicommon.log(success_msg, "Install.log")

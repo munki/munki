@@ -269,6 +269,8 @@ def display_warning(msg, *args):
     # append this warning to our warnings log
     log(warning, 'warnings.log')
     # collect the warning for later reporting
+    if not 'Warnings' in report:
+        report['Warnings'] = []
     report['Warnings'].append(str(msg))
 
 
@@ -290,6 +292,8 @@ def display_error(msg, *args):
     # append this error to our errors log
     log(errmsg, 'errors.log')
     # collect the errors for later reporting
+    if not 'Errors' in report:
+        report['Errors'] = []
     report['Errors'].append(str(msg))
 
 
@@ -1605,9 +1609,6 @@ verbose = 1
 munkistatusoutput = False
 tmpdir = tempfile.mkdtemp()
 report = {}
-report['Errors'] = []
-report['Warnings'] = []
-
 
 def main():
     """Placeholder"""

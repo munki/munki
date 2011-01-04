@@ -695,8 +695,10 @@ def download_installeritem(item_pl, uninstalling=False):
     # set verboseness back.
     munkicommon.verbose = oldverbose
     if changed:
-        if not verifySoftwarePackageIntegrity(destinationpath, item_pl,
-                                              item_hash_key):
+        package_verified = verifySoftwarePackageIntegrity(destinationpath, 
+                                                          item_pl,
+                                                          item_hash_key)
+        if not package_verified:
             raise PackageVerificationError()
 
 
@@ -1175,7 +1177,6 @@ def verifySoftwarePackageIntegrity(file_path, item_pl, item_key):
                     'Reference hash value missing for %s -- package '
                     'integrity verification skipped.' % item_pl.get('name'))
                 return True
-
     else:
         munkicommon.display_error(
             'The PackageVerificationMode in the ManagedInstalls.plist has an '
