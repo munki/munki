@@ -95,7 +95,8 @@ if [ "$BUILD_APP" == "YES" ]; then
     
     (
         cd "$munkiroot/code/Managed Software Update"
-        /usr/bin/xcodebuild -project "Managed Software Update.xcodeproj" -alltargets
+        /usr/bin/xcodebuild -project "Managed Software Update.xcodeproj" -alltargets clean
+        /usr/bin/xcodebuild -project "Managed Software Update.xcodeproj" -alltargets build
         XCODEBUILD_RESULT="$?"
         if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
             echo "Error building Managed Software Update.app: $XCODEBUILD_RESULT"
