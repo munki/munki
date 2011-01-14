@@ -18,6 +18,7 @@
 		C0458B4D11EB8899001F1172 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C0458B4C11EB8899001F1172 /* ScaledImageView.m */; };
 		C0458B5111EB88C0001F1172 /* MSUStatusWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0458B5011EB88C0001F1172 /* MSUStatusWindowController.py */; };
 		C062868911E677820009B44B /* MSUOptionalInstallsViewController.py in Resources */ = {isa = PBXBuildFile; fileRef = C062868811E677820009B44B /* MSUOptionalInstallsViewController.py */; };
+		C082286F12C3CF5D007BAD36 /* ManagedInstalls.manifest in Resources */ = {isa = PBXBuildFile; fileRef = C082286E12C3CF5D007BAD36 /* ManagedInstalls.manifest */; };
 		C0828C801123DBC5003D5807 /* MSUWebViewPolicyDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = C0828C7F1123DBC5003D5807 /* MSUWebViewPolicyDelegate.py */; };
 		C0828C901123DCFF003D5807 /* ShutDownReq.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0828C871123DCFF003D5807 /* ShutDownReq.tif */; };
 		C0828C911123DCFF003D5807 /* RestartRec.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0828C881123DCFF003D5807 /* RestartRec.tif */; };
@@ -57,6 +58,7 @@
 		C0458B4F11EB88AD001F1172 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C0458B5011EB88C0001F1172 /* MSUStatusWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUStatusWindowController.py; sourceTree = "<group>"; };
 		C062868811E677820009B44B /* MSUOptionalInstallsViewController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUOptionalInstallsViewController.py; sourceTree = "<group>"; };
+		C082286E12C3CF5D007BAD36 /* ManagedInstalls.manifest */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ManagedInstalls.manifest; sourceTree = "<group>"; };
 		C0828C7F1123DBC5003D5807 /* MSUWebViewPolicyDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUWebViewPolicyDelegate.py; sourceTree = "<group>"; };
 		C0828C871123DCFF003D5807 /* ShutDownReq.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = ShutDownReq.tif; sourceTree = "<group>"; };
 		C0828C881123DCFF003D5807 /* RestartRec.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = RestartRec.tif; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				C0828C8E1123DCFF003D5807 /* package.tiff */,
 				C0828C8F1123DCFF003D5807 /* Installer.tiff */,
 				8D1107310486CEB800E47090 /* Info.plist */,
+				C082286E12C3CF5D007BAD36 /* ManagedInstalls.manifest */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -266,6 +269,7 @@
 				C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */,
 				C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */,
 				C0C5493212B9691B002C76CD /* MainMenu.strings in Resources */,
+				C082286F12C3CF5D007BAD36 /* ManagedInstalls.manifest in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

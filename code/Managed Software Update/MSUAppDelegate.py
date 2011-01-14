@@ -63,8 +63,15 @@ class MSUAppDelegate(NSObject):
         elif self.runmode == "MunkiStatus":
             self.munkiStatusController.startMunkiStatusSession()
         else:
-            # display updates if available; if no available updates
-            # trigger an update check
+            # user may have launched the app manually, or it may have
+            # been launched by /usr/local/munki/managedsoftwareupdate
+            # to display available updates
+            lastcheck = NSDate.dateWithString_(munki.pref('LastCheckDate'))
+            if not lastcheck or lastcheck.timeIntervalSinceNow() < -60:
+                # it's been more than a minute since the last check
+                self.checkForUpdates()
+                return
+            # do we have existing updates to display?
             if not self._listofupdates:
                 self.getAvailableUpdates()
             if self._listofupdates:
@@ -82,7 +89,8 @@ class MSUAppDelegate(NSObject):
 
     def munkiStatusSessionEnded_(self, socketSessionResult):
         consoleuser = munki.getconsoleuser()
-        if self.runmode == "MunkiStatus" or consoleuser == None or consoleuser == u"loginwindow":
+        if (self.runmode == "MunkiStatus" or consoleuser == None 
+            or consoleuser == u"loginwindow"):
             # Status Window only, so we should just quit
             NSApp.terminate_(self)
 
