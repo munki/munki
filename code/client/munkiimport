@@ -43,7 +43,7 @@ def makeDMG(pkgpath):
     diskimagename = os.path.splitext(pkgname)[0] + '.dmg'
     diskimagepath = os.path.join(munkicommon.tmpdir, diskimagename)
     cmd = ['/usr/bin/hdiutil', 'create', '-srcfolder', pkgpath, diskimagepath]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1, 
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     while True: 
@@ -394,7 +394,7 @@ def makePkgInfo(item_path):
         # didn't find it; assume the default install path
         makepkginfo_path = '/usr/local/munki/makepkginfo'
     proc = subprocess.Popen([makepkginfo_path, item_path],
-                            bufsize=1, stdout=subprocess.PIPE, 
+                            bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
     if proc.returncode:
@@ -417,7 +417,7 @@ def makeCatalogs():
     if not os.path.exists(repo_path):
         raise RepoCopyError('Could not connect to munki repo.')
     proc = subprocess.Popen([makecatalogs_path, repo_path],
-                            bufsize=1, stdout=subprocess.PIPE, 
+                            bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
     while True:
         output = proc.stdout.readline()

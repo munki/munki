@@ -25,6 +25,7 @@ import os
 import stat
 import subprocess
 from xml.dom import minidom
+from xml.parsers.expat import ExpatError
 
 from Foundation import NSDate
 
@@ -51,10 +52,13 @@ def getCurrentSoftwareUpdateServer():
 
 def selectSoftwareUpdateServer():
     '''Switch to our preferred Software Update Server if supplied'''
-    if munkicommon.pref('SoftwareUpdateServerURL'):
+    localCatalogURL = munkicommon.pref('SoftwareUpdateServerURL')
+    if localCatalogURL:
+        munkicommon.display_detail('Setting Apple Software Update '
+                                   'CatalogURL to %s' % localCatalogURL)
         cmd = ['/usr/bin/defaults', 'write',
                '/Library/Preferences/com.apple.SoftwareUpdate',
-               'CatalogURL', munkicommon.pref('SoftwareUpdateServerURL')]
+               'CatalogURL', localCatalogURL]
         unused_retcode = subprocess.call(cmd)
 
 
@@ -62,16 +66,20 @@ def restoreSoftwareUpdateServer(theurl):
     '''Switch back to original Software Update server (if there was one)'''
     if munkicommon.pref('SoftwareUpdateServerURL'):
         if theurl:
+            munkicommon.display_detail('Resetting Apple Software Update '
+                                       'CatalogURL to %s' % theurl)
             cmd = ['/usr/bin/defaults', 'write',
                    '/Library/Preferences/com.apple.SoftwareUpdate',
                    'CatalogURL', theurl]
         else:
+            munkicommon.display_detail('Resetting Apple Software Update '
+                                       'CatalogURL to the default')
             cmd = ['/usr/bin/defaults', 'delete',
                    '/Library/Preferences/com.apple.SoftwareUpdate', 
                    'CatalogURL']
         unused_retcode = subprocess.call(cmd)
-        
-        
+
+
 def setupSoftwareUpdateCheck():
     '''Set defaults for root user and current host.
     Needed for Leopard.'''
@@ -87,7 +95,7 @@ def setupSoftwareUpdateCheck():
            'com.apple.SoftwareUpdate', 'LaunchAppInBackground', 
            '-bool', 'YES']
     unused_retcode = subprocess.call(cmd)
-    
+
 
 CACHEDUPDATELIST = None
 def softwareUpdateList():
@@ -107,7 +115,7 @@ def softwareUpdateList():
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, unused_err) = proc.communicate()                     
     if proc.returncode == 0:
-       updates = [str(item)[5:] for item in output.splitlines() 
+        updates = [str(item)[5:] for item in output.splitlines() 
                        if str(item).startswith('   * ')]
     munkicommon.display_detail(
         'softwareupdate returned %s updates' % len(updates))
@@ -117,14 +125,14 @@ def softwareUpdateList():
     
 def checkForSoftwareUpdates():
     '''Does our Apple Software Update check'''
+    msg = "Checking for available Apple Software Updates..."
     if munkicommon.munkistatusoutput:
-        munkistatus.message("Checking for available "
-                            "Apple Software Updates...")
+        munkistatus.message(msg)
         munkistatus.detail("")
         munkistatus.percent(-1)
+        munkicommon.log(msg)
     else:
-        munkicommon.display_status("Checking for available "
-                                   "Apple Software Updates...")
+        munkicommon.display_status(msg)
     # save the current SUS URL
     original_url = getCurrentSoftwareUpdateServer()
     # switch to a different SUS server if specified
@@ -147,30 +155,52 @@ def checkForSoftwareUpdates():
         os.chmod(softwareupdateapp, newmode)
         
         cmd = [ softwareupdatecheck ]
-    elif osvers == 10:
+    elif osvers > 9:
         # in Snow Leopard we can just use /usr/sbin/softwareupdate, since it
         # now downloads updates the same way as SoftwareUpdateCheck
-        cmd = ['/usr/sbin/softwareupdate', '-d', '-a']
+        cmd = ['/usr/sbin/softwareupdate', '-v', '-d', '-a']
     else:
         # unsupported os version
         return -1
-       
+        
+    # bump up verboseness so we get download percentage done feedback.
+    oldverbose = munkicommon.verbose
+    munkicommon.verbose = oldverbose + 1
+    
     # now check for updates
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                            stdin=subprocess.PIPE, 
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                            
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
     while True: 
         output = proc.stdout.readline().decode('UTF-8')
         if munkicommon.munkistatusoutput:
-            if munkistatus.getStopButtonState() == 1:
+            if munkicommon.stopRequested():
                 os.kill(proc.pid, 15) #15 is SIGTERM
                 break
         if not output and (proc.poll() != None):
             break
         # send the output to STDOUT or MunkiStatus as applicable
-        # But first, filter out some noise...
-        if "Missing bundle identifier" not in output:
+        if output.startswith('Downloading '):
+            munkicommon.display_status(output.rstrip('\n'))
+        elif output.startswith('   Progress: '):
+            try:
+                percent = int(output[13:].rstrip('\n%'))
+            except ValueError:
+                percent = -1
+            munkicommon.display_percent_done(percent, 100)
+        elif output.startswith('Installed '):
+            # don't display this, it's just confusing
+            pass
+        elif output.startswith('x '):
+            # don't display this, it's just confusing
+            pass
+        elif 'Missing bundle identifier' in output:
+            # don't display this, it's noise
+            pass
+        elif output.rstrip() == '':
+            pass
+        else:
             munkicommon.display_status(output.rstrip('\n'))
     
     retcode = proc.poll()
@@ -194,35 +224,145 @@ def checkForSoftwareUpdates():
     if osvers == 9:
         # put mode back for Software Update.app
         os.chmod(softwareupdateapp, oldmode)
+        
+    # set verboseness back.
+    munkicommon.verbose = oldverbose
     
     # switch back to the original SUS server
     restoreSoftwareUpdateServer(original_url)
     return retcode
     
     
+#
+# Apple information on Distribution ('.dist') files:
+#
+# http://developer.apple.com/library/mac/#documentation/DeveloperTools/
+# Reference/DistributionDefinitionRef/200-Distribution_XML_Ref/
+# Distribution_XML_Ref.html
+#
+# Referred to elsewhere in this code as 'Distribution_XML_Ref.html'
+#
+
+def get_pkgrefs(xml_element):
+    '''Gets all the pkg-refs that are children of the xml_element
+       Returns a list of dictionaries.'''
+    pkgs = []
+    pkgrefs = xml_element.getElementsByTagName('pkg-ref')
+    if pkgrefs:
+        for ref in pkgrefs:
+            keys = ref.attributes.keys()
+            if 'id' in keys:
+                pkgid = ref.attributes['id'].value
+                pkg = {}
+                pkg['id'] = pkgid
+                if 'installKBytes' in keys:
+                    pkg['installKBytes'] = \
+                        ref.attributes['installKBytes'].value
+                # Distribution_XML_Ref.html
+                # says either 'installKBytes' or 'archiveKBytes' is valid
+                if 'archiveKBytes' in keys:
+                    pkg['installKBytes'] = \
+                        ref.attributes['archiveKBytes'].value
+                if 'version' in keys:
+                    pkg['version'] = \
+                        ref.attributes['version'].value
+                if 'auth' in keys:
+                    pkg['auth'] = \
+                        ref.attributes['auth'].value
+                if 'onConclusion' in keys:
+                    pkg['onConclusion'] = \
+                        ref.attributes['onConclusion'].value
+                if ref.firstChild:
+                    pkgfile = ref.firstChild.nodeValue
+                    pkgfile = os.path.basename(pkgfile).lstrip('#./')
+                    if pkgfile:
+                        pkg['package_file'] = pkgfile
+                pkgs.append(pkg)
+    return pkgs
+
+
 def parseDist(filename):
-    '''Attempts to extract:
-    SU_TITLE, SU_VERS, and SU_DESCRIPTION
-    from a .dist file in a Software Update download.'''
-    text = ""
+    '''Parses a dist file, looking for infomation of interest to
+       munki. Returns a dictionary.'''
+    su_name = ""
+    title = ""
+
     dom = minidom.parse(filename)
-    gui_scripts = dom.getElementsByTagName("installer-gui-script")
-    if gui_scripts:
-        localizations = gui_scripts[0].getElementsByTagName("localization")
-        if localizations:
-            string_elements = localizations[0].getElementsByTagName("strings")
-            if string_elements:
-                strings = string_elements[0]
-                for node in strings.childNodes:
-                    text += node.nodeValue
-                    
-                #if 'language' in strings.attributes.keys():
-                #    if strings.attributes['language'
-                #                             ].value.encode(
-                #                                   'UTF-8') == "English":
-                #        for node in strings.childNodes:
-                #            text += node.nodeValue
-                           
+
+    title_elements = dom.getElementsByTagName('title')
+    if title_elements and title_elements[0].firstChild:
+        title = title_elements[0].firstChild.nodeValue
+
+    outlines = {}
+    choices_outlines = dom.getElementsByTagName('choices-outline')
+    if choices_outlines:
+        for outline in choices_outlines:
+            if 'ui' in outline.attributes.keys():
+                # I wonder if we should convert to all lowercase...
+                ui_name = outline.attributes['ui'].value
+            else:
+                ui_name = u'Installer'
+            if not ui_name in outlines:
+                outlines[ui_name] = []
+                # this gets all lines, even children of lines
+                # so we get a flattened list, which is fine
+                # for our purposes for now.
+                # may need to rework if we need tree-style
+                # data in the future
+                lines = outline.getElementsByTagName('line')
+                for line in lines:
+                    if 'choice' in line.attributes.keys():
+                        outlines[ui_name].append(
+                            line.attributes['choice'].value)
+            else:
+                # more than one choices-outline with the same ui-name.
+                # we should throw an exception until we understand how to deal 
+                # with this.
+                # Maybe we can safely merge them, but we'll play it
+                # conversative for now
+                raise AppleUpdateParseError(
+                    'More than one choices-outline with ui=%s in %s'
+                    % (ui_name, filename))
+
+    choices = {}
+    choice_elements = dom.getElementsByTagName("choice")
+    if choice_elements:
+        for choice in choice_elements:
+            keys = choice.attributes.keys()
+            if 'id' in keys:
+                choice_id = choice.attributes['id'].value
+                if not choice_id in choices:
+                    choices[choice_id] = {}
+                pkgrefs = get_pkgrefs(choice)
+                if pkgrefs:
+                    choices[choice_id]['pkg-refs'] = pkgrefs
+            if 'suDisabledGroupID' in keys:
+                # this is the name as displayed from
+                # /usr/sbin/softwareupdate -l
+                su_name = choice.attributes[
+                    'suDisabledGroupID'].value
+
+    # now look in top-level of xml for more pkg-ref info
+    # this gets pkg-refs in child choice elements, too
+    root_pkgrefs = get_pkgrefs(dom)
+    # so remove the ones that we already found in choice elements
+    already_seen_pkgrefs = []
+    for key in choices.keys():
+        for pkgref in choices[key].get('pkg-refs', []):
+            already_seen_pkgrefs.append(pkgref)
+    root_pkgrefs = [item for item in root_pkgrefs
+                    if item not in already_seen_pkgrefs]
+
+    text = ""
+    localizations = dom.getElementsByTagName('localization')
+    if localizations:
+        string_elements = localizations[0].getElementsByTagName('strings')
+        if string_elements:
+            strings = string_elements[0]
+            if strings.firstChild:
+                text = strings.firstChild.nodeValue
+
+    # get title, version and description as displayed in Software Update
     title = vers = description = ""
     keep = False
     for line in text.split('\n'):
@@ -239,7 +379,7 @@ def parseDist(filename):
             line = line[16:]
             # lop off everything up through '
             line = line[line.find("'")+1:]
-        
+
         if keep:
             # replace escaped single quotes
             line = line.replace("\\'","'")
@@ -253,68 +393,253 @@ def parseDist(filename):
             else:
                 # append the line to the description
                 description += line + "\n"
-            
-    # now try to extract the size
+
+    # now try to determine the total installed size
     itemsize = 0
-    if gui_scripts:
-        pkgrefs = gui_scripts[0].getElementsByTagName("pkg-ref")
-        if pkgrefs:
-            for ref in pkgrefs:
-                keys = ref.attributes.keys()
-                if 'installKBytes' in keys:
-                    itemsize = int(
-                            ref.attributes[
-                            'installKBytes'].value.encode('UTF-8'))
-                    break
-            
+    for pkgref in root_pkgrefs:
+        if 'installKBytes' in pkgref:
+            itemsize += int(pkgref['installKBytes'])
+
     if itemsize == 0:
+        # just add up the size of the files in this directory
         for (path, unused_dirs, files) in os.walk(os.path.dirname(filename)):
             for name in files:
                 pathname = os.path.join(path, name)
                 # use os.lstat so we don't follow symlinks
                 itemsize += int(os.lstat(pathname).st_size)
         # convert to kbytes
-        itemsize = int(itemsize/1024)   
-                 
-    return title, vers, description, itemsize
+        itemsize = int(itemsize/1024)
+
+    dist = {}
+    dist['su_name'] = su_name
+    dist['title'] = title
+    dist['version'] = vers
+    dist['installed_size'] = itemsize
+    dist['description'] = description
+    dist['choices-outlines'] = outlines
+    dist['choices'] = choices
+    dist['pkg-refs'] = root_pkgrefs
+    return dist
 
 
-def getRestartInfo(installitemdir):
-    '''Looks at all the RestartActions for all the items in the
-     directory and returns the highest weighted of:
-       RequireRestart
-       RecommendRestart
-       RequireLogout
-       RecommendLogout
-       None'''
-    
-    weight = {}
-    weight['RequireRestart'] = 4
-    weight['RecommendRestart'] = 3
-    weight['RequireLogout'] = 2
-    weight['RecommendLogout'] = 1
-    weight['None'] = 0
-    
+def getRestartInfo(distfile):
+    '''Returns RestartInfo for distfile'''
     restartAction = "None"
-    for item in munkicommon.listdir(installitemdir):
-        if item.endswith(".dist") or item.endswith(".pkg") or \
-                item.endswith(".mpkg"):
-            installeritem = os.path.join(installitemdir, item)
-
-            proc = subprocess.Popen(["/usr/sbin/installer",
-                                    "-query", "RestartAction", 
-                                    "-pkg", installeritem], 
-                                    bufsize=1, 
-                                    stdout=subprocess.PIPE, 
-                                    stderr=subprocess.PIPE)
-            (out, unused_err) = proc.communicate()
-            if out:
-                thisAction = str(out).rstrip('\n')
-                if thisAction in weight.keys():
-                    if weight[thisAction] > weight[restartAction]:
-                        restartAction = thisAction
-            
+    proc = subprocess.Popen(["/usr/sbin/installer",
+                            "-query", "RestartAction", 
+                            "-pkg", distfile], 
+                            bufsize=1, 
+                            stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE)
+    (out, unused_err) = proc.communicate()
+    if out:
+        restartAction = out.rstrip('\n')
     return restartAction
+
+
+def actionWeight(action):
+    '''Returns an integer representing the weight of an
+    onConclusion action'''
+    weight = {}
+    weight['RequireShutdown'] = 4
+    weight['RequireRestart'] = 3
+    weight['RecommendRestart'] = 2
+    weight['RequireLogout'] = 1
+    weight['None'] = 0
+    return weight.get(action, 'None')
+
+
+def deDupPkgRefList(pkgref_list):
+    '''some dists have the same package file listed
+       more than once with different attributes
+       we need to de-dupe the list'''
+
+    deduped_list = []
+    for pkg_ref in pkgref_list:
+        matchingitems = [item for item in deduped_list 
+            if item['package_file'] == pkg_ref['package_file']]
+        if matchingitems:
+            # we have a duplicate; we should keep the one that has
+            # the higher weighted 'onConclusion' action
+            if (actionWeight(pkg_ref.get('onConclusion', 'None')) >
+                actionWeight(matchingitems[0].get('onConclusion', 'None'))):
+                deduped_list.remove(matchingitems[0])
+                deduped_list.append(pkg_ref)
+            else:
+                # keep existing item in deduped_list
+                pass
+        else:
+            deduped_list.append(pkg_ref)
+    return deduped_list
+
+
+def getPkgsToInstall(dist, dist_dir=None):
+    '''Given a processed dist dictionary (from parseDist()),
+    Returns a list of pkg-ref dictionaries in the order of install'''
+
+    # Distribution_XML_Ref.html
+    #
+    # The name of the application that is to display the choices specified by  
+    # this element. Values: "Installer" (default), "SoftwareUpdate", or 
+    # "Invisible".
+    # "invisible" seems to be in use as well...
+    if 'SoftwareUpdate' in dist['choices-outlines']:
+        ui_names = ['SoftwareUpdate', 'invisible', 'Invisible']
+    else:
+        ui_names = ['Installer', 'invisible', 'Invisible']
+
+    pkgref_list = []
+    for ui_name in ui_names:
+        if ui_name in dist['choices-outlines']:
+            outline = dist['choices-outlines'][ui_name]
+            choices = dist['choices']
+            for line in outline:
+                if line in choices:
+                    for pkg_ref in choices[line].get('pkg-refs', []):
+                        if 'package_file' in pkg_ref:
+                            if dist_dir:
+                                # make sure pkg is present in dist_dir
+                                # before adding to the list
+                                package_path = os.path.join(dist_dir,
+                                    pkg_ref['package_file'])
+                                if os.path.exists(package_path):
+                                    pkgref_list.append(pkg_ref)
+                            else:
+                                # just add it
+                                pkgref_list.append(pkg_ref)
+
+    return deDupPkgRefList(pkgref_list)
+
+
+def makeFakeDist(title, pkg_refs_to_install):
+    '''Builds a dist script for the list of pkg_refs_to_install
+       Returns xml object'''
+    xmlout = minidom.parseString(
+'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<installer-gui-script minSpecVersion="1">
+    <options hostArchitectures="ppc,i386" customize="never"></options>
+    <title></title>
+    <platforms>
+        <client arch="ppc,i386"></client><server arch="ppc,i386"></server>
+    </platforms>
+    <choices-outline ui="SoftwareUpdate">
+        <line choice="su"></line>
+    </choices-outline>
+    <choices-outline>
+        <line choice="su"></line>
+    </choices-outline>
+    <choice id="su" title="">
+    </choice>
+</installer-gui-script>
+''')
+    xmlinst = xmlout.getElementsByTagName('installer-gui-script')[0]
+    xmlchoice = xmlinst.getElementsByTagName('choice')[0]
+    xmltitle = xmlinst.getElementsByTagName('title')[0]
+    for pkg_ref in pkg_refs_to_install:
+        node = xmlout.createElement('pkg-ref')
+        node.setAttribute("id", pkg_ref['id'])
+        if 'auth' in pkg_ref:
+            node.setAttribute('auth', pkg_ref['auth'])
+        if 'onConclusion' in pkg_ref:
+            node.setAttribute('onConclusion', pkg_ref['onConclusion'])
+        node.appendChild(
+            xmlout.createTextNode(pkg_ref.get('package_file','')))
+        # add to choice
+        xmlchoice.appendChild(node)
+
+        node = xmlout.createElement("pkg-ref")
+        node.setAttribute("id", pkg_ref['id'])
+        if 'installKBytes' in pkg_ref:
+            node.setAttribute('installKBytes', pkg_ref['installKBytes'])
+        if 'version' in pkg_ref:
+            node.setAttribute('version', pkg_ref['version'])
+        # add to root of installer-gui-script
+        xmlinst.appendChild(node)
+
+    xmlchoice.setAttribute("title", title)
+    xmltitle.appendChild(xmlout.createTextNode(title))    
+
+    return xmlout
+
+
+class AppleUpdateParseError(Exception):
+    '''We raise this exception when we encounter something
+    unexpected in the update processing'''
+    pass
+    
+    
+def processSoftwareUpdateDownload(appleupdatedir, 
+                            verifypkgsexist=True, writefile=True):
+    '''Given a directory containing an update downloaded by softwareupdate -d 
+    or SoftwareUpdateCheck, attempts to create a simplified .dist file that
+    /usr/sbin/installer can use to successfully install the downloaded
+    update. 
+    Returns dist info as dictionary, 
+    or raises AppleUpdateParseError exception.'''
+
+    availabledists = []
+    availablepkgs = []
+    generated_dist_file = os.path.join(appleupdatedir, 'MunkiGenerated.dist')
+    try:
+        os.unlink(generated_dist_file)
+    except OSError:
+        pass
+
+    # What files do we have to work with? Do we have an appropriate quantity?
+    diritems = os.listdir(appleupdatedir)
+    for diritem in diritems:
+        if diritem.endswith('.dist'):
+            availabledists.append(diritem)
+        elif diritem.endswith('.pkg') or diritem.endswith('.mpkg'):
+            availablepkgs.append(diritem)
+
+    if len(availabledists) != 1:
+        raise AppleUpdateParseError(
+            'Multiple .dist files in update directory %s' % appleupdatedir)
+    if verifypkgsexist and len(availablepkgs) < 1:
+        raise AppleUpdateParseError(
+            'No packages in update directory %s' % appleupdatedir)
+
+    appledistfile = os.path.join(appleupdatedir, availabledists[0])
+    try:
+        dist = parseDist(appledistfile)
+    except (ExpatError, IOError):
+        raise AppleUpdateParseError(
+            'Could not parse .dist file %s' % appleupdatedir)
+
+    if verifypkgsexist:
+        pkg_refs_to_install = getPkgsToInstall(dist, appleupdatedir)
+    else:
+        pkg_refs_to_install = getPkgsToInstall(dist)
+
+    if len(pkg_refs_to_install) == 0:
+        raise AppleUpdateParseError(
+            'Nothing was found to install in %s' % appleupdatedir)
+
+    if verifypkgsexist:
+        pkg_files_to_install = [item['package_file'] 
+                                for item in pkg_refs_to_install]
+        for pkg in availablepkgs:
+            if not pkg in pkg_files_to_install:
+                raise AppleUpdateParseError(
+                    'Package %s missing from list of packages to install '
+                    'in %s' % (pkg, appleupdatedir))
+
+    # combine info from the root pkg-refs and the ones to be installed
+    for choice_pkg_ref in pkg_refs_to_install:
+        root_match = [item for item in dist['pkg-refs']
+                      if choice_pkg_ref['id'] == item['id']]
+        for item in root_match:
+            for key in item.keys():
+                choice_pkg_ref[key] = item[key]
+
+    xmlout = makeFakeDist(dist['title'], pkg_refs_to_install)
+    if writefile:
+        f = open(generated_dist_file, 'w')
+        f.write(xmlout.toxml('utf-8'))
+        f.close()
+    
+    return dist
 
 
 def getSoftwareUpdateInfo():
@@ -372,28 +697,25 @@ def getSoftwareUpdateInfo():
             updatename = products[product_key]
             installitem = os.path.join(updatesdir, updatename)
             if os.path.exists(installitem) and os.path.isdir(installitem):
-                for subitem in munkicommon.listdir(installitem):
-                    if subitem.endswith('.dist'):
-                        distfile = os.path.join(installitem, subitem)
-                        (title, vers, 
-                            description, 
-                            installedsize) = parseDist(distfile)
-                        iteminfo = {}
-                        iteminfo["installer_item"] = updatename
-                        iteminfo["name"] = title
-                        iteminfo["description"] = description
-                        if iteminfo["description"] == '':
-                            iteminfo["description"] = \
-                                            "Updated Apple software."
-                        iteminfo["version_to_install"] = vers
-                        iteminfo['display_name'] = title
-                        iteminfo['installed_size'] = installedsize
-                        restartAction = getRestartInfo(installitem)
-                        if restartAction != "None":
-                            iteminfo['RestartAction'] = restartAction
-                        
-                        infoarray.append(iteminfo)
-                        break
+                try:
+                    dist = processSoftwareUpdateDownload(installitem)
+                except AppleUpdateParseError, e:
+                    munkicommon.display_error('%s' % e)
+                else:
+                    iteminfo = {}
+                    iteminfo["installer_item"] = os.path.join(
+                        updatename, 'MunkiGenerated.dist')
+                    iteminfo["name"] = dist['su_name']
+                    iteminfo["description"] = (
+                        dist['description'] or "Updated Apple software.")
+                    iteminfo["version_to_install"] = dist['version']
+                    iteminfo['display_name'] = dist['title']
+                    iteminfo['installed_size'] = dist['installed_size']
+                    restartAction = getRestartInfo(
+                        os.path.join(installitem, 'MunkiGenerated.dist'))
+                    if restartAction != "None":
+                        iteminfo['RestartAction'] = restartAction
+                    infoarray.append(iteminfo)
 
     return infoarray
 
@@ -469,8 +791,8 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         if now.timeIntervalSinceDate_(nextSUcheck) >= 0:
             unused_retcode = checkForSoftwareUpdates()
         else:
-            munkicommon.log("Skipping Apple Software Update check because "
-                            "we last checked on %s..." % lastSUcheck)
+            munkicommon.log('Skipping Apple Software Update check because '
+                            'we last checked on %s...' % lastSUcheck)
 
     if writeAppleUpdatesFile():
         displayAppleUpdateInfo()
@@ -492,9 +814,7 @@ def clearAppleUpdateInfo():
 
 def installAppleUpdates():
     '''Uses /usr/sbin/installer to install updates previously
-    downloaded. Some items downloaded by SoftwareUpdate are not
-    installable by /usr/sbin/installer, so this approach may fail
-    to install all downloaded updates'''
+    downloaded.'''
 
     restartneeded = False
     appleupdatelist = getSoftwareUpdateInfo()
@@ -503,24 +823,18 @@ def installAppleUpdates():
     if appleupdatelist:
         munkicommon.report['AppleUpdateList'] = appleupdatelist
         munkicommon.savereport()
-        try:
-            # once we start, we should remove /Library/Updates/index.plist
-            # because it will point to items we've already installed
-            os.unlink('/Library/Updates/index.plist')
-            # remove the appleupdatesfile 
-            # so Managed Software Update.app doesn't display these
-            # updates again
-            os.unlink(appleUpdatesFile)
-        except (OSError, IOError):
-            pass
-        # now try to install the updates
         (restartneeded, unused_skipped_installs) = \
                 installer.installWithInfo("/Library/Updates",
                                           appleupdatelist)
         if restartneeded:
             munkicommon.report['RestartRequired'] = True
         munkicommon.savereport()
+        clearAppleUpdateInfo()
+                
     return restartneeded
+
+
+
 
 
 # define this here so we can access it in multiple functions

@@ -489,7 +489,7 @@ def main():
                 if not munkicommon.pythonScriptRunning(myname):
                     break
                 # or user clicks Stop
-                if munkistatus.getStopButtonState() == 1:
+                if munkicommon.stopRequested():
                     break
                 time.sleep(0.5)
 

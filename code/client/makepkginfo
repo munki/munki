@@ -51,7 +51,7 @@ def DMGhasSLA(dmgpath):
     hasSLA = False
     proc = subprocess.Popen(
                 ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
-                bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
     if err:
         print >> sys.stderr, ("hdiutil error %s with image %s." 
@@ -456,9 +456,9 @@ def main():
                 exit(-1)
             
             if options.description:
-              catinfo['description'] = options.description
+                catinfo['description'] = options.description
             if options.displayname:
-              catinfo['display_name'] = options.displayname
+                catinfo['display_name'] = options.displayname
 
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash
@@ -543,7 +543,7 @@ def main():
                 installs.append(iteminfodict)
             else:
                 print >> sys.stderr, (
-                                "Item %s doesn't exist. Skipping." % fitem)
+                    "Item %s doesn't exist. Skipping." % fitem)
                             
     if catinfo:
         catinfo['autoremove'] = False

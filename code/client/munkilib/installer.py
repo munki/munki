@@ -129,12 +129,12 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
                                   '-target', '/']
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     while True:
-        installinfo =  proc.stdout.readline().decode('UTF-8')
+        installinfo = proc.stdout.readline().decode('UTF-8')
         if not installinfo and (proc.poll() != None):
             break
         if installinfo.startswith("installer:"):
@@ -480,8 +480,7 @@ def installWithInfo(dirpath, installlist, only_forced=False):
         if munkicommon.stopRequested():
             return restartflag
         if "installer_item" in item:
-            display_name = item.get('display_name') or item.get('name') or \
-                           item.get('manifestitem')
+            display_name = item.get('display_name') or item.get('name')
             version_to_install = item.get('version_to_install','')
             if munkicommon.munkistatusoutput:
                 munkistatus.message("Installing %s (%s of %s)..." %
@@ -583,20 +582,12 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
                 else:
-                    itempath = munkicommon.findInstallerItem(itempath)
-                    if (itempath.endswith(".pkg") or \
-                            itempath.endswith(".mpkg")):
-                        (retcode, needtorestart) = install(itempath,
-                                                           choicesXMLfile,
-                                                    suppressBundleRelocation)
-                        if needtorestart:
-                            restartflag = True
-                    elif os.path.isdir(itempath):
-                        # directory of packages,
-                        # like what we get from Software Update
-                        (retcode, needtorestart) = installall(itempath,
-                                                              choicesXMLfile,
-                                                    suppressBundleRelocation)
+                    if (itempath.endswith(".pkg") or 
+                        itempath.endswith(".mpkg") or 
+                        itempath.endswith(".dist")):
+                        (retcode, needtorestart) = \
+                            install(itempath, choicesXMLfile,
+                                    suppressBundleRelocation)
                         if needtorestart:
                             restartflag = True
 
@@ -649,12 +640,20 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                 if os.path.exists(itempath):
                     if os.path.isdir(itempath):
                         retcode = subprocess.call(
-                                                ["/bin/rm", "-rf", itempath])
+                            ["/bin/rm", "-rf", itempath])
+                    elif itempath.endswith('MunkiGenerated.dist'):
+                        # softwareupdate item handled by munki
+                        # remove enclosing directory
+                        retcode = subprocess.call(
+                            ["/bin/rm", "-rf", os.path.dirname(itempath)])
                     else:
+                        # flat pkg or dmg
                         retcode = subprocess.call(["/bin/rm", itempath])
-                shadowfile = os.path.join(itempath,".shadow")
-                if os.path.exists(shadowfile):
-                    retcode = subprocess.call(["/bin/rm", shadowfile])
+                        if itempath.endswith('.dmg'):
+                            shadowfile = os.path.join(itempath,".shadow")
+                            if os.path.exists(shadowfile):
+                                retcode = subprocess.call(
+                                    ["/bin/rm", shadowfile])
                     
     return (restartflag, skipped_installs)
 
@@ -673,6 +672,7 @@ def writefile(stringdata, path):
 
 
 def runUninstallScript(name, path):
+    '''Runs the uninstall script'''
     if munkicommon.munkistatusoutput:
         munkistatus.message("Running uninstall script "
                             "for %s..." % name)
@@ -738,8 +738,7 @@ def processRemovals(removallist, only_forced=False):
             continue
 
         index += 1
-        name = item.get('display_name') or item.get('name') or \
-               item.get('manifestitem')
+        name = item.get('display_name') or item.get('name')
         if munkicommon.munkistatusoutput:
             munkistatus.message("Removing %s (%s of %s)..." %
                                 (name, index, len(removallist)))

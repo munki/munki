@@ -74,7 +74,7 @@ class PreferencesError(Error):
 def get_version():
     """Returns version of munkitools, reading version.plist
     and svnversion"""
-    version = "UNKNOWN"
+    vers = "UNKNOWN"
     build = ""
     # find the munkilib directory, and the version files
     munkilibdir = os.path.dirname(os.path.abspath(__file__))
@@ -86,7 +86,7 @@ def get_version():
             pass
         else:
             try:
-                version = vers_plist['CFBundleShortVersionString']
+                vers = vers_plist['CFBundleShortVersionString']
             except KeyError:
                 pass
     svnversionfile = os.path.join(munkilibdir, "svnversion")
@@ -99,8 +99,8 @@ def get_version():
         except OSError:
             pass
     if build:
-        version = version + " Build " + build
-    return version
+        vers = vers + " Build " + build
+    return vers
 
 
 # output and logging functions
@@ -271,7 +271,7 @@ def display_warning(msg, *args):
     # collect the warning for later reporting
     if not 'Warnings' in report:
         report['Warnings'] = []
-    report['Warnings'].append(str(msg))
+    report['Warnings'].append('%s' % msg)
 
 
 def reset_errors():
@@ -294,7 +294,7 @@ def display_error(msg, *args):
     # collect the errors for later reporting
     if not 'Errors' in report:
         report['Errors'] = []
-    report['Errors'].append(str(msg))
+    report['Errors'].append('%s' % msg)
 
 
 def format_time(timestamp=None):
@@ -1159,28 +1159,13 @@ def nameAndVersion(aString):
     return (aString, '')
 
 
-def findInstallerItem(path):
-    """Find an installer item in the directory given by path"""
-    if path.endswith('.pkg') or path.endswith('.mpkg') or \
-       path.endswith('.dmg'):
-        return path
+def isInstallerItem(path):
+    """Verifies we have an installer item"""
+    if (path.endswith('.pkg') or path.endswith('.mpkg') or
+        path.endswith('.dmg') or path.endswith('.dist')):
+        return True
     else:
-        # Apple Software Updates download as directories
-        # with .dist files and .pkgs
-        if os.path.exists(path) and os.path.isdir(path):
-            for item in listdir(path):
-                if item.endswith('.pkg'):
-                    return path
-
-            # we didn't find a pkg at this level
-            # look for a Packages dir
-            path = os.path.join(path,'Packages')
-            if os.path.exists(path) and os.path.isdir(path):
-                for item in listdir(path):
-                    if item.endswith('.pkg'):
-                        return path
-    # found nothing!
-    return ''
+        return False
 
 
 def getPackageMetaData(pkgitem):
@@ -1202,8 +1187,7 @@ def getPackageMetaData(pkgitem):
               (some may not be installed on some machines)
     """
 
-    pkgitem = findInstallerItem(pkgitem)
-    if pkgitem == None:
+    if not isInstallerItem(pkgitem):
         return {}
 
     # first get the data /usr/sbin/installer will give us
@@ -1421,7 +1405,7 @@ def getSpotlightInstalledApplications():
     """
     argv = ['/usr/bin/mdfind', '-0', 'kMDItemKind = \'Application\'']
     p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, stderr) = p.communicate()
+    (stdout, unused_stderr) = p.communicate()
     rc = p.wait()
 
     applist = []
@@ -1445,7 +1429,7 @@ def getLSInstalledApplications():
     apps = LaunchServices._LSCopyAllApplicationURLs(None)
     applist = []
     for app in apps:
-        (status, fsobj, url) = LaunchServices.LSGetApplicationForURL(
+        (status, fsobj, unused_url) = LaunchServices.LSGetApplicationForURL(
             app, _unsigned(LaunchServices.kLSRolesAll), None, None)
         if status != 0:
             continue
