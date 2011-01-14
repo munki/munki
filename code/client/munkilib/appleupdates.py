@@ -586,7 +586,7 @@ def processSoftwareUpdateDownload(appleupdatedir,
         pass
 
     # What files do we have to work with? Do we have an appropriate quantity?
-    diritems = os.listdir(appleupdatedir)
+    diritems = munkicommon.listdir(appleupdatedir)
     for diritem in diritems:
         if diritem.endswith('.dist'):
             availabledists.append(diritem)
