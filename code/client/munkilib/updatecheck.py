@@ -579,9 +579,9 @@ def getInstalledVersion(item_plist):
                                    if 'CFBundleShortVersionString' in item]
     for install_item in install_items_with_versions:
         # look for an installs item whose version matches the pkginfo version
-        if (compareVersions(install_item['CFBundleShortVersionString'],    
-            item_plist['version']) == 1):
-            if item['type'] == 'application':
+        if compareVersions(install_item['CFBundleShortVersionString'],   
+                           item_plist['version']) == 1:
+            if install_item['type'] == 'application':
                 name = install_item.get('CFBundleName')
                 bundleid = install_item.get('CFBundleIdentifier')
                 munkicommon.display_debug2(
@@ -613,7 +613,7 @@ def getInstalledVersion(item_plist):
                                 # version is higher
                                 maxversion = ai_item['version']
                     return maxversion
-            elif item['type'] == 'bundle':
+            elif install_item['type'] == 'bundle':
                 munkicommon.display_debug2(
                     'Using bundle %s to determine installed version of %s' 
                     % (install_item['path'], item_plist['name']))
@@ -624,7 +624,7 @@ def getInstalledVersion(item_plist):
                     return plist.get('CFBundleShortVersionString', 'UNKNOWN')
                 except FoundationPlist.NSPropertyListSerializationException:
                     return "UNKNOWN"
-            elif item['type'] == 'plist':
+            elif install_item['type'] == 'plist':
                 munkicommon.display_debug2(
                     'Using plist %s to determine installed version of %s' 
                     % (install_item['path'], item_plist['name']))
