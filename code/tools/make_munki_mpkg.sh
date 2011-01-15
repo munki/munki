@@ -114,7 +114,8 @@ echo
 # Build Xcode project.
 echo "Building Managed Software Update.xcodeproj..."
 pushd "$MUNKIROOT/code/Managed Software Update" > /dev/null
-/usr/bin/xcodebuild -project "Managed Software Update.xcodeproj" -alltargets > /dev/null
+/usr/bin/xcodebuild -project "Managed Software Update.xcodeproj" -alltargets clean > /dev/null
+/usr/bin/xcodebuild -project "Managed Software Update.xcodeproj" -alltargets build > /dev/null
 XCODEBUILD_RESULT="$?"
 popd > /dev/null
 if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
