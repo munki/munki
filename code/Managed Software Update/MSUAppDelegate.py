@@ -94,6 +94,10 @@ class MSUAppDelegate(NSObject):
             # Status Window only, so we should just quit
             NSApp.terminate_(self)
 
+        # The managedsoftwareupdate run will have changed state preferences
+        # in ManagedInstalls.plist. Load the new values.
+        munki.reload_prefs()
+
         alertMessageText = NSLocalizedString(u"Update check failed", None)
         if self.managedsoftwareupdate_task == "installwithnologout":
             alertMessageText = NSLocalizedString(u"Install session failed", None)

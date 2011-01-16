@@ -25,6 +25,7 @@ import subprocess
 import FoundationPlist
 from Foundation import NSFileManager
 from Foundation import CFPreferencesCopyAppValue
+from Foundation import CFPreferencesAppSynchronize
 
 
 UPDATECHECKLAUNCHFILE = \
@@ -40,6 +41,14 @@ def call(cmd):
 
 
 BUNDLE_ID = 'ManagedInstalls'
+
+def reload_prefs():
+    """Uses CFPreferencesAppSynchronize(BUNDLE_ID)
+    to make sure we have the latest prefs. Call this
+    if another process may have modified ManagedInstalls.plist,
+    this needs to be run after returning from MunkiStatus"""
+    CFPreferencesAppSynchronize(BUNDLE_ID)
+
 
 def pref(pref_name):
     """Return a preference. Since this uses CFPreferencesCopyAppValue,
