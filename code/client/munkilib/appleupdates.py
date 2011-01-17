@@ -473,7 +473,7 @@ def deDupPkgRefList(pkgref_list):
     return deduped_list
 
 
-def getPkgsToInstall(dist, dist_dir=None):
+def getPkgsToInstall(dist, pkgdir=None):
     '''Given a processed dist dictionary (from parseDist()),
     Returns a list of pkg-ref dictionaries in the order of install'''
 
@@ -497,10 +497,10 @@ def getPkgsToInstall(dist, dist_dir=None):
                 if line in choices:
                     for pkg_ref in choices[line].get('pkg-refs', []):
                         if 'package_file' in pkg_ref:
-                            if dist_dir:
+                            if pkgdir:
                                 # make sure pkg is present in dist_dir
                                 # before adding to the list
-                                package_path = os.path.join(dist_dir,
+                                package_path = os.path.join(pkgdir,
                                     pkg_ref['package_file'])
                                 if os.path.exists(package_path):
                                     pkgref_list.append(pkg_ref)
@@ -574,9 +574,14 @@ def processSoftwareUpdateDownload(appleupdatedir,
     or SoftwareUpdateCheck, attempts to create a simplified .dist file that
     /usr/sbin/installer can use to successfully install the downloaded
     update. 
-    Returns dist info as dictionary, 
+    Returns dist info as dictionary and path to generated dist
     or raises AppleUpdateParseError exception.'''
-
+    
+    osvers = int(os.uname()[2].split('.')[0])
+    if osvers == 9:
+        # Under Leopard, everything is one directory down...
+        appleupdatedir = os.path.join(appleupdatedir, "Packages")
+    
     availabledists = []
     availablepkgs = []
     generated_dist_file = os.path.join(appleupdatedir, 'MunkiGenerated.dist')
@@ -639,7 +644,7 @@ def processSoftwareUpdateDownload(appleupdatedir,
         f.write(xmlout.toxml('utf-8'))
         f.close()
     
-    return dist
+    return (dist, generated_dist_file)
 
 
 def getSoftwareUpdateInfo():
@@ -698,21 +703,21 @@ def getSoftwareUpdateInfo():
             installitem = os.path.join(updatesdir, updatename)
             if os.path.exists(installitem) and os.path.isdir(installitem):
                 try:
-                    dist = processSoftwareUpdateDownload(installitem)
+                    (dist, generated_dist_path) = \
+                        processSoftwareUpdateDownload(installitem)
                 except AppleUpdateParseError, e:
                     munkicommon.display_error('%s' % e)
                 else:
                     iteminfo = {}
-                    iteminfo["installer_item"] = os.path.join(
-                        updatename, 'MunkiGenerated.dist')
+                    iteminfo["installer_item"] = os.path.relpath(
+                        generated_dist_path, start=updatesdir)
                     iteminfo["name"] = dist['su_name']
                     iteminfo["description"] = (
                         dist['description'] or "Updated Apple software.")
                     iteminfo["version_to_install"] = dist['version']
                     iteminfo['display_name'] = dist['title']
                     iteminfo['installed_size'] = dist['installed_size']
-                    restartAction = getRestartInfo(
-                        os.path.join(installitem, 'MunkiGenerated.dist'))
+                    restartAction = getRestartInfo(generated_dist_path)
                     if restartAction != "None":
                         iteminfo['RestartAction'] = restartAction
                     infoarray.append(iteminfo)
@@ -832,8 +837,6 @@ def installAppleUpdates():
         clearAppleUpdateInfo()
                 
     return restartneeded
-
-
 
 
 
