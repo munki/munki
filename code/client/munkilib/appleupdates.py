@@ -709,8 +709,8 @@ def getSoftwareUpdateInfo():
                     munkicommon.display_error('%s' % e)
                 else:
                     iteminfo = {}
-                    iteminfo["installer_item"] = os.path.relpath(
-                        generated_dist_path, start=updatesdir)
+                    iteminfo["installer_item"] = \
+                        generated_dist_path[len(updatesdir)+1:]
                     iteminfo["name"] = dist['su_name']
                     iteminfo["description"] = (
                         dist['description'] or "Updated Apple software.")

@@ -38,7 +38,7 @@ import warnings
 from distutils import version
 from xml.dom import minidom
 
-from Foundation import NSDate
+from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
 from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesSetValue
 from Foundation import CFPreferencesAppSynchronize
@@ -1398,26 +1398,77 @@ def isExcludedFilesystem(path, _retry=False):
     return is_nfs or exc_flags
 
 
+def findAppsInDirs(dirlist):
+    """Do spotlight search for type applications within the
+    list of directories provided. Returns a list of paths to applications
+    these appear to always be some form of unicode string.
+    """
+    applist = []
+    query = NSMetadataQuery.alloc().init()
+    query.setPredicate_(NSPredicate.predicateWithFormat_(
+                                    '(kMDItemKind = "Application")'))
+    query.setSearchScopes_(dirlist)
+    query.startQuery()
+    # Spotlight isGathering phase - this is the initial search. After the
+    # isGathering phase Spotlight keeps running returning live results from
+    # filesystem changes, we are not interested in that phase.
+    # Run for 0.3 seconds then check if isGathering has completed.
+    runtime = 0
+    maxruntime = 20
+    while query.isGathering() and runtime <= maxruntime:
+        runtime += 0.3
+        NSRunLoop.currentRunLoop().runUntilDate_(
+                                   NSDate.dateWithTimeIntervalSinceNow_(0.3))
+    query.stopQuery()
+
+    if runtime >= maxruntime:
+        display_warning('Spotlight search for applications terminated due to '
+              'excessive time. This will happen if spotlight is reindexing '
+              'the drive, otherwise it is a bug.')
+
+    for item in query.results():
+        p = item.valueForAttribute_('kMDItemPath')
+        if not isExcludedFilesystem(p):
+            applist.append(p)
+
+    return applist
+
+
 def getSpotlightInstalledApplications():
     """Get paths of currently installed applications per Spotlight.
     Return value is list of paths.
-    Ignores apps installed on other volumes
+    Excludes most non-boot volumes.
+    In future may include local r/w volumes.
     """
-    argv = ['/usr/bin/mdfind', '-0', 'kMDItemKind = \'Application\'']
-    p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, unused_stderr) = p.communicate()
-    rc = p.wait()
-
+    # Includes /Users.
+    skipdirs = ['Volumes', 'tmp', '.vol', '.Trashes',
+                '.Spotlight-V100', '.fseventsd', 'Network', 'net',
+                'home', 'cores', 'dev']
+    dirlist = []
     applist = []
 
-    if rc != 0:
-        return applist
+    for f in listdir(u'/'):
+        if not f in skipdirs:
+            p = os.path.join(u'/', f)
+            if os.path.isdir(p) and not os.path.islink(p) \
+                                and not isExcludedFilesystem(p):
+                if f.endswith('.app'):
+                    applist.append(p)
+                else:
+                    dirlist.append(p)
 
-    for app_path in stdout.split('\0'):
-        if (not app_path.startswith('/Volumes/') and not
-        isExcludedFilesystem(app_path)):
-            applist.append(app_path)
+    # Future code changes may mean we wish to look for Applications
+    # installed on any r/w local volume.
+    #for f in listdir(u'/Volumes'):
+    #    p = os.path.join(u'/Volumes', f)
+    #    if os.path.isdir(p) and not os.path.islink(p) \
+    #                        and not isExcludedFilesystem(p):
+    #        dirlist.append(p)
 
+    # /Users is not currently excluded, so no need to add /Users/Shared.
+    #dirlist.append(u'/Users/Shared')
+
+    applist.extend(findAppsInDirs(dirlist))
     return applist
 
 
@@ -1435,7 +1486,7 @@ def getLSInstalledApplications():
             continue
         app_path = fsobj.as_pathname()
         if (not app_path.startswith('/Volumes/') and not
-        isExcludedFilesystem(app_path)):
+            isExcludedFilesystem(app_path)):
             applist.append(app_path)
 
     return applist

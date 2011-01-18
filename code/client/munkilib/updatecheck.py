@@ -566,8 +566,8 @@ def getInstalledVersion(item_plist):
     """
     for receipt in item_plist.get('receipts', []):
         # look for a receipt whose version matches the pkginfo version
-        if (compareVersions(receipt.get('version', 0),
-            item_plist['version'])) == 1:
+        if compareVersions(receipt.get('version', 0),
+                           item_plist['version']) == 1:
             pkgid = receipt['packageid']
             munkicommon.display_debug2(
                 'Using receipt %s to determine installed version of %s' 
@@ -595,7 +595,6 @@ def getInstalledVersion(item_plist):
                     return plist.get('CFBundleShortVersionString', 'UNKNOWN')
                 except FoundationPlist.NSPropertyListSerializationException:
                     # that didn't work, fall through to the slow way
-                    # using System Profiler
                     appinfo = []
                     appdata = munkicommon.getAppData()
                     if appdata:
