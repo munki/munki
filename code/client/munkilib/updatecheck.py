@@ -191,7 +191,7 @@ PKGDATA  = {}
 def analyzeInstalledPkgs():
     """Analyzed installed packages in an attempt to determine what is
        installed."""
-    global PKGDATA
+    #global PKGDATA
     managed_pkgids = {}
     for catalogname in CATALOG.keys():
         catalogitems = CATALOG[catalogname]['items']
@@ -247,7 +247,6 @@ def analyzeInstalledPkgs():
                 references[pkg] = []
             references[pkg].append(name)
 
-    PKGDATA = {}
     PKGDATA['receipts_for_name'] = installedpkgsmatchedtoname
     PKGDATA['installed_names'] = installed
     PKGDATA['pkg_references'] = references
@@ -1918,7 +1917,7 @@ def getManifestValueForKey(manifestpath, keyname):
 # global to hold our catalog DBs
 CATALOG = {}
 def getCatalogs(cataloglist):
-    """Retreives the catalogs from the server and populates our catalogs
+    """Retrieves the catalogs from the server and populates our catalogs
     dictionary.
     """
     #global CATALOG
