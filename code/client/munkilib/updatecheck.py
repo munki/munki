@@ -1450,7 +1450,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
 
     iteminfo = {}
     iteminfo['name'] = item_pl.get('name', '')
-    iteminfo['display_name'] = item_pl.get('display_name', '')
+    iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
     #iteminfo['manifestitem'] = manifestitemname
     
@@ -1459,7 +1459,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
         munkicommon.display_detail('Need to install %s' % manifestitemname)
         iteminfo['installer_item_size'] = item_pl.get(
                                                 'installer_item_size', 0)
-        iteminfo['installed_size'] = item_pl.get('installer_item_size',
+        iteminfo['installed_size'] = item_pl.get('installed_size',
                                             iteminfo['installer_item_size'])
 
        # check to see if there is enough free space to download and install
@@ -1541,6 +1541,9 @@ def processInstall(manifestitem, cataloglist, installinfo):
             return False
     else:
         iteminfo['installed'] = True
+        # record installed size for reporting
+        iteminfo['installed_size'] = item_pl.get('installed_size', 
+            item_pl.get('installer_item_size',0))
         if installed_state == 1:
             # just use the version from the pkginfo
             iteminfo['installed_version'] = item_pl['version']
