@@ -1597,7 +1597,7 @@ def getAvailableDiskSpace(volumepath='/'):
             'Error getting disk space in %s: %s', volumepath, str(e))
         return 0
 
-    return st.f_frsize * st.f_bavail / 1024 # f_bavail matches df(1) output
+    return int(st.f_frsize * st.f_bavail / 1024) # f_bavail matches df(1) output
 
 
 def cleanUpTmpDir():
