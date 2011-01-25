@@ -4,7 +4,7 @@
 #  Managed Software Update
 #
 #  Created by Greg Neagle on 2/11/10.
-#  Copyright 2010 Greg Neagle.
+#  Copyright 2010-2011 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

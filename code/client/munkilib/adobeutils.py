@@ -7,7 +7,7 @@ Utilities to enable munki to install/uninstall Adobe CS3/CS4/CS5 products
 using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
-# Copyright 2009-2010 Greg Neagle.
+# Copyright 2009-2011 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

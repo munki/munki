@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2010 Greg Neagle.
+# Copyright 2009-2011 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ Builds a repo catalog from these files.
 Assumes a pkgsinfo directory under repopath.
 User calling this needs to be able to write to repo/catalogs.
 
-TO-DOs:
-Maybe generate a checksum so we can verify the installer item is the right one
 """
 
 import sys
