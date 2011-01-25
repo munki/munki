@@ -1191,7 +1191,7 @@ def getAutoRemovalItems(installinfo, cataloglist):
     that have already been processed.
     """
     autoremovalnames = []
-    for catalogname in cataloglist:
+    for catalogname in (cataloglist or []):
         if catalogname in CATALOG.keys():
             autoremovalnames += CATALOG[catalogname]['autoremoveitems']
             
