@@ -266,7 +266,7 @@ def notifyUserOfUpdates():
             # subtract 6 hours
             interval = interval - (6 * 60 * 60)
         nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
-    if now.timeIntervalSinceDate_(nextNotifyDate) > 0:
+    if now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
         # record current notification date
         munkicommon.set_pref('LastNotifiedDate', now)
         
