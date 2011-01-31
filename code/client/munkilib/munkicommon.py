@@ -36,6 +36,7 @@ import time
 import urllib2
 import warnings
 from distutils import version
+from types import StringType
 from xml.dom import minidom
 
 from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
@@ -753,6 +754,30 @@ def getInstallerPkgInfo(filename):
             installerinfo['RestartAction'] = restartAction
 
     return installerinfo
+    
+
+class MunkiLooseVersion (version.LooseVersion):
+    '''Subclass version.LooseVersion to compare things like
+    "10.6" and "10.6.0" as equal'''
+
+    def pad(self, version_list, max_length):
+        """Pad a version list by adding extra 0
+        components to the end if needed"""
+        # copy the version_list so we don't modify it
+        cmp_list = list(version_list)
+        while len(cmp_list) < max_length :
+                cmp_list.append(0)
+        return (cmp_list)
+
+    def __cmp__ (self, other):
+        if isinstance(other, StringType):
+            other = MunkiLooseVersion(other)
+
+        max_length = max(len(self.version), len(other.version))
+        self_cmp_version = self.pad(self.version, max_length)
+        other_cmp_version = self.pad(other.version, max_length)
+
+        return cmp(self_cmp_version, other_cmp_version)
 
 
 def padVersionString(versString, tupleCount):
@@ -811,7 +836,8 @@ def getExtendedVersion(bundlepath):
         plist = FoundationPlist.readPlist(infoPlist)
         versionstring = getVersionString(plist)
         if versionstring:
-            return padVersionString(versionstring, 5)
+            #return padVersionString(versionstring, 5)
+            return versionstring
 
     # no version number in Info.plist. Maybe old-style package?
     infopath = os.path.join(bundlepath, 'Contents', 'Resources',
@@ -829,8 +855,9 @@ def getExtendedVersion(bundlepath):
                     if len(parts) == 2:
                         label = parts[0]
                         if label == 'Version':
-                            return padVersionString(parts[1], 5)
-
+                            #return padVersionString(parts[1], 5)
+                            return parts[1]
+                            
     # didn't find a version number, so return 0...
     return '0.0.0.0.0'
 
@@ -848,8 +875,10 @@ def parsePkgRefs(filename):
                 pkginfo = {}
                 pkginfo['packageid'] = \
                              ref.attributes['id'].value.encode('UTF-8')
-                pkginfo['version'] = padVersionString(
-                           ref.attributes['version'].value.encode('UTF-8'), 5)
+                #pkginfo['version'] = padVersionString(
+                #       ref.attributes['version'].value.encode('UTF-8'), 5)
+                pkginfo['version'] = \
+                    ref.attributes['version'].value.encode('UTF-8')
                 if 'installKBytes' in keys:
                     pkginfo['installed_size'] = int(
                         ref.attributes['installKBytes'].value.encode('UTF-8'))
@@ -865,9 +894,11 @@ def parsePkgRefs(filename):
                     pkginfo = {}
                     pkginfo['packageid'] = \
                            ref.attributes['identifier'].value.encode('UTF-8')
+                    #pkginfo['version'] = \
+                    #    padVersionString(
+                    #    ref.attributes['version'].value.encode('UTF-8'),5)
                     pkginfo['version'] = \
-                           padVersionString(
-                            ref.attributes['version'].value.encode('UTF-8'),5)
+                        ref.attributes['version'].value.encode('UTF-8')
                     payloads = ref.getElementsByTagName('payload')
                     if payloads:
                         keys = payloads[0].attributes.keys()
@@ -973,8 +1004,9 @@ def getOnePackageInfo(pkgpath):
                         if len(parts) == 2:
                             label = parts[0]
                             if label == 'Version':
-                                pkginfo['version'] = \
-                                    padVersionString(parts[1], 5)
+                                #pkginfo['version'] = \
+                                #    padVersionString(parts[1], 5)
+                                pkginfo['version'] = parts[1]
                             if label == 'Title':
                                 pkginfo['name'] = parts[1]
                     break
@@ -1109,7 +1141,8 @@ def getInstalledPackageVersion(pkgid):
             if pkgid == foundbundleid:
                 display_debug2('\tThis machine has %s, version %s' %
                                 (pkgid, foundvers))
-            return padVersionString(foundvers, 5)
+            #return padVersionString(foundvers, 5)
+            return foundvers
 
     # If we got to this point, we haven't found the pkgid yet.
     # Check /Library/Receipts
@@ -1125,8 +1158,8 @@ def getInstalledPackageVersion(pkgid):
                     foundbundleid = infoitem['packageid']
                     foundvers = infoitem['version']
                     if pkgid == foundbundleid:
-                        if version.LooseVersion(foundvers) > \
-                           version.LooseVersion(highestversion):
+                        if (MunkiLooseVersion(foundvers) > 
+                           MunkiLooseVersion(highestversion)):
                             highestversion = foundvers
 
         if highestversion != '0':
@@ -1206,8 +1239,8 @@ def getPackageMetaData(pkgitem):
     highestpkgversion = '0.0'
     installedsize = 0
     for infoitem in receiptinfo:
-        if version.LooseVersion(infoitem['version']) > \
-           version.LooseVersion(highestpkgversion):
+        if (MunkiLooseVersion(infoitem['version']) > 
+            MunkiLooseVersion(highestpkgversion)):
             highestpkgversion = infoitem['version']
             if 'installed_size' in infoitem:
                 # note this is in KBytes

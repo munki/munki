@@ -132,8 +132,9 @@ def getPayloadInfo(dirpath):
                                 if propname == 'ProductName':
                                     payloadinfo['display_name'] = propvalue
                                 if propname == 'ProductVersion':
-                                    payloadinfo['version'] = \
-                                     munkicommon.padVersionString(propvalue,5)
+                                    #payloadinfo['version'] = \
+                                    #munkicommon.padVersionString(propvalue,5)
+                                    payloadinfo['version'] = propvalue
                                      
                     installmetadata = \
                         payload_info[0].getElementsByTagName(

@@ -31,7 +31,7 @@ import time
 import urllib2
 import urlparse
 import xattr
-from distutils import version
+#from distutils import version
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 #our libs
@@ -57,7 +57,8 @@ def makeCatalogDB(catalogitems):
             munkicommon.display_warning('Bad pkginfo: %s' % item)
 
         # normalize the version number
-        vers = munkicommon.padVersionString(vers, 5)
+        #vers = munkicommon.padVersionString(vers, 5)
+        vers = trimVersionString(vers)
 
         # build indexes for items by name and version
         if not name in name_table:
@@ -181,8 +182,8 @@ def getInstalledPackages():
                         # installed, since presumably
                         # the newer package replaced the older one
                         storedversion = INSTALLEDPKGS[pkgid]
-                        if version.LooseVersion(thisversion) > \
-                           version.LooseVersion(storedversion):
+                        if (munkicommon.MunkiLooseVersion(thisversion) > 
+                            munkicommon.MunkiLooseVersion(storedversion)):
                             INSTALLEDPKGS[pkgid] = thisversion
 
 
@@ -276,11 +277,13 @@ def compareVersions(thisvers, thatvers):
       1 if thisvers is the same as thatvers
       2 if thisvers is newer than thatvers
     """
-    thisvers = munkicommon.padVersionString(thisvers, 5)
-    thatvers = munkicommon.padVersionString(thatvers, 5)
-    if version.LooseVersion(thisvers) < version.LooseVersion(thatvers):
+    #thisvers = munkicommon.padVersionString(thisvers, 5)
+    #thatvers = munkicommon.padVersionString(thatvers, 5)
+    if (munkicommon.MunkiLooseVersion(thisvers) < 
+        munkicommon.MunkiLooseVersion(thatvers)):
         return -1
-    elif version.LooseVersion(thisvers) == version.LooseVersion(thatvers):
+    elif (munkicommon.MunkiLooseVersion(thisvers) ==
+          munkicommon.MunkiLooseVersion(thatvers)):
         return 1
     else:
         return 2
@@ -755,8 +758,8 @@ def getAllItemsWithName(name, cataloglist):
     """
     def compare_item_versions(a, b):
         """Internal comparison function for use with sorting"""
-        return cmp(version.LooseVersion(b['version']),
-                   version.LooseVersion(a['version']))
+        return cmp(munkicommon.MunkiLooseVersion(b['version']),
+                   munkicommon.MunkiLooseVersion(a['version']))
 
     itemlist = []
     # we'll throw away any included version info
@@ -785,6 +788,24 @@ def getAllItemsWithName(name, cataloglist):
         # sort so latest version is first
         itemlist.sort(compare_item_versions)
     return itemlist
+    
+    
+def trimVersionString(version_string):
+    """Trims all lone trailing zeros in the version string after major/minor.
+
+    Examples:
+      10.0.0.0 -> 10.0
+      10.0.0.1 -> 10.0.0.1
+      10.0.0-abc1 -> 10.0.0-abc1
+      10.0.0-abc1.0 -> 10.0.0-abc1
+    """
+    if version_string == None or version_string == '':
+        return ''
+    version_parts = version_string.split('.')
+    # strip off all trailing 0's in the version, while over 2 parts.
+    while len(version_parts) > 2 and version_parts[-1] == '0':
+        del(version_parts[-1])
+    return '.'.join(version_parts)
 
 
 def getItemDetail(name, cataloglist, vers=''):
@@ -797,7 +818,8 @@ def getItemDetail(name, cataloglist, vers=''):
     """
     def compare_version_keys(a, b):
         """Internal comparison function for use in sorting"""
-        return cmp(version.LooseVersion(b), version.LooseVersion(a))
+        return cmp(munkicommon.MunkiLooseVersion(b),
+                   munkicommon.MunkiLooseVersion(a))
 
     (name, includedversion) = nameAndVersion(name)
     if vers == '':
@@ -805,7 +827,9 @@ def getItemDetail(name, cataloglist, vers=''):
             vers = includedversion
     if vers:
         # make sure version is in 1.0.0.0.0 format
-        vers = munkicommon.padVersionString(vers, 5)
+        #vers = munkicommon.padVersionString(vers, 5)
+        # normalize the version string
+        vers = trimVersionString(vers)
     else:
         vers = 'latest'
 
@@ -840,17 +864,18 @@ def getItemDetail(name, cataloglist, vers=''):
                 # we have an item whose name and version matches the request.
                 # now check to see if it meets os and cpu requirements
                 if 'minimum_os_version' in item:
-                    min_os_vers = \
-                        munkicommon.padVersionString(
-                                                item['minimum_os_version'],3)
+                    #min_os_vers = \
+                    #    munkicommon.padVersionString(
+                    #                            item['minimum_os_version'],3)
+                    min_os_vers = item['minimum_os_version']
                     munkicommon.display_debug1(
                         'Considering item %s, ' % item['name'] +
                         'version %s ' % item['version'] +
                         'with minimum os version required %s' % min_os_vers)
                     munkicommon.display_debug1('Our OS version is %s' %
                                                 MACHINE['os_vers'])
-                    if version.LooseVersion(MACHINE['os_vers']) < \
-                       version.LooseVersion(min_os_vers):
+                    if (munkicommon.MunkiLooseVersion(MACHINE['os_vers']) < 
+                       munkicommon.MunkiLooseVersion(min_os_vers)):
                         # skip this one, go to the next
                         reason = (('Rejected item %s, version %s '
                                   'with minimum os version required %s. '
@@ -862,17 +887,18 @@ def getItemDetail(name, cataloglist, vers=''):
                         continue
 
                 if 'maximum_os_version' in item:
-                    max_os_vers = \
-                        munkicommon.padVersionString(
-                                                item['maximum_os_version'],3)
+                    #max_os_vers = \
+                    #    munkicommon.padVersionString(
+                    #                            item['maximum_os_version'],3)
+                    max_os_vers = item['maximum_os_version']
                     munkicommon.display_debug1(
                         'Considering item %s, ' % item['name'] +
                         'version %s ' % item['version'] +
                         'with maximum os version supported %s' % max_os_vers)
                     munkicommon.display_debug1('Our OS version is %s' %
                                                 MACHINE['os_vers'])
-                    if version.LooseVersion(MACHINE['os_vers']) > \
-                       version.LooseVersion(max_os_vers):
+                    if (munkicommon.MunkiLooseVersion(MACHINE['os_vers']) > 
+                        munkicommon.MunkiLooseVersion(max_os_vers)):
                         # skip this one, go to the next
                         reason = (('Rejected item %s, version %s '
                                   'with maximum os version required %s. '
@@ -2459,8 +2485,9 @@ def getMachineFacts():
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, unused_err) = proc.communicate()
     # format version string like '10.5.8', so that '10.6' becomes '10.6.0'
-    MACHINE['os_vers'] = munkicommon.padVersionString(
-                                                str(output).rstrip('\n'),3)
+    #MACHINE['os_vers'] = munkicommon.padVersionString(
+    #                                            str(output).rstrip('\n'),3)
+    MACHINE['os_vers'] = str(output).rstrip('\n')
 
 
 def check(client_id='', localmanifestpath=None):

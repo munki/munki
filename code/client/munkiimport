@@ -28,7 +28,7 @@ import os
 import optparse
 import subprocess
 import time
-from distutils import version
+#from distutils import version
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
@@ -271,7 +271,7 @@ def makeCatalogDB():
             munkicommon.display_warning('Bad pkginfo: %s' % item)
 
         # normalize the version number
-        vers = munkicommon.padVersionString(vers, 5)
+        #vers = munkicommon.padVersionString(vers, 5)
         
         # add to hash table
         if 'installer_item_hash' in item:
@@ -324,7 +324,8 @@ def findMatchingPkginfo(pkginfo):
     
     def compare_version_keys(a, b):
         """Internal comparison function for use in sorting"""
-        return cmp(version.LooseVersion(b), version.LooseVersion(a))
+        return cmp(munkicommon.MunkiLooseVersion(b),
+                   munkicommon.MunkiLooseVersion(a))
     
     try:
         db = makeCatalogDB()
