@@ -360,7 +360,7 @@ def parseDist(filename):
         if string_elements:
             strings = string_elements[0]
             if strings.firstChild:
-                text = strings.firstChild.nodeValue
+                text = strings.firstChild.wholeText
 
     # get title, version and description as displayed in Software Update
     title = vers = description = ""
@@ -371,6 +371,9 @@ def parseDist(filename):
             title = title[title.find('"')+1:-2]
         if line.startswith('"SU_VERS"'):
             vers = line[9:]
+            vers = vers[vers.find('"')+1:-2]
+        if line.startswith('"SU_VERSION"'):
+            vers = line[12:]
             vers = vers[vers.find('"')+1:-2]
         if line.startswith('"SU_DESCRIPTION"'):
             description = ""
