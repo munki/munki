@@ -498,14 +498,24 @@ def pythonScriptRunning(scriptname):
     mypid = os.getpid()
     lines = str(out).splitlines()
     for line in lines:
-        (pid, process) = line.split(None, 1)
-        # first look for Python processes
-        if (process.find('MacOS/Python ') != -1 or
-                                            process.find('python ') != -1):
-            if process.find(scriptname) != -1:
-                if int(pid) != int(mypid):
-                    return pid
-
+        try:
+            (pid, process) = line.split(None, 1)
+        except ValueError:
+            # funky process line, so we'll skip it
+            pass
+        else:
+            # first look for Python processes
+            if (process.find('MacOS/Python ') != -1 or
+                process.find('python ') != -1):
+                if process.find(scriptname) != -1:
+                    try:
+                        if int(pid) != int(mypid):
+                            return pid
+                    except ValueError:
+                        # pid must have some funky characters
+                        pass
+    # if we get here we didn't find a Python script with scriptname
+    # (other than ourselves)
     return 0
 
 
@@ -754,19 +764,19 @@ def getInstallerPkgInfo(filename):
             installerinfo['RestartAction'] = restartAction
 
     return installerinfo
-    
+
 
 class MunkiLooseVersion (version.LooseVersion):
     '''Subclass version.LooseVersion to compare things like
     "10.6" and "10.6.0" as equal'''
 
-    def pad(self, version_list, max_length):
+    def __pad__(self, version_list, max_length):
         """Pad a version list by adding extra 0
         components to the end if needed"""
         # copy the version_list so we don't modify it
         cmp_list = list(version_list)
         while len(cmp_list) < max_length :
-                cmp_list.append(0)
+            cmp_list.append(0)
         return (cmp_list)
 
     def __cmp__ (self, other):
@@ -774,8 +784,8 @@ class MunkiLooseVersion (version.LooseVersion):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
-        self_cmp_version = self.pad(self.version, max_length)
-        other_cmp_version = self.pad(other.version, max_length)
+        self_cmp_version = self.__pad__(self.version, max_length)
+        other_cmp_version = self.__pad__(other.version, max_length)
 
         return cmp(self_cmp_version, other_cmp_version)
 
