@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>blocking_applications</key>
+	<array>
+		<string>Adobe Photoshop CS5</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>The Adobe Photoshop 12.0.2 update fixes a number of high priority bugs including painting performance and type-related issues. The most significant fixes in the Photoshop 12.0.2 update include the following:
+
+- A number of potential security vulnerabilities have been addressed
+- Top type and font crashers found in the field have been addressed
+- A number of performance issues have been addressed
+- Crash opening 3D layers has been addressed
+- Color Engine crash has been resolved
+- Intermittent file format issues addressed
+- Shift scrolling bug fixed
+- Sharpen crasher fixed
+- Marching ants not seen at certain zoom levels fixed
+- Metadata focus distance issue addressed
+- File info bug addressed for Orphea Studio jpg’s
+- TWAIN crashers fixed
+- Brush cursor bug fixed
+- Histogram progress bar issue fixed
+- Droplet issues addressed</string>
+	<key>display_name</key>
+	<string>Adobe Photoshop CS5 Update</string>
+	<key>installed_size</key>
+	<integer>399214</integer>
+	<key>installer_item_hash</key>
+	<string>08dc735beeefd8b2e73a5eb123aeab0e4b39dcad3d5331f49c43f9a32744ff1f</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/updates/AdobePhotoshop12_2-mul-AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>14973</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{8B187308-57C1-49B9-8A6A-FAB3F0D10D0A}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{648BBEB0-4E70-4D89-96CD-41C80A63686D}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5</string>
+			<key>installed_size</key>
+			<integer>399214</integer>
+			<key>version</key>
+			<string>12.0.2.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{8B187308-57C1-49B9-8A6A-FAB3F0D10D0A}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5 Support</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>12.0.2.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+	</array>
+	<key>version</key>
+	<string>12.0.2.0.0</string>
+</dict>
+</plist>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>adobe_install_info</key>
+	<dict>
+		<key>media_signature</key>
+		<string>{F8918124-1CFB-4AB9-9BC2-39B961DBBBEE}</string>
+		<key>payload_count</key>
+		<integer>3</integer>
+		<key>uninstallxml</key>
+		<string>&lt;Deployment&gt;
+                &lt;Properties&gt;
+                    &lt;Property name="mediaSignature"&gt;{F8918124-1CFB-4AB9-9BC2-39B961DBBBEE}&lt;/Property&gt;
+                &lt;/Properties&gt;
+                &lt;Payloads&gt;
+                    &lt;!-- Adobe Pixel Bender Toolkit 2 --&gt;
+                    &lt;Payload adobeCode="{F8918124-1CFB-4AB9-9BC2-39B961DBBBEE}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                &lt;/Payloads&gt;
+            &lt;/Deployment&gt;</string>
+	</dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>The Adobe Pixel Bender Plug-in for Adobe Photoshop CS5 supports processing of Pixel Bender filters on images opened in Photoshop CS5. These filters can be executed on the graphics card (GPU) or CPU of a computer. Pixel Bender customers as well as members of the Adobe Pixel Bender team have authored the filters that are included in this download.</string>
+	<key>display_name</key>
+	<string>Adobe Pixel Bender Toolkit 2</string>
+	<key>installed_size</key>
+	<integer>102392</integer>
+	<key>installer_item_hash</key>
+	<string>2594cd468315e468eebae333f0993d88e3dcdb28d84d87afbf96b3dae1c0566d</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/PixelBenderToolkit2_Install.dmg</string>
+	<key>installer_item_size</key>
+	<integer>113353</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5AAMEEPackage</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{89D20533-9A93-493E-98B0-96693B45AE56}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobePixelBenderToolkit2</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4687A306-D716-4D7A-B0AA-EAB65D17F149}</string>
+			<key>display_name</key>
+			<string>Adobe Player for Embedding</string>
+			<key>installed_size</key>
+			<integer>68704</integer>
+			<key>version</key>
+			<string>3.1.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F8918124-1CFB-4AB9-9BC2-39B961DBBBEE}</string>
+			<key>display_name</key>
+			<string>Adobe Pixel Bender Toolkit 2</string>
+			<key>installed_size</key>
+			<integer>32391</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{89D20533-9A93-493E-98B0-96693B45AE56}</string>
+			<key>display_name</key>
+			<string>Adobe Pixel Bender Toolkit 2</string>
+			<key>installed_size</key>
+			<integer>1297</integer>
+			<key>version</key>
+			<string>2.1.0.0.0</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>AdobeCS5AAMEEPackage</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>2.0.0.0.0</string>
+</dict>
+</plist>

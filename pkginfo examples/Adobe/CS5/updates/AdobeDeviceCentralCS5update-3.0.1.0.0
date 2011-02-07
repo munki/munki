@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>blocking_applications</key>
+	<array>
+		<string>Adobe Device Central CS5</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>This update contains fixes for major and minor bugs in Device Central CS5. For instance, it adjusts the behavior of the accelerometer emulation feature. It also enables the Device Central help system for certain languages. The patch also includes an updated version of Flash Player 10.1 for Smartphones used for the emulation in Device Central CS5.</string>
+	<key>display_name</key>
+	<string>Adobe Device Central CS5 3.0.1</string>
+	<key>installed_size</key>
+	<integer>269615</integer>
+	<key>installer_item_hash</key>
+	<string>292d45aa236530590891da85f076f35801cd0122690375a80e8865ddd6b4fb09</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/AdobeDeviceCentral3_Patch.dmg</string>
+	<key>installer_item_size</key>
+	<integer>8517</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{03AA8100-8A65-11DF-9F66-0013724DD917}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeDeviceCentralCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{03AA8100-8A65-11DF-9F66-0013724DD917}</string>
+			<key>display_name</key>
+			<string>Adobe Device Central CS5 3.0.1</string>
+			<key>installed_size</key>
+			<integer>267571</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{493B6B6D-6AA2-422F-92D6-44B3FFAC26B0}</string>
+			<key>display_name</key>
+			<string>LangPack (Arabic) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{393B2FE3-1AFE-4A95-9F2F-917AEDE7C4BD}</string>
+			<key>display_name</key>
+			<string>LangPack (Czech) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>503</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{18C862DB-C70D-4EF2-A061-0C2C126758AF}</string>
+			<key>display_name</key>
+			<string>LangPack (German) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>518</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{E44989DF-DD51-44E4-92A0-C074E88DF06A}</string>
+			<key>display_name</key>
+			<string>LangPack (Greece) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{D395B38A-5F3F-4F27-8863-C4887A92C344}</string>
+			<key>display_name</key>
+			<string>LangPack (British) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{32B4EB02-434D-4F2D-80FC-244210A457D5}</string>
+			<key>display_name</key>
+			<string>LangPack (EnglishMiddleEast) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{9E868E47-67BE-4263-8E0B-B69D7A544D40}</string>
+			<key>display_name</key>
+			<string>LangPack (SpanishNorth) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{DD34FF56-F064-46C9-BB1C-8DC9E19D6427}</string>
+			<key>display_name</key>
+			<string>LangPack (Finnish) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{1BCBF828-7587-409B-B1B1-12DD363794FF}</string>
+			<key>display_name</key>
+			<string>LangPack (FrenchCanadian) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{22308254-D8F3-45F3-B06C-920B28D20F2D}</string>
+			<key>display_name</key>
+			<string>LangPack (FrenchMiddleEastern) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{8333C09D-A637-43F8-8358-C55B2659F058}</string>
+			<key>display_name</key>
+			<string>LangPack (Hebrew) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{E89236C6-26E2-4593-A95D-607320C5A71A}</string>
+			<key>display_name</key>
+			<string>LangPack (Hungarian) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6B0DF8A5-E3F3-4B1D-839B-919B8938DEC3}</string>
+			<key>display_name</key>
+			<string>LangPack (Norwegian) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{09FCCB91-D7D4-4958-8844-961110C1F681}</string>
+			<key>display_name</key>
+			<string>LangPack (Portuguese) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>511</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{203E029D-C721-4D3B-A6E6-4516D367749A}</string>
+			<key>display_name</key>
+			<string>LangPack (Romanian) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{C432FC14-AE21-41A0-84DA-E00C9F400A3F}</string>
+			<key>display_name</key>
+			<string>LangPack (Russian) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>512</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{239C7A43-4412-4F5A-8DE3-E3AAC464E9B0}</string>
+			<key>display_name</key>
+			<string>LangPack (Ukrainian) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.1.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>3.0.1.0.0</string>
+</dict>
+</plist>

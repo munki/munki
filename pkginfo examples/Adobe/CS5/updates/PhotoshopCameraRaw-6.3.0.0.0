@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>This new version of the Camera Raw plug-in replaces the original one that was installed with Adobe Photoshop CS5, Adobe Photoshop Elements 9 and Adobe Premiere Elements 9 software.
+
+Notes: List of newly supported cameras can be found at:
+http://www.adobe.com/products/photoshop/cameraraw.html
+
+Camera Raw 6.3 Read Me:
+http://www.adobe.com/special/photoshop/camera_raw/Camera_Raw_6.3_ReadMe.pdf</string>
+	<key>display_name</key>
+	<string>Photoshop Camera Raw</string>
+	<key>installed_size</key>
+	<integer>2392</integer>
+	<key>installer_item_hash</key>
+	<string>73efb40ce823972858a67a6efd45a8703b24b198a27ed737e3fa644d89168575</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/updates/Camera_Raw_6_3_updater.dmg</string>
+	<key>installer_item_size</key>
+	<integer>77271</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{FD58D99B-9927-4226-8E00-959A4F76BD89}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCameraRaw</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{FD58D99B-9927-4226-8E00-959A4F76BD89}</string>
+			<key>display_name</key>
+			<string>Photoshop Camera Raw</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>6.3.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A189C479-C7CD-4E08-8CCF-D999B68C0C71}</string>
+			<key>display_name</key>
+			<string>Camera Profiles Installer</string>
+			<key>installed_size</key>
+			<integer>2392</integer>
+			<key>version</key>
+			<string>6.3.0.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>6.3.0.0.0</string>
+</dict>
+</plist>

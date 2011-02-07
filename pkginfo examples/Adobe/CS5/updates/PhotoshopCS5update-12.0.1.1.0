@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string></string>
+	<key>display_name</key>
+	<string>Adobe Photoshop CS5 Update</string>
+	<key>installed_size</key>
+	<integer>313007</integer>
+	<key>installer_item_hash</key>
+	<string>0c724888aca6afa1534d10fcc8d8b097b4bb722a7bead219b1c104c3b8c0c37a</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/PhotoshopCS5update-12.0.1.dmg</string>
+	<key>installer_item_size</key>
+	<integer>11549</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.adobe.Photoshop</string>
+			<key>CFBundleName</key>
+			<string>Photoshop</string>
+			<key>CFBundleShortVersionString</key>
+			<string>12.0.1</string>
+			<key>path</key>
+			<string>/Applications/Adobe Photoshop CS5/Adobe Photoshop CS5.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{70906323-AC20-42E8-B41A-D2DBB94D925F}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5</string>
+			<key>installed_size</key>
+			<integer>313007</integer>
+			<key>version</key>
+			<string>12.0.1.1.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{5973F911-18DE-4ED0-A227-0F6E2E2BDA57}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5 Support</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>12.0.1.1.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+	</array>
+	<key>version</key>
+	<string>12.0.1.1.0</string>
+</dict>
+</plist>

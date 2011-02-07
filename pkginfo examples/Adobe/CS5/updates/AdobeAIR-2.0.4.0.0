@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Installs updated Adobe AIR</string>
+	<key>display_name</key>
+	<string>Adobe AIR</string>
+	<key>installer_item_hash</key>
+	<string>6594d1b02b201922cd389c05973b08bd46d69ba0d2cb92ccd40b36c8fbeacfe6</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/AdobeAIR-2.0.4.dmg</string>
+	<key>installer_item_size</key>
+	<integer>20372</integer>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeAIR</string>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>filename</key>
+			<string>AdobeAIR-2.0.4.pkg</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>packageid</key>
+			<string>com.googlecode.munki.pkg.adobeairinstaller</string>
+			<key>version</key>
+			<string>2.0.4.0.0</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>2.0.4.0.0</string>
+</dict>
+</plist>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>blocking_applications</key>
+	<array>
+		<string>Adobe Illustrator CS5</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>The Adobe Illustrator CS5 15.0.2 update addresses a number of issues, including the following:
+
+- PSD files lose saturation of spot colors when imported into AiCS5
+- Performance problems when guides are set to dot
+- Acrobat 10 documents with passwords fail to open
+- Improved precision with DXF import
+- Links are broken in legacy formats when image name contains Japanese characters for voiced sound marks
+- Rounded Corner Edges that curved inside flipped to curve outside
+- Non-Specific Crash when opening or closing files
+- Security Issues</string>
+	<key>display_name</key>
+	<string>Adobe Illustrator CS5</string>
+	<key>installed_size</key>
+	<integer>0</integer>
+	<key>installer_item_hash</key>
+	<string>8d5b67c614fd2e3f419bf9d0d26d3928bac5b367d086fd14b8a1fc70a4777e63</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/updates/AdobeIllustrator_15.0.2.dmg</string>
+	<key>installer_item_size</key>
+	<integer>14637</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{7A75E573-6909-4D48-BDFA-D8ED118605A7}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeIllustratorCS5Update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{7A75E573-6909-4D48-BDFA-D8ED118605A7}</string>
+			<key>display_name</key>
+			<string>Adobe Illustrator CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>15.0.2.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobeIllustratorCS5</string>
+	</array>
+	<key>version</key>
+	<string>15.0.2.0.0</string>
+</dict>
+</plist>

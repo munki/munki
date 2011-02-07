@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>blocking_applications</key>
+	<array>
+		<string>Adobe Premiere Pro CS5</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>The Adobe Premiere Pro CS5 5.0.3 update adds Mercury Playback Engine (MPE) support for the NVIDIA Quadro 4000 card, along with other bug fixes.</string>
+	<key>display_name</key>
+	<string>Adobe Premiere Pro CS5</string>
+	<key>installed_size</key>
+	<integer>700140</integer>
+	<key>installer_item_hash</key>
+	<string>c1a30c67a6b56de33967eefd04df3bbf300fe02888add1ada77abfcce1ffff64</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/updates/PremiereProTrial-5.0.3-mul-AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>116791</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{2A1F5828-6437-498B-A16B-C7E3ADC4D809}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobePremiereProCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{2A1F5828-6437-498B-A16B-C7E3ADC4D809}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5</string>
+			<key>installed_size</key>
+			<integer>603763</integer>
+			<key>version</key>
+			<string>5.0.3.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{AAA45CA1-CEF2-45A9-9162-6774CFFF8260}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>30305</integer>
+			<key>version</key>
+			<string>5.0.3.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4BD0D94C-C5CA-41CA-879B-928E55ADA18F}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Royalty Content</string>
+			<key>installed_size</key>
+			<integer>13870</integer>
+			<key>version</key>
+			<string>5.0.3.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CB8BB160-EC13-4D89-8990-F15F01E74961}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Royalty Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>52202</integer>
+			<key>version</key>
+			<string>5.0.3.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+	</array>
+	<key>version</key>
+	<string>5.0.3.0.0</string>
+</dict>
+</plist>

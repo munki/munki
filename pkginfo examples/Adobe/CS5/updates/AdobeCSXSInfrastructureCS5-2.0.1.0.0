@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>This update is necessary to avoid possible problems with future updates of CS Live service extensions. It also fixes reported crashes or delays when quitting CS5 applications.</string>
+	<key>display_name</key>
+	<string>Adobe CSXS Infrastructure CS5</string>
+	<key>installed_size</key>
+	<integer>18</integer>
+	<key>installer_item_hash</key>
+	<string>4f1b43219fea3883389f4b2ee11541316ae1dd20d44915e2df654c66abbcf8bb</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/CSXSInfrastructure.dmg</string>
+	<key>installer_item_size</key>
+	<integer>908</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{273F2A32-EC95-4AF7-BF26-EF4A57368DC9}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeCSXSInfrastructureCS5</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{273F2A32-EC95-4AF7-BF26-EF4A57368DC9}</string>
+			<key>display_name</key>
+			<string>Adobe CSXS Infrastructure CS5</string>
+			<key>installed_size</key>
+			<integer>18</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>2.0.1.0.0</string>
+</dict>
+</plist>

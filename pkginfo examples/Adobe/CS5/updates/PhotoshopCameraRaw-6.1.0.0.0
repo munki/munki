@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string></string>
+	<key>display_name</key>
+	<string>Photoshop Camera Raw</string>
+	<key>installed_size</key>
+	<integer>2392</integer>
+	<key>installer_item_hash</key>
+	<string>1e5ebba35369b51b3950e2fa0e8d2a874925cdb608a38c9b4d6400047bd6bf53</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/Camera_Raw_6_1_updater.dmg</string>
+	<key>installer_item_size</key>
+	<integer>63428</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{A22AED20-106A-4F71-8F7E-5279F3E40438}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{E87F7D90-1D5E-4C89-8CB1-A1D522C6768C}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>PhotoshopCameraRaw</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A22AED20-106A-4F71-8F7E-5279F3E40438}</string>
+			<key>display_name</key>
+			<string>Photoshop Camera Raw</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>6.1.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{E87F7D90-1D5E-4C89-8CB1-A1D522C6768C}</string>
+			<key>display_name</key>
+			<string>Camera Profiles Installer</string>
+			<key>installed_size</key>
+			<integer>2392</integer>
+			<key>version</key>
+			<string>6.1.0.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>6.1.0.0.0</string>
+</dict>
+</plist>

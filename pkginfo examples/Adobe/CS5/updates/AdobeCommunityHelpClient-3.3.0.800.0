@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Installs updated Adobe AIR and Adobe Community Help Client</string>
+	<key>display_name</key>
+	<string>Adobe Community Help Client</string>
+	<key>installer_item_hash</key>
+	<string>e5991445169f7b38d29c8940fe692bf351a47cdeebd36b7f5e611dae15f492f5</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/AdobeCommunityHelpClient-3.3.0.dmg</string>
+	<key>installer_item_size</key>
+	<integer>22993</integer>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>chc.4875E02D9FB21EE389F73B8D1702B320485DF8CE.1</string>
+			<key>CFBundleShortVersionString</key>
+			<string>3.3.0.800</string>
+			<key>path</key>
+			<string>/Applications/Adobe/Adobe Help.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeCommunityHelpClient</string>
+	<key>receipts</key>
+	<array>
+		<dict>
+			<key>filename</key>
+			<string>AdobeCommunityHelpClient-3.3.0.pkg</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>packageid</key>
+			<string>com.googlecode.munki.pkg.adobehelpinstaller</string>
+			<key>version</key>
+			<string>3.3.0.800.0</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>removepackages</string>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>3.3.0.800.0</string>
+</dict>
+</plist>

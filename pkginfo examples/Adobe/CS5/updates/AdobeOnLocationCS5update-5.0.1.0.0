@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>blocking_applications</key>
+	<array>
+		<string>Adobe On Location CS5</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>This patch corrects problems in OnLocation, including a crash in some languages when starting Adobe Story from OnLocation, 24PA and 24P timecode inconsistencies, in / out points not being saved if the app loses focus, missing audio during scrubbing, and improper handling of spanned DVCPROHD clips that have moved from their original location.</string>
+	<key>display_name</key>
+	<string>Adobe OnLocation CS5</string>
+	<key>installed_size</key>
+	<integer>320577</integer>
+	<key>installer_item_hash</key>
+	<string>99364f3988fc8b1a750f0cd41fb14c7966a853ba796d22da3e56f0764429070c</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/OnLocationTrial-5.0.1-mul-AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>52056</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{64C19EC0-24A3-4F6F-A0AD-C701C8C48700}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeOnLocationCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{64C19EC0-24A3-4F6F-A0AD-C701C8C48700}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5</string>
+			<key>installed_size</key>
+			<integer>277706</integer>
+			<key>version</key>
+			<string>5.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{5AF84E15-9A23-4295-8508-F2901A923E83}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5 Royalty Content</string>
+			<key>installed_size</key>
+			<integer>30926</integer>
+			<key>version</key>
+			<string>5.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6C6D990F-FC88-4F07-912C-DA37468D9A3C}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5 Royalty Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>11945</integer>
+			<key>version</key>
+			<string>5.0.1.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+	</array>
+	<key>version</key>
+	<string>5.0.1.0.0</string>
+</dict>
+</plist>

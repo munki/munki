@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>This Flash Professional update includes several fixes to improve the opening of some legacy files and correctly saving them in the new XFL format for Flash Professional CS5. It also addresses issues where some components are unable to be added to the stage, the preservation of all properties in TLF linked containers, better handling of certain characters when included in TLF text fields, and other minor issues.</string>
+	<key>display_name</key>
+	<string>Adobe Flash Pro CS5</string>
+	<key>installed_size</key>
+	<integer>605205</integer>
+	<key>installer_item_hash</key>
+	<string>171e99c2be1c18af4a56e49310e80c457c1ce1a5d986bfb7e5e8ae3b18977cb7</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/FlashCS5_11.0.2_Update.dmg</string>
+	<key>installer_item_size</key>
+	<integer>103550</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{70CAC073-3CDD-498C-80F7-79B76A61D7E6}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{22C1290B-8DC3-4C8B-93E2-4373B9AAB1CC}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{88BE801D-C8EC-46A4-92AC-06CE56FE0E0A}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeFlashProCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F637969B-336C-4533-9D4D-D0163A39C42F}</string>
+			<key>display_name</key>
+			<string>Adobe Flash CS5 Payload LangPack (en_US)</string>
+			<key>installed_size</key>
+			<integer>12847</integer>
+			<key>version</key>
+			<string>11.0.2.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{70CAC073-3CDD-498C-80F7-79B76A61D7E6}</string>
+			<key>display_name</key>
+			<string>Adobe Flash Pro CS5</string>
+			<key>installed_size</key>
+			<integer>128115</integer>
+			<key>version</key>
+			<string>11.0.2.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{10CDCC6A-A4AD-44C0-8E57-F9023490D3AB}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 cs_CZ)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{1AE9BCBF-7C09-4E8F-AF67-EBDAB021CCA3}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 de_DE)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A69CC698-119E-450F-9AEC-2F377C03B33B}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 en_US)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{7EF4662B-5E84-48DF-9319-8BD846CA62DF}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 es_ES)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{16C55803-1794-469C-B2E6-3598870B4EDA}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 fr_FR)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{1CB80EBC-B3E6-4FE1-890C-7758EE392608}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 it_IT)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F277305C-0FF0-498E-BA6A-1E65ABB52FD7}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 ja_JP)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A66C5296-2F23-4540-8A19-8F6E09A5C2BC}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 ko_KR)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{88BE801D-C8EC-46A4-92AC-06CE56FE0E0A}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5)</string>
+			<key>installed_size</key>
+			<integer>211083</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{303361BC-38CF-47C8-BAAD-F449F33D7FCC}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 nl_NL)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{67375FD9-04A2-411A-A538-256378AA68CA}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 pl_PL)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{83F70A20-4865-4B4F-8268-AC53B8F2778F}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 pt_BR)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{525441E4-3E30-4FB2-8DBC-19E806BABCCB}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 ru_RU)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{9EEDA794-9285-4C8B-B645-C6D84EF657A3}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 sv_SE)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{47980253-B3BD-45A1-A532-0645AE1F2F38}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 tr_TR)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{555A9117-F739-48D9-BEBC-38DD0D99D99E}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 zh_CN)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4EA0ED38-A23C-4C74-999B-A1526C3E87C6}</string>
+			<key>display_name</key>
+			<string>AIR2 (for Adobe Flash Pro CS5 zh_TW)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{62466A6D-1130-4D66-9D65-ED3E1A988E12}</string>
+			<key>display_name</key>
+			<string>Packager for iPhone®</string>
+			<key>installed_size</key>
+			<integer>252905</integer>
+			<key>version</key>
+			<string>1.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{22C1290B-8DC3-4C8B-93E2-4373B9AAB1CC}</string>
+			<key>display_name</key>
+			<string>TLF (for Adobe Flash Pro CS5)</string>
+			<key>installed_size</key>
+			<integer>255</integer>
+			<key>version</key>
+			<string>1.0.1.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+	</array>
+	<key>version</key>
+	<string>11.0.2.0.0</string>
+</dict>
+</plist>

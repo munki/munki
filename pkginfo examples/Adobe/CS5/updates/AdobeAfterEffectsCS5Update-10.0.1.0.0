@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>blocking_applications</key>
+	<array>
+		<string>Adobe After Effects CS5</string>
+	</array>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Adobe After Effects CS5, version 10.0.1, provides a number of critical stability fixes. We strongly recommend you install this update.</string>
+	<key>display_name</key>
+	<string>Adobe After Effects CS5</string>
+	<key>installed_size</key>
+	<integer>872902</integer>
+	<key>installer_item_hash</key>
+	<string>0baee32776a23c3dcc7ef317fbbb4bc3672494553d5c16963f1890bee540d20d</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/AfterEffectsTrial-10.0.1-mul-AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>208562</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{DD1C5C30-D903-42BE-96BC-FDF9813C0F6F}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeAfterEffectsCS5Update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{DD1C5C30-D903-42BE-96BC-FDF9813C0F6F}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5</string>
+			<key>installed_size</key>
+			<integer>460196</integer>
+			<key>version</key>
+			<string>10.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{7D446C8E-2FAF-4C5D-8FC6-7A4433A34FD4}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Content</string>
+			<key>installed_size</key>
+			<integer>198545</integer>
+			<key>version</key>
+			<string>10.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{AAC33035-8CD9-4089-900B-10F4350AE81E}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>167349</integer>
+			<key>version</key>
+			<string>10.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{2F02E440-B7BF-4018-8CB5-977257350EAB}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Royalty Content</string>
+			<key>installed_size</key>
+			<integer>13941</integer>
+			<key>version</key>
+			<string>10.0.1.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A8573435-DB08-4E7E-8E19-D16BD9A04736}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Royalty Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>32871</integer>
+			<key>version</key>
+			<string>10.0.1.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>10.0.1.0.0</string>
+</dict>
+</plist>

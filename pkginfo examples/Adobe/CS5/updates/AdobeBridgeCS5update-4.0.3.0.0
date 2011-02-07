@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>This update includes several important bug fixes.</string>
+	<key>display_name</key>
+	<string>Adobe Bridge CS5</string>
+	<key>installed_size</key>
+	<integer>174418</integer>
+	<key>installer_item_hash</key>
+	<string>5d3f4fe3307c4b448c65b1d7e50419c4687b4bded0d7d3abb4429d610bf223c8</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/AdobeBridge_4.0.3_mul_AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>31196</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{97C63D21-3710-4ECA-835F-39C69C842093}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeBridgeCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{97C63D21-3710-4ECA-835F-39C69C842093}</string>
+			<key>display_name</key>
+			<string>Adobe Bridge CS5</string>
+			<key>installed_size</key>
+			<integer>174418</integer>
+			<key>version</key>
+			<string>4.0.3.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeProductionPremiumCS5</string>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeAfterEffectsCS5</string>
+	</array>
+	<key>version</key>
+	<string>4.0.3.0.0</string>
+</dict>
+</plist>

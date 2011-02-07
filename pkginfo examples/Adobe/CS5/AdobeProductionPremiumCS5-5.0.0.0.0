@@ -1,0 +1,1105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>adobe_install_info</key>
+	<dict>
+		<key>media_signature</key>
+		<string>{544E41B1-42A9-400F-895C-FC678F613FBC}</string>
+		<key>payload_count</key>
+		<integer>96</integer>
+		<key>uninstallxml</key>
+		<string>&lt;Deployment&gt;
+                &lt;Properties&gt;
+                    &lt;Property name="mediaSignature"&gt;{544E41B1-42A9-400F-895C-FC678F613FBC}&lt;/Property&gt;
+                &lt;/Properties&gt;
+                &lt;Payloads&gt;
+                    &lt;!-- Adobe Encore CS5 Third Party Royalty Content --&gt;
+                    &lt;Payload adobeCode="{0E3C6C75-872D-4B0D-B0B2-31C717250691}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Creative Suite 5 Production Premium --&gt;
+                    &lt;Payload adobeCode="{544E41B1-42A9-400F-895C-FC678F613FBC}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Premiere Pro CS5 Third Party Royalty Content --&gt;
+                    &lt;Payload adobeCode="{565DE707-5798-4FC3-8DF6-0F58A348A9B0}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Media Encoder CS5 PCI --&gt;
+                    &lt;Payload adobeCode="{5A39FDD0-686E-49BD-A6FF-02F7E8256DBF}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Media Encoder CS5 Dolby --&gt;
+                    &lt;Payload adobeCode="{627D49F9-9F71-436C-9B85-9ACAA9E78561}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Illustrator CS5 --&gt;
+                    &lt;Payload adobeCode="{6A75E573-6909-4D48-BDFA-D8ED118605A5}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe OnLocation CS5 Royalty Content --&gt;
+                    &lt;Payload adobeCode="{7816FDDE-40D4-482D-AD7D-97858985DB3E}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Photoshop CS5 --&gt;
+                    &lt;Payload adobeCode="{7DFEBBA4-81E1-425B-BBAA-06E9E5BBD97E}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Encore CS5 --&gt;
+                    &lt;Payload adobeCode="{A334FDED-DCCA-481E-B226-F902CCC419D2}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Flash Catalyst CS5 --&gt;
+                    &lt;Payload adobeCode="{A4EE8093-4250-4D8B-BDE4-A4675BB44953}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe OnLocation CS5 --&gt;
+                    &lt;Payload adobeCode="{ABDC1F61-2C50-4BB1-ACDA-66D412D72582}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Premiere Pro CS5 Third Party Content --&gt;
+                    &lt;Payload adobeCode="{B8D286BC-A68D-4E74-9F68-8756A49896D8}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe After Effects CS5 Third Party Content --&gt;
+                    &lt;Payload adobeCode="{C0AA232E-BD1B-40B5-A176-A2BEB67FFAE1}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Premiere Pro CS5 --&gt;
+                    &lt;Payload adobeCode="{C21384F7-1A36-4706-95AB-B09BCE3C144F}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Soundbooth CS5 --&gt;
+                    &lt;Payload adobeCode="{CBE4F6C3-788E-4CAC-BA25-26FE39A3BC8C}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe After Effects CS5 Third Party Royalty Content --&gt;
+                    &lt;Payload adobeCode="{CD29B5CA-4727-4114-9AD9-25CCCE6E4014}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Flash Pro CS5 --&gt;
+                    &lt;Payload adobeCode="{CFC9F871-7C40-40B6-BE4A-B98A5B309716}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe After Effects CS5 --&gt;
+                    &lt;Payload adobeCode="{DA1B174B-4297-467C-9EF8-0AB8D4D5171E}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Soundbooth CS5 Codecs --&gt;
+                    &lt;Payload adobeCode="{DE5DE662-2ECB-4D93-967B-221FBCC8A736}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                    &lt;!-- Adobe Soundbooth CS5 Royalty Codecs --&gt;
+                    &lt;Payload adobeCode="{F319804F-E3A4-4C02-8AEC-CB39A4F6447E}"&gt;
+                        &lt;Action&gt;remove&lt;/Action&gt;
+                    &lt;/Payload&gt;
+                &lt;/Payloads&gt;
+            &lt;/Deployment&gt;</string>
+	</dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string></string>
+	<key>display_name</key>
+	<string>Creative Suite 5 Production Premium</string>
+	<key>installed_size</key>
+	<integer>3797748</integer>
+	<key>installer_item_hash</key>
+	<string>f337ac175323616ffa47ae756ac1f8c8f2df339d1f9e255b0e531b9061d90f3b</string>
+	<key>installer_item_location</key>
+	<string>apps/Adobe/CS5/CS5ProductionPremium_Install.pkg.dmg</string>
+	<key>installer_item_size</key>
+	<integer>4114605</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5AAMEEPackage</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{544E41B1-42A9-400F-895C-FC678F613FBC}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeProductionPremiumCS5</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{DA1B174B-4297-467C-9EF8-0AB8D4D5171E}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6ACDB89B-63FB-4C7D-8490-7528E248F25B}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 LangPack (en_US) </string>
+			<key>installed_size</key>
+			<integer>8</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{C0AA232E-BD1B-40B5-A176-A2BEB67FFAE1}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Content</string>
+			<key>installed_size</key>
+			<integer>149987</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{406D22BD-7910-479B-96AA-0DB8A36C694B}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>82896</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CD29B5CA-4727-4114-9AD9-25CCCE6E4014}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Royalty Content</string>
+			<key>installed_size</key>
+			<integer>16240</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{20F72893-AEC7-4954-9EAA-F07FD6184781}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Third Party Royalty Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>18255</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{64D991B0-4E64-47AC-8A35-291DA2E7D02F}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Support</string>
+			<key>installed_size</key>
+			<integer>9</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CC0EF75D-9336-4E4F-B4A2-99E2E60E161F}</string>
+			<key>display_name</key>
+			<string>Adobe After Effects CS5 Presets</string>
+			<key>installed_size</key>
+			<integer>92031</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{2C8C0585-5083-4032-94B8-A9AD04ED0716}</string>
+			<key>display_name</key>
+			<string>Adobe AIR</string>
+			<key>installed_size</key>
+			<integer>59875</integer>
+			<key>version</key>
+			<string>1.5.3.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CD693E49-C5EF-4FA6-9037-9B636931C02B}</string>
+			<key>display_name</key>
+			<string>Adobe CS5 American English Speech Analysis Models</string>
+			<key>installed_size</key>
+			<integer>307252</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{463D65D7-CD43-4FAC-A6C7-7D24CB5DB93B}</string>
+			<key>display_name</key>
+			<string>Adobe Media Player</string>
+			<key>installed_size</key>
+			<integer>62278</integer>
+			<key>version</key>
+			<string>1.8.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4687A306-D716-4D7A-B0AA-EAB65D17F149}</string>
+			<key>display_name</key>
+			<string>Adobe Player for Embedding</string>
+			<key>installed_size</key>
+			<integer>68704</integer>
+			<key>version</key>
+			<string>3.1.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{0D067D13-C3D7-4EA6-B346-740CD91FD547}</string>
+			<key>display_name</key>
+			<string>Adobe Bridge CS5</string>
+			<key>installed_size</key>
+			<integer>226304</integer>
+			<key>version</key>
+			<string>4.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{37AB3C65-E02C-4DCF-B0E0-4C2E253D8FA3}</string>
+			<key>display_name</key>
+			<string>Photoshop Camera Raw</string>
+			<key>installed_size</key>
+			<integer>26855</integer>
+			<key>version</key>
+			<string>6.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{3F023875-4A52-4605-9DB6-A88D4A813E8D}</string>
+			<key>display_name</key>
+			<string>Camera Profiles Installer</string>
+			<key>installed_size</key>
+			<integer>164133</integer>
+			<key>version</key>
+			<string>6.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{BD0D6363-E961-410F-8BF4-ECD8795F3923}</string>
+			<key>display_name</key>
+			<string>Adobe CMaps CS5</string>
+			<key>installed_size</key>
+			<integer>6365</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{39CB2E53-5326-4939-8B5A-0402C6EFBFE3}</string>
+			<key>display_name</key>
+			<string>AdobeColorCommonSetCMYK</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{78A53622-CDBA-49D1-A3D0-D563FB398D0C}</string>
+			<key>display_name</key>
+			<string>AdobeColorCommonSetRGB</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6F29BE46-E5F3-4146-8A84-20301E5C985A}</string>
+			<key>display_name</key>
+			<string>Adobe Color EU Extra Settings CS5</string>
+			<key>installed_size</key>
+			<integer>1976</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{54F4466A-091A-46DA-B697-43D55CEF9DF6}</string>
+			<key>display_name</key>
+			<string>Adobe Color JA Extra Settings CS5</string>
+			<key>installed_size</key>
+			<integer>2800</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{D26EEF95-420A-4726-B85D-AFBE752EF526}</string>
+			<key>display_name</key>
+			<string>Adobe Color NA Recommended Settings CS5</string>
+			<key>installed_size</key>
+			<integer>2334</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{D31D91FE-F0E8-4DF1-812C-9400BE92A386}</string>
+			<key>display_name</key>
+			<string>Adobe Color - Photoshop Specific CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{8CCA90E1-F5BA-456F-84BF-AD5FB2CCE13F}</string>
+			<key>display_name</key>
+			<string>Adobe CSXS Extensions CS5</string>
+			<key>installed_size</key>
+			<integer>6284</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{02731921-5711-4E7A-A898-D6BCF0F2A1CD}</string>
+			<key>display_name</key>
+			<string>Adobe CSXS Infrastructure CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6E505C8F-2896-11DF-9B64-0013724DD917}</string>
+			<key>display_name</key>
+			<string>Adobe Device Central CS5</string>
+			<key>installed_size</key>
+			<integer>164688</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A8798E04-96FF-4564-9157-0D4C89CB794C}</string>
+			<key>display_name</key>
+			<string>Adobe Dynamiclink Support</string>
+			<key>installed_size</key>
+			<integer>10628</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A334FDED-DCCA-481E-B226-F902CCC419D2}</string>
+			<key>display_name</key>
+			<string>Adobe Encore CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{B842A584-A0BF-4870-A850-9C0E52FD6A20}</string>
+			<key>display_name</key>
+			<string>Adobe Encore CS5 LangPack (en_US) </string>
+			<key>installed_size</key>
+			<integer>261</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{0E3C6C75-872D-4B0D-B0B2-31C717250691}</string>
+			<key>display_name</key>
+			<string>Adobe Encore CS5 Third Party Royalty Content</string>
+			<key>installed_size</key>
+			<integer>5632</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{1A48007B-34D2-44BD-8708-B570F5339C14}</string>
+			<key>display_name</key>
+			<string>Adobe Encore CS5 Royalty Codecs Installer Wrapper</string>
+			<key>installed_size</key>
+			<integer>22897</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{5A60CD44-B38B-47CD-BE38-219C81AE3345}</string>
+			<key>display_name</key>
+			<string>Adobe ExtendScript Toolkit CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.5.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{E4E188D2-27D5-4E4C-92CE-87F9D24AD2F6}</string>
+			<key>display_name</key>
+			<string>Adobe Extension Manager CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{14A2CC02-4638-405D-8190-ECD7BFD32D6E}</string>
+			<key>display_name</key>
+			<string>Adobe Flash CS5 Payload LangPack (en_US)</string>
+			<key>installed_size</key>
+			<integer>124210</integer>
+			<key>version</key>
+			<string>11.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CFC9F871-7C40-40B6-BE4A-B98A5B309716}</string>
+			<key>display_name</key>
+			<string>Adobe Flash Pro CS5</string>
+			<key>installed_size</key>
+			<integer>430654</integer>
+			<key>version</key>
+			<string>11.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A4EE8093-4250-4D8B-BDE4-A4675BB44953}</string>
+			<key>display_name</key>
+			<string>Adobe Flash Catalyst CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{7745F18B-FD8A-4011-BE16-588900C503D0}</string>
+			<key>display_name</key>
+			<string>Adobe Flash Fonts1</string>
+			<key>installed_size</key>
+			<integer>124040</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{E39A5ABD-516B-46F9-A042-694BBA6A4E08}</string>
+			<key>display_name</key>
+			<string>Adobe Fonts Recommended</string>
+			<key>installed_size</key>
+			<integer>124042</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CBDD7465-CE11-4A58-9497-C370B65923F1}</string>
+			<key>display_name</key>
+			<string>Adobe Fonts Required</string>
+			<key>installed_size</key>
+			<integer>124041</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{298CF0B0-8B47-46DF-B726-8E4BFAD5432E}</string>
+			<key>display_name</key>
+			<string>AdobeHelp</string>
+			<key>installed_size</key>
+			<integer>2441</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6A75E573-6909-4D48-BDFA-D8ED118605A5}</string>
+			<key>display_name</key>
+			<string>Adobe Illustrator CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>15.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{B4975576-60AD-4181-AED4-253FC150B404}</string>
+			<key>display_name</key>
+			<string>Adobe Illustrator CS5 LangPack (en_US)</string>
+			<key>installed_size</key>
+			<integer>389665</integer>
+			<key>version</key>
+			<string>15.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A44863BF-8DB8-4D22-88DB-5A02BE319840}</string>
+			<key>display_name</key>
+			<string>Adobe Linguistics CS5</string>
+			<key>installed_size</key>
+			<integer>38182</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4438C826-1FD0-4D04-A70B-24FE1580AB21}</string>
+			<key>display_name</key>
+			<string>Adobe Mini Bridge CS5</string>
+			<key>installed_size</key>
+			<integer>3654</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{26B0DF8D-3A8D-4BA9-B131-3B0D9EE87655}</string>
+			<key>display_name</key>
+			<string>Adobe Flash CS5 Extension - Flash Lite LangPack en_US</string>
+			<key>installed_size</key>
+			<integer>2115</integer>
+			<key>version</key>
+			<string>4.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{579FDC01-BA85-49E7-B16A-2C4CB55F7ACD}</string>
+			<key>display_name</key>
+			<string>Adobe Flash CS5 Extension - Flash Lite LangPack Common</string>
+			<key>installed_size</key>
+			<integer>1188</integer>
+			<key>version</key>
+			<string>4.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F3ECF5C7-9A9D-460A-B3D6-C7E4C1DFD040}</string>
+			<key>display_name</key>
+			<string>Adobe MotionPicture Color Files CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{ABDC1F61-2C50-4BB1-ACDA-66D412D72582}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{771C9F59-3F22-4610-A23E-321A98ECA264}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5 LangPack (en_US) </string>
+			<key>installed_size</key>
+			<integer>34</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{7816FDDE-40D4-482D-AD7D-97858985DB3E}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5 Royalty Content</string>
+			<key>installed_size</key>
+			<integer>16983</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{01367616-4132-4311-911F-49D2EA82F7C2}</string>
+			<key>display_name</key>
+			<string>Adobe OnLocation CS5 Royalty Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>17242</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{925ED7E4-E1B6-4544-8141-1C98A18D2E2E}</string>
+			<key>display_name</key>
+			<string>Adobe Output Module</string>
+			<key>installed_size</key>
+			<integer>6398</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{BAE5212B-6651-4AD8-B26A-1B284D2665C6}</string>
+			<key>display_name</key>
+			<string>Adobe PDF Library Files CS5</string>
+			<key>installed_size</key>
+			<integer>69571</integer>
+			<key>version</key>
+			<string>9.9.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A2502D10-2D75-4620-8A8B-73F39D5C1243}</string>
+			<key>display_name</key>
+			<string>PDF Settings CS5</string>
+			<key>installed_size</key>
+			<integer>590</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{7DFEBBA4-81E1-425B-BBAA-06E9E5BBD97E}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>12.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{69582206-7E5D-4476-A8F4-ECF90E9C8A69}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5 English Language Pack</string>
+			<key>installed_size</key>
+			<integer>36739</integer>
+			<key>version</key>
+			<string>12.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{0A6FC585-E761-4776-A4F3-BDA1E4FE1B7A}</string>
+			<key>display_name</key>
+			<string>Adobe Photoshop CS5 Support</string>
+			<key>installed_size</key>
+			<integer>927</integer>
+			<key>version</key>
+			<string>12.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{C21384F7-1A36-4706-95AB-B09BCE3C144F}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{34F82E6B-8096-45CA-B604-ACACAC22E553}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 LangPack (en_US) </string>
+			<key>installed_size</key>
+			<integer>65061</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{B8D286BC-A68D-4E74-9F68-8756A49896D8}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Content</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{22F41D72-2E97-46AE-B8C4-EF66876C7838}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>16962</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{565DE707-5798-4FC3-8DF6-0F58A348A9B0}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Royalty Content</string>
+			<key>installed_size</key>
+			<integer>26210</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6BA6F6D7-1D30-482A-B9B8-20E79D6DB4F9}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Third Party Royalty Content Wrapper</string>
+			<key>installed_size</key>
+			<integer>27903</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F77882B9-A94F-44F4-A739-8370749255B6}</string>
+			<key>display_name</key>
+			<string>Adobe Premiere Pro CS5 Support</string>
+			<key>installed_size</key>
+			<integer>7</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{544E41B1-42A9-400F-895C-FC678F613FBC}</string>
+			<key>display_name</key>
+			<string>Creative Suite 5 Production Premium</string>
+			<key>installed_size</key>
+			<integer>2599</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{FFEDE6AE-3052-11DF-89B7-E7102C404F28}</string>
+			<key>display_name</key>
+			<string>Adobe ReviewPanel CS5</string>
+			<key>installed_size</key>
+			<integer>1800</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{CBE4F6C3-788E-4CAC-BA25-26FE39A3BC8C}</string>
+			<key>display_name</key>
+			<string>Adobe Soundbooth CS5</string>
+			<key>installed_size</key>
+			<integer>15</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{E6F68811-F702-492C-A7DA-D22CA670BC22}</string>
+			<key>display_name</key>
+			<string>Adobe Soundbooth CS5 LangPack (en_US) </string>
+			<key>installed_size</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{DE5DE662-2ECB-4D93-967B-221FBCC8A736}</string>
+			<key>display_name</key>
+			<string>Adobe Soundbooth CS5 Codecs</string>
+			<key>installed_size</key>
+			<integer>8502</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4BE1791F-1D8A-4B8E-B803-D97C5D7CB245}</string>
+			<key>display_name</key>
+			<string>Adobe Soundbooth CS5 Codecs Wrapper</string>
+			<key>installed_size</key>
+			<integer>26933</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F319804F-E3A4-4C02-8AEC-CB39A4F6447E}</string>
+			<key>display_name</key>
+			<string>Adobe Soundbooth CS5 Royalty Codecs</string>
+			<key>installed_size</key>
+			<integer>20358</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{ADAF6949-4547-4B3D-97C5-6FB4D0C08A1E}</string>
+			<key>display_name</key>
+			<string>Adobe Soundbooth CS5 Royalty Codecs Wrapper</string>
+			<key>installed_size</key>
+			<integer>30114</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{66173EC7-974E-4652-9468-4A93D2481BF0}</string>
+			<key>display_name</key>
+			<string>CSXS Story Extension</string>
+			<key>installed_size</key>
+			<integer>116</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{3423F36D-004F-4DFC-8BCE-07A20B8DFBDE}</string>
+			<key>display_name</key>
+			<string>Suite Shared Configuration CS5</string>
+			<key>installed_size</key>
+			<integer>5982</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6F3A624B-1B72-4081-96E8-23261F389C5C}</string>
+			<key>display_name</key>
+			<string>Adobe Type Support CS5</string>
+			<key>installed_size</key>
+			<integer>5856</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{796659A8-114A-4E16-9994-14DF6A1B1683}</string>
+			<key>display_name</key>
+			<string>Adobe Utilities CS5</string>
+			<key>installed_size</key>
+			<integer>3</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{A5A8E72E-1B9D-4F99-ADED-F3595CB3D03E}</string>
+			<key>display_name</key>
+			<string>Adobe Color Video Profiles AE CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{73A4DC5E-226E-42BA-8ECA-2822592AC044}</string>
+			<key>display_name</key>
+			<string>Adobe Color Video Profiles CS CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{007A2A28-D6A8-4D91-9A2B-568FF8052215}</string>
+			<key>display_name</key>
+			<string>Adobe WinSoft Linguistics Plugin CS5</string>
+			<key>installed_size</key>
+			<integer>9486</integer>
+			<key>version</key>
+			<string>1.2.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{6A2E619B-E4AC-433B-A648-D458CE543A96}</string>
+			<key>display_name</key>
+			<string>Adobe XMP Panels CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F8918124-1CFB-4AB9-9BC2-39B961DBBBEE}</string>
+			<key>display_name</key>
+			<string>Adobe Pixel Bender Toolkit 2</string>
+			<key>installed_size</key>
+			<integer>32391</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{955EB78F-C938-4EA8-8470-C6EA71685834}</string>
+			<key>display_name</key>
+			<string>AIR2 For Adobe Flash Pro LangPack (en_US)</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{30221E3E-4C47-4560-A296-DD9ABB500C21}</string>
+			<key>display_name</key>
+			<string>AIR2 For Adobe Flash Pro</string>
+			<key>installed_size</key>
+			<integer>121915</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{47DF3210-E261-4D06-A073-92F6C426C352}</string>
+			<key>display_name</key>
+			<string>Adobe Media Encoder CS5</string>
+			<key>installed_size</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{627D49F9-9F71-436C-9B85-9ACAA9E78561}</string>
+			<key>display_name</key>
+			<string>Adobe Media Encoder CS5 Dolby</string>
+			<key>installed_size</key>
+			<integer>9733</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{18B12757-2C22-44CA-B1B7-E6C6A0639F46}</string>
+			<key>display_name</key>
+			<string>Adobe Media Encoder CS5 Dolby WRAPPER</string>
+			<key>installed_size</key>
+			<integer>17872</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{5A39FDD0-686E-49BD-A6FF-02F7E8256DBF}</string>
+			<key>display_name</key>
+			<string>Adobe Media Encoder CS5 PCI</string>
+			<key>installed_size</key>
+			<integer>51685</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{1B947DEB-869E-4DA3-8368-64A79749384D}</string>
+			<key>display_name</key>
+			<string>Adobe Media Encoder CS5 PCI WRAPPER</string>
+			<key>installed_size</key>
+			<integer>28842</integer>
+			<key>version</key>
+			<string>5.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{5E08533A-2C1B-469D-AFD5-953C9D00031F}</string>
+			<key>display_name</key>
+			<string>Adobe Browser Lab CS Live</string>
+			<key>installed_size</key>
+			<integer>236</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{3E7A8DA8-0298-42F2-B927-4DB00E2F8FEE}</string>
+			<key>display_name</key>
+			<string>LangPack (English) for DeviceCentral</string>
+			<key>installed_size</key>
+			<integer>293</integer>
+			<key>version</key>
+			<string>3.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{C7BDD22E-AD27-4B06-BEB9-F97BC4D89671}</string>
+			<key>display_name</key>
+			<string>Adobe Flash Player 10</string>
+			<key>installed_size</key>
+			<integer>29793</integer>
+			<key>version</key>
+			<string>10.1.52.15.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{1EC2407F-6A7B-4A3C-9F46-C812EE3D44FD}</string>
+			<key>display_name</key>
+			<string>HIL Help Search</string>
+			<key>installed_size</key>
+			<integer>275</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{635DCFA5-3A47-4452-AEC7-D3B23FFE929D}</string>
+			<key>display_name</key>
+			<string>Packager for iPhone®</string>
+			<key>installed_size</key>
+			<integer>134108</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{5C5F61E0-E13B-4FD6-9F4B-C034FFD0672A}</string>
+			<key>display_name</key>
+			<string>Players For Adobe Flash Pro</string>
+			<key>installed_size</key>
+			<integer>110449</integer>
+			<key>version</key>
+			<string>10.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{03EEF3DA-71F9-4FE5-92AD-D10142E26459}</string>
+			<key>display_name</key>
+			<string>SiteCatalyst® NetAverages™</string>
+			<key>installed_size</key>
+			<integer>130</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{4FFA83C0-007A-4DB3-955C-B5EEE73BEDAF}</string>
+			<key>display_name</key>
+			<string>Adobe SwitchBoard 2.0</string>
+			<key>installed_size</key>
+			<integer>35</integer>
+			<key>version</key>
+			<string>2.0.0.0.0</string>
+		</dict>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{F1599C36-2EAB-448F-B8F9-7DBEE9D5B345}</string>
+			<key>display_name</key>
+			<string>TLF For Adobe Flash Pro</string>
+			<key>installed_size</key>
+			<integer>675</integer>
+			<key>version</key>
+			<string>1.0.0.0.0</string>
+		</dict>
+	</array>
+	<key>uninstall_method</key>
+	<string>AdobeCS5AAMEEPackage</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>version</key>
+	<string>5.0.0.0.0</string>
+</dict>
+</plist>
