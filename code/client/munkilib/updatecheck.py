@@ -1975,16 +1975,17 @@ def getCatalogs(cataloglist):
                 munkicommon.display_error(err)
 
             else:
-                if munkicommon.validPlist(catalogpath):
-                    CATALOG[catalogname] = makeCatalogDB(
-                        FoundationPlist.readPlist(catalogpath))
-                else:
+                try:
+                    catalogdata = FoundationPlist.readPlist(catalogpath)
+                except FoundationPlist.NSPropertyListSerializationException:
                     munkicommon.display_error(
                         'Retreived catalog %s is invalid.' % catalogname)
                     try:
                         os.unlink(catalogpath)
                     except (OSError, IOError):
                         pass
+                else:
+                    CATALOG[catalogname] = makeCatalogDB(catalogdata)
 
 
 class ManifestException(Exception):
@@ -2008,7 +2009,8 @@ def getmanifest(partialurl, suppress_errors=False):
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
 
-    if partialurl.startswith('http://') or partialurl.startswith('https://'):
+    if (partialurl.startswith('http://') or partialurl.startswith('https://')
+        or partialurl.startswith('file:/')):
         # then it's really a request for the client's primary manifest
         manifesturl = partialurl
         partialurl = 'client_manifest'
@@ -2037,11 +2039,10 @@ def getmanifest(partialurl, suppress_errors=False):
             munkicommon.display_error(str(err))
         return None
 
-    if munkicommon.validPlist(manifestpath):
-        # record it for future access
-        MANIFESTS[manifestname] = manifestpath
-        return manifestpath
-    else:
+    try:
+        # read plist to see if it is valid
+        unused_data = FoundationPlist.readPlist(manifestpath)
+    except FoundationPlist.NSPropertyListSerializationException:
         errormsg = 'manifest returned for %s is invalid.' % partialurl
         munkicommon.display_error(errormsg)
         try:
@@ -2049,6 +2050,10 @@ def getmanifest(partialurl, suppress_errors=False):
         except (OSError, IOError):
             pass
         raise ManifestException(errormsg)
+    else:
+        # plist is valid
+        MANIFESTS[manifestname] = manifestpath
+        return manifestpath
 
 
 def getPrimaryManifest(alternate_id):
@@ -2125,13 +2130,18 @@ def checkServer(url):
     ISPs that return results for non-existent web servers..."""
     # deconstruct URL so we can check availability
     (scheme, netloc,
-     unused_path, unused_query, unused_fragment) = urlparse.urlsplit(url)
+     path, unused_query, unused_fragment) = urlparse.urlsplit(url)
     if scheme == 'http':
         port = 80
     elif scheme == 'https':
         port = 443
+    elif scheme == 'file':
+        if os.path.exists(path):
+            return (0, 'OK')
+        else:
+            return (-1, '%s does not exist' % path)
     else:
-        return False
+        return (-1, 'Unsupported URL scheme')
 
     # get rid of any embedded username/password
     netlocparts = netloc.split('@')
@@ -2232,9 +2242,12 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             if not os.path.isfile(key):
                 raise CurlError(-4, 'No client key at %s' % key)
             print >> fileobj, 'key = "%s"' % key
-        if os.path.exists(tempdownloadpath) and resume:
-            # let's try to resume this download
-            print >> fileobj, 'continue-at -'
+        if os.path.exists(tempdownloadpath):
+            if resume:
+                # let's try to resume this download
+                print >> fileobj, 'continue-at -'
+            else:
+                os.remove(tempdownloadpath)
 
         if os.path.exists(destinationpath):
             if etag:
@@ -2251,7 +2264,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         # header format. For example:
         # <key>AdditionalHttpHeaders</key>
         # <array>
-        #   <string>Key-With-Optional-Dahes: Foo Value</string>
+        #   <string>Key-With-Optional-Dashes: Foo Value</string>
         #   <string>another-custom-header: bar value</string>
         # </array>
         custom_headers = munkicommon.pref(
@@ -2312,7 +2325,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                         except (ValueError, TypeError):
                             targetsize = 0
 
-                if message and header['http_result_code'] != '304':
+                if message and header.get('http_result_code') != '304':
                     if message:
                         # log always, display if verbose is 2 or more
                         munkicommon.display_detail(message)
@@ -2320,7 +2333,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                             # send to detail field on MunkiStatus
                             munkistatus.detail(message)
 
-        elif targetsize and header['http_result_code'].startswith('2'):
+        elif targetsize and header.get('http_result_code').startswith('2'):
             # display progress if we get a 2xx result code
             if os.path.exists(tempdownloadpath):
                 downloadedsize = os.path.getsize(tempdownloadpath)
@@ -2338,12 +2351,15 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
     retcode = proc.poll()
     if retcode:
         curlerr = proc.stderr.read().rstrip('\n').split(None, 2)[2]
-        if not resume and os.path.exists(tempdownloadpath):
-            os.unlink(tempdownloadpath)
+        if os.path.exists(tempdownloadpath):
+            if (not resume) or (retcode == 33):
+                # 33 means server doesn't support range requests
+                # and so cannot resume downloads, so 
+                os.remove(tempdownloadpath)
         raise CurlError(retcode, curlerr)
     else:
         temp_download_exists = os.path.isfile(tempdownloadpath)
-        http_result = header['http_result_code']
+        http_result = header.get('http_result_code')
         if downloadedpercent != 100 and \
             http_result.startswith('2') and \
             temp_download_exists:
@@ -2355,7 +2371,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             else:
                 # not enough bytes retreived
                 if not resume and temp_download_exists:
-                    os.unlink(tempdownloadpath)
+                    os.remove(tempdownloadpath)
                 raise CurlError(-5, 'Expected %s bytes, got: %s' %
                                         (targetsize, downloadedsize))
         elif http_result.startswith('2') and temp_download_exists:
@@ -2372,7 +2388,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 except OSError:
                     pass
             raise HTTPError(http_result,
-                                header['http_result_description'])
+                                header.get('http_result_description',''))
 
 
 def getHTTPfileIfChangedAtomically(url, destinationpath,
@@ -2683,9 +2699,9 @@ def check(client_id='', localmanifestpath=None):
         # before it is installed or removed - so the cached item
         # is no longer needed.
         cache_list = [item['installer_item']
-                      for item in installinfo['managed_installs']]
+                      for item in installinfo.get('managed_installs', [])]
         cache_list.extend([item['uninstaller_item']
-                           for item in installinfo['removals']
+                           for item in installinfo.get('removals', [])
                            if item.get('uninstaller_item')])
         cachedir = os.path.join(ManagedInstallDir, 'Cache')
         for item in munkicommon.listdir(cachedir):
@@ -2733,11 +2749,10 @@ def check(client_id='', localmanifestpath=None):
                 installinfo = FoundationPlist.readPlist(installinfopath)
             except FoundationPlist.NSPropertyListSerializationException:
                 installinfo = {}
-            else:
-                munkicommon.report['ItemsToInstall'] = \
-                    installinfo.get('managed_installs', [])
-                munkicommon.report['ItemsToRemove'] = \
-                    installinfo.get('removals', [])
+            munkicommon.report['ItemsToInstall'] = \
+                installinfo.get('managed_installs', [])
+            munkicommon.report['ItemsToRemove'] = \
+                installinfo.get('removals', [])
 
 
     installcount = len(installinfo.get('managed_installs', []))
