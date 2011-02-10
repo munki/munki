@@ -70,7 +70,7 @@ def repoAvailable():
         print >> sys.stderr, 'No repo path specified.'
         return False
     if not os.path.exists(repo_path):
-        mountRepoGUI()
+        mountRepoCLI()
     if not os.path.exists(repo_path):
         return False
     for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
@@ -105,11 +105,21 @@ def mountRepoCLI():
     if os.path.exists(repo_path):
         return
     os.mkdir(repo_path)
+    print 'Attempting to mount fileshare %s:' % repo_url
     cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
     retcode = subprocess.call(cmd)
     if retcode:
         os.rmdir(repo_path)
 
+
+def unmountRepoCLI():
+    """Attempts to unmount the repo fileshare"""
+    repo_path = pref('repo_path')
+    if not os.path.exists(repo_path):
+        return
+    cmd = ['/sbin/umount', repo_path]
+    return subprocess.call(cmd)
+    
 
 class RepoCopyError(Exception):
     """Error copying installer item to repo"""
@@ -378,9 +388,8 @@ def findMatchingPkginfo(pkginfo):
     if possiblematches:
         versionlist = possiblematches.keys()
         versionlist.sort(compare_version_keys)
-        indexes = db['installer_items'][installer_item_name][
-                                                               versionlist[0]]
-        return pkgdb['items'][indexes[0]]
+        indexes = db['installer_items'][installer_item_name][versionlist[0]]
+        return db['items'][indexes[0]]
         
     # if we get here, we found no matches
     return {}
@@ -430,7 +439,14 @@ def makeCatalogs():
     if errors:
         print '\nThe following errors occurred while building catalogs:\n'
         print errors
-    
+        
+
+def cleanupAndExit(exitcode):
+    if not NOINTERACTIVE:
+        answer = raw_input('Unmount the repo fileshare? [y/n] ')
+        if answer.lower().startswith('y'):
+            result = unmountRepoCLI()
+    exit(exitcode or result)
 
 def pref(prefname):
     """Returns a preference for prefname"""
@@ -466,9 +482,12 @@ def configure():
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
 PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',    
                                             PREFSNAME))
+NOINTERACTIVE = False
 
 def main():
     """Main routine"""
+    global NOINTERACTIVE
+    
     usage = """usage: %prog [options] [/path/to/installer_item]
        Imports an installer item into a munki repo.
        Installer item can be a pkg, mpkg, dmg, or app.
@@ -500,7 +519,9 @@ def main():
     if options.configure:
         configure()
         exit(0)
-    
+        
+    NOINTERACTIVE = options.nointeractive
+        
     if len(arguments) == 0:
         p.print_usage()
         exit(0)
@@ -514,7 +535,12 @@ def main():
     if not os.path.exists(installer_item):
         print >> sys.stderr, '%s does not exist!' % installer_item
         exit(-1)
-        
+    
+    item_ext = os.path.splitext(installer_item)[1]
+    if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
+        print >> sys.stderr, '%s is an unknown type.' % installer_item
+        exit(-1)
+    
     if not pref('repo_path'):
         print >> sys.stderr, ('Path to munki repo has not been defined. '
                               'Run with --configure option to configure this '
@@ -525,17 +551,12 @@ def main():
         print >> sys.stderr, ('Could not connect to munki repo. Check the '
                               'configuration and try again.')
         exit(-1)
-                
-    item_ext = os.path.splitext(installer_item)[1]
-    if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
-        print >> sys.stderr, '%s is an unknown type.' % installer_item
-        exit(-1)
-    
+                    
     if os.path.isdir(installer_item):
         if item_ext == '.dmg':
             # a directory named foo.dmg!
             print >> sys.stderr, '%s is an unknown type.' % installer_item
-            exit(-1)
+            cleanupAndExit(-1)
         else:
             # we need to convert to dmg
             dmg_path = makeDMG(installer_item)
@@ -544,14 +565,14 @@ def main():
             else:
                 print >> sys.stderr, ('Could not convert %s to a disk image.' 
                                         % installer_item)
-                exit(-1)
+                cleanupAndExit(-1)
                 
     # generate pkginfo for the item
     pkginfo = makePkgInfo(installer_item)
     
     if not pkginfo:
         # makepkginfo returned an error
-        exit(-1)
+        cleanupAndExit(-1)
     
     if not options.nointeractive:
         # try to find existing pkginfo items that match this one
@@ -578,7 +599,7 @@ def main():
             if exactmatch:
                 answer = raw_input('Import this item anyway? [y/n] ')
                 if not answer.lower().startswith('y'):
-                    exit(0)
+                    cleanupAndExit(0)
                     
             answer = raw_input('Use existing item as a template? [y/n] ')
             if answer.lower().startswith('y'):
@@ -631,7 +652,7 @@ def main():
         print
         answer = raw_input('Import this item? [y/n] ')
         if not answer.lower().startswith('y'):
-            exit(0)
+            cleanupAndExit(0)
         
         if options.subdirectory == '':
             pkgs_path = os.path.join(pref('repo_path'), 'pkgs')
@@ -654,7 +675,7 @@ def main():
                                           options.subdirectory)
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
-        exit(-1)
+        cleanupAndExit(-1)
         
     # adjust the installer_item_location to match the actual location and name
     pkginfo['installer_item_location'] = uploaded_pkgpath
@@ -664,7 +685,7 @@ def main():
         pkginfo_path = copyPkginfoToRepo(pkginfo, options.subdirectory)
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
-        exit(-1)
+        cleanupAndExit(-1)
     
     if not options.nointeractive:
         # open the pkginfo file in the user's editor
@@ -675,7 +696,10 @@ def main():
                 makeCatalogs()
             except RepoCopyError, errmsg:
                 print >> sys.stderr, errmsg
-                exit(-1)
+                cleanupAndExit(-1)
+        
+    cleanupAndExit(0)
+            
     
 if __name__ == '__main__':
     main()
