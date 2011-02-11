@@ -100,6 +100,7 @@ def mountRepoGUI():
 
 def mountRepoCLI():
     """Attempts to connect to the repo fileshare"""
+    global WE_MOUNTED_THE_REPO
     repo_path = pref('repo_path')
     repo_url = pref('repo_url')
     if os.path.exists(repo_path):
@@ -110,6 +111,8 @@ def mountRepoCLI():
     retcode = subprocess.call(cmd)
     if retcode:
         os.rmdir(repo_path)
+    else:
+        WE_MOUNTED_THE_REPO = True
 
 
 def unmountRepoCLI():
@@ -442,11 +445,16 @@ def makeCatalogs():
         
 
 def cleanupAndExit(exitcode):
-    if not NOINTERACTIVE:
-        answer = raw_input('Unmount the repo fileshare? [y/n] ')
-        if answer.lower().startswith('y'):
+    result = 0
+    if WE_MOUNTED_THE_REPO:
+        if not NOINTERACTIVE:
+            answer = raw_input('Unmount the repo fileshare? [y/n] ')
+            if answer.lower().startswith('y'):
+                result = unmountRepoCLI()
+        else:
             result = unmountRepoCLI()
     exit(exitcode or result)
+
 
 def pref(prefname):
     """Returns a preference for prefname"""
@@ -483,6 +491,7 @@ PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
 PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',    
                                             PREFSNAME))
 NOINTERACTIVE = False
+WE_MOUNTED_THE_REPO = False
 
 def main():
     """Main routine"""
