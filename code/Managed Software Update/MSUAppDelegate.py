@@ -79,7 +79,7 @@ class MSUAppDelegate(NSObject):
             else:
                 # no updates available. Should we check for some?
                 self.checkForUpdates()
-                
+
     def displayUpdatesWindow(self):
         self.buildUpdateTableData()
         if self._optionalInstalls:
@@ -89,7 +89,7 @@ class MSUAppDelegate(NSObject):
 
     def munkiStatusSessionEnded_(self, socketSessionResult):
         consoleuser = munki.getconsoleuser()
-        if (self.runmode == "MunkiStatus" or consoleuser == None 
+        if (self.runmode == "MunkiStatus" or consoleuser == None
             or consoleuser == u"loginwindow"):
             # Status Window only, so we should just quit
             NSApp.terminate_(self)
@@ -106,10 +106,10 @@ class MSUAppDelegate(NSObject):
             # connection was dropped unexpectedly
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                alertMessageText, 
+                alertMessageText,
                 NSLocalizedString(u"Quit", None),
-                objc.nil, 
-                objc.nil, 
+                objc.nil,
+                objc.nil,
                 NSLocalizedString(u"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -119,10 +119,10 @@ class MSUAppDelegate(NSObject):
             # socket timed out before connection
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                alertMessageText, 
+                alertMessageText,
                 NSLocalizedString(u"Quit", None),
-                objc.nil, 
-                objc.nil, 
+                objc.nil,
+                objc.nil,
                 NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -154,19 +154,19 @@ class MSUAppDelegate(NSObject):
                 NSApp.requestUserAttention_(NSCriticalRequest)
             elif lastCheckResult == -1:
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Cannot check for updates", None), 
+                    NSLocalizedString(u"Cannot check for updates", None),
                     NSLocalizedString(u"Quit", None),
-                    objc.nil, 
-                    objc.nil, 
+                    objc.nil,
+                    objc.nil,
                     NSLocalizedString(u"Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator.", None))
                 alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                     self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
             elif lastCheckResult == -2:
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Cannot check for updates", None), 
-                    NSLocalizedString(u"Quit",  None), 
-                    objc.nil, 
-                    objc.nil, 
+                    NSLocalizedString(u"Cannot check for updates", None),
+                    NSLocalizedString(u"Quit",  None),
+                    objc.nil,
+                    objc.nil,
                     NSLocalizedString(u"Managed Software Update failed its preflight check.\nTry again later.", None))
                 alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                     self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -174,19 +174,19 @@ class MSUAppDelegate(NSObject):
     def noUpdatesAlert(self):
         if self._optionalInstalls:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Your software is up to date.", None), 
-                NSLocalizedString(u"Quit", None), 
-                NSLocalizedString(u"Optional software...", None), 
-                objc.nil, 
+                NSLocalizedString(u"Your software is up to date.", None),
+                NSLocalizedString(u"Quit", None),
+                NSLocalizedString(u"Optional software...", None),
+                objc.nil,
                 NSLocalizedString(u"There is no new software for your computer at this time.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Your software is up to date.", None), 
-                NSLocalizedString(u"Quit", None), 
-                objc.nil, 
-                objc.nil, 
+                NSLocalizedString(u"Your software is up to date.", None),
+                NSLocalizedString(u"Quit", None),
+                objc.nil,
+                objc.nil,
                 NSLocalizedString(u"There is no new software for your computer at this time.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -194,7 +194,7 @@ class MSUAppDelegate(NSObject):
 
     def checkForUpdates(self):
         # kick off an update check
-        
+
         # close main window
         self.mainWindowController.theWindow.orderOut_(self)
         # clear data structures
@@ -214,10 +214,10 @@ class MSUAppDelegate(NSObject):
         else:
             self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Update check failed", None), 
-                NSLocalizedString(u"Quit", None), 
-                objc.nil, 
-                objc.nil, 
+                NSLocalizedString(u"Update check failed", None),
+                NSLocalizedString(u"Quit", None),
+                objc.nil,
+                objc.nil,
                 NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -255,7 +255,7 @@ class MSUAppDelegate(NSObject):
                     if item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
                         restartNeeded = True
                     if showRemovalDetail:
-                        item["display_name"] = ((item.get("display_name") or item.get("name", "")) 
+                        item["display_name"] = ((item.get("display_name") or item.get("name", ""))
                                                 + NSLocalizedString(u" (will be removed)", None))
                         item["description"] = NSLocalizedString(u"This item will be removed.", None)
                         updatelist.append(item)
@@ -397,42 +397,42 @@ class MSUAppDelegate(NSObject):
             return
         if len(munki.currentGUIusers()) > 1:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Other users logged in", None), 
-                NSLocalizedString(u"Cancel", None), 
-                objc.nil, 
-                objc.nil, 
+                NSLocalizedString(u"Other users logged in", None),
+                NSLocalizedString(u"Cancel", None),
+                objc.nil,
+                objc.nil,
                 NSLocalizedString("There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.multipleUserAlertDidEnd_returnCode_contextInfo_, objc.nil)
         elif self.restart_required:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Restart Required", None), 
-                NSLocalizedString(u"Log out and update", None), 
-                NSLocalizedString(u"Cancel", None), 
-                objc.nil, 
-                NSLocalizedString(u"A restart is required after updating. Log out and update now?", None))
+                NSLocalizedString(u"Restart Required", None),
+                NSLocalizedString(u"Log out and update", None),
+                NSLocalizedString(u"Cancel", None),
+                objc.nil,
+                NSLocalizedString(u"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         elif self.logout_required or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Logout Required", None), 
-                NSLocalizedString(u"Log out and update", None), 
-                NSLocalizedString(u"Cancel", None),  
-                objc.nil, 
-                NSLocalizedString(u"A logout is required before updating. Log out and update now?", None))
+                NSLocalizedString(u"Logout Required", None),
+                NSLocalizedString(u"Log out and update", None),
+                NSLocalizedString(u"Cancel", None),
+                objc.nil,
+                NSLocalizedString(u"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Logout Recommended", None), 
-                NSLocalizedString(u"Log out and update", None), 
-                NSLocalizedString(u"Cancel", None), 
-                NSLocalizedString(u"Update without logging out", None), 
-                NSLocalizedString(u"A logout is recommended before updating. Log out and update now?", None))
+                NSLocalizedString(u"Logout Recommended", None),
+                NSLocalizedString(u"Log out and update", None),
+                NSLocalizedString(u"Cancel", None),
+                NSLocalizedString(u"Update without logging out", None),
+                NSLocalizedString(u"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
-    
+
     def alertIfBlockingAppsRunning(self):
         apps_to_check = []
         for update_item in self._listofupdates:
@@ -442,14 +442,14 @@ class MSUAppDelegate(NSObject):
                 apps_to_check.extend([os.path.basename(item.get('path'))
                                      for item in update_item.get('installs', [])
                                      if item['type'] == 'application'])
-                                     
+
         running_apps = munki.getRunningBlockingApps(apps_to_check)
         if running_apps:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Conflicting applications running", None), 
-                    NSLocalizedString(u"OK", None), 
-                    objc.nil, 
-                    objc.nil, 
+                    NSLocalizedString(u"Conflicting applications running", None),
+                    NSLocalizedString(u"OK", None),
+                    objc.nil,
+                    objc.nil,
                     NSLocalizedString(u"You must quit the following applications before proceeding with installation:\n\n%s", None) % '\n'.join(running_apps))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.blockingAppsRunningAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -459,10 +459,10 @@ class MSUAppDelegate(NSObject):
 
     def installSessionErrorAlert(self):
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Cannot start installation session", None), 
-                NSLocalizedString(u"Quit", None), 
-                objc.nil, 
-                objc.nil, 
+                NSLocalizedString(u"Cannot start installation session", None),
+                NSLocalizedString(u"Quit", None),
+                objc.nil,
+                objc.nil,
                 NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator.", None))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
