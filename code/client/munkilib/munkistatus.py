@@ -113,9 +113,14 @@ def getPIDforProcessName(processname):
             break
         line = line.rstrip('\n')
         if line:
-            (pid, process) = line.split(None, 1)
-            if process.find(processname) != -1:
-                return str(pid)
+            try:
+                (pid, process) = line.split(None, 1)
+            except ValueError:
+                # funky process line, so we'll skip it
+                pass
+            else:
+                if process.find(processname) != -1:
+                    return str(pid)
                 
     return 0
 
