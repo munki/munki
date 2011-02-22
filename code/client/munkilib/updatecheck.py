@@ -649,7 +649,7 @@ class PackageVerificationError(MunkiDownloadError):
     """Download failed because it coud not be verified"""
     pass
 
-def download_installeritem(item_pl, uninstalling=False):
+def download_installeritem(item_pl, installinfo, uninstalling=False):
     """Downloads an (un)installer item.
     Raises an error if there are issues..."""
 
@@ -678,8 +678,16 @@ def download_installeritem(item_pl, uninstalling=False):
     # grab last path component of location to derive package name.
     pkgname = os.path.basename(location)
     destinationpath = os.path.join(mycachedir, pkgname)
-
-    munkicommon.display_detail('Downloading %s from %s' % (pkgname, location))
+    if not os.path.exists(destinationpath):
+        # check to see if there is enough free space to download and install
+        if not enoughDiskSpace(item_pl, installinfo['managed_installs']):
+            raise MunkiDownloadError(
+                'Insufficient disk space to download and install %s'
+                % pkgname)
+        else:
+            munkicommon.display_detail(
+                'Downloading %s from %s' % (pkgname, location))
+                
     # bump up verboseness so we get download percentage done feedback.
     # this is kind of a hack...
     oldverbose = munkicommon.verbose
@@ -1357,7 +1365,6 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     # to the list of optional installs
     iteminfo = {}
     iteminfo['name'] = item_pl.get('name', manifestitemname)
-    #iteminfo['manifestitem'] = manifestitemname
     iteminfo['description'] = item_pl.get('description', '')
     iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
     iteminfo['display_name'] = item_pl.get('display_name', '')
@@ -1371,8 +1378,8 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
         iteminfo['installed_size'] = item_pl.get('installer_item_size',
                                         iteminfo['installer_item_size'])
         if not enoughDiskSpace(item_pl,
-                                    installinfo.get('managed_installs', []),
-                                    warn=False):
+                               installinfo.get('managed_installs', []),
+                               warn=False):
             iteminfo['note'] = \
                 'Insufficient disk space to download and install.'
 
@@ -1478,7 +1485,6 @@ def processInstall(manifestitem, cataloglist, installinfo):
     iteminfo['name'] = item_pl.get('name', '')
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
-    #iteminfo['manifestitem'] = manifestitemname
     
     installed_state = installedState(item_pl)
     if installed_state == 0:
@@ -1487,17 +1493,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                                                 'installer_item_size', 0)
         iteminfo['installed_size'] = item_pl.get('installed_size',
                                             iteminfo['installer_item_size'])
-
-       # check to see if there is enough free space to download and install
-        if not enoughDiskSpace(item_pl, installinfo['managed_installs']):
-            iteminfo['installed'] = False
-            iteminfo['note'] = \
-                'Insufficient disk space to download and install'
-            installinfo['managed_installs'].append(iteminfo)
-            return False
-
         try:
-            download_installeritem(item_pl)
+            download_installeritem(item_pl, installinfo)
             filename = os.path.split(item_pl['installer_item_location'])[1]
             # required keys
             iteminfo['installer_item'] = filename
@@ -1559,10 +1556,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
             installinfo['managed_installs'].append(iteminfo)
             return False
         except MunkiDownloadError, errmsg:
-            munkicommon.display_warning('Can\'t install %s because of: %s'
+            munkicommon.display_warning('Can\'t install %s because: %s'
                                         % (manifestitemname, errmsg))
             iteminfo['installed'] = False
-            iteminfo['note'] = errmsg
+            iteminfo['note'] = '%s' % errmsg
             installinfo['managed_installs'].append(iteminfo)
             return False
     else:
@@ -1735,7 +1732,6 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                                     manifestitemname_withversion)
         iteminfo = {}
         iteminfo['name'] = manifestitemname
-        #iteminfo['manifestitem'] = manifestitemname_withversion
         iteminfo['installed'] = False
         installinfo['removals'].append(iteminfo)
         return True
@@ -1829,7 +1825,6 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo = {}
     iteminfo['name'] = uninstall_item.get('name', '')
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
-    #iteminfo['manifestitem'] = manifestitemname_withversion
     iteminfo['description'] = 'Will be removed.'
 
     # currently we will ignore the forced_install and forced_uninstall key if
@@ -1883,11 +1878,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 location = uninstall_item['uninstaller_item_location']
             else:
                 location = uninstall_item['installer_item_location']
-            if not enoughDiskSpace(uninstall_item, uninstalling=True):
-                return False
-
             try:
-                download_installeritem(item, uninstalling=True)
+                download_installeritem(item, installinfo, uninstalling=True)
                 filename = os.path.split(location)[1]
                 iteminfo['uninstaller_item'] = filename
                 iteminfo['adobe_package_name'] = \
@@ -1897,10 +1889,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'Can\'t uninstall %s because the integrity check '
                     'failed.' % iteminfo['name'])
                 return False
-            except MunkiDownloadError:
+            except MunkiDownloadError, errmsg:
                 munkicommon.display_warning('Failed to download the '
-                                            'uninstaller for %s'
-                                            % iteminfo['name'])
+                                            'uninstaller for %s because %s'
+                                            % (iteminfo['name'], errmsg))
                 return False
     elif uninstallmethod == 'remove_copied_items':
         iteminfo['items_to_remove'] = item.get('items_to_copy', [])
