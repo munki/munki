@@ -67,7 +67,7 @@ def pref(pref_name):
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:
         pref_value = default_prefs.get(pref_name)
-    if type(pref_value).__name__ == "__NSCFDate":
+    if type(pref_value).__name__ in ['__NSCFDate', '__NSDate', '__CFDate']:
         # convert NSDate/CFDates to strings
         pref_value = str(pref_value)
     return pref_value

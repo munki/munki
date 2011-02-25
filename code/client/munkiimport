@@ -79,7 +79,7 @@ def repoAvailable():
             return False
     # if we get this far, the repo path looks OK
     return True
-    
+
 
 def mountRepoGUI():
     """Attempts to connect to the repo fileshare
