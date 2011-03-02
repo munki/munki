@@ -2180,8 +2180,10 @@ class HTTPError(Exception):
     pass
 
 
+WARNINGSLOGGED = {}
 def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
-         cacert=None, capath=None, cert=None, key=None, message=None):
+         cacert=None, capath=None, cert=None, key=None, message=None,
+         donotrecurse=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -2234,12 +2236,6 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             if not os.path.isfile(key):
                 raise CurlError(-4, 'No client key at %s' % key)
             print >> fileobj, 'key = "%s"' % key
-        if os.path.exists(tempdownloadpath):
-            if resume:
-                # let's try to resume this download
-                print >> fileobj, 'continue-at -'
-            else:
-                os.remove(tempdownloadpath)
 
         if os.path.exists(destinationpath):
             if etag:
@@ -2250,6 +2246,25 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 print >> fileobj, 'time-cond = "%s"' % destinationpath
             else:
                 os.remove(destinationpath)
+
+        if os.path.exists(tempdownloadpath):
+            if resume and not os.path.exists(destinationpath):
+                # let's try to resume this download
+                print >> fileobj, 'continue-at -'
+                # if an existing etag, only resume if etags still match.
+                tempetag = None
+                if ('com.googlecode.munki.etag' in
+                        xattr.listxattr(tempdownloadpath)):
+                    tempetag = xattr.getxattr(tempdownloadpath,
+                        'com.googlecode.munki.etag')
+                if tempetag:
+                    # Note: If-Range is more efficient, but the response
+                    # confuses curl (Error: 33 if etag not match).
+                    escaped_etag = tempetag.replace('"','\\"')
+                    print >> fileobj, ('header = "If-Match: %s"'
+                                        % escaped_etag)
+            else:
+                os.remove(tempdownloadpath)
 
         # Add any additional headers specified in ManagedInstalls.plist.
         # AdditionalHttpHeaders must be an array of strings with valid HTTP
@@ -2342,23 +2357,81 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
     retcode = proc.poll()
     if retcode:
-        curlerr = proc.stderr.read().rstrip('\n').split(None, 2)[2]
+        curlerr = ''
+        try:
+            curlerr = proc.stderr.read().rstrip('\n')
+            curlerr = curlerr.split(None, 2)[2]
+        except IndexError:
+            pass
+        if retcode == 22:
+            # 22 means any 400 series return code. Note: header seems not to
+            # be dumped to STDOUT for immediate failures. Hence
+            # http_result_code is likely blank/000. Read it from stderr.
+            if re.search(r'URL returned error: [0-9]+$', curlerr):
+                header['http_result_code'] = curlerr[curlerr.rfind(' ')+1:]
+
         if os.path.exists(tempdownloadpath):
-            if (not resume) or (retcode == 33):
-                # 33 means server doesn't support range requests
-                # and so cannot resume downloads, so
+            if not resume:
                 os.remove(tempdownloadpath)
+            elif retcode == 33 or header.get('http_result_code') == '412':
+                # 33: server doesn't support range requests
+                # 412: Etag didn't match (precondition failed), could not
+                #   resume partial download as file on server has changed.
+                if retcode == 33 and not 'HTTPRange' in WARNINGSLOGGED:
+                    munkicommon.display_warning('Web server refused ' +
+                            'partial/range request. Munki cannot run ' +
+                            'efficiently when this support is absent for ' +
+                            'pkg urls. URL: %s'
+                            % url)
+                    WARNINGSLOGGED['HTTPRange'] = 1
+                os.remove(tempdownloadpath)
+                # The partial failed immediately as not supported.
+                # Try a full download again immediately.
+                if not donotrecurse:
+                    return curl(url, destinationpath, onlyifnewer=onlyifnewer,
+                                etag=etag, resume=resume, cacert=cacert,
+                                capath=capath, cert=cert, key=key,
+                                message=message, donotrecurse=True)
+            elif retcode == 22:
+                # TODO: Made http(s) connection but 400 series error. What should we do?
+                # 403 could be ok, just that someone is currently offsite and the server is refusing the service them while there.
+                # 404 could be an interception proxy at a public wifi point. The partial may still be ok later.
+                # 416 could be dangerous - the targeted resource may now be different / smaller. We need to delete the temp or retrying will never work.
+                if header.get('http_result_code') == 416:
+                    # Bad range request.
+                    os.remove(tempdownloadpath)
+                elif header.get('http_result_code') == 503:
+                    # Web server temporarily unavailable.
+                    pass
+                elif not header.get('http_result_code').startswith('4'):
+                    # 500 series, or no error code parsed.
+                    # Perhaps the webserver gets really confused by partial
+                    # requests. It is likely majorly misconfigured so we won't
+                    # try asking it anything challenging.
+                    os.remove(tempdownloadpath)
+            elif header.get('etag'):
+                xattr.setxattr(tempdownloadpath,
+                               'com.googlecode.munki.etag', header['etag'])
+        # TODO: should we log this diagnostic here (we didn't previously)?
+        # Currently for a pkg all that is logged on failure is:
+        # "WARNING: Download of Firefox failed." with no detail. Logging at
+        # the place where this exception is caught has to be done in many places.
+        munkicommon.display_detail('Download error: %s. Failed (%s) with: %s'
+                                    % (url,retcode,curlerr))
         raise CurlError(retcode, curlerr)
     else:
         temp_download_exists = os.path.isfile(tempdownloadpath)
         http_result = header.get('http_result_code')
-        if downloadedpercent != 100 and \
-            http_result.startswith('2') and \
+        if http_result.startswith('2') and \
             temp_download_exists:
             downloadedsize = os.path.getsize(tempdownloadpath)
             if downloadedsize >= targetsize:
-                munkicommon.display_percent_done(100, 100)
+                if not downloadedpercent == 100:
+                    munkicommon.display_percent_done(100, 100)
                 os.rename(tempdownloadpath, destinationpath)
+                if resume and not header.get('etag') and not 'HTTPetag' in WARNINGSLOGGED:
+                    munkicommon.display_warning('Web server did not return an etag. Munki cannot safely resume downloads without etag support on the web server. URL: %s' % url)
+                    WARNINGSLOGGED['HTTPetag'] = 1
                 return header
             else:
                 # not enough bytes retreived
@@ -2366,9 +2439,6 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     os.remove(tempdownloadpath)
                 raise CurlError(-5, 'Expected %s bytes, got: %s' %
                                         (targetsize, downloadedsize))
-        elif http_result.startswith('2') and temp_download_exists:
-            os.rename(tempdownloadpath, destinationpath)
-            return header
         elif http_result == '304':
             return header
         else:
