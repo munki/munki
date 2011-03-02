@@ -2263,7 +2263,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
         if custom_headers:
             for custom_header in custom_headers:
-                custom_header = custom_header.strip()
+                custom_header = custom_header.strip().encode('utf-8')
                 if re.search(r'^[\w-]+:.+', custom_header):
                     print >> fileobj, ('header = "%s"' % custom_header)
                 else:
