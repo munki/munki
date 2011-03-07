@@ -455,7 +455,7 @@ def removeCopiedItems(itemlist):
 
     return retcode
 
-def installWithInfo(dirpath, installlist, only_forced=False):
+def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
     """
     Uses the installlist to install items in the
     correct order.
@@ -499,7 +499,7 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                 munkicommon.display_error("Installer item %s was not found." %
                                            item["installer_item"])
                 return restartflag
-                
+
             installer_type = item.get("installer_type","")
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.doAdobeInstall(item)
@@ -555,7 +555,7 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag
-                        
+
                     retcode = -99 # in case we find nothing to install
                     needtorestart = False
                     if item.get('package_path','').endswith('.pkg') or \
@@ -582,8 +582,8 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
                 else:
-                    if (itempath.endswith(".pkg") or 
-                        itempath.endswith(".mpkg") or 
+                    if (itempath.endswith(".pkg") or
+                        itempath.endswith(".mpkg") or
                         itempath.endswith(".dist")):
                         (retcode, needtorestart) = \
                             install(itempath, choicesXMLfile,
@@ -594,17 +594,27 @@ def installWithInfo(dirpath, installlist, only_forced=False):
             # record install success/failure
             if not 'InstallResults' in munkicommon.report:
                 munkicommon.report['InstallResults'] = []
-            if retcode == 0:
-                success_msg = ("Install of %s-%s: SUCCESSFUL" %
-                               (display_name, version_to_install))
-                munkicommon.log(success_msg, "Install.log")
-                munkicommon.report['InstallResults'].append(success_msg)
+
+            if applesus:
+              message = "Apple SUS install of %s-%s: %s"
             else:
-                failure_msg = ("Install of %s-%s: "
-                               "FAILED with return code: %s" %
-                               (display_name, version_to_install, retcode))
-                munkicommon.log(failure_msg, "Install.log")
-                munkicommon.report['InstallResults'].append(failure_msg)
+              message = "Install of %s-%s: %s"
+
+            if retcode == 0:
+              status = "SUCCESSFUL"
+            else:
+              status = "FAILED with return code: %s" % retcode
+
+            log_msg = message % (display_name, version_to_install, status)
+            munkicommon.log(log_msg, "Install.log")
+
+            install_result = {
+                'name': display_name,
+                'version': version_to_install,
+                'applesus': applesus,
+                'status': retcode,
+            }
+            munkicommon.report['InstallResults'].append(install_result)
 
             # check to see if this installer item is needed by any additional
             # items in installinfo
@@ -654,7 +664,7 @@ def installWithInfo(dirpath, installlist, only_forced=False):
                             if os.path.exists(shadowfile):
                                 retcode = subprocess.call(
                                     ["/bin/rm", shadowfile])
-                    
+
     return (restartflag, skipped_installs)
 
 
@@ -821,7 +831,7 @@ def processRemovals(removallist, only_forced=False):
                  os.access(uninstallmethod[0], os.X_OK):
                 # it's a script or program to uninstall
                 retcode = runUninstallScript(name, uninstallmethod[0])
-                if (retcode == 0 and 
+                if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
 
@@ -871,13 +881,13 @@ def removeItemFromSelfServeUninstallList(itemname):
                 FoundationPlist.writePlist(plist, selfservemanifest)
             except FoundationPlist.FoundationPlistException:
                 pass
-                
-                
+
+
 def blockingApplicationsRunning(pkginfoitem):
     """Returns true if any application in the blocking_applications list
     is running or, if there is no blocking_applications list, if any
     application in the installs list is running."""
-    
+
     if 'blocking_applications' in pkginfoitem:
         appnames = pkginfoitem['blocking_applications']
     else:
@@ -886,7 +896,7 @@ def blockingApplicationsRunning(pkginfoitem):
         appnames = [os.path.basename(item.get('path'))
                     for item in pkginfoitem.get('installs', [])
                     if item['type'] == 'application']
-    
+
     munkicommon.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
                     if munkicommon.isAppRunning(appname)]
@@ -951,16 +961,16 @@ def run(only_forced=False):
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
-                (removals_need_restart, 
+                (removals_need_restart,
                  skipped_removals) = processRemovals(removallist,
                                                      only_forced=only_forced)
                 # if any removals were skipped, record them for later
                 installinfo['removals'] = skipped_removals
-                    
+
         if "managed_installs" in installinfo:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
-                installlist = [item for item in 
+                installlist = [item for item in
                                installinfo['managed_installs']
                                if item.get('installed') == False]
                 munkicommon.report['ItemsToInstall'] = installlist
@@ -981,10 +991,10 @@ def run(only_forced=False):
                                                     only_forced=only_forced)
                     # if any installs were skipped record them for later
                     installinfo['managed_installs'] = skipped_installs
-                                            
-        if (only_forced and 
+
+        if (only_forced and
             installinfo['managed_installs'] or installinfo['removals']):
-            # need to write the installinfo back out minus the stuff we 
+            # need to write the installinfo back out minus the stuff we
             # actually installed
             try:
                 FoundationPlist.writePlist(installinfo, installinfopath)

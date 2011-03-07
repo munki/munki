@@ -11,9 +11,9 @@ Utilities for dealing with Apple Software Update.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -75,7 +75,7 @@ def restoreSoftwareUpdateServer(theurl):
             munkicommon.display_detail('Resetting Apple Software Update '
                                        'CatalogURL to the default')
             cmd = ['/usr/bin/defaults', 'delete',
-                   '/Library/Preferences/com.apple.SoftwareUpdate', 
+                   '/Library/Preferences/com.apple.SoftwareUpdate',
                    'CatalogURL']
         unused_retcode = subprocess.call(cmd)
 
@@ -84,15 +84,15 @@ def setupSoftwareUpdateCheck():
     '''Set defaults for root user and current host.
     Needed for Leopard.'''
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
-           'com.apple.SoftwareUpdate', 'AgreedToLicenseAgreement', 
+           'com.apple.SoftwareUpdate', 'AgreedToLicenseAgreement',
            '-bool', 'YES']
     unused_retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
-           'com.apple.SoftwareUpdate', 'AutomaticDownload', 
+           'com.apple.SoftwareUpdate', 'AutomaticDownload',
            '-bool', 'YES']
     unused_retcode = subprocess.call(cmd)
     cmd = ['/usr/bin/defaults', '-currentHost', 'write',
-           'com.apple.SoftwareUpdate', 'LaunchAppInBackground', 
+           'com.apple.SoftwareUpdate', 'LaunchAppInBackground',
            '-bool', 'YES']
     unused_retcode = subprocess.call(cmd)
 
@@ -101,7 +101,7 @@ CACHEDUPDATELIST = None
 def softwareUpdateList():
     '''Returns a list of available updates
     using `/usr/sbin/softwareupdate -l`'''
-    
+
     global CACHEDUPDATELIST
     if CACHEDUPDATELIST != None:
         return CACHEDUPDATELIST
@@ -111,18 +111,18 @@ def softwareUpdateList():
         'Getting list of available Apple Software Updates')
     cmd = ['/usr/sbin/softwareupdate', '-l']
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                           stdin=subprocess.PIPE, 
+                           stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, unused_err) = proc.communicate()                     
+    (output, unused_err) = proc.communicate()
     if proc.returncode == 0:
-        updates = [str(item)[5:] for item in output.splitlines() 
+        updates = [str(item)[5:] for item in output.splitlines()
                        if str(item).startswith('   * ')]
     munkicommon.display_detail(
         'softwareupdate returned %s updates' % len(updates))
     CACHEDUPDATELIST = updates
     return CACHEDUPDATELIST
-    
-    
+
+
 def checkForSoftwareUpdates():
     '''Does our Apple Software Update check'''
     msg = "Checking for available Apple Software Updates..."
@@ -137,23 +137,23 @@ def checkForSoftwareUpdates():
     original_url = getCurrentSoftwareUpdateServer()
     # switch to a different SUS server if specified
     selectSoftwareUpdateServer()
-    # get the OS version 
+    # get the OS version
     osvers = int(os.uname()[2].split('.')[0])
     if osvers == 9:
         setupSoftwareUpdateCheck()
         softwareupdateapp = "/System/Library/CoreServices/Software Update.app"
-        softwareupdatecheck = os.path.join(softwareupdateapp, 
+        softwareupdatecheck = os.path.join(softwareupdateapp,
                                 "Contents/Resources/SoftwareUpdateCheck")
-        
+
         # record mode of Software Update.app
         rawmode = os.stat(softwareupdateapp).st_mode
         oldmode = stat.S_IMODE(rawmode)
-        
+
         # set mode of Software Update.app so it won't launch
         # yes, this is a hack.  So sue me.
         newmode = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
         os.chmod(softwareupdateapp, newmode)
-        
+
         cmd = [ softwareupdatecheck ]
     elif osvers > 9:
         # in Snow Leopard we can just use /usr/sbin/softwareupdate, since it
@@ -162,17 +162,17 @@ def checkForSoftwareUpdates():
     else:
         # unsupported os version
         return -1
-        
+
     # bump up verboseness so we get download percentage done feedback.
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
-    
+
     # now check for updates
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
-    while True: 
+    while True:
         output = proc.stdout.readline().decode('UTF-8')
         if munkicommon.munkistatusoutput:
             if munkicommon.stopRequested():
@@ -202,7 +202,7 @@ def checkForSoftwareUpdates():
             pass
         else:
             munkicommon.display_status(output.rstrip('\n'))
-    
+
     retcode = proc.poll()
     if retcode:
         if osvers == 9:
@@ -210,29 +210,29 @@ def checkForSoftwareUpdates():
             # because we prevent the app from launching
             # so let's just ignore them
             retcode = 0
-            
-    if retcode == 0:      
+
+    if retcode == 0:
         # get SoftwareUpdate's LastResultCode
         LastResultCode = softwareUpdatePrefs().get('LastResultCode', 0)
         if LastResultCode > 2:
             retcode = LastResultCode
-            
+
     if retcode:
         # there was an error
         munkicommon.display_error("softwareupdate error: %s" % retcode)
-            
+
     if osvers == 9:
         # put mode back for Software Update.app
         os.chmod(softwareupdateapp, oldmode)
-        
+
     # set verboseness back.
     munkicommon.verbose = oldverbose
-    
+
     # switch back to the original SUS server
     restoreSoftwareUpdateServer(original_url)
     return retcode
-    
-    
+
+
 #
 # Apple information on Distribution ('.dist') files:
 #
@@ -316,7 +316,7 @@ def parseDist(filename):
                             line.attributes['choice'].value)
             else:
                 # more than one choices-outline with the same ui-name.
-                # we should throw an exception until we understand how to deal 
+                # we should throw an exception until we understand how to deal
                 # with this.
                 # Maybe we can safely merge them, but we'll play it
                 # conversative for now
@@ -429,10 +429,10 @@ def getRestartInfo(distfile):
     '''Returns RestartInfo for distfile'''
     restartAction = "None"
     proc = subprocess.Popen(["/usr/sbin/installer",
-                            "-query", "RestartAction", 
-                            "-pkg", distfile], 
-                            bufsize=1, 
-                            stdout=subprocess.PIPE, 
+                            "-query", "RestartAction",
+                            "-pkg", distfile],
+                            bufsize=1,
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, unused_err) = proc.communicate()
     if out:
@@ -459,7 +459,7 @@ def deDupPkgRefList(pkgref_list):
 
     deduped_list = []
     for pkg_ref in pkgref_list:
-        matchingitems = [item for item in deduped_list 
+        matchingitems = [item for item in deduped_list
             if item['package_file'] == pkg_ref['package_file']]
         if matchingitems:
             # we have a duplicate; we should keep the one that has
@@ -482,8 +482,8 @@ def getPkgsToInstall(dist, pkgdir=None):
 
     # Distribution_XML_Ref.html
     #
-    # The name of the application that is to display the choices specified by  
-    # this element. Values: "Installer" (default), "SoftwareUpdate", or 
+    # The name of the application that is to display the choices specified by
+    # this element. Values: "Installer" (default), "SoftwareUpdate", or
     # "Invisible".
     # "invisible" seems to be in use as well...
     if 'SoftwareUpdate' in dist['choices-outlines']:
@@ -560,7 +560,7 @@ def makeFakeDist(title, pkg_refs_to_install):
         xmlinst.appendChild(node)
 
     xmlchoice.setAttribute("title", title)
-    xmltitle.appendChild(xmlout.createTextNode(title))    
+    xmltitle.appendChild(xmlout.createTextNode(title))
 
     return xmlout
 
@@ -569,22 +569,22 @@ class AppleUpdateParseError(Exception):
     '''We raise this exception when we encounter something
     unexpected in the update processing'''
     pass
-    
-    
-def processSoftwareUpdateDownload(appleupdatedir, 
+
+
+def processSoftwareUpdateDownload(appleupdatedir,
                             verifypkgsexist=True, writefile=True):
-    '''Given a directory containing an update downloaded by softwareupdate -d 
+    '''Given a directory containing an update downloaded by softwareupdate -d
     or SoftwareUpdateCheck, attempts to create a simplified .dist file that
     /usr/sbin/installer can use to successfully install the downloaded
-    update. 
+    update.
     Returns dist info as dictionary and path to generated dist
     or raises AppleUpdateParseError exception.'''
-    
+
     osvers = int(os.uname()[2].split('.')[0])
     if osvers == 9:
         # Under Leopard, everything is one directory down...
         appleupdatedir = os.path.join(appleupdatedir, "Packages")
-    
+
     availabledists = []
     availablepkgs = []
     generated_dist_file = os.path.join(appleupdatedir, 'MunkiGenerated.dist')
@@ -625,7 +625,7 @@ def processSoftwareUpdateDownload(appleupdatedir,
             'Nothing was found to install in %s' % appleupdatedir)
 
     if verifypkgsexist:
-        pkg_files_to_install = [item['package_file'] 
+        pkg_files_to_install = [item['package_file']
                                 for item in pkg_refs_to_install]
         for pkg in availablepkgs:
             if not pkg in pkg_files_to_install:
@@ -646,7 +646,7 @@ def processSoftwareUpdateDownload(appleupdatedir,
         f = open(generated_dist_file, 'w')
         f.write(xmlout.toxml('utf-8'))
         f.close()
-    
+
     return (dist, generated_dist_file)
 
 
@@ -654,13 +654,13 @@ def getSoftwareUpdateInfo():
     '''Parses the Software Update index.plist and the downloaded updates,
     extracting info in the format munki expects. Returns an array of
     installeritems like those found in munki's InstallInfo.plist'''
-    
+
     updatesdir = "/Library/Updates"
     updatesindex = os.path.join(updatesdir, "index.plist")
     if not os.path.exists(updatesindex):
         # no updates index, so bail
         return []
-    
+
     suLastResultCode = softwareUpdatePrefs().get('LastResultCode')
     if suLastResultCode == 0:
         # successful and updates found
@@ -775,8 +775,8 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
 
     if suppresscheck:
         # typically because we're doing a logout install; if
-        # there are no waiting Apple Updates we shouldn't 
-        # trigger a check for them. 
+        # there are no waiting Apple Updates we shouldn't
+        # trigger a check for them.
         pass
     elif forcecheck:
         # typically because user initiated the check from
@@ -826,19 +826,20 @@ def installAppleUpdates():
 
     restartneeded = False
     appleupdatelist = getSoftwareUpdateInfo()
-    
-    # did we find some Apple updates?        
+
+    # did we find some Apple updates?
     if appleupdatelist:
         munkicommon.report['AppleUpdateList'] = appleupdatelist
         munkicommon.savereport()
         (restartneeded, unused_skipped_installs) = \
                 installer.installWithInfo("/Library/Updates",
-                                          appleupdatelist)
+                                          appleupdatelist,
+                                          applesus=True)
         if restartneeded:
             munkicommon.report['RestartRequired'] = True
         munkicommon.savereport()
         clearAppleUpdateInfo()
-                
+
     return restartneeded
 
 
