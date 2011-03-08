@@ -479,6 +479,15 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                 continue
         if munkicommon.stopRequested():
             return restartflag
+
+        if 'preinstall_script' in item:
+            retcode = runEmbeddedScript('preinstall_script', item['name'])
+            if retcode:
+                # preinstall script failures cause install to abort
+                munkicommon.display_error(
+                                'Install of %s failed.' % item['name'])
+                return restartflag
+            
         if "installer_item" in item:
             display_name = item.get('display_name') or item.get('name')
             version_to_install = item.get('version_to_install','')
@@ -590,20 +599,31 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                                     suppressBundleRelocation)
                         if needtorestart:
                             restartflag = True
+                            
+            if 'postinstall_script' in item:
+                retcode = runEmbeddedScript(
+                    'postinstall_script', item['name'])
+                if retcode:
+                    # we won't consider postinstall script failures as fatal
+                    # since the item has been installed via package/disk image
+                    # must admin should be notified
+                    munkicommon.display_warning(
+                        'Postinstall script for %s returned %s'
+                        % (item['name'], retcode))
 
             # record install success/failure
             if not 'InstallResults' in munkicommon.report:
                 munkicommon.report['InstallResults'] = []
 
             if applesus:
-              message = "Apple SUS install of %s-%s: %s"
+                message = "Apple SUS install of %s-%s: %s"
             else:
-              message = "Install of %s-%s: %s"
+                message = "Install of %s-%s: %s"
 
             if retcode == 0:
-              status = "SUCCESSFUL"
+                status = "SUCCESSFUL"
             else:
-              status = "FAILED with return code: %s" % retcode
+                status = "FAILED with return code: %s" % retcode
 
             log_msg = message % (display_name, version_to_install, status)
             munkicommon.log(log_msg, "Install.log")
@@ -681,16 +701,47 @@ def writefile(stringdata, path):
         return ""
 
 
-def runUninstallScript(name, path):
-    '''Runs the uninstall script'''
+def runEmbeddedScript(scriptname, pkginfo_item):
+    '''Runs a script embedded in the pkginfo.
+    Returns the result code.'''
+    
+    # get the script text from the pkginfo
+    script_text = pkginfo_item.get(scriptname)
+    itemname =  pkginfo_item.get('name')
+    if not script_text:
+        munkicommon.display_error(
+            'Missing script %s for %s' % (scriptname, itemname))
+        return -1
+        
+    # write the script to a temp file
+    scriptpath = os.path.join(munkicommon.tmpdir, scriptname)
+    if writefile(script_text, scriptpath):
+        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
+        retcode = subprocess.call(cmd)
+        if retcode:
+            munkicommon.display_error(
+                'Error setting script mode in %s for %s' 
+                % (scriptname, itemname))
+            return -1
+    else:
+        munkicommon.display_error(
+            'Cannot write script %s for %s' % (scriptname, itemname))
+        return -1
+    
+    # now run the script
+    return runScript(itemname, scriptpath, scriptname)
+    
+    
+def runScript(itemname, path, scriptname):
+    '''Runs a script, Returns return code.'''
     if munkicommon.munkistatusoutput:
-        munkistatus.message("Running uninstall script "
-                            "for %s..." % name)
+        munkistatus.message('Running %s for %s '
+                            % (scriptname, itemname))
         munkistatus.detail("")
         # set indeterminate progress bar
         munkistatus.percent(-1)
 
-    uninstalleroutput = []
+    scriptoutput = []
     proc = subprocess.Popen(path, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
@@ -698,23 +749,23 @@ def runUninstallScript(name, path):
 
     while (proc.poll() == None):
         msg = proc.stdout.readline().decode('UTF-8')
-        # save all uninstaller output in case there is
+        # save all script output in case there is
         # an error so we can dump it to the log
-        uninstalleroutput.append(msg)
+        scriptoutput.append(msg)
         msg = msg.rstrip("\n")
         munkicommon.display_info(msg)
 
     retcode = proc.poll()
     if retcode:
         munkicommon.display_error(
-                        "Uninstall of %s failed." % name)
+            'Running %s for %s failed.' % (scriptname, itemname))
         munkicommon.display_error("-"*78)
-        for line in uninstalleroutput:
+        for line in scriptoutput:
             munkicommon.display_error("\t%s" % line.rstrip("\n"))
         munkicommon.display_error("-"*78)
     else:
-        munkicommon.log("Uninstall of %s was "
-                        "successful." % name)
+        munkicommon.log(
+            'Running %s for %s was successful.' % (scriptname, itemname))
 
     if munkicommon.munkistatusoutput:
         # clear indeterminate progress bar
@@ -800,37 +851,17 @@ def processRemovals(removallist, only_forced=False):
                                               "info missing from %s" %
                                               name)
 
-            elif uninstallmethod[0] == "uninstall_script":
-                uninstall_script = item.get('uninstall_script')
-                if uninstall_script:
-                    scriptpath = os.path.join(munkicommon.tmpdir,
-                                              "uninstallscript")
-                    if writefile(uninstall_script, scriptpath):
-                        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
-                        retcode = subprocess.call(cmd)
-                        if retcode:
-                            munkicommon.display_error("Error setting mode "
-                                                      "for %s" % scriptpath)
-                        else:
-                            retcode = runUninstallScript(name, scriptpath)
-                            if (retcode == 0 and item.get(
-                                        'RestartAction') == "RequireRestart"):
-                                restartFlag = True
-                            try:
-                                os.unlink(scriptpath)
-                            except OSError:
-                                pass
-                    else:
-                        munkicommon.display_error("Cannot write uninstall "
-                                                  "script for %s" % name)
-                else:
-                    munkicommon.display_error("Uninstall script missing "
-                                              "from %s" % name)
+            elif uninstallmethod[0] == 'uninstall_script':
+                retcode = runEmbeddedScript('uninstall_script', name)
+                if (retcode == 0 and
+                    item.get('RestartAction') == "RequireRestart"):
+                    restartFlag = True
 
             elif os.path.exists(uninstallmethod[0]) and \
                  os.access(uninstallmethod[0], os.X_OK):
                 # it's a script or program to uninstall
-                retcode = runUninstallScript(name, uninstallmethod[0])
+                retcode = runScript(
+                    name, uninstallmethod[0], 'uninstall script')
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
@@ -854,8 +885,7 @@ def processRemovals(removallist, only_forced=False):
                 failure_msg = "Removal of %s: " % name + \
                               " FAILED with return code: %s" % retcode
                 munkicommon.log(failure_msg, "Install.log")
-                munkicommon.report[
-                                 'RemovalResults'].append(failure_msg)
+                munkicommon.report['RemovalResults'].append(failure_msg)
 
     return (restartFlag, skipped_removals)
 
