@@ -479,16 +479,12 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                 continue
         if munkicommon.stopRequested():
             return restartflag
-
+        
+        retcode = 0
         if 'preinstall_script' in item:
             retcode = runEmbeddedScript('preinstall_script', item['name'])
-            if retcode:
-                # preinstall script failures cause install to abort
-                munkicommon.display_error(
-                                'Install of %s failed.' % item['name'])
-                return restartflag
             
-        if "installer_item" in item:
+        if retcode == 0 and 'installer_item' in item:
             display_name = item.get('display_name') or item.get('name')
             version_to_install = item.get('version_to_install','')
             if munkicommon.munkistatusoutput:
@@ -600,7 +596,8 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                         if needtorestart:
                             restartflag = True
                             
-            if 'postinstall_script' in item:
+            if retcode == 0  and 'postinstall_script' in item:
+                # only run embedded postinstall script if we still have a 
                 retcode = runEmbeddedScript(
                     'postinstall_script', item['name'])
                 if retcode:
