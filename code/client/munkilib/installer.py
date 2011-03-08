@@ -598,12 +598,11 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                             
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if we still have a 
-                retcode = runEmbeddedScript(
-                    'postinstall_script', item)
+                retcode = runEmbeddedScript('postinstall_script', item)
                 if retcode:
                     # we won't consider postinstall script failures as fatal
                     # since the item has been installed via package/disk image
-                    # must admin should be notified
+                    # but admin should be notified
                     munkicommon.display_warning(
                         'Postinstall script for %s returned %s'
                         % (item['name'], retcode))
