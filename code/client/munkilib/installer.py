@@ -848,7 +848,7 @@ def processRemovals(removallist, only_forced=False):
                                               name)
 
             elif uninstallmethod[0] == 'uninstall_script':
-                retcode = runEmbeddedScript('uninstall_script', name)
+                retcode = runEmbeddedScript('uninstall_script', item)
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
