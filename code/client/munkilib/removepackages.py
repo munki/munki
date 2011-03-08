@@ -1065,6 +1065,7 @@ def main():
     '''Used when calling removepackages.py directly from the command line.'''
     # command-line options
     p = optparse.OptionParser()
+    p.set_usage('''Usage: %prog [options] package_id ...''')
     p.add_option('--forcedeletebundles', '-f', action='store_true',
                     help='Delete bundles even if they aren\'t empty.')
     p.add_option('--listfiles', '-l', action='store_true',

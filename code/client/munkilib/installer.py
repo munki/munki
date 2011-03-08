@@ -482,7 +482,7 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
         
         retcode = 0
         if 'preinstall_script' in item:
-            retcode = runEmbeddedScript('preinstall_script', item['name'])
+            retcode = runEmbeddedScript('preinstall_script', item)
             
         if retcode == 0 and 'installer_item' in item:
             display_name = item.get('display_name') or item.get('name')
@@ -599,7 +599,7 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if we still have a 
                 retcode = runEmbeddedScript(
-                    'postinstall_script', item['name'])
+                    'postinstall_script', item)
                 if retcode:
                     # we won't consider postinstall script failures as fatal
                     # since the item has been installed via package/disk image

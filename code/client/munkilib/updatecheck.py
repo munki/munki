@@ -1520,6 +1520,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'package_path',
                              'blocking_applications',
                              'installs',
+                             'preinstall_script',
+                             'postinstall_script',
                              'items_to_copy',  # used w/ copy_from_dmg
                              'copy_local']     # used w/ AdobeCS5 Updaters
 
