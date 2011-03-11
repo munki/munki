@@ -8,22 +8,24 @@ PKGTYPE="bundle"
 PKGID="com.googlecode.munki"
 MUNKIROOT="/Users/Shared/munki/munki"
 OUTPUTDIR="/Users/Shared/pkgs"
+CONFPKG=""
 
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-f] [-i id] [-r root] [-o dir]"
+Usage: `basename $0` [-f] [-i id] [-r root] [-o dir] [-c package]"
 
     -f          Build a flat package (bundle is the default)
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
+    -c package  Include a configuration package
 
 EOF
 }
 
 
-while getopts "fi:r:o:" option
+while getopts "fi:r:o:c:h" option
 do
     case $option in
         "f")
@@ -40,7 +42,10 @@ do
         "o")
             OUTPUTDIR="$OPTARG"
             ;;
-        *)
+        "c")
+            CONFPKG="$OPTARG"
+            ;;
+        "h" | *)
             usage
             exit 1
             ;;
@@ -330,6 +335,7 @@ else
     mkdir -p "$METAROOT/Contents/Packages"
     # Copy Resources.
     cp -R "$MUNKIROOT/code/pkgtemplate/Resources" "$METAROOT/Contents/"
+    find -d "$METAROOT" -name .svn -exec rm -rf {} \;
     # Configure Distribution.dist.
     DISTFILE="$METAROOT/Contents/distribution.dist"
     PKGPREFIX="file:./Contents/Packages/"
@@ -343,6 +349,35 @@ LIBTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_lib/English.lproj
 USRDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_usr/English.lproj/Description" IFPkgDescriptionDescription`
 APPDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionDescription`
 LIBDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_lib/English.lproj/Description" IFPkgDescriptionDescription`
+CONFOUTLINE=""
+CONFCHOICE=""
+CONFREF=""
+if [ ! -z "$CONFPKG" ]; then
+    if [ $PKGTYPE == "flag" ]; then
+        echo "Flat configuration package not implemented"
+        exit 1
+    else
+        if [ -d "$CONFPKG/Contents/Resources/English.lproj" ]; then
+            eng_resources="$CONFPKG/Contents/Resources/English.lproj"
+        elif [ -d "$CONFPKG/Contents/Resources/en.lproj" ]; then
+            eng_resources="$CONFPKG/Contents/Resources/en.lproj"
+        else
+            echo "Can't find English.lproj or en.lproj in $CONFPKG/Contents/Resources"
+            exit 1
+        fi
+        CONFTITLE=`defaults read "$eng_resources/Description" IFPkgDescriptionTitle`
+        CONFDESC=`defaults read "$eng_resources/Description" IFPkgDescriptionDescription`
+        CONFID=`defaults read "$CONFPKG/Contents/Info" CFBundleIdentifier`
+        CONFSIZE=`defaults read "$CONFPKG/Contents/Info" IFPkgFlagInstalledSize`
+        CONFVERSION=`defaults read "$CONFPKG/Contents/Info" CFBundleShortVersionString`
+        CONFBASENAME=`basename "$CONFPKG"`
+    fi
+    CONFOUTLINE="<line choice=\"choice3\"/>"
+    CONFCHOICE="<choice id=\"choice3\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
+        <pkg-ref id=\"$CONFID\"/>
+    </choice>"
+    CONFREF="<pkg-ref id=\"$CONFID\" installKBytes=\"$CONFSIZE\" version=\"$CONFVERSION\" auth=\"Root\">${PKGPREFIX}$CONFBASENAME</pkg-ref>"
+fi
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.4" authoringToolBuild="179">
@@ -353,6 +388,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="choice0"/>
         <line choice="choice1"/>
         <line choice="choice2"/>
+        $CONFOUTLINE
     </choices-outline>
     <choice id="choice0" title="$USRTITLE" description="$USRDESC">
         <pkg-ref id="$PKGID.usr"/>
@@ -363,9 +399,11 @@ cat > "$DISTFILE" <<EOF
     <choice id="choice2" title="$LIBTITLE" description="$LIBDESC">
         <pkg-ref id="$PKGID.lib"/>
     </choice>
+    $CONFCHOICE
     <pkg-ref id="$PKGID.usr" installKBytes="$USRSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_usr-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$MSUVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.lib" installKBytes="$LIBSIZE" version="$VERSION" auth="Root" onConclusion="RequireRestart">${PKGPREFIX}munkitools_lib-$VERSION.pkg</pkg-ref>
+    $CONFREF
 </installer-script>
 EOF
 
@@ -414,6 +452,10 @@ if [ "$PKGTYPE" == "flat" ]; then
     # FIXME: we should call packagemaker here
     echo "No flat package creation yet!"
 else
+    if [ ! -z "$CONFPKG" ]; then
+        echo Copying `basename "$CONFPKG"`
+        cp -rp "$CONFPKG" "$PKGDEST"
+    fi
     echo "Metapackage created at $MPKG"
 fi
 
