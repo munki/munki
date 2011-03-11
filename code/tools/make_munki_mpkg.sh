@@ -61,6 +61,9 @@ fi
 if [ ! -d "$MUNKIROOT" ]; then
     echo "Please set the munki root" 1>&2
     exit 1
+else
+    # Convert to absolute path.
+    MUNKIROOT=`cd "$MUNKIROOT"; pwd`
 fi
 
 if [ ! -d "$OUTPUTDIR" ]; then
