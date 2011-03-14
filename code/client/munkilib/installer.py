@@ -478,7 +478,7 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                     "Skipping forced install of %s" % item['name'])
                 continue
         if munkicommon.stopRequested():
-            return restartflag
+            return restartflag, skipped_installs
         
         retcode = 0
         if 'preinstall_script' in item:
@@ -503,8 +503,8 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                 # depend on this one, we shouldn't continue
                 munkicommon.display_error("Installer item %s was not found." %
                                            item["installer_item"])
-                return restartflag
-
+                return restartflag, skipped_installs
+                
             installer_type = item.get("installer_type","")
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.doAdobeInstall(item)
@@ -556,10 +556,10 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                         munkicommon.display_error("No filesystems mounted "
                                                   "from %s" %
                                                   item["installer_item"])
-                        return restartflag
+                        return restartflag, skipped_installs
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
-                        return restartflag
+                        return restartflag, skipped_installs
 
                     retcode = -99 # in case we find nothing to install
                     needtorestart = False
@@ -597,7 +597,8 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                             restartflag = True
                             
             if retcode == 0  and 'postinstall_script' in item:
-                # only run embedded postinstall script if we still have a 
+                # only run embedded postinstall script if the install did not
+                # return a failure code
                 retcode = runEmbeddedScript('postinstall_script', item)
                 if retcode:
                     # we won't consider postinstall script failures as fatal
