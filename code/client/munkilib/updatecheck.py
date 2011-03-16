@@ -663,21 +663,32 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     if not location:
         raise MunkiDownloadError("No %s in item info." % download_item_key)
 
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    downloadbaseurl = munkicommon.pref('PackageURL') or \
+    # allow pkginfo preferences to override system munki preferences
+    downloadbaseurl = item_pl.get('PackageCompleteURL') or \
+                      item_pl.get('PackageURL') or \
+                      munkicommon.pref('PackageURL') or \
                       munkicommon.pref('SoftwareRepoURL') + '/pkgs/'
-    if not downloadbaseurl.endswith('/'):
-        downloadbaseurl = downloadbaseurl + '/'
-    munkicommon.display_debug2('Download base URL is: %s' % downloadbaseurl)
-
-    mycachedir = os.path.join(ManagedInstallDir, 'Cache')
 
     # build a URL, quoting the the location to encode reserved characters
-    pkgurl = downloadbaseurl + urllib2.quote(location)
+    if item_pl.get('PackageCompleteURL'):
+        pkgurl = downloadbaseurl
+    else:
+        if not downloadbaseurl.endswith('/'):
+            downloadbaseurl = downloadbaseurl + '/'
+        pkgurl = downloadbaseurl + urllib2.quote(location)
+    
+    pkgname = getInstallerItemBasename(location)
+    munkicommon.display_debug2('Download base URL is: %s' % downloadbaseurl)
+    munkicommon.display_debug2('Package name is: %s' % pkgname)
+    munkicommon.display_debug2('Download URL is: %s' % pkgurl)
 
-    # grab last path component of location to derive package name.
-    pkgname = os.path.basename(location)
-    destinationpath = os.path.join(mycachedir, pkgname)
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    mycachedir = os.path.join(ManagedInstallDir, 'Cache')
+    destinationpath = getDownloadCachePath(mycachedir, location)
+    munkicommon.display_debug2('Downloading to: %s' % destinationpath)
+
+    munkicommon.display_detail('Downloading %s from %s' % (pkgname, location))
+
     if not os.path.exists(destinationpath):
         # check to see if there is enough free space to download and install
         if not enoughDiskSpace(item_pl, installinfo['managed_installs']):
@@ -694,10 +705,10 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     munkicommon.verbose = oldverbose + 1
     dl_message = 'Downloading %s...' % pkgname
     try:
-        changed = getHTTPfileIfChangedAtomically(pkgurl, destinationpath,
+        changed = getResourceIfChangedAtomically(pkgurl, destinationpath,
                                                  resume=True,
                                                  message=dl_message)
-    except CurlDownloadError:
+    except MunkiDownloadError:
         munkicommon.verbose = oldverbose
         raise
 
@@ -972,8 +983,9 @@ def enoughDiskSpace(manifestitem_pl, installlist=None,
     alreadydownloadedsize = 0
     if 'installer_item_location' in manifestitem_pl:
         cachedir = os.path.join(munkicommon.pref('ManagedInstallDir'),'Cache')
-        download = os.path.join(cachedir,
-                                manifestitem_pl['installer_item_location'])
+        download = getDownloadCachePath(
+            cachedir,
+            manifestitem_pl['installer_item_location'])
         if os.path.exists(download):
             alreadydownloadedsize = os.path.getsize(download)
     if 'installer_item_size' in manifestitem_pl:
@@ -1495,7 +1507,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                                             iteminfo['installer_item_size'])
         try:
             download_installeritem(item_pl, installinfo)
-            filename = os.path.split(item_pl['installer_item_location'])[1]
+            filename = getInstallerItemBasename(
+                item_pl['installer_item_location'])
             # required keys
             iteminfo['installer_item'] = filename
             iteminfo['installed'] = False
@@ -1550,9 +1563,9 @@ def processInstall(manifestitem, cataloglist, installinfo):
             iteminfo['note'] = 'Integrity check failed'
             installinfo['managed_installs'].append(iteminfo)
             return False
-        except CurlDownloadError:
+        except CurlDownloadError, errmsg:
             munkicommon.display_warning(
-                'Download of %s failed.' % manifestitem)
+                'Download of %s failed: %s' % (manifestitem, errmsg))
             iteminfo['installed'] = False
             iteminfo['note'] = 'Download failed'
             installinfo['managed_installs'].append(iteminfo)
@@ -1959,7 +1972,7 @@ def getCatalogs(cataloglist):
             munkicommon.display_detail('Getting catalog %s...' % catalogname)
             message = 'Retreiving catalog "%s"...' % catalogname
             try:
-                unused_value = getHTTPfileIfChangedAtomically(catalogurl,
+                unused_value = getResourceIfChangedAtomically(catalogurl,
                                                               catalogpath,
                                                               message=message)
             except MunkiDownloadError, err:
@@ -2022,7 +2035,7 @@ def getmanifest(partialurl, suppress_errors=False):
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = 'Retreiving list of software for this machine...'
     try:
-        unused_value = getHTTPfileIfChangedAtomically(manifesturl,
+        unused_value = getResourceIfChangedAtomically(manifesturl,
                                                       manifestpath,
                                                       message=message)
     except MunkiDownloadError, err:
@@ -2453,6 +2466,106 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     pass
             raise HTTPError(http_result,
                                 header.get('http_result_description',''))
+
+
+def getInstallerItemBasename(url):
+    """For a URL, absolute or relative, return the basename string.
+
+    e.g. "http://foo/bar/path/foo.dmg" => "foo.dmg"
+         "/path/foo.dmg" => "foo.dmg"
+    """
+
+    url_parse = urlparse.urlparse(url)
+    return os.path.basename(url_parse.path)
+
+
+def getDownloadCachePath(destinationpathprefix, url):
+    """For a URL, return the path that the download should cache to.
+
+    Returns a string."""
+
+    return os.path.join(
+        destinationpathprefix, getInstallerItemBasename(url))
+
+
+def getResourceIfChangedAtomically(url, destinationpath,
+                                 message=None, resume=False):
+    """Gets file from a URL, checking first to see if it has changed on the
+       server.
+       
+       Supported schemes are http, https, file.
+
+       Returns True if a new download was required; False if the
+       item is already in the local cache.
+
+       Raises a MunkiDownloadError derived class if there is an error."""
+
+    url_parse = urlparse.urlparse(url)
+
+    if url_parse.scheme in ['http', 'https']:
+        return getHTTPfileIfChangedAtomically(
+                url, destinationpath, message, resume)
+    elif url_parse.scheme in ['file']:
+        return getFileIfChangedAtomically(
+                url_parse.path, destinationpath)
+    # TODO: in theory NFS, AFP, or SMB could be supported here.
+    else:
+        raise MunkiDownloadError(
+                'Unknown scheme for %s: %s' % (url, url_parse.scheme))
+
+
+def getFileIfChangedAtomically(path, destinationpath):
+    """Gets file from path, checking first to see if it has changed on the
+       source.
+
+       Returns True if a new copy was required; False if the
+       item is already in the local cache.
+
+       Raises FileCopyError if there is an error."""
+
+    try:
+        st_src = os.stat(path)
+    except OSError:
+        raise FileCopyError('Source does not exist: %s' % path)
+
+    try:
+        st_dst = os.stat(destinationpath)
+    except OSError:
+        st_dst = None
+
+    # if the destination exists, with same mtime and size, already cached
+    if st_dst is not None and (
+        st_src.st_mtime == st_dst.st_mtime and
+        st_src.st_size == st_dst.st_size):
+        return False
+
+    # write to a temporary destination
+    tmp_destinationpath = '%s.download' % destinationpath
+
+    # remove the temporary destination if it exists
+    try:
+        if st_dst:
+            os.unlink(tmp_destinationpath)
+    except OSError, e:
+        if e.args[0] == errno.ENOENT:
+            pass  # OK
+        else:
+            raise FileCopyError('Removing %s: %s' % (
+                tmp_destinationpath, str(e)))
+
+    # copy from source to temporary destination
+    try:
+        shutil.copy2(path, tmp_destinationpath)
+    except IOError, e:
+        raise FileCopyError('Copy IOError: %s' % str(e))
+    
+    # rename temp destination to final destination
+    try:
+        os.rename(tmp_destinationpath, destinationpath)
+    except OSError, e:
+        raise FileCopyError('Renaming %s: %s' % (destinationpath, str(e)))
+
+    return True
 
 
 def getHTTPfileIfChangedAtomically(url, destinationpath,
