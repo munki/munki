@@ -23,8 +23,10 @@ Created by Greg Neagle on 2008-11-13.
 
 #standard libs
 import calendar
+import errno
 import os
 import re
+import shutil
 import subprocess
 import socket
 import time
