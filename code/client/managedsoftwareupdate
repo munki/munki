@@ -335,6 +335,12 @@ def main():
                        This is the default behavior.""")
     p.add_option('--installonly', action='store_true',
                        help='Skip checking and install any pending updates.')
+    p.add_option('--applesuspkgsonly', action='store_true',
+                       help=('Only check/install Apple SUS packages, '
+                             'skip Munki packages.'))
+    p.add_option('--munkipkgsonly', action='store_true',
+                       help=('Only check/install Munki packages, '
+                             'skip Apple SUS.'))
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
 
@@ -500,7 +506,9 @@ def main():
         munkicommon.cleanUpTmpDir()
         exit(0)
 
-    applesoftwareupdatesonly = munkicommon.pref('AppleSoftwareUpdatesOnly')
+    applesoftwareupdatesonly = (munkicommon.pref('AppleSoftwareUpdatesOnly')
+        or options.applesuspkgsonly)
+
     if not options.installonly and not applesoftwareupdatesonly:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
@@ -566,8 +574,8 @@ def main():
         not munkicommon.stopRequested()):
         # if there are no munki updates,
         # are we supposed to check for and install Apple Software Updates?
-        if (munkicommon.pref('InstallAppleSoftwareUpdates') or
-            applesoftwareupdatesonly):
+        if ((munkicommon.pref('InstallAppleSoftwareUpdates') or
+            applesoftwareupdatesonly) and not options.munkipkgsonly):
             try:
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
@@ -580,6 +588,7 @@ def main():
                 exit(-1)
 
     if (not updatesavailable and options.installonly and
+        not options.munkipkgsonly and
         (munkicommon.pref('InstallAppleSoftwareUpdates') or
          applesoftwareupdatesonly)):
         # just look and see if there are already downloaded Apple updates
