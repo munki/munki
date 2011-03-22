@@ -18,8 +18,12 @@
 # limitations under the License.
 
 from objc import YES, NO, IBAction, IBOutlet
+import munki
 from Foundation import *
 from AppKit import *
+
+munki.setupLogging()
+
 
 class MSUupdatesViewController(NSViewController):
     '''
@@ -54,6 +58,7 @@ class MSUupdatesViewController(NSViewController):
     
     @IBAction
     def laterBtnClicked_(self, sender):
+        munki.log("user", "exit_later_clicked")
         NSApp.terminate_(self)
         
     @IBAction
@@ -64,6 +69,7 @@ class MSUupdatesViewController(NSViewController):
     @IBAction
     def optionalSoftwareBtnClicked_(self, sender):
         # switch to optional software pane
+        munki.log("user", "view_optional_software")
         self.window_controller.theTabView.selectNextTabViewItem_(sender)
         NSApp.delegate().optional_view_controller.AddRemoveBtn.setEnabled_(NO)
         #NSApp.delegate().buildOptionalInstallsData()

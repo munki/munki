@@ -20,8 +20,12 @@
 
 '''munki-specific code for use with Managed Software Update'''
 
+import errno
+import logging
 import os
+import stat
 import subprocess
+import random
 import FoundationPlist
 from Foundation import NSFileManager
 from Foundation import CFPreferencesCopyAppValue
@@ -30,6 +34,61 @@ from Foundation import CFPreferencesAppSynchronize
 
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
+MSULOGDIR = \
+    "/Users/Shared/.com.googlecode.munki.ManagedSoftwareUpdate.logs"
+MSULOGFILE = "%s.log"
+MSULOGENABLED = False
+
+
+class FleetingFileHandler(logging.FileHandler):
+    """File handler which opens/closes the log file only during log writes."""
+
+    def __init__(self, filename, mode='a', encoding=None, delay=True):
+        if hasattr(self, '_open'):  # if py2.6+ ...
+            logging.FileHandler.__init__(self, filename, mode, encoding, delay)
+        else:
+            logging.FileHandler.__init__(self, filename, mode, encoding)
+            # lots of py <=2.5 fixes to support delayed open and immediate
+            # close.
+            self.encoding = encoding
+            self._open = self.__open
+            self.flush = self.__flush
+            self._close()
+
+    def __open(self):
+        """Open the log file."""
+        if self.encoding is None:
+            stream = open(self.baseFilename, self.mode)
+        else:
+            stream = logging.codecs.open(
+                self.baseFilename, self.mode, self.encoding)
+        return stream
+
+    def __flush(self):
+        """Flush the stream if it is open."""
+        if self.stream:
+            self.stream.flush()
+
+    def _close(self):
+        """Close the log file if it is open."""
+        if self.stream:
+            self.flush()
+            if hasattr(self.stream, 'close'):
+                self.stream.close()
+        self.stream = None
+
+    def close(self):
+        """Close the entire handler if it is open."""
+        if self.stream:
+            return logging.FileHandler.close(self)
+
+    def emit(self, record):
+        """Open the log, emit a record and close the log."""
+        if self.stream is None:
+            self.stream = self._open()
+        logging.FileHandler.emit(self, record)
+        self._close()
+
 
 def call(cmd):
     '''Convenience function; works around an issue with subprocess.call
@@ -234,8 +293,8 @@ def justUpdate():
     cmd = ["/usr/bin/touch",
            "/private/tmp/.com.googlecode.munki.managedinstall.launchd"]
     return call(cmd)
-    
-    
+
+
 def getRunningProcesses():
     """Returns a list of paths of running processes"""
     proc = subprocess.Popen(['/bin/ps', '-axo' 'comm='],
@@ -256,7 +315,7 @@ def getRunningProcesses():
                                     stderr=subprocess.PIPE)
             (output, unused_err) = proc.communicate()
             if proc.returncode == 0:
-                carbon_apps = [item[len(LaunchCFMApp)+1:] 
+                carbon_apps = [item[len(LaunchCFMApp)+1:]
                                for item in output.splitlines()
                                if item.startswith(LaunchCFMApp)]
                 if carbon_apps:
@@ -299,5 +358,109 @@ def getRunningBlockingApps(appnames):
     return list(set(running_apps))
 
 
+def setupLogging(username=None):
+    """Setup logging module.
+
+    Args:
+        username: str, optional, current login name
+    """
+    global MSULOGENABLED
+
+    if (logging.root.handlers and
+        logging.root.handlers[0].__class__ is FleetingFileHandler):
+        return
+
+    if pref('MSULogEnabled'):
+        MSULOGENABLED = True
+
+    if not MSULOGENABLED:
+        return
+
+    if username is None:
+        username = os.getlogin() or 'UID%d' % os.getuid()
+
+    if not os.path.exists(MSULOGDIR):
+        try:
+            os.mkdir(MSULOGDIR, 01777)
+        except OSError, e:
+            logging.error('mkdir(%s): %s' % (MSULOGDIR, str(e)))
+            return
+
+    if not os.path.isdir(MSULOGDIR):
+        logging.error('%s is not a directory' % MSULOGDIR)
+        return
+
+    # freshen permissions, if possible.
+    try:
+        os.chmod(MSULOGDIR, 01777)
+    except OSError:
+        pass
+
+    # find a safe log file to write to for this user
+    filename = os.path.join(MSULOGDIR, MSULOGFILE % username)
+    t = 0
+    ours = False
+
+    while t < 10:
+        try:
+            f = os.open(filename, os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW, 0600)
+            st = os.fstat(f)
+            ours = stat.S_ISREG(st.st_mode) and st.st_uid == os.getuid()
+            os.close(f)
+            if ours:
+                break
+        except (OSError, IOError):
+            pass  # permission denied, symlink, ...
+
+        # avoid creating many separate log files by using one static suffix
+        # as the first alternative.  if unsuccessful, switch to totally
+        # randomly suffixed files.
+        if t == 0:
+            random.seed(hash(username))
+        elif t == 1:
+            random.seed()
+
+        filename = os.path.join(
+            MSULOGDIR, MSULOGFILE % (
+                '%s_%d' % (username, random.randint(0, 2**32))))
+
+        t += 1
+
+    if not ours:
+        logging.error('No logging is possible')
+        return
+
+    # setup log handler
+
+    log_format = '%(created)f %(levelname)s ' + username + ' : %(message)s'
+    ffh = None
+
+    try:
+        ffh = FleetingFileHandler(filename)
+    except IOError, e:
+        logging.error('Error opening log file %s: %s' % (filename, str(e)))
+
+    ffh.setFormatter(logging.Formatter(log_format, None))
+    logging.root.addHandler(ffh)
+    logging.getLogger().setLevel(logging.INFO)
 
 
+def log(source, event, msg=None, *args):
+    """Log an event from a source.
+
+    Args:
+        source: str, like "MSU" or "user"
+        event: str, like "exit"
+        msg: str, optional, additional log output
+        args: list, optional, arguments supplied to msg as format args
+    """
+    if not MSULOGENABLED:
+        return
+
+    if msg:
+        if args:
+            logging.info('@@%s:%s@@ ' + msg, source, event, *args)
+        else:
+            logging.info('@@%s:%s@@ %s', source, event, msg)
+    else:
+        logging.info('@@%s:%s@@', source, event)
