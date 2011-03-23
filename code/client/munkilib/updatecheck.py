@@ -648,7 +648,11 @@ class CurlDownloadError(MunkiDownloadError):
     pass
 
 class PackageVerificationError(MunkiDownloadError):
-    """Download failed because it coud not be verified"""
+    """Download failed because it could not be verified"""
+    pass
+    
+class FileCopyError(MunkiDownloadError):
+    """Download failed because of file copy errors."""
     pass
 
 def download_installeritem(item_pl, installinfo, uninstalling=False):
