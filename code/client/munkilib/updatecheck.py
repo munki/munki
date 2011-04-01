@@ -2001,6 +2001,15 @@ def getCatalogs(cataloglist):
                     CATALOG[catalogname] = makeCatalogDB(catalogdata)
 
 
+def cleanUpCatalogs():
+    """Removes any catalog files that are no longer in use by this client"""
+    catalog_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                               'catalogs')
+    for item in os.listdir(catalog_dir):
+        if item not in CATALOG.keys():
+            os.unlink(os.path.join(catalog_dir, item))
+
+
 class ManifestException(Exception):
     """Lets us raise an exception when we get an invalid
     manifest."""
@@ -2517,7 +2526,7 @@ def getResourceIfChangedAtomically(url, destinationpath,
     # TODO: in theory NFS, AFP, or SMB could be supported here.
     else:
         raise MunkiDownloadError(
-                'Unknown scheme for %s: %s' % (url, url_parse.scheme))
+                'Unsupported scheme for %s: %s' % (url, url_parse.scheme))
 
 
 def getFileIfChangedAtomically(path, destinationpath):
@@ -2873,6 +2882,9 @@ def check(client_id='', localmanifestpath=None):
         # record the filtered lists
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
         munkicommon.report['ItemsToRemove'] = installinfo['removals']
+        
+        # clean up catalogs directory
+        cleanUpCatalogs()
 
         # clean up cache dir
         # remove any item in the cache that isn't scheduled
