@@ -37,8 +37,8 @@ except:
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     script = os.path.join(scriptdir, 'report_broken_client')
     try:
-        result, output = utils.runExternalScript(script)
-        print >> sys.stderr, result, output
+        result, stdout, stderr = utils.runExternalScript(script)
+        print >> sys.stderr, result, stdout, stderr
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:
@@ -448,8 +448,9 @@ def main():
     if os.path.exists(preflightscript):
         munkicommon.display_status('Performing preflight tasks...')
     try:
-        result, output = utils.runExternalScript(preflightscript, runtype)
-        munkicommon.display_info(output)
+        result, stdout, stderr = utils.runExternalScript(
+            preflightscript, runtype)
+        munkicommon.display_info(stdout)
     except utils.ScriptNotFoundError:
         result = 0
         pass  # script is not required, so pass
@@ -462,6 +463,7 @@ def main():
         munkicommon.display_info(
             'managedsoftwareupdate run aborted by preflight script: %s' 
             % result)
+        munkicommon.display_info(stderr)
         # record the check result for use by Managed Software Update.app
         # right now, we'll return the same code as if the munki server
         # was unavailable. We need to revisit this and define additional
@@ -670,8 +672,11 @@ def main():
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
     try:
-        unused_r, output = utils.runExternalScript(postflightscript, runtype)
-        munkicommon.display_info(output)
+        result, stdout, stderr = utils.runExternalScript(
+            postflightscript, runtype)
+        munkicommon.display_info(stdout)
+        if result:
+            munkicommon.display_info(stderr)
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:

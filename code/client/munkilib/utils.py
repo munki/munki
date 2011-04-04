@@ -121,8 +121,8 @@ def runExternalScript(script, *args):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, err) = proc.communicate()
-        return proc.returncode, output
+        (stdout, stderr) = proc.communicate()
+        return proc.returncode, stdout, stderr
     else:
         raise RunExternalScriptError('%s not executable' % script)
 
