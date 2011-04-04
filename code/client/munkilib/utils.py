@@ -98,7 +98,7 @@ def runExternalScript(script, *args):
       script: string path to the script to execute.
       args: args to pass to the script.
     Returns:
-      Tuple. (integer exit status from script, str output).
+      Tuple. (integer exit status from script, str stdout, str stderr).
     Raises:
       ScriptNotFoundError: the script was not found at the given path.
       RunExternalScriptError: there was an error running the script.
