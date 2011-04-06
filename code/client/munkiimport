@@ -107,7 +107,13 @@ def mountRepoCLI():
         return
     os.mkdir(repo_path)
     print 'Attempting to mount fileshare %s:' % repo_url
-    cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
+    if repo_url.startswith('afp:'):
+        cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
+    elif repo_url.startswith('smb:'):
+        cmd = ['/sbin/mount_smbfs', repo_url[4:], repo_path]
+    else:
+        print >> sys.stderr, 'Unsupported filesystem URL!'
+        return
     retcode = subprocess.call(cmd)
     if retcode:
         os.rmdir(repo_path)
@@ -236,9 +242,7 @@ def promptForSubdirectory(subdirectory):
                     % subdirectory)
         if newdir:
             repo_path = pref('repo_path')
-            if not os.path.exists(repo_path):
-                mountRepoGUI()
-            if not os.path.exists(repo_path):
+            if not repoAvailable():
                 raise RepoCopyError('Could not connect to munki repo.')
             destination_path = os.path.join(repo_path, 'pkgs', newdir)
             if not os.path.exists(destination_path):
@@ -283,9 +287,6 @@ def makeCatalogDB():
         if name == 'NO NAME' or vers == 'NO VERSION':
             munkicommon.display_warning('Bad pkginfo: %s' % item)
 
-        # normalize the version number
-        #vers = munkicommon.padVersionString(vers, 5)
-        
         # add to hash table
         if 'installer_item_hash' in item:
             if not item['installer_item_hash'] in hash_table:
@@ -425,9 +426,7 @@ def makeCatalogs():
         # didn't find it; assume the default install path
         makecatalogs_path = '/usr/local/munki/makepkginfo'
     repo_path = pref('repo_path')
-    if not os.path.exists(repo_path):
-        mountRepoGUI()
-    if not os.path.exists(repo_path):
+    if not repoAvailable():
         raise RepoCopyError('Could not connect to munki repo.')
     proc = subprocess.Popen([makecatalogs_path, repo_path],
                             bufsize=-1, stdout=subprocess.PIPE, 

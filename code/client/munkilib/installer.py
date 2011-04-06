@@ -26,6 +26,7 @@ import subprocess
 import adobeutils
 import munkicommon
 import munkistatus
+import updatecheck
 import FoundationPlist
 from removepackages import removepackages
 
@@ -455,6 +456,51 @@ def removeCopiedItems(itemlist):
 
     return retcode
 
+
+def itemPrereqsInSkippedItems(item, skipped_items):
+    '''Looks for item prerequisites (requires and update_for) in the list
+    of skipped items. Returns a list of matches.'''
+    munkicommon.display_debug1(
+        'Checking for skipped prerequisites for %s-%s'
+        % (item['name'], item.get('version_to_install')))
+        
+    # get list of prerequisites for this item
+    prerequisites = item.get('requires', [])
+    prerequisites.extend(item.get('update_for', []))
+    if not prerequisites:
+        munkicommon.display_debug1(
+            '%s-%s has no prerequisites.'
+            % (item['name'], item.get('version_to_install')))
+        return []
+    munkicommon.display_debug1('Prerequisites: %s' % ", ".join(prerequisites))
+    
+    # build a dictionary of names and versions of skipped items
+    skipped_item_dict = {}
+    for skipped_item in skipped_items:
+        if skipped_item['name'] not in skipped_item_dict:
+            skipped_item_dict[skipped_item['name']] = []
+        normalized_version = updatecheck.trimVersionString(
+                                skipped_item.get('version_to_install', '0.0'))
+        munkicommon.display_debug1('Adding skipped item: %s-%s'
+                                % (skipped_item['name'], normalized_version))
+        skipped_item_dict[skipped_item['name']].append(normalized_version)
+        
+    # now check prereqs against the skipped items
+    matched_prereqs = []
+    for prereq in prerequisites:
+        (name, version) = updatecheck.nameAndVersion(prereq)
+        munkicommon.display_debug1(
+            'Comparing %s-%s against skipped items' % (name, version))
+        if name in skipped_item_dict:
+            if version:
+                version = updatecheck.trimVersionString(version)
+                if version in skipped_item_dict[name]:
+                    matched_prereqs.append(prereq)
+            else:
+                matched_prereqs.append(prereq)
+    return matched_prereqs
+
+
 def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
     """
     Uses the installlist to install items in the
@@ -470,13 +516,26 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                 skipped_installs.append(item)
                 munkicommon.display_detail(
                     ('Skipping install of %s because it\'s not flagged for '
-                    'forced_install') % item['name'])
+                    'forced_install.') % item['name'])
                 continue
             elif blockingApplicationsRunning(item):
                 skipped_installs.append(item)
                 munkicommon.display_detail(
-                    "Skipping forced install of %s" % item['name'])
+                    'Skipping forced/background install of %s because '
+                    'blocking application(s) running.'
+                    % item['name'])
                 continue
+            skipped_prereqs = itemPrereqsInSkippedItems(
+                                                    item, skipped_installs)
+            if skipped_prereqs:
+                # need to skip this too
+                skipped_installs.append(item)
+                munkicommon.display_detail(
+                    'Skipping forced/background install of %s because these '
+                    'prerequisites were skipped: %s'
+                    % (item['name'], ", ".join(skipped_prereqs)))
+                continue
+                    
         if munkicommon.stopRequested():
             return restartflag, skipped_installs
         
@@ -491,7 +550,7 @@ def installWithInfo(dirpath, installlist, only_forced=False, applesus=False):
                 munkistatus.message("Installing %s (%s of %s)..." %
                                     (display_name, itemindex,
                                      len(installlist)))
-                munkistatus.detail("")
+                munkistatus.detail('')
                 munkistatus.percent(-1)
             else:
                 munkicommon.display_status("Installing %s (%s of %s)" %
@@ -771,6 +830,27 @@ def runScript(itemname, path, scriptname):
     return retcode
 
 
+def skippedItemsThatRequireThisItem(item, skipped_items):
+    '''Looks for items in the skipped_items that require or are update_for
+    the current item. Returns a list of matches.'''
+    munkicommon.display_debug1(
+        'Checking for skipped items that require %s' % item['name'])
+    
+    matched_skipped_items = []
+    for skipped_item in skipped_items:
+        # get list of prerequisites for this skipped_item
+        prerequisites = skipped_item.get('requires', [])
+        prerequisites.extend(skipped_item.get('update_for', []))
+        munkicommon.display_debug1(
+            '%s has these prerequisites: %s' 
+            % (skipped_item['name'], ', '.join(prerequisites)))
+        for prereq in prerequisites:
+            (prereq_name, unused_version) = updatecheck.nameAndVersion(prereq)
+            if prereq_name == item['name']:
+                matched_skipped_items.append(skipped_item['name'])
+    return matched_skipped_items
+
+
 def processRemovals(removallist, only_forced=False):
     '''processes removals from the removal list'''
     restartFlag = False
@@ -787,8 +867,20 @@ def processRemovals(removallist, only_forced=False):
             elif blockingApplicationsRunning(item):
                 skipped_removals.append(item)
                 munkicommon.display_detail(
-                    'Skipping forced removal of %s ' % item['name'])
+                    'Skipping forced/background removal of %s because '
+                    'blocking application(s) running.' % item['name'])
                 continue
+            dependent_skipped_items = skippedItemsThatRequireThisItem(
+                                                    item, skipped_removals)
+            if dependent_skipped_items:
+                # need to skip this too
+                skipped_removals.append(item)
+                munkicommon.display_detail(
+                    'Skipping forced/background removal of %s because these '
+                    'skipped items required it: %s'
+                    % (item['name'], ", ".join(dependent_skipped_items)))
+                continue
+                
         if munkicommon.stopRequested():
             return restartFlag
         if not item.get('installed'):

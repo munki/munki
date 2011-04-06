@@ -21,7 +21,7 @@ using the CS3/CS4/CS5 Deployment Toolkits.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+#import sys
 import os
 import subprocess
 import time
@@ -132,8 +132,6 @@ def getPayloadInfo(dirpath):
                                 if propname == 'ProductName':
                                     payloadinfo['display_name'] = propvalue
                                 if propname == 'ProductVersion':
-                                    #payloadinfo['version'] = \
-                                    #munkicommon.padVersionString(propvalue,5)
                                     payloadinfo['version'] = propvalue
                                      
                     installmetadata = \

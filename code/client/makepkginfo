@@ -157,10 +157,6 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo = {}
             cataloginfo['name'] = iteminfo.get('CFBundleName',
                                             os.path.splitext(item)[0])
-            #cataloginfo['version'] = \
-            #            munkicommon.padVersionString(
-            #            iteminfo.get('CFBundleShortVersionString', "0")
-            #            ,5)
             cataloginfo['version'] = \
                 iteminfo.get('CFBundleShortVersionString', "0")
             cataloginfo['installs'] = [iteminfo]
@@ -445,7 +441,7 @@ def main():
                         "To use it with munki, you should encapsulate it "
                         "in a disk image.\n")  % item
                     # need to walk the dir and add it all up
-                    for (path, dirs, files) in os.walk(item):
+                    for (path, unused_dirs, files) in os.walk(item):
                         for name in files:
                             filename = os.path.join(path, name)
                             # use os.lstat so we don't follow symlinks
@@ -536,9 +532,6 @@ def main():
                           munkicommon.MunkiLooseVersion(minosversion)):
                         minosversion = thisminosversion
                 if 'CFBundleShortVersionString' in iteminfodict:
-                    #thisitemversion = \
-                    #    munkicommon.padVersionString(
-                    #        iteminfodict['CFBundleShortVersionString'],5)
                     thisitemversion = \
                         iteminfodict['CFBundleShortVersionString']
                     if (munkicommon.MunkiLooseVersion(thisitemversion) >

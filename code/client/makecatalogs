@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # encoding: utf-8
 #
 # Copyright 2009-2011 Greg Neagle.
@@ -30,17 +30,51 @@ User calling this needs to be able to write to repo/catalogs.
 import sys
 import os
 import optparse
-from munkilib import munkicommon
+
 try:
     from munkilib import FoundationPlist as plistlib
 except ImportError:
     try:
         import FoundationPlist as plistlib
     except ImportError:
+        # maybe we're not on an OS X machine...
         print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
                               "using plistlib instead.")
         import plistlib
-    
+        
+try:
+    from munkilib.munkicommon import listdir, get_version
+except ImportError:
+    # munkilib is not available
+    def listdir(path):
+        """OSX HFS+ string encoding safe listdir().
+
+        Args:
+            path: path to list contents of
+        Returns:
+            list of contents, items as str or unicode types
+        """
+        # if os.listdir() is supplied a unicode object for the path,
+        # it will return unicode filenames instead of their raw fs-dependent
+        # version, which is decomposed utf-8 on OSX.
+        #
+        # we use this to our advantage here and have Python do the decoding
+        # work for us, instead of decoding each item in the output list.
+        #
+        # references:
+        # http://docs.python.org/howto/unicode.html#unicode-filenames
+        # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
+        # http://lists.zerezo.com/git/msg643117.html
+        # http://unicode.org/reports/tr15/    section 1.2
+        if type(path) is str:
+            path = unicode(path, 'utf-8')
+        elif type(path) is not unicode:
+            path = unicode(path)
+        return os.listdir(path)
+        
+    def get_version():
+        '''Placeholder if munkilib is not available'''
+        return 'UNKNOWN'
         
 def makecatalogs(repopath):
     '''Assembles all pkginfo files into catalogs.
@@ -54,7 +88,7 @@ def makecatalogs(repopath):
     catalogs = {}
     catalogs['all'] = []    
     for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
-        subdir = dirpath[len(pkgsinfopath):]
+        #subdir = dirpath[len(pkgsinfopath):]
         for name in filenames:
             if name.startswith("._") or name == ".DS_Store":
                 # don't process these
@@ -102,7 +136,7 @@ def makecatalogs(repopath):
     if not os.path.exists(catalogpath):
         os.mkdir(catalogpath)
     else:
-        for item in munkicommon.listdir(catalogpath):
+        for item in listdir(catalogpath):
             itempath = os.path.join(catalogpath, item)
             if os.path.isfile(itempath):
                 os.remove(itempath)
@@ -122,7 +156,7 @@ def main():
     options, arguments = p.parse_args()
     
     if options.version:
-        print munkicommon.get_version()
+        print get_version()
         exit(0)
     
     if len(arguments) == 0:

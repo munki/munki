@@ -846,7 +846,6 @@ def getExtendedVersion(bundlepath):
         plist = FoundationPlist.readPlist(infoPlist)
         versionstring = getVersionString(plist)
         if versionstring:
-            #return padVersionString(versionstring, 5)
             return versionstring
 
     # no version number in Info.plist. Maybe old-style package?
@@ -865,7 +864,6 @@ def getExtendedVersion(bundlepath):
                     if len(parts) == 2:
                         label = parts[0]
                         if label == 'Version':
-                            #return padVersionString(parts[1], 5)
                             return parts[1]
                             
     # didn't find a version number, so return 0...
@@ -885,8 +883,6 @@ def parsePkgRefs(filename):
                 pkginfo = {}
                 pkginfo['packageid'] = \
                              ref.attributes['id'].value.encode('UTF-8')
-                #pkginfo['version'] = padVersionString(
-                #       ref.attributes['version'].value.encode('UTF-8'), 5)
                 pkginfo['version'] = \
                     ref.attributes['version'].value.encode('UTF-8')
                 if 'installKBytes' in keys:
@@ -904,9 +900,6 @@ def parsePkgRefs(filename):
                     pkginfo = {}
                     pkginfo['packageid'] = \
                            ref.attributes['identifier'].value.encode('UTF-8')
-                    #pkginfo['version'] = \
-                    #    padVersionString(
-                    #    ref.attributes['version'].value.encode('UTF-8'),5)
                     pkginfo['version'] = \
                         ref.attributes['version'].value.encode('UTF-8')
                     payloads = ref.getElementsByTagName('payload')
@@ -1014,8 +1007,6 @@ def getOnePackageInfo(pkgpath):
                         if len(parts) == 2:
                             label = parts[0]
                             if label == 'Version':
-                                #pkginfo['version'] = \
-                                #    padVersionString(parts[1], 5)
                                 pkginfo['version'] = parts[1]
                             if label == 'Title':
                                 pkginfo['name'] = parts[1]
@@ -1132,7 +1123,6 @@ def getInstalledPackageVersion(pkgid):
     """
 
     # First check (Leopard and later) package database
-
     proc = subprocess.Popen(['/usr/sbin/pkgutil',
                              '--pkg-info-plist', pkgid],
                              bufsize=1,
@@ -1151,8 +1141,7 @@ def getInstalledPackageVersion(pkgid):
             if pkgid == foundbundleid:
                 display_debug2('\tThis machine has %s, version %s' %
                                 (pkgid, foundvers))
-            #return padVersionString(foundvers, 5)
-            return foundvers
+                return foundvers
 
     # If we got to this point, we haven't found the pkgid yet.
     # Check /Library/Receipts
