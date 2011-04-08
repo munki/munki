@@ -647,7 +647,7 @@ class CurlDownloadError(MunkiDownloadError):
 class PackageVerificationError(MunkiDownloadError):
     """Download failed because it could not be verified"""
     pass
-    
+
 class FileCopyError(MunkiDownloadError):
     """Download failed because of file copy errors."""
     pass
@@ -679,7 +679,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
         if not downloadbaseurl.endswith('/'):
             downloadbaseurl = downloadbaseurl + '/'
         pkgurl = downloadbaseurl + urllib2.quote(location)
-    
+
     pkgname = getInstallerItemBasename(location)
     munkicommon.display_debug2('Download base URL is: %s' % downloadbaseurl)
     munkicommon.display_debug2('Package name is: %s' % pkgname)
@@ -1509,16 +1509,16 @@ def processInstall(manifestitem, cataloglist, installinfo):
             iteminfo['version_to_install'] = item_pl.get(
                                                  'version','UNKNOWN')
 
-            # we will ignore the forced_install key
-            # if the item needs a restart or logout...
-            if item_pl.get('forced_install'):
+            # we will ignore the unattended_install key if the item needs a
+            # restart or logout...
+            if item_pl.get('unattended_install'):
                 if item_pl.get('RestartAction'):
                     munkicommon.display_warning(
-                        'Ignoring forced_install key for %s '
+                        'Ignoring unattended_install key for %s '
                         'because RestartAction is %s.'
                         % (item_pl['name'], item_pl.get('RestartAction')))
                 else:
-                    iteminfo['forced_install'] = True
+                    iteminfo['unattended_install'] = True
 
             # optional keys
             optional_keys = ['suppress_bundle_relocation',
@@ -1841,17 +1841,17 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
     iteminfo['description'] = 'Will be removed.'
 
-    # we will ignore the forced_install and forced_uninstall key if
-    # the item needs a restart or logout...
-    if uninstall_item.get('forced_uninstall'):
+    # we will ignore the unattended_uninstall key if the item needs a restart
+    # or logout...
+    if uninstall_item.get('unattended_uninstall'):
         if uninstall_item.get('RestartAction'):
             munkicommon.display_warning(
-                'Ignoring forced_uninstall key for %s '
+                'Ignoring unattended_uninstall key for %s '
                 'because RestartAction is %s.'
                 % (uninstall_item['name'],
                    uninstall_item.get('RestartAction')))
         else:
-            iteminfo['forced_uninstall'] = True
+            iteminfo['unattended_uninstall'] = True
 
     # some keys we'll copy if they exist
     optionalKeys = ['blocking_applications',
@@ -2507,7 +2507,7 @@ def getResourceIfChangedAtomically(url, destinationpath,
                                  message=None, resume=False):
     """Gets file from a URL, checking first to see if it has changed on the
        server.
-       
+
        Supported schemes are http, https, file.
 
        Returns True if a new download was required; False if the
@@ -2573,7 +2573,7 @@ def getFileIfChangedAtomically(path, destinationpath):
         shutil.copy2(path, tmp_destinationpath)
     except IOError, e:
         raise FileCopyError('Copy IOError: %s' % str(e))
-    
+
     # rename temp destination to final destination
     try:
         os.rename(tmp_destinationpath, destinationpath)
@@ -2803,7 +2803,7 @@ def check(client_id='', localmanifestpath=None):
                                                        'managed_installs')
             available_optional_installs = [item['name']
                 for item in installinfo.get('optional_installs',[])]
-            # filter the list, removing any items not in the current list 
+            # filter the list, removing any items not in the current list
             # of available self-serve installs
             selfserveinstalls = [item for item in selfserveinstalls
                                  if item in available_optional_installs]
@@ -2835,7 +2835,7 @@ def check(client_id='', localmanifestpath=None):
                             for item in installinfo['managed_installs']
                                 if item.get('installed') == False and
                                     not item.get('installer_item')]
-        # filter removals to get items already removed 
+        # filter removals to get items already removed
         # (or never installed)
         removed_items = [item.get('name','')
                             for item in installinfo['removals']
@@ -2885,7 +2885,7 @@ def check(client_id='', localmanifestpath=None):
         # record the filtered lists
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
         munkicommon.report['ItemsToRemove'] = installinfo['removals']
-        
+
         # clean up catalogs directory
         cleanUpCatalogs()
 
@@ -2917,7 +2917,7 @@ def check(client_id='', localmanifestpath=None):
                     # that need to be installed but are missing
                     # the installer_item; these might be partial
                     # downloads. So if we have no problem items, it's
-                    # OK to get rid of any partial downloads hanging 
+                    # OK to get rid of any partial downloads hanging
                     # around.
                     os.unlink(os.path.join(cachedir, item))
             elif item not in cache_list:

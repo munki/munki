@@ -135,16 +135,16 @@ def initMunkiDirs():
         return True
 
 
-def doInstallTasks(only_forced=False):
+def doInstallTasks(only_unattended=False):
     """Perform our installation/removal tasks.
 
     Args:
-      only_forced: Boolean. If True, only do forced installs/removals.
+      only_unattended: Boolean. If True, only do unattended_(un)install items.
 
     Returns:
       Boolean. True if a restart is required, False otherwise.
     """
-    if not only_forced:
+    if not only_unattended:
         # first, clear the last notified date
         # so we can get notified of new changes after this round
         # of installs
@@ -161,7 +161,7 @@ def doInstallTasks(only_forced=False):
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            need_to_restart = installer.run(only_forced=only_forced)
+            need_to_restart = installer.run(only_unattended=only_unattended)
         except:
             munkicommon.display_error(
                 'Unexpected error in munkilib.installer:')
@@ -171,11 +171,11 @@ def doInstallTasks(only_forced=False):
 
         # clear any Apple update info since it may no longer
         # be relevant
-        if not only_forced:
+        if not only_unattended:
             appleupdates.clearAppleUpdateInfo()
     elif ((munkicommon.pref('InstallAppleSoftwareUpdates') or
            munkicommon.pref('AppleSoftwareUpdatesOnly'))
-           and not only_forced):
+           and not only_unattended):
         # are we supposed to handle Apple Software Updates?
         try:
             need_to_restart = appleupdates.installAppleUpdates()
@@ -627,11 +627,11 @@ def main():
                     munkicommon.log('Skipping auto install because system is '
                                     'not idle (keyboard or mouse activity).')
             else:  # there are GUI users
-                doInstallTasks(only_forced=True)
+                doInstallTasks(only_unattended=True)
                 # it's possible that we no longer have any available updates
                 # so we need to check InstallInfo.plist again
-                # however Apple Updates have not been affected by the forced
-                # install tasks (so that check is still valid).
+                # however Apple Updates have not been affected by the
+                # unattended install tasks (so that check is still valid).
                 if appleupdatesavailable or munkiUpdatesAvailable():
                     consoleuser = munkicommon.getconsoleuser()
                     if consoleuser == u'loginwindow':
