@@ -1511,7 +1511,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
 
             # we will ignore the unattended_install key if the item needs a
             # restart or logout...
-            if item_pl.get('unattended_install'):
+            if (item_pl.get('unattended_install') or        
+                item_pl.get('forced_install')):
                 if item_pl.get('RestartAction'):
                     munkicommon.display_warning(
                         'Ignoring unattended_install key for %s '
@@ -1843,7 +1844,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     # we will ignore the unattended_uninstall key if the item needs a restart
     # or logout...
-    if uninstall_item.get('unattended_uninstall'):
+    if (uninstall_item.get('unattended_uninstall') or 
+        uninstall_item.get('forced_uninstall')):
         if uninstall_item.get('RestartAction'):
             munkicommon.display_warning(
                 'Ignoring unattended_uninstall key for %s '
@@ -2754,8 +2756,7 @@ def check(client_id='', localmanifestpath=None):
         cataloglist = getManifestValueForKey(mainmanifestpath, 'catalogs')
         autoremovalitems = getAutoRemovalItems(installinfo, cataloglist)
         if autoremovalitems:
-            munkicommon.display_detail(
-                                    '**Checking for implicit removals**')
+            munkicommon.display_detail('**Checking for implicit removals**')
         for item in autoremovalitems:
             if munkicommon.stopRequested():
                 return 0
