@@ -517,7 +517,7 @@ def installWithInfo(
                 skipped_installs.append(item)
                 munkicommon.display_detail(
                     ('Skipping install of %s because it\'s not unattended.'
-                     % item['name'])
+                     % item['name']))
                 continue
             elif blockingApplicationsRunning(item):
                 skipped_installs.append(item)
@@ -863,7 +863,7 @@ def processRemovals(removallist, only_unattended=False):
                 skipped_removals.append(item)
                 munkicommon.display_detail(
                     ('Skipping removal of %s because it\'s not unattended.'
-                     % item['name'])
+                     % item['name']))
                 continue
             elif blockingApplicationsRunning(item):
                 skipped_removals.append(item)
