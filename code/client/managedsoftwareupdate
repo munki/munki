@@ -21,6 +21,7 @@ managedsoftwareupdate
 import grp
 import optparse
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -64,8 +65,11 @@ def getIdleSeconds():
     ioreglines = str(output).splitlines()
     for line in ioreglines:
         if 'Idle' in line:
-            parts = line.split()
-            return int(int(parts[3])/1000000000)
+            idle_re = re.search(' (\d+)', line)
+            idle_time = 0
+            if idle_re:
+              idle_time = idle_re.group(0)
+            return int(int(idle_time)/1000000000)
 
 
 def networkUp():
