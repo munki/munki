@@ -465,13 +465,15 @@ def filesystemItemExists(item):
                 (or there is no checksum)
     Returns -1 if the filesystem item exists but the checksum does not match.
 
-
+    Broken symlinks are OK; we're testing for the existence of the symlink,
+    not the item it points to.
+    
     Raises munkicommon.Error is there's a problem with the input.
     """
     if 'path' in item:
         filepath = item['path']
         munkicommon.display_debug1('Checking existence of %s...' % filepath)
-        if os.path.exists(filepath):
+        if os.path.lexists(filepath):
             munkicommon.display_debug2('\tExists.')
             if 'md5checksum' in item:
                 storedchecksum = item['md5checksum']
