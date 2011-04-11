@@ -20,8 +20,11 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
 
+import datetime
 import os
+import signal
 import subprocess
+import time
 
 import adobeutils
 import munkicommon
@@ -36,6 +39,7 @@ from removepackages import removepackages
 # calls installWithInfo()
 munkicommon.report['InstallResults'] = []
 munkicommon.report['RemovalResults'] = []
+
 
 def removeBundleRelocationInfo(pkgpath):
     '''Attempts to remove any info in the package
@@ -130,12 +134,29 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
                                   '-target', '/']
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+
+    # run installer, setting the program id of the process (all child
+    # processes will also use the same program id), making it easier to kill
+    # not only hung installer but also any child processes it started.
+    proc = munkicommon.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            preexec_fn=lambda: os.setpgid(
+                                os.getpid(), os.getpid()))
+    timeout = 2 * 60 * 60
 
     while True:
-        installinfo = proc.stdout.readline().decode('UTF-8')
+        try:
+            installinfo = proc.timed_readline(proc.stdout, timeout=timeout)
+        except munkicommon.TimeoutError:
+            munkicommon.display_error(
+                "/usr/sbin/installer timeout after %d seconds" % timeout)
+            signal.signal(signal.SIGCHLD, signal.SIG_IGN)  # reap immed.
+            os.kill(-1 * proc.pid, signal.SIGTERM)
+            signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+            break
+
+        installinfo = installinfo.decode('UTF-8')
         if not installinfo and (proc.poll() != None):
             break
         if installinfo.startswith("installer:"):
@@ -172,15 +193,24 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
             else:
                 munkicommon.log(msg)
 
+    # try for a little bit to catch return code from exiting process...
     retcode = proc.poll()
-    if retcode:
-        munkicommon.display_status("Install of %s failed." % packagename)
+    t = 0
+    while retcode is None and t < 5:
+        time.sleep(1)
+        t += 1
+        retcode = proc.poll()
+
+    if retcode != 0:  # this could be <0, >0, or even None (never returned)
+        munkicommon.display_status(
+                "Install of %s failed with return code %s" % (
+                    packagename, retcode))
         munkicommon.display_error("-"*78)
         for line in installeroutput:
             munkicommon.display_error(line.rstrip("\n"))
         munkicommon.display_error("-"*78)
         restartneeded = False
-    else:
+    elif retcode == 0:
         munkicommon.log("Install of %s was successful." % packagename)
         if munkicommon.munkistatusoutput:
             munkistatus.percent(100)

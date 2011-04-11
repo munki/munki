@@ -24,10 +24,13 @@ Common functions used by the munki tools.
 
 import ctypes
 import ctypes.util
+import fcntl
 import hashlib
 import os
 import platform
+import select
 import shutil
+import signal
 import struct
 import subprocess
 import sys
@@ -55,12 +58,12 @@ import LaunchServices
 BUNDLE_ID = 'ManagedInstalls'
 
 # the following two items are not used internally by munki
-# any longer, but remain for backwards compatibility with 
+# any longer, but remain for backwards compatibility with
 # pre and postflight script that might access these files directly
 MANAGED_INSTALLS_PLIST_PATH = "/Library/Preferences/" + BUNDLE_ID + ".plist"
 SECURE_MANAGED_INSTALLS_PLIST_PATH = \
     "/private/var/root/Library/Preferences/" + BUNDLE_ID + ".plist"
-    
+
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
@@ -70,6 +73,117 @@ class Error(Exception):
 
 class PreferencesError(Error):
     """There was an error reading the preferences plist."""
+
+
+class TimeoutError(Error):
+    """Timeout limit exceeded since last I/O."""
+
+
+def set_file_nonblock(f, non_blocking=True):
+    """Set non-blocking flag on a file object.
+
+    Args:
+      f: file
+      non_blocking: bool, default True, non-blocking mode or not
+    """
+    flags = fcntl.fcntl(f.fileno(), fcntl.F_GETFL)
+    if bool(flags & os.O_NONBLOCK) != non_blocking:
+      flags ^= os.O_NONBLOCK
+    fcntl.fcntl(f.fileno(), fcntl.F_SETFL, flags)
+
+
+class Popen(subprocess.Popen):
+
+    def timed_readline(self, f, timeout):
+        """Perform readline-like operation with timeout.
+
+        Args:
+            f: file object to .readline() on
+            timeout: int, seconds of inactivity to raise error at
+        Raises:
+            TimeoutError, if timeout is reached
+        """
+        set_file_nonblock(f)
+
+        output = []
+        inactive = 0
+        while 1:
+            (rlist, wlist, xlist) = select.select([f], [], [], 1.0)
+
+            if not rlist:
+                inactive += 1  # approx -- py select doesn't return tv
+                if inactive >= timeout:
+                    break
+            else:
+                inactive = 0
+                c = f.read(1)
+                output.append(c)  # keep newline
+                if c == '' or c == '\n':
+                    break
+
+        set_file_nonblock(f, non_blocking=False)
+
+        if inactive >= timeout:
+            raise TimeoutError  # note, an incomplete line can be lost
+        else:
+            return ''.join(output)
+
+    def communicate(self, input=None, timeout=0):
+        """Communicate, optionally ending after a timeout of no activity.
+
+        Args:
+            input: str, to send on stdin
+            timeout: int, seconds of inactivity to raise error at
+        Returns:
+            (str or None, str or None) for stdout, stderr
+        Raises:
+            TimeoutError, if timeout is reached
+        """
+        if timeout <= 0:
+            return super(Popen, self).communicate(input=input)
+
+        fds = []
+        stdout = []
+        stderr = []
+
+        if self.stdout is not None:
+            set_file_nonblock(self.stdout)
+            fds.append(self.stdout)
+        if self.stderr is not None:
+            set_file_nonblock(self.stderr)
+            fds.append(self.stderr)
+        if input is not None and sys.stdin is not None:
+            sys.stdin.write(input)
+
+        returncode = None
+
+        while returncode is None:
+            (rlist, wlist, xlist) = select.select(fds, [], [], 1.0)
+
+            if not rlist:
+                inactive += 1
+                if inactive >= timeout:
+                    raise TimeoutError
+            else:
+                inactive = 0
+                for fd in rlist:
+                    if fd is self.stdout:
+                        stdout.append(fd.read())
+                    elif fd is self.stderr:
+                        stderr.append(fd.read())
+
+            returncode = self.poll()
+
+        if self.stdout is not None:
+            stdout = ''.join(stdout)
+        else:
+            stdout = None
+        if self.stderr is not None:
+            stderr = ''.join(stderr)
+        else:
+            stderr = None
+
+        return (stdout, stderr)
 
 
 def get_version():
@@ -660,14 +774,14 @@ def reload_prefs():
 
 
 def set_pref(pref_name, pref_value):
-    """Sets a preference, writing it to 
-    /Library/Preferences/ManagedInstalls.plist. 
+    """Sets a preference, writing it to
+    /Library/Preferences/ManagedInstalls.plist.
     This should normally be used only for 'bookkeeping' values;
     values that control the behavior of munki may be overridden
     elsewhere (by MCX, for example)"""
     try:
         CFPreferencesSetValue(
-            pref_name, pref_value, BUNDLE_ID, 
+            pref_name, pref_value, BUNDLE_ID,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         CFPreferencesAppSynchronize(BUNDLE_ID)
     except Exception:
@@ -702,7 +816,7 @@ def pref(pref_name):
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:
         pref_value = default_prefs.get(pref_name)
-        # we're using a default value. We'll write it out to 
+        # we're using a default value. We'll write it out to
         # /Library/Preferences/<BUNDLE_ID>.plist for admin
         # discoverability
         set_pref(pref_name, pref_value)
@@ -865,7 +979,7 @@ def getExtendedVersion(bundlepath):
                         label = parts[0]
                         if label == 'Version':
                             return parts[1]
-                            
+
     # didn't find a version number, so return 0...
     return '0.0.0.0.0'
 
@@ -1157,7 +1271,7 @@ def getInstalledPackageVersion(pkgid):
                     foundbundleid = infoitem['packageid']
                     foundvers = infoitem['version']
                     if pkgid == foundbundleid:
-                        if (MunkiLooseVersion(foundvers) > 
+                        if (MunkiLooseVersion(foundvers) >
                            MunkiLooseVersion(highestversion)):
                             highestversion = foundvers
 
@@ -1238,7 +1352,7 @@ def getPackageMetaData(pkgitem):
     highestpkgversion = '0.0'
     installedsize = 0
     for infoitem in receiptinfo:
-        if (MunkiLooseVersion(infoitem['version']) > 
+        if (MunkiLooseVersion(infoitem['version']) >
             MunkiLooseVersion(highestpkgversion)):
             highestpkgversion = infoitem['version']
             if 'installed_size' in infoitem:
