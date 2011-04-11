@@ -618,16 +618,21 @@ def pythonScriptRunning(scriptname):
             # funky process line, so we'll skip it
             pass
         else:
-            # first look for Python processes
-            if (process.find('MacOS/Python ') != -1 or
-                process.find('python ') != -1):
-                if process.find(scriptname) != -1:
-                    try:
-                        if int(pid) != int(mypid):
-                            return pid
-                    except ValueError:
-                        # pid must have some funky characters
-                        pass
+            args = process.split()
+            try:
+                # first look for Python processes
+                if (args[0].find('MacOS/Python') != -1 or
+                    args[0].find('python') != -1):
+                    # look for first argument being scriptname
+                    if args[1].find(scriptname) != -1:
+                        try:
+                            if int(pid) != int(mypid):
+                                return pid
+                        except ValueError:
+                            # pid must have some funky characters
+                            pass
+            except IndexError:
+                pass
     # if we get here we didn't find a Python script with scriptname
     # (other than ourselves)
     return 0
