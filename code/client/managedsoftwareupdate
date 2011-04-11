@@ -58,18 +58,19 @@ from munkilib import utils
 def getIdleSeconds():
     """Returns the number of seconds since the last mouse 
     or keyboard event."""
-    cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4']
+    cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, unused_err) = proc.communicate()
     ioreglines = str(output).splitlines()
+    idle_time = 0
+    regex = re.compile('"?HIDIdleTime"?\s+=\s+(\d+)')
     for line in ioreglines:
-        if 'Idle' in line:
-            idle_re = re.search(' (\d+)', line)
-            idle_time = 0
-            if idle_re:
-              idle_time = idle_re.group(0)
-            return int(int(idle_time)/1000000000)
+        idle_re = regex.search(line)
+        if idle_re:
+            idle_time = idle_re.group(1)
+            break
+    return int(int(idle_time)/1000000000)
 
 
 def networkUp():
