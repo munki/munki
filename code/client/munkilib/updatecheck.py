@@ -1729,8 +1729,11 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         infoitems = getAllItemsWithName(manifestitemname, cataloglist)
 
     if not infoitems:
-        munkicommon.display_warning('Could not get information for %s' %
-                                     manifestitemname_withversion)
+        munkicommon.display_warning(
+            'Could not process item %s for removal: ' % manifestitemname)
+        munkicommon.display_warning(
+            'No pkginfo for %s found in catalogs: %s' %
+            (manifestitemname, ', '.join(cataloglist)))
         return False
 
     installEvidence = False
