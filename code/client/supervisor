@@ -1,0 +1,198 @@
+#!/usr/bin/python
+# encoding: utf-8
+#
+# Copyright 2011 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Tool to supervise launch other binaries."""
+
+
+import getopt
+import logging
+import logging.handlers
+import os
+import random
+import signal
+import subprocess
+import sys
+import time
+
+
+class Error(Exception):
+    """Base error."""
+
+
+class OptionError(Error):
+    """Option error."""
+
+
+class TimeoutError(Error):
+    """Timeout while execute() running."""
+
+
+class Supervisor(object):
+    def __init__(self):
+        """Init."""
+        self.options = {
+            'timeout': None,
+            'delayrandom': None,
+            'stdout': None,
+            'stderr': None,
+            'debug': None,
+        }
+
+    def setOptions(self, **kwargs):
+        for k in kwargs:
+            self.options[k] = kwargs[k]
+
+    def execute(self, args):
+        """Exec.
+
+        Args:
+            args: list, arguments to execute, args[0] is binary name
+        """
+        logging.debug('execute(%s)' % args)
+        if 'delayrandom' in self.options and self.options['delayrandom']:
+          max_secs = self.options['delayrandom']
+          random_secs = random.randrange(0, max_secs)
+          logging.debug(
+              'Applying random delay up to %s seconds: %s',
+              max_secs, random_secs)
+          time.sleep(random_secs)
+
+        proc = subprocess.Popen(
+            args,
+            preexec_fn=lambda: os.setpgid(os.getpid(), os.getpid()),
+        )
+
+        self.returncode = None
+
+        start_time = time.time()
+
+        try:
+            while 1:
+                slept = 0
+
+                returncode = proc.poll()
+                if returncode is not None:
+                    self.returncode = returncode
+                    break
+
+                if 'timeout' in self.options and self.options['timeout']:
+                    if (time.time() - start_time) > self.options['timeout']:
+                        raise TimeoutError
+
+                # this loop is constructed this way, rather than using alarm or
+                # something, to facilitate future features, e.g. pipe
+                # stderr/stdout to syslog.
+                if slept < 1:
+                    time.sleep(1)
+                    slept += 1
+
+        except TimeoutError:
+            logging.critical('Timeout error executing %s', ' '.join(args))
+            signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+            os.kill(-1 * proc.pid, signal.SIGTERM)
+            signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+            raise
+
+    def GetReturnCode(self):
+        return self.returncode
+
+
+def parseOpts(argv):
+    """Parse argv and return options and arguments.
+
+    Args:
+        argv: list, all argv parameters
+    Returns:
+        (dict of options, list extra args besides options)
+    """
+    try:
+        argopts, args = getopt.gnu_getopt(
+            argv, '',
+            [
+                'timeout=', 'delayrandom=', 'debug', 'help',
+            ])
+    except getopt.GetoptError, e:
+        raise OptionError(str(e))
+
+    options = {}
+    for k, v in argopts:
+        if k in ['--timeout', '--delayrandom']:
+            options[k[2:]] = int(v)
+        else:
+            options[k[2:]] = v
+    return options, args
+
+
+def Usage():
+    """Print usage."""
+    print """supervisor [options] [--] [path to executable] [arguments]
+
+    options:
+        --timeout n
+            after n seconds, terminate the executable
+        --delayrandom n
+            delay the execution of executable by random seconds up to n
+        --debug
+            enable debugging output
+        --help
+            this text
+        --
+            use the -- to separate supervisor options from arguments to the
+            executable which will appear as options.
+    """
+
+
+def processOpts(options, args):
+    """Process options for validity etc.
+
+    Args:
+        options: dict, options
+        args: list, extra args
+    Returns:
+        True if supervisor startup should occur, False if not.
+    Raises:
+        OptionError: if there is an error in options
+    """
+    if not args or options.get('help', None) is not None:
+        Usage()
+        return False
+    if options.get('debug', None) is not None:
+        logging.getLogger().setLevel(logging.DEBUG)
+    return True
+
+
+def main(argv):
+    try:
+        options, args = parseOpts(argv[1:])
+        if not processOpts(options, args):
+            return 0
+    except OptionError, e:
+        logging.error(str(e))
+        return 1
+
+    try:
+        sp = Supervisor()
+        sp.setOptions(**options)
+        sp.execute(args)
+        return 0
+    except Error, e:
+        logging.debug('%s %s', e.__class__.__name__, str(e))
+        return 1
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
