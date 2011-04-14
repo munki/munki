@@ -89,7 +89,7 @@ class MSUupdatesViewController(NSViewController):
             description = row.get("description", u"")
         else:
             description = u""
-        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateWebKitView_, description, NO)
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateWebKitView_, description, YES)
         
     def tableViewSelectionDidChange_(self, sender):
         #NSLog(u"MSUupdatesViewController.tableViewSelectionDidChange_")
