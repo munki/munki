@@ -676,6 +676,8 @@ def main():
 
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
+    if os.path.exists(postflightscript):
+            munkicommon.display_status('Performing postflight tasks...')
     try:
         result, stdout, stderr = utils.runExternalScript(
             postflightscript, runtype)
