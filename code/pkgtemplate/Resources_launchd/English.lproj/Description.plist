@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>IFPkgDescriptionTitle</key>
-	<string>Munki Commandline Tools</string>
+	<string>Munki launchd agents</string>
 	<key>IFPkgDescriptionDescription</key>
-	<string>Commandline tools used by munki runtime and administrators.</string>
+	<string>Munki launch daemons and launch agents.</string>
 </dict>
 </plist>
