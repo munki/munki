@@ -1059,11 +1059,15 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 
-def run(only_unattended=False):
+def run(only_unattended=False, install_only_list=None):
     """Runs the install/removal session.
 
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
+      install_only_list: list of pkgnames. 
+        If install_only_list exists, treat as a filter for items to be
+        installed (or removed), acting only on the items in the list
+        and any queued dependencies.
     """
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
