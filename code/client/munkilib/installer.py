@@ -541,6 +541,8 @@ def installWithInfo(
     itemindex = 0
     skipped_installs = []
     for item in installlist:
+        # Keep track of when this particular install started.
+        utc_now = datetime.datetime.utcnow()
         itemindex = itemindex + 1
         if only_unattended:
             if not item.get('unattended_install'):
@@ -715,11 +717,17 @@ def installWithInfo(
             log_msg = message % (display_name, version_to_install, status)
             munkicommon.log(log_msg, "Install.log")
 
+            # Calculate install duration; note, if a machine is put to sleep
+            # during the install this time may be inaccurate.
+            utc_now_complete = datetime.datetime.utcnow()
+            duration_seconds = (utc_now_complete - utc_now).seconds
+
             install_result = {
                 'name': display_name,
                 'version': version_to_install,
                 'applesus': applesus,
                 'status': retcode,
+                'duration_seconds': duration_seconds,
             }
             munkicommon.report['InstallResults'].append(install_result)
 
