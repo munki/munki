@@ -16,12 +16,24 @@
 	<array>
 		<string>WacomTablet</string>
 		<string>iWork09</string>
-		<string>iLife08_iPhoto</string>
-		<string>iLife08_iDVD</string>
+		<string>iLife11_iPhoto</string>
+		<string>iLife11_iDVD</string>
 	</array>
 	<key>managed_uninstalls</key>
 	<array>
 		<string>TextWrangler</string>
 	</array>
+	<key>managed_updates</string>
+	<array>
+		<string>Office2011_Updates</string>
+		<string>GoogleChrome</string>
+		<string>Firefox</string>
+	</array>
+	<key>optional_installs</key>
+	<array>
+		<string>GoogleEarth</string>
+		<string>GoogleSketchUp</string>
+	</array>
+	
 </dict>
 </plist>
