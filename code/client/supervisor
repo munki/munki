@@ -188,7 +188,7 @@ def main(argv):
         sp = Supervisor()
         sp.setOptions(**options)
         sp.execute(args)
-        return 0
+        return sp.GetReturnCode()
     except Error, e:
         logging.debug('%s %s', e.__class__.__name__, str(e))
         return 1
