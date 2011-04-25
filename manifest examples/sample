@@ -3,16 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>catalogs</key>
+	<!--These catalogs are searched to find items defined below-->
 	<array>
 		<string>testing</string>
 		<string>production</string>
 	</array>
 	<key>included_manifests</key>
+	<!--These manifests are used to group items common to multiple clients-->
 	<array>
 		<string>groups/StandardApps</string>
 		<string>groups/WebPlugins</string>
 	</array>
 	<key>managed_installs</key>
+	<!--These items will be installed if missing and kept up to date-->
 	<array>
 		<string>WacomTablet</string>
 		<string>iWork09</string>
@@ -20,16 +23,21 @@
 		<string>iLife11_iDVD</string>
 	</array>
 	<key>managed_uninstalls</key>
+	<!--These will be removed if they are installed on a client-->
 	<array>
 		<string>TextWrangler</string>
 	</array>
-	<key>managed_updates</string>
+	<key>managed_updates</key>
+	<!--These are kept up to date if some version is already installed-->
+	<!--but if no version is installed, no action will be taken-->
 	<array>
 		<string>Office2011_Updates</string>
 		<string>GoogleChrome</string>
 		<string>Firefox</string>
 	</array>
 	<key>optional_installs</key>
+	<!--These items are offered for optional installation in-->
+	<!--Managed Software Update.app-->
 	<array>
 		<string>GoogleEarth</string>
 		<string>GoogleSketchUp</string>
