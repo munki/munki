@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string></string>
+	<key>display_name</key>
+	<string>Adobe ExtendScript Toolkit CS5</string>
+	<key>installed_size</key>
+	<integer>806</integer>
+	<key>installer_item_hash</key>
+	<string>c9f4c1a9212c409a5b0704305847b2fb28d460c8c8c91857854b5db70e77d120</string>
+	<key>installer_item_location</key>
+	<string>Apps/Adobe/CS5 Updates/AdobeExtendScriptToolkit3.5.0-mul-AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>2453</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{52B09838-E7B4-4D45-8D7D-FCB2F3910C9C}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeExtendScriptToolkitCS5update</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{52B09838-E7B4-4D45-8D7D-FCB2F3910C9C}</string>
+			<key>display_name</key>
+			<string>Adobe ExtendScript Toolkit CS5</string>
+			<key>installed_size</key>
+			<integer>806</integer>
+			<key>version</key>
+			<string>3.5.0.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeFlashProCS5</string>
+		<string>AdobeIllustratorCS5</string>
+		<string>AdobeInDesignCS5</string>		
+	</array>	
+	<key>version</key>
+	<string>3.5.1.0.0</string>
+</dict>
+</plist>

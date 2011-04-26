@@ -58,6 +58,10 @@
 		<string>AdobeProductionPremiumCS5</string>
 		<string>AdobePhotoshopCS5</string>
 		<string>AdobeAfterEffectsCS5</string>
+		<string>AdobeDreamweaverCS5</string>
+		<string>AdobeFlashProCS5</string>
+		<string>AdobeIllustratorCS5</string>
+		<string>AdobeInDesignCS5</string>
 	</array>
 	<key>version</key>
 	<string>2.0.1.0.0</string>

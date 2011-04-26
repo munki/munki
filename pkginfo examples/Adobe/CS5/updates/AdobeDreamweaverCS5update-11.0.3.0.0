@@ -191,6 +191,7 @@
 	<key>update_for</key>
 	<array>
 		<string>AdobeMasterCollectionCS5</string>
+		<string>AdobeDreamweaverCS5</string>
 	</array>
 	<key>version</key>
 	<string>11.0.3.0.0</string>

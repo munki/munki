@@ -69,6 +69,9 @@ The changes include:
 		<string>AdobeProductionPremiumCS5</string>
 		<string>AdobePhotoshopCS5</string>
 		<string>AdobeAfterEffectsCS5</string>
+		<string>AdobeFlashProCS5</string>
+		<string>AdobeIllustratorCS5</string>
+		<string>AdobeInDesignCS5</string>
 	</array>
 	<key>version</key>
 	<string>4.0.4.0.0</string>
