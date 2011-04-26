@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AdobeSetupType</key>
+	<string>ProductInstall</string>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string></string>
+	<key>display_name</key>
+	<string>Adobe Extension Manager CS5</string>
+	<key>installed_size</key>
+	<integer>29365</integer>
+	<key>installer_item_hash</key>
+	<string>3bd1749c0ccaf4c6d517175c7320869670c9d20c3434d225483459e23cf0d050</string>
+	<key>installer_item_location</key>
+	<string>Apps/Adobe/CS5 Updates/AdobeExtensionManager-5.0.1-mul-AdobeUpdate.dmg</string>
+	<key>installer_item_size</key>
+	<integer>7026</integer>
+	<key>installer_type</key>
+	<string>AdobeCS5PatchInstaller</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>path</key>
+			<string>/Library/Application Support/Adobe/Uninstall/{9AF7B703-B806-4C74-94E5-82963EFC0188}.db</string>
+			<key>type</key>
+			<string>file</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>AdobeExtensionManagerCS5</string>
+	<key>payloads</key>
+	<array>
+		<dict>
+			<key>AdobeCode</key>
+			<string>{9AF7B703-B806-4C74-94E5-82963EFC0188}</string>
+			<key>display_name</key>
+			<string>Adobe Extension Manager CS5</string>
+			<key>installed_size</key>
+			<integer>29365</integer>
+			<key>version</key>
+			<string>5.0.1.0.0</string>
+		</dict>
+	</array>
+	<key>uninstallable</key>
+	<false/>
+	<key>update_for</key>
+	<array>
+		<string>AdobePhotoshopCS5</string>
+		<string>AdobeDreamweaverCS5</string>
+		<string>AdobeFlashProCS5</string>
+		<string>AdobeIllustratorCS5</string>
+		<string>AdobeInDesignCS5</string>
+	</array>	
+	<key>version</key>
+	<string>5.0.1.0.0</string>
+</dict>
+</plist>
