@@ -145,14 +145,19 @@ def checkForSoftwareUpdates():
         softwareupdatecheck = os.path.join(softwareupdateapp,
                                 "Contents/Resources/SoftwareUpdateCheck")
 
-        # record mode of Software Update.app
-        rawmode = os.stat(softwareupdateapp).st_mode
-        oldmode = stat.S_IMODE(rawmode)
-
-        # set mode of Software Update.app so it won't launch
-        # yes, this is a hack.  So sue me.
-        newmode = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-        os.chmod(softwareupdateapp, newmode)
+        try:
+            # record mode of Software Update.app
+            rawmode = os.stat(softwareupdateapp).st_mode
+            oldmode = stat.S_IMODE(rawmode)
+            # set mode of Software Update.app so it won't launch
+            # yes, this is a hack.  So sue me.
+            newmode = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+            os.chmod(softwareupdateapp, newmode)
+        except OSError, e:
+            munkicommon.display_warning(
+                'Error with os.stat(Softare Update.app): %s', str(e))
+            munkicommon.display_warning('Skipping Apple SUS check.')
+            return -2
 
         cmd = [ softwareupdatecheck ]
     elif osvers > 9:
@@ -167,11 +172,24 @@ def checkForSoftwareUpdates():
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
 
-    # now check for updates
-    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
+    try:
+        # now check for updates
+        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except OSError, e:
+        munkicommon.display_warning('Error with Popen(%s): %s', cmd, str(e))
+        munkicommon.display_warning('Skipping Apple SUS check.')
+        # if 10.5.x, safely revert the chmod from above.
+        if osvers == 9:
+            try:
+                # put mode back for Software Update.app
+                os.chmod(softwareupdateapp, oldmode)
+            except OSError:
+                pass
+        return -3
+
     while True:
         output = proc.stdout.readline().decode('UTF-8')
         if munkicommon.munkistatusoutput:
