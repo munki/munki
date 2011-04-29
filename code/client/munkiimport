@@ -621,7 +621,8 @@ def main():
                     matchingpkginfo.get('installer_item_location')):
                     options.subdirectory = os.path.dirname(
                         matchingpkginfo['installer_item_location'])
-                for key in ['forced_install',
+                for key in ['blocking_applications',
+                            'forced_install',
                             'forced_uninstall',
                             'unattended_install',
                             'unattended_uninstall',
