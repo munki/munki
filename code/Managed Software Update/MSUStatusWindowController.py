@@ -206,10 +206,15 @@ class MSUStatusWindowController(NSObject):
         self.window.orderOut_(self)
         self.session_started = False
         self.session_connected = False
-        NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
+        #NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                self.socketEnded_,socketSessionResult, NO)
 
         # Clean up autorelease pool
         del pool
+
+    def socketEnded_(self, socketSessionResult):
+        NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)		
 
     def processSocketMsg_(self, message):
         if message.startswith(u"ACTIVATE: "):
