@@ -208,7 +208,7 @@ class MSUStatusWindowController(NSObject):
         self.session_connected = False
         #NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                self.socketEnded_,socketSessionResult, NO)
+                self.socketEnded_,socketSessionResult, objc.NO)
 
         # Clean up autorelease pool
         del pool
