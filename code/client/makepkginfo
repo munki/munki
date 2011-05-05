@@ -202,6 +202,18 @@ def getBundleInfo(path):
             pass
 
     return None
+    
+
+def readfile(path):
+    '''Reads file at path. Returns a string.'''
+    try:
+        fileobject = open(path, mode='r', buffering=1)
+        data = fileobject.read()
+        fileobject.close()
+        return data
+    except (OSError, IOError):
+        print >> sys.stderr, "Couldn't read %s" % path
+        return ""
 
 
 def getiteminfo(itempath):
@@ -318,12 +330,12 @@ def main():
                     root of the dmg.''')
     p.add_option('--displayname',
                     help='''Optional flag.
-
+                    
                     String display name of the package.
                     Note: overrides any display_name in the package itself''')
     p.add_option('--description',
                     help='''Optional flag.
-
+                    
                     String description of the package.
                     Note: overrides any description in the package itself''')
     p.add_option('--destinationpath', '-d',
@@ -341,6 +353,27 @@ def main():
                     Adobe CS3 deployment package, UNINSTALLERDMG is a path 
                     to a disk image containing an AdobeUberUninstaller for
                     this item.''')
+    p.add_option('--postinstall_script',
+                    metavar='SCRIPT_PATH',
+                    help='''Optional flag.
+                    
+                    Path to an optional postinstall script to be run after  
+                    installation of the item. The script will be read and 
+                    embedded into the pkginfo.''')
+    p.add_option('--preinstall_script',
+                    metavar='SCRIPT_PATH',
+                    help='''Optional flag.
+                    
+                    Path to an optional preinstall script to be run before 
+                    installation of the item. The script will be read and 
+                    embedded into the pkginfo.''')
+    p.add_option('--uninstall_script',
+                    metavar='SCRIPT_PATH',
+                    help='''Optional flag.
+                    
+                    Path to an uninstall script to be run in order to
+                    uninstall this item. The script will be read and 
+                    embedded into the pkginfo.''')
     p.add_option('--catalog', '-c', action="append",
                     help='''Optional flag.
                     
@@ -390,7 +423,11 @@ def main():
         print munkicommon.get_version()
         exit(0)
     
-    if len(arguments) == 0 and not options.file:
+    if (len(arguments) == 0 
+        and not options.file 
+        and not options.preinstall_script
+        and not options.postinstall_script
+        and not options.uninstall_script):
         p.print_usage()
         exit(-1)
     
@@ -513,6 +550,18 @@ def main():
         
     minosversion = ""
     maxfileversion = "0.0.0.0.0"
+    if catinfo:
+        catinfo['autoremove'] = False
+        if minosversion:
+            catinfo['minimum_os_version'] = minosversion
+        else:
+            catinfo['minimum_os_version'] = "10.4.0"
+        if not 'version' in catinfo:
+            if maxfileversion != "0.0.0.0.0":
+                catinfo['version'] = maxfileversion
+            else:
+                catinfo['version'] = "1.0.0.0.0 (Please edit me!)"
+    
     if options.file:           
         for fitem in options.file:
             # no trailing slashes, please.
@@ -542,21 +591,23 @@ def main():
                 print >> sys.stderr, (
                     "Item %s doesn't exist. Skipping." % fitem)
                             
-    if catinfo:
-        catinfo['autoremove'] = False
-        if minosversion:
-            catinfo['minimum_os_version'] = minosversion
-        else:
-            catinfo['minimum_os_version'] = "10.4.0"
-        if not 'version' in catinfo:
-            if maxfileversion != "0.0.0.0.0":
-                catinfo['version'] = maxfileversion
-            else:
-                catinfo['version'] = "1.0.0.0.0 (Please edit me!)"
-        
     if installs:
         catinfo['installs'] = installs
-    
+
+    if options.postinstall_script:
+        scriptstring = readfile(options.postinstall_script)
+        if scriptstring:
+            catinfo['postinstall_script'] = scriptstring
+    if options.preinstall_script:
+        scriptstring = readfile(options.preinstall_script)
+        if scriptstring:
+            catinfo['preinstall_script'] = scriptstring
+    if options.uninstall_script:
+        scriptstring = readfile(options.uninstall_script)
+        if scriptstring:
+            catinfo['uninstall_script'] = scriptstring
+            catinfo['uninstall_method'] = 'uninstall_script'
+
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
 
