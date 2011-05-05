@@ -835,6 +835,9 @@ def runScript(itemname, path, scriptname):
         munkistatus.detail("")
         # set indeterminate progress bar
         munkistatus.percent(-1)
+    else:
+        munkicommon.display_status('Running %s for %s '
+                                   % (scriptname, itemname))
 
     scriptoutput = []
     proc = subprocess.Popen(path, shell=False, bufsize=1,
