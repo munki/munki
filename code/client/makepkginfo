@@ -207,7 +207,7 @@ def getBundleInfo(path):
 def readfile(path):
     '''Reads file at path. Returns a string.'''
     try:
-        fileobject = open(path, mode='r', buffering=1)
+        fileobject = open(os.path.expanduser(path), mode='r', buffering=1)
         data = fileobject.read()
         fileobject.close()
         return data
@@ -593,7 +593,7 @@ def main():
                             
     if installs:
         catinfo['installs'] = installs
-
+        
     if options.postinstall_script:
         scriptstring = readfile(options.postinstall_script)
         if scriptstring:
