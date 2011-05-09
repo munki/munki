@@ -423,8 +423,8 @@ if [ ! -z "$CONFPKG" ]; then
         CONFVERSION=`defaults read "$CONFPKG/Contents/Info" CFBundleShortVersionString`
         CONFBASENAME=`basename "$CONFPKG"`
     fi
-    CONFOUTLINE="<line choice=\"choice4\"/>"
-    CONFCHOICE="<choice id=\"choice4\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
+    CONFOUTLINE="<line choice=\"config\"/>"
+    CONFCHOICE="<choice id=\"config\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
         <pkg-ref id=\"$CONFID\"/>
     </choice>"
     CONFREF="<pkg-ref id=\"$CONFID\" installKBytes=\"$CONFSIZE\" version=\"$CONFVERSION\" auth=\"Root\">${PKGPREFIX}$CONFBASENAME</pkg-ref>"
@@ -436,22 +436,22 @@ cat > "$DISTFILE" <<EOF
     <options customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
-        <line choice="choice0"/>
-        <line choice="choice1"/>
-        <line choice="choice2"/>
-        <line choice="choice3"/>
+        <line choice="core"/>
+        <line choice="admin"/>
+        <line choice="app"/>
+        <line choice="launchd"/>
         $CONFOUTLINE
     </choices-outline>
-    <choice id="choice0" title="$CORETITLE" description="$COREDESC">
+    <choice id="core" title="$CORETITLE" description="$COREDESC">
         <pkg-ref id="$PKGID.core"/>
     </choice>
-    <choice id="choice1" title="$ADMINTITLE" description="$ADMINDESC">
+    <choice id="admin" title="$ADMINTITLE" description="$ADMINDESC">
         <pkg-ref id="$PKGID.admin"/>
     </choice>
-    <choice id="choice2" title="$APPTITLE" description="$APPDESC">
+    <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="choice3" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $CONFCHOICE
