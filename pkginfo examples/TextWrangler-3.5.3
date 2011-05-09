@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoremove</key>
+	<false/>
+	<key>catalogs</key>
+	<array>
+		<string>production</string>
+	</array>
+	<key>description</key>
+	<string>Free text editor from the makers of BBEdit</string>
+	<key>display_name</key>
+	<string>TextWrangler</string>
+	<key>installer_item_hash</key>
+	<string>4102747e33d6af3bfe19a1d4eaf9792d65bdf98952cefa9afcf1a008e5fda965</string>
+	<key>installer_item_location</key>
+	<string>apps/TextWrangler_3.5.3.dmg</string>
+	<key>installer_item_size</key>
+	<integer>12675</integer>
+	<key>installer_type</key>
+	<string>copy_from_dmg</string>
+	<key>installs</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.barebones.textwrangler</string>
+			<key>CFBundleName</key>
+			<string>TextWrangler</string>
+			<key>CFBundleShortVersionString</key>
+			<string>3.5.3</string>
+			<key>minosversion</key>
+			<string>10.5</string>
+			<key>path</key>
+			<string>/Applications/TextWrangler.app</string>
+			<key>type</key>
+			<string>application</string>
+		</dict>
+	</array>
+	<key>items_to_copy</key>
+	<array>
+		<dict>
+			<key>destination_path</key>
+			<string>/Applications</string>
+			<key>source_item</key>
+			<string>TextWrangler.app</string>
+		</dict>
+	</array>
+	<key>minimum_os_version</key>
+	<string>10.4.0</string>
+	<key>name</key>
+	<string>TextWrangler</string>
+	<key>postinstall_script</key>
+	<string>#!/bin/sh
+
+mkdir -p -m 775 /usr/local/bin
+cp /Applications/TextWrangler.app/Contents/MacOS/edit /usr/local/bin/
+cp /Applications/TextWrangler.app/Contents/MacOS/twdiff /usr/local/bin/
+cp /Applications/TextWrangler.app/Contents/MacOS/twfind /usr/local/bin/
+
+mkdir -p -m 775 /usr/local/share/man/man1
+cp /Applications/TextWrangler.app/Contents/Resources/edit.1 /usr/local/share/man/man1/
+cp /Applications/TextWrangler.app/Contents/Resources/twdiff.1 /usr/local/share/man/man1/
+cp /Applications/TextWrangler.app/Contents/Resources/twfind.1 /usr/local/share/man/man1/
+
+exit 0
+	</string>
+	<key>uninstall_method</key>
+	<string>remove_copied_items</string>
+	<key>uninstallable</key>
+	<true/>
+	<key>version</key>
+	<string>3.5.3</string>
+</dict>
+</plist>
