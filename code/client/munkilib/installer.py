@@ -843,7 +843,7 @@ def runScript(itemname, path, scriptname):
     proc = subprocess.Popen(path, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                            stderr=subprocess.STDOUT)
 
     while (proc.poll() == None):
         msg = proc.stdout.readline().decode('UTF-8')
