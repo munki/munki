@@ -1079,6 +1079,30 @@ def getFlatPackageInfo(pkgpath):
     return infoarray
 
 
+def getBomList(pkgpath):
+    '''Gets bom listing from pkgpath, which should be a path
+    to a bundle-style package'''
+    bompath = None
+    for item in listdir(os.path.join(pkgpath, 'Contents')):
+        if item.endswith('.bom'):
+            bompath = os.path.join(pkgpath, 'Contents', item)
+            break
+    if not bompath:
+        for item in listdir(os.path.join(pkgpath, 'Contents', 'Resources')):
+            if item.endswith('.bom'):
+                bompath = os.path.join(pkgpath, 'Contents', 'Resources', item)
+                break
+    if bompath:
+        proc = subprocess.Popen(['/usr/bin/lsbom', '-s', bompath],
+                                shell=False, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        (output, unused_err) = proc.communicate()
+        if proc.returncode == 0:
+            return output.splitlines()
+    return []
+
+
 def getOnePackageInfo(pkgpath):
     """Gets receipt info for a single bundle-style package"""
     pkginfo = {}
@@ -1107,6 +1131,12 @@ def getOnePackageInfo(pkgpath):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
                                     os.path.basename(pkgpath)
             pkginfo['version'] = '0.0.0.0.0'
+        ## now look for applications to suggest for blocking_applications
+        #bomlist = getBomList(pkgpath)
+        #if bomlist:
+        #    pkginfo['apps'] = [os.path.basename(item) for item in bomlist
+        #                        if item.endswith('.app')]
+                
     else:
         # look for old-style .info files!
         infopath = os.path.join(pkgpath, 'Contents', 'Resources',
