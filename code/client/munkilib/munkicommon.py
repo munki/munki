@@ -28,6 +28,7 @@ import fcntl
 import hashlib
 import os
 import platform
+import re
 import select
 import shutil
 import signal
@@ -1328,16 +1329,45 @@ def nameAndVersion(aString):
     'AdobePhotoshopCS3-11.2.1' becomes ('AdobePhotoshopCS3', '11.2.1')
     'MicrosoftOffice2008v12.2.1' becomes ('MicrosoftOffice2008', '12.2.1')
     """
+    # first try regex
+    m = re.search(r'[0-9]+(\.[0-9]+)((\.|a|b|d|v)[0-9]+)+', aString)
+    if m:
+        version = m.group(0)
+        name = aString[0:aString.find(version)].rstrip(' .-_v')
+        return (name, version)
+
+    # try another way
     index = 0
-    for char in aString:
-        if char in '0123456789':
-            possibleVersion = aString[index:]
-            if not (' ' in possibleVersion or '_' in possibleVersion or \
-                    '-' in possibleVersion or 'v' in possibleVersion):
-                return (aString[0:index].rstrip(' .-_v'), possibleVersion)
-        index += 1
-    # no version number found, just return original string and empty string
-    return (aString, '')
+    for char in aString[::-1]:
+        if (char in '0123456789._'):
+            index -= 1
+        elif (char in 'abdv'):
+            partialVersion = aString[index:]
+            if set(partialVersion).intersection(set('abdv')):
+                # only one of 'abdv' allowed in the version
+                break
+            else:
+                index -= 1
+        else:
+            break
+
+    if index < 0:
+        possibleVersion = aString[index:]
+        # now check from the front of the possible version until we
+        # reach a digit (because we might have characters in '._abdv'
+        # at the start)
+        for char in possibleVersion:
+            if not char in '0123456789':
+                index +=1
+            else:
+                break
+        version = aString[index:]
+        return (aString[0:index].rstrip(' .-_v'), version)
+    else:
+        # no version number found, 
+        # just return original string and empty string
+        return (aString, '')
+
 
 
 def isInstallerItem(path):
