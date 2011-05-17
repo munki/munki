@@ -712,6 +712,10 @@
 	<string>removepackages</string>
 	<key>uninstallable</key>
 	<true/>
+	<key>update_for</key>
+	<array>
+		<string>Office2011</string>
+	</array>
 	<key>version</key>
 	<string>14.1.0</string>
 </dict>
