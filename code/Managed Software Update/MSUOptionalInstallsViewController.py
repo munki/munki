@@ -32,6 +32,7 @@ class MSUOptionalInstallsViewController(NSViewController):
     array_controller = IBOutlet()
     window_controller = IBOutlet()
     AddRemoveBtn = IBOutlet()
+    searchField = IBOutlet()
     
     _EMPTYOPTIONALLIST = NSArray.arrayWithArray_([{"installed": NO, 
                                                    "managed": NO, 
@@ -45,16 +46,29 @@ class MSUOptionalInstallsViewController(NSViewController):
                                                    "original_status": ""}])
 
     _optionallist = []
-    
-    def optionallist(self):
-        #NSLog(u"MSUOptionalInstallsViewController.optionallist")
-        return self._optionallist or self._EMPTYOPTIONALLIST
-    objc.accessor(optionallist) # PyObjC KVO hack
-    
+    _filteredlist = []
+        
     def setOptionallist_(self, newlist):
-        #NSLog(u"MSUOptionalInstallsViewController.setOptionallist_")
         self._optionallist = NSArray.arrayWithArray_(newlist)
-    objc.accessor(setOptionallist_) # PyObjC KVO hack
+        self.setFilteredlist_(newlist)
+    
+    def filteredlist(self):
+        #NSLog(u"MSUOptionalInstallsViewController.optionallist")
+        return self._filteredlist or self._EMPTYOPTIONALLIST
+    objc.accessor(filteredlist) # PyObjC KVO hack
+    
+    def setFilteredlist_(self, newlist):
+        #NSLog(u"MSUOptionalInstallsViewController.setOptionallist_")
+        self._filteredlist = NSArray.arrayWithArray_(newlist)
+    objc.accessor(setFilteredlist_) # PyObjC KVO hack
+
+    @IBAction
+    def searchFilterChanged_(self, sender):
+        filterString = self.searchField.stringValue().lower()
+        self.setFilteredlist_([item for item in self._optionallist
+            if filterString in item['name'].lower() or
+               filterString in item['description'].lower()])
+        self.updateDescriptionView()
     
     @IBAction
     def itemCheckBoxClicked_(self, sender):
