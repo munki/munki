@@ -119,6 +119,8 @@ class MSUOptionalInstallsViewController(NSViewController):
     @IBAction
     def AddRemoveBtnClicked_(self, sender):
         # process Adds and/or Removes
+        self.searchField.setStringValue_('')
+        self.setFilteredlist_(self._optionallist)
         self.window_controller.theTabView.selectPreviousTabViewItem_(sender)
         NSApp.delegate().addOrRemoveOptionalSoftware()
         
