@@ -86,6 +86,13 @@ def makeCatalogDB(catalogitems):
     # filter all items from the catalogitems that have a non-empty
     # 'update_for' list
     updaters = [item for item in catalogitems if item.get('update_for')]
+    
+    # now fix possible admin errors where 'update_for' is a string instead
+    # of a list of strings
+    for update in updaters:
+        if isinstance(update['update_for'], basestring):
+            # convert to list of strings
+            update['update_for'] = [update['update_for']]
 
     # build table of autoremove items with a list comprehension --
     # filter all items from the catalogitems that have a non-empty
@@ -1270,9 +1277,7 @@ def lookForUpdates(manifestitem, cataloglist):
                         for catalogitem in updaters
                         if (name in catalogitem.get('update_for', []) or
                             nameWithVersion in 
-                            catalogitem.get('update_for', []) or
-                            name == catalogitem.get('update_for') or
-                            nameWithVersion == catalogitem.get('update_for'))]
+                            catalogitem.get('update_for', []))]
         if update_items:
             update_list.extend(update_items)
 
