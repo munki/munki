@@ -1267,10 +1267,12 @@ def lookForUpdates(manifestitem, cataloglist):
         updaters = CATALOG[catalogname]['updaters']
         # list comprehension coming up...
         update_items = [catalogitem['name']
-                            for catalogitem in updaters
-                            if (name in catalogitem.get('update_for',[]) or
-                                nameWithVersion in
-                                catalogitem.get('update_for',[]))]
+                        for catalogitem in updaters
+                        if (name in catalogitem.get('update_for', []) or
+                            nameWithVersion in 
+                            catalogitem.get('update_for', []) or
+                            name == catalogitem.get('update_for') or
+                            nameWithVersion == catalogitem.get('update_for'))]
         if update_items:
             update_list.extend(update_items)
 
@@ -1474,6 +1476,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
 
     if 'requires' in item_pl:
         dependencies = item_pl['requires']
+        # fix things if 'requires' was specified as a string
+        # instead of an array of strings
+        if isinstance(dependencies, basestring):
+            dependencies = [dependencies]
         for item in dependencies:
             munkicommon.display_detail('%s-%s requires %s. '
                                     'Getting info on %s...' %
