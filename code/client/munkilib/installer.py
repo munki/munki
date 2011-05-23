@@ -623,7 +623,7 @@ def installWithInfo(
                                                             installer_type)
                 retcode = -99
             else:
-                # must be Apple installer package
+                # better be Apple installer package
                 suppressBundleRelocation = item.get(
                                     "suppress_bundle_relocation", False)
                 munkicommon.display_debug1("suppress_bundle_relocation: %s" %
@@ -678,15 +678,19 @@ def installWithInfo(
                     if needtorestart:
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
+                elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg") 
+                      or itempath.endswith(".dist")):
+                    (retcode, needtorestart) = install(itempath,    
+                                                       choicesXMLfile, 
+                                                     suppressBundleRelocation)
+                    if needtorestart:
+                        restartflag = True
                 else:
-                    if (itempath.endswith(".pkg") or
-                        itempath.endswith(".mpkg") or
-                        itempath.endswith(".dist")):
-                        (retcode, needtorestart) = \
-                            install(itempath, choicesXMLfile,
-                                    suppressBundleRelocation)
-                        if needtorestart:
-                            restartflag = True
+                    # we didn't find anything we know how to install
+                    munkicommon.log(
+                        "Found nothing we know how to install in %s" 
+                        % itempath)
+                    retcode = -99
 
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if the install did not
@@ -699,6 +703,9 @@ def installWithInfo(
                     munkicommon.display_warning(
                         'Postinstall script for %s returned %s'
                         % (item['name'], retcode))
+                    # reset retcode to 0 so we will mark this install
+                    # as successful
+                    retcode = 0
 
             # record install success/failure
             if not 'InstallResults' in munkicommon.report:
@@ -939,8 +946,13 @@ def processRemovals(removallist, only_unattended=False):
         else:
             munkicommon.display_status("Removing %s (%s of %s)..." %
                                       (name, index, len(removallist)))
+                                      
+        retcode = 0
+        # run preuninstall_script if it exists
+        if 'preuninstall_script' in item:
+            retcode = runEmbeddedScript('preuninstall_script', item)
 
-        if 'uninstall_method' in item:
+        if retcode == 0 and 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method'].split(' ')
             if uninstallmethod[0] == "removepackages":
                 if 'packages' in item:
@@ -1002,21 +1014,34 @@ def processRemovals(removallist, only_unattended=False):
                                 "there was no valid uninstall "
                                 "method." % name)
                 retcode = -99
+                
+            if retcode == 0 and item.get('postuninstall_script'):
+                retcode = runEmbeddedScript('postuninstall_script', item)
+                if retcode:
+                    # we won't consider postuninstall script failures as fatal
+                    # since the item has been uninstalled
+                    # but admin should be notified
+                    munkicommon.display_warning(
+                        'Postuninstall script for %s returned %s'
+                        % (item['name'], retcode))
+                    # reset retcode to 0 so we will mark this uninstall
+                    # as successful
+                    retcode = 0
 
-            # record removal success/failure
-            if not 'RemovalResults' in munkicommon.report:
-                munkicommon.report['RemovalResults'] = []
-            if retcode == 0:
-                success_msg = "Removal of %s: SUCCESSFUL" % name
-                munkicommon.log(success_msg, "Install.log")
-                munkicommon.report[
-                                 'RemovalResults'].append(success_msg)
-                removeItemFromSelfServeUninstallList(item.get('name'))
-            else:
-                failure_msg = "Removal of %s: " % name + \
-                              " FAILED with return code: %s" % retcode
-                munkicommon.log(failure_msg, "Install.log")
-                munkicommon.report['RemovalResults'].append(failure_msg)
+        # record removal success/failure
+        if not 'RemovalResults' in munkicommon.report:
+            munkicommon.report['RemovalResults'] = []
+        if retcode == 0:
+            success_msg = "Removal of %s: SUCCESSFUL" % name
+            munkicommon.log(success_msg, "Install.log")
+            munkicommon.report[
+                             'RemovalResults'].append(success_msg)
+            removeItemFromSelfServeUninstallList(item.get('name'))
+        else:
+            failure_msg = "Removal of %s: " % name + \
+                          " FAILED with return code: %s" % retcode
+            munkicommon.log(failure_msg, "Install.log")
+            munkicommon.report['RemovalResults'].append(failure_msg)
 
     return (restartFlag, skipped_removals)
 
@@ -1070,15 +1095,11 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 
-def run(only_unattended=False, install_only_list=None):
+def run(only_unattended=False):
     """Runs the install/removal session.
 
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
-      install_only_list: list of pkgnames. 
-        If install_only_list exists, treat as a filter for items to be
-        installed (or removed), acting only on the items in the list
-        and any queued dependencies.
     """
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
