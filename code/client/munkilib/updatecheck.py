@@ -1548,8 +1548,6 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'update_for',
                              'preinstall_script',
                              'postinstall_script',
-                             'preuninstall_script',
-                             'postuninstall_script',
                              'items_to_copy',  # used w/ copy_from_dmg
                              'copy_local']     # used w/ AdobeCS5 Updaters
 
@@ -1877,7 +1875,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     optionalKeys = ['blocking_applications',
                     'installs',
                     'requires',
-                    'update_for']
+                    'update_for',
+                    'preuninstall_script',
+                    'postuninstall_script']
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
