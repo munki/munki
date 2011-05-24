@@ -953,8 +953,8 @@ def processRemovals(removallist, only_unattended=False):
             retcode = runEmbeddedScript('preuninstall_script', item)
 
         if retcode == 0 and 'uninstall_method' in item:
-            uninstallmethod = item['uninstall_method'].split(' ')
-            if uninstallmethod[0] == "removepackages":
+            uninstallmethod = item['uninstall_method']
+            if uninstallmethod == "removepackages":
                 if 'packages' in item:
                     if item.get('RestartAction') == "RequireRestart":
                         restartFlag = True
@@ -971,13 +971,13 @@ def processRemovals(removallist, only_unattended=False):
                         munkicommon.log("Uninstall of %s was "
                                         "successful." % name)
 
-            elif uninstallmethod[0].startswith("Adobe"):
+            elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
 
-            elif uninstallmethod[0] == "remove_copied_items":
+            elif uninstallmethod == "remove_copied_items":
                 retcode = removeCopiedItems(item.get('items_to_remove'))
 
-            elif uninstallmethod[0] == "remove_app":
+            elif uninstallmethod == "remove_app":
                 remove_app_info = item.get('remove_app_info', None)
                 if remove_app_info:
                     path_to_remove = remove_app_info['path']
@@ -994,17 +994,17 @@ def processRemovals(removallist, only_unattended=False):
                                               "info missing from %s" %
                                               name)
 
-            elif uninstallmethod[0] == 'uninstall_script':
+            elif uninstallmethod == 'uninstall_script':
                 retcode = runEmbeddedScript('uninstall_script', item)
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
 
-            elif os.path.exists(uninstallmethod[0]) and \
-                 os.access(uninstallmethod[0], os.X_OK):
+            elif os.path.exists(uninstallmethod) and \
+                 os.access(uninstallmethod, os.X_OK):
                 # it's a script or program to uninstall
                 retcode = runScript(
-                    name, uninstallmethod[0], 'uninstall script')
+                    name, uninstallmethod, 'uninstall script')
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
