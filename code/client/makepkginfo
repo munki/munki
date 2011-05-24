@@ -367,6 +367,20 @@ def main():
                     Path to an optional preinstall script to be run before 
                     installation of the item. The script will be read and 
                     embedded into the pkginfo.''')
+    p.add_option('--postuninstall_script',
+                    metavar='SCRIPT_PATH',
+                    help='''Optional flag.
+
+                    Path to an optional postuninstall script to be run after  
+                    removal of the item. The script will be read and 
+                    embedded into the pkginfo.''')
+    p.add_option('--preuninstall_script',
+                    metavar='SCRIPT_PATH',
+                    help='''Optional flag.
+
+                    Path to an optional preuninstall script to be run before 
+                    removal of the item. The script will be read and 
+                    embedded into the pkginfo.''')
     p.add_option('--uninstall_script',
                     metavar='SCRIPT_PATH',
                     help='''Optional flag.
@@ -602,6 +616,14 @@ def main():
         scriptstring = readfile(options.preinstall_script)
         if scriptstring:
             catinfo['preinstall_script'] = scriptstring
+    if options.postuninstall_script:
+        scriptstring = readfile(options.postuninstall_script)
+        if scriptstring:
+            catinfo['postuninstall_script'] = scriptstring
+    if options.preuninstall_script:
+        scriptstring = readfile(options.preuninstall_script)
+        if scriptstring:
+            catinfo['preuninstall_script'] = scriptstring
     if options.uninstall_script:
         scriptstring = readfile(options.uninstall_script)
         if scriptstring:
