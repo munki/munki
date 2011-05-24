@@ -64,7 +64,7 @@ def getManifestNames():
     for dirpath, dirnames, filenames in os.walk(manifests_path):
         subdir = dirpath[len(manifests_path):]
         for name in filenames:
-            if name.startswith("._") or name == ".DS_Store":
+            if name.startswith("."):
                 # don't process these
                 continue
             manifests.append(os.path.join(subdir, name).lstrip('/'))
