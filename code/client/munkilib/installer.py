@@ -852,8 +852,10 @@ def runScript(itemname, path, scriptname):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
 
-    while (proc.poll() == None):
+    while True:
         msg = proc.stdout.readline().decode('UTF-8')
+        if not msg and (proc.poll() != None):
+            break
         # save all script output in case there is
         # an error so we can dump it to the log
         scriptoutput.append(msg)
