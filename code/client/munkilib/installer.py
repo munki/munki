@@ -380,7 +380,7 @@ def copyFromDMG(dmgpath, itemlist):
                         "Error copying %s to %s" %
                                             (itempath, destpath))
 
-            destitem = os.path.join(destpath, itemname)
+            destitem = os.path.join(destpath, os.path.basename(itemname))
 
             if retcode == 0:
                 # set owner
