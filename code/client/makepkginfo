@@ -441,6 +441,8 @@ def main():
         and not options.file 
         and not options.preinstall_script
         and not options.postinstall_script
+        and not options.preuninstall_script
+        and not options.postuninstall_script
         and not options.uninstall_script):
         p.print_usage()
         exit(-1)
@@ -604,7 +606,7 @@ def main():
             else:
                 print >> sys.stderr, (
                     "Item %s doesn't exist. Skipping." % fitem)
-                            
+
     if installs:
         catinfo['installs'] = installs
         
