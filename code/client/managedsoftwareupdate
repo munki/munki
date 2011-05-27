@@ -555,7 +555,7 @@ def main():
     munkicommon.log("### Starting managedsoftwareupdate run ###")
     if options.verbose:
         print 'Managed Software Update Tool'
-        print 'Copyright 2010 The Munki Project'
+        print 'Copyright 2010-2011 The Munki Project'
         print 'http://code.google.com/p/munki\n'
 
     if applesoftwareupdatesonly and options.verbose:
