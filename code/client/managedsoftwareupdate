@@ -195,6 +195,11 @@ def doInstallTasks(only_unattended=False):
     return need_to_restart
 
 
+def doLogout():
+    """Handle the need for a logout."""
+    munkicommon.forceLogoutNow()
+
+
 def doRestart():
     """Handle the need for a restart."""
     restartMessage = 'Software installed or removed requires a restart.'
@@ -248,9 +253,12 @@ def recordUpdateCheckResult(result):
     munkicommon.set_pref('LastCheckResult', result)
 
 
-def notifyUserOfUpdates():
+def notifyUserOfUpdates(force=False):
     """Notify the logged-in user of available updates.
 
+    Args: 
+      force: bool, default False, forcefully notify user regardless
+          of LastNotifiedDate.
     Returns:
       Boolean.  True if the user was notified, False otherwise.
     """
@@ -271,7 +279,7 @@ def notifyUserOfUpdates():
             # subtract 6 hours
             interval = interval - (6 * 60 * 60)
         nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
-    if now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
+    if force or now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
         # record current notification date
         munkicommon.set_pref('LastNotifiedDate', now)
         
@@ -610,6 +618,7 @@ def main():
             exit(-1)
 
     mustrestart = False
+    mustlogout = False
     if options.manualcheck:
         # just quit munkistatus; Managed Software Update will notify
         munkistatus.quit()
@@ -632,7 +641,16 @@ def main():
                     munkicommon.log('Skipping auto install because system is '
                                     'not idle (keyboard or mouse activity).')
             else:  # there are GUI users
+                unused_force_action = updatecheck.checkForceInstallPackages()
                 doInstallTasks(only_unattended=True)
+                force_action = updatecheck.checkForceInstallPackages()
+                # if any installs are still requiring force actions, just
+                # initiate a logout to get started.  blocking apps might
+                # have stopped even non-logout/reboot installs from
+                # occuring.
+                if force_action in ['now', 'logout', 'restart']:
+                    mustlogout = True
+
                 # it's possible that we no longer have any available updates
                 # so we need to check InstallInfo.plist again
                 # however Apple Updates have not been affected by the
@@ -644,6 +662,8 @@ def main():
                         # the loginwindow due to fast user switching
                         # so do nothing
                         pass
+                    elif force_action:
+                        notifyUserOfUpdates(force=True)
                     elif not munkicommon.pref('SuppressUserNotification'):
                         notifyUserOfUpdates()
                     else:
@@ -693,6 +713,8 @@ def main():
     munkicommon.cleanUpTmpDir()
     if mustrestart:
         doRestart()
+    elif mustlogout:
+        doLogout()
     elif munkicommon.munkistatusoutput:
         munkistatus.quit()
 

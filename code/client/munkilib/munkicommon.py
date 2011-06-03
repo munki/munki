@@ -68,6 +68,10 @@ SECURE_MANAGED_INSTALLS_PLIST_PATH = \
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 
+LOGINWINDOW = (
+    "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow")
+
+
 class Error(Exception):
     """Class for domain specific exceptions."""
 
@@ -1847,6 +1851,88 @@ def listdir(path):
     elif type(path) is not unicode:
         path = unicode(path)
     return os.listdir(path)
+
+
+def findProcesses(user=None, exe=None, args=None):
+    """Find processes in process list.
+
+    Args:
+        user: str, optional, username owning process
+        exe: str, optional, executable name of process
+        args: str, optional, string arguments to match to process
+    Returns:
+        dictionary of pids = {
+                pid: {
+                        'user': str, username owning process,
+                        'args': str, string executable and arguments of process,
+                }
+        }
+
+        list of pids, or {} if none
+    """
+    argv = ['/bin/ps', '-x', '-w', '-w', '-a', '-o', 'pid=,user=,args=']
+
+    p = subprocess.Popen(
+        argv,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (stdout, stderr) = p.communicate()
+
+    pids = {}
+
+    if not stdout or p.returncode != 0:
+        return pids
+
+    try:
+        lines = stdout.splitlines()
+
+        for proc in lines:
+            (p_pid, p_user, p_args) = proc.split(None, 2)
+
+            if exe is not None:
+                if not p_args.startswith(exe):
+                    continue
+            if args is not None:
+                if not p_args.find(args) > -1:
+                    continue
+            if user is not None:
+                if p_user != user:
+                    continue
+            pids[int(p_pid)] = {
+                    'user': p_user,
+                    'args': p_args,
+            }
+
+    except (ValueError, TypeError, IndexError):
+        return pids
+
+    return pids
+
+
+def forceLogoutNow():
+    """Force the logout of interactive GUI users and spawn MSU."""
+    try:
+        procs = findProcesses(exe=LOGINWINDOW)
+        users = {}
+        for pid in procs:
+            users[procs[pid]['user']] = pid
+
+        if 'root' in users:
+            del(users['root'])
+
+        # force MSU GUI to raise
+        f = open('/private/tmp/com.googlecode.munki.installatlogout', 'w')
+        f.close()
+
+        # kill loginwindows to cause logout of current users, whether
+        # active or switched away via fast user switching.
+        for user in users:
+            try:
+                os.kill(users[user], signal.SIGKILL)
+            except OSError:
+                pass
+
+    except Exception, e:
+        display_error('Exception in forceLogoutNow(): %s' % str(e))
 
 
 # module globals

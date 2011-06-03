@@ -43,6 +43,10 @@ import appleupdates
 import FoundationPlist
 
 
+# This many hours before a force install deadline, start notifying the user.
+FORCE_INSTALL_WARNING_HOURS = 4
+
+
 def makeCatalogDB(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database"""
@@ -1549,7 +1553,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'preinstall_script',
                              'postinstall_script',
                              'items_to_copy',  # used w/ copy_from_dmg
-                             'copy_local']     # used w/ AdobeCS5 Updaters
+                             'copy_local',     # used w/ AdobeCS5 Updaters
+                             'force_install_after_date']
 
             for key in optional_keys:
                 if key in item_pl:
@@ -3020,6 +3025,62 @@ def check(client_id='', localmanifestpath=None):
         return 1
     else:
         return 0
+
+
+def checkForceInstallPackages():
+    """Check installable packages for force install parameters.
+
+    This method has a side effect of modifying InstallInfo in one scenario:
+    It enables the unattended_install flag on all packages which need to be
+    force installed and do not have a RestartAction.
+    
+    The return value may be one of:
+        'now': a force install is about to occur
+        'soon': a force install will occur within FORCE_INSTALL_WARNING_HOURS
+        'logout': a force install is about to occur and requires logout
+        'restart': a force install is about to occur and requires restart
+        None: no force installs are about to occur
+    """
+    result = None
+    
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
+
+    try:
+        installinfo = FoundationPlist.readPlist(installinfopath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        return result
+        
+    now = NSDate.date()
+    now_xhours = NSDate.dateWithTimeIntervalSinceNow_(
+            FORCE_INSTALL_WARNING_HOURS * 3600)
+    writeback = False
+    
+    for i in xrange(len(installinfo.get('managed_installs', []))):
+        install = installinfo['managed_installs'][i]
+        force_install_after_date = install.get('force_install_after_date')
+        
+        if force_install_after_date:
+            if now >= force_install_after_date:
+                result = 'now'
+                if install.get('RestartAction'):
+                    if install['RestartAction'] == 'RequireLogout':
+                        result = 'logout'
+                    elif install['RestartAction'] == 'RequireRestart':
+                        result = 'restart'
+                elif not install.get('unattended_install', False):
+                    install['unattended_install'] = True
+                    installinfo['managed_installs'][i] = install
+                    writeback = True
+
+            if now_xhours >= force_install_after_date:
+                if not result:
+                    result = 'soon'
+
+    if writeback:
+        FoundationPlist.writePlist(installinfo, installinfopath)
+
+    return result
 
 
 def main():
