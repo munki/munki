@@ -142,17 +142,18 @@ def checkForSoftwareUpdates():
     if osvers == 9:
         setupSoftwareUpdateCheck()
         softwareupdateapp = "/System/Library/CoreServices/Software Update.app"
+        softwareupdateappbin = os.path.join(softwareupdateapp,
+                                "Contents/MacOS/Software Update")
         softwareupdatecheck = os.path.join(softwareupdateapp,
                                 "Contents/Resources/SoftwareUpdateCheck")
 
         try:
-            # record mode of Software Update.app
-            rawmode = os.stat(softwareupdateapp).st_mode
+            # record mode of Software Update.app executable
+            rawmode = os.stat(softwareupdateappbin).st_mode
             oldmode = stat.S_IMODE(rawmode)
-            # set mode of Software Update.app so it won't launch
+            # set mode of Software Update.app executable so it won't launch
             # yes, this is a hack.  So sue me.
-            newmode = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-            os.chmod(softwareupdateapp, newmode)
+            os.chmod(softwareupdateappbin, 0)
         except OSError, e:
             munkicommon.display_warning(
                 'Error with os.stat(Softare Update.app): %s', str(e))
@@ -184,8 +185,8 @@ def checkForSoftwareUpdates():
         # if 10.5.x, safely revert the chmod from above.
         if osvers == 9:
             try:
-                # put mode back for Software Update.app
-                os.chmod(softwareupdateapp, oldmode)
+                # put mode back for Software Update.app executable
+                os.chmod(softwareupdateappbin, oldmode)
             except OSError:
                 pass
         return -3
@@ -240,9 +241,12 @@ def checkForSoftwareUpdates():
         munkicommon.display_error("softwareupdate error: %s" % retcode)
 
     if osvers == 9:
-        # put mode back for Software Update.app
-        os.chmod(softwareupdateapp, oldmode)
-
+        try:
+            # put mode back for Software Update.app executable
+            os.chmod(softwareupdateappbin, oldmode)
+        except OSError:
+            pass
+    
     # set verboseness back.
     munkicommon.verbose = oldverbose
 
