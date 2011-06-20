@@ -41,6 +41,7 @@ import munkicommon
 import munkistatus
 import appleupdates
 import FoundationPlist
+from Foundation import NSDate
 
 
 # This many hours before a force install deadline, start notifying the user.
