@@ -353,8 +353,9 @@ def compareApplicationVersion(app):
                         'Skipped app %s with path %s',
                         item['name'], item['path'])
                     continue
-            if bundleid and item['bundleid'] == bundleid:
-                appinfo.append(item)
+            if bundleid:
+                if item['bundleid'] == bundleid:
+                    appinfo.append(item)
             elif name and item['name'] == name:
                 appinfo.append(item)
 
@@ -367,13 +368,12 @@ def compareApplicationVersion(app):
     for item in appinfo:
         if 'name' in item:
             munkicommon.display_debug2(
-                '\tName: \t %s' % item['name'].encode('UTF-8'))
+                '\tName: \t %s' % item['name'])
         if 'path' in item:
             munkicommon.display_debug2(
-                '\tPath: \t %s' % item['path'].encode('UTF-8'))
+                '\tPath: \t %s' % item['path'])
             munkicommon.display_debug2(
-                '\tCFBundleIdentifier: \t %s' %
-                                        item['bundleid'].encode('UTF-8'))
+                '\tCFBundleIdentifier: \t %s' % item['bundleid'])
                                         
         if minupvers:
             if compareVersions(item['version'], minupvers) < 1:
@@ -386,7 +386,7 @@ def compareApplicationVersion(app):
 
         if 'version' in item:
             munkicommon.display_debug2(
-                '\tVersion: \t %s' % item['version'].encode('UTF-8'))
+                '\tVersion: \t %s' % item['version'])
             if compareVersions(item['version'], versionstring) == 1:
                 # version is the same
                 return 1
@@ -2749,9 +2749,10 @@ def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
+    
     getMachineFacts()
     munkicommon.report['MachineInfo'] = MACHINE
-
+    
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
 
     if munkicommon.munkistatusoutput:
@@ -3003,7 +3004,6 @@ def check(client_id='', localmanifestpath=None):
             munkicommon.report['ItemsToRemove'] = \
                 installinfo.get('removals', [])
 
-
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
 
@@ -3050,6 +3050,19 @@ def check(client_id='', localmanifestpath=None):
         return 1
     else:
         return 0
+        
+        
+def discardTimeZoneFromDate(the_date):
+    """Input: NSDate object
+    Output: NSDate object with same date and time as the UTC date.
+    In PDT, '2011-06-20T12:00:00Z' becomes '2011-06-20 12:00:00 -0700'"""
+    # get local offset
+    (unused_date, unused_time, offset) = str(the_date).split()
+    hour_offset = int(offset[0:3])
+    minute_offset = int(offset[0] + offset[3:])
+    seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
+    # return new NSDate minus local_offset
+    return the_date.dateByAddingTimeInterval_(-seconds_offset)
 
 
 def checkForceInstallPackages():
@@ -3086,6 +3099,11 @@ def checkForceInstallPackages():
         force_install_after_date = install.get('force_install_after_date')
         
         if force_install_after_date:
+            force_install_after_date = discardTimeZoneFromDate(
+                force_install_after_date)
+            munkicommon.display_debug1(
+                'Forced install for %s at %s', 
+                install['name'], force_install_after_date)
             if now >= force_install_after_date:
                 result = 'now'
                 if install.get('RestartAction'):
@@ -3094,6 +3112,8 @@ def checkForceInstallPackages():
                     elif install['RestartAction'] == 'RequireRestart':
                         result = 'restart'
                 elif not install.get('unattended_install', False):
+                    munkicommon.display_debug1(
+                        'Setting unattended install for %s', install['name'])
                     install['unattended_install'] = True
                     installinfo['managed_installs'][i] = install
                     writeback = True
@@ -3101,7 +3121,7 @@ def checkForceInstallPackages():
             if now_xhours >= force_install_after_date:
                 if not result:
                     result = 'soon'
-
+            
     if writeback:
         FoundationPlist.writePlist(installinfo, installinfopath)
 
