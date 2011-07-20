@@ -296,9 +296,10 @@ def get_pkgrefs(xml_element):
                         ref.attributes['onConclusion'].value
                 if ref.firstChild:
                     pkgfile = ref.firstChild.nodeValue
-                    pkgfile = os.path.basename(pkgfile).lstrip('#./')
                     if pkgfile:
-                        pkg['package_file'] = pkgfile
+                        pkgfile = os.path.basename(pkgfile).lstrip('#./')
+                        if pkgfile:
+                            pkg['package_file'] = pkgfile
                 pkgs.append(pkg)
     return pkgs
 
