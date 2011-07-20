@@ -58,6 +58,10 @@ class MSUAppDelegate(NSObject):
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
 
+        # Prevent automatic relaunching at login on Lion 
+        if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
+            NSApp.disableRelaunchOnLogin()
+
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
             # Status Window only
