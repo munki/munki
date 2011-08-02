@@ -830,7 +830,8 @@ def pref(pref_name):
         # /Library/Preferences/<BUNDLE_ID>.plist for admin
         # discoverability
         set_pref(pref_name, pref_value)
-    if type(pref_value).__name__ in ['__NSCFDate', '__NSDate', '__CFDate']:
+    if type(pref_value).__name__ in ['__NSCFDate', '__NSDate', '__CFDate',      
+                                     '__NSTaggedDate']:
         # convert NSDate/CFDates to strings
         pref_value = str(pref_value)
     return pref_value
