@@ -1464,12 +1464,6 @@ def processInstall(manifestitem, cataloglist, installinfo):
             ('Will not process %s for install because it has already '
              'been processed for uninstall!') % manifestitemname)
         return False
-    elif manifestitemname in installinfo['managed_updates']:
-        # we're processing this as a managed update, so don't
-        # add it to the processed_installs list
-        pass
-    else:
-        installinfo['processed_installs'].append(manifestitemname)
 
     item_pl = getItemDetail(manifestitem, cataloglist)
     if not item_pl:
@@ -1479,6 +1473,14 @@ def processInstall(manifestitem, cataloglist, installinfo):
             'No pkginfo for %s found in catalogs: %s' %
             (manifestitem, ', '.join(cataloglist)))
         return False
+    elif manifestitemname in installinfo['managed_updates']:
+        # we're processing this as a managed update, so don't
+        # add it to the processed_installs list
+        pass
+    else:
+        # we found it, so add it to our list of procssed installs
+        # so we don't process it again in the future
+        installinfo['processed_installs'].append(manifestitemname)
 
     if isItemInInstallInfo(item_pl, installinfo['managed_installs'],
                            vers=item_pl.get('version')):
