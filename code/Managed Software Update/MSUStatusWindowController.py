@@ -214,7 +214,7 @@ class MSUStatusWindowController(NSObject):
         del pool
 
     def socketEnded_(self, socketSessionResult):
-        NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)		
+        NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
 
     def processSocketMsg_(self, message):
         if message.startswith(u"ACTIVATE: "):
@@ -227,11 +227,10 @@ class MSUStatusWindowController(NSObject):
             self.window.orderFront_(self)
             return ""
         if message.startswith(u"TITLE: "):
-            self.window.setTitle_(NSLocalizedString(message[7:], None))
+            self.window.setTitle_(message[7:])
             return ""
         if message.startswith(u"MESSAGE: "):
-            self.messageFld.setStringValue_(
-                                NSLocalizedString(message[9:], None))
+            self.messageFld.setStringValue_(message[9:])
             return ""
         if message.startswith(u"DETAIL: "):
             self.detailFld.setStringValue_(message[8:])
@@ -280,10 +279,10 @@ class MSUStatusWindowController(NSObject):
     def doRestartAlert(self):
         self.restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-            NSLocalizedString(u"Restart Required", None), 
-            NSLocalizedString(u"Restart", None), 
-            objc.nil, 
-            objc.nil, 
+            NSLocalizedString(u"Restart Required", None),
+            NSLocalizedString(u"Restart", None),
+            objc.nil,
+            objc.nil,
             NSLocalizedString(u"Software installed or removed requires a restart. You will have a chance to save open documents.", None))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil)

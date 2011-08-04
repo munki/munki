@@ -8,24 +8,24 @@ a new localized nib is created.
 
 Based on Philippe Casgrain's 'Automatically localize your nibs when building'
     http://developer.casgrain.com/?p=94
-    
+
 And Wil Shipley's 'Pimp My Code, Part 17: Lost in Translations'
     http://wilshipley.com/blog/2009/10/pimp-my-code-part-17-lost-in.html
 
 Written by David Keegan for Murky
     http://bitbucket.org/snej/murky
 
-Usage: 
+Usage:
     Localize.py -help
-    
+
     Localize nibs:
         Localize.py --from English --to "French|German" --nibs "MainMenu|Projects|Repo"
-        
+
     Generate Strings:
         Localize.py --to English --genstrings "./**/*.[hm]"
-        
+
     Use the '--utf8' flag to convert the strings files from utf-16 to utf-8.
-                            
+
 The MIT License
 
 Copyright David Keegan 2009-1010
@@ -74,11 +74,11 @@ def detectEncoding(filepath):
     If its not utf-16 assume it's utf-8, this should work for ascii
     files becuase the first 128 characters are the same...
     '''
-    
+
     f = open(filepath, 'r')
     firstBytes = f.read(2)
     f.close()
-    
+
     if firstBytes == codecs.BOM_UTF16_BE:
         return 'utf_16_be'
     elif firstBytes == codecs.BOM_UTF16_LE:
@@ -100,33 +100,33 @@ def fileToUtf8(stringFile):
             toFile = codecs.open(tempStrings, 'w', 'utf_8')
             for eachLine in fromFile:
                 toFile.write(eachLine)
-            
-            toFile.close()            
+
+            toFile.close()
             fromFile.close()
-            
+
             os.remove(stringFile)
             os.rename(tempStrings, stringFile)
-        
+
 def runCommand(command, args):
     '''Run shell commands'''
     commandAndArgs = '%s %s' % (command, args)
     proc = subprocess.Popen(commandAndArgs, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
-    if stderr != '':
+    if proc.returncode:
         raise LocalizationError(commandAndArgs + ' : ' + stderr)
     return stdout
- 
+
 def md5(file):
     '''Get the md5 checksum of a file'''
     md5Sum = runCommand('/usr/bin/openssl md5', file)
     return md5Sum.split('=')[1].strip()
-    
+
 def langProjName(language):
     return language.strip()+'.lproj'
-    
+
 def nibToStringFileName(nibFile):
     return nibFile.rstrip('.xib')+'.strings'
-    
+
 def ibtoolsGenerateStringsFile(nibFile, utf8=False):
     '''
     Generate a .strings file from a nib
@@ -134,22 +134,22 @@ def ibtoolsGenerateStringsFile(nibFile, utf8=False):
     '''
     nibFileStrings = nibToStringFileName(nibFile)
     runCommand('ibtool', '--generate-strings-file %s %s' % (nibFileStrings, nibFile))
-    
+
     if utf8:
         fileToUtf8(nibFileStrings)
-    
+
     print '  ', nibFileStrings, 'updated'
-    
+
 def ibtoolsWriteNib(fromFile, toFile, utf8=False):
     '''convert one localized nib from one language to another'''
     toStrings = nibToStringFileName(toFile)
     runCommand('ibtool', '--strings-file %s --write %s %s' % (toStrings, toFile, fromFile))
-    
+
     if utf8:
         fileToUtf8(toStrings)
-    
+
     print '  ', toFile, 'updated'
- 
+
 def genStrings(toLangs, globString, utf8=False):
     for eachToLang in toLangs:
         toLangLproj = langProjName(eachToLang)
@@ -157,7 +157,7 @@ def genStrings(toLangs, globString, utf8=False):
         localizableStrings = os.path.join(toLangLproj, 'Localizable.strings')
         if utf8:
             fileToUtf8(localizableStrings)
-        
+
         print '  ', localizableStrings, 'updated'
 
 def getDict():
@@ -165,7 +165,7 @@ def getDict():
     localizeDict = {}
     if not os.path.isfile(k_localizePath):
         return localizeDict
-        
+
     with open(k_localizePath, 'rU') as localizeFile:
         for line in localizeFile:
             line = line.strip()
@@ -173,39 +173,39 @@ def getDict():
             if match:
                 localizeDict[match.group('key')] = match.group('value')
     return localizeDict
-    
+
 def writeDict(dict):
     '''Write a dictionary to Localize.ini'''
     with open(k_localizePath, 'w') as localizeFile:
         for key, value in sorted(dict.iteritems()):
             localizeFile.write('%s=%s\n' % (key, value))
- 
+
 def localizeNibs(fromLang, toLangs, nibs=None, utf8=False, ignore=False):
     '''Localize nibs from one language to others'''
-    
+
     #get the data from the ini file
     iniData = getDict()
-        
+
     fromLangLproj = langProjName(fromLang)
-        
+
     #if nibs is none, get all the nibs in the from language project
     if nibs is None:
         nibs = []
         for eachNib in glob.glob('%s/*.xib' % fromLangLproj):
             nibs.append(eachNib.lstrip(fromLangLproj+'/').rstrip('.xib'))
-    
+
     for eachNib in nibs:
         eachNib = eachNib.strip()
         if not eachNib.endswith('.xib'):
             eachNib += '.xib'
         fromNib = os.path.join(fromLangLproj, eachNib)
-        
+
         #get md5 and update the ini data
         fromNibMd5 = md5(fromNib)
         #check if the strings for the fromNib need to the updated
         if not os.path.isfile(nibToStringFileName(fromNib)) or fromNib not in iniData or iniData[fromNib] != fromNibMd5:
             ibtoolsGenerateStringsFile(fromNib, utf8)
-        
+
         #write the localized nibs
         for eachToLang in toLangs:
             toLangLproj = langProjName(eachToLang)
@@ -220,16 +220,16 @@ def localizeNibs(fromLang, toLangs, nibs=None, utf8=False, ignore=False):
                 toStrings not in iniData or iniData[toStrings] != toStringsMd5):
                 ibtoolsWriteNib(fromNib, toNib, utf8)
                 iniData[toStrings] = toStringsMd5
-                
+
         iniData[fromNib] = fromNibMd5
-                
+
     #update Localize.ini
     writeDict(iniData)
-    
+
 if __name__ == '__main__':
     '''Command line options'''
     startTime = time.time()
-    
+
     opts = OptionParser()
     opts.add_option('--from', '-f', dest='fromLang', help='The language to localize from.', metavar='LANG')
     opts.add_option('--to', '-t', dest='toLangs', help="An array of languages to localize to, separated by '|'.", metavar='LANGS')
@@ -238,8 +238,8 @@ if __name__ == '__main__':
     opts.add_option('--ignore', '-i', dest='ignore', help='If this flag is present the md5 checksums will be ignored.', action="store_true", default=False)
     opts.add_option('--genstrings', '-g', dest='genstrings', help='File name or glob string. If this argument is present the genstrings command line will be called.', metavar='GLOB', default=None)
     options, arguments = opts.parse_args()
-    
-    if options.genstrings != None:  
+
+    if options.genstrings != None:
         genStrings(options.toLangs.split('|'), options.genstrings, options.utf8)
         print 'Strings updated in %.2f seconds' % (time.time()-startTime)
     else:
@@ -247,4 +247,4 @@ if __name__ == '__main__':
         if nibs != None:
             nibs = options.nibs.split('|')
         localizeNibs(options.fromLang, options.toLangs.split('|'), nibs, options.utf8, options.ignore)
-        print 'Nibs updated in %.2f seconds' % (time.time()-startTime)    
+        print 'Nibs updated in %.2f seconds' % (time.time()-startTime)

@@ -40,8 +40,10 @@ class MSUAppDelegate(NSObject):
     _emptyImage = NSImage.imageNamed_("Empty.png")
     _restartImage = NSImage.imageNamed_("RestartReq.tif")
     _logoutImage = NSImage.imageNamed_("LogOutReq.tif")
+    _exclamationImage = NSImage.imageNamed_("exclamation.tif")
     _listofupdates = []
     _optionalInstalls = []
+    _currentAlert = None
 
     restart_required = False
     logout_required = False
@@ -58,9 +60,29 @@ class MSUAppDelegate(NSObject):
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
 
-        # Prevent automatic relaunching at login on Lion 
+        # Prevent automatic relaunching at login on Lion
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
+
+        # register for notification messages so we can be told if available updates
+        # change while we are open
+        notification_center = NSDistributedNotificationCenter.defaultCenter()
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.updateAvailableUpdates,
+            'com.googlecode.munki.ManagedSoftwareUpdate.update',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
+
+        # register for notification messages so we can be told to
+        # display a logout warning
+        notification_center = NSDistributedNotificationCenter.defaultCenter()
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.forcedLogoutWarning,
+            'com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
 
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
@@ -73,7 +95,12 @@ class MSUAppDelegate(NSObject):
             # user may have launched the app manually, or it may have
             # been launched by /usr/local/munki/managedsoftwareupdate
             # to display available updates
-            lastcheck = NSDate.dateWithString_(munki.pref('LastCheckDate'))
+            if munki.thereAreUpdatesToBeForcedSoon(hours=2):
+                # skip the check and just display the updates
+                # by pretending the lastcheck is now
+                lastcheck = NSDate.date()
+            else:
+                lastcheck = NSDate.dateWithString_(munki.pref('LastCheckDate'))
             if not lastcheck or lastcheck.timeIntervalSinceNow() < -60:
                 # it's been more than a minute since the last check
                 self.checkForUpdates()
@@ -87,12 +114,24 @@ class MSUAppDelegate(NSObject):
                 # no updates available. Should we check for some?
                 self.checkForUpdates()
 
+    def updateAvailableUpdates(self):
+        NSLog(u"Managed Software Update got update notification")
+        if self.mainWindowController.theWindow.isVisible():
+            self.getAvailableUpdates()
+            self.buildUpdateTableData()
+            self.getOptionalInstalls()
+            self.buildOptionalInstallsData()
+
+
     def displayUpdatesWindow(self):
         self.buildUpdateTableData()
         if self._optionalInstalls:
             self.buildOptionalInstallsData()
         self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
-        NSApp.requestUserAttention_(NSCriticalRequest)
+        if munki.thereAreUpdatesToBeForcedSoon(hours=2):
+            NSApp.activateIgnoringOtherApps_(True)
+        else:
+            NSApp.requestUserAttention_(NSCriticalRequest)
 
     def munkiStatusSessionEnded_(self, socketSessionResult):
         consoleuser = munki.getconsoleuser()
@@ -259,6 +298,17 @@ class MSUAppDelegate(NSObject):
         installinfo = munki.getInstallInfo()
         if installinfo:
             updatelist = installinfo.get("managed_installs", [])
+            for update in updatelist:
+                force_install_after_date = update.get('force_install_after_date')
+                if force_install_after_date:
+                    # insert installation deadline into description
+                    local_date = munki.discardTimeZoneFromDate(force_install_after_date)
+                    date_str = munki.stringFromDate(local_date)
+                    forced_date_text = NSLocalizedString(u"This item must be installed by ", None)
+                    description = update["description"]
+                    # prepend deadline info to description. This will fail if the description is HTML...
+                    update["description"] = forced_date_text + date_str + "\n\n" + description
+
             if installinfo.get("removals"):
                 removallist = installinfo.get("removals")
                 restartNeeded = False
@@ -379,6 +429,8 @@ class MSUAppDelegate(NSObject):
             elif item.get("RestartAction") == "RequireLogout" or item.get("RestartAction") == "RecommendLogout":
                 row['image'] = self._logoutImage
                 self.logout_required = True
+            if item.get("force_install_after_date"):
+                row['image'] = self._exclamationImage
             else:
                 row['image'] = self._emptyImage
             row['name'] = item.get("display_name") or item.get("name","")
@@ -405,6 +457,81 @@ class MSUAppDelegate(NSObject):
             self.update_view_controller.restartImageFld.setImage_(self._logoutImage)
 
 
+    def forcedLogoutWarning(self, notification_obj):
+        NSApp.activateIgnoringOtherApps_(True)
+        info = notification_obj.userInfo()
+        moreText = NSLocalizedString(
+            u"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now.", None)
+        logout_time = None
+        if info:
+            logout_time = info.get('logout_time')
+        elif munki.thereAreUpdatesToBeForcedSoon():
+            logout_time = munki.earliestForceInstallDate()
+        if not logout_time:
+            return
+        time_til_logout = int(logout_time.timeIntervalSinceNow() / 60)
+        if time_til_logout > 55:
+            deadline_str = munki.stringFromDate(logout_time)
+            munki.log("user", "forced_logout_warning_initial")
+            infoText = NSLocalizedString(u"A logout will be forced at approximately %s.", None) % deadline_str + moreText
+        elif time_til_logout > 0:
+            munki.log("user", "forced_logout_warning_%s" % time_til_logout)
+            infoText = NSLocalizedString(u"A logout will be forced in less than %s minutes.", None) % time_til_logout + moreText
+        else:
+            munki.log("user", "forced_logout_warning_final")
+            infoText = NSLocalizedString(u"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost.", None)
+
+        # Set the OK button to default, unless less than 5 minutes to logout
+        # in which case only the Logout button should be displayed.
+        self._force_warning_logout_btn = NSLocalizedString(
+            u"Logout and update now", None)
+        self._force_warning_ok_btn = NSLocalizedString(u"OK", None)
+        if time_til_logout > 5:
+            self._force_warning_btns = {
+                NSAlertDefaultReturn: self._force_warning_ok_btn,
+                NSAlertAlternateReturn: self._force_warning_logout_btn,
+            }
+        else:
+            self._force_warning_btns = {
+                NSAlertDefaultReturn: self._force_warning_logout_btn,
+                NSAlertAlternateReturn: objc.nil,
+            }
+
+        if self._currentAlert:
+            NSApp.endSheet_(self._currentAlert.window())
+            self._currentAlert = None
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                    NSLocalizedString(u"Forced Logout for Mandatory Install", None),
+                    self._force_warning_btns[NSAlertDefaultReturn],
+                    self._force_warning_btns[NSAlertAlternateReturn],
+                    objc.nil,
+                    infoText)
+        self._currentAlert = alert
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+            self.mainWindowController.theWindow, self, self.forceLogoutWarningDidEnd_returnCode_contextInfo_, objc.nil)
+
+    def laterBtnClicked(self):
+        if munki.thereAreUpdatesToBeForcedSoon():
+            deadline = munki.earliestForceInstallDate()
+            time_til_logout = deadline.timeIntervalSinceNow()
+            if time_til_logout > 0:
+                deadline_str = munki.stringFromDate(deadline)
+                infoText = NSLocalizedString("One or more updates must be installed by %s. A logout may be forced if you wait too long to update.", None) % deadline_str
+            else:
+                infoText = NSLocalizedString("One or more mandatory updates are overdue for installation. A logout will be forced soon.", None)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                    NSLocalizedString(u"Manadatory Updates Pending", None),
+                    NSLocalizedString(u"Show updates", None),
+                    NSLocalizedString(u"Update later", None),
+                    objc.nil,
+                    infoText)
+            self._currentAlert = alert
+            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                self.mainWindowController.theWindow, self, self.confirmLaterAlertDidEnd_returnCode_contextInfo_, objc.nil)
+        else:
+            munki.log("user", "exit_later_clicked")
+            NSApp.terminate_(self)
+
     def confirmInstallUpdates(self):
         if self.mainWindowController.theWindow.isVisible() == objc.NO:
             return
@@ -415,33 +542,37 @@ class MSUAppDelegate(NSObject):
                 objc.nil,
                 objc.nil,
                 NSLocalizedString("There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out.", None))
+            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.multipleUserAlertDidEnd_returnCode_contextInfo_, objc.nil)
         elif self.restart_required:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Restart Required", None),
-                NSLocalizedString(u"Log out and update", None),
+                NSLocalizedString(u"Logout and update", None),
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
-                NSLocalizedString(u"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?", None))
+                NSLocalizedString(u"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?", None))
+            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         elif self.logout_required or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Required", None),
-                NSLocalizedString(u"Log out and update", None),
+                NSLocalizedString(u"Logout and update", None),
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
-                NSLocalizedString(u"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?", None))
+                NSLocalizedString(u"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?", None))
+            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Recommended", None),
-                NSLocalizedString(u"Log out and update", None),
+                NSLocalizedString(u"Logout and update", None),
                 NSLocalizedString(u"Cancel", None),
                 NSLocalizedString(u"Update without logging out", None),
-                NSLocalizedString(u"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?", None))
+                NSLocalizedString(u"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?", None))
+            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
@@ -465,6 +596,7 @@ class MSUAppDelegate(NSObject):
                     objc.nil,
                     NSLocalizedString(u"You must quit the following applications before proceeding with installation:\n\n%s", None) % '\n'.join(running_apps))
             munki.log("MSU", "conflicting_apps", ','.join(running_apps))
+            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.blockingAppsRunningAlertDidEnd_returnCode_contextInfo_, objc.nil)
             return True
@@ -479,17 +611,19 @@ class MSUAppDelegate(NSObject):
                 objc.nil,
                 NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator.", None))
         munki.log("MSU", "cannot_start")
+        self._currentAlert = alert
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
 
     @PyObjCTools.AppHelper.endSheetMethod
     def logoutAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        self._currentAlert = None
         if returncode == 0:
             NSLog("User cancelled")
             munki.log("user", "cancelled")
         elif returncode == 1:
-            NSLog("User chose to log out")
+            NSLog("User chose to logout")
             munki.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
             if result:
@@ -514,14 +648,34 @@ class MSUAppDelegate(NSObject):
 
     @PyObjCTools.AppHelper.endSheetMethod
     def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
-        pass
+        self._currentAlert = None
 
     @PyObjCTools.AppHelper.endSheetMethod
     def multipleUserAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
-        pass
+        self._currentAlert = None
+
+    @PyObjCTools.AppHelper.endSheetMethod
+    def confirmLaterAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        self._currentAlert = None
+        if returncode == 0:
+            munki.log("user", "exit_later_clicked")
+            NSApp.terminate_(self)
+        else:
+            pass
+
+    @PyObjCTools.AppHelper.endSheetMethod
+    def forceLogoutWarningDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        self._currentAlert = None
+        btn_pressed = self._force_warning_btns[returncode]
+        if btn_pressed == self._force_warning_logout_btn:
+            munki.log("user", "install_with_logout")
+            result = munki.logoutAndUpdate()
+        else:
+            munki.log("user", "dismissed_forced_logout_warning")
 
     @PyObjCTools.AppHelper.endSheetMethod
     def quitAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        self._currentAlert = None
         if returncode == 1:
             munki.log("user", "quit")
             NSApp.terminate_(self)

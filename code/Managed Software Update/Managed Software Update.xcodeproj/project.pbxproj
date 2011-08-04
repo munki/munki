@@ -35,6 +35,7 @@
 		C09D9A2D11E6DC7800B3E573 /* MSUupdatesViewController.py in Resources */ = {isa = PBXBuildFile; fileRef = C09D9A2C11E6DC7800B3E573 /* MSUupdatesViewController.py */; };
 		C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0C548F812B6E52B002C76CD /* Localizable.strings */; };
 		C0C5493212B9691B002C76CD /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0C5493012B9691B002C76CD /* MainMenu.strings */; };
+		C0E5AFC413B4E2550046074F /* exclamation.tif in Resources */ = {isa = PBXBuildFile; fileRef = C0E5AFC313B4E2550046074F /* exclamation.tif */; };
 		C0E9E82411EFB1EB003CE81A /* Solid Aqua Blue.png in Resources */ = {isa = PBXBuildFile; fileRef = C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,7 @@
 		C0458B4E11EB88AD001F1172 /* BorderlessWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BorderlessWindow.h; sourceTree = "<group>"; };
 		C0458B4F11EB88AD001F1172 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C0458B5011EB88C0001F1172 /* MSUStatusWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUStatusWindowController.py; sourceTree = "<group>"; };
+		C054583B13D4FDD000ED615D /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		C062868811E677820009B44B /* MSUOptionalInstallsViewController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUOptionalInstallsViewController.py; sourceTree = "<group>"; };
 		C082286E12C3CF5D007BAD36 /* ManagedInstalls.manifest */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ManagedInstalls.manifest; sourceTree = "<group>"; };
 		C0828C7F1123DBC5003D5807 /* MSUWebViewPolicyDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUWebViewPolicyDelegate.py; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 		C0C5492D12B96869002C76CD /* German */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C0C5493112B9691B002C76CD /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C0C5493312B9693E002C76CD /* German */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0E5AFC313B4E2550046074F /* exclamation.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = exclamation.tif; sourceTree = "<group>"; };
 		C0E9E82311EFB1EB003CE81A /* Solid Aqua Blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Solid Aqua Blue.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -165,6 +168,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C0E5AFC313B4E2550046074F /* exclamation.tif */,
 				C0C5493012B9691B002C76CD /* MainMenu.strings */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				77C8C1F70C07829500965286 /* MainMenu.xib */,
@@ -270,6 +274,7 @@
 				C0C548FD12B6E52B002C76CD /* Localizable.strings in Resources */,
 				C0C5493212B9691B002C76CD /* MainMenu.strings in Resources */,
 				C082286F12C3CF5D007BAD36 /* ManagedInstalls.manifest in Resources */,
+				C0E5AFC413B4E2550046074F /* exclamation.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,7 +307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./**/*.[hm]\" --utf8\n\n# localize nibs\n./Localize.py --from English --to German --utf8";
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to German --utf8";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -342,6 +347,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				C0C548F912B6E52B002C76CD /* German */,
+				C054583B13D4FDD000ED615D /* English */,
 			);
 			name = Localizable.strings;
 			path = German.lproj;

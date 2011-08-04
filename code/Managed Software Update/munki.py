@@ -27,11 +27,14 @@ import stat
 import subprocess
 import random
 import FoundationPlist
+import Foundation
+from Foundation import NSDate
 from Foundation import NSFileManager
 from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesAppSynchronize
 
 
+INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 MSULOGDIR = \
@@ -183,6 +186,67 @@ def getInstallInfo():
     return plist
 
 
+def thereAreUpdatesToBeForcedSoon(hours=72):
+    '''Return True if any updates need to be installed within the next
+    X hours, false otherwise'''
+    installinfo = getInstallInfo()
+    if installinfo:
+        now = NSDate.date()
+        now_xhours = NSDate.dateWithTimeIntervalSinceNow_(hours * 3600)
+        for item in installinfo.get('managed_installs', []):
+            force_install_after_date = item.get('force_install_after_date')
+            if force_install_after_date:
+                force_install_after_date = discardTimeZoneFromDate(
+                    force_install_after_date)
+                if now_xhours >= force_install_after_date:
+                    return True
+    return False
+
+
+def earliestForceInstallDate():
+    """Check installable packages for force_install_after_dates
+    Returns None or earliest force_install_after_date converted to local time
+    """
+    earliest_date = None
+    
+    installinfo = getInstallInfo()
+            
+    for install in installinfo.get('managed_installs', []):
+        this_force_install_date = install.get('force_install_after_date')
+        
+        if this_force_install_date:
+            this_force_install_date = discardTimeZoneFromDate(
+                this_force_install_date)
+            if not earliest_date or this_force_install_date < earliest_date:
+                earliest_date = this_force_install_date
+            
+    return earliest_date
+
+
+def discardTimeZoneFromDate(the_date):
+    """Input: NSDate object
+    Output: NSDate object with same date and time as the UTC.
+    In PDT, '2011-06-20T12:00:00Z' becomes '2011-06-20 12:00:00 -0700'"""
+    # get local offset
+    (unused_date, unused_time, offset) = str(the_date).split()
+    hour_offset = int(offset[0:3])
+    minute_offset = int(offset[0] + offset[3:])
+    seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
+    # return new NSDate minus local_offset
+    return the_date.dateByAddingTimeInterval_(-seconds_offset)
+
+
+def stringFromDate(nsdate):
+    """Input: NSDate object
+    Output: unicode object, date and time formatted per system locale.
+    """
+    df = Foundation.NSDateFormatter.alloc().init()
+    df.setFormatterBehavior_(Foundation.NSDateFormatterBehavior10_4)
+    df.setDateStyle_(Foundation.kCFDateFormatterLongStyle)
+    df.setTimeStyle_(Foundation.kCFDateFormatterShortStyle)
+    return unicode(df.stringForObjectValue_(nsdate))
+
+
 def startUpdateCheck():
     '''Does launchd magic to run managedsoftwareupdate as root.'''
     result = call(["/usr/bin/touch", UPDATECHECKLAUNCHFILE])
@@ -201,6 +265,7 @@ def getAppleUpdates():
         except FoundationPlist.NSPropertyListSerializationException:
             pass
     return plist
+
 
 def humanReadable(kbytes):
     """Returns sizes in human-readable units."""
@@ -276,13 +341,14 @@ end ignoring
 def logoutAndUpdate():
     '''Touch a flag so the process that runs after
     logout knows it's OK to install everything'''
-    cmd = ["/usr/bin/touch",
-           "/private/tmp/com.googlecode.munki.installatlogout"]
-    result = call(cmd)
-    if result == 0:
+
+    try:
+        if not os.path.exists(INSTALLATLOGOUTFILE):
+            f = open(INSTALLATLOGOUTFILE, 'w')
+            f.close()    
         logoutNow()
-    else:
-        return result
+    except (OSError, IOError):
+        return 1
 
 
 def justUpdate():

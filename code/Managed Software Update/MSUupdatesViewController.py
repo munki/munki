@@ -58,8 +58,7 @@ class MSUupdatesViewController(NSViewController):
     
     @IBAction
     def laterBtnClicked_(self, sender):
-        munki.log("user", "exit_later_clicked")
-        NSApp.terminate_(self)
+        NSApp.delegate().laterBtnClicked()
         
     @IBAction
     def updateNowBtnClicked_(self, sender):

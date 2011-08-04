@@ -98,7 +98,7 @@ def set_file_nonblock(f, non_blocking=True):
 
 
 class Popen(subprocess.Popen):
-    '''Subclass of subprocess.Popen to add support for 
+    '''Subclass of subprocess.Popen to add support for
     timeouts for some operations.'''
     def timed_readline(self, f, timeout):
         """Perform readline-like operation with timeout.
@@ -1144,7 +1144,7 @@ def getOnePackageInfo(pkgpath):
         #if bomlist:
         #    pkginfo['apps'] = [os.path.basename(item) for item in bomlist
         #                        if item.endswith('.app')]
-                
+
     else:
         # look for old-style .info files!
         infopath = os.path.join(pkgpath, 'Contents', 'Resources',
@@ -1371,7 +1371,7 @@ def nameAndVersion(aString):
         version = aString[index:]
         return (aString[0:index].rstrip(' .-_v'), version)
     else:
-        # no version number found, 
+        # no version number found,
         # just return original string and empty string
         return (aString, '')
 
@@ -1856,24 +1856,23 @@ def listdir(path):
     return os.listdir(path)
 
 
-def findProcesses(user=None, exe=None, args=None):
+def findProcesses(user=None, exe=None):
     """Find processes in process list.
 
     Args:
         user: str, optional, username owning process
         exe: str, optional, executable name of process
-        args: str, optional, string arguments to match to process
     Returns:
         dictionary of pids = {
                 pid: {
                         'user': str, username owning process,
-                        'args': str, string executable and arguments of process,
+                        'exe': str, string executable of process,
                 }
         }
 
         list of pids, or {} if none
     """
-    argv = ['/bin/ps', '-x', '-w', '-w', '-a', '-o', 'pid=,user=,args=']
+    argv = ['/bin/ps', '-x', '-w', '-w', '-a', '-o', 'pid=,user=,comm=']
 
     p = subprocess.Popen(
         argv,
@@ -1889,26 +1888,24 @@ def findProcesses(user=None, exe=None, args=None):
         lines = stdout.splitlines()
 
         for proc in lines:
-            (p_pid, p_user, p_args) = proc.split(None, 2)
+            (p_pid, p_user, p_comm) = proc.split(None, 2)
 
             if exe is not None:
-                if not p_args.startswith(exe):
-                    continue
-            if args is not None:
-                if not p_args.find(args) > -1:
+                if not p_comm.startswith(exe):
                     continue
             if user is not None:
                 if p_user != user:
                     continue
             pids[int(p_pid)] = {
                     'user': p_user,
-                    'args': p_args,
+                    'exe': p_comm,
             }
 
     except (ValueError, TypeError, IndexError):
         return pids
 
     return pids
+
 
 
 def forceLogoutNow():

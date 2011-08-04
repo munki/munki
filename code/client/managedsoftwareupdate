@@ -31,6 +31,9 @@ import traceback
 # Do not place any imports with ObjC bindings above this!
 try:
     from Foundation import NSDate
+    from Foundation import NSDistributedNotificationCenter
+    from Foundation import NSNotificationDeliverImmediately
+    from Foundation import NSNotificationPostToAllSessions
 except:
     # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
@@ -195,9 +198,14 @@ def doInstallTasks(only_unattended=False):
     return need_to_restart
 
 
-def doLogout():
-    """Handle the need for a logout."""
-    munkicommon.forceLogoutNow()
+def startLogoutHelper():
+    """Handle the need for a forced logout. Start our logouthelper"""
+    cmd = ['/bin/launchctl', 'start', 'com.googlecode.munki.logouthelper']
+    result = subprocess.call(cmd)
+    if result:
+        # some problem with the launchd job
+        munkicommon.display_error(
+            'Could not start com.googlecode.munki.logouthelper')
 
 
 def doRestart():
@@ -212,8 +220,14 @@ def doRestart():
     else:
         munkicommon.display_info(restartMessage)
 
-    if not munkicommon.currentGUIusers():
-        # no-one is logged in and we're at the loginwindow
+    # TODO: temporary fix for forced logout problem where we've killed 
+    # loginwindow sessions, but munkicommon.currentGUIusers() still returns
+    # users. Need to find a better solution, though.
+    #if not munkicommon.currentGUIusers():
+    #    # no-one is logged in and we're at the loginwindow
+    consoleuser = munkicommon.getconsoleuser()
+    if not consoleuser or consoleuser == u'loginwindow':
+        # no-one is logged in or we're at the loginwindow
         time.sleep(5)
         unused_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
@@ -253,6 +267,16 @@ def recordUpdateCheckResult(result):
     munkicommon.set_pref('LastCheckResult', result)
 
 
+def sendUpdateNotification():
+    '''Sends an update notification via NSDistributedNotificationCenter
+    MSU.app registers to receive these events.'''
+    dnc = NSDistributedNotificationCenter.defaultCenter()
+    dnc.postNotificationName_object_userInfo_options_(
+        'com.googlecode.munki.ManagedSoftwareUpdate.update', 
+        None, None,
+        NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+
+
 def notifyUserOfUpdates(force=False):
     """Notify the logged-in user of available updates.
 
@@ -282,25 +306,13 @@ def notifyUserOfUpdates(force=False):
     if force or now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
         # record current notification date
         munkicommon.set_pref('LastNotifiedDate', now)
-        
-        # Kill Managed Software Update.app if it's already
-        # open so it will update its display
-        # using subprocess.Popen instead of subprocess.call
-        # so stderr doesn't get output to the terminal
-        # when there is no Managed Software Update process running
-        cmd = ['/usr/bin/killall', 'Managed Software Update']
-        proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (unused_output, unused_err) = proc.communicate()
 
         # notify user of available updates using LaunchAgent to start
         # Managed Software Update.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         cmd = ['/usr/bin/touch', launchfile]
         unused_retcode = subprocess.call(cmd)
-
-        time.sleep(0.1)
+        time.sleep(1)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
@@ -585,7 +597,7 @@ def main():
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-
+        
     updatesavailable = munkiUpdatesAvailable()
     appleupdatesavailable = False 
     if (not updatesavailable and not options.installonly and
@@ -619,6 +631,9 @@ def main():
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
+            
+    # send a notification event so MSU can update its display if needed
+    sendUpdateNotification()
 
     mustrestart = False
     mustlogout = False
@@ -667,6 +682,8 @@ def main():
                         pass
                     elif force_action:
                         notifyUserOfUpdates(force=True)
+                        time.sleep(2)
+                        startLogoutHelper()
                     elif not munkicommon.pref('SuppressUserNotification'):
                         notifyUserOfUpdates()
                     else:
@@ -719,8 +736,8 @@ def main():
     munkicommon.cleanUpTmpDir()
     if mustrestart:
         doRestart()
-    elif mustlogout:
-        doLogout()
+    #elif mustlogout:
+    #   doForcedLogout() # indirectly done via logouthelper
     elif munkicommon.munkistatusoutput:
         munkistatus.quit()
 
