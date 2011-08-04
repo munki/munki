@@ -463,7 +463,10 @@ def main():
     try:
         result, stdout, stderr = utils.runExternalScript(
             preflightscript, runtype)
-        munkicommon.display_info(stdout)
+        if stdout:
+            munkicommon.display_info('preflight stdout: %s', stdout)
+        if stderr:
+            munkicommon.display_info('preflight stderr: %s', stderr)
     except utils.ScriptNotFoundError:
         result = 0
         pass  # script is not required, so pass
@@ -701,9 +704,12 @@ def main():
     try:
         result, stdout, stderr = utils.runExternalScript(
             postflightscript, runtype)
-        munkicommon.display_info(stdout)
         if result:
-            munkicommon.display_info(stderr)
+            munkicommon.display_info('postflight return code: %d' % result)
+        if stdout:
+            munkicommon.display_info('postflight stdout: %s', stdout)
+        if stderr:
+            munkicommon.display_info('postflight stderr: %s', stderr)
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:
