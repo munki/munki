@@ -670,8 +670,12 @@ class MSUAppDelegate(NSObject):
     @PyObjCTools.AppHelper.endSheetMethod
     def forceLogoutWarningDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
-        btn_pressed = self._force_warning_btns[returncode]
-        if btn_pressed == self._force_warning_logout_btn:
+        btn_pressed = self._force_warning_btns.get(returncode)
+        if not btn_pressed:
+            # sheet was dismissed via NSApp.endSheet()
+            # and not via button press, so do nothing
+            pass
+        elif btn_pressed == self._force_warning_logout_btn:
             munki.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
         else:
