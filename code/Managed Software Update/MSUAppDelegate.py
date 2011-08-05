@@ -52,7 +52,11 @@ class MSUAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         NSLog(u"Managed Software Update finished launching.")
-        munki.log("MSU", "launched")
+
+        ver = NSBundle.mainBundle().infoDictionary().get(
+            'CFBundleShortVersionString')
+        NSLog("MSU GUI version: %s" % ver)
+        munki.log("MSU", "launched", "VER=%s" % ver)
 
         runmode = NSUserDefaults.standardUserDefaults().stringForKey_("mode") or \
                   os.environ.get("ManagedSoftwareUpdateMode")
