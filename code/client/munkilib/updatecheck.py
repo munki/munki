@@ -91,7 +91,7 @@ def makeCatalogDB(catalogitems):
     # filter all items from the catalogitems that have a non-empty
     # 'update_for' list
     updaters = [item for item in catalogitems if item.get('update_for')]
-    
+
     # now fix possible admin errors where 'update_for' is a string instead
     # of a list of strings
     for update in updaters:
@@ -374,13 +374,13 @@ def compareApplicationVersion(app):
                 '\tPath: \t %s' % item['path'])
             munkicommon.display_debug2(
                 '\tCFBundleIdentifier: \t %s' % item['bundleid'])
-                                        
+
         if minupvers:
             if compareVersions(item['version'], minupvers) < 1:
                 munkicommon.display_debug1(
                     '\tVersion %s too old < %s' % (
                             item['version'], minupvers))
-                # installed version is < minimum_update_version, 
+                # installed version is < minimum_update_version,
                 # too old to match
                 return 0
 
@@ -442,7 +442,7 @@ def compareBundleVersion(item):
                 munkicommon.display_debug1(
                     '\tVersion %s too old < %s' % (installedvers, minupvers))
                 return 0
-                
+
         return compareVersions(installedvers, vers)
     else:
         munkicommon.display_debug1('\tNo version info in %s.' % filepath)
@@ -503,7 +503,7 @@ def filesystemItemExists(item):
 
     Broken symlinks are OK; we're testing for the existence of the symlink,
     not the item it points to.
-    
+
     Raises munkicommon.Error is there's a problem with the input.
     """
     if 'path' in item:
@@ -1305,7 +1305,7 @@ def lookForUpdates(manifestitem, cataloglist):
         update_items = [catalogitem['name']
                         for catalogitem in updaters
                         if (name in catalogitem.get('update_for', []) or
-                            nameWithVersion in 
+                            nameWithVersion in
                             catalogitem.get('update_for', []))]
         if update_items:
             update_list.extend(update_items)
@@ -1555,7 +1555,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
 
             # we will ignore the unattended_install key if the item needs a
             # restart or logout...
-            if (item_pl.get('unattended_install') or        
+            if (item_pl.get('unattended_install') or
                 item_pl.get('forced_install')):
                 if item_pl.get('RestartAction'):
                     munkicommon.display_warning(
@@ -1892,7 +1892,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     # we will ignore the unattended_uninstall key if the item needs a restart
     # or logout...
-    if (uninstall_item.get('unattended_uninstall') or 
+    if (uninstall_item.get('unattended_uninstall') or
         uninstall_item.get('forced_uninstall')):
         if uninstall_item.get('RestartAction'):
             munkicommon.display_warning(
@@ -2589,7 +2589,7 @@ def getFileIfChangedAtomically(path, destinationpath):
        item is already in the local cache.
 
        Raises FileCopyError if there is an error."""
-
+    path = urllib2.unquote(path)
     try:
         st_src = os.stat(path)
     except OSError:
@@ -2751,10 +2751,10 @@ def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
-    
+
     getMachineFacts()
     munkicommon.report['MachineInfo'] = MACHINE
-    
+
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
 
     if munkicommon.munkistatusoutput:
@@ -3052,8 +3052,8 @@ def check(client_id='', localmanifestpath=None):
         return 1
     else:
         return 0
-        
-        
+
+
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC date.
@@ -3073,7 +3073,7 @@ def checkForceInstallPackages():
     This method has a side effect of modifying InstallInfo in one scenario:
     It enables the unattended_install flag on all packages which need to be
     force installed and do not have a RestartAction.
-    
+
     The return value may be one of:
         'now': a force install is about to occur
         'soon': a force install will occur within FORCE_INSTALL_WARNING_HOURS
@@ -3082,7 +3082,7 @@ def checkForceInstallPackages():
         None: no force installs are about to occur
     """
     result = None
-    
+
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
 
@@ -3090,21 +3090,21 @@ def checkForceInstallPackages():
         installinfo = FoundationPlist.readPlist(installinfopath)
     except FoundationPlist.NSPropertyListSerializationException:
         return result
-        
+
     now = NSDate.date()
     now_xhours = NSDate.dateWithTimeIntervalSinceNow_(
             FORCE_INSTALL_WARNING_HOURS * 3600)
     writeback = False
-    
+
     for i in xrange(len(installinfo.get('managed_installs', []))):
         install = installinfo['managed_installs'][i]
         force_install_after_date = install.get('force_install_after_date')
-        
+
         if force_install_after_date:
             force_install_after_date = discardTimeZoneFromDate(
                 force_install_after_date)
             munkicommon.display_debug1(
-                'Forced install for %s at %s', 
+                'Forced install for %s at %s',
                 install['name'], force_install_after_date)
             if now >= force_install_after_date:
                 result = 'now'
@@ -3123,7 +3123,7 @@ def checkForceInstallPackages():
             if now_xhours >= force_install_after_date:
                 if not result:
                     result = 'soon'
-            
+
     if writeback:
         FoundationPlist.writePlist(installinfo, installinfopath)
 
