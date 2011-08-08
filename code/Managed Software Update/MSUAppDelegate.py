@@ -623,16 +623,16 @@ class MSUAppDelegate(NSObject):
     @PyObjCTools.AppHelper.endSheetMethod
     def logoutAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
-        if returncode == 0:
-            NSLog("User cancelled")
-            munki.log("user", "cancelled")
-        elif returncode == 1:
+        if returncode == NSAlertDefaultReturn:
             NSLog("User chose to logout")
             munki.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
             if result:
                 self.installSessionErrorAlert()
-        elif returncode == -1:
+        elif returncode == NSAlertAlternateReturn:
+            NSLog("User cancelled")
+            munki.log("user", "cancelled")
+        elif returncode == NSAlertOtherReturn:
             # dismiss the alert sheet now because we might display
             # another alert
             alert.window().orderOut_(self)
@@ -650,44 +650,43 @@ class MSUAppDelegate(NSObject):
                     self.munkiStatusController.window.makeKeyAndOrderFront_(self)
                     self.munkiStatusController.startMunkiStatusSession()
 
+
     @PyObjCTools.AppHelper.endSheetMethod
     def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
+
 
     @PyObjCTools.AppHelper.endSheetMethod
     def multipleUserAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
 
+
     @PyObjCTools.AppHelper.endSheetMethod
     def confirmLaterAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
-        if returncode == 0:
+        if returncode == NSAlertAlternateReturn:
             munki.log("user", "exit_later_clicked")
             NSApp.terminate_(self)
-        else:
-            pass
+
 
     @PyObjCTools.AppHelper.endSheetMethod
     def forceLogoutWarningDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
         btn_pressed = self._force_warning_btns.get(returncode)
-        if not btn_pressed:
-            # sheet was dismissed via NSApp.endSheet()
-            # and not via button press, so do nothing
-            pass
-        elif btn_pressed == self._force_warning_logout_btn:
+        if btn_pressed == self._force_warning_logout_btn:
             munki.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
-        else:
+        elif btn_pressed == self._force_warning_ok_btn:
             munki.log("user", "dismissed_forced_logout_warning")
+
 
     @PyObjCTools.AppHelper.endSheetMethod
     def quitAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         self._currentAlert = None
-        if returncode == 1:
+        if returncode == NSAlertDefaultReturn:
             munki.log("user", "quit")
             NSApp.terminate_(self)
-        else:
+        elif returncode == NSAlertAlternateReturn:
             munki.log("user", "view_optional_software")
             self.update_view_controller.optionalSoftwareBtn.setHidden_(NO)
             self.buildOptionalInstallsData()
