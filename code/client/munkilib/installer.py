@@ -32,6 +32,7 @@ import munkistatus
 import updatecheck
 import FoundationPlist
 from removepackages import removepackages
+from Foundation import NSDate
 
 
 # initialize our report fields
@@ -734,7 +735,7 @@ def installWithInfo(
                 'version': version_to_install,
                 'applesus': applesus,
                 'status': retcode,
-                'time': time.time(),
+                'time': NSDate.new(),
                 'duration_seconds': duration_seconds,
             }
             munkicommon.report['InstallResults'].append(install_result)
