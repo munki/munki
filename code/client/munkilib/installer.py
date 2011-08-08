@@ -678,17 +678,17 @@ def installWithInfo(
                     if needtorestart:
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
-                elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg") 
+                elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg")
                       or itempath.endswith(".dist")):
-                    (retcode, needtorestart) = install(itempath,    
-                                                       choicesXMLfile, 
+                    (retcode, needtorestart) = install(itempath,
+                                                       choicesXMLfile,
                                                      suppressBundleRelocation)
                     if needtorestart:
                         restartflag = True
                 else:
                     # we didn't find anything we know how to install
                     munkicommon.log(
-                        "Found nothing we know how to install in %s" 
+                        "Found nothing we know how to install in %s"
                         % itempath)
                     retcode = -99
 
@@ -734,6 +734,7 @@ def installWithInfo(
                 'version': version_to_install,
                 'applesus': applesus,
                 'status': retcode,
+                'time': time.time(),
                 'duration_seconds': duration_seconds,
             }
             munkicommon.report['InstallResults'].append(install_result)
@@ -948,7 +949,7 @@ def processRemovals(removallist, only_unattended=False):
         else:
             munkicommon.display_status("Removing %s (%s of %s)..." %
                                       (name, index, len(removallist)))
-                                      
+
         retcode = 0
         # run preuninstall_script if it exists
         if 'preuninstall_script' in item:
@@ -1016,7 +1017,7 @@ def processRemovals(removallist, only_unattended=False):
                                 "there was no valid uninstall "
                                 "method." % name)
                 retcode = -99
-                
+
             if retcode == 0 and item.get('postuninstall_script'):
                 retcode = runEmbeddedScript('postuninstall_script', item)
                 if retcode:

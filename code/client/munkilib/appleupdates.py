@@ -397,6 +397,7 @@ def installAppleUpdates():
         rep['name'] = item.get('display_name')
         rep['version'] = item.get('version_to_install', '')
         rep['applesus'] = True
+        rep['time'] = time.time()
         rep['productKey'] = item.get('productKey', '')
         message = "Apple Software Update install of %s-%s: %s"
         if rep['name'] in installresults['installed']:
