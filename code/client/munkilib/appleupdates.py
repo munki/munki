@@ -45,6 +45,37 @@ import munkistatus
 import updatecheck
 
 
+# TODO(gregneagle): Please comment on what this is, where it comes from, etc.
+APPLICABLE_UPDATES = 'ApplicableUpdates.plist'
+
+# Path to the directory where local catalogs are stored, relative to
+# munkicommon.pref('ManagedInstallDir').
+LOCAL_CATALOG_DIR_REL_PATH = 'content/catalogs/'
+
+# The prestine, untouched, but potentially gzipped catalog.
+APPLE_DOWNLOAD_CATALOG_NAME = 'apple.sucatalog'
+
+# The prestine, untouched, and extracted catalog.
+APPLE_EXTRACTED_CATALOG_NAME = 'apple_index.sucatalog'
+APPLE_EXTRACTED_CATALOG_REL_PATH = os.path.join(
+    LOCAL_CATALOG_DIR_REL_PATH, APPLE_EXTRACTED_CATALOG_NAME)
+
+# TODO(gregneagle): Please comment on what this is, why it's used, etc.
+LOCAL_DOWNLOAD_CATALOG_NAME = 'local_download.sucatalog'
+LOCAL_DOWNLOAD_CATALOG_REL_PATH = os.path.join(
+    LOCAL_CATALOG_DIR_REL_PATH, LOCAL_DOWNLOAD_CATALOG_NAME)
+
+# The catalog containing only updates in APPLICABLE_UPDATES.
+FILTERED_CATALOG_NAME = 'filtered_index.sucatalog'
+FILTERED_CATALOG_REL_PATH = os.path.join(
+    LOCAL_CATALOG_DIR_REL_PATH, FILTERED_CATALOG_NAME)
+
+# The catalog containing only updates to be installed.
+LOCAL_CATALOG_NAME = 'local_install.sucatalog'
+LOCAL_CATALOG_REL_PATH = os.path.join(
+    LOCAL_CATALOG_DIR_REL_PATH, LOCAL_CATALOG_NAME)
+
+
 def swupdCacheDir(temp=True):
     '''Returns the local cache dir for our Software Update
     mini-cache. The temp cache directory is cleared upon install
@@ -133,8 +164,8 @@ def cacheSwupdMetadata():
     and Distribution (.dist) files for the available updates
     to the local machine and writes a new sucatalog that refers
     to the local copies of these files.'''
-    filtered_catalogpath = os.path.join(swupdCacheDir(),
-            'content/catalogs/filtered_index.sucatalog')
+    filtered_catalogpath = os.path.join(
+        swupdCacheDir(), FILTERED_CATALOG_REL_PATH)
     catalog = FoundationPlist.readPlist(filtered_catalogpath)
     if 'Products' in catalog:
         product_keys = list(catalog['Products'].keys())
@@ -174,20 +205,20 @@ def cacheSwupdMetadata():
         # rewrite URLs to point to local resources
         rewriteURLs(catalog, rewrite_pkg_urls=False)
         # write out the rewritten catalog
-        localcatalogpath = os.path.join(swupdCacheDir(),
-                                        'content', 'catalogs')
+        localcatalogpath = os.path.join(
+            swupdCacheDir(), LOCAL_CATALOG_DIR_REL_PATH)
         if not os.path.exists(localcatalogpath):
             try:
                 os.makedirs(localcatalogpath)
             except OSError, oserr:
                 raise ReplicationError(oserr)
-        localcatalogpathname = os.path.join(localcatalogpath,
-                                            'local_download.sucatalog')
+        localcatalogpathname = os.path.join(
+            localcatalogpath, LOCAL_DOWNLOAD_CATALOG_NAME)
         FoundationPlist.writePlist(catalog, localcatalogpathname)
 
         rewriteURLs(catalog, rewrite_pkg_urls=True)
-        localcatalogpathname = os.path.join(localcatalogpath,
-                                            'local_install.sucatalog')
+        localcatalogpathname = os.path.join(
+            localcatalogpath, LOCAL_CATALOG_NAME)
         FoundationPlist.writePlist(catalog, localcatalogpathname)
 
 
@@ -195,16 +226,16 @@ def writeFilteredUpdateCatalog(updatelist):
     '''Write out a sucatalog containing only the updates
     listed in updatelist. updatelist is a list of ProductIDs.'''
     # our locally-cached catalog
-    catalogpath = os.path.join(swupdCacheDir(),
-        'content/catalogs/apple_index.sucatalog')
+    catalogpath = os.path.join(
+        swupdCacheDir(), APPLE_EXTRACTED_CATALOG_REL_PATH)
     catalog = FoundationPlist.readPlist(catalogpath)
     if 'Products' in catalog:
         filtered_products = {}
         for key in updatelist:
             filtered_products[key] = catalog['Products'][key]
         catalog['Products'] = filtered_products
-    filtered_catalogpath = os.path.join(swupdCacheDir(),
-            'content/catalogs/filtered_index.sucatalog')
+    filtered_catalogpath = os.path.join(
+        swupdCacheDir(), FILTERED_CATALOG_REL_PATH)
     FoundationPlist.writePlist(catalog, filtered_catalogpath)
 
 
@@ -223,6 +254,7 @@ def run_softwareupdate(options_list, stop_allowed=False,
     cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null',
            '/usr/sbin/softwareupdate']
     osvers = int(os.uname()[2].split('.')[0])
+    # If > 10.5/Leopard.
     if osvers > 9:
         cmd.append('-v')
 
@@ -374,8 +406,8 @@ def installAppleUpdates():
         munkicommon.display_status(msg)
     restartneeded = restartNeeded()
     # use our filtered local catalog
-    catalogpath = os.path.join(swupdCacheDir(),
-        'content/catalogs/local_install.sucatalog')
+    catalogpath = os.path.join(swupdCacheDir(), LOCAL_CATALOG_REL_PATH)
+
     if not os.path.exists(catalogpath):
         munkicommon.display_error(
             'Missing local Software Update catalog at %s', catalogpath)
@@ -572,14 +604,17 @@ def downloadAvailableUpdates():
         munkicommon.display_status(msg)
 
     # use our filtered local catalog
-    catalogpath = os.path.join(swupdCacheDir(),
-        'content/catalogs/local_download.sucatalog')
+    # TODO(gregneagle): errr.... comment above says filtered, but we're
+    #   operating on the local download catalog here.... ?
+    catalogpath = os.path.join(
+        swupdCacheDir(), LOCAL_DOWNLOAD_CATALOG_REL_PATH)
     if not os.path.exists(catalogpath):
         munkicommon.display_error(
             'Missing local Software Update catalog at %s', catalogpath)
         return False
 
     catalogURL = 'file://localhost' + urllib2.quote(catalogpath)
+
     # get the OS version
     osvers = int(os.uname()[2].split('.')[0])
     if osvers == 9:
@@ -605,8 +640,7 @@ def getAvailableUpdates():
     else:
         munkicommon.display_status(msg)
 
-    applicable_updates = os.path.join(swupdCacheDir(),
-                                      'ApplicableUpdates.plist')
+    applicable_updates = os.path.join(swupdCacheDir(), APPLICABLE_UPDATES)
     if os.path.exists(applicable_updates):
         # remove any old item
         try:
@@ -615,8 +649,8 @@ def getAvailableUpdates():
             pass
 
     # use our locally-cached Apple catalog
-    catalogpath = os.path.join(swupdCacheDir(),
-        'content/catalogs/apple_index.sucatalog')
+    catalogpath = os.path.join(
+        swupdCacheDir(), APPLE_EXTRACTED_CATALOG_REL_PATH)
     catalogURL = 'file://localhost' + urllib2.quote(catalogpath)
     su_options = ['--CatalogURL', catalogURL, '-l', '-f', applicable_updates]
 
@@ -646,18 +680,18 @@ def getAvailableUpdates():
 def extractAppleSUScatalog():
     '''The SUCatalog may be text or may be gzipped-text. Extract if
     necessary.'''
-    local_apple_sus_catalog_dir = os.path.join(swupdCacheDir(),
-                                               'content', 'catalogs')
+    local_apple_sus_catalog_dir = os.path.join(
+        swupdCacheDir(), LOCAL_CATALOG_DIR_REL_PATH)
     if not os.path.exists(local_apple_sus_catalog_dir):
         try:
             os.makedirs(local_apple_sus_catalog_dir)
         except OSError, oserr:
             raise ReplicationError(oserr)
 
-    download_location = os.path.join(swupdCacheDir(temp=False),
-                                     'apple.sucatalog')
-    local_apple_sus_catalog = os.path.join(local_apple_sus_catalog_dir,
-                                           'apple_index.sucatalog')
+    download_location = os.path.join(
+        swupdCacheDir(temp=False), APPLE_DOWNLOAD_CATALOG_NAME)
+    local_apple_sus_catalog = os.path.join(
+        local_apple_sus_catalog_dir, APPLE_EXTRACTED_CATALOG_NAME)
     f = open(download_location, 'rb')
     magic = f.read(2)
     f.close()
@@ -707,8 +741,8 @@ def cacheAppleSUScatalog():
         except OSError, oserr:
             raise ReplicationError(oserr)
     munkicommon.display_detail('Caching CatalogURL %s', catalogURL)
-    download_location = os.path.join(swupdCacheDir(temp=False),
-                                     'apple.sucatalog')
+    download_location = os.path.join(
+        swupdCacheDir(temp=False), APPLE_DOWNLOAD_CATALOG_NAME)
     try:
         file_changed = updatecheck.getResourceIfChangedAtomically(
             catalogURL, download_location, resume=True)
@@ -742,7 +776,8 @@ def installedApplePackagesChanged():
 
 def checkForSoftwareUpdates(forcecheck=True):
     '''Does our Apple Software Update check if needed'''
-    sucatalog = os.path.join(swupdCacheDir(temp=False), 'apple.sucatalog')
+    sucatalog = os.path.join(
+        swupdCacheDir(temp=False), APPLE_DOWNLOAD_CATALOG_NAME)
     catcksum = munkicommon.getsha256hash(sucatalog)
     try:
         catalogchanged = cacheAppleSUScatalog()
@@ -841,8 +876,7 @@ def getSoftwareUpdateInfo():
     '''Uses AvailableUpdates.plist to generate the AppleUpdates.plist,
     which records available updates in the format
     Managed Software Update.app expects.'''
-    applicable_updates = os.path.join(swupdCacheDir(),
-                                      'ApplicableUpdates.plist')
+    applicable_updates = os.path.join(swupdCacheDir(), APPLICABLE_UPDATES)
     if not os.path.exists(applicable_updates):
         # no applicable_updates, so bail
         return []
@@ -981,13 +1015,3 @@ def appleUpdatesFile():
     '''Returns path to the AppleUpdates.plist'''
     return os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'AppleUpdates.plist')
-
-
-def main():
-    '''Placeholder'''
-    pass
-
-
-if __name__ == '__main__':
-    main()
-
