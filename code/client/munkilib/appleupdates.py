@@ -45,32 +45,43 @@ import munkistatus
 import updatecheck
 
 
-# TODO(gregneagle): Please comment on what this is, where it comes from, etc.
+# Filename for results of softwareupdate -l -f <pathname>.
+# This lists the currently applicable Apple updates in a 
+# very useful format.
 APPLICABLE_UPDATES = 'ApplicableUpdates.plist'
 
 # Path to the directory where local catalogs are stored, relative to
 # munkicommon.pref('ManagedInstallDir').
 LOCAL_CATALOG_DIR_REL_PATH = 'content/catalogs/'
 
-# The prestine, untouched, but potentially gzipped catalog.
+# The pristine, untouched, but potentially gzipped catalog.
 APPLE_DOWNLOAD_CATALOG_NAME = 'apple.sucatalog'
 
-# The prestine, untouched, and extracted catalog.
+# The pristine, untouched, and extracted catalog.
 APPLE_EXTRACTED_CATALOG_NAME = 'apple_index.sucatalog'
 APPLE_EXTRACTED_CATALOG_REL_PATH = os.path.join(
     LOCAL_CATALOG_DIR_REL_PATH, APPLE_EXTRACTED_CATALOG_NAME)
 
-# TODO(gregneagle): Please comment on what this is, why it's used, etc.
-LOCAL_DOWNLOAD_CATALOG_NAME = 'local_download.sucatalog'
-LOCAL_DOWNLOAD_CATALOG_REL_PATH = os.path.join(
-    LOCAL_CATALOG_DIR_REL_PATH, LOCAL_DOWNLOAD_CATALOG_NAME)
-
 # The catalog containing only updates in APPLICABLE_UPDATES.
+# This is used to replicate a subset of the software update 
+# server data to our local cache.
 FILTERED_CATALOG_NAME = 'filtered_index.sucatalog'
 FILTERED_CATALOG_REL_PATH = os.path.join(
     LOCAL_CATALOG_DIR_REL_PATH, FILTERED_CATALOG_NAME)
 
-# The catalog containing only updates to be installed.
+# The catalog containing only updates to be downloaded and installed.
+# We use this one when downloading Apple updates.
+# In this case package URLs are still pointing to the
+# software update server so we can download them, but the rest of the
+# URLs point to our local cache.
+LOCAL_DOWNLOAD_CATALOG_NAME = 'local_download.sucatalog'
+LOCAL_DOWNLOAD_CATALOG_REL_PATH = os.path.join(
+    LOCAL_CATALOG_DIR_REL_PATH, LOCAL_DOWNLOAD_CATALOG_NAME)
+
+# Catalog with all URLs (including package URLs) pointed to local cache.
+# We use this one during install phase.
+# This causes softwareupdate -d -a to fail cleanly if we don't
+# have the required packages already downloaded.
 LOCAL_CATALOG_NAME = 'local_install.sucatalog'
 LOCAL_CATALOG_REL_PATH = os.path.join(
     LOCAL_CATALOG_DIR_REL_PATH, LOCAL_CATALOG_NAME)
@@ -603,9 +614,7 @@ def downloadAvailableUpdates():
     else:
         munkicommon.display_status(msg)
 
-    # use our filtered local catalog
-    # TODO(gregneagle): errr.... comment above says filtered, but we're
-    #   operating on the local download catalog here.... ?
+    # use our filtered local download catalog
     catalogpath = os.path.join(
         swupdCacheDir(), LOCAL_DOWNLOAD_CATALOG_REL_PATH)
     if not os.path.exists(catalogpath):
