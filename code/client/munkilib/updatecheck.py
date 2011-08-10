@@ -2460,11 +2460,13 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 # 412: Etag didn't match (precondition failed), could not
                 #   resume partial download as file on server has changed.
                 if retcode == 33 and not 'HTTPRange' in WARNINGSLOGGED:
-                    munkicommon.display_warning('Web server refused ' +
-                            'partial/range request. Munki cannot run ' +
-                            'efficiently when this support is absent for ' +
-                            'pkg urls. URL: %s'
-                            % url)
+                    # use display_info instead of display_warning so these
+                    # don't get reported but are available in the log
+                    # and in command-line output
+                    munkicommon.display_info('WARNING: Web server refused '
+                            'partial/range request. Munki cannot run '
+                            'efficiently when this support is absent for '
+                            'pkg urls. URL: %s' % url)
                     WARNINGSLOGGED['HTTPRange'] = 1
                 os.remove(tempdownloadpath)
                 # The partial failed immediately as not supported.
@@ -2475,10 +2477,15 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                                 capath=capath, cert=cert, key=key,
                                 message=message, donotrecurse=True)
             elif retcode == 22:
-                # TODO: Made http(s) connection but 400 series error. What should we do?
-                # 403 could be ok, just that someone is currently offsite and the server is refusing the service them while there.
-                # 404 could be an interception proxy at a public wifi point. The partial may still be ok later.
-                # 416 could be dangerous - the targeted resource may now be different / smaller. We need to delete the temp or retrying will never work.
+                # TODO: Made http(s) connection but 400 series error. 
+                # What should we do?
+                # 403 could be ok, just that someone is currently offsite and 
+                # the server is refusing the service them while there.
+                # 404 could be an interception proxy at a public wifi point. 
+                # The partial may still be ok later.
+                # 416 could be dangerous - the targeted resource may now be 
+                # different / smaller. We need to delete the temp or retrying 
+                # will never work.
                 if header.get('http_result_code') == 416:
                     # Bad range request.
                     os.remove(tempdownloadpath)
@@ -2497,7 +2504,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         # TODO: should we log this diagnostic here (we didn't previously)?
         # Currently for a pkg all that is logged on failure is:
         # "WARNING: Download of Firefox failed." with no detail. Logging at
-        # the place where this exception is caught has to be done in many places.
+        # the place where this exception is caught has to be done in many 
+        # places.
         munkicommon.display_detail('Download error: %s. Failed (%s) with: %s'
                                     % (url,retcode,curlerr))
         raise CurlError(retcode, curlerr)
@@ -2511,8 +2519,16 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 if not downloadedpercent == 100:
                     munkicommon.display_percent_done(100, 100)
                 os.rename(tempdownloadpath, destinationpath)
-                if resume and not header.get('etag') and not 'HTTPetag' in WARNINGSLOGGED:
-                    munkicommon.display_warning('Web server did not return an etag. Munki cannot safely resume downloads without etag support on the web server. URL: %s' % url)
+                if (resume and not header.get('etag') 
+                    and not 'HTTPetag' in WARNINGSLOGGED):
+                    # use display_info instead of display_warning so these
+                    # don't get reported but are available in the log
+                    # and in command-line output
+                    munkicommon.display_info(
+                        'WARNING: '
+                        'Web server did not return an etag. Munki cannot '
+                        'safely resume downloads without etag support on the '
+                        'web server. URL: %s' % url)
                     WARNINGSLOGGED['HTTPetag'] = 1
                 return header
             else:
