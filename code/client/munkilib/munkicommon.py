@@ -91,11 +91,11 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
       only_major_minor: Boolean. If True, only include major/minor versions.
       as_tuple: Boolean. If True, return a tuple of ints, otherwise a string.
     """
-    os_version_tuple = tuple(platform.mac_ver()[0].split('.'))
+    os_version_tuple = platform.mac_ver()[0].split('.')
     if only_major_minor:
         os_version_tuple = os_version_tuple[0:2]
     if as_tuple:
-        return map(int, os_version_tuple)
+        return tuple(map(int, os_version_tuple))
     else:
         return '.'.join(os_version_tuple)
 
