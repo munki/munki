@@ -260,10 +260,27 @@ def run_softwareupdate(options_list, stop_allowed=False,
         # but need to create a temporary dict anyway
         results = {}
 
-    # wrapping with /usr/bin/script so we can get pseudo-unbuffered
-    # output
-    cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null',
-           '/usr/sbin/softwareupdate']
+    # we need to wrap our call to /usr/sbin/softwareupdate with a utility
+    # that makes softwareupdate think it is connected to a tty-like
+    # device so its output is unbuffered so we can get progress info
+    # 
+    # Try to find our ptyexec tool
+    # first look in the parent directory of this file's directory
+    # (../)
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ptyexec_path = os.path.join(parent_dir, 'ptyexec')
+    if not os.path.exists(ptyexec_path):
+        # try absolute path in munki's normal install dir
+        ptyexec_path = '/usr/local/munki/ptyexec'
+    if os.path.exists(ptyexec_path):
+        cmd = [ptyexec_path]
+    else:
+        # fall back to /usr/bin/script
+        # this is not preferred because it uses way too much CPU
+        # checking stdin for input that will never come...
+        cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
+    cmd.append('/usr/sbin/softwareupdate')
+    
     osvers = int(os.uname()[2].split('.')[0])
     # If > 10.5/Leopard.
     if osvers > 9:
