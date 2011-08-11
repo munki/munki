@@ -2755,7 +2755,7 @@ def getMachineFacts():
 
     MACHINE['hostname'] = os.uname()[1]
     MACHINE['arch'] = os.uname()[4]
-    MACHINE['os_vers'] = munkicommon.getOsVersion()
+    MACHINE['os_vers'] = munkicommon.getOsVersion(only_major_minor=False)
 
 
 def check(client_id='', localmanifestpath=None):
