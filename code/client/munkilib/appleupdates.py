@@ -45,8 +45,15 @@ import munkistatus
 import updatecheck
 
 
+# Apple Software Update Catalog URLs.
+DEFAULT_CATALOG_URLS = {
+    '10.5': 'http://swscan.apple.com/content/catalogs/others/index-leopard.merged-1.sucatalog',
+    '10.6': 'http://swscan.apple.com/content/catalogs/others/index-leopard-snowleopard.merged-1.sucatalog',
+    '10.7': 'http://swscan.apple.com/content/catalogs/others/index-lion-snowleopard-leopard.merged-1.sucatalog.gz',
+}
+
 # Filename for results of softwareupdate -l -f <pathname>.
-# This lists the currently applicable Apple updates in a 
+# This lists the currently applicable Apple updates in a
 # very useful format.
 APPLICABLE_UPDATES = 'ApplicableUpdates.plist'
 
@@ -63,7 +70,7 @@ APPLE_EXTRACTED_CATALOG_REL_PATH = os.path.join(
     LOCAL_CATALOG_DIR_REL_PATH, APPLE_EXTRACTED_CATALOG_NAME)
 
 # The catalog containing only updates in APPLICABLE_UPDATES.
-# This is used to replicate a subset of the software update 
+# This is used to replicate a subset of the software update
 # server data to our local cache.
 FILTERED_CATALOG_NAME = 'filtered_index.sucatalog'
 FILTERED_CATALOG_REL_PATH = os.path.join(
@@ -87,10 +94,20 @@ LOCAL_CATALOG_REL_PATH = os.path.join(
     LOCAL_CATALOG_DIR_REL_PATH, LOCAL_CATALOG_NAME)
 
 
+
+class Error(Exception):
+    '''Class for domain specific exceptions.'''
+
+
+class ReplicationError(Error):
+    '''A custom error when replication fails'''
+
+
 def swupdCacheDir(temp=True):
-    '''Returns the local cache dir for our Software Update
-    mini-cache. The temp cache directory is cleared upon install
-    completion. The non-temp is kept.'''
+    '''Returns the local cache dir for our Software Update mini-cache.
+
+    The temp cache directory is cleared upon install completion, while the
+    non-temp is kept.'''
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     if temp:
         return os.path.join(ManagedInstallDir, 'swupd', 'mirror')
@@ -99,20 +116,19 @@ def swupdCacheDir(temp=True):
 
 
 def rewriteOneURL(full_url):
-    '''Rewrites a single URL to point to our local replica'''
+    '''Rewrites a single URL to point to our local replica.'''
     our_base_url = 'file://localhost' + urllib2.quote(swupdCacheDir())
+    # only rewrite the URL if needed
     if not full_url.startswith(our_base_url):
-        # only rewrite the URL if needed
-        (unused_scheme, unused_netloc,
-         path, unused_query, unused_fragment) = urlparse.urlsplit(full_url)
+        unused_scheme, unused_netloc, path, unused_query, unused_fragment = (
+            urlparse.urlsplit(full_url))
         return our_base_url + path
     else:
         return full_url
 
 
 def rewriteURLsForProduct(product, rewrite_pkg_urls=False):
-    '''Rewrites the ServerMetadataURLs and MetadataURLs
-    for a product to point to our local cache'''
+    '''Rewrites the (Server)MetadataURLs to point to our local cache.'''
     if 'ServerMetadataURL' in product:
         product['ServerMetadataURL'] = rewriteOneURL(
             product['ServerMetadataURL'])
@@ -120,27 +136,18 @@ def rewriteURLsForProduct(product, rewrite_pkg_urls=False):
         if rewrite_pkg_urls and 'URL' in package:
             package['URL'] = rewriteOneURL(package['URL'])
         if 'MetadataURL' in package:
-            package['MetadataURL'] = rewriteOneURL(
-                package['MetadataURL'])
+            package['MetadataURL'] = rewriteOneURL(package['MetadataURL'])
     distributions = product['Distributions']
     for dist_lang in distributions.keys():
-        distributions[dist_lang] = rewriteOneURL(
-            distributions[dist_lang])
+        distributions[dist_lang] = rewriteOneURL(distributions[dist_lang])
 
 
 def rewriteURLs(catalog, rewrite_pkg_urls=False):
-    '''Rewrites some URLs in the given catalog to point to our local
-    replica'''
+    '''Rewrites some URLs in the given catalog to point to our local replica.'''
     if 'Products' in catalog:
-        product_keys = list(catalog['Products'].keys())
-        for product_key in product_keys:
+        for product_key in catalog['Products'].keys():
             product = catalog['Products'][product_key]
             rewriteURLsForProduct(product, rewrite_pkg_urls=rewrite_pkg_urls)
-
-
-class ReplicationError (Exception):
-    '''A custom error when replication fails'''
-    pass
 
 
 def replicateURLtoFilesystem(full_url, copy_only_if_missing=False):
@@ -171,71 +178,60 @@ def replicateURLtoFilesystem(full_url, copy_only_if_missing=False):
 
 
 def cacheSwupdMetadata():
-    '''Copies ServerMetadata (.smd), Metadata (.pkm),
-    and Distribution (.dist) files for the available updates
-    to the local machine and writes a new sucatalog that refers
-    to the local copies of these files.'''
+    '''Copies ServerMetadata (.smd), Metadata (.pkm), and Distribution (.dist)
+    files for the available updates to the local machine and writes a new
+    sucatalog that refers to the local copies of these files.'''
     filtered_catalogpath = os.path.join(
         swupdCacheDir(), FILTERED_CATALOG_REL_PATH)
     catalog = FoundationPlist.readPlist(filtered_catalogpath)
-    if 'Products' in catalog:
-        product_keys = list(catalog['Products'].keys())
-        for product_key in product_keys:
-            munkicommon.display_status(
-                'Caching metadata for product ID %s', product_key)
-            product = catalog['Products'][product_key]
-            if 'ServerMetadataURL' in product:
-                unused_path = replicateURLtoFilesystem(
-                    product['ServerMetadataURL'],
-                    copy_only_if_missing=True)
+    if not 'Products' in catalog:
+        return
 
-            for package in product.get('Packages', []):
-                ### not replicating the packages themselves ###
-                #if 'URL' in package:
-                #    unused_path = replicateURLtoFilesystem(
-                #        package['URL'],
-                #        copy_only_if_missing=fast_scan)
-                if 'MetadataURL' in package:
-                    munkicommon.display_status(
-                        'Caching package metadata for product ID %s',
-                         product_key)
-                    unused_path = replicateURLtoFilesystem(
-                        package['MetadataURL'],
-                        copy_only_if_missing=True)
+    for product_key in catalog['Products'].keys():
+        munkicommon.display_status(
+            'Caching metadata for product ID %s', product_key)
+        product = catalog['Products'][product_key]
+        if 'ServerMetadataURL' in product:
+            replicateURLtoFilesystem(
+                product['ServerMetadataURL'], copy_only_if_missing=True)
 
-            distributions = product['Distributions']
-            for dist_lang in distributions.keys():
+        for package in product.get('Packages', []):
+            if 'MetadataURL' in package:
                 munkicommon.display_status(
-                    'Caching %s distribution for product ID %s',
-                    dist_lang, product_key)
-                dist_url = distributions[dist_lang]
-                unused_path = replicateURLtoFilesystem(
-                    dist_url,
-                    copy_only_if_missing=True)
+                    'Caching package metadata for product ID %s', product_key)
+                replicateURLtoFilesystem(
+                    package['MetadataURL'], copy_only_if_missing=True)
 
-        # rewrite URLs to point to local resources
-        rewriteURLs(catalog, rewrite_pkg_urls=False)
-        # write out the rewritten catalog
-        localcatalogpath = os.path.join(
-            swupdCacheDir(), LOCAL_CATALOG_DIR_REL_PATH)
-        if not os.path.exists(localcatalogpath):
-            try:
-                os.makedirs(localcatalogpath)
-            except OSError, oserr:
-                raise ReplicationError(oserr)
-        localcatalogpathname = os.path.join(
-            localcatalogpath, LOCAL_DOWNLOAD_CATALOG_NAME)
-        FoundationPlist.writePlist(catalog, localcatalogpathname)
+        distributions = product['Distributions']
+        for dist_lang in distributions.keys():
+            munkicommon.display_status(
+                'Caching %s distribution for product ID %s',
+                dist_lang, product_key)
+            dist_url = distributions[dist_lang]
+            replicateURLtoFilesystem(dist_url, copy_only_if_missing=True)
 
-        rewriteURLs(catalog, rewrite_pkg_urls=True)
-        localcatalogpathname = os.path.join(
-            localcatalogpath, LOCAL_CATALOG_NAME)
-        FoundationPlist.writePlist(catalog, localcatalogpathname)
+    # rewrite URLs to point to local resources
+    rewriteURLs(catalog, rewrite_pkg_urls=False)
+    # write out the rewritten catalog
+    localcatalogpath = os.path.join(swupdCacheDir(), LOCAL_CATALOG_DIR_REL_PATH)
+    if not os.path.exists(localcatalogpath):
+        try:
+            os.makedirs(localcatalogpath)
+        except OSError, oserr:
+            raise ReplicationError(oserr)
+    localcatalogpathname = os.path.join(
+        localcatalogpath, LOCAL_DOWNLOAD_CATALOG_NAME)
+    FoundationPlist.writePlist(catalog, localcatalogpathname)
+
+    rewriteURLs(catalog, rewrite_pkg_urls=True)
+    localcatalogpathname = os.path.join(localcatalogpath, LOCAL_CATALOG_NAME)
+    FoundationPlist.writePlist(catalog, localcatalogpathname)
 
 
 def writeFilteredUpdateCatalog(updatelist):
-    '''Write out a sucatalog containing only the updates
-    listed in updatelist. updatelist is a list of ProductIDs.'''
+    '''Write out a sucatalog containing only the updates listed in updatelist.
+
+    updatelist is a list of ProductIDs.'''
     # our locally-cached catalog
     catalogpath = os.path.join(
         swupdCacheDir(), APPLE_EXTRACTED_CATALOG_REL_PATH)
@@ -253,8 +249,8 @@ def writeFilteredUpdateCatalog(updatelist):
 def run_softwareupdate(options_list, stop_allowed=False,
                        mode=None, results=None):
     '''Runs /usr/sbin/softwareupdate with options.
-    Provides user feedback via command line or MunkiStatus'''
 
+    Provides user feedback via command line or MunkiStatus'''
     if results == None:
         # we're not interested in the results,
         # but need to create a temporary dict anyway
@@ -263,7 +259,7 @@ def run_softwareupdate(options_list, stop_allowed=False,
     # we need to wrap our call to /usr/sbin/softwareupdate with a utility
     # that makes softwareupdate think it is connected to a tty-like
     # device so its output is unbuffered so we can get progress info
-    # 
+    #
     # Try to find our ptyexec tool
     # first look in the parent directory of this file's directory
     # (../)
@@ -280,10 +276,9 @@ def run_softwareupdate(options_list, stop_allowed=False,
         # checking stdin for input that will never come...
         cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
     cmd.append('/usr/sbin/softwareupdate')
-    
-    osvers = int(os.uname()[2].split('.')[0])
-    # If > 10.5/Leopard.
-    if osvers > 9:
+
+    os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
+    if os_version_tuple > (10, 5):
         cmd.append('-v')
 
     cmd.extend(options_list)
@@ -339,7 +334,7 @@ def run_softwareupdate(options_list, stop_allowed=False,
             if item:
                 if munkicommon.munkistatusoutput:
                     munkistatus.message(output)
-                    munkistatus.detail("")
+                    munkistatus.detail('')
                     munkistatus.percent(-1)
                     munkicommon.log(output)
                 else:
@@ -359,8 +354,7 @@ def run_softwareupdate(options_list, stop_allowed=False,
             munkicommon.display_status(output)
             results['installed'].append(output[5:])
         elif output.startswith('Downloading ') and mode == 'install':
-            # This is 10.5 & 10.7 behaviour
-            # for an entirely missing subpackage.
+            # This is 10.5 & 10.7 behaviour for an entirely missing subpackage.
             munkicommon.display_warning(
                 'A necessary subpackage is not available on disk '
                 'during an Apple Software Update installation '
@@ -378,7 +372,7 @@ def run_softwareupdate(options_list, stop_allowed=False,
             pass
         elif output == '':
             pass
-        elif osvers == 9 and output[0] in '.012468':
+        elif os_version_tuple == (10, 5) and output[0] in '.012468':
             # Leopard: See if there is percent-done info we can use,
             # which will look something like '.20..' or '0..' or '.40...60..'
             # so strip '.' chars and grab the last set of numbers
@@ -406,28 +400,27 @@ def run_softwareupdate(options_list, stop_allowed=False,
 
 
 def restartNeeded():
-    '''Returns True if any update in AppleUpdates.plist
-    requires an update; False otherwise.'''
+    '''Returns True if any update in AppleUpdates.plist requires an update.'''
     try:
         appleupdates = FoundationPlist.readPlist(appleUpdatesFile())
     except FoundationPlist.NSPropertyListSerializationException:
         return True
     for item in appleupdates.get('AppleUpdates', []):
-        if (item.get('RestartAction') == 'RequireRestart' or
-            item.get('RestartAction') == 'RecommendRestart'):
+        if item.get('RestartAction') in ['RequireRestart', 'RecommendRestart']:
             return True
     # if we get this far, there must be no items that require restart
     return False
 
 
 def installAppleUpdates():
-    '''Uses /usr/sbin/softwareupdate to install previously
-    downloaded updates. Returns True if a restart is needed
-    after install, False otherwise.'''
-    msg = "Installing available Apple Software Updates..."
+    '''Uses /usr/sbin/softwareupdate to install previously downloaded updates.
+
+    Returns:
+      Boolean. True if a restart is needed after install, False otherwise.'''
+    msg = 'Installing available Apple Software Updates...'
     if munkicommon.munkistatusoutput:
         munkistatus.message(msg)
-        munkistatus.detail("")
+        munkistatus.detail('')
         munkistatus.percent(-1)
         munkicommon.log(msg)
     else:
@@ -459,7 +452,7 @@ def installAppleUpdates():
         rep['applesus'] = True
         rep['time'] = NSDate.new()
         rep['productKey'] = item.get('productKey', '')
-        message = "Apple Software Update install of %s-%s: %s"
+        message = 'Apple Software Update install of %s-%s: %s'
         if rep['name'] in installresults['installed']:
             rep['status'] = 0
             install_status = 'SUCCESSFUL'
@@ -479,11 +472,11 @@ def installAppleUpdates():
 
         munkicommon.report['InstallResults'].append(rep)
         log_msg = message % (rep['name'], rep['version'], install_status)
-        munkicommon.log(log_msg, "Install.log")
+        munkicommon.log(log_msg, 'Install.log')
 
     if retcode:
         # there was an error
-        munkicommon.display_error("softwareupdate error: %s" % retcode)
+        munkicommon.display_error('softwareupdate error: %s' % retcode)
     # clean up our now stale local cache
     cachedir = os.path.join(swupdCacheDir())
     if os.path.exists(cachedir):
@@ -505,33 +498,28 @@ def installAppleUpdates():
 ###    Leopard-specific SoftwareUpdate workarounds    ###
 
 def setupSoftwareUpdateCheck():
-    '''Set defaults for root user and current host.
-    Needed for Leopard.'''
-    CFPreferencesSetValue('AgreedToLicenseAgreement', True,
-                          'com.apple.SoftwareUpdate',
-                          kCFPreferencesCurrentUser,
-                          kCFPreferencesCurrentHost)
-    CFPreferencesSetValue('AutomaticDownload', True,
-                          'com.apple.SoftwareUpdate',
-                          kCFPreferencesCurrentUser,
-                          kCFPreferencesCurrentHost)
-    CFPreferencesSetValue('LaunchAppInBackground', True,
-                          'com.apple.SoftwareUpdate',
-                          kCFPreferencesCurrentUser,
-                          kCFPreferencesCurrentHost)
+    '''Set defaults for root user and current host; needed for Leopard.'''
+    defaults = {
+        'AgreedToLicenseAgreement': True,
+        'AutomaticDownload': True,
+        'LaunchAppInBackground': True,
+    }
+    for key, value in defaults.iteritems():
+        CFPreferencesSetValue(
+            key, value, 'com.apple.SoftwareUpdate',
+            kCFPreferencesCurrentUser, kCFPreferencesCurrentHost)
     if not CFPreferencesAppSynchronize('com.apple.SoftwareUpdate'):
         munkicommon.display_warning(
             'Error setting com.apple.SoftwareUpdate ByHost preferences')
 
 
 def leopardDownloadAvailableUpdates(catalogURL):
-    '''Clunky process to download Apple updates in Leopard'''
-
-    softwareupdateapp = "/System/Library/CoreServices/Software Update.app"
-    softwareupdateappbin = os.path.join(softwareupdateapp,
-                            "Contents/MacOS/Software Update")
-    softwareupdatecheck = os.path.join(softwareupdateapp,
-                            "Contents/Resources/SoftwareUpdateCheck")
+    '''Clunky process to download Apple updates in Leopard.'''
+    softwareupdateapp = '/System/Library/CoreServices/Software Update.app'
+    softwareupdateappbin = os.path.join(
+        softwareupdateapp, 'Contents/MacOS/Software Update')
+    softwareupdatecheck = os.path.join(
+        softwareupdateapp, 'Contents/Resources/SoftwareUpdateCheck')
 
     try:
         # record mode of Software Update.app executable
@@ -601,9 +589,8 @@ def leopardDownloadAvailableUpdates(catalogURL):
     LastResultCode = getSoftwareUpdatePref('LastResultCode') or 0
     if LastResultCode > 2:
         retcode = LastResultCode
-    if retcode:
-        # there was an error
-        munkicommon.display_error("softwareupdate error: %s" % retcode)
+    if retcode:  # retcode != 0, error
+        munkicommon.display_error('softwareupdate error: %s' % retcode)
 
     try:
         # put mode back for Software Update.app executable
@@ -620,12 +607,14 @@ def leopardDownloadAvailableUpdates(catalogURL):
 
 
 def downloadAvailableUpdates():
-    '''Downloads the available Apple updates using our local
-    filtered sucatalog. Returns True if successful, False otherwise.'''
-    msg = "Downloading available Apple Software Updates..."
+    '''Downloads the available Apple updates using our local filtered sucatalog.
+
+    Returns:
+      Boolean. True if successful, False otherwise.'''
+    msg = 'Downloading available Apple Software Updates...'
     if munkicommon.munkistatusoutput:
         munkistatus.message(msg)
-        munkistatus.detail("")
+        munkistatus.detail('')
         munkistatus.percent(-1)
         munkicommon.log(msg)
     else:
@@ -641,26 +630,24 @@ def downloadAvailableUpdates():
 
     catalogURL = 'file://localhost' + urllib2.quote(catalogpath)
 
-    # get the OS version
-    osvers = int(os.uname()[2].split('.')[0])
-    if osvers == 9:
+    if munkicommon.getOsVersion() == '10.5':
         retcode = leopardDownloadAvailableUpdates(catalogURL)
     else:
         retcode = run_softwareupdate(['--CatalogURL', catalogURL, '-d', '-a'])
 
     if retcode:
         # there was an error
-        munkicommon.display_error("softwareupdate error: %s" % retcode)
+        munkicommon.display_error('softwareupdate error: %s' % retcode)
         return False
     return True
 
 
 def getAvailableUpdates():
     '''Returns a list of product IDs of available Apple updates'''
-    msg = "Checking for available Apple Software Updates..."
+    msg = 'Checking for available Apple Software Updates...'
     if munkicommon.munkistatusoutput:
         munkistatus.message(msg)
-        munkistatus.detail("")
+        munkistatus.detail('')
         munkistatus.percent(-1)
         munkicommon.log(msg)
     else:
@@ -683,29 +670,28 @@ def getAvailableUpdates():
     retcode = run_softwareupdate(su_options)
     if retcode:
         # there was an error
-        osvers = int(os.uname()[2].split('.')[0])
-        if osvers == 9:
-            # always a non-zero retcode on Leopard
-            pass
+        if munkicommon.getOsVersion() == '10.5':
+            pass  # Leopard softwareupdate always returns a non-zero exit code.
         else:
-            munkicommon.display_error("softwareupdate error: %s" % retcode)
+            munkicommon.display_error('softwareupdate error: %s' % retcode)
             return []
 
-    if os.path.exists(applicable_updates):
-        try:
-            updatelist = FoundationPlist.readPlist(applicable_updates)
-            if updatelist:
-                results_array = updatelist.get('phaseResultsArray', [])
-                return [item['productKey'] for item in results_array
-                        if 'productKey' in item]
-        except FoundationPlist.NSPropertyListSerializationException:
-            return []
-    return []
+    try:
+        updatelist = FoundationPlist.readPlist(applicable_updates)
+    except FoundationPlist.NSPropertyListSerializationException:
+        # plist either doesn't exist or is malformed.
+        return []
+
+    if not updatelist:
+        return []
+
+    results_array = updatelist.get('phaseResultsArray', [])
+    return [item['productKey'] for item in results_array
+            if 'productKey' in item]
 
 
 def extractAppleSUScatalog():
-    '''The SUCatalog may be text or may be gzipped-text. Extract if
-    necessary.'''
+    '''Copy the downloaded SUCatalog to a new catalog, extracting if gzipped.'''
     local_apple_sus_catalog_dir = os.path.join(
         swupdCacheDir(), LOCAL_CATALOG_DIR_REL_PATH)
     if not os.path.exists(local_apple_sus_catalog_dir):
@@ -723,10 +709,10 @@ def extractAppleSUScatalog():
     f.close()
     contents = ''
     if magic == '\x1f\x8b':
-        #File is gzip compressed.
+        # File is gzip compressed.
         f = gzip.open(download_location, 'rb')
     else:
-        #Hopefully a nice plain plist.
+        # Hopefully a nice plain plist.
         f = open(download_location, 'rb')
     contents = f.read()
     f.close()
@@ -737,7 +723,6 @@ def extractAppleSUScatalog():
 
 def cacheAppleSUScatalog():
     '''Caches a local copy of the current Apple SUS catalog.'''
-    osvers = int(os.uname()[2].split('.')[0])
     munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
     prefs_catalogURL = getSoftwareUpdatePref('CatalogURL')
     if munkisuscatalog:
@@ -747,20 +732,13 @@ def cacheAppleSUScatalog():
         # defined via MCX or
         # in /Library/Preferences/com.apple.SoftwareUpdate.plist
         catalogURL = prefs_catalogURL
-    elif osvers == 9:
-        # default catalog for Leopard
-        catalogURL = 'http://swscan.apple.com/content/catalogs/others/index-leopard.merged-1.sucatalog'
-    elif osvers == 10:
-        # default catalog for Snow Leopard
-        catalogURL = 'http://swscan.apple.com/content/catalogs/others/index-leopard-snowleopard.merged-1.sucatalog'
-    elif osvers == 11:
-        # default catalog for Lion
-        catalogURL = 'http://swscan.apple.com/content/catalogs/others/index-lion-snowleopard-leopard.merged-1.sucatalog.gz'
     else:
-        munkicommon.display_error(
-            'Can\'t determine Software Update CatalogURL for Darwin '
-            'version %s', osvers)
-        return -1
+        os_version = munkicommon.getOsVersion()
+        catalogURL = DEFAULT_CATALOG_URLS.get(os_version, None)
+        if not catalogURL:
+            munkicommon.display_error(
+                'No default Software Update CatalogURL for: %s', os_version)
+            return -1
     if not os.path.exists(swupdCacheDir(temp=False)):
         try:
             os.makedirs(swupdCacheDir(temp=False))
@@ -781,8 +759,10 @@ def cacheAppleSUScatalog():
 def installedApplePackagesChanged():
     '''Generates a SHA-256 checksum of the info for all packages in the
     receipts database whose id matches com.apple.* and compares it to
-    a stored version of this checksum. Returns False if the checksums
-    match, True if they differ.'''
+    a stored version of this checksum.
+
+    Returns:
+      Boolean. False if the checksums match, True if they differ.'''
     cmd = ['/usr/sbin/pkgutil', '--regexp', '-pkg-info-plist',
            'com\.apple\.*']
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
@@ -801,7 +781,7 @@ def installedApplePackagesChanged():
 
 
 def checkForSoftwareUpdates(forcecheck=True):
-    '''Does our Apple Software Update check if needed'''
+    '''Does our Apple Software Update check if needed.'''
     sucatalog = os.path.join(
         swupdCacheDir(temp=False), APPLE_DOWNLOAD_CATALOG_NAME)
     catcksum = munkicommon.getsha256hash(sucatalog)
@@ -824,44 +804,45 @@ def checkForSoftwareUpdates(forcecheck=True):
         munkicommon.log('Downloaded updates do not match our list '
                         'of available updates.')
         forcecheck = True
-    if forcecheck:
-        updatelist = getAvailableUpdates()
-        if updatelist:
-            writeFilteredUpdateCatalog(updatelist)
-            try:
-                cacheSwupdMetadata()
-            except ReplicationError, err:
-                munkicommon.display_warning(
-                    'Could not replicate software update metadata:')
-                munkicommon.display_warning('\t', err)
-                return False
-            if downloadAvailableUpdates():
-                # Download success. Updates ready to install.
-                munkicommon.set_pref('LastAppleSoftwareUpdateCheck',
-                                     NSDate.date())
-                return True
-            else:
-                # Download error, allow check again soon.
-                return False
-        else:
-            # No updates found (not currently differentiating
-            # "softwareupdate -l" failure from no updates found).
-            munkicommon.set_pref('LastAppleSoftwareUpdateCheck',
-                                 NSDate.date())
-            return False
-    else:
+
+    if not forcecheck:
         munkicommon.log('Skipping Apple Software Update check because '
                         'sucatalog is unchanged, installed Apple packages '
                         'are unchanged and we recently did a full check')
         return False
 
+    updatelist = getAvailableUpdates()
+    if not updatelist:
+        # No updates found (not currently differentiating
+        # "softwareupdate -l" failure from no updates found).
+        munkicommon.set_pref('LastAppleSoftwareUpdateCheck',
+                             NSDate.date())
+        return False
+
+    writeFilteredUpdateCatalog(updatelist)
+    try:
+        cacheSwupdMetadata()
+    except ReplicationError, err:
+        munkicommon.display_warning(
+            'Could not replicate software update metadata:')
+        munkicommon.display_warning('\t', err)
+        return False
+    if downloadAvailableUpdates():
+        # Download success. Updates ready to install.
+        munkicommon.set_pref('LastAppleSoftwareUpdateCheck',
+                             NSDate.date())
+        return True
+    else:
+        # Download error, allow check again soon.
+        return False
+
 
 def availableUpdatesAreDownloaded():
-    '''Verifies that applicable/available Apple updates have
-    been downloaded. Returns False if one or more product directories
-    are missing, True otherwise (including when there are no available
-    updates).'''
+    '''Verifies that applicable/available Apple updates have been downloaded.
 
+    Returns:
+      Boolean. False if one or more product directories are missing, True
+      otherwise (including when there are no available updates).'''
     appleUpdates = getSoftwareUpdateInfo()
     if not appleUpdates:
         return True
@@ -878,10 +859,9 @@ def availableUpdatesAreDownloaded():
     for update in appleUpdates:
         productKey = update.get('productKey')
         if productKey:
-            if (productKey not in downloaded or
-                not os.path.isdir(
-                    os.path.join('/Library/Updates',
-                                 downloaded[productKey]))):
+            product_dir_exists = os.path.isdir(os.path.join(
+                '/Library/Updates', downloaded[productKey]))
+            if (productKey not in downloaded or not product_dir_exists):
                 munkicommon.log('Apple Update product directory for %s is '
                                 'missing.' % update['name'])
                 return False
@@ -889,9 +869,9 @@ def availableUpdatesAreDownloaded():
 
 
 def getSoftwareUpdatePref(prefname):
-    '''Returns a preference from
-    /Library/Preferences/com.apple.SoftwareUpdate using
-    CoreFoundation methods'''
+    '''Returns a preference from /Library/Preferences/com.apple.SoftwareUpdate.
+
+    Uses CoreFoundation methods.'''
     return CFPreferencesCopyValue(prefname,
                                   'com.apple.SoftwareUpdate',
                                   kCFPreferencesAnyUser,
@@ -900,12 +880,13 @@ def getSoftwareUpdatePref(prefname):
 
 def getSoftwareUpdateInfo():
     '''Uses AvailableUpdates.plist to generate the AppleUpdates.plist,
-    which records available updates in the format
-    Managed Software Update.app expects.'''
+    which records available updates in the format Managed Software Update.app
+    expects.'''
     applicable_updates = os.path.join(swupdCacheDir(), APPLICABLE_UPDATES)
     if not os.path.exists(applicable_updates):
         # no applicable_updates, so bail
         return []
+
     infoarray = []
     plist = FoundationPlist.readPlist(applicable_updates)
     update_list = plist.get('phaseResultsArray', [])
@@ -924,8 +905,8 @@ def getSoftwareUpdateInfo():
 
 
 def writeAppleUpdatesFile():
-    '''Writes a file used by Managed Software Update.app to display
-    available updates'''
+    '''Writes a file used by Managed Software Update.app to display available
+    updates.'''
     appleUpdates = getSoftwareUpdateInfo()
     if appleUpdates:
         plist = {}
@@ -941,32 +922,29 @@ def writeAppleUpdatesFile():
 
 
 def displayAppleUpdateInfo():
-    '''Prints Apple update information'''
+    '''Prints Apple update information.'''
     try:
         updatelist = FoundationPlist.readPlist(appleUpdatesFile())
     except FoundationPlist.FoundationPlistException:
         return
-    else:
-        appleupdates = updatelist.get('AppleUpdates', [])
-        if len(appleupdates):
-            munkicommon.display_info(
-            "The following Apple Software Updates are available to install:")
-        for item in appleupdates:
-            munkicommon.display_info("    + %s-%s" %
-                                        (item.get('display_name',''),
-                                         item.get('version_to_install','')))
-            if item.get('RestartAction') == 'RequireRestart' or \
-               item.get('RestartAction') == 'RecommendRestart':
-                munkicommon.display_info("       *Restart required")
-                munkicommon.report['RestartRequired'] = True
-            if item.get('RestartAction') == 'RequireLogout':
-                munkicommon.display_info("       *Logout required")
-                munkicommon.report['LogoutRequired'] = True
+    appleupdates = updatelist.get('AppleUpdates', [])
+    if len(appleupdates):
+        munkicommon.display_info(
+            'The following Apple Software Updates are available to install:')
+    for item in appleupdates:
+        munkicommon.display_info('    + %s-%s' % (
+            item.get('display_name', ''), item.get('version_to_install', '')))
+        if item.get('RestartAction') in ['RequireRestart', 'RecommendRestart']:
+            munkicommon.display_info('       *Restart required')
+            munkicommon.report['RestartRequired'] = True
+        if item.get('RestartAction') == 'RequireLogout':
+            munkicommon.display_info('       *Logout required')
+            munkicommon.report['LogoutRequired'] = True
 
 
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     '''Checks for available Apple Software Updates, trying not to hit the SUS
-    more than needed'''
+    more than needed.'''
     if suppresscheck:
         # typically because we're doing a logout install; if
         # there are no waiting Apple Updates we shouldn't
@@ -994,7 +972,6 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
         else:
             unused_retcode = checkForSoftwareUpdates(forcecheck=False)
 
-
     if writeAppleUpdatesFile():
         displayAppleUpdateInfo()
         return True
@@ -1003,8 +980,10 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
 
 
 def clearAppleUpdateInfo():
-    '''Clears Apple update info. Called after performing munki updates
-    because the Apple updates may no longer be relevant.'''
+    '''Clears Apple update info.
+
+    This is called after performing munki updates because the Apple updates may
+    no longer be relevant.'''
     try:
         os.unlink(appleUpdatesFile())
     except (OSError, IOError):
@@ -1013,9 +992,7 @@ def clearAppleUpdateInfo():
 
 CACHEDUPDATELIST = None
 def softwareUpdateList():
-    '''Returns a list of available updates
-    using `/usr/sbin/softwareupdate -l`'''
-
+    '''Returns a list of available updates using /usr/sbin/softwareupdate -l'''
     global CACHEDUPDATELIST
     if CACHEDUPDATELIST != None:
         return CACHEDUPDATELIST
@@ -1038,6 +1015,6 @@ def softwareUpdateList():
 
 
 def appleUpdatesFile():
-    '''Returns path to the AppleUpdates.plist'''
-    return os.path.join(munkicommon.pref('ManagedInstallDir'),
-                                'AppleUpdates.plist')
+    '''Returns path to the AppleUpdates.plist.'''
+    return os.path.join(
+        munkicommon.pref('ManagedInstallDir'), 'AppleUpdates.plist')
