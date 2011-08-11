@@ -2477,14 +2477,14 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                                 capath=capath, cert=cert, key=key,
                                 message=message, donotrecurse=True)
             elif retcode == 22:
-                # TODO: Made http(s) connection but 400 series error. 
+                # TODO: Made http(s) connection but 400 series error.
                 # What should we do?
-                # 403 could be ok, just that someone is currently offsite and 
+                # 403 could be ok, just that someone is currently offsite and
                 # the server is refusing the service them while there.
-                # 404 could be an interception proxy at a public wifi point. 
+                # 404 could be an interception proxy at a public wifi point.
                 # The partial may still be ok later.
-                # 416 could be dangerous - the targeted resource may now be 
-                # different / smaller. We need to delete the temp or retrying 
+                # 416 could be dangerous - the targeted resource may now be
+                # different / smaller. We need to delete the temp or retrying
                 # will never work.
                 if header.get('http_result_code') == 416:
                     # Bad range request.
@@ -2504,7 +2504,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         # TODO: should we log this diagnostic here (we didn't previously)?
         # Currently for a pkg all that is logged on failure is:
         # "WARNING: Download of Firefox failed." with no detail. Logging at
-        # the place where this exception is caught has to be done in many 
+        # the place where this exception is caught has to be done in many
         # places.
         munkicommon.display_detail('Download error: %s. Failed (%s) with: %s'
                                     % (url,retcode,curlerr))
@@ -2519,7 +2519,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 if not downloadedpercent == 100:
                     munkicommon.display_percent_done(100, 100)
                 os.rename(tempdownloadpath, destinationpath)
-                if (resume and not header.get('etag') 
+                if (resume and not header.get('etag')
                     and not 'HTTPetag' in WARNINGSLOGGED):
                     # use display_info instead of display_warning so these
                     # don't get reported but are available in the log
@@ -2755,12 +2755,7 @@ def getMachineFacts():
 
     MACHINE['hostname'] = os.uname()[1]
     MACHINE['arch'] = os.uname()[4]
-    cmd = ['/usr/bin/sw_vers', '-productVersion']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, unused_err) = proc.communicate()
-    MACHINE['os_vers'] = str(output).rstrip('\n')
+    MACHINE['os_vers'] = munkicommon.getOsVersion()
 
 
 def check(client_id='', localmanifestpath=None):

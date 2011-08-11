@@ -84,7 +84,6 @@ class TimeoutError(Error):
     """Timeout limit exceeded since last I/O."""
 
 
-
 def getOsVersion(only_major_minor=True, as_tuple=False):
     """Returns an OS version.
 
@@ -1529,8 +1528,8 @@ def getFilesystems():
     # see man GETFSSTAT(2) for struct
     statfs_32_struct = '=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
     statfs_64_struct = '=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
-    os_ver = map(int, platform.mac_ver()[0].split('.'))
-    if os_ver[0] <= 10 and os_ver[1] <= 5:
+    os_version = getOsVersion(as_tuple=True)
+    if os_version <= (10, 5):
         mode = 32
     else:
         mode = 64

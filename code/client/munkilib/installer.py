@@ -130,7 +130,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
 
     # get the OS version; we need it later when processing installer's output,
     # which varies depending on OS version.
-    osvers = int(os.uname()[2].split('.')[0])
+    os_version = munkicommon.getOsVersion()
     cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath,
                                   '-target', '/']
     if choicesXMLpath:
@@ -175,7 +175,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
                     munkicommon.display_status(status)
             elif msg.startswith("%"):
                 percent = float(msg[1:])
-                if osvers < 10:
+                if os_version == '10.5':
                     # Leopard uses a float from 0 to 1
                     percent = int(percent * 100)
                 if munkicommon.munkistatusoutput:
