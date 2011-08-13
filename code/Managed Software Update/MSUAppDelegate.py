@@ -427,14 +427,14 @@ class MSUAppDelegate(NSObject):
         self.logout_required = False
         for item in self._listofupdates:
             row = {}
-            if item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
+            if item.get("force_install_after_date"):
+                row['image'] = self._exclamationImage
+            elif item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
                 row['image'] = self._restartImage
                 self.restart_required = True
             elif item.get("RestartAction") == "RequireLogout" or item.get("RestartAction") == "RecommendLogout":
                 row['image'] = self._logoutImage
                 self.logout_required = True
-            if item.get("force_install_after_date"):
-                row['image'] = self._exclamationImage
             else:
                 row['image'] = self._emptyImage
             row['name'] = item.get("display_name") or item.get("name","")
