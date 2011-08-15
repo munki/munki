@@ -227,8 +227,10 @@ def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC.
     In PDT, '2011-06-20T12:00:00Z' becomes '2011-06-20 12:00:00 -0700'"""
+    # Convert to string representation in local time zone
+    date_str = the_date.descriptionWithCalendarFormat_timeZone_locale_(None, None, None)
     # get local offset
-    (unused_date, unused_time, offset) = str(the_date).split()
+    (unused_date, unused_time, offset) = date_str.split()
     hour_offset = int(offset[0:3])
     minute_offset = int(offset[0] + offset[3:])
     seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
