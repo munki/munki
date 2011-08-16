@@ -3067,10 +3067,14 @@ def check(client_id='', localmanifestpath=None):
 
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
-    Output: NSDate object with same date and time as the UTC date.
-    In PDT, '2011-06-20T12:00:00Z' becomes '2011-06-20 12:00:00 -0700'"""
+    Output: NSDate object with same date and time as the UTC.
+    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes 
+    '2011-06-20 12:00:00 -0700'.
+    In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
+    """
     # get local offset
-    (unused_date, unused_time, offset) = str(the_date).split()
+    offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
+        '%z', None, None)
     hour_offset = int(offset[0:3])
     minute_offset = int(offset[0] + offset[3:])
     seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
