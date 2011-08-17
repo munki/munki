@@ -860,10 +860,14 @@ def availableUpdatesAreDownloaded():
         productKey = update.get('productKey')
         if productKey:
             product_dir_exists = os.path.isdir(os.path.join(
-                '/Library/Updates', downloaded[productKey]))
-            if (productKey not in downloaded or not product_dir_exists):
-                munkicommon.log('Apple Update product directory for %s is '
-                                'missing.' % update['name'])
+                '/Library/Updates', downloaded.get(productKey, '')))
+            if productKey not in downloaded:
+                munkicommon.log('Apple Update product not downloaded: %s' %
+                                update['name'])
+                return False
+            elif not product_dir_exists:
+                munkicommon.log('Apple Update product directory missing: %s' %
+                                update['name'])
                 return False
     return True
 
