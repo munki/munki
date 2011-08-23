@@ -31,10 +31,10 @@ import urllib2
 import urlparse
 
 from Foundation import NSDate
-from Foundation import CFPreferencesCopyValue
-from Foundation import CFPreferencesSetValue
+from Foundation import CFPreferencesCopyAppValue
+#from Foundation import CFPreferencesSetValue
 from Foundation import CFPreferencesAppSynchronize
-from Foundation import kCFPreferencesAnyUser
+#from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 
@@ -873,13 +873,11 @@ def availableUpdatesAreDownloaded():
 
 
 def getSoftwareUpdatePref(prefname):
-    '''Returns a preference from /Library/Preferences/com.apple.SoftwareUpdate.
+    '''Returns a preference from the 
+    com.apple.SoftwareUpdate preferences domain.
 
     Uses CoreFoundation methods.'''
-    return CFPreferencesCopyValue(prefname,
-                                  'com.apple.SoftwareUpdate',
-                                  kCFPreferencesAnyUser,
-                                  kCFPreferencesCurrentHost)
+    return CFPreferencesCopyAppValue(prefname, 'com.apple.SoftwareUpdate')
 
 
 def getSoftwareUpdateInfo():
