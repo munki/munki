@@ -85,7 +85,7 @@ fi
 
 # generate a psuedo-svn revision number from the list of Git revisions
 GITREV=`git log -n1 --format="%H" -- code/client`
-GITREVINDEX=`git rev-list --branches --reverse HEAD | grep -n $GITREV | cut -d: -f1`
+GITREVINDEX=`git rev-list --reverse HEAD | grep -n $GITREV | cut -d: -f1`
 SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 VERSION=$MUNKIVERS.$SVNREV.0
 
@@ -283,7 +283,7 @@ cp -X "$MUNKIROOT/code/client/munkilib/"*.py "$COREROOT/usr/local/munki/munkilib
 cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki/munkilib/"
 # svnversion file was used when we were using subversion
 # we don't need this file if we have an updated get_version method in munkicommon.py
-if [ "$SVNREV" -lt "1310" ]; then
+if [ "$SVNREV" -lt "1302" ]; then
     echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
 fi
 # add Build Number and Git Revision to version.plist
@@ -291,6 +291,8 @@ defaults write "$COREROOT/usr/local/munki/munkilib/version" BuildNumber "$SVNREV
 defaults write "$COREROOT/usr/local/munki/munkilib/version" GitRevision "$GITREV"
 # defaults write converts the file to binary format, so convert back to XML
 plutil -convert xml1 "$COREROOT/usr/local/munki/munkilib/version.plist"
+# it also sets permissions too restrictively, so fix
+chmod a+r "$COREROOT/usr/local/munki/munkilib/version.plist"
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
