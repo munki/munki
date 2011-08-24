@@ -7,12 +7,29 @@
 PKGTYPE="bundle"
 PKGID="com.googlecode.munki"
 MUNKIROOT="."
-OUTPUTDIR="/Users/Shared/pkgs"
+# Convert to absolute path.
+MUNKIROOT=`cd "$MUNKIROOT"; pwd`
+OUTPUTDIR="."
+# Convert to absolute path.
+OUTPUTDIR=`cd "$OUTPUTDIR"; pwd`
 CONFPKG=""
 # add this number to Git revision index to get "build" number
 # consistent with old SVN repo
 MAGICNUMBER=482
 
+# try to automagically find munki source root
+TOOLSDIR=`dirname $0`
+# Convert to absolute path.
+TOOLSDIR=`cd "$TOOLSDIR"; pwd`
+PARENTDIR=`dirname $TOOLSDIR`
+PARENTDIRNAME=`basename $PARENTDIR`
+if [ "$PARENTDIRNAME" == "code" ]; then
+    GRANDPARENTDIR=`dirname $PARENTDIR`
+    GRANDPARENTDIRNAME=`basename $GRANDPARENTDIR`
+    if [ "$GRANDPARENTDIRNAME" == "munki" ]; then
+        MUNKIROOT="$GRANDPARENTDIR"
+    fi
+fi
 
 usage() {
     cat <<EOF
@@ -83,11 +100,19 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
-# generate a psuedo-svn revision number from the list of Git revisions
+cd "$MUNKIROOT"
+# generate a psuedo-svn revision number for the core tools (and admin tools)
+# from the list of Git revisions
 GITREV=`git log -n1 --format="%H" -- code/client`
 GITREVINDEX=`git rev-list --reverse HEAD | grep -n $GITREV | cut -d: -f1`
 SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 VERSION=$MUNKIVERS.$SVNREV.0
+
+# get a psuedo-svn revision number for the metapackage
+MPKGGITREV=`git log -n1 --format="%H"`
+GITREVINDEX=`git rev-list --reverse HEAD | grep -n $MPKGGITREV | cut -d: -f1`
+MPKGSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+MPKGVERSION=$MUNKIVERS.$MPKGSVNREV.0
 
 # Get launchd version if different
 LAUNCHDVERSION=$VERSION
@@ -98,10 +123,10 @@ fi
 # Configure flat or bundle package.
 if [ "$PKGTYPE" == "flat" ]; then
     TARGET="10.5"
-    MPKG="$OUTPUTDIR/munkitools-$VERSION.pkg"
+    MPKG="$OUTPUTDIR/munkitools-$MPKGVERSION.pkg"
 else
     TARGET="10.4"
-    MPKG="$OUTPUTDIR/munkitools-$VERSION.mpkg"
+    MPKG="$OUTPUTDIR/munkitools-$MPKGVERSION.mpkg"
 fi
 
 
@@ -132,10 +157,10 @@ echo "  Package type: $PKGTYPE"
 echo "  Bundle ID: $PKGID"
 echo "  Munki root: $MUNKIROOT"
 echo "  Output directory: $OUTPUTDIR"
-echo "  munki tools version: $VERSION"
+echo "  munki core tools version: $VERSION"
 echo "  LaunchAgents/LaunchDaemons version: $LAUNCHDVERSION"
+echo "  metapackage version: $MPKGVERSION"
 echo
-
 
 # Build Xcode project.
 echo "Building Managed Software Update.xcodeproj..."

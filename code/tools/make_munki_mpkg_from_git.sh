@@ -94,9 +94,7 @@ else
     CONFPKGARG=""
 fi
 
-# get the directory this script lives in so we can find make_munki_pkg.sh
-TOOLSDIR=`dirname $0`
-
-"$TOOLSDIR/make_munki_mpkg.sh" -i "$PKGID" -r "$MUNKIDIR" -o "$OUTPUTDIR" $CONFPKGARG
+# now use the version of the make_munki_mpkg.sh script in the Git repo.
+"$MUNKIDIR/code/tools/make_munki_mpkg.sh" -i "$PKGID" -r "$MUNKIDIR" -o "$OUTPUTDIR" $CONFPKGARG
 
 exit $?
