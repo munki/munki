@@ -20,7 +20,8 @@ Usage: `basename $0` [-f] [-i id] [-o dir] [-c package] [-r revision]"
     -i id       Set the base package bundle ID
     -o dir      Set the output directory
     -c package  Include a configuration package
-    -r revision SVN revision to check out (latest is the default)
+    -b branch   Git branch to clone (master is the default)
+    -r revision Git revision to check out (HEAD is the default)
 
 EOF
 }
@@ -68,6 +69,8 @@ GIT=`which git`
 WHICH_GIT_RESULT="$?"
 if [ "$WHICH_GIT_RESULT" != "0" ]; then
     echo "Could not find git in command path. Maybe it's not installed?" 1>&2
+    echo "You can get a Git package here:" 1>&2
+    echo "    http://code.google.com/p/git-osx-installer/downloads/list"
     exit 1
 fi
 
