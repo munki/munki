@@ -281,8 +281,16 @@ done
 cp -X "$MUNKIROOT/code/client/munkilib/"*.py "$COREROOT/usr/local/munki/munkilib/"
 # Copy munki version.
 cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki/munkilib/"
-echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
-echo $GITREV > "$COREROOT/usr/local/munki/munkilib/gitrevision"
+# svnversion file was used when we were using subversion
+# we don't need this file if we have an updated get_version method in munkicommon.py
+if [ "$SVNREV" -lt "1310" ]; then
+    echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
+fi
+# add Build Number and Git Revision to version.plist
+defaults write "$COREROOT/usr/local/munki/munkilib/version" BuildNumber "$SVNREV"
+defaults write "$COREROOT/usr/local/munki/munkilib/version" GitRevision "$GITREV"
+# defaults write converts the file to binary format, so convert back to XML
+plutil -convert xml1 "$COREROOT/usr/local/munki/munkilib/version.plist"
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"

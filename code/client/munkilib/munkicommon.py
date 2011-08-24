@@ -211,11 +211,10 @@ class Popen(subprocess.Popen):
 
 
 def get_version():
-    """Returns version of munkitools, reading version.plist
-    and svnversion"""
+    """Returns version of munkitools, reading version.plist"""
     vers = "UNKNOWN"
     build = ""
-    # find the munkilib directory, and the version files
+    # find the munkilib directory, and the version file
     munkilibdir = os.path.dirname(os.path.abspath(__file__))
     versionfile = os.path.join(munkilibdir, "version.plist")
     if os.path.exists(versionfile):
@@ -226,17 +225,9 @@ def get_version():
         else:
             try:
                 vers = vers_plist['CFBundleShortVersionString']
+                build = vers_plist['BuildNumber']
             except KeyError:
                 pass
-    svnversionfile = os.path.join(munkilibdir, "svnversion")
-    if os.path.exists(svnversionfile):
-        try:
-            fileobj = open(svnversionfile, mode='r')
-            contents = fileobj.read()
-            fileobj.close()
-            build = contents.splitlines()[0]
-        except OSError:
-            pass
     if build:
         vers = vers + " Build " + build
     return vers
