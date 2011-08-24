@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Check out Munki from svn and build an mpkg distribution package.
+# Check out Munki from git and build an mpkg distribution package.
 
 
 # Defaults.
@@ -9,6 +9,7 @@ PKGID="com.googlecode.munki"
 OUTPUTDIR=`pwd`
 CONFPKG=""
 CHECKOUTREV="HEAD"
+BRANCH="master"
 
 
 usage() {
@@ -25,7 +26,7 @@ EOF
 }
 
 
-while getopts "fi:r:o:c:h" option
+while getopts "fi:r:o:b:c:h" option
 do
     case $option in
         "f")
@@ -38,6 +39,9 @@ do
             ;;
         "o")
             OUTPUTDIR="$OPTARG"
+            ;;
+        "b")
+            BRANCH="$OPTARG"
             ;;
         "c")
             CONFPKG="$OPTARG"
@@ -58,14 +62,29 @@ if [ $# -ne 0 ]; then
     exit 1
 fi
 
+MUNKIDIR=`pwd`/"munki-git"
 
-MUNKIDIR=`pwd`/"munki-SVN"
+GIT=`which git`
+WHICH_GIT_RESULT="$?"
+if [ "$WHICH_GIT_RESULT" != "0" ]; then
+    echo "Could not find git in command path. Maybe it's not installed?" 1>&2
+    exit 1
+fi
 
-echo "Checking out munki from SVN..."
-svn checkout -r "$CHECKOUTREV" http://munki.googlecode.com/svn/trunk/ "$MUNKIDIR"
+echo "Cloning munki repo branch $BRANCH from code.google.com..."
+git clone --branch "$BRANCH" --no-checkout -- https://code.google.com/p/munki/ "$MUNKIDIR"
+CLONE_RESULT="$?"
+if [ "$CLONE_RESULT" != "0" ]; then
+    echo "Error cloning munki repo: $CLONE_RESULT" 1>&2
+    exit 1
+fi
+
+echo "Checking out revision $CHECKOUTREV..."
+cd "$MUNKIDIR"
+git checkout "$CHECKOUTREV"
 CHECKOUT_RESULT="$?"
 if [ "$CHECKOUT_RESULT" != "0" ]; then
-    echo "Error checking out munki code from SVN: $CHECKOUT_RESULT"
+    echo "Error checking out $CHECKOUTREV: $CHECKOUT_RESULT" 1>&2
     exit 1
 fi
 
@@ -75,6 +94,9 @@ else
     CONFPKGARG=""
 fi
 
-"$MUNKIDIR/code/tools/make_munki_mpkg.sh" -i "$PKGID" -r "$MUNKIDIR" -o "$OUTPUTDIR" $CONFPKGARG
+# get the directory this script lives in so we can find make_munki_pkg.sh
+TOOLSDIR=`dirname $0`
+
+"$TOOLSDIR/make_munki_mpkg.sh" -i "$PKGID" -r "$MUNKIDIR" -o "$OUTPUTDIR" $CONFPKGARG
 
 exit $?

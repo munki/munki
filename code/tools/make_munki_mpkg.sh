@@ -6,9 +6,12 @@
 # Defaults.
 PKGTYPE="bundle"
 PKGID="com.googlecode.munki"
-MUNKIROOT="/Users/Shared/munki/munki"
+MUNKIROOT="."
 OUTPUTDIR="/Users/Shared/pkgs"
 CONFPKG=""
+# add this number to Git revision index to get "build" number
+# consistent with old SVN repo
+MAGICNUMBER=482
 
 
 usage() {
@@ -59,7 +62,7 @@ if [ $# -ne 0 ]; then
 fi
 
 if [ ! -d "$MUNKIROOT" ]; then
-    echo "Please set the munki root" 1>&2
+    echo "Please set the munki source root" 1>&2
     exit 1
 else
     # Convert to absolute path.
@@ -74,7 +77,16 @@ fi
 
 # Get the munki version.
 MUNKIVERS=`defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString`
-SVNREV=`svnversion $MUNKIROOT | cut -d: -f2 | tr -cd '[:digit:]'`
+if [ "$?" != "0" ]; then
+    echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
+    echo "Perhaps $MUNKIROOT does not contain the munki source?"  1>&2
+    exit 1
+fi
+
+# generate a psuedo-svn revision number from the list of Git revisions
+GITREV=`git log -n1 --format="%H" -- code/client`
+GITREVINDEX=`git rev-list --branches --reverse HEAD | grep -n $GITREV | cut -d: -f1`
+SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 VERSION=$MUNKIVERS.$SVNREV.0
 
 # Get launchd version if different
@@ -270,6 +282,7 @@ cp -X "$MUNKIROOT/code/client/munkilib/"*.py "$COREROOT/usr/local/munki/munkilib
 # Copy munki version.
 cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki/munkilib/"
 echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
+echo $GITREV > "$COREROOT/usr/local/munki/munkilib/gitrevision"
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
