@@ -65,6 +65,7 @@ fi
 
 MUNKIDIR=`pwd`/"munki-git"
 
+# Sanity checks.
 GIT=`which git`
 WHICH_GIT_RESULT="$?"
 if [ "$WHICH_GIT_RESULT" != "0" ]; then
@@ -73,6 +74,15 @@ if [ "$WHICH_GIT_RESULT" != "0" ]; then
     echo "    http://code.google.com/p/git-osx-installer/downloads/list"
     exit 1
 fi
+if [ ! -x "/Developer/usr/bin/packagemaker" ]; then
+    echo "PackageMaker is not installed!" 1>&2
+    exit 1
+fi
+if [ ! -x "/usr/bin/xcodebuild" ]; then
+    echo "Xcode is not installed!" 1>&2
+    exit 1
+fi
+
 
 echo "Cloning munki repo branch $BRANCH from code.google.com..."
 git clone --branch "$BRANCH" --no-checkout -- https://code.google.com/p/munki/ "$MUNKIDIR"
