@@ -287,12 +287,10 @@ if [ "$SVNREV" -lt "1302" ]; then
     echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
 fi
 # add Build Number and Git Revision to version.plist
-defaults write "$COREROOT/usr/local/munki/munkilib/version" BuildNumber "$SVNREV"
-defaults write "$COREROOT/usr/local/munki/munkilib/version" GitRevision "$GITREV"
-# defaults write converts the file to binary format, so convert back to XML
-plutil -convert xml1 "$COREROOT/usr/local/munki/munkilib/version.plist"
-# it also sets permissions too restrictively, so fix
-chmod a+r "$COREROOT/usr/local/munki/munkilib/version.plist"
+/usr/libexec/PlistBuddy -c "Delete :BuildNumber" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
+/usr/libexec/PlistBuddy -c "Add :BuildNumber string $SVNREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
+/usr/libexec/PlistBuddy -c "Delete :GitRevision" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
+/usr/libexec/PlistBuddy -c "Add :GitRevision string $GITREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
