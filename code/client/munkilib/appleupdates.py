@@ -31,10 +31,11 @@ import urllib2
 import urlparse
 
 from Foundation import NSDate
-from Foundation import CFPreferencesCopyValue
+from Foundation import CFPreferencesCopyAppValue
+#from Foundation import CFPreferencesCopyValue
 from Foundation import CFPreferencesSetValue
 from Foundation import CFPreferencesAppSynchronize
-from Foundation import kCFPreferencesAnyUser
+#from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 
@@ -53,7 +54,7 @@ DEFAULT_CATALOG_URLS = {
 }
 
 # Preference domain for Apple Software Update.
-APPLE_SOFTWARE_UPDATE_PLIST = 'com.apple.SoftwareUpdate'
+APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN = 'com.apple.SoftwareUpdate'
 
 # Filename for results of softwareupdate -l -f <pathname>.
 # This lists the currently applicable Apple updates in a
@@ -706,9 +707,8 @@ class AppleUpdates(object):
         Args:
           pref_name: str preference name to get.
         """
-        return CFPreferencesCopyValue(
-            pref_name, APPLE_SOFTWARE_UPDATE_PLIST,
-            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        return CFPreferencesCopyAppValue(
+            pref_name, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
     def _LeopardSetupSoftwareUpdateCheck(self):
         """Set defaults for root user and current host; needed for Leopard."""
@@ -719,9 +719,9 @@ class AppleUpdates(object):
         }
         for key, value in defaults.iteritems():
             CFPreferencesSetValue(
-                key, value, APPLE_SOFTWARE_UPDATE_PLIST,
+                key, value, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
                 kCFPreferencesCurrentUser, kCFPreferencesCurrentHost)
-        if not CFPreferencesAppSynchronize(APPLE_SOFTWARE_UPDATE_PLIST):
+        if not CFPreferencesAppSynchronize(APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN):
             munkicommon.display_warning(
                 'Error setting com.apple.SoftwareUpdate ByHost preferences.')
 

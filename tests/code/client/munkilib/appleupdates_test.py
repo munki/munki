@@ -1450,14 +1450,13 @@ class TestAppleUpdates(mox.MoxTestBase):
 
     def testGetSoftwareUpdatePref(self):
         """Tests GetSoftwareUpdatePref()."""
-        self.mox.StubOutWithMock(appleupdates, 'CFPreferencesCopyValue')
+        self.mox.StubOutWithMock(appleupdates, 'CFPreferencesCopyAppValue')
         pref_name = 'foo'
         expected_return = 'bar'
-        appleupdates.CFPreferencesCopyValue(
+        appleupdates.CFPreferencesCopyAppValue(
             pref_name,
-            appleupdates.APPLE_SOFTWARE_UPDATE_PLIST,
-            appleupdates.kCFPreferencesAnyUser,
-            appleupdates.kCFPreferencesCurrentHost).AndReturn(expected_return)
+            appleupdates.APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN
+            ).AndReturn(expected_return)
 
         self.mox.ReplayAll()
         self.au.GetSoftwareUpdatePref(pref_name)
@@ -1470,21 +1469,21 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates, 'CFPreferencesAppSynchronize')
         appleupdates.CFPreferencesSetValue(
             'AgreedToLicenseAgreement', True,
-            appleupdates.APPLE_SOFTWARE_UPDATE_PLIST,
+            appleupdates.APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             appleupdates.kCFPreferencesCurrentUser,
             appleupdates.kCFPreferencesCurrentHost).AndReturn(None)
         appleupdates.CFPreferencesSetValue(
             'AutomaticDownload', True,
-            appleupdates.APPLE_SOFTWARE_UPDATE_PLIST,
+            appleupdates.APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             appleupdates.kCFPreferencesCurrentUser,
             appleupdates.kCFPreferencesCurrentHost).AndReturn(None)
         appleupdates.CFPreferencesSetValue(
             'LaunchAppInBackground', True,
-            appleupdates.APPLE_SOFTWARE_UPDATE_PLIST,
+            appleupdates.APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             appleupdates.kCFPreferencesCurrentUser,
             appleupdates.kCFPreferencesCurrentHost).AndReturn(None)
         appleupdates.CFPreferencesAppSynchronize(
-            appleupdates.APPLE_SOFTWARE_UPDATE_PLIST).AndReturn(None)
+            appleupdates.APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN).AndReturn(None)
         appleupdates.munkicommon.display_warning(
             'Error setting com.apple.SoftwareUpdate ByHost preferences.')
 
