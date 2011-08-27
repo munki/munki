@@ -727,7 +727,7 @@ def configure(args):
     for (key, prompt) in [
         ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
         ('repo_url', 
-         'Repo fileshare URL (example: afp://munki.pretendco.com/repo)')]:
+         'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
         
         newvalue = raw_input('%15s [%s]: ' % (prompt, pref(key)))
         _prefs[key] = newvalue or pref(key) or ''
