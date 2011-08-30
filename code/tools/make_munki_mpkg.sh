@@ -91,6 +91,23 @@ if [ ! -d "$OUTPUTDIR" ]; then
     exit 1
 fi
 
+# Sanity checks.
+GIT=`which git`
+WHICH_GIT_RESULT="$?"
+if [ "$WHICH_GIT_RESULT" != "0" ]; then
+    echo "Could not find git in command path. Maybe it's not installed?" 1>&2
+    echo "You can get a Git package here:" 1>&2
+    echo "    http://code.google.com/p/git-osx-installer/downloads/list"
+    exit 1
+fi
+if [ ! -x "/Developer/usr/bin/packagemaker" ]; then
+    echo "PackageMaker is not installed!"
+    exit 1
+fi
+if [ ! -x "/usr/bin/xcodebuild" ]; then
+    echo "Xcode is not installed!"
+    exit 1
+fi
 
 # Get the munki version.
 MUNKIVERS=`defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString`
@@ -127,17 +144,6 @@ if [ "$PKGTYPE" == "flat" ]; then
 else
     TARGET="10.4"
     MPKG="$OUTPUTDIR/munkitools-$MPKGVERSION.mpkg"
-fi
-
-
-# Sanity checks.
-if [ ! -x "/Developer/usr/bin/packagemaker" ]; then
-    echo "PackageMaker is not installed!"
-    exit 1
-fi
-if [ ! -x "/usr/bin/xcodebuild" ]; then
-    echo "Xcode is not installed!"
-    exit 1
 fi
 
 if [ $(id -u) -ne 0 ]; then
