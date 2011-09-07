@@ -64,6 +64,9 @@ class MSUAppDelegate(NSObject):
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
 
+        # Clear our fast-launch trigger file if present.
+        munki.clearLaunchTrigger()
+
         # Prevent automatic relaunching at login on Lion
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()

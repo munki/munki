@@ -35,6 +35,7 @@ from Foundation import CFPreferencesAppSynchronize
 
 
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
+STATUSATLOGOUTFILE = "/private/tmp/com.googlecode.munki.statusatlogout"
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 MSULOGDIR = \
@@ -350,7 +351,21 @@ def logoutAndUpdate():
         if not os.path.exists(INSTALLATLOGOUTFILE):
             f = open(INSTALLATLOGOUTFILE, 'w')
             f.close()    
+        if not os.path.exists(STATUSATLOGOUTFILE):
+            f = open(STATUSATLOGOUTFILE, 'w')
+            f.close()
         logoutNow()
+    except (OSError, IOError):
+        return 1
+
+
+def clearLaunchTrigger():
+    '''Clear the trigger file that fast-launches us at loginwindow.
+    typically because we have been launched in statusmode at the
+    loginwindow to perform a logout-install.'''
+    try:
+        if os.path.exists(STATUSATLOGOUTFILE):
+            os.unlink(STATUSATLOGOUTFILE)
     except (OSError, IOError):
         return 1
 

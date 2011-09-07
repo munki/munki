@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.googlecode.munki.MunkiStatus</string>
+  <string>com.googlecode.munki.MunkiStatusLogin</string>
   <key>LimitLoadToSessionType</key>
   <array>
-    <string>Aqua</string>
+    <string>LoginWindow</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
@@ -15,9 +15,7 @@
   </dict>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/munki/launchapp</string>
-    <string>-a</string>
-    <string>/Applications/Utilities/Managed Software Update.app</string>
+    <string>/Applications/Utilities/Managed Software Update.app/Contents/MacOS/Managed Software Update</string>
   </array>
   <key>RunAtLoad</key>
   <false/>
@@ -26,6 +24,8 @@
      <key>PathState</key>
      <dict>
        <key>/var/run/com.googlecode.munki.MunkiStatus</key>
+       <true/>
+       <key>/private/tmp/com.googlecode.munki.statusatlogout</key>
        <true/>
      </dict>
   </dict>
