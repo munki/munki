@@ -1222,7 +1222,7 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
                 necessary for this function.
 
     Returns:
-        (True/False, hash)
+        (True/False, sha256-hash)
         True if the package integrity could be validated. Otherwise, False.
     """
     mode = munkicommon.pref('PackageVerificationMode')
@@ -1244,7 +1244,6 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
             if item_hash == chash:
                 return (True, chash)
             else:
-                #TODO(rob) - item_pl doesn't exist if we don't pass it.
                 munkicommon.display_error(
                     'Hash value integrity check for %s failed.' %
                     item_name)
@@ -2633,6 +2632,8 @@ def getResourceIfChangedAtomically(url, destinationpath,
                 os.unlink(destinationpath)
             except OSError:
                 pass
+        munkicommon.log('Cached payload does not match hash in catalog, '
+                'will check if changed and redownload: %s' % destinationpath)                
         #continue with normal if-modified-since/etag update methods.
 
     url_parse = urlparse.urlparse(url)
@@ -2657,7 +2658,7 @@ def getResourceIfChangedAtomically(url, destinationpath,
             except OSError:
                 pass
             raise PackageVerificationError()
-        if hash:
+        if fhash:
             writeCachedChecksum(destinationpath, fhash=fhash)
 
     return changed
