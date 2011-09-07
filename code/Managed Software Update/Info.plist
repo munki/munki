@@ -28,5 +28,7 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>GitRevision</key>
+	<string>UNKNOWN</string>
 </dict>
 </plist>
