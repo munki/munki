@@ -47,6 +47,8 @@ from Foundation import NSDate
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
+# XATTR name storing the ETAG of the file when downloaded via http(s).
+XATTR_ETAG = 'com.googlecode.munki.etag'
 # XATTR name storing the sha256 of the file after original download by munki.
 XATTR_SHA = 'com.googlecode.munki.sha256'
 
@@ -2340,11 +2342,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 # let's try to resume this download
                 print >> fileobj, 'continue-at -'
                 # if an existing etag, only resume if etags still match.
-                tempetag = None
-                if ('com.googlecode.munki.etag' in
-                        xattr.listxattr(tempdownloadpath)):
-                    tempetag = xattr.getxattr(tempdownloadpath,
-                        'com.googlecode.munki.etag')
+                tempetag = getxattr(tempdownloadpath, XATTR_ETAG)
                 if tempetag:
                     # Note: If-Range is more efficient, but the response
                     # confuses curl (Error: 33 if etag not match).
@@ -2505,8 +2503,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     # try asking it anything challenging.
                     os.remove(tempdownloadpath)
             elif header.get('etag'):
-                xattr.setxattr(tempdownloadpath,
-                               'com.googlecode.munki.etag', header['etag'])
+                xattr.setxattr(tempdownloadpath, XATTR_ETAG, header['etag'])
         # TODO: should we log this diagnostic here (we didn't previously)?
         # Currently for a pkg all that is logged on failure is:
         # "WARNING: Download of Firefox failed." with no detail. Logging at
@@ -2763,10 +2760,9 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
     if os.path.exists(destinationpath):
         getonlyifnewer = True
         # see if we have an etag attribute
-        if 'com.googlecode.munki.etag' in xattr.listxattr(destinationpath):
+        etag = getxattr(destinationpath, XATTR_ETAG)
+        if etag:
             getonlyifnewer = False
-            etag = xattr.getxattr(destinationpath,
-                                  'com.googlecode.munki.etag')
 
     try:
         header = curl(url,
@@ -2806,8 +2802,7 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
             os.utime(destinationpath, (time.time(), modtimeint))
         if header.get('etag'):
             # store etag in extended attribute for future use
-            xattr.setxattr(destinationpath,
-                           'com.googlecode.munki.etag', header['etag'])
+            xattr.setxattr(destinationpath, XATTR_ETAG, header['etag'])
 
     return True
 
