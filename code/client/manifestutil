@@ -202,9 +202,17 @@ def mountRepoCLI():
     repo_url = pref('repo_url')
     if os.path.exists(repo_path):
         return
-    os.mkdir(repo_path, 0777)
+    os.mkdir(repo_path)
     print 'Attempting to mount fileshare %s:' % repo_url
-    cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
+    if repo_url.startswith('afp:'):
+        cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
+    elif repo_url.startswith('smb:'):
+        cmd = ['/sbin/mount_smbfs', repo_url[4:], repo_path]
+    elif repo_url.startswith('nfs:'):
+        cmd = ['/sbin/mount_nfs', repo_url, repo_path]
+    else:
+        print >> sys.stderr, 'Unsupported filesystem URL!'
+        return
     retcode = subprocess.call(cmd)
     if retcode:
         os.rmdir(repo_path)
