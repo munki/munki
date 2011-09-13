@@ -208,8 +208,8 @@ def mountRepoCLI():
         cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
     elif repo_url.startswith('smb:'):
         cmd = ['/sbin/mount_smbfs', repo_url[4:], repo_path]
-    elif repo_url.startswith('nfs:'):
-        cmd = ['/sbin/mount_nfs', repo_url, repo_path]
+    elif repo_url.startswith('nfs://'):
+        cmd = ['/sbin/mount_nfs', repo_url[6:], repo_path]
     else:
         print >> sys.stderr, 'Unsupported filesystem URL!'
         return
