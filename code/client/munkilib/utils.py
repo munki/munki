@@ -91,7 +91,7 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
             '%s is not secure! %s' % (file_path, e.args[0]))
 
 
-def runExternalScript(script, allow_insecure=False, *args):
+def runExternalScript(script, allow_insecure=False, script_args=[]):
     """Run a script (e.g. preflight/postflight) and return its exit status.
 
     Args:
@@ -117,8 +117,8 @@ def runExternalScript(script, allow_insecure=False, *args):
 
     if os.access(script, os.X_OK):
         cmd = [script]
-        if args:
-            cmd.extend(args)
+        if script_args:
+            cmd.extend(script_args)
         proc = subprocess.Popen(cmd, shell=False,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,

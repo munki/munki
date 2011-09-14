@@ -350,6 +350,7 @@ class MSUAppDelegate(NSObject):
                 self.update_view_controller.updateNowBtn.setEnabled_(YES)
                 self.update_view_controller.optionalSoftwareBtn.setHidden_(YES)
             else:
+                self._listofupdates = []
                 self.update_view_controller.updateNowBtn.setEnabled_(NO)
                 self.getOptionalInstalls()
 

@@ -171,7 +171,8 @@ def runScript(script, display_name, runtype):
             return result
 
     try:
-        result, stdout, stderr = utils.runExternalScript(script, True, runtype)
+        result, stdout, stderr = utils.runExternalScript(
+            script, allow_insecure=True, script_args=[runtype])
         if result:
             munkicommon.display_info('%s return code: %d'
                                     % (display_name, result))
@@ -662,7 +663,8 @@ def main():
             munkicommon.savereport()
             exit(-1)
             
-    # send a notification event so MSU can update its display if needed
+    # send a notification event so MSU can update its display 
+    # if needed
     sendUpdateNotification()
 
     mustrestart = False
@@ -691,6 +693,11 @@ def main():
             else:  # there are GUI users
                 unused_force_action = updatecheck.checkForceInstallPackages()
                 doInstallTasks(only_unattended=True)
+                
+                # send a notification event so MSU can update its display 
+                # if needed
+                sendUpdateNotification()
+                
                 force_action = updatecheck.checkForceInstallPackages()
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
