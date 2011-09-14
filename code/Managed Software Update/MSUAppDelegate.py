@@ -64,9 +64,6 @@ class MSUAppDelegate(NSObject):
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
 
-        # Clear our fast-launch trigger file if present.
-        munki.clearLaunchTrigger()
-
         # Prevent automatic relaunching at login on Lion
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
@@ -146,6 +143,9 @@ class MSUAppDelegate(NSObject):
             or consoleuser == u"loginwindow"):
             # Status Window only, so we should just quit
             munki.log("MSU", "exit_munkistatus")
+            # clear launch trigger file so we aren't immediately
+            # relaunched by launchd
+            munki.clearLaunchTrigger()
             NSApp.terminate_(self)
 
         # The managedsoftwareupdate run will have changed state preferences

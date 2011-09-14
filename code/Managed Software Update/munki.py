@@ -35,9 +35,10 @@ from Foundation import CFPreferencesAppSynchronize
 
 
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
-STATUSATLOGOUTFILE = "/private/tmp/com.googlecode.munki.statusatlogout"
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
+INSTALLWITHOUTLOGOUTFILE = \
+    "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 MSULOGDIR = \
     "/Users/Shared/.com.googlecode.munki.ManagedSoftwareUpdate.logs"
 MSULOGFILE = "%s.log"
@@ -254,8 +255,11 @@ def stringFromDate(nsdate):
 
 def startUpdateCheck():
     '''Does launchd magic to run managedsoftwareupdate as root.'''
-    result = call(["/usr/bin/touch", UPDATECHECKLAUNCHFILE])
-    return result
+    try:
+        f = open(UPDATECHECKLAUNCHFILE, 'w')
+        f.close()    
+    except (OSError, IOError):
+        return 1
 
 
 def getAppleUpdates():
@@ -351,9 +355,6 @@ def logoutAndUpdate():
         if not os.path.exists(INSTALLATLOGOUTFILE):
             f = open(INSTALLATLOGOUTFILE, 'w')
             f.close()    
-        if not os.path.exists(STATUSATLOGOUTFILE):
-            f = open(STATUSATLOGOUTFILE, 'w')
-            f.close()
         logoutNow()
     except (OSError, IOError):
         return 1
@@ -364,8 +365,8 @@ def clearLaunchTrigger():
     typically because we have been launched in statusmode at the
     loginwindow to perform a logout-install.'''
     try:
-        if os.path.exists(STATUSATLOGOUTFILE):
-            os.unlink(STATUSATLOGOUTFILE)
+        if os.path.exists(INSTALLATLOGOUTFILE):
+            os.unlink(INSTALLATLOGOUTFILE)
     except (OSError, IOError):
         return 1
 
@@ -375,10 +376,14 @@ def justUpdate():
     We touch a file that launchd is is watching
     launchd, in turn,
     launches managedsoftwareupdate --installwithnologout as root'''
-    cmd = ["/usr/bin/touch",
-           "/private/tmp/.com.googlecode.munki.managedinstall.launchd"]
+    cmd = ["/usr/bin/touch", INSTALLWITHOUTLOGOUTFILE]
     return call(cmd)
-
+    try:
+        f = open(INSTALLWITHOUTLOGOUTFILE, 'w')
+        f.close()    
+    except (OSError, IOError):
+        return 1
+    
 
 def getRunningProcesses():
     """Returns a list of paths of running processes"""
