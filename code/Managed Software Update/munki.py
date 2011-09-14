@@ -256,8 +256,9 @@ def stringFromDate(nsdate):
 def startUpdateCheck():
     '''Does launchd magic to run managedsoftwareupdate as root.'''
     try:
-        f = open(UPDATECHECKLAUNCHFILE, 'w')
-        f.close()    
+        if not os.path.exists(UPDATECHECKLAUNCHFILE):
+            open(UPDATECHECKLAUNCHFILE, 'w').close()
+        return 0
     except (OSError, IOError):
         return 1
 
@@ -353,8 +354,7 @@ def logoutAndUpdate():
 
     try:
         if not os.path.exists(INSTALLATLOGOUTFILE):
-            f = open(INSTALLATLOGOUTFILE, 'w')
-            f.close()    
+            open(INSTALLATLOGOUTFILE, 'w').close()    
         logoutNow()
     except (OSError, IOError):
         return 1
@@ -376,11 +376,10 @@ def justUpdate():
     We touch a file that launchd is is watching
     launchd, in turn,
     launches managedsoftwareupdate --installwithnologout as root'''
-    cmd = ["/usr/bin/touch", INSTALLWITHOUTLOGOUTFILE]
-    return call(cmd)
     try:
-        f = open(INSTALLWITHOUTLOGOUTFILE, 'w')
-        f.close()    
+        if not os.path.exists(INSTALLWITHOUTLOGOUTFILE):
+            open(INSTALLWITHOUTLOGOUTFILE, 'w').close()
+        return 0
     except (OSError, IOError):
         return 1
     

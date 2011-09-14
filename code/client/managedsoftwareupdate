@@ -426,6 +426,7 @@ def main():
                     # delete triggerfile if _not_ checkandinstallatstartup
                     os.unlink(filename)
         if not user_triggered:
+            # no trigger file was found -- how'd we get launched?
             munkicommon.cleanUpTmpDir()
             exit(0)
 

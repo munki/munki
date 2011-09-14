@@ -25,7 +25,7 @@
      <dict>
        <key>/var/run/com.googlecode.munki.MunkiStatus</key>
        <true/>
-       <key>/private/tmp/com.googlecode.munki.statusatlogout</key>
+       <key>/private/tmp/com.googlecode.munki.installatlogout</key>
        <true/>
      </dict>
   </dict>
