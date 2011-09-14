@@ -91,11 +91,12 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
             '%s is not secure! %s' % (file_path, e.args[0]))
 
 
-def runExternalScript(script, *args):
+def runExternalScript(script, allow_insecure=False, *args):
     """Run a script (e.g. preflight/postflight) and return its exit status.
 
     Args:
       script: string path to the script to execute.
+      allow_insecure: bool skip the permissions check of executable.
       args: args to pass to the script.
     Returns:
       Tuple. (integer exit status from script, str stdout, str stderr).
@@ -106,12 +107,13 @@ def runExternalScript(script, *args):
     if not os.path.exists(script):
         raise ScriptNotFoundError('script does not exist: %s' % script)
 
-    try:
-        verifyFileOnlyWritableByMunkiAndRoot(script)
-    except VerifyFilePermissionsError, e:
-        msg = ('Skipping execution due to failed file permissions '
-               'verification: %s\n%s' % (script, str(e)))
-        raise RunExternalScriptError(msg)
+    if not allow_insecure:
+        try:
+            verifyFileOnlyWritableByMunkiAndRoot(script)
+        except VerifyFilePermissionsError, e:
+            msg = ('Skipping execution due to failed file permissions '
+                   'verification: %s\n%s' % (script, str(e)))
+            raise RunExternalScriptError(msg)
 
     if os.access(script, os.X_OK):
         cmd = [script]
@@ -122,7 +124,8 @@ def runExternalScript(script, *args):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         (stdout, stderr) = proc.communicate()
-        return proc.returncode, stdout, stderr
+        return proc.returncode, stdout.decode('UTF-8','replace'), \
+                                stderr.decode('UTF-8','replace')
     else:
         raise RunExternalScriptError('%s not executable' % script)
 
