@@ -317,6 +317,11 @@ cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki
 if [ "$SVNREV" -lt "1302" ]; then
     echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
 fi
+# make paths.d file
+mkdir -p "$COREROOT/private/etc/paths.d"
+echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
+chmod -R 755 "$COREROOT/private"
+
 # add Build Number and Git Revision to version.plist
 /usr/libexec/PlistBuddy -c "Delete :BuildNumber" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
 /usr/libexec/PlistBuddy -c "Add :BuildNumber string $SVNREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
@@ -525,6 +530,7 @@ echo "Setting ownership to root..."
 sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
+sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 
