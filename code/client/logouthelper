@@ -102,9 +102,6 @@ def alertUserOfForcedLogout(info=None):
     # make sure flag is in place to cause munki to install at logout
     f = open('/private/tmp/com.googlecode.munki.installatlogout', 'w')
     f.close()
-    # drop flag for speedier launch of status window covering loginwindow
-    f = open('/private/tmp/com.googlecode.munki.statusatlogout', 'w')
-    f.close()
 
 
 def main():
