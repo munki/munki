@@ -2432,7 +2432,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     # percent changed; update display
                     downloadedpercent = percent
                     munkicommon.display_percent_done(downloadedpercent, 100)
-            time.sleep(0.1)
+
+        time.sleep(0.1)
 
         if (proc.poll() != None):
             break
@@ -3068,7 +3069,7 @@ def check(client_id='', localmanifestpath=None):
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC.
-    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes 
+    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
