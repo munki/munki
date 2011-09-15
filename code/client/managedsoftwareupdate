@@ -512,6 +512,18 @@ def main():
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
+    
+    if options.installonly:
+        # we're only installing, not checking, so we should copy
+        # some report values from the prior run
+        munkicommon.readreport()
+
+    # start a new report
+    munkicommon.report['StartTime'] = munkicommon.format_time()
+    munkicommon.report['RunType'] = runtype
+    # Clearing arrays must be run before any call to display_warning/error.
+    munkicommon.report['Errors'] = []
+    munkicommon.report['Warnings'] = []
 
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
@@ -593,19 +605,9 @@ def main():
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
     
-    if options.installonly:
-        # we're only installing, not checking, so we should copy
-        # some report values from the prior run
-        munkicommon.readreport()
-    
     # archive the previous session's report
     munkicommon.archive_report()
-    # start a new report
-    munkicommon.report['StartTime'] = munkicommon.format_time()
-    munkicommon.report['RunType'] = runtype
-    munkicommon.report['Errors'] = []
-    munkicommon.report['Warnings'] = []
-    
+
     munkicommon.log("### Starting managedsoftwareupdate run ###")
     if options.verbose:
         print 'Managed Software Update Tool'
