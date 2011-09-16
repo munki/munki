@@ -2432,8 +2432,11 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     # percent changed; update display
                     downloadedpercent = percent
                     munkicommon.display_percent_done(downloadedpercent, 100)
-
-        time.sleep(0.1)
+            time.sleep(0.1)
+        else:
+            # Headers have finished, but not targetsize or HTTP2xx.
+            # It's possible that Content-Type was not in the headers.
+            time.sleep(0.1)
 
         if (proc.poll() != None):
             break
