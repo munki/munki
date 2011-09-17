@@ -782,13 +782,24 @@ def main():
                     # no-one is logged in and the machine has been idle 
                     # for a few seconds; kill the loginwindow
                     # (which will cause us to run again)
-                    munkicommon.log(
-                        'Killing loginwindow so we will run again...')
-                    cmd = ['/usr/bin/killall', 'loginwindow']
-                    unused_retcode = subprocess.call(cmd)
+                    #munkicommon.log(
+                    #    'Killing loginwindow so we will run again...')
+                    #cmd = ['/usr/bin/killall', 'loginwindow']
+                    #unused_retcode = subprocess.call(cmd)
+                    # with the new LaunchAgent, we don't have to kill
+                    # the loginwindow
+                    pass
                 else:
+                    # if the trigger file is present when we exit, we'll
+                    # be relaunched by launchd, so we need to remove it
+                    # to prevent automatic relaunch.
                     munkicommon.log(
-                        'System not idle -- skipping killing loginwindow')
+                        'System not idle -- '
+                        'removing trigger file to prevent relaunch')
+                    try:
+                        os.unlink(checkandinstallatstartupflag)
+                    except OSError:
+                        pass
 
 if __name__ == '__main__':
     main()
