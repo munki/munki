@@ -694,8 +694,11 @@ def main():
                                     'not idle (keyboard or mouse activity).')
             else:  # there are GUI users
                 unused_force_action = updatecheck.checkForceInstallPackages()
-                doInstallTasks(only_unattended=True)
-                
+                if not munkicommon.pref('SuppressAutoInstall'):
+                    doInstallTasks(only_unattended=True)
+                else:
+                     munkicommon.log('Skipping unattended installs because '
+                                     'SuppressAutoInstall is true.')
                 # send a notification event so MSU can update its display 
                 # if needed
                 sendUpdateNotification()
