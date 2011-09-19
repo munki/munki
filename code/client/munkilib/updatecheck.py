@@ -2435,7 +2435,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
             time.sleep(0.1)
         else:
             # Headers have finished, but not targetsize or HTTP2xx.
-            # It's possible that Content-Type was not in the headers.
+            # It's possible that Content-Length was not in the headers.
             time.sleep(0.1)
 
         if (proc.poll() != None):
