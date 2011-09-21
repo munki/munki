@@ -716,6 +716,10 @@ def main():
                 # however Apple Updates have not been affected by the
                 # unattended install tasks (so that check is still valid).
                 if appleupdatesavailable or munkiUpdatesAvailable():
+                    # it may have been more than a minute since we ran our
+                    # original updatecheck so tickle the updatecheck time
+                    # so MSU.app knows to display results immediately
+                    recordUpdateCheckResult(1)
                     consoleuser = munkicommon.getconsoleuser()
                     if consoleuser == u'loginwindow':
                         # someone is logged in, but we're sitting at
