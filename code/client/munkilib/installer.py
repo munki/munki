@@ -849,10 +849,15 @@ def runScript(itemname, path, scriptname):
                                    % (scriptname, itemname))
 
     scriptoutput = []
-    proc = subprocess.Popen(path, shell=False, bufsize=1,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
+    try:
+        proc = subprocess.Popen(path, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except OSError, e:
+        munkicommon.display_error(
+            'Error executing script %s: %s' % (scriptname, str(e)))
+        return -1
 
     while True:
         msg = proc.stdout.readline().decode('UTF-8')
