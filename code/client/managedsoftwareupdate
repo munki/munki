@@ -143,6 +143,50 @@ def initMunkiDirs():
         return True
 
 
+def runScript(script, display_name, runtype):
+    """Run an external script. Do not run if the permissions on the external
+    script file are weaker than the current executable."""
+    result = 0
+    if os.path.exists(script):
+        munkicommon.display_status('Performing %s tasks...' % display_name)
+    else:
+        return result
+
+    try:
+        utils.verifyFileOnlyWritableByMunkiAndRoot(script)
+    except utils.VerifyFilePermissionsError, e:
+        # preflight/postflight is insecure, but if the currently executing
+        # file is insecure too we are no worse off.
+        try:
+            utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
+        except utils.VerifyFilePermissionsError, e:
+            # OK, managedsoftwareupdate is insecure anyway - warn & execute.
+            munkicommon.display_warning('Multiple munki executable scripts '
+                'have insecure file permissions. Executing '
+                '%s anyway. Error: %s' % (display_name, e))
+        else:
+            # Just the preflight/postflight is insecure. Do not execute.
+            munkicommon.display_warning('Skipping execution of %s due to '
+                'insecure file permissions. Error: %s' % (display_name, e))
+            return result
+
+    try:
+        result, stdout, stderr = utils.runExternalScript(
+            script, allow_insecure=True, script_args=[runtype])
+        if result:
+            munkicommon.display_info('%s return code: %d'
+                                    % (display_name, result))
+        if stdout:
+            munkicommon.display_info('%s stdout: %s' % (display_name, stdout))
+        if stderr:
+            munkicommon.display_info('%s stderr: %s' % (display_name, stderr))
+    except utils.ScriptNotFoundError:
+        pass  # script is not required, so pass
+    except utils.RunExternalScriptError, e:
+        munkicommon.display_warning(str(e))
+    return result
+
+
 def doInstallTasks(only_unattended=False):
     """Perform our installation/removal tasks.
 
@@ -426,6 +470,7 @@ def main():
                     # delete triggerfile if _not_ checkandinstallatstartup
                     os.unlink(filename)
         if not user_triggered:
+            # no trigger file was found -- how'd we get launched?
             munkicommon.cleanUpTmpDir()
             exit(0)
 
@@ -467,24 +512,22 @@ def main():
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
+    
+    if options.installonly:
+        # we're only installing, not checking, so we should copy
+        # some report values from the prior run
+        munkicommon.readreport()
+
+    # start a new report
+    munkicommon.report['StartTime'] = munkicommon.format_time()
+    munkicommon.report['RunType'] = runtype
+    # Clearing arrays must be run before any call to display_warning/error.
+    munkicommon.report['Errors'] = []
+    munkicommon.report['Warnings'] = []
 
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
-    if os.path.exists(preflightscript):
-        munkicommon.display_status('Performing preflight tasks...')
-    try:
-        result, stdout, stderr = utils.runExternalScript(
-            preflightscript, runtype)
-        if stdout:
-            munkicommon.display_info('preflight stdout: %s', stdout)
-        if stderr:
-            munkicommon.display_info('preflight stderr: %s', stderr)
-    except utils.ScriptNotFoundError:
-        result = 0
-        pass  # script is not required, so pass
-    except utils.RunExternalScriptError, e:
-        result = 0
-        munkicommon.display_warning(str(e))
+    result = runScript(preflightscript, 'preflight', runtype)
 
     if result:
         # non-zero return code means don't run
@@ -562,19 +605,9 @@ def main():
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
     
-    if options.installonly:
-        # we're only installing, not checking, so we should copy
-        # some report values from the prior run
-        munkicommon.readreport()
-    
     # archive the previous session's report
     munkicommon.archive_report()
-    # start a new report
-    munkicommon.report['StartTime'] = munkicommon.format_time()
-    munkicommon.report['RunType'] = runtype
-    munkicommon.report['Errors'] = []
-    munkicommon.report['Warnings'] = []
-    
+
     munkicommon.log("### Starting managedsoftwareupdate run ###")
     if options.verbose:
         print 'Managed Software Update Tool'
@@ -632,7 +665,8 @@ def main():
             munkicommon.savereport()
             exit(-1)
             
-    # send a notification event so MSU can update its display if needed
+    # send a notification event so MSU can update its display 
+    # if needed
     sendUpdateNotification()
 
     mustrestart = False
@@ -660,7 +694,15 @@ def main():
                                     'not idle (keyboard or mouse activity).')
             else:  # there are GUI users
                 unused_force_action = updatecheck.checkForceInstallPackages()
-                doInstallTasks(only_unattended=True)
+                if not munkicommon.pref('SuppressAutoInstall'):
+                    doInstallTasks(only_unattended=True)
+                else:
+                     munkicommon.log('Skipping unattended installs because '
+                                     'SuppressAutoInstall is true.')
+                # send a notification event so MSU can update its display 
+                # if needed
+                sendUpdateNotification()
+                
                 force_action = updatecheck.checkForceInstallPackages()
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
@@ -674,6 +716,10 @@ def main():
                 # however Apple Updates have not been affected by the
                 # unattended install tasks (so that check is still valid).
                 if appleupdatesavailable or munkiUpdatesAvailable():
+                    # it may have been more than a minute since we ran our
+                    # original updatecheck so tickle the updatecheck time
+                    # so MSU.app knows to display results immediately
+                    recordUpdateCheckResult(1)
                     consoleuser = munkicommon.getconsoleuser()
                     if consoleuser == u'loginwindow':
                         # someone is logged in, but we're sitting at
@@ -716,21 +762,7 @@ def main():
 
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
-    if os.path.exists(postflightscript):
-        munkicommon.display_status('Performing postflight tasks...')
-    try:
-        result, stdout, stderr = utils.runExternalScript(
-            postflightscript, runtype)
-        if result:
-            munkicommon.display_info('postflight return code: %d' % result)
-        if stdout:
-            munkicommon.display_info('postflight stdout: %s', stdout)
-        if stderr:
-            munkicommon.display_info('postflight stderr: %s', stderr)
-    except utils.ScriptNotFoundError:
-        pass  # script is not required, so pass
-    except utils.RunExternalScriptError, e:
-        munkicommon.display_warning(str(e))
+    result = runScript(postflightscript, 'postflight', runtype)
     # we ignore the result of the postflight
 
     munkicommon.cleanUpTmpDir()
@@ -757,13 +789,24 @@ def main():
                     # no-one is logged in and the machine has been idle 
                     # for a few seconds; kill the loginwindow
                     # (which will cause us to run again)
-                    munkicommon.log(
-                        'Killing loginwindow so we will run again...')
-                    cmd = ['/usr/bin/killall', 'loginwindow']
-                    unused_retcode = subprocess.call(cmd)
+                    #munkicommon.log(
+                    #    'Killing loginwindow so we will run again...')
+                    #cmd = ['/usr/bin/killall', 'loginwindow']
+                    #unused_retcode = subprocess.call(cmd)
+                    # with the new LaunchAgent, we don't have to kill
+                    # the loginwindow
+                    pass
                 else:
+                    # if the trigger file is present when we exit, we'll
+                    # be relaunched by launchd, so we need to remove it
+                    # to prevent automatic relaunch.
                     munkicommon.log(
-                        'System not idle -- skipping killing loginwindow')
+                        'System not idle -- '
+                        'removing trigger file to prevent relaunch')
+                    try:
+                        os.unlink(checkandinstallatstartupflag)
+                    except OSError:
+                        pass
 
 if __name__ == '__main__':
     main()

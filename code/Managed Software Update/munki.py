@@ -37,6 +37,8 @@ from Foundation import CFPreferencesAppSynchronize
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
 UPDATECHECKLAUNCHFILE = \
     "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
+INSTALLWITHOUTLOGOUTFILE = \
+    "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 MSULOGDIR = \
     "/Users/Shared/.com.googlecode.munki.ManagedSoftwareUpdate.logs"
 MSULOGFILE = "%s.log"
@@ -253,8 +255,12 @@ def stringFromDate(nsdate):
 
 def startUpdateCheck():
     '''Does launchd magic to run managedsoftwareupdate as root.'''
-    result = call(["/usr/bin/touch", UPDATECHECKLAUNCHFILE])
-    return result
+    try:
+        if not os.path.exists(UPDATECHECKLAUNCHFILE):
+            open(UPDATECHECKLAUNCHFILE, 'w').close()
+        return 0
+    except (OSError, IOError):
+        return 1
 
 
 def getAppleUpdates():
@@ -348,9 +354,19 @@ def logoutAndUpdate():
 
     try:
         if not os.path.exists(INSTALLATLOGOUTFILE):
-            f = open(INSTALLATLOGOUTFILE, 'w')
-            f.close()    
+            open(INSTALLATLOGOUTFILE, 'w').close()    
         logoutNow()
+    except (OSError, IOError):
+        return 1
+
+
+def clearLaunchTrigger():
+    '''Clear the trigger file that fast-launches us at loginwindow.
+    typically because we have been launched in statusmode at the
+    loginwindow to perform a logout-install.'''
+    try:
+        if os.path.exists(INSTALLATLOGOUTFILE):
+            os.unlink(INSTALLATLOGOUTFILE)
     except (OSError, IOError):
         return 1
 
@@ -360,10 +376,13 @@ def justUpdate():
     We touch a file that launchd is is watching
     launchd, in turn,
     launches managedsoftwareupdate --installwithnologout as root'''
-    cmd = ["/usr/bin/touch",
-           "/private/tmp/.com.googlecode.munki.managedinstall.launchd"]
-    return call(cmd)
-
+    try:
+        if not os.path.exists(INSTALLWITHOUTLOGOUTFILE):
+            open(INSTALLWITHOUTLOGOUTFILE, 'w').close()
+        return 0
+    except (OSError, IOError):
+        return 1
+    
 
 def getRunningProcesses():
     """Returns a list of paths of running processes"""

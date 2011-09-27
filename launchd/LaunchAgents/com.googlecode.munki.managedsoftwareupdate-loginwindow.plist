@@ -18,7 +18,19 @@
     <string>--logoutinstall</string>
   </array>
   <key>RunAtLoad</key>
-  <true/>
+  <false/>
+  <key>KeepAlive</key>
+  <dict>
+     <key>PathState</key>
+     <dict>
+       <key>/private/tmp/com.googlecode.munki.installatlogout</key>
+       <true/>
+       <key>/Users/Shared/.com.googlecode.munki.checkandinstallatstartup</key>
+       <true/>
+       <key>/Users/Shared/.com.googlecode.munki.installatstartup</key>
+       <true/>
+     </dict>
+  </dict>
 </dict>
 </plist>
 

@@ -143,6 +143,9 @@ class MSUAppDelegate(NSObject):
             or consoleuser == u"loginwindow"):
             # Status Window only, so we should just quit
             munki.log("MSU", "exit_munkistatus")
+            # clear launch trigger file so we aren't immediately
+            # relaunched by launchd
+            munki.clearLaunchTrigger()
             NSApp.terminate_(self)
 
         # The managedsoftwareupdate run will have changed state preferences
@@ -347,6 +350,7 @@ class MSUAppDelegate(NSObject):
                 self.update_view_controller.updateNowBtn.setEnabled_(YES)
                 self.update_view_controller.optionalSoftwareBtn.setHidden_(YES)
             else:
+                self._listofupdates = []
                 self.update_view_controller.updateNowBtn.setEnabled_(NO)
                 self.getOptionalInstalls()
 

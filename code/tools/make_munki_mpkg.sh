@@ -317,6 +317,7 @@ cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki
 if [ "$SVNREV" -lt "1302" ]; then
     echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
 fi
+
 # add Build Number and Git Revision to version.plist
 /usr/libexec/PlistBuddy -c "Delete :BuildNumber" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
 /usr/libexec/PlistBuddy -c "Add :BuildNumber string $SVNREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
@@ -362,6 +363,10 @@ done
 # Set permissions.
 chmod -R go-w "$ADMINROOT/usr/local/munki"
 chmod +x "$ADMINROOT/usr/local/munki"
+# make paths.d file
+mkdir -p "$ADMINROOT/private/etc/paths.d"
+echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
+chmod -R 755 "$ADMINROOT/private"
 
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
@@ -527,6 +532,7 @@ sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
+sudo chown -hR root:wheel "$ADMINROOT/private"
 
 sudo chown -hR root:admin "$APPROOT/Applications"
 

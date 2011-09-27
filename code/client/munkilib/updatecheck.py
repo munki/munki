@@ -47,6 +47,10 @@ from Foundation import NSDate
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
+# XATTR name storing the ETAG of the file when downloaded via http(s).
+XATTR_ETAG = 'com.googlecode.munki.etag'
+# XATTR name storing the sha256 of the file after original download by munki.
+XATTR_SHA = 'com.googlecode.munki.sha256'
 
 def makeCatalogDB(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
@@ -745,22 +749,19 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     oldverbose = munkicommon.verbose
     munkicommon.verbose = oldverbose + 1
     dl_message = 'Downloading %s...' % pkgname
+    expected_hash = item_pl.get(item_hash_key, None)
     try:
         changed = getResourceIfChangedAtomically(pkgurl, destinationpath,
                                                  resume=True,
-                                                 message=dl_message)
+                                                 message=dl_message,
+                                                 expected_hash=expected_hash,
+                                                 verify=True)
     except MunkiDownloadError:
         munkicommon.verbose = oldverbose
         raise
 
     # set verboseness back.
     munkicommon.verbose = oldverbose
-    if changed:
-        package_verified = verifySoftwarePackageIntegrity(destinationpath,
-                                                          item_pl,
-                                                          item_hash_key)
-        if not package_verified:
-            raise PackageVerificationError()
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
@@ -1202,7 +1203,7 @@ def evidenceThisIsInstalled(item_pl):
     return False
 
 
-def verifySoftwarePackageIntegrity(file_path, item_pl, item_key):
+def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
     """Verifies the integrity of the given software package.
 
     The feature is controlled through the PackageVerificationMode key in
@@ -1218,47 +1219,54 @@ def verifySoftwarePackageIntegrity(file_path, item_pl, item_key):
 
     Args:
         file_path: The file to check integrity on.
-        item_pl: The item plist which contains the reference values.
-        item_key: The name of the key in plist which contains the hash.
+        item_hash: the sha256 hash expected.
+        always_hash: True/False always check (& return) the hash even if not
+                necessary for this function.
 
     Returns:
+        (True/False, sha256-hash)
         True if the package integrity could be validated. Otherwise, False.
     """
     mode = munkicommon.pref('PackageVerificationMode')
+    chash = None
+    item_name = getInstallerItemBasename(file_path)
+    if always_hash:
+        chash = munkicommon.getsha256hash(file_path)
+
     if not mode:
-        return True
+        return (True, chash)
     elif mode.lower() == 'none':
         munkicommon.display_warning('Package integrity checking is disabled.')
-        return True
+        return (True, chash)
     elif mode.lower() == 'hash' or mode.lower() == 'hash_strict':
-        if item_key in item_pl:
+        if item_hash:
             munkicommon.display_status('Verifying package integrity...')
-            item_hash = item_pl[item_key]
-            if (item_hash is not 'N/A' and
-                item_hash == munkicommon.getsha256hash(file_path)):
-                return True
+            if not chash:
+                chash = munkicommon.getsha256hash(file_path)
+            if item_hash == chash:
+                return (True, chash)
             else:
                 munkicommon.display_error(
                     'Hash value integrity check for %s failed.' %
-                    item_pl.get('name'))
-                return False
+                    item_name)
+                return (False, chash)
         else:
             if mode.lower() == 'hash_strict':
                 munkicommon.display_error(
                     'Reference hash value for %s is missing in catalog.'
-                    % item_pl.get('name'))
-                return False
+                    % item_name)
+                return (False, chash)
             else:
                 munkicommon.display_warning(
                     'Reference hash value missing for %s -- package '
-                    'integrity verification skipped.' % item_pl.get('name'))
-                return True
+                    'integrity verification skipped.' % item_name)
+                return (True, chash)
     else:
         munkicommon.display_error(
             'The PackageVerificationMode in the ManagedInstalls.plist has an '
             'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
 
-    return False
+    return (False, chash)
 
 
 def getAutoRemovalItems(installinfo, cataloglist):
@@ -2334,11 +2342,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 # let's try to resume this download
                 print >> fileobj, 'continue-at -'
                 # if an existing etag, only resume if etags still match.
-                tempetag = None
-                if ('com.googlecode.munki.etag' in
-                        xattr.listxattr(tempdownloadpath)):
-                    tempetag = xattr.getxattr(tempdownloadpath,
-                        'com.googlecode.munki.etag')
+                tempetag = getxattr(tempdownloadpath, XATTR_ETAG)
                 if tempetag:
                     # Note: If-Range is more efficient, but the response
                     # confuses curl (Error: 33 if etag not match).
@@ -2503,8 +2507,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     # try asking it anything challenging.
                     os.remove(tempdownloadpath)
             elif header.get('etag'):
-                xattr.setxattr(tempdownloadpath,
-                               'com.googlecode.munki.etag', header['etag'])
+                xattr.setxattr(tempdownloadpath, XATTR_ETAG, header['etag'])
         # TODO: should we log this diagnostic here (we didn't previously)?
         # Currently for a pkg all that is logged on failure is:
         # "WARNING: Download of Firefox failed." with no detail. Logging at
@@ -2575,10 +2578,36 @@ def getDownloadCachePath(destinationpathprefix, url):
         destinationpathprefix, getInstallerItemBasename(url))
 
 
+def writeCachedChecksum(file_path, fhash=None):
+    """Write the sha256 checksum of a file to an xattr so we do not need to
+       calculate it again. Optionally pass the recently calculated hash value.
+    """
+    if not fhash:
+        fhash = munkicommon.getsha256hash(file_path)
+    if len(fhash) == 64:
+        xattr.setxattr(file_path, XATTR_SHA, fhash)
+        return fhash
+    return None
+
+
+def getxattr(file, attr):
+    """Get a named xattr from a file. Return None if not present"""
+    if attr in xattr.listxattr(file):
+        return xattr.getxattr(file, attr)
+    else:
+        return None
+
+
 def getResourceIfChangedAtomically(url, destinationpath,
-                                 message=None, resume=False):
-    """Gets file from a URL, checking first to see if it has changed on the
-       server.
+                                 message=None, resume=False,
+                                 expected_hash=None,
+                                 verify=False):
+    """Gets file from a URL.
+       Checks first if there is already a file with the necessary checksum.
+       Then checks if the file has changed on the server, resuming or
+       re-downloading as necessary.
+
+       If the file has changed verify the pkg hash if so configured.
 
        Supported schemes are http, https, file.
 
@@ -2587,18 +2616,53 @@ def getResourceIfChangedAtomically(url, destinationpath,
 
        Raises a MunkiDownloadError derived class if there is an error."""
 
-    url_parse = urlparse.urlparse(url)
+    changed = False
 
+    # If we already have a downloaded file & its (cached) hash matches what
+    # we need, do nothing, return unchanged.
+    if resume and expected_hash and os.path.isfile(destinationpath):
+        xattr_hash = getxattr(destinationpath, XATTR_SHA)
+        if not xattr_hash:
+            xattr_hash = writeCachedChecksum(destinationpath)
+        if xattr_hash == expected_hash:
+            #File is already current, no change.
+            return False
+        elif munkicommon.pref('PackageVerificationMode').lower() in \
+                                                    ['hash_strict','hash']:
+            try:
+                os.unlink(destinationpath)
+            except OSError:
+                pass
+        munkicommon.log('Cached payload does not match hash in catalog, '
+                'will check if changed and redownload: %s' % destinationpath)                
+        #continue with normal if-modified-since/etag update methods.
+
+    url_parse = urlparse.urlparse(url)
     if url_parse.scheme in ['http', 'https']:
-        return getHTTPfileIfChangedAtomically(
+        changed = getHTTPfileIfChangedAtomically(
                 url, destinationpath, message, resume)
     elif url_parse.scheme in ['file']:
-        return getFileIfChangedAtomically(
+        changed = getFileIfChangedAtomically(
                 url_parse.path, destinationpath)
     # TODO: in theory NFS, AFP, or SMB could be supported here.
     else:
         raise MunkiDownloadError(
                 'Unsupported scheme for %s: %s' % (url, url_parse.scheme))
+
+    if changed and verify:
+        (verify_ok, fhash) = verifySoftwarePackageIntegrity(destinationpath,
+                                                          expected_hash,
+                                                          always_hash=True)
+        if not verify_ok:
+            try:
+                os.unlink(destinationpath)
+            except OSError:
+                pass
+            raise PackageVerificationError()
+        if fhash:
+            writeCachedChecksum(destinationpath, fhash=fhash)
+
+    return changed
 
 
 def getFileIfChangedAtomically(path, destinationpath):
@@ -2700,10 +2764,9 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
     if os.path.exists(destinationpath):
         getonlyifnewer = True
         # see if we have an etag attribute
-        if 'com.googlecode.munki.etag' in xattr.listxattr(destinationpath):
+        etag = getxattr(destinationpath, XATTR_ETAG)
+        if etag:
             getonlyifnewer = False
-            etag = xattr.getxattr(destinationpath,
-                                  'com.googlecode.munki.etag')
 
     try:
         header = curl(url,
@@ -2743,8 +2806,7 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
             os.utime(destinationpath, (time.time(), modtimeint))
         if header.get('etag'):
             # store etag in extended attribute for future use
-            xattr.setxattr(destinationpath,
-                           'com.googlecode.munki.etag', header['etag'])
+            xattr.setxattr(destinationpath, XATTR_ETAG, header['etag'])
 
     return True
 

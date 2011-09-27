@@ -684,6 +684,7 @@ class AppleUpdates(object):
             return
         apple_updates = pl_dict.get('AppleUpdates', [])
         if apple_updates:
+            munkicommon.report['AppleUpdates'] = apple_updates
             munkicommon.display_info(
                 'The following Apple Software Updates are available to '
                 'install:')
