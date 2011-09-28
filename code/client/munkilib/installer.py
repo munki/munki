@@ -139,13 +139,16 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     # run installer, setting the program id of the process (all child
     # processes will also use the same program id), making it easier to kill
     # not only hung installer but also any child processes it started.
-    proc = munkicommon.Popen(cmd, shell=False, bufsize=-1,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            preexec_fn=lambda: os.setpgid(
-                                os.getpid(), os.getpid()))
+    env_vars = os.environ.copy()
+    if not 'USER' in env_vars:
+        env_vars['USER'] = 'root'
+    proc = munkicommon.Popen(cmd, shell=False, bufsize=1, env=env_vars,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, 
+                             stderr=subprocess.STDOUT,
+                             preexec_fn=lambda: os.setpgid(
+                                 os.getpid(), os.getpid()))
     timeout = 2 * 60 * 60
-
     while True:
         try:
             installinfo = proc.timed_readline(proc.stdout, timeout=timeout)
