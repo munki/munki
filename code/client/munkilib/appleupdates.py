@@ -40,11 +40,10 @@ from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 
 import FoundationPlist
-import fetch
 import launchd
 import munkicommon
 import munkistatus
-#import updatecheck
+import updatecheck
 
 
 # Apple Software Update Catalog URLs.
@@ -231,9 +230,9 @@ class AppleUpdates(object):
             except OSError, oserr:
                 raise ReplicationError(oserr)
         try:
-            fetch.getResourceIfChangedAtomically(
+            updatecheck.getResourceIfChangedAtomically(
                 full_url, local_file_path, resume=True)
-        except fetch.MunkiDownloadError, err:
+        except updatecheck.MunkiDownloadError, err:
             raise ReplicationError(err)
         return local_file_path
 
@@ -470,7 +469,7 @@ class AppleUpdates(object):
         Raises:
           CatalogNotFoundError: a catalog was not found to cache.
           ReplicationError: there was an error making the cache directory.
-          fetch.MunkiDownloadError: error downloading the catalog.
+          updatecheck.MunkiDownloadError: error downloading the catalog.
         """
         try:
             catalog_url = self._GetAppleCatalogURL()
@@ -484,10 +483,10 @@ class AppleUpdates(object):
                 raise ReplicationError(oserr)
         munkicommon.display_detail('Caching CatalogURL %s', catalog_url)
         try:
-            file_changed = fetch.getResourceIfChangedAtomically(
+            file_changed = updatecheck.getResourceIfChangedAtomically(
                 catalog_url, self.apple_download_catalog_path, resume=True)
             self.ExtractAndCopyDownloadedCatalog()
-        except fetch.MunkiDownloadError:
+        except updatecheck.MunkiDownloadError:
             raise
 
     def InstalledApplePackagesHaveChanged(self):
@@ -560,7 +559,7 @@ class AppleUpdates(object):
             munkicommon.display_warning('Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', str(err))
             return False
-        except fetch.MunkiDownloadError:
+        except updatecheck.MunkiDownloadError:
             munkicommon.display_warning('Could not download Apple SUS catalog.')
             return False
 
