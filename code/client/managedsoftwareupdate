@@ -525,6 +525,12 @@ def main():
     munkicommon.report['Errors'] = []
     munkicommon.report['Warnings'] = []
 
+    munkicommon.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
+    if options.verbose:
+        print 'Managed Software Update Tool'
+        print 'Copyright 2010-2011 The Munki Project'
+        print 'http://code.google.com/p/munki\n'
+
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
     result = runScript(preflightscript, 'preflight', runtype)
@@ -607,12 +613,6 @@ def main():
     
     # archive the previous session's report
     munkicommon.archive_report()
-
-    munkicommon.log("### Starting managedsoftwareupdate run ###")
-    if options.verbose:
-        print 'Managed Software Update Tool'
-        print 'Copyright 2010-2011 The Munki Project'
-        print 'http://code.google.com/p/munki\n'
 
     if applesoftwareupdatesonly and options.verbose:
         print ('NOTE: managedsoftwareupdate is configured to process Apple '
@@ -750,7 +750,6 @@ def main():
             if os.path.exists(checkandinstallatstartupflag):
                 os.unlink(checkandinstallatstartupflag)
 
-    munkicommon.log("### Ending managedsoftwareupdate run ###")
     # finish our report
     munkicommon.report['EndTime'] = munkicommon.format_time()
     munkicommon.report['ManagedInstallVersion'] = munkicommon.get_version()
@@ -764,6 +763,8 @@ def main():
     postflightscript = os.path.join(scriptdir, 'postflight')
     result = runScript(postflightscript, 'postflight', runtype)
     # we ignore the result of the postflight
+
+    munkicommon.log("### Ending managedsoftwareupdate run ###")
 
     munkicommon.cleanUpTmpDir()
     if mustrestart:
