@@ -540,7 +540,6 @@ def main():
         munkicommon.display_info(
             'managedsoftwareupdate run aborted by preflight script: %s' 
             % result)
-        munkicommon.display_info(stderr)
         # record the check result for use by Managed Software Update.app
         # right now, we'll return the same code as if the munki server
         # was unavailable. We need to revisit this and define additional
