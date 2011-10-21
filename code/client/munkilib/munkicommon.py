@@ -1653,7 +1653,7 @@ def findAppsInDirs(dirlist):
 
     for item in query.results():
         p = item.valueForAttribute_('kMDItemPath')
-        if not isExcludedFilesystem(p):
+        if p and not isExcludedFilesystem(p):
             applist.append(p)
 
     return applist
@@ -1710,7 +1710,7 @@ def getLSInstalledApplications():
         if status != 0:
             continue
         app_path = fsobj.as_pathname()
-        if (not app_path.startswith('/Volumes/') and not
+        if (app_path and not app_path.startswith('/Volumes/') and not
             isExcludedFilesystem(app_path)):
             applist.append(app_path)
 
