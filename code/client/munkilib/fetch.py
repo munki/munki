@@ -113,11 +113,11 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
     # curl so we avoid the problem of URLs showing up in a process listing
     try:
         fileobj = open(curldirectivepath, mode='w')
-        print >> fileobj, 'silent'         # no progress meter
-        print >> fileobj, 'show-error'     # print error msg to stderr
-        print >> fileobj, 'no-buffer'      # don't buffer output
-        print >> fileobj, 'fail'           # throw error if download fails
-        print >> fileobj, 'dump-header -'  # dump headers to stdout
+        print >> fileobj, 'silent'          # no progress meter
+        print >> fileobj, 'show-error'      # print error msg to stderr
+        print >> fileobj, 'no-buffer'       # don't buffer output
+        print >> fileobj, 'fail'            # throw error if download fails
+        print >> fileobj, 'dump-header -'   # dump headers to stdout
         print >> fileobj, 'speed-time = 30' # give up if too slow d/l
         print >> fileobj, 'output = "%s"' % tempdownloadpath
         print >> fileobj, 'ciphers = HIGH,!ADH' #use only secure >=128 bit SSL
