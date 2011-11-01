@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,7 @@
 
 This is intended as a drop-in replacement for Python's included plistlib,
 with a few caveats:
-    - readPlist() and writePlist() operate only on a filepath, 
+    - readPlist() and writePlist() operate only on a filepath,
         not a file object.
     - there is no support for the deprecated functions:
         readPlistFromResource()
@@ -34,7 +34,7 @@ function. 'rootObject' is the top level object, 'filepath' is a
 filename.
 
 To parse a plist from a file, use the readPlist(filepath) function,
-with a file name. It returns the top level object (again, usually a 
+with a file name. It returns the top level object (again, usually a
 dictionary).
 
 To work with plist data in strings, you can use readPlistFromString()
@@ -45,13 +45,13 @@ from Foundation import NSData, \
                        NSPropertyListSerialization, \
                        NSPropertyListMutableContainers, \
                        NSPropertyListXMLFormat_v1_0
-                       
+
 class FoundationPlistException(Exception):
     pass
 
 class NSPropertyListSerializationException(FoundationPlistException):
     pass
-    
+
 class NSPropertyListWriteException(FoundationPlistException):
     pass
 
@@ -62,9 +62,10 @@ def readPlist(filepath):
     """
     plistData = NSData.dataWithContentsOfFile_(filepath)
     dataObject, plistFormat, error = \
-NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(
-                    plistData, NSPropertyListMutableContainers, None, None)
+        NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(
+                     plistData, NSPropertyListMutableContainers, None, None)
     if error:
+        error = error.encode('ascii', 'ignore')
         errmsg = "%s in file %s" % (error, filepath)
         raise NSPropertyListSerializationException(errmsg)
     else:
@@ -78,6 +79,7 @@ def readPlistFromString(data):
      NSPropertyListSerialization.propertyListFromData_mutabilityOption_format_errorDescription_(
                     plistData, NSPropertyListMutableContainers, None, None)
     if error:
+        error = error.encode('ascii', 'ignore')
         raise NSPropertyListSerializationException(error)
     else:
         return dataObject
@@ -91,6 +93,7 @@ def writePlist(dataObject, filepath):
      NSPropertyListSerialization.dataFromPropertyList_format_errorDescription_(
                             dataObject, NSPropertyListXMLFormat_v1_0, None)
     if error:
+        error = error.encode('ascii', 'ignore')
         raise NSPropertyListSerializationException(error)
     else:
         if plistData.writeToFile_atomically_(filepath, True):
@@ -106,6 +109,7 @@ def writePlistToString(rootObject):
      NSPropertyListSerialization.dataFromPropertyList_format_errorDescription_(
                             rootObject, NSPropertyListXMLFormat_v1_0, None)
     if error:
+        error = error.encode('ascii', 'ignore')
         raise NSPropertyListSerializationException(error)
     else:
         return str(plistData)
