@@ -1145,7 +1145,7 @@ def getOnePackageInfo(pkgpath):
                 FoundationPlist.NSPropertyListSerializationException):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
                                     os.path.basename(pkgpath)
-            pkginfo['version'] = '0.0.0.0.0'
+            pkginfo['version'] = '0.0'
         ## now look for applications to suggest for blocking_applications
         #bomlist = getBomList(pkgpath)
         #if bomlist:
@@ -1166,6 +1166,8 @@ def getOnePackageInfo(pkgpath):
                     info = fileobj.read()
                     fileobj.close()
                     infolines = info.splitlines()
+                    pkginfo['version'] = '0.0'
+                    pkginfo['name'] = 'UNKNOWN'
                     for line in infolines:
                         parts = line.split(None, 1)
                         if len(parts) == 2:
