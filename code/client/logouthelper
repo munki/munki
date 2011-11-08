@@ -81,7 +81,7 @@ def alertUserOfForcedLogout(info=None):
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         f = open(launchfile, 'w')
         f.close()
-        time.sleep(0.1)
+        time.sleep(0.5)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         # now wait a bit for it to launch before proceeding
