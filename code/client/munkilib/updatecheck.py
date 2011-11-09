@@ -921,7 +921,7 @@ def getItemDetail(name, cataloglist, vers=''):
                 item = CATALOG[catalogname]['items'][index]
                 # we have an item whose name and version matches the request.
                 # now check to see if it meets os and cpu requirements
-                if 'minimum_os_version' in item:
+                if item.get('minimum_os_version', ''):
                     min_os_vers = item['minimum_os_version']
                     munkicommon.display_debug1(
                         'Considering item %s, ' % item['name'] +
@@ -941,7 +941,7 @@ def getItemDetail(name, cataloglist, vers=''):
                         rejected_items.append(reason)
                         continue
 
-                if 'maximum_os_version' in item:
+                if item.get('maximum_os_version', ''):
                     max_os_vers = item['maximum_os_version']
                     munkicommon.display_debug1(
                         'Considering item %s, ' % item['name'] +
@@ -2634,7 +2634,7 @@ def getResourceIfChangedAtomically(url, destinationpath,
             except OSError:
                 pass
         munkicommon.log('Cached payload does not match hash in catalog, '
-                'will check if changed and redownload: %s' % destinationpath)                
+                'will check if changed and redownload: %s' % destinationpath)
         #continue with normal if-modified-since/etag update methods.
 
     url_parse = urlparse.urlparse(url)
