@@ -880,6 +880,7 @@ class AppleUpdates(object):
         results['installed'] = []
         results['download'] = []
 
+        last_output = None
         while True:
             if stop_allowed and munkicommon.stopRequested():
                 job.stop()
@@ -894,6 +895,12 @@ class AppleUpdates(object):
                     # sleep a bit before checking for more output
                     time.sleep(1)
                     continue
+
+            # Don't bother parsing the stdout output if it hasn't changed since
+            # the last loop iteration.
+            if last_output == output:
+                continue
+            last_output = output
 
             output = output.decode('UTF-8').strip()
             # send the output to STDOUT or MunkiStatus as applicable
