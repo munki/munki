@@ -22,7 +22,6 @@ from AppKit import *
 from objc import YES, NO
 import os
 import munki
-import subprocess
 import PyObjCTools
 
 munki.setupLogging()
@@ -57,23 +56,7 @@ class MSUAppDelegate(NSObject):
         ver = NSBundle.mainBundle().infoDictionary().get(
             'CFBundleShortVersionString')
         NSLog("MSU GUI version: %s" % ver)
-
-        if os.environ.get('MACOSX_DEPLOYMENT_TARGET', None):
-            from_gui = False
-        else:
-            from_gui = True
-        try:
-            cmd = ['/bin/ps', '-p', '%d' % os.getppid(), '-x', '-o',
-                   'user=,pid=,comm=']
-            proc = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            (output, unused_err) = proc.communicate()
-            output = output.strip()
-            munki.log(
-                "MSU", "launched",
-                "VER=%s GUI=%s Parent Process=%s" % (ver, from_gui, output))
-        except OSError, e:
-            munki.log("MSU", "launched", "VER=%s ERR=%s" % (ver, str(e)))
+        munki.log("MSU", "launched", "VER=%s" % ver)
 
         runmode = NSUserDefaults.standardUserDefaults().stringForKey_("mode") or \
                   os.environ.get("ManagedSoftwareUpdateMode")
