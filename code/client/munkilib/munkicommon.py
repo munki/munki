@@ -1145,7 +1145,7 @@ def getOnePackageInfo(pkgpath):
                 FoundationPlist.NSPropertyListSerializationException):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
                                     os.path.basename(pkgpath)
-            pkginfo['version'] = '0.0.0.0.0'
+            pkginfo['version'] = '0.0'
         ## now look for applications to suggest for blocking_applications
         #bomlist = getBomList(pkgpath)
         #if bomlist:
@@ -1166,6 +1166,8 @@ def getOnePackageInfo(pkgpath):
                     info = fileobj.read()
                     fileobj.close()
                     infolines = info.splitlines()
+                    pkginfo['version'] = '0.0'
+                    pkginfo['name'] = 'UNKNOWN'
                     for line in infolines:
                         parts = line.split(None, 1)
                         if len(parts) == 2:
@@ -1653,7 +1655,7 @@ def findAppsInDirs(dirlist):
 
     for item in query.results():
         p = item.valueForAttribute_('kMDItemPath')
-        if not isExcludedFilesystem(p):
+        if p and not isExcludedFilesystem(p):
             applist.append(p)
 
     return applist
@@ -1710,7 +1712,7 @@ def getLSInstalledApplications():
         if status != 0:
             continue
         app_path = fsobj.as_pathname()
-        if (not app_path.startswith('/Volumes/') and not
+        if (app_path and not app_path.startswith('/Volumes/') and not
             isExcludedFilesystem(app_path)):
             applist.append(app_path)
 

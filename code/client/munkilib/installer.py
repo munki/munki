@@ -679,7 +679,9 @@ def installWithInfo(
                         (retcode, needtorestart) = installall(mountpoints[0],
                                                               choicesXMLfile,
                                                     suppressBundleRelocation)
-                    if needtorestart:
+                    if (needtorestart or
+                        item.get("RestartAction") == "RequireRestart" or
+                        item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
                 elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg")
@@ -687,8 +689,11 @@ def installWithInfo(
                     (retcode, needtorestart) = install(itempath,
                                                        choicesXMLfile,
                                                      suppressBundleRelocation)
-                    if needtorestart:
+                    if (needtorestart or
+                        item.get("RestartAction") == "RequireRestart" or
+                        item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
+                    
                 else:
                     # we didn't find anything we know how to install
                     munkicommon.log(
