@@ -118,6 +118,29 @@ class MSUAppDelegate(NSObject):
                 # no updates available. Should we check for some?
                 self.checkForUpdates()
 
+
+    def _sortUpdateList(self, l):
+        # pop any forced install items off the list.
+        forced_items = []
+        i = 0
+        while i < len(l):
+            if l[i].get('force_install_after_date'):
+                forced_items.append(l.pop(i))
+            else:
+                i += 1
+        # sort the regular update list, preferring display_name to name.
+        sort_lambda = lambda i: (i.get('display_name') or i.get('name')).lower()
+        l.sort(key=sort_lambda)
+        # if there were any forced items, add them to the top of the list.
+        if forced_items:
+            # sort forced items by datetime, reversed so soonest is last.
+            forced_items.sort(
+                key=lambda i: i.get('force_install_after_date'), reverse=True)
+            # insert items at top of the list one by one, so soonest is first.
+            for i in forced_items:
+                l.insert(0, i)
+
+
     def updateAvailableUpdates(self):
         NSLog(u"Managed Software Update got update notification")
         if self.mainWindowController.theWindow.isVisible():
@@ -290,6 +313,7 @@ class MSUAppDelegate(NSObject):
         if installinfo:
             optionalInstalls = installinfo.get("optional_installs", [])
         if optionalInstalls:
+            self._sortUpdateList(optionalInstalls)
             self._optionalInstalls = optionalInstalls
             self.update_view_controller.optionalSoftwareBtn.setHidden_(NO)
         else:
@@ -338,6 +362,7 @@ class MSUAppDelegate(NSObject):
                     updatelist.append(row)
 
         if updatelist:
+            self._sortUpdateList(updatelist)
             self._listofupdates = updatelist
             self.enableUpdateNowBtn_(YES)
             #self.performSelector_withObject_afterDelay_("enableUpdateNowBtn:", YES, 4)
