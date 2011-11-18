@@ -21,7 +21,7 @@ Created by Greg Neagle on 2008-11-13.
 
 """
 
-#standard libs
+# standard libs
 import calendar
 import errno
 import os
@@ -33,15 +33,16 @@ import time
 import urllib2
 import urlparse
 import xattr
-#from distutils import version
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
-#our libs
+# our libs
 import munkicommon
 import munkistatus
 import appleupdates
 import FoundationPlist
-from Foundation import NSDate
+
+# Apple's libs
+from Foundation import NSDate, NSPredicate
 
 
 # This many hours before a force install deadline, start notifying the user.
@@ -1662,58 +1663,117 @@ def processInstall(manifestitem, cataloglist, installinfo):
         return True
 
 
-def processManifestForKey(manifestpath, manifest_key, installinfo,
+INFO_OBJECT = {}
+def makeInfoObject():
+    if INFO_OBJECT:
+        return
+    for key in MACHINE.keys():
+        INFO_OBJECT[key] = MACHINE[key]
+    os_vers = MACHINE['os_vers']
+    os_vers = os_vers + '.0.0'
+    INFO_OBJECT['os_vers_major'] = int(os_vers.split('.')[0])
+    INFO_OBJECT['os_vers_minor'] = int(os_vers.split('.')[1])
+    INFO_OBJECT['os_vers_patch'] = int(os_vers.split('.')[2])
+    if 'Book' in MACHINE.get('machine_model', ''):
+        INFO_OBJECT['machine_type'] = 'laptop'
+    else:
+        INFO_OBJECT['machine_type'] = 'desktop'
+
+
+def predicateEvaluatesAsTrue(predicate_string):
+    '''Evaluates predicate against our info object''' 
+    munkicommon.display_debug1('Evaluating predicate: %s' % predicate_string)
+    try:
+        p = NSPredicate.predicateWithFormat_(predicate_string)
+    except Exception, e:
+        munkicommon.display_warning('%s' % e)
+        # can't parse predicate, so return False
+        return False
+        
+    result = p.evaluateWithObject_(INFO_OBJECT)
+    munkicommon.display_debug1(
+        'Predicate %s is %s' % (predicate_string, result))
+    return result
+
+
+def processManifestForKey(manifest, manifest_key, installinfo,
                           parentcatalogs=None):
     """Processes keys in manifests to build the lists of items to install and
     remove.
 
     Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well.
+    
+    manifest can be a path to a manifest file or a dictionary object.
     """
-    munkicommon.display_debug1(
-        "** Processing manifest %s for %s" %
-        (os.path.basename(manifestpath), manifest_key))
+    if isinstance(manifest, basestring):
+        munkicommon.display_debug1(
+            "** Processing manifest %s for %s" %
+            (os.path.basename(manifest), manifest_key))
+        manifestdata = getManifestData(manifest)
+    else:
+        manifestdata = manifest
+        manifest = 'embedded manifest'
 
-    cataloglist = getManifestValueForKey(manifestpath, 'catalogs')
+    cataloglist = manifestdata.get('catalogs')
     if cataloglist:
         getCatalogs(cataloglist)
     elif parentcatalogs:
         cataloglist = parentcatalogs
 
-    if cataloglist:
-        nestedmanifests = getManifestValueForKey(manifestpath,
-                                                 'included_manifests')
-        if nestedmanifests:
-            for item in nestedmanifests:
-                try:
-                    nestedmanifestpath = getmanifest(item)
-                except ManifestException:
-                    nestedmanifestpath = None
-                if munkicommon.stopRequested():
-                    return {}
-                if nestedmanifestpath:
-                    processManifestForKey(nestedmanifestpath, manifest_key,
-                                          installinfo, cataloglist)
-
-        items = getManifestValueForKey(manifestpath, manifest_key)
-        if items:
-            for item in items:
-                if munkicommon.stopRequested():
-                    return {}
-                if manifest_key == 'managed_installs':
-                    unused_result = processInstall(item, cataloglist,
-                                                   installinfo)
-                elif manifest_key == 'managed_updates':
-                    processManagedUpdate(item, cataloglist, installinfo)
-                elif manifest_key == 'optional_installs':
-                    processOptionalInstall(item, cataloglist, installinfo)
-                elif manifest_key == 'managed_uninstalls':
-                    unused_result = processRemoval(item, cataloglist,
-                                                   installinfo)
-
-    else:
+    if not cataloglist:
         munkicommon.display_warning('Manifest %s has no catalogs' %
                                     manifestpath)
+        return
+        
+    nestedmanifests = manifestdata.get('included_manifests')
+    if nestedmanifests:
+        for item in nestedmanifests:
+            try:
+                nestedmanifestpath = getmanifest(item)
+            except ManifestException:
+                nestedmanifestpath = None
+            if munkicommon.stopRequested():
+                return {}
+            if nestedmanifestpath:
+                processManifestForKey(nestedmanifestpath, manifest_key,
+                                      installinfo, cataloglist)
+                                      
+    conditionalitems = manifestdata.get('conditional_items')
+    if conditionalitems:
+        munkicommon.display_debug1(
+            '** Processing conditional_items in %s' % manifest)
+        # conditionalitems should be an array of dicts
+        # each dict has a predicate; the rest consists of the
+        # same keys as a manifest
+        for item in conditionalitems:
+            try:
+                predicate = item['condition']
+            except (AttributeError, KeyError):
+                munkicommon.display_warning(
+                    'Missing predicate for conditional_item %s' % item)
+                continue
+            INFO_OBJECT['catalogs'] = cataloglist
+            if predicateEvaluatesAsTrue(predicate):
+                conditionalmanifest = item
+                processManifestForKey(conditionalmanifest, manifest_key,
+                                      installinfo, cataloglist)
+
+    items = manifestdata.get(manifest_key)
+    if items:
+        for item in items:
+            if munkicommon.stopRequested():
+                return {}
+            if manifest_key == 'managed_installs':
+                unused_result = processInstall(item, cataloglist,
+                                               installinfo)
+            elif manifest_key == 'managed_updates':
+                processManagedUpdate(item, cataloglist, installinfo)
+            elif manifest_key == 'optional_installs':
+                processOptionalInstall(item, cataloglist, installinfo)
+            elif manifest_key == 'managed_uninstalls':
+                unused_result = processRemoval(item, cataloglist,
+                                               installinfo)
 
 
 def getReceiptsToRemove(item):
@@ -2003,17 +2063,21 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     return True
 
 
-def getManifestValueForKey(manifestpath, keyname):
-    """Returns a value for keyname in manifestpath"""
+def getManifestData(manifestpath):
+    '''Reads a manifest file, returns a
+    dictionary-like object'''
+    plist = {}
     try:
         plist = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
         munkicommon.display_error('Could not read plist %s' % manifestpath)
-        return None
-    if keyname in plist:
-        return plist[keyname]
-    else:
-        return None
+    return plist
+
+
+def getManifestValueForKey(manifestpath, keyname):
+    """Returns a value for keyname in manifestpath"""
+    plist = getManifestData(manifestpath)
+    return plist.get(keyname, None)
 
 
 # global to hold our catalog DBs
@@ -2811,8 +2875,26 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
     return True
 
 
-# we only want to call sw_vers and the like once. Since these values don't
-# change often, we store the info in MACHINE.
+def get_hardware_info():
+    '''Uses system profiler to get hardware info for this machine'''
+    cmd = ['/usr/sbin/system_profiler', 'SPHardwareDataType', '-xml']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, error) = proc.communicate()
+    try:
+        plist = FoundationPlist.readPlistFromString(output)
+        # system_profiler xml is an array
+        sp_dict = plist[0]
+        items = sp_dict['_items']
+        sp_hardware_dict = items[0]
+        return sp_hardware_dict
+    except Exception, e:
+        return {}
+
+
+# we only want to call system_profiler and the like once. Since these values 
+# don't change often, we store the info in MACHINE.
 MACHINE = {}
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
@@ -2822,6 +2904,8 @@ def getMachineFacts():
     MACHINE['hostname'] = os.uname()[1]
     MACHINE['arch'] = os.uname()[4]
     MACHINE['os_vers'] = munkicommon.getOsVersion(only_major_minor=False)
+    hardware_info = get_hardware_info()
+    MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
 
 
 def check(client_id='', localmanifestpath=None):
@@ -2859,7 +2943,10 @@ def check(client_id='', localmanifestpath=None):
         installinfo['optional_installs'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
-
+        
+        # set up INFO_OBJECT for conditional item comparisons
+        makeInfoObject()
+        
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
                               installinfo)
