@@ -1664,7 +1664,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
 
 
 INFO_OBJECT = {}
-def makeInfoObject():
+def makePredicateInfoObject():
     if INFO_OBJECT:
         return
     for key in MACHINE.keys():
@@ -2945,7 +2945,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = []
         
         # set up INFO_OBJECT for conditional item comparisons
-        makeInfoObject()
+        makePredicateInfoObject()
         
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
