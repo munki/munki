@@ -358,7 +358,8 @@ def copyFromDMG(dmgpath, itemlist):
                     destpath = item.get("destination_path")
                     if os.path.exists(destpath):
                         # remove item if it already exists
-                        olditem = os.path.join(destpath, itemname)
+                        olditem = os.path.join(destpath,
+                                               os.path.basename(itemname))
                         if os.path.exists(olditem):
                             retcode = subprocess.call(
                                                 ["/bin/rm", "-rf", olditem])
@@ -474,7 +475,7 @@ def removeCopiedItems(itemlist):
             munkicommon.display_error("Missing path for item to remove.")
             retcode = -1
             break
-        path_to_remove = os.path.join(destpath, itemname)
+        path_to_remove = os.path.join(destpath, os.path.basename(itemname))
         if os.path.exists(path_to_remove):
             munkicommon.display_status('Removing %s' % path_to_remove)
             retcode = subprocess.call(['/bin/rm', '-rf', path_to_remove])
