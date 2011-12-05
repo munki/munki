@@ -18,11 +18,11 @@
 managedsoftwareupdate
 """
 
-import grp
+#import grp
 import optparse
 import os
 import re
-import stat
+#import stat
 import subprocess
 import sys
 import time
@@ -696,7 +696,7 @@ def main():
                 if not munkicommon.pref('SuppressAutoInstall'):
                     doInstallTasks(only_unattended=True)
                 else:
-                     munkicommon.log('Skipping unattended installs because '
+                    munkicommon.log('Skipping unattended installs because '
                                      'SuppressAutoInstall is true.')
                 # send a notification event so MSU can update its display 
                 # if needed
