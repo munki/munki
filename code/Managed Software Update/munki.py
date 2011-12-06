@@ -434,7 +434,7 @@ def getRunningBlockingApps(appnames):
         if not matching_items:
             # try adding '.app' to the name and check again
             matching_items = [item for item in proc_list
-                              if '/'+ appname + '.app/' in item]
+                              if '/' + appname + '.app/' in item]
 
         matching_items = set(matching_items)
         for path in matching_items:
@@ -457,7 +457,7 @@ def getPowerInfo():
     cmd = ['/usr/bin/pmset', '-g', 'ps']
     proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    (output, error) = proc.communicate()
+    (output, unused_error) = proc.communicate()
     if proc.returncode:
         # handle error
         return power_dict
@@ -465,22 +465,22 @@ def getPowerInfo():
     # output from `pmset -g ps` looks like:
     #
     # Currently drawing from 'AC Power'
-    # -InternalBattery-0	100%; charged; 0:00 remaining
+    # -InternalBattery-0    100%; charged; 0:00 remaining
     #
     # or
     #
     # Currently drawing from 'AC Power'
-    # -InternalBattery-0	98%; charging; 0:08 remaining
+    # -InternalBattery-0    98%; charging; 0:08 remaining
     #
     # or
     #
     # Currently drawing from 'Battery Power'
-    # -InternalBattery-0	100%; discharging; (no estimate)
+    # -InternalBattery-0    100%; discharging; (no estimate)
     #
     # or
     #
     # Currently drawing from 'Battery Power'
-    # -InternalBattery-0	100%; discharging; 5:55 remaining
+    # -InternalBattery-0    100%; discharging; 5:55 remaining
     #
     line = output.splitlines()
     if 'AC Power' in line[0]:
@@ -506,7 +506,7 @@ def getPowerInfo():
             except (IndexError, ValueError):
                 pass
 
-        return power_dict
+    return power_dict
 
 
 def setupLogging(username=None):

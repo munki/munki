@@ -641,11 +641,11 @@ class MSUAppDelegate(NSObject):
         power_info = munki.getPowerInfo()
         if power_info.get('PowerSource') == 'Battery Power':
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                        NSLocalizedString(u"Your computer is not connected to a power source", None),
+                        NSLocalizedString(u"Your computer is not connected to a power source.", None),
                         NSLocalizedString(u"Cancel", None),
                         NSLocalizedString(u"Continue", None),
                         objc.nil,
-                        NSLocalizedString(u"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?", None)
+                        NSLocalizedString(u"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?", None))
             munki.log("MSU", "alert_on_battery_power")
             buttonPressed = alert.runModal()
             if buttonPressed == NSAlertDefaultReturn:
