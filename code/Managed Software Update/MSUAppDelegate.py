@@ -639,20 +639,26 @@ class MSUAppDelegate(NSObject):
 
     def alertIfRunnningOnBattery(self):
         power_info = munki.getPowerInfo()
-        if power_info.get('PowerSource') == 'Battery Power':
+        if (power_info.get('PowerSource') == 'Battery Power'
+            and power_info.get('BatteryCharge', 0) < 50):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                         NSLocalizedString(u"Your computer is not connected to a power source.", None),
-                        NSLocalizedString(u"Cancel", None),
                         NSLocalizedString(u"Continue", None),
+                        NSLocalizedString(u"Cancel", None),
                         objc.nil,
                         NSLocalizedString(u"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?", None))
             munki.log("MSU", "alert_on_battery_power")
+            # making UI consistent with Apple Software Update...
+            # set Cancel button to be activated by return key
+            alert.buttons()[1].setKeyEquivalent_('\r')
+            # set Ccontinue button to be activated by Escape key
+            alert.buttons()[0].setKeyEquivalent_(chr(27))
             buttonPressed = alert.runModal()
-            if buttonPressed == NSAlertDefaultReturn:
+            if buttonPressed == NSAlertAlternateReturn:
                 return True
         return False
 
-                                                                                                                  
+
     def installSessionErrorAlert(self):
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Cannot start installation session", None),
