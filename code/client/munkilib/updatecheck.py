@@ -1577,6 +1577,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # optional keys
             optional_keys = ['suppress_bundle_relocation',
                              'installer_choices_xml',
+                             'installer_environment',
                              'adobe_install_info',
                              'RestartAction',
                              'installer_type',

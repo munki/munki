@@ -22,6 +22,7 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 
 import datetime
 import os
+import pwd
 import signal
 import subprocess
 import time
@@ -79,7 +80,8 @@ def removeBundleRelocationInfo(pkgpath):
                 pass
 
 
-def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
+def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
+            environment=None):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
@@ -136,12 +138,28 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
 
+    # set up environment for installer
+    env_vars = os.environ.copy()
+    # get info for root
+    userinfo = pwd.getpwuid(0)
+    env_vars['USER'] = userinfo.pw_name
+    env_vars['HOME'] = userinfo.pw_dir
+    if environment:
+        # Munki admin has specified custom installer environment
+        for key in environment.keys():
+            if key == 'USER' and environment[key] == 'CURRENT_CONSOLE_USER':
+                # current console user (if there is one) 'owns' /dev/console
+                userinfo = pwd.getpwuid(os.stat('/dev/console').st_uid)
+                env_vars['USER'] = userinfo.pw_name
+                env_vars['HOME'] = userinfo.pw_dir
+            else:
+                env_vars[key] = environment[key]
+        munkicommon.display_debug1(
+            'Using custom installer environment variables: %s', env_vars)
+
     # run installer, setting the program id of the process (all child
     # processes will also use the same program id), making it easier to kill
     # not only hung installer but also any child processes it started.
-    env_vars = os.environ.copy()
-    if not 'USER' in env_vars:
-        env_vars['USER'] = 'root'
     proc = munkicommon.Popen(cmd, shell=False, bufsize=1, env=env_vars,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, 
@@ -222,7 +240,8 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False):
     return (retcode, restartneeded)
 
 
-def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False):
+def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
+                environment=None):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -250,7 +269,8 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False):
                 # of the mountpoint -- call us recursively!
                 (retcode, needsrestart) = installall(mountpoint,
                                                      choicesXMLpath,
-                                                     suppressBundleRelocation)
+                                                     suppressBundleRelocation,
+                                                     environment)
                 if needsrestart:
                     restartflag = True
                 if retcode:
@@ -262,7 +282,8 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False):
 
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
             (retcode, needsrestart) = install(itempath, choicesXMLpath,
-                                                suppressBundleRelocation)
+                                                suppressBundleRelocation,
+                                                environment)
             if needsrestart:
                 restartflag = True
             if retcode:
@@ -640,6 +661,7 @@ def installWithInfo(
                                                choicesXMLfile)
                 else:
                     choicesXMLfile = ''
+                installer_environment = item.get('installer_environment')
                 if itempath.endswith(".dmg"):
                     munkicommon.display_status("Mounting disk image %s" %
                                                 item["installer_item"])
@@ -672,14 +694,16 @@ def installWithInfo(
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = install(fullpkgpath,
                                                      choicesXMLfile,
-                                                     suppressBundleRelocation)
+                                                     suppressBundleRelocation,
+                                                     installer_environment)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = installall(mountpoints[0],
-                                                              choicesXMLfile,
-                                                    suppressBundleRelocation)
+                                                     choicesXMLfile,
+                                                     suppressBundleRelocation,
+                                                     installer_environment)
                     if (needtorestart or
                         item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
@@ -688,8 +712,9 @@ def installWithInfo(
                 elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg")
                       or itempath.endswith(".dist")):
                     (retcode, needtorestart) = install(itempath,
-                                                       choicesXMLfile,
-                                                     suppressBundleRelocation)
+                                                     choicesXMLfile,
+                                                     suppressBundleRelocation,
+                                                     installer_environment)
                     if (needtorestart or
                         item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
