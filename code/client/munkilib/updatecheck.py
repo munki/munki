@@ -1682,7 +1682,7 @@ def makePredicateInfoObject():
 
 
 def predicateEvaluatesAsTrue(predicate_string):
-    '''Evaluates predicate against our info object''' 
+    '''Evaluates predicate against our info object'''
     munkicommon.display_debug1('Evaluating predicate: %s' % predicate_string)
     try:
         p = NSPredicate.predicateWithFormat_(predicate_string)
@@ -1690,7 +1690,7 @@ def predicateEvaluatesAsTrue(predicate_string):
         munkicommon.display_warning('%s' % e)
         # can't parse predicate, so return False
         return False
-        
+
     result = p.evaluateWithObject_(INFO_OBJECT)
     munkicommon.display_debug1(
         'Predicate %s is %s' % (predicate_string, result))
@@ -1704,7 +1704,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
 
     Can be recursive if manifests include other manifests.
     Probably doesn't handle circular manifest references well.
-    
+
     manifest can be a path to a manifest file or a dictionary object.
     """
     if isinstance(manifest, basestring):
@@ -1726,7 +1726,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
         munkicommon.display_warning('Manifest %s has no catalogs' %
                                     manifestpath)
         return
-        
+
     nestedmanifests = manifestdata.get('included_manifests')
     if nestedmanifests:
         for item in nestedmanifests:
@@ -1739,7 +1739,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
             if nestedmanifestpath:
                 processManifestForKey(nestedmanifestpath, manifest_key,
                                       installinfo, cataloglist)
-                                      
+
     conditionalitems = manifestdata.get('conditional_items')
     if conditionalitems:
         munkicommon.display_debug1(
@@ -2894,7 +2894,7 @@ def get_hardware_info():
         return {}
 
 
-# we only want to call system_profiler and the like once. Since these values 
+# we only want to call system_profiler and the like once. Since these values
 # don't change often, we store the info in MACHINE.
 MACHINE = {}
 def getMachineFacts():
@@ -2944,10 +2944,10 @@ def check(client_id='', localmanifestpath=None):
         installinfo['optional_installs'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
-        
+
         # set up INFO_OBJECT for conditional item comparisons
         makePredicateInfoObject()
-        
+
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
                               installinfo)
@@ -3020,16 +3020,17 @@ def check(client_id='', localmanifestpath=None):
                                                        'managed_installs')
             available_optional_installs = [item['name']
                 for item in installinfo.get('optional_installs',[])]
-            # filter the list, removing any items not in the current list
-            # of available self-serve installs
-            selfserveinstalls = [item for item in selfserveinstalls
-                                 if item in available_optional_installs]
-            for item in selfserveinstalls:
-                unused_result = processInstall(
-                    item, cataloglist, installinfo)
-            # we don't need to filter uninstalls
-            processManifestForKey(selfservemanifest, 'managed_uninstalls',
-                                  installinfo, cataloglist)
+            if selfserveinstalls:
+                # filter the list, removing any items not in the current list
+                # of available self-serve installs
+                selfserveinstalls = [item for item in selfserveinstalls
+                                     if item in available_optional_installs]
+                for item in selfserveinstalls:
+                    unused_result = processInstall(
+                        item, cataloglist, installinfo)
+                # we don't need to filter uninstalls
+                processManifestForKey(selfservemanifest, 'managed_uninstalls',
+                                      installinfo, cataloglist)
 
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
