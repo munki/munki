@@ -2468,7 +2468,15 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 # we got an empty line; end of headers (or curl exited)
                 donewithheaders = True
                 try:
-                    targetsize = int(header.get('content-length'))
+                    # Prefer Content-Length header to determine download size,
+                    # otherwise fall back to a custom X-Download-Size header.
+                    # This is primary for servers that use chunked transfer
+                    # encoding, when Content-Length is forbidden by RFC2616 4.4.
+                    # An example of such a server is App Engine Blobstore.
+                    targetsize = (
+                        header.get('content-length') or
+                        header.get('x-download-size'))
+                    targetsize = int(targetsize)
                 except (ValueError, TypeError):
                     targetsize = 0
                 if header.get('http_result_code') == '206':
