@@ -28,16 +28,17 @@ import optparse
 import os
 import readline
 
-try:
-    from munkilib import FoundationPlist as plistlib
-except ImportError:
-    try:
-        import FoundationPlist as plistlib
-    except ImportError:
-        # maybe we're not on an OS X machine...
-        print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
-                              "using plistlib instead.")
-        import plistlib
+#try:
+#    from munkilib import FoundationPlist as plistlib
+#except ImportError:
+#    try:
+#        import FoundationPlist as plistlib
+#    except ImportError:
+#        # maybe we're not on an OS X machine...
+#        print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
+#                              "using plistlib instead.")
+#        import plistlib
+import plistlib
         
 try:
     from munkilib.munkicommon import get_version
@@ -357,7 +358,11 @@ def find(args):
     count = 0 
     for name in getManifestNames():
         pathname = os.path.join(manifests_path, name)
-        manifest = plistlib.readPlist(pathname)
+        try:
+            manifest = plistlib.readPlist(pathname)
+        except Exception:
+            print >> sys.stderr, 'Error reading %s' % pathname
+            continue
         if keyname:
             if keyname in manifest:
                 value = manifest[keyname]

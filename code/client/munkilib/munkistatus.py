@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -69,7 +69,7 @@ def sendCommand(command_text):
     global SOCK
     if SOCK == None:
         launchAndConnectToMunkiStatus()
-    if SOCK:        
+    if SOCK:
         try:
             # we can send only a single line.
             messagelines = command_text.splitlines(True)
@@ -97,17 +97,21 @@ def readResponse():
             print err, errmsg
             SOCK.close()
             SOCK = None
-            
+
     return ''
 
 
 def getPIDforProcessName(processname):
     '''Returns a process ID for processname'''
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    while True: 
+    try:
+        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except OSError:
+        return 0
+
+    while True:
         line =  proc.stdout.readline().decode('UTF-8')
         if not line and (proc.poll() != None):
             break
@@ -121,7 +125,7 @@ def getPIDforProcessName(processname):
             else:
                 if process.find(processname) != -1:
                     return str(pid)
-                
+
     return 0
 
 
@@ -147,7 +151,7 @@ def getMunkiStatusSocket():
             socketpath = "/tmp/com.googlecode.munki.munkistatus.%s" % pid
             if os.path.exists(socketpath):
                 return socketpath
-            
+
             # sleep and try again
             time.sleep(.25)
     return ""
@@ -202,7 +206,7 @@ def showStopButton():
 
 def disableStopButton():
     '''Disables (grays out) the stop button.'''
-    sendCommand(u"DISABLESTOPBUTTON: \n")       
+    sendCommand(u"DISABLESTOPBUTTON: \n")
 
 
 def enableStopButton():

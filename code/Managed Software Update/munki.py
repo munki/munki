@@ -434,7 +434,7 @@ def getRunningBlockingApps(appnames):
         if not matching_items:
             # try adding '.app' to the name and check again
             matching_items = [item for item in proc_list
-                              if '/'+ appname + '.app/' in item]
+                              if '/' + appname + '.app/' in item]
 
         matching_items = set(matching_items)
         for path in matching_items:
@@ -445,6 +445,68 @@ def getRunningBlockingApps(appnames):
             running_apps.append(filemanager.displayNameAtPath_(path))
 
     return list(set(running_apps))
+
+
+def getPowerInfo():
+    '''Returns power info in a dictionary'''
+    power_dict = {}
+    power_dict['PowerSource'] = 'Unknown Power'
+    power_dict['BatteryCharge'] = -1
+    power_dict['ChargingStatus'] = 'unknown'
+    power_dict['TimeRemaining'] = -1
+    cmd = ['/usr/bin/pmset', '-g', 'ps']
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    (output, unused_error) = proc.communicate()
+    if proc.returncode:
+        # handle error
+        return power_dict
+    #
+    # output from `pmset -g ps` looks like:
+    #
+    # Currently drawing from 'AC Power'
+    # -InternalBattery-0    100%; charged; 0:00 remaining
+    #
+    # or
+    #
+    # Currently drawing from 'AC Power'
+    # -InternalBattery-0    98%; charging; 0:08 remaining
+    #
+    # or
+    #
+    # Currently drawing from 'Battery Power'
+    # -InternalBattery-0    100%; discharging; (no estimate)
+    #
+    # or
+    #
+    # Currently drawing from 'Battery Power'
+    # -InternalBattery-0    100%; discharging; 5:55 remaining
+    #
+    line = output.splitlines()
+    if 'AC Power' in line[0]:
+        power_dict['PowerSource'] = 'AC Power'
+        power_dict['ChargingStatus'] = 'not applicable'
+    if 'Battery Power' in line[0]:
+        power_dict['PowerSource'] = 'Battery Power'
+        if len(line) > 1:
+            part = line[1].split()
+            try:
+                power_dict['BatteryCharge'] = int(part[1].rstrip('%;'))
+            except (IndexError, ValueError):
+                pass
+            try:
+                power_dict['ChargingStatus'] = part[2].rstrip(';')
+            except IndexError:
+                pass
+            try:
+                time_remaining_text = part[3]
+                time_part = time_remaining_text.split(':')
+                minutes = 60 * int(time_part[0]) + int(time_part[1])
+                power_dict['TimeRemaining'] = minutes
+            except (IndexError, ValueError):
+                pass
+
+    return power_dict
 
 
 def setupLogging(username=None):
