@@ -373,7 +373,8 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
 def getResourceIfChangedAtomically(url, destinationpath,
                                  message=None, resume=False,
-                                 expected_hash=None):
+                                 expected_hash=None,
+                                 verify=False):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -397,16 +398,16 @@ def getResourceIfChangedAtomically(url, destinationpath,
         if not xattr_hash:
             xattr_hash = writeCachedChecksum(destinationpath)
         if xattr_hash == expected_hash:
-            # File is already current, no change.
+            #File is already current, no change.
             return False
         elif munkicommon.pref('PackageVerificationMode').lower() in \
-                                                    ['hash_strict', 'hash']:
+                                                    ['hash_strict','hash']:
             try:
                 os.unlink(destinationpath)
             except OSError:
                 pass
         munkicommon.log('Cached payload does not match hash in catalog, '
-                'will check if changed and redownload: %s' % destinationpath)                
+                'will check if changed and redownload: %s' % destinationpath)
         #continue with normal if-modified-since/etag update methods.
 
     url_parse = urlparse.urlparse(url)
@@ -420,6 +421,19 @@ def getResourceIfChangedAtomically(url, destinationpath,
     else:
         raise MunkiDownloadError(
                 'Unsupported scheme for %s: %s' % (url, url_parse.scheme))
+
+    if changed and verify:
+        (verify_ok, fhash) = verifySoftwarePackageIntegrity(destinationpath,
+                                                          expected_hash,
+                                                          always_hash=True)
+        if not verify_ok:
+            try:
+                os.unlink(destinationpath)
+            except OSError:
+                pass
+            raise PackageVerificationError()
+        if fhash:
+            writeCachedChecksum(destinationpath, fhash=fhash)
 
     return changed
 

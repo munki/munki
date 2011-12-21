@@ -734,7 +734,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
     try:
-        changed = fetch.getResourceIfChangedAtomically(pkgurl, destinationpath,
+        unused_x = fetch.getResourceIfChangedAtomically(pkgurl, destinationpath,
                                                     resume=True,
                                                     message=dl_message,
                                                     expected_hash=expected_hash,
@@ -1644,6 +1644,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
 
 INFO_OBJECT = {}
 def makePredicateInfoObject():
+    '''Builds our info object used for predicate comparisons'''
     if INFO_OBJECT:
         return
     for key in MACHINE.keys():
@@ -2323,7 +2324,7 @@ def get_hardware_info():
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error) = proc.communicate()
+    (output, unused_error) = proc.communicate()
     try:
         plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array
@@ -2331,7 +2332,7 @@ def get_hardware_info():
         items = sp_dict['_items']
         sp_hardware_dict = items[0]
         return sp_hardware_dict
-    except Exception, e:
+    except Exception:
         return {}
 
 
