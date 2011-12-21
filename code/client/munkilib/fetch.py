@@ -594,3 +594,82 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
             # store etag in extended attribute for future use
             xattr.setxattr(destinationpath, XATTR_ETAG, header['etag'])
         return True
+        
+        
+def getURLitemBasename(url):
+    """For a URL, absolute or relative, return the basename string.
+
+    e.g. "http://foo/bar/path/foo.dmg" => "foo.dmg"
+         "/path/foo.dmg" => "foo.dmg"
+    """
+
+    url_parse = urlparse.urlparse(url)
+    return os.path.basename(url_parse.path)
+
+
+def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
+    """Verifies the integrity of the given software package.
+
+    The feature is controlled through the PackageVerificationMode key in
+    the ManagedInstalls.plist. Following modes currently exist:
+        none: No integrity check is performed.
+        hash: Integrity check is performed by calcualting a SHA-256 hash of
+            the given file and comparing it against the reference value in
+            catalog. Only applies for package plists that contain the
+            item_key; for packages without the item_key, verifcation always
+            returns True.
+        hash_strict: Same as hash, but returns False for package plists that
+            do not contain the item_key.
+
+    Args:
+        file_path: The file to check integrity on.
+        item_hash: the sha256 hash expected.
+        always_hash: True/False always check (& return) the hash even if not
+                necessary for this function.
+
+    Returns:
+        (True/False, sha256-hash)
+        True if the package integrity could be validated. Otherwise, False.
+    """
+    mode = munkicommon.pref('PackageVerificationMode')
+    chash = None
+    item_name = getURLitemBasename(file_path)
+    if always_hash:
+        chash = munkicommon.getsha256hash(file_path)
+
+    if not mode:
+        return (True, chash)
+    elif mode.lower() == 'none':
+        munkicommon.display_warning('Package integrity checking is disabled.')
+        return (True, chash)
+    elif mode.lower() == 'hash' or mode.lower() == 'hash_strict':
+        if item_hash:
+            munkicommon.display_status_minor('Verifying package integrity...')
+            if not chash:
+                chash = munkicommon.getsha256hash(file_path)
+            if item_hash == chash:
+                return (True, chash)
+            else:
+                munkicommon.display_error(
+                    'Hash value integrity check for %s failed.' %
+                    item_name)
+                return (False, chash)
+        else:
+            if mode.lower() == 'hash_strict':
+                munkicommon.display_error(
+                    'Reference hash value for %s is missing in catalog.'
+                    % item_name)
+                return (False, chash)
+            else:
+                munkicommon.display_warning(
+                    'Reference hash value missing for %s -- package '
+                    'integrity verification skipped.' % item_name)
+                return (True, chash)
+    else:
+        munkicommon.display_error(
+            'The PackageVerificationMode in the ManagedInstalls.plist has an '
+            'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
+
+    return (False, chash)
+
+
