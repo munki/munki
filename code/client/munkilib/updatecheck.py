@@ -745,10 +745,6 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
             munkicommon.display_detail(
                 'Downloading %s from %s' % (pkgname, location))
 
-    # bump up verboseness so we get download percentage done feedback.
-    # this is kind of a hack...
-    oldverbose = munkicommon.verbose
-    munkicommon.verbose = oldverbose + 1
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
     try:
@@ -760,9 +756,6 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     except MunkiDownloadError:
         munkicommon.verbose = oldverbose
         raise
-
-    # set verboseness back.
-    munkicommon.verbose = oldverbose
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
@@ -2471,8 +2464,9 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     # Prefer Content-Length header to determine download size,
                     # otherwise fall back to a custom X-Download-Size header.
                     # This is primary for servers that use chunked transfer
-                    # encoding, when Content-Length is forbidden by RFC2616 4.4.
-                    # An example of such a server is App Engine Blobstore.
+                    # encoding, when Content-Length is forbidden by 
+                    # RFC2616 4.4. An example of such a server is
+                    # Google App Engine Blobstore.
                     targetsize = (
                         header.get('content-length') or
                         header.get('x-download-size'))
@@ -2493,11 +2487,9 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
                 if message and header.get('http_result_code') != '304':
                     if message:
-                        # log always, display if verbose is 2 or more
-                        munkicommon.display_detail(message)
-                        if munkicommon.munkistatusoutput:
-                            # send to detail field on MunkiStatus
-                            munkistatus.detail(message)
+                        # log always, display if verbose is 1 or more
+                        # also display in MunkiStatus detail field
+                        munkicommon.display_status(message)
 
         elif targetsize and header.get('http_result_code').startswith('2'):
             # display progress if we get a 2xx result code
