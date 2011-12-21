@@ -394,7 +394,8 @@ def display_warning(msg, *args):
     """
     msg = concat_log_message(msg, *args)
     warning = 'WARNING: %s' % msg
-    print >> sys.stderr, warning.encode('UTF-8')
+    if verbose > 0:
+        print >> sys.stderr, warning.encode('UTF-8')
     log(warning)
     # append this warning to our warnings log
     log(warning, 'warnings.log')
@@ -417,7 +418,8 @@ def display_error(msg, *args):
     """
     msg = concat_log_message(msg, *args)
     errmsg = 'ERROR: %s' % msg
-    print >> sys.stderr, errmsg.encode('UTF-8')
+    if verbose > 0:
+        print >> sys.stderr, errmsg.encode('UTF-8')
     log(errmsg)
     # append this error to our errors log
     log(errmsg, 'errors.log')
