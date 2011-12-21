@@ -149,13 +149,7 @@ class AppleUpdates(object):
         Args:
           message: str message to display to the user and log.
         """
-        if munkicommon.munkistatusoutput:
-            munkistatus.message(message)
-            munkistatus.detail('')
-            munkistatus.percent(-1)
-            munkicommon.log(message)
-        else:
-            munkicommon.display_status(message)
+        munkicommon.display_status_major(message)
 
     def _GetURLPath(self, full_url):
         """Returns only the URL path.
@@ -248,7 +242,7 @@ class AppleUpdates(object):
         for product_key in catalog['Products'].keys():
             if munkicommon.stopRequested():
                 break
-            munkicommon.display_status(
+            munkicommon.display_status_minor(
                 'Caching metadata for product ID %s', product_key)
             product = catalog['Products'][product_key]
             if 'ServerMetadataURL' in product:
@@ -259,7 +253,7 @@ class AppleUpdates(object):
                 if munkicommon.stopRequested():
                     break
                 if 'MetadataURL' in package:
-                    munkicommon.display_status(
+                    munkicommon.display_status_minor(
                         'Caching package metadata for product ID %s',
                         product_key)
                     self.RetrieveURLToCacheDir(
@@ -269,7 +263,7 @@ class AppleUpdates(object):
             for dist_lang in distributions.keys():
                 if munkicommon.stopRequested():
                     break
-                munkicommon.display_status(
+                munkicommon.display_status_minor(
                     'Caching %s distribution for product ID %s',
                     dist_lang, product_key)
                 dist_url = distributions[dist_lang]
@@ -795,7 +789,7 @@ class AppleUpdates(object):
             # We can pretty it up before display.
             fields = output.rstrip().split()
             if len(fields) > 3:
-                munkicommon.display_status(' '.join(fields[3:]))
+                munkicommon.display_status_minor(' '.join(fields[3:]))
 
         retcode = proc.poll()
         # there's always an error on Leopard
@@ -924,7 +918,7 @@ class AppleUpdates(object):
             elif output.startswith('Installed '):
                 # 10.6 / 10.7. Successful install of package name.
                 if mode == 'install':
-                    munkicommon.display_status(output)
+                    munkicommon.display_status_minor(output)
                     results['installed'].append(output[10:])
                 else:
                     pass
@@ -933,7 +927,7 @@ class AppleUpdates(object):
                     # successful download-only session is odd.
             elif output.startswith('Done '):
                 # 10.5. Successful install of package name.
-                munkicommon.display_status(output)
+                munkicommon.display_status_minor(output)
                 results['installed'].append(output[5:])
             elif output.startswith('Downloading ') and mode == 'install':
                 # This is 10.5 & 10.7 behavior for a missing subpackage.
@@ -966,7 +960,7 @@ class AppleUpdates(object):
                 except ValueError:
                     pass
             else:
-                munkicommon.display_status(output)
+                munkicommon.display_status_minor(output)
 
         retcode = job.returncode()
         if retcode == 0:

@@ -527,7 +527,8 @@ def initDatabase(forcerebuild=False):
     if not shouldRebuildDB(packagedb) and not forcerebuild:
         return True
 
-    munkicommon.display_status('Gathering information on installed packages')
+    munkicommon.display_status_minor(
+        'Gathering information on installed packages')
 
     if os.path.exists(packagedb):
         try:
@@ -713,7 +714,8 @@ def getpathstoremove(pkgkeylist):
         "(path_key in (%s) and path_key not in (%s))" % \
                                 (in_selected_packages, not_in_other_packages)
 
-    munkicommon.display_status('Determining which filesystem items to remove')
+    munkicommon.display_status_minor(
+        'Determining which filesystem items to remove')
     if munkicommon.munkistatusoutput:
         munkistatus.percent(-1)
 
@@ -735,7 +737,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     /Library/Receipts/boms, our internal package database,
     and optionally Apple's package database.
     """
-    munkicommon.display_status('Removing receipt info')
+    munkicommon.display_status_minor('Removing receipt info')
     local_display_percent_done(0, 4)
 
     conn = sqlite3.connect(packagedb)
@@ -914,7 +916,8 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
     removalpaths.sort(reverse=True)
     removalerrors = ""
     removalcount = len(removalpaths)
-    munkicommon.display_status("Removing %s filesystem items" % removalcount)
+    munkicommon.display_status_minor(
+        'Removing %s filesystem items' % removalcount)
 
     itemcount = len(removalpaths)
     itemindex = 0
@@ -1042,7 +1045,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
                 munkistatus.disableStopButton()
             removeFilesystemItems(removalpaths, forcedeletebundles)
     else:
-        munkicommon.display_status('Nothing to remove.')
+        munkicommon.display_status_minor('Nothing to remove.')
         if munkicommon.munkistatusoutput:
             time.sleep(2)
 
@@ -1051,7 +1054,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
             removeReceipts(pkgkeyslist, noupdateapplepkgdb)
         if munkicommon.munkistatusoutput:
             munkistatus.enableStopButton()
-            munkicommon.display_status('Package removal complete.')
+            munkicommon.display_status_minor('Package removal complete.')
             time.sleep(2)
 
     return 0

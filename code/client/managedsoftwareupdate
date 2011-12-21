@@ -148,7 +148,8 @@ def runScript(script, display_name, runtype):
     script file are weaker than the current executable."""
     result = 0
     if os.path.exists(script):
-        munkicommon.display_status('Performing %s tasks...' % display_name)
+        munkicommon.display_status_minor(
+            'Performing %s tasks...' % display_name)
     else:
         return result
 
@@ -461,7 +462,7 @@ def main():
                     # we'll attempt to wait up to 10 seconds for the
                     # network interfaces to come up
                     # before continuing
-                    munkicommon.display_status('Waiting for network...')
+                    munkicommon.display_status_minor('Waiting for network...')
                     for i in range(5):
                         if networkUp():
                             break
