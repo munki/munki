@@ -263,7 +263,7 @@ def display_percent_done(current, maximum):
             else:
                 percentdone = int(float(current)/float(maximum)*100)
             munkistatus.percent(str(percentdone))
-    elif verbose > 1:
+    elif verbose > 0:
         step = getsteps(16, maximum)
         output = ''
         indicator = ['\t0', '.', '.', '20', '.', '.', '40', '.', '.',
