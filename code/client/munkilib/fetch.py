@@ -235,11 +235,9 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
                 if message and header.get('http_result_code') != '304':
                     if message:
-                        # log always, display if verbose is 2 or more
-                        munkicommon.display_detail(message)
-                        if munkicommon.munkistatusoutput:
-                            # send to detail field on MunkiStatus
-                            munkistatus.detail(message)
+                        # log always, display if verbose is 1 or more
+                        # also display in MunkiStatus detail field
+                        munkicommon.display_status_minor(message)
 
         elif targetsize and header.get('http_result_code').startswith('2'):
             # display progress if we get a 2xx result code
