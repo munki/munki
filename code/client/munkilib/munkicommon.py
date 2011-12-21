@@ -303,9 +303,28 @@ def concat_log_message(msg, *args):
     return msg
 
 
-def display_status(msg, *args):
+def display_status_major(msg, *args):
     """
     Displays major status messages, formatting as needed
+    for verbose/non-verbose and munkistatus-style output.
+    """
+    msg = concat_log_message(msg, *args)
+    log(msg)
+    if munkistatusoutput:
+        munkistatus.message(msg)
+        munkistatus.detail('')
+        munkistatus.percent(-1)
+    elif verbose > 0:
+        if msg.endswith('.') or msg.endswith(u'…'):
+            print '%s' % msg.encode('UTF-8')
+        else:
+            print '%s...' % msg.encode('UTF-8')
+        sys.stdout.flush()
+
+
+def display_status_minor(msg, *args):
+    """
+    Displays minor status messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
     msg = concat_log_message(msg, *args)
@@ -314,9 +333,9 @@ def display_status(msg, *args):
         munkistatus.detail(msg)
     elif verbose > 0:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print '%s' % msg.encode('UTF-8')
+            print '    %s' % msg.encode('UTF-8')
         else:
-            print '%s...' % msg.encode('UTF-8')
+            print '    %s...' % msg.encode('UTF-8')
         sys.stdout.flush()
 
 
@@ -336,10 +355,10 @@ def display_info(msg, *args):
 
 def display_detail(msg, *args):
     """
-    Displays minor info messages, formatting as needed
-    for verbose/non-verbose and munkistatus-style output.
+    Displays minor info messages.
+    Not displayed in MunkiStatus.
     These are usually logged only, but can be printed to
-    stdout if verbose is set to 2 or higher
+    stdout if verbose is set greater than 1
     """
     msg = concat_log_message(msg, *args)
     if munkistatusoutput:

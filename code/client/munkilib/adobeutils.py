@@ -500,11 +500,12 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
             else:
                 payloadinfo = ""
             if number_of_payloads:
-                
-                munkicommon.display_status("Completed payload %s of %s%s" %
-                   (payload_completed_count, number_of_payloads, payloadinfo))
+                munkicommon.display_status_minor(
+                    'Completed payload %s of %s%s' %
+                    (payload_completed_count, number_of_payloads,
+                     payloadinfo))
             else:
-                munkicommon.display_status("Completed payload %s%s" %
+                munkicommon.display_status_minor('Completed payload %s%s' %
                                        (payload_completed_count, payloadinfo))
             if munkicommon.munkistatusoutput:
                 munkistatus.percent(getPercent(payload_completed_count,
@@ -542,7 +543,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
     else:
         if munkicommon.munkistatusoutput:
             munkistatus.percent(100)
-        munkicommon.display_status("Done.")
+        munkicommon.display_status_minor('Done.')
         
     return retcode
 
@@ -550,8 +551,8 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
 def runAdobeSetup(dmgpath, uninstalling=False):
     '''Runs the Adobe setup tool in silent mode from
     an Adobe update DMG or an Adobe CS3 install DMG'''
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         setup_path = findSetupApp(mountpoints[0])
@@ -579,7 +580,7 @@ def runAdobeSetup(dmgpath, uninstalling=False):
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(mountpoints[0])
-            munkicommon.display_status("Running Adobe Setup")
+            munkicommon.display_status_minor('Running Adobe Setup')
             adobe_setup = [ setup_path, '--mode=silent',  
                             '--skipProcessCheck=1' ]
             if deploymentfile:
@@ -589,14 +590,14 @@ def runAdobeSetup(dmgpath, uninstalling=False):
             
         else:
             munkicommon.display_error(
-                             "%s doesn't appear to contain Adobe Setup." % 
-                             os.path.basename(dmgpath))
+                '%s doesn\'t appear to contain Adobe Setup.' %
+                 os.path.basename(dmgpath))
             retcode = -1
             
         munkicommon.unmountdmg(mountpoints[0])
         return retcode
     else:
-        munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
+        munkicommon.display_error('No mountable filesystems on %s' % dmgpath)
         return -1
 
 
@@ -635,15 +636,15 @@ def doAdobeCS5Uninstall(adobeInstallInfo):
                     '--action=uninstall',
                     '--skipProcessCheck=1', 
                     '--deploymentFile=%s' % deploymentFile ]
-    munkicommon.display_status("Running Adobe Uninstall")
+    munkicommon.display_status_minor('Running Adobe Uninstall')
     return runAdobeInstallTool(uninstall_cmd, payloadcount)
     
     
 def runAdobeCS5AAMEEInstall(dmgpath):
     '''Installs a CS5 product using an AAMEE-generated package on a 
     disk image.'''
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if not mountpoints:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
@@ -690,7 +691,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
                 '--setupBasePath=%s' % tmpdir, '--installDirPath=/',
                 '--mode=install'])
                 
-        munkicommon.display_status("Starting Adobe CS5 installer...")
+        munkicommon.display_status_minor('Starting Adobe CS5 installer...')
         retcode = runAdobeInstallTool(cmd, number_of_payloads,
                                                             killAdobeAIR=True)
         # now clean up our symlink hackfest
@@ -709,8 +710,8 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
     '''Runs the AdobePatchInstaller for CS5.
     Optionally can copy the DMG contents to the local disk
     to work around issues with the patcher.'''
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         if copylocal:
@@ -735,7 +736,7 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(updatedir)
-            munkicommon.display_status("Running Adobe Patch Installer")
+            munkicommon.display_status_minor('Running Adobe Patch Installer')
             install_cmd = [ patchinstaller, 
                             '--mode=silent',  
                             '--skipProcessCheck=1' ]
@@ -763,8 +764,8 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     pkgname is the name of a directory at the top level of the dmg
     containing the AdobeUber tools and their XML files.'''
     
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         installroot = mountpoints[0]
@@ -781,13 +782,10 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
             action = "Installing"
             if uninstalling:
                 action = "Uninstalling"
+            munkicommon.display_status_major('%s %s' % (action, packagename))
             if munkicommon.munkistatusoutput:
-                munkistatus.message("%s %s..." % (action, packagename))
-                munkistatus.detail("Starting %s" % os.path.basename(ubertool))
-                munkistatus.percent(-1)
-            else:
-                munkicommon.display_status("%s %s" % (action, packagename))
-            
+                munkistatus.detail('Starting %s' % os.path.basename(ubertool))
+
             # try to find and count the number of payloads 
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(installroot)
@@ -847,8 +845,8 @@ def updateAcrobatPro(dmgpath):
         munkistatus.percent(-1)
     
     #first mount the dmg
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
     if mountpoints:
         installroot = mountpoints[0]
@@ -887,10 +885,10 @@ def updateAcrobatPro(dmgpath):
     for line in appList:
         payloadNum = payloadNum + 1
         if munkicommon.munkistatusoutput:
-            munkistatus.percent(getPercent(payloadNum+1, len(appList)+1))
+            munkistatus.percent(getPercent(payloadNum + 1, len(appList) + 1))
         
         (appname, status) = line.split("\t")
-        munkicommon.display_status("Searching for %s" % appname)
+        munkicommon.display_status_minor('Searching for %s' % appname)
         # first look in the obvious place
         pathname = os.path.join("/Applications/Adobe Acrobat 9 Pro", appname)
         if os.path.exists(pathname):
@@ -920,7 +918,7 @@ def updateAcrobatPro(dmgpath):
             munkicommon.unmountdmg(installroot)
             return -1
         
-        munkicommon.display_status("Updating %s" % appname)
+        munkicommon.display_status_minor('Updating %s' % appname)
         apppath = os.path.dirname(candidates[0]["path"])
         cmd = [ApplyOperation, apppath, appname, resourcesDir,
                callingScriptPath, str(payloadNum)]
@@ -950,9 +948,10 @@ def updateAcrobatPro(dmgpath):
                                        (appname, retcode))
             break
         else:
-            munkicommon.display_status("Patching %s complete." % appname)
+            munkicommon.display_status_minor(
+                'Patching %s complete.' % appname)
     
-    munkicommon.display_status("Done.")
+    munkicommon.display_status_minor('Done.')
     if munkicommon.munkistatusoutput:
         munkistatus.percent(100)
     

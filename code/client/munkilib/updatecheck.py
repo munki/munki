@@ -1234,7 +1234,7 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
         return (True, chash)
     elif mode.lower() == 'hash' or mode.lower() == 'hash_strict':
         if item_hash:
-            munkicommon.display_status('Verifying package integrity...')
+            munkicommon.display_status_minor('Verifying package integrity...')
             if not chash:
                 chash = munkicommon.getsha256hash(file_path)
             if item_hash == chash:
@@ -2489,7 +2489,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                     if message:
                         # log always, display if verbose is 1 or more
                         # also display in MunkiStatus detail field
-                        munkicommon.display_status(message)
+                        munkicommon.display_status_minor(message)
 
         elif targetsize and header.get('http_result_code').startswith('2'):
             # display progress if we get a 2xx result code
@@ -2918,14 +2918,11 @@ def check(client_id='', localmanifestpath=None):
     munkicommon.report['MachineInfo'] = MACHINE
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-
     if munkicommon.munkistatusoutput:
         munkistatus.activate()
-        munkistatus.message('Checking for available updates...')
-        munkistatus.detail('')
-        munkistatus.percent('-1')
 
     munkicommon.log('### Beginning managed software check ###')
+    munkicommon.display_status_major('Checking for available updates...')
 
     if localmanifestpath:
         mainmanifestpath = localmanifestpath
@@ -3178,7 +3175,7 @@ def check(client_id='', localmanifestpath=None):
     munkicommon.log('')
     if installcount:
         munkicommon.display_info(
-            'The following items will be installed or upgraded:')
+            '\nThe following items will be installed or upgraded:')
     for item in installinfo.get('managed_installs', []):
         if item.get('installer_item'):
             munkicommon.display_info('    + %s-%s' %

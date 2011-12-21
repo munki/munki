@@ -107,13 +107,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
         restartaction = pkginfo.get('RestartAction','None')
     if not packagename:
         packagename = os.path.basename(pkgpath)
-
-    if munkicommon.munkistatusoutput:
-        munkistatus.message("Installing %s..." % packagename)
-        munkistatus.detail("")
-        # clear indeterminate progress bar
-        munkistatus.percent(0)
-
+    #munkicommon.display_status_major("Installing %s..." % packagename)
     munkicommon.log("Installing %s from %s" % (packagename,
                                                os.path.basename(pkgpath)))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
@@ -126,8 +120,8 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     restartaction = str(output).decode('UTF-8').rstrip("\n")
     if restartaction == "RequireRestart" or \
        restartaction == "RecommendRestart":
-        munkicommon.display_status("%s requires a restart after installation."
-                                    % packagename)
+        munkicommon.display_status_minor(
+            '%s requires a restart after installation.' % packagename)
         restartneeded = True
 
     # get the OS version; we need it later when processing installer's output,
@@ -189,11 +183,11 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
             if msg.startswith("PHASE:"):
                 phase = msg[6:]
                 if phase:
-                    munkicommon.display_status(phase)
+                    munkicommon.display_status_minor(phase)
             elif msg.startswith("STATUS:"):
                 status = msg[7:]
                 if status:
-                    munkicommon.display_status(status)
+                    munkicommon.display_status_minor(status)
             elif msg.startswith("%"):
                 percent = float(msg[1:])
                 if os_version == '10.5':
@@ -202,7 +196,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                 if munkicommon.munkistatusoutput:
                     munkistatus.percent(percent)
                 else:
-                    munkicommon.display_status(
+                    munkicommon.display_status_minor(
                         "%s percent complete" % percent)
             elif msg.startswith(" Error"):
                 munkicommon.display_error(msg)
@@ -224,9 +218,8 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
         retcode = proc.poll()
 
     if retcode != 0:  # this could be <0, >0, or even None (never returned)
-        munkicommon.display_status(
-                "Install of %s failed with return code %s" % (
-                    packagename, retcode))
+        munkicommon.display_status_minor(
+            "Install of %s failed with return code %s" % (packagename, retcode))
         munkicommon.display_error("-"*78)
         for line in installeroutput:
             munkicommon.display_error(line.rstrip("\n"))
@@ -295,8 +288,8 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
 
 def copyAppFromDMG(dmgpath):
     '''copies application from DMG to /Applications'''
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = munkicommon.mountdmg(dmgpath)
     if mountpoints:
         retcode = 0
@@ -317,8 +310,8 @@ def copyAppFromDMG(dmgpath):
                     munkicommon.display_error("Error removing existing "
                                               "%s" % destpath)
             if retcode == 0:
-                munkicommon.display_status(
-                            "Copying %s to Applications folder" % appname)
+                munkicommon.display_status_minor(
+                    'Copying %s to Applications folder' % appname)
                 retcode = subprocess.call(["/bin/cp", "-R",
                                             itempath, destpath])
                 if retcode:
@@ -340,8 +333,8 @@ def copyAppFromDMG(dmgpath):
                                              "com.apple.quarantine",
                                               destpath])
                 # let the user know we completed successfully
-                munkicommon.display_status(
-                                "The software was successfully installed.")
+                munkicommon.display_status_minor(
+                    'The software was successfully installed.')
         munkicommon.unmountdmg(mountpoint)
         if not appname:
             munkicommon.display_error("No application found on %s" %
@@ -361,8 +354,8 @@ def copyFromDMG(dmgpath, itemlist):
         munkicommon.display_error("No items to copy!")
         return -1
 
-    munkicommon.display_status("Mounting disk image %s" %
-                                os.path.basename(dmgpath))
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = munkicommon.mountdmg(dmgpath)
     if mountpoints:
         mountpoint = mountpoints[0]
@@ -397,7 +390,7 @@ def copyFromDMG(dmgpath, itemlist):
                     retcode = -1
 
             if retcode == 0:
-                munkicommon.display_status(
+                munkicommon.display_status_minor(
                     "Copying %s to %s" % (itemname, destpath))
                 retcode = subprocess.call(["/bin/cp", "-pR",
                                             itempath, destpath])
@@ -467,7 +460,7 @@ def copyFromDMG(dmgpath, itemlist):
 
         if retcode == 0:
             # let the user know we completed successfully
-            munkicommon.display_status(
+            munkicommon.display_status_minor(
                                 "The software was successfully installed.")
         munkicommon.unmountdmg(mountpoint)
         return retcode
@@ -498,7 +491,7 @@ def removeCopiedItems(itemlist):
             break
         path_to_remove = os.path.join(destpath, os.path.basename(itemname))
         if os.path.exists(path_to_remove):
-            munkicommon.display_status('Removing %s' % path_to_remove)
+            munkicommon.display_status_minor('Removing %s' % path_to_remove)
             retcode = subprocess.call(['/bin/rm', '-rf', path_to_remove])
             if retcode:
                 munkicommon.display_error('Removal error for %s' %
@@ -605,16 +598,10 @@ def installWithInfo(
         if retcode == 0 and 'installer_item' in item:
             display_name = item.get('display_name') or item.get('name')
             version_to_install = item.get('version_to_install','')
-            if munkicommon.munkistatusoutput:
-                munkistatus.message("Installing %s (%s of %s)..." %
-                                    (display_name, itemindex,
-                                     len(installlist)))
-                munkistatus.detail('')
-                munkistatus.percent(-1)
-            else:
-                munkicommon.display_status("Installing %s (%s of %s)" %
-                                            (display_name, itemindex,
-                                            len(installlist)))
+            munkicommon.display_status_major(
+                "Installing %s (%s of %s)" 
+                % (display_name, itemindex, len(installlist)))
+
             itempath = os.path.join(dirpath, item["installer_item"])
             if not os.path.exists(itempath):
                 # can't install, so we should stop. Since later items might
@@ -663,8 +650,8 @@ def installWithInfo(
                     choicesXMLfile = ''
                 installer_environment = item.get('installer_environment')
                 if itempath.endswith(".dmg"):
-                    munkicommon.display_status("Mounting disk image %s" %
-                                                item["installer_item"])
+                    munkicommon.display_status_minor(
+                        "Mounting disk image %s" % item["installer_item"])
                     mountWithShadow = suppressBundleRelocation
                     # we need to mount the diskimage as read/write to
                     # be able to modify the package to suppress bundle
@@ -872,15 +859,11 @@ def runEmbeddedScript(scriptname, pkginfo_item):
 
 def runScript(itemname, path, scriptname):
     '''Runs a script, Returns return code.'''
+    munkicommon.display_status_minor(
+        'Running %s for %s ' % (scriptname, itemname))
     if munkicommon.munkistatusoutput:
-        munkistatus.message('Running %s for %s '
-                            % (scriptname, itemname))
-        munkistatus.detail("")
         # set indeterminate progress bar
         munkistatus.percent(-1)
-    else:
-        munkicommon.display_status('Running %s for %s '
-                                   % (scriptname, itemname))
 
     scriptoutput = []
     try:
@@ -981,14 +964,8 @@ def processRemovals(removallist, only_unattended=False):
 
         index += 1
         name = item.get('display_name') or item.get('name')
-        if munkicommon.munkistatusoutput:
-            munkistatus.message("Removing %s (%s of %s)..." %
-                                (name, index, len(removallist)))
-            munkistatus.detail("")
-            munkistatus.percent(-1)
-        else:
-            munkicommon.display_status("Removing %s (%s of %s)..." %
-                                      (name, index, len(removallist)))
+        munkicommon.display_status_major(
+            "Removing %s (%s of %s)..." % (name, index, len(removallist)))
 
         retcode = 0
         # run preuninstall_script if it exists
@@ -1024,8 +1001,8 @@ def processRemovals(removallist, only_unattended=False):
                 remove_app_info = item.get('remove_app_info', None)
                 if remove_app_info:
                     path_to_remove = remove_app_info['path']
-                    munkicommon.display_status("Removing %s" %
-                                                path_to_remove)
+                    munkicommon.display_status_minor(
+                        'Removing %s' % path_to_remove)
                     retcode = subprocess.call(["/bin/rm", "-rf",
                                                 path_to_remove])
                     if retcode:
