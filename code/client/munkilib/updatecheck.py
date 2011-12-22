@@ -734,11 +734,11 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
     try:
-        unused_x = getMunkiResource(pkgurl, destinationpath,
-                                    resume=True,
-                                    message=dl_message,
-                                    expected_hash=expected_hash,
-                                    verify=True)
+        unused_x = getResourceIfChangedAtomically(pkgurl, destinationpath,
+                                                  resume=True,
+                                                  message=dl_message,
+                                                  expected_hash=expected_hash,
+                                                  verify=True)
     except fetch.MunkiDownloadError:
         raise
 
@@ -2021,7 +2021,7 @@ def getCatalogs(cataloglist):
             munkicommon.display_detail('Getting catalog %s...' % catalogname)
             message = 'Retreiving catalog "%s"...' % catalogname
             try:
-                unused_value = getMunkiResource(
+                unused_value = getResourceIfChangedAtomically(
                     catalogurl, catalogpath, message=message)
             except fetch.MunkiDownloadError, err:
                 munkicommon.display_error(
@@ -2092,7 +2092,7 @@ def getmanifest(partialurl, suppress_errors=False):
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = 'Retreiving list of software for this machine...'
     try:
-        unused_value = getMunkiResource(
+        unused_value = getResourceIfChangedAtomically(
             manifesturl, manifestpath, message=message)
     except fetch.MunkiDownloadError, err:
         if not suppress_errors:
@@ -2648,12 +2648,12 @@ def checkForceInstallPackages():
     return result
 
 
-def getMunkiResource(url,
-                     destinationpath,
-                     message=None, 
-                     resume=False,
-                     expected_hash=None,
-                     verify=False):
+def getResourceIfChangedAtomically(url,
+                                  destinationpath,
+                                  message=None, 
+                                  resume=False,
+                                  expected_hash=None,
+                                  verify=False):
                      
     '''Gets a given URL from the Munki server. Sets up cert/CA info if it 
     exists, and adds any additional headers'''
