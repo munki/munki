@@ -871,7 +871,10 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.path.exists(self.au.temp_cache_dir).AndReturn(False)
         appleupdates.os.makedirs(self.au.temp_cache_dir).AndReturn(None)
 
-        appleupdates.munkicommon.display_detail('Caching CatalogURL %s', url)
+        appleupdates.munkicommon.display_status_major(
+            'Checking Apple Software Update catalog...')
+        appleupdates.munkicommon.display_detail(
+            'Caching CatalogURL %s', url)
         self.au.GetSoftwareUpdateResource(
             url, self.au.apple_download_catalog_path, resume=True).AndReturn(
                 0)
@@ -925,7 +928,10 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.path.exists(self.au.temp_cache_dir).AndReturn(False)
         appleupdates.os.makedirs(self.au.temp_cache_dir).AndReturn(None)
 
-        appleupdates.munkicommon.display_detail('Caching CatalogURL %s', url)
+        appleupdates.munkicommon.display_status_major(
+            'Checking Apple Software Update catalog...')
+        appleupdates.munkicommon.display_detail(
+            'Caching CatalogURL %s', url)
         self.au.GetSoftwareUpdateResource(
             url, self.au.apple_download_catalog_path, resume=True).AndRaise(
                 appleupdates.fetch.MunkiDownloadError)

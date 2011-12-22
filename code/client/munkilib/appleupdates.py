@@ -493,6 +493,8 @@ class AppleUpdates(object):
                 os.makedirs(self.temp_cache_dir)
             except OSError, oserr:
                 raise ReplicationError(oserr)
+        msg = 'Checking Apple Software Update catalog...'
+        self._ResetMunkiStatusAndDisplayMessage(msg)
         munkicommon.display_detail('Caching CatalogURL %s', catalog_url)
         try:
             file_changed = self.GetSoftwareUpdateResource(
