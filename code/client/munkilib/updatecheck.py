@@ -1977,13 +1977,19 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
 
 def getManifestData(manifestpath):
-    '''Reads a manifest file, returns a
-    dictionary-like object'''
+    '''Reads a manifest file, returns a dictionary-like object.'''
     plist = {}
     try:
         plist = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
-        munkicommon.display_error('Could not read plist %s' % manifestpath)
+        munkicommon.display_error('Could not read plist: %s', manifestpath)
+        if os.path.exists(manifestpath):
+            try:
+                os.unlink(manifestpath)
+            except OSError, e:
+                munkicommon.display_error('Failed to delete plist: %s', str(e))
+        else:
+            munkicommon.display_error('plist does not exist.')
     return plist
 
 
