@@ -229,7 +229,7 @@ def get_version():
             except KeyError:
                 pass
     if build:
-        vers = vers + " Build " + build
+        vers = vers + "." + build
     return vers
 
 
@@ -1798,6 +1798,37 @@ def getRunningProcesses():
 
 
 # some utility functions
+
+def get_hardware_info():
+    '''Uses system profiler to get hardware info for this machine'''
+    cmd = ['/usr/sbin/system_profiler', 'SPHardwareDataType', '-xml']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, unused_error) = proc.communicate()
+    try:
+        plist = FoundationPlist.readPlistFromString(output)
+        # system_profiler xml is an array
+        sp_dict = plist[0]
+        items = sp_dict['_items']
+        sp_hardware_dict = items[0]
+        return sp_hardware_dict
+    except Exception:
+        return {}
+
+MACHINE = {}
+def getMachineFacts():
+    """Gets some facts about this machine we use to determine if a given
+    installer is applicable to this OS or hardware"""
+    if not MACHINE:
+        MACHINE['hostname'] = os.uname()[1]
+        MACHINE['arch'] = os.uname()[4]
+        MACHINE['os_vers'] = getOsVersion(only_major_minor=False)
+        hardware_info = get_hardware_info()
+        MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
+        MACHINE['munki_version'] = get_version()
+    return MACHINE
+
 
 def isAppRunning(appname):
     """Tries to determine if the application in appname is currently

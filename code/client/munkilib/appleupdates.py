@@ -224,11 +224,29 @@ class AppleUpdates(object):
             except OSError, oserr:
                 raise ReplicationError(oserr)
         try:
-            fetch.getResourceIfChangedAtomically(
+            self.GetSoftwareUpdateResource(
                 full_url, local_file_path, resume=True)
         except fetch.MunkiDownloadError, err:
             raise ReplicationError(err)
         return local_file_path
+        
+        
+    def GetSoftwareUpdateResource(self, url, destinationpath, resume=False):
+        '''Gets item from Apple Software Update Server.
+        We set the User-Agent header to match that used by Apple's
+        softwareupdate client for better compatibility'''
+        
+        machine = munkicommon.getMachineFacts()
+        darwin_version = os.uname()[2]
+        user_agent_header = (
+            "User-Agent: managedsoftwareupdate/%s Darwin/%s (%s) (%s)" 
+            % (machine['munki_version'], darwin_version, 
+               machine['arch'], machine['machine_model']))
+        return fetch.getResourceIfChangedAtomically(
+                                            url,
+                                            destinationpath,
+                                            custom_headers=[user_agent_header],
+                                            resume=resume)
 
     def CacheUpdateMetadata(self):
         """Copies ServerMetadata (.smd), Metadata (.pkm), and
@@ -477,7 +495,7 @@ class AppleUpdates(object):
                 raise ReplicationError(oserr)
         munkicommon.display_detail('Caching CatalogURL %s', catalog_url)
         try:
-            file_changed = fetch.getResourceIfChangedAtomically(
+            file_changed = self.GetSoftwareUpdateResource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
             self.ExtractAndCopyDownloadedCatalog()
         except fetch.MunkiDownloadError:

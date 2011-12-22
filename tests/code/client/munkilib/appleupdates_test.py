@@ -49,8 +49,8 @@ class TestAppleUpdates(mox.MoxTestBase):
     def _MockMunkiDisplay(self):
         """Mock out all munkicommon.display_* methods."""
         for display in [
-            'percent_done', 'status', 'info', 'detail', 'debug1', 'debug2',
-            'warning', 'error']:
+            'percent_done', 'status_major', 'status_minor', 
+            'info', 'detail', 'debug1', 'debug2', 'warning', 'error']:
             self.mox.StubOutWithMock(
                 appleupdates.munkicommon, 'display_%s' % display)
 
@@ -75,10 +75,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         msg = 'foo + bar == foobar'
 
         appleupdates.munkicommon.munkistatusoutput = True
-        appleupdates.munkistatus.message(msg)
-        appleupdates.munkistatus.detail('')
-        appleupdates.munkistatus.percent(-1)
-        appleupdates.munkicommon.log(msg)
+        appleupdates.munkicommon.display_status_major(msg)
 
         self.mox.ReplayAll()
         self.au._ResetMunkiStatusAndDisplayMessage(msg)
@@ -91,7 +88,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         msg = 'asdf'
 
         appleupdates.munkicommon.munkistatusoutput = False
-        appleupdates.munkicommon.display_status(msg)
+        appleupdates.munkicommon.display_status_major(msg)
 
         self.mox.ReplayAll()
         self.au._ResetMunkiStatusAndDisplayMessage(msg)
@@ -266,19 +263,19 @@ class TestAppleUpdates(mox.MoxTestBase):
             self.au.filtered_catalog_path).AndReturn(catalog)
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
-        appleupdates.munkicommon.display_status(
+        appleupdates.munkicommon.display_status_minor(
             'Caching metadata for product ID %s', 'key0')
         self.au.RetrieveURLToCacheDir(
             'url0', copy_only_if_missing=True).AndReturn(None)
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
-        appleupdates.munkicommon.display_status(
+        appleupdates.munkicommon.display_status_minor(
             'Caching package metadata for product ID %s', 'key0')
         self.au.RetrieveURLToCacheDir(
             'url1', copy_only_if_missing=True).AndReturn(None)
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
-        appleupdates.munkicommon.display_status(
+        appleupdates.munkicommon.display_status_minor(
             'Caching %s distribution for product ID %s', 'lang',
             'key0').AndReturn(None)
         self.au.RetrieveURLToCacheDir(
@@ -332,19 +329,19 @@ class TestAppleUpdates(mox.MoxTestBase):
             self.au.filtered_catalog_path).AndReturn(catalog)
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
-        appleupdates.munkicommon.display_status(
+        appleupdates.munkicommon.display_status_minor(
             'Caching metadata for product ID %s', 'key0')
         self.au.RetrieveURLToCacheDir(
             'url0', copy_only_if_missing=True).AndReturn(None)
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
-        appleupdates.munkicommon.display_status(
+        appleupdates.munkicommon.display_status_minor(
             'Caching package metadata for product ID %s', 'key0')
         self.au.RetrieveURLToCacheDir(
             'url1', copy_only_if_missing=True).AndReturn(None)
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
-        appleupdates.munkicommon.display_status(
+        appleupdates.munkicommon.display_status_minor(
             'Caching %s distribution for product ID %s', 'lang',
             'key0').AndReturn(None)
         self.au.RetrieveURLToCacheDir(
@@ -380,8 +377,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(self.au, '_GetURLPath')
         self.mox.StubOutWithMock(appleupdates.os, 'makedirs')
         self.mox.StubOutWithMock(appleupdates.os.path, 'exists')
-        self.mox.StubOutWithMock(
-            appleupdates.updatecheck, 'getResourceIfChangedAtomically')
+        self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateResource')
 
         path = '/foo/bar'
         url = 'https://www.example.com' + path
@@ -392,7 +388,7 @@ class TestAppleUpdates(mox.MoxTestBase):
 
         appleupdates.os.path.exists(local_dir_path).AndReturn(False)
         appleupdates.os.makedirs(local_dir_path).AndReturn(None)
-        appleupdates.updatecheck.getResourceIfChangedAtomically(
+        self.au.GetSoftwareUpdateResource(
             url, local_file_path, resume=True).AndReturn(None)
 
         self.mox.ReplayAll()
@@ -405,8 +401,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(self.au, '_GetURLPath')
         self.mox.StubOutWithMock(appleupdates.os, 'makedirs')
         self.mox.StubOutWithMock(appleupdates.os.path, 'exists')
-        self.mox.StubOutWithMock(
-            appleupdates.updatecheck, 'getResourceIfChangedAtomically')
+        self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateResource')
 
         path = '/foo/bar'
         url = 'https://www.example.com' + path
@@ -417,9 +412,9 @@ class TestAppleUpdates(mox.MoxTestBase):
 
         appleupdates.os.path.exists(local_dir_path).AndReturn(False)
         appleupdates.os.makedirs(local_dir_path).AndReturn(None)
-        appleupdates.updatecheck.getResourceIfChangedAtomically(
+        self.au.GetSoftwareUpdateResource(
             url, local_file_path, resume=True).AndRaise(
-                appleupdates.updatecheck.MunkiDownloadError)
+                appleupdates.fetch.MunkiDownloadError)
 
         self.mox.ReplayAll()
         self.assertRaises(
@@ -869,8 +864,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(self.au, 'ExtractAndCopyDownloadedCatalog')
         self.mox.StubOutWithMock(appleupdates.os, 'makedirs')
         self.mox.StubOutWithMock(appleupdates.os.path, 'exists')
-        self.mox.StubOutWithMock(
-            appleupdates.updatecheck, 'getResourceIfChangedAtomically')
+        self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateResource')
 
         url = 'url'
         self.au._GetAppleCatalogURL().AndReturn(url)
@@ -878,7 +872,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.makedirs(self.au.temp_cache_dir).AndReturn(None)
 
         appleupdates.munkicommon.display_detail('Caching CatalogURL %s', url)
-        appleupdates.updatecheck.getResourceIfChangedAtomically(
+        self.au.GetSoftwareUpdateResource(
             url, self.au.apple_download_catalog_path, resume=True).AndReturn(
                 0)
         self.au.ExtractAndCopyDownloadedCatalog().AndReturn(None)
@@ -924,8 +918,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(self.au, 'ExtractAndCopyDownloadedCatalog')
         self.mox.StubOutWithMock(appleupdates.os, 'makedirs')
         self.mox.StubOutWithMock(appleupdates.os.path, 'exists')
-        self.mox.StubOutWithMock(
-            appleupdates.updatecheck, 'getResourceIfChangedAtomically')
+        self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateResource')
 
         url = 'url'
         self.au._GetAppleCatalogURL().AndReturn(url)
@@ -933,13 +926,13 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.makedirs(self.au.temp_cache_dir).AndReturn(None)
 
         appleupdates.munkicommon.display_detail('Caching CatalogURL %s', url)
-        appleupdates.updatecheck.getResourceIfChangedAtomically(
+        self.au.GetSoftwareUpdateResource(
             url, self.au.apple_download_catalog_path, resume=True).AndRaise(
-                appleupdates.updatecheck.MunkiDownloadError)
+                appleupdates.fetch.MunkiDownloadError)
 
         self.mox.ReplayAll()
         self.assertRaises(
-            appleupdates.updatecheck.MunkiDownloadError,
+            appleupdates.fetch.MunkiDownloadError,
             self.au.CacheAppleCatalog)
         self.mox.VerifyAll()
 
@@ -1071,7 +1064,7 @@ class TestAppleUpdates(mox.MoxTestBase):
             appleupdates.munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
             appleupdates.munkicommon.display_warning('\t%s', s)
-        elif exc == appleupdates.updatecheck.MunkiDownloadError:
+        elif exc == appleupdates.fetch.MunkiDownloadError:
             appleupdates.munkicommon.display_warning(
                 'Could not download Apple SUS catalog.')
 
@@ -1092,7 +1085,7 @@ class TestAppleUpdates(mox.MoxTestBase):
     def testCheckForSoftwareUpdatesMunkiDownloadError(self):
         """Tests CheckForSoftwareUpdates() with MunkiDownloadError."""
         self._CheckForSoftwareUpdatesCacheAppleCatalogExceptionHelper(
-            appleupdates.updatecheck.MunkiDownloadError)
+            appleupdates.fetch.MunkiDownloadError)
 
     def testCheckForSoftwareUpdatesWhenForceCheckNotNeeded(self):
         """Tests CheckForSoftwareUpdates() when a force check is not needed."""

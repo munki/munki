@@ -35,7 +35,7 @@ import xattr
 
 #our libs
 import munkicommon
-import munkistatus
+#import munkistatus
 
 
 # XATTR name storing the ETAG of the file when downloaded via http(s).
@@ -84,9 +84,9 @@ def writeCachedChecksum(file_path, fhash=None):
 
 
 WARNINGSLOGGED = {}
-def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
-         cacert=None, capath=None, cert=None, key=None, message=None,
-         donotrecurse=False, custom_headers=None):
+def curl(url, destinationpath,
+         cert_info=None, custom_headers=None, donotrecurse=False, etag=None,
+         message=None, onlyifnewer=False, resume=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -104,9 +104,9 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
     header = {}
     header['http_result_code'] = '000'
-    header['http_result_description'] = ""
+    header['http_result_description'] = ''
 
-    curldirectivepath = os.path.join(munkicommon.tmpdir,'curl_temp')
+    curldirectivepath = os.path.join(munkicommon.tmpdir, 'curl_temp')
     tempdownloadpath = destinationpath + '.download'
 
     # we're writing all the curl options to a file and passing that to
@@ -122,23 +122,28 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
         print >> fileobj, 'output = "%s"' % tempdownloadpath
         print >> fileobj, 'ciphers = HIGH,!ADH' #use only secure >=128 bit SSL
         print >> fileobj, 'url = "%s"' % url
-
-        if cacert:
-            if not os.path.isfile(cacert):
-                raise CurlError(-1, 'No CA cert at %s' % cacert)
-            print >> fileobj, 'cacert = "%s"' % cacert
-        if capath:
-            if not os.path.isdir(capath):
-                raise CurlError(-2, 'No CA directory at %s' % capath)
-            print >> fileobj, 'capath = "%s"' % capath
-        if cert:
-            if not os.path.isfile(cert):
-                raise CurlError(-3, 'No client cert at %s' % cert)
-            print >> fileobj, 'cert = "%s"' % cert
-        if key:
-            if not os.path.isfile(key):
-                raise CurlError(-4, 'No client key at %s' % key)
-            print >> fileobj, 'key = "%s"' % key
+        
+        if cert_info:
+            cacert = cert_info.get('cacert')
+            capath = cert_info.get('capath')
+            cert = cert_info.get('cert')
+            key = cert_info.get('key')
+            if cacert:
+                if not os.path.isfile(cacert):
+                    raise CurlError(-1, 'No CA cert at %s' % cacert)
+                print >> fileobj, 'cacert = "%s"' % cacert
+            if capath:
+                if not os.path.isdir(capath):
+                    raise CurlError(-2, 'No CA directory at %s' % capath)
+                print >> fileobj, 'capath = "%s"' % capath
+            if cert:
+                if not os.path.isfile(cert):
+                    raise CurlError(-3, 'No client cert at %s' % cert)
+                print >> fileobj, 'cert = "%s"' % cert
+            if key:
+                if not os.path.isfile(key):
+                    raise CurlError(-4, 'No client key at %s' % key)
+                print >> fileobj, 'key = "%s"' % key
 
         if os.path.exists(destinationpath):
             if etag:
@@ -196,7 +201,7 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
 
     while True:
         if not donewithheaders:
-            info =  proc.stdout.readline().strip('\r\n')
+            info = proc.stdout.readline().strip('\r\n')
             if info:
                 if info.startswith('HTTP/'):
                     header['http_result_code'] = info.split(None, 2)[1]
@@ -293,10 +298,14 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                 # The partial failed immediately as not supported.
                 # Try a full download again immediately.
                 if not donotrecurse:
-                    return curl(url, destinationpath, onlyifnewer=onlyifnewer,
-                                etag=etag, resume=resume, cacert=cacert,
-                                capath=capath, cert=cert, key=key,
-                                message=message, donotrecurse=True)
+                    return curl(url, destinationpath, 
+                                cert_info=cert_info,
+                                custom_headers=custom_headers,
+                                donotrecurse=True,
+                                etag=etag,
+                                message=message,
+                                onlyifnewer=onlyifnewer,
+                                resume=resume)
             elif retcode == 22:
                 # TODO: Made http(s) connection but 400 series error.
                 # What should we do?
@@ -371,10 +380,14 @@ def curl(url, destinationpath, onlyifnewer=False, etag=None, resume=False,
                                 header.get('http_result_description',''))
 
 
-def getResourceIfChangedAtomically(url, destinationpath,
-                                 message=None, resume=False,
-                                 expected_hash=None,
-                                 verify=False):
+def getResourceIfChangedAtomically(url, 
+                                   destinationpath,
+                                   cert_info=None,
+                                   custom_headers=None,
+                                   expected_hash=None,
+                                   message=None, 
+                                   resume=False,
+                                   verify=False):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -401,7 +414,7 @@ def getResourceIfChangedAtomically(url, destinationpath,
             #File is already current, no change.
             return False
         elif munkicommon.pref('PackageVerificationMode').lower() in \
-                                                    ['hash_strict','hash']:
+                                                    ['hash_strict', 'hash']:
             try:
                 os.unlink(destinationpath)
             except OSError:
@@ -413,11 +426,11 @@ def getResourceIfChangedAtomically(url, destinationpath,
     url_parse = urlparse.urlparse(url)
     if url_parse.scheme in ['http', 'https']:
         changed = getHTTPfileIfChangedAtomically(
-                url, destinationpath, message, resume)
-    elif url_parse.scheme in ['file']:
-        changed = getFileIfChangedAtomically(
-                url_parse.path, destinationpath)
-    # TODO: in theory NFS, AFP, or SMB could be supported here.
+            url, destinationpath,
+            cert_info=cert_info, custom_headers=custom_headers,
+            message=message, resume=resume)
+    elif url_parse.scheme == 'file':
+        changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
     else:
         raise MunkiDownloadError(
                 'Unsupported scheme for %s: %s' % (url, url_parse.scheme))
@@ -493,7 +506,8 @@ def getFileIfChangedAtomically(path, destinationpath):
 
 
 def getHTTPfileIfChangedAtomically(url, destinationpath,
-                                 message=None, resume=False):
+                                   cert_info=None, custom_headers=None,
+                                   message=None, resume=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 
@@ -501,36 +515,6 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
        item is already in the local cache.
 
        Raises CurlDownloadError if there is an error."""
-
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    # get server CA cert if it exists so we can verify the munki server
-    ca_cert_path = None
-    ca_dir_path = None
-    if munkicommon.pref('SoftwareRepoCAPath'):
-        CA_path = munkicommon.pref('SoftwareRepoCAPath')
-        if os.path.isfile(CA_path):
-            ca_cert_path = CA_path
-        elif os.path.isdir(CA_path):
-            ca_dir_path = CA_path
-    if munkicommon.pref('SoftwareRepoCACertificate'):
-        ca_cert_path = munkicommon.pref('SoftwareRepoCACertificate')
-    if ca_cert_path == None:
-        ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
-        if not os.path.exists(ca_cert_path):
-            ca_cert_path = None
-
-    client_cert_path = None
-    client_key_path = None
-    # get client cert if it exists
-    if munkicommon.pref('UseClientCertificate'):
-        client_cert_path = munkicommon.pref('ClientCertificatePath') or None
-        client_key_path = munkicommon.pref('ClientKeyPath') or None
-        if not client_cert_path:
-            for name in ['cert.pem', 'client.pem', 'munki.pem']:
-                client_cert_path = os.path.join(ManagedInstallDir, 'certs',
-                                                                    name)
-                if os.path.exists(client_cert_path):
-                    break
 
     etag = None
     getonlyifnewer = False
@@ -540,31 +524,16 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
         etag = getxattr(destinationpath, XATTR_ETAG)
         if etag:
             getonlyifnewer = False
-            
-    # Add any additional headers specified in ManagedInstalls.plist.
-    # AdditionalHttpHeaders must be an array of strings with valid HTTP
-    # header format. For example:
-    # <key>AdditionalHttpHeaders</key>
-    # <array>
-    #   <string>Key-With-Optional-Dashes: Foo Value</string>
-    #   <string>another-custom-header: bar value</string>
-    # </array>
-    custom_headers = munkicommon.pref(
-        munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
-    
 
     try:
         header = curl(url,
                       destinationpath,
-                      cert=client_cert_path,
-                      key=client_key_path,
-                      cacert=ca_cert_path,
-                      capath=ca_dir_path,
-                      onlyifnewer=getonlyifnewer,
+                      cert_info=cert_info,
+                      custom_headers=custom_headers,
                       etag=etag,
-                      resume=resume,
                       message=message,
-                      custom_headers=custom_headers)
+                      onlyifnewer=getonlyifnewer,
+                      resume=resume)
 
     except CurlError, err:
         err = 'Error %s: %s' % tuple(err)

@@ -734,11 +734,11 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
     try:
-        unused_x = fetch.getResourceIfChangedAtomically(pkgurl, destinationpath,
-                                                    resume=True,
-                                                    message=dl_message,
-                                                    expected_hash=expected_hash,
-                                                    verify=True)
+        unused_x = getMunkiResource(pkgurl, destinationpath,
+                                    resume=True,
+                                    message=dl_message,
+                                    expected_hash=expected_hash,
+                                    verify=True)
     except fetch.MunkiDownloadError:
         raise
 
@@ -2021,7 +2021,7 @@ def getCatalogs(cataloglist):
             munkicommon.display_detail('Getting catalog %s...' % catalogname)
             message = 'Retreiving catalog "%s"...' % catalogname
             try:
-                unused_value = fetch.getResourceIfChangedAtomically(
+                unused_value = getMunkiResource(
                     catalogurl, catalogpath, message=message)
             except fetch.MunkiDownloadError, err:
                 munkicommon.display_error(
@@ -2092,7 +2092,7 @@ def getmanifest(partialurl, suppress_errors=False):
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = 'Retreiving list of software for this machine...'
     try:
-        unused_value = fetch.getResourceIfChangedAtomically(
+        unused_value = getMunkiResource(
             manifesturl, manifestpath, message=message)
     except fetch.MunkiDownloadError, err:
         if not suppress_errors:
@@ -2257,46 +2257,15 @@ def getDownloadCachePath(destinationpathprefix, url):
     return os.path.join(
         destinationpathprefix, getInstallerItemBasename(url))
 
-
-def get_hardware_info():
-    '''Uses system profiler to get hardware info for this machine'''
-    cmd = ['/usr/sbin/system_profiler', 'SPHardwareDataType', '-xml']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, unused_error) = proc.communicate()
-    try:
-        plist = FoundationPlist.readPlistFromString(output)
-        # system_profiler xml is an array
-        sp_dict = plist[0]
-        items = sp_dict['_items']
-        sp_hardware_dict = items[0]
-        return sp_hardware_dict
-    except Exception:
-        return {}
-
-
-# we only want to call system_profiler and the like once. Since these values
-# don't change often, we store the info in MACHINE.
 MACHINE = {}
-def getMachineFacts():
-    """Gets some facts about this machine we use to determine if a given
-    installer is applicable to this OS or hardware"""
-    #global MACHINE
-
-    MACHINE['hostname'] = os.uname()[1]
-    MACHINE['arch'] = os.uname()[4]
-    MACHINE['os_vers'] = munkicommon.getOsVersion(only_major_minor=False)
-    hardware_info = get_hardware_info()
-    MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
-
-
 def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
-
-    getMachineFacts()
+    
+    global MACHINE
+    munkicommon.getMachineFacts()
+    MACHINE = munkicommon.getMachineFacts()
     munkicommon.report['MachineInfo'] = MACHINE
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
@@ -2677,6 +2646,72 @@ def checkForceInstallPackages():
         FoundationPlist.writePlist(installinfo, installinfopath)
 
     return result
+
+
+def getMunkiResource(url,
+                     destinationpath,
+                     message=None, 
+                     resume=False,
+                     expected_hash=None,
+                     verify=False):
+                     
+    '''Gets a given URL from the Munki server. Sets up cert/CA info if it 
+    exists, and adds any additional headers'''
+    
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    # get server CA cert if it exists so we can verify the munki server
+    ca_cert_path = None
+    ca_dir_path = None
+    if munkicommon.pref('SoftwareRepoCAPath'):
+        CA_path = munkicommon.pref('SoftwareRepoCAPath')
+        if os.path.isfile(CA_path):
+            ca_cert_path = CA_path
+        elif os.path.isdir(CA_path):
+            ca_dir_path = CA_path
+    if munkicommon.pref('SoftwareRepoCACertificate'):
+        ca_cert_path = munkicommon.pref('SoftwareRepoCACertificate')
+    if ca_cert_path == None:
+        ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
+        if not os.path.exists(ca_cert_path):
+            ca_cert_path = None
+
+    client_cert_path = None
+    client_key_path = None
+    # get client cert if it exists
+    if munkicommon.pref('UseClientCertificate'):
+        client_cert_path = munkicommon.pref('ClientCertificatePath') or None
+        client_key_path = munkicommon.pref('ClientKeyPath') or None
+        if not client_cert_path:
+            for name in ['cert.pem', 'client.pem', 'munki.pem']:
+                client_cert_path = os.path.join(ManagedInstallDir, 'certs',
+                                                                    name)
+                if os.path.exists(client_cert_path):
+                    break
+    cert_info = {}
+    cert_info['cacert'] = ca_cert_path
+    cert_info['capath'] = ca_dir_path
+    cert_info['cert'] = client_cert_path
+    cert_info['key'] = client_key_path
+
+    # Add any additional headers specified in ManagedInstalls.plist.
+    # AdditionalHttpHeaders must be an array of strings with valid HTTP
+    # header format. For example:
+    # <key>AdditionalHttpHeaders</key>
+    # <array>
+    #   <string>Key-With-Optional-Dashes: Foo Value</string>
+    #   <string>another-custom-header: bar value</string>
+    # </array>
+    custom_headers = munkicommon.pref(
+        munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
+
+    return fetch.getResourceIfChangedAtomically(url,
+                                                destinationpath,
+                                                cert_info=cert_info,
+                                                custom_headers=custom_headers,
+                                                expected_hash=expected_hash,
+                                                message=message,
+                                                resume=resume,
+                                                verify=verify)
 
 
 def main():

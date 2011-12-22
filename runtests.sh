@@ -44,7 +44,7 @@ EOM
 
 function detectPython() {
     case `sw_vers -productVersion 2>/dev/null` in
-        10.7.*) PYTHON="python2.6" ;;
+        10.7.*) PYTHON="python2.7" ;;
         10.6.*) PYTHON="python2.6" ;;
         10.5.*) PYTHON="python2.5" ;;
         10.4.*) PYTHON="python2.4" ;;
