@@ -37,35 +37,11 @@ import os
 import re
 import optparse
 from optparse import OptionValueError
-#from distutils import version
 import subprocess
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
-
-
-def DMGhasSLA(dmgpath):
-    '''Returns true if dmg has a Software License Agreement.
-    These dmgs cannot be attached without user intervention'''
-    hasSLA = False
-    proc = subprocess.Popen(
-                ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
-                bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (pliststr, err) = proc.communicate()
-    if err:
-        print >> sys.stderr, ("hdiutil error %s with image %s." 
-                                                         % (err, dmgpath))
-    if pliststr:
-        try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
-            properties = plist.get('Properties')
-            if properties:
-                hasSLA = properties.get('Software License Agreement', False)
-        except FoundationPlist.NSPropertyListSerializationException:
-            pass
-    
-    return hasSLA
 
 
 def getCatalogInfoFromDmg(dmgpath, options):
@@ -76,13 +52,6 @@ def getCatalogInfoFromDmg(dmgpath, options):
     
     To-do: handle multiple installer items on a disk image(?)
     """
-    if DMGhasSLA(dmgpath):
-        print >> sys.stderr, \
-            "%s has an attached Software License Agreement." % dmgpath
-        print >> sys.stderr, \
-        "It cannot be automatically mounted. You'll need to create a new dmg."
-        exit(-1)
-        
     cataloginfo = None
     mountpoints = munkicommon.mountdmg(dmgpath)
     if not mountpoints:

@@ -137,23 +137,6 @@ def addPackageids(catalogitems, pkgid_table):
                         pkgid_table[name].append(receipt['packageid'])
 
 
-def getFirstPlist(textString):
-    """Gets the next plist from a set of concatenated text-style plists.
-    Returns a tuple - the first plist (if any) and the remaining
-    string"""
-    plistStart = textString.find('<?xml version')
-    if plistStart == -1:
-        # not found
-        return ("", textString)
-    plistEnd = textString.find('</plist>', plistStart + 13)
-    if plistEnd == -1:
-        # not found
-        return ("", textString)
-    # adjust end value
-    plistEnd = plistEnd + 8
-    return (textString[plistStart:plistEnd], textString[plistEnd:])
-
-
 INSTALLEDPKGS = {}
 def getInstalledPackages():
     """Builds a dictionary of installed receipts and their version number"""
@@ -166,7 +149,7 @@ def getInstalledPackages():
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, unused_err) = proc.communicate()
     while out:
-        (pliststr, out) = getFirstPlist(out)
+        (pliststr, out) = munkicommon.getFirstPlist(out)
         if pliststr:
             plist = FoundationPlist.readPlistFromString(pliststr)
             if 'pkg-version' in plist and 'pkgid' in plist:
@@ -2525,8 +2508,9 @@ def check(client_id='', localmanifestpath=None):
 
     munkicommon.log('')
     if installcount:
+        munkicommon.display_info('')
         munkicommon.display_info(
-            '\nThe following items will be installed or upgraded:')
+            'The following items will be installed or upgraded:')
     for item in installinfo.get('managed_installs', []):
         if item.get('installer_item'):
             munkicommon.display_info('    + %s-%s' %

@@ -300,7 +300,7 @@ def concat_log_message(msg, *args):
             warnings.warn(
                 'String format does not match concat args: %s' % (
                 str(sys.exc_info())))
-    return msg
+    return msg.rstrip()
 
 
 def display_status_major(msg, *args):
@@ -328,7 +328,7 @@ def display_status_minor(msg, *args):
     for verbose/non-verbose and munkistatus-style output.
     """
     msg = concat_log_message(msg, *args)
-    log(msg)
+    log(u'    ' + msg)
     if munkistatusoutput:
         munkistatus.detail(msg)
     elif verbose > 0:
@@ -345,11 +345,11 @@ def display_info(msg, *args):
     Not displayed in MunkiStatus.
     """
     msg = concat_log_message(msg, *args)
-    log(msg)
+    log(u'    ' + msg)
     if munkistatusoutput:
         pass
     elif verbose > 0:
-        print msg.encode('UTF-8')
+        print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
 
 
@@ -364,10 +364,10 @@ def display_detail(msg, *args):
     if munkistatusoutput:
         pass
     elif verbose > 1:
-        print msg.encode('UTF-8')
+        print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
     if pref('LoggingLevel') > 0:
-        log(msg)
+        log(u'    ' + msg)
 
 
 def display_debug1(msg, *args):
@@ -379,7 +379,7 @@ def display_debug1(msg, *args):
     if munkistatusoutput:
         pass
     elif verbose > 2:
-        print msg.encode('UTF-8')
+        print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
     if pref('LoggingLevel') > 1:
         log('DEBUG1: %s' % msg)
@@ -394,7 +394,7 @@ def display_debug2(msg, *args):
     if munkistatusoutput:
         pass
     elif verbose > 3:
-        print msg.encode('UTF-8')
+        print '    %s' % msg.encode('UTF-8')
     if pref('LoggingLevel') > 2:
         log('DEBUG2: %s' % msg)
 
@@ -687,7 +687,49 @@ def osascript(osastring):
         return str(out).decode('UTF-8').rstrip('\n')
 
 
+def getFirstPlist(textString):
+    """Gets the next plist from a text string that may contain one or
+    more text-style plists.
+    Returns a tuple - the first plist (if any) and the remaining
+    string after the plist"""
+    plistStart = textString.find('<?xml version')
+    if plistStart == -1:
+        # not found
+        return ("", textString)
+    plistEnd = textString.find('</plist>', plistStart + 13)
+    if plistEnd == -1:
+        # not found
+        return ("", textString)
+    # adjust end value
+    plistEnd = plistEnd + 8
+    return (textString[plistStart:plistEnd], textString[plistEnd:])
+
+
 # dmg helpers
+
+def DMGhasSLA(dmgpath):
+    '''Returns true if dmg has a Software License Agreement.
+    These dmgs cannot be attached without user intervention'''
+    hasSLA = False
+    proc = subprocess.Popen(
+                ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
+                bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if err:
+        print >> sys.stderr, (
+            'hdiutil error %s with image %s.' % (err, dmgpath))
+    (pliststr, out) = getFirstPlist(out)
+    if pliststr:
+        try:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            properties = plist.get('Properties')
+            if properties:
+                hasSLA = properties.get('Software License Agreement', False)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+
+    return hasSLA
+
 
 def mountdmg(dmgpath, use_shadow=False):
     """
@@ -697,22 +739,32 @@ def mountdmg(dmgpath, use_shadow=False):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
+    SLA_is_present = DMGhasSLA(dmgpath)
+    stdin = ''
+    if SLA_is_present:
+        stdin = 'Y\n'
     cmd = ['/usr/bin/hdiutil', 'attach', dmgpath,
                 '-mountRandom', '/tmp', '-nobrowse', '-plist']
     if use_shadow:
         cmd.append('-shadow')
     proc = subprocess.Popen(cmd,
                             bufsize=1, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (pliststr, err) = proc.communicate()
+                            stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    (out, err) = proc.communicate(stdin)
     if proc.returncode:
-        display_error('Error: "%s" while mounting %s.' % (err, dmgname))
+        display_error(
+            'Error: "%s" while mounting %s.' % (err.rstrip(), dmgname))
+    (pliststr, out) = getFirstPlist(out)
     if pliststr:
-        plist = FoundationPlist.readPlistFromString(pliststr)
-        for entity in plist['system-entities']:
-            if 'mount-point' in entity:
-                mountpoints.append(entity['mount-point'])
-
+        try:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            for entity in plist.get('system-entities', []):
+                if 'mount-point' in entity:
+                    mountpoints.append(entity['mount-point'])
+        except FoundationPlist.NSPropertyListSerializationException:
+            display_error(
+                'Bad plist string returned when mounting diskimage %s:\n%s' 
+                % (dmgname, pliststr))
     return mountpoints
 
 

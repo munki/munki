@@ -578,9 +578,9 @@ class AppleUpdates(object):
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):
-            munkicommon.log('Skipping Apple Software Update check because '
-                            'sucatalog is unchanged, installed Apple packages '
-                            'are unchanged and we recently did a full check.')
+            munkicommon.display_info('Skipping Apple Software Update check '
+                'because sucatalog is unchanged, installed Apple packages are '
+                'unchanged and we recently did a full check.')
             return False
 
         product_ids = self.GetAvailableUpdateProductIDs()
