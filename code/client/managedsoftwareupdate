@@ -529,9 +529,10 @@ def main():
     munkicommon.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print 'Managed Software Update Tool'
-        print 'Copyright 2010-2011 The Munki Project'
+        print 'Copyright 2010-2012 The Munki Project'
         print 'http://code.google.com/p/munki\n'
 
+    munkicommon.display_status_major('Starting...')
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
     result = runScript(preflightscript, 'preflight', runtype)
@@ -759,12 +760,15 @@ def main():
                                         '<None>'
     munkicommon.savereport()
 
+    munkicommon.display_status_major('Finishing...')
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
     result = runScript(postflightscript, 'postflight', runtype)
     # we ignore the result of the postflight
 
     munkicommon.log("### Ending managedsoftwareupdate run ###")
+    if options.verbose:
+        print 'Done.'
 
     munkicommon.cleanUpTmpDir()
     if mustrestart:
