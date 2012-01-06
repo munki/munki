@@ -980,7 +980,7 @@ class MunkiLooseVersion (version.LooseVersion):
     
     def __init__ (self, vstring=None):
         if vstring is not None:
-            self.parse(vstring)
+            self.parse(str(vstring))
 
     def __pad__(self, version_list, max_length):
         """Pad a version list by adding extra 0
