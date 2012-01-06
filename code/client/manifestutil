@@ -368,10 +368,13 @@ def find(args):
                 value = manifest[keyname]
                 if type(value) == list or type(value).__name__ == 'NSCFArray':
                     for item in value:
-                        if findtext.upper() in item.upper():
-                            print '%s: %s' % (name, item)
-                            count += 1
-                            break
+                        try:
+                            if findtext.upper() in item.upper():
+                                print '%s: %s' % (name, item)
+                                count += 1
+                                break
+                        except AttributeError, err:
+                            pass
                 elif findtext.upper() in value.upper():
                     print '%s: %s' % (name, value)
                     count += 1
@@ -380,10 +383,13 @@ def find(args):
                 value = manifest[key]
                 if type(value) == list or type(value).__name__ == 'NSCFArray':
                     for item in value:
-                        if findtext.upper() in item.upper():
-                            print '%s (%s): %s' % (name, key, item)
-                            count += 1
-                            break
+                        try:
+                            if findtext.upper() in item.upper():
+                                print '%s (%s): %s' % (name, key, item)
+                                count += 1
+                                break
+                        except AttributeError, err:
+                            pass
                 elif findtext.upper() in value.upper():
                     print '%s (%s): %s' % (name, key, value)
                     count += 1
