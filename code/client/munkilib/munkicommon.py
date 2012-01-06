@@ -924,6 +924,10 @@ def getInstallerPkgInfo(filename):
 class MunkiLooseVersion (version.LooseVersion):
     '''Subclass version.LooseVersion to compare things like
     "10.6" and "10.6.0" as equal'''
+    
+    def __init__ (self, vstring=None):
+        if vstring is not None:
+            self.parse(vstring)
 
     def __pad__(self, version_list, max_length):
         """Pad a version list by adding extra 0
