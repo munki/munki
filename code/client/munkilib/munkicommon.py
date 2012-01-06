@@ -709,7 +709,7 @@ def getFirstPlist(textString):
 
 def DMGhasSLA(dmgpath):
     '''Returns true if dmg has a Software License Agreement.
-    These dmgs cannot be attached without user intervention'''
+    These dmgs normally cannot be attached without user intervention'''
     hasSLA = False
     proc = subprocess.Popen(
                 ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
@@ -739,10 +739,11 @@ def mountdmg(dmgpath, use_shadow=False):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
-    SLA_is_present = DMGhasSLA(dmgpath)
     stdin = ''
-    if SLA_is_present:
+    if DMGhasSLA(dmgpath):
         stdin = 'Y\n'
+        display_detail(
+            'NOTE: %s has embedded Software License Agreement' % dmgname)
     cmd = ['/usr/bin/hdiutil', 'attach', dmgpath,
                 '-mountRandom', '/tmp', '-nobrowse', '-plist']
     if use_shadow:
@@ -1723,8 +1724,8 @@ def findAppsInDirs(dirlist):
 
     if runtime >= maxruntime:
         display_warning('Spotlight search for applications terminated due to '
-              'excessive time. This will happen if spotlight is reindexing '
-              'the drive, otherwise it is a bug.')
+              'excessive time. Possible causes: Spotlight indexing is turned '
+              'off for a volume; Spotlight is reindexing a volume.')
 
     for item in query.results():
         p = item.valueForAttribute_('kMDItemPath')
