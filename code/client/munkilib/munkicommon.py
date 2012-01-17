@@ -508,6 +508,12 @@ def rotate_main_log():
             rotatelog(pref('LogFile'))
 
 
+def saveappdata():
+    """Save installed application data"""
+    FoundationPlist.writePlist(getAppData(),
+        os.path.join(pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
+
+
 def printreportitem(label, value, indent=0):
     """Prints a report item in an 'attractive' way"""
     indentspace = '    '

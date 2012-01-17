@@ -761,6 +761,8 @@ def main():
     munkicommon.savereport()
 
     munkicommon.display_status_major('Finishing...')
+    # save application inventory data
+    munkicommon.saveappdata()
     # run the postflight script if it exists
     postflightscript = os.path.join(scriptdir, 'postflight')
     result = runScript(postflightscript, 'postflight', runtype)
