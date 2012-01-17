@@ -111,11 +111,15 @@ def makecatalogs(repopath):
             if not 'installer_item_location' in pkginfo:
                 print >> sys.stderr, \
                     ("WARNING: file %s is missing installer_item_location" % 
-                                                                    filepath)
+                                                filepath[len(pkgsinfopath)+1:])
                 continue
-                
-            installeritempath = os.path.join(repopath, "pkgs",
+            try:
+                installeritempath = os.path.join(repopath, "pkgs",
                             pkginfo['installer_item_location'])
+            except TypeError:
+                print >> sys.stderr, ("WARNING: invalid installer_item_location"
+                    " in info file %s" % filepath[len(pkgsinfopath)+1:])
+                continue
             if not os.path.exists(installeritempath):
                 print >> sys.stderr, ("WARNING: Info file %s refers to "
                                       "missing installer item: %s" % 
