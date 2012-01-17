@@ -417,9 +417,9 @@ def main():
         exit(-1)
     
     if len(arguments) > 1:
-        print >> sys.stderr, \
-            ("Can process only one installer item at a time. "
-             "Ignoring additional installer items.")
+        print >> sys.stderr, 'Can process only one installer item at a time.'
+        print >> sys.stderr, 'Ignoring additional installer items:'
+        print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
     
     catinfo = {}
     installs = []

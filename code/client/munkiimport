@@ -539,6 +539,8 @@ def main():
     if len(arguments) > 1:
         print >> sys.stderr, \
             'This tool supports importing only one item at a time.'
+        print >> sys.stderr, 'Too many items given:'
+        print >> sys.stderr, '\t', '\n\t'.join(arguments)
         exit(-1)
     
     installer_item = arguments[0]
