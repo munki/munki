@@ -336,7 +336,15 @@ def notifyUserOfUpdates(force=False):
     # if we haven't notified in a while, notify:
     user_was_notified = False
     lastNotifiedString = munkicommon.pref('LastNotifiedDate')
-    daysBetweenNotifications = munkicommon.pref('DaysBetweenNotifications')
+    try:
+        daysBetweenNotifications = int(
+            munkicommon.pref('DaysBetweenNotifications'))
+    except ValueError:
+        munkicommon.display_warning(
+            'DaysBetweenNotifications is not an integer: %s'
+            % munkicommon.pref('DaysBetweenNotifications'))
+        # continue with the default DaysBetweenNotifications
+        daysBetweenNotifications = 1
     now = NSDate.new()
     nextNotifyDate = now
     if lastNotifiedString:
