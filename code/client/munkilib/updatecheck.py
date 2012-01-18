@@ -3151,10 +3151,21 @@ def check(client_id='', localmanifestpath=None):
         installinfochanged = True
         installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
         if os.path.exists(installinfopath):
-            oldinstallinfo = FoundationPlist.readPlist(installinfopath)
+            try:
+                oldinstallinfo = FoundationPlist.readPlist(installinfopath)
+            except FoundationPlist.NSPropertyListSerializationException:
+                oldinstallinfo = None
+                munkicommon.display_error(
+                    'Could not read InstallInfo.plist. Deleting...')
+                try:
+                    os.unlink(installinfopath)
+                except OSError, e:
+                    munkicommon.display_error(
+                        'Failed to delete InstallInfo.plist: %s', str(e))
             if oldinstallinfo == installinfo:
                 installinfochanged = False
                 munkicommon.display_detail('No change in InstallInfo.')
+
         if installinfochanged:
             FoundationPlist.writePlist(installinfo,
                                        os.path.join(ManagedInstallDir,
