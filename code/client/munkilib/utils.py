@@ -91,7 +91,7 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
             '%s is not secure! %s' % (file_path, e.args[0]))
 
 
-def runExternalScript(script, allow_insecure=False, script_args=[]):
+def runExternalScript(script, allow_insecure=False, script_args=()):
     """Run a script (e.g. preflight/postflight) and return its exit status.
 
     Args:
