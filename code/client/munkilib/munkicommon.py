@@ -510,7 +510,22 @@ def rotate_main_log():
 
 def saveappdata():
     """Save installed application data"""
-    FoundationPlist.writePlist(getAppData(),
+    # data from getAppData() is meant for use by updatecheck
+    # we need to massage it a bit for more general usage
+    log('Saving application inventory...')
+    app_inventory = []
+    for item in getAppData():
+        inventory_item = {}
+        inventory_item['CFBundleName'] = item.get('name')
+        inventory_item['bundleid'] = item.get('bundleid')
+        inventory_item['version'] = item.get('version')
+        inventory_item['path'] = item.get('path', '')
+        # use last path item (minus '.app' if present) as name
+        inventory_item['name'] = \
+            os.path.splitext(os.path.basename(inventory_item['path']))[0]
+        app_inventory.append(inventory_item)
+        
+    FoundationPlist.writePlist(app_inventory,
         os.path.join(pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
 
 
