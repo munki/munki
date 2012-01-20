@@ -680,10 +680,9 @@ def main():
 
     mustrestart = False
     mustlogout = False
-    if options.manualcheck:
-        # just quit munkistatus; Managed Software Update will notify
-        munkistatus.quit()
-    elif updatesavailable or appleupdatesavailable:
+    notify_user = False
+    force_action = None
+    if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks()
@@ -725,26 +724,10 @@ def main():
                 # however Apple Updates have not been affected by the
                 # unattended install tasks (so that check is still valid).
                 if appleupdatesavailable or munkiUpdatesAvailable():
-                    # it may have been more than a minute since we ran our
-                    # original updatecheck so tickle the updatecheck time
-                    # so MSU.app knows to display results immediately
-                    recordUpdateCheckResult(1)
-                    consoleuser = munkicommon.getconsoleuser()
-                    if consoleuser == u'loginwindow':
-                        # someone is logged in, but we're sitting at
-                        # the loginwindow due to fast user switching
-                        # so do nothing
-                        pass
-                    elif force_action:
-                        notifyUserOfUpdates(force=True)
-                        time.sleep(2)
-                        startLogoutHelper()
-                    elif not munkicommon.pref('SuppressUserNotification'):
-                        notifyUserOfUpdates()
-                    else:
-                        munkicommon.log('Skipping user notification because '
-                                        'SuppressUserNotification is true.')
-
+                    # set a flag to notify the user of available updates
+                    # after we conclude this run.
+                    notify_user = True
+                    
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
                    'updates.' % myname)
@@ -780,11 +763,33 @@ def main():
     if options.verbose:
         print 'Done.'
 
+    if options.manualcheck:
+        # just quit munkistatus; Managed Software Update will notify
+        munkistatus.quit()
+    elif notify_user:
+        # it may have been more than a minute since we ran our
+        # original updatecheck so tickle the updatecheck time
+        # so MSU.app knows to display results immediately
+        recordUpdateCheckResult(1)
+        consoleuser = munkicommon.getconsoleuser()
+        if consoleuser == u'loginwindow':
+            # someone is logged in, but we're sitting at
+            # the loginwindow due to fast user switching
+            # so do nothing
+            pass
+        elif force_action:
+            notifyUserOfUpdates(force=True)
+            time.sleep(2)
+            startLogoutHelper()
+        elif not munkicommon.pref('SuppressUserNotification'):
+            notifyUserOfUpdates()
+        else:
+            munkicommon.log('Skipping user notification because '
+                            'SuppressUserNotification is true.')
+
     munkicommon.cleanUpTmpDir()
     if mustrestart:
         doRestart()
-    #elif mustlogout:
-    #   doForcedLogout() # indirectly done via logouthelper
     elif munkicommon.munkistatusoutput:
         munkistatus.quit()
 
