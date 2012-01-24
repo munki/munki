@@ -212,6 +212,13 @@ class AppleUpdates(object):
     def RetrieveURLToCacheDir(self, full_url, copy_only_if_missing=False):
         """Downloads a URL and stores it in the same relative path on our
         filesystem. Returns a path to the replicated file.
+
+        Args:
+          full_url: str, full URL to retrieve.
+          copy_only_if_missing: boolean, True to copy only if the file is not
+              already cached, False to copy regardless of existence in cache.
+        Returns:
+          String path to the locally cached file.
         """
         relative_url = os.path.normpath(self._GetURLPath(full_url).lstrip('/'))
         local_file_path = os.path.join(self.cache_dir, relative_url)
@@ -229,18 +236,25 @@ class AppleUpdates(object):
         except fetch.MunkiDownloadError, err:
             raise ReplicationError(err)
         return local_file_path
-        
-        
+
     def GetSoftwareUpdateResource(self, url, destinationpath, resume=False):
-        '''Gets item from Apple Software Update Server.
-        We set the User-Agent header to match that used by Apple's
-        softwareupdate client for better compatibility'''
-        
+        """Gets item from Apple Software Update Server.
+
+        Args:
+          url: str, URL of the resource to download.
+          destinationpath: str, path of the destination to save the resource.
+          resume: boolean, True to resume downloads, False to redownload.
+        Returns:
+          Boolean. True if a new download was required, False if the item was
+          already in the local cache.
+        """
         machine = munkicommon.getMachineFacts()
         darwin_version = os.uname()[2]
+        # Set the User-Agent header to match that used by Apple's
+        # softwareupdate client for better compatibility.
         user_agent_header = (
-            "User-Agent: managedsoftwareupdate/%s Darwin/%s (%s) (%s)" 
-            % (machine['munki_version'], darwin_version, 
+            "User-Agent: managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
+            % (machine['munki_version'], darwin_version,
                machine['arch'], machine['machine_model']))
         return fetch.getResourceIfChangedAtomically(
                                             url,
