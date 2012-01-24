@@ -524,7 +524,7 @@ def saveappdata():
         inventory_item['name'] = \
             os.path.splitext(os.path.basename(inventory_item['path']))[0]
         app_inventory.append(inventory_item)
-        
+
     FoundationPlist.writePlist(app_inventory,
         os.path.join(pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
 
@@ -713,11 +713,12 @@ def getFirstPlist(textString):
     more text-style plists.
     Returns a tuple - the first plist (if any) and the remaining
     string after the plist"""
-    plistStart = textString.find('<?xml version')
+    plist_header = '<?xml version'
+    plistStart = textString.find(plist_header)
     if plistStart == -1:
         # not found
         return ("", textString)
-    plistEnd = textString.find('</plist>', plistStart + 13)
+    plistEnd = textString.find('</plist>', plistStart + len(plist_header))
     if plistEnd == -1:
         # not found
         return ("", textString)
@@ -785,7 +786,7 @@ def mountdmg(dmgpath, use_shadow=False):
                     mountpoints.append(entity['mount-point'])
         except FoundationPlist.NSPropertyListSerializationException:
             display_error(
-                'Bad plist string returned when mounting diskimage %s:\n%s' 
+                'Bad plist string returned when mounting diskimage %s:\n%s'
                 % (dmgname, pliststr))
     return mountpoints
 
@@ -998,7 +999,7 @@ def getInstallerPkgInfo(filename):
 class MunkiLooseVersion (version.LooseVersion):
     '''Subclass version.LooseVersion to compare things like
     "10.6" and "10.6.0" as equal'''
-    
+
     def __init__ (self, vstring=None):
         if vstring is not None:
             self.parse(str(vstring))
