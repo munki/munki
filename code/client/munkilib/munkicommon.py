@@ -714,17 +714,20 @@ def getFirstPlist(textString):
     Returns a tuple - the first plist (if any) and the remaining
     string after the plist"""
     plist_header = '<?xml version'
-    plistStart = textString.find(plist_header)
-    if plistStart == -1:
+    plist_footer = '</plist>'
+    plist_start_index = textString.find(plist_header)
+    if plist_start_index == -1:
         # not found
         return ("", textString)
-    plistEnd = textString.find('</plist>', plistStart + len(plist_header))
-    if plistEnd == -1:
+    plist_end_index = textString.find(
+        plist_footer, plist_start_index + len(plist_header))
+    if plist_end_index == -1:
         # not found
         return ("", textString)
     # adjust end value
-    plistEnd = plistEnd + 8
-    return (textString[plistStart:plistEnd], textString[plistEnd:])
+    plist_end_index = plist_end_index + len(plist_footer)
+    return (textString[plist_start_index:plist_end_index],
+            textString[plist_end_index:])
 
 
 # dmg helpers
