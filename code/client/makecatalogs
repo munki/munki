@@ -148,7 +148,13 @@ def makecatalogs(repopath):
     # write the new catalogs
     for key in catalogs.keys():
         catalogpath = os.path.join(repopath, "catalogs", key)
-        plistlib.writePlist(catalogs[key], catalogpath)
+        if os.path.exists(catalogpath):
+            print >> sys.stderr, ("WARNING: catalog %s already exists at "
+                "%s. Perhaps this is a non-case sensitive filesystem and you "
+                "have catalogs with names differing only in case?" 
+                % (key, catalogpath))
+        else:
+            plistlib.writePlist(catalogs[key], catalogpath)
         
 
 def main():
