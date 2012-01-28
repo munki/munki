@@ -589,8 +589,9 @@ def main():
 
             munkistatus.quit()
         else:
-            print >> sys.stderr, \
-              'Another instance of %s is running. Exiting.' % myname
+            msg = 'Another instance of %s is running. Exiting.' % myname
+            munkicommon.log(msg)
+            print >> sys.stderr, msg
         munkicommon.cleanUpTmpDir()
         exit(0)
 
