@@ -2339,7 +2339,13 @@ def check(client_id='', localmanifestpath=None):
                     except OSError:
                         pass
             except FoundationPlist.FoundationPlistException:
-                pass
+                # problem reading the usermanifest
+                # better remove it
+                munkicommon.display_error('Could not read %s' % usermanifest)
+                try:
+                    os.unlink(usermanifest)
+                except OSError:
+                    pass
 
         if os.path.exists(selfservemanifest):
             # use catalogs from main manifest for self-serve manifest
@@ -2350,7 +2356,7 @@ def check(client_id='', localmanifestpath=None):
             selfserveinstalls = getManifestValueForKey(selfservemanifest,
                                                        'managed_installs')
             available_optional_installs = [item['name']
-                for item in installinfo.get('optional_installs',[])]
+                for item in installinfo.get('optional_installs', [])]
             if selfserveinstalls:
                 # filter the list, removing any items not in the current list
                 # of available self-serve installs
@@ -2359,9 +2365,10 @@ def check(client_id='', localmanifestpath=None):
                 for item in selfserveinstalls:
                     unused_result = processInstall(
                         item, cataloglist, installinfo)
-                # we don't need to filter uninstalls
-                processManifestForKey(selfservemanifest, 'managed_uninstalls',
-                                      installinfo, cataloglist)
+
+            # we don't need to filter uninstalls
+            processManifestForKey(selfservemanifest, 'managed_uninstalls',
+                                  installinfo, cataloglist)
 
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
