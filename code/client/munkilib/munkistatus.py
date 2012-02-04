@@ -101,39 +101,12 @@ def readResponse():
     return ''
 
 
-def getPIDforProcessName(processname):
-    '''Returns a process ID for processname'''
-    cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    try:
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-    except OSError:
-        return 0
-
-    while True:
-        line =  proc.stdout.readline().decode('UTF-8')
-        if not line and (proc.poll() != None):
-            break
-        line = line.rstrip('\n')
-        if line:
-            try:
-                (pid, process) = line.split(None, 1)
-            except ValueError:
-                # funky process line, so we'll skip it
-                pass
-            else:
-                if process.find(processname) != -1:
-                    return str(pid)
-
-    return 0
-
-
 def getMunkiStatusPID():
     '''Gets the process ID for Managed Software Update'''
-    return getPIDforProcessName(
-      "Managed Software Update.app/Contents/MacOS/Managed Software Update") \
-      or getPIDforProcessName("MunkiStatus.app/Contents/MacOS/MunkiStatus")
+    return munkicommon.getPIDforProcessName(
+        "Managed Software Update.app/Contents/MacOS/Managed Software Update") \
+    or munkicommon.getPIDforProcessName(
+        "MunkiStatus.app/Contents/MacOS/MunkiStatus")
 
 
 def getMunkiStatusSocket():

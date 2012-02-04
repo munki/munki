@@ -427,24 +427,7 @@ def findAdobeDeploymentManager(dirpath):
             if os.path.exists(dm_path):
                 return dm_path
     return ''
-    
-    
-def getPID(processname):
-    '''Returns process ID for a command string'''
-    cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
-                            stdout=subprocess.PIPE, 
-                            stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
-    lines = str(out).splitlines()
-    for line in lines:
-        (pid, process) = line.split(None, 1)
-        if process.find(processname) != -1:
-            return pid
-            
-    return 0
-    
+
 
 secondsToLive = {}
 def killStupidProcesses():
@@ -456,7 +439,7 @@ def killStupidProcesses():
                         "open -a /Library/Application Support/Adobe/SwitchBoard/SwitchBoard.app"]
                         
     for procname in stupid_processes:
-        pid = getPID(procname)
+        pid = munkicommon.getPIDforProcessName(procname)
         if pid:
             if not pid in secondsToLive:
                 secondsToLive[pid] = 30
@@ -682,7 +665,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
                munkicommon.getconsoleuser() == u"loginwindow"):
             # we're at the loginwindow, so we need to run the deployment
             # manager in the loginwindow context using launchctl bsexec
-            loginwindowPID = getPID("loginwindow")
+            loginwindowPID = munkicommon.getPIDforProcessName("loginwindow")
             cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
         else:
             cmd = []
