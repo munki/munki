@@ -773,7 +773,8 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(installroot)
             
-            retcode = runAdobeInstallTool([ubertool], number_of_payloads)
+            retcode = runAdobeInstallTool(
+                [ubertool], number_of_payloads, killAdobeAIR=True)
             
         else:
             munkicommon.display_error("No %s found" % ubertool)
