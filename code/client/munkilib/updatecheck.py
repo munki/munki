@@ -24,6 +24,7 @@ Created by Greg Neagle on 2008-11-13.
 # standard libs
 #import calendar
 #import errno
+import datetime
 import os
 #import re
 #import shutil
@@ -1448,7 +1449,20 @@ def processInstall(manifestitem, cataloglist, installinfo):
         iteminfo['installed_size'] = item_pl.get('installed_size',
                                             iteminfo['installer_item_size'])
         try:
+            # Get a timestamp, then run download the installer item.
+            start = datetime.datetime.now()
             download_installeritem(item_pl, installinfo)
+            # Record the download speed to the InstallResults output.
+            end = datetime.datetime.now()
+            download_seconds = (end - start).seconds
+            try:
+              # installer_item_size is in KBytes, so just divide by seconds.
+              download_speed = int(
+                 iteminfo['installer_item_size'] / download_seconds)
+            except (ValueError, ZeroDivisionError):
+              download_speed = None
+            iteminfo['download_kbytes_per_sec'] = download_speed
+
             filename = getInstallerItemBasename(
                 item_pl['installer_item_location'])
             # required keys
@@ -2245,7 +2259,7 @@ def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
-    
+
     global MACHINE
     munkicommon.getMachineFacts()
     MACHINE = munkicommon.getMachineFacts()
@@ -2652,14 +2666,14 @@ def checkForceInstallPackages():
 
 def getResourceIfChangedAtomically(url,
                                   destinationpath,
-                                  message=None, 
+                                  message=None,
                                   resume=False,
                                   expected_hash=None,
                                   verify=False):
-                     
-    '''Gets a given URL from the Munki server. Sets up cert/CA info if it 
+
+    '''Gets a given URL from the Munki server. Sets up cert/CA info if it
     exists, and adds any additional headers'''
-    
+
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     # get server CA cert if it exists so we can verify the munki server
     ca_cert_path = None

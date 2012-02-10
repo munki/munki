@@ -156,7 +156,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     # not only hung installer but also any child processes it started.
     proc = munkicommon.Popen(cmd, shell=False, bufsize=1, env=env_vars,
                              stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, 
+                             stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              preexec_fn=lambda: os.setpgid(
                                  os.getpid(), os.getpid()))
@@ -599,7 +599,7 @@ def installWithInfo(
             display_name = item.get('display_name') or item.get('name')
             version_to_install = item.get('version_to_install','')
             munkicommon.display_status_major(
-                "Installing %s (%s of %s)" 
+                "Installing %s (%s of %s)"
                 % (display_name, itemindex, len(installlist)))
 
             itempath = os.path.join(dirpath, item["installer_item"])
@@ -706,7 +706,7 @@ def installWithInfo(
                         item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
-                    
+
                 else:
                     # we didn't find anything we know how to install
                     munkicommon.log(
@@ -751,6 +751,7 @@ def installWithInfo(
             utc_now_complete = datetime.datetime.utcnow()
             duration_seconds = (utc_now_complete - utc_now).seconds
 
+            download_speed = item.get('download_kbytes_per_sec', None)
             install_result = {
                 'name': display_name,
                 'version': version_to_install,
@@ -758,6 +759,7 @@ def installWithInfo(
                 'status': retcode,
                 'time': NSDate.new(),
                 'duration_seconds': duration_seconds,
+                'download_kbytes_per_sec': download_speed,
             }
             munkicommon.report['InstallResults'].append(install_result)
 
