@@ -27,6 +27,7 @@ import os
 import subprocess
 import socket
 import time
+import utils
 
 # module socket variable
 SOCK = None
@@ -103,9 +104,9 @@ def readResponse():
 
 def getMunkiStatusPID():
     '''Gets the process ID for Managed Software Update'''
-    return munkicommon.getPIDforProcessName(
+    return utils.getPIDforProcessName(
         "Managed Software Update.app/Contents/MacOS/Managed Software Update") \
-    or munkicommon.getPIDforProcessName(
+    or utils.getPIDforProcessName(
         "MunkiStatus.app/Contents/MacOS/MunkiStatus")
 
 

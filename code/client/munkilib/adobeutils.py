@@ -12,9 +12,9 @@ using the CS3/CS4/CS5 Deployment Toolkits.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,6 +31,7 @@ import tempfile
 import FoundationPlist
 import munkicommon
 import munkistatus
+import utils
 
 # dmg helper
 # we need this instead of the one in munkicommon because the Adobe stuff
@@ -44,7 +45,7 @@ def mountAdobeDmg(dmgpath):
     dmgname = os.path.basename(dmgpath)
     proc = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath,
                             '-nobrowse', '-noverify', '-plist'],
-                            bufsize=1, 
+                            bufsize=1,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
     if err:
@@ -77,7 +78,7 @@ def getCS5uninstallXML(optionXMLfile):
 def getCS5mediaSignature(dirpath):
     '''Returns the CS5 mediaSignature for an AAMEE CS5 install.
     dirpath is typically the root of a mounted dmg'''
-    
+
     deploymentmgr = findAdobeDeploymentManager(dirpath)
     if deploymentmgr:
         parentdir = os.path.join(os.path.dirname(deploymentmgr), "Setup")
@@ -98,10 +99,10 @@ def getCS5mediaSignature(dirpath):
                 for node in element.childNodes:
                     elementvalue += node.nodeValue
                 return elementvalue
-    
+
     return ""
-    
-    
+
+
 def getPayloadInfo(dirpath):
     '''Parses Adobe payloads, pulling out info useful to munki'''
     payloadinfo = {}
@@ -133,7 +134,7 @@ def getPayloadInfo(dirpath):
                                     payloadinfo['display_name'] = propvalue
                                 if propname == 'ProductVersion':
                                     payloadinfo['version'] = propvalue
-                                     
+
                     installmetadata = \
                         payload_info[0].getElementsByTagName(
                                                  "InstallDestinationMetadata")
@@ -146,17 +147,17 @@ def getPayloadInfo(dirpath):
                                 installsize += node.nodeValue
                             payloadinfo['installed_size'] = \
                                                          int(installsize)/1024
-                                                         
+
     return payloadinfo
-    
-    
+
+
 def getAdobeSetupInfo(installroot):
     '''Given the root of mounted Adobe DMG,
     look for info about the installer or updater'''
-    
+
     info = {}
     payloads = []
-    
+
     # look for a payloads folder
     for (path, unused_dirs, unused_files) in os.walk(installroot):
         if path.endswith("/payloads"):
@@ -182,20 +183,20 @@ def getAdobeSetupInfo(installroot):
                             element = mediaSignatureElements[0]
                             for node in element.childNodes:
                                 mediaSignature += node.nodeValue
-                            
+
             for item in munkicommon.listdir(path):
                 payloadpath = os.path.join(path, item)
                 payloadinfo = getPayloadInfo(payloadpath)
                 if payloadinfo:
                     payloads.append(payloadinfo)
                     if (driverfolder and item == driverfolder) or \
-                       (mediaSignature and 
+                       (mediaSignature and
                             payloadinfo['AdobeCode'] == mediaSignature):
                         info['display_name'] = payloadinfo['display_name']
                         info['version'] = payloadinfo['version']
                         info['AdobeSetupType'] = "ProductInstall"
-                        
-            # we found a payloads directory, 
+
+            # we found a payloads directory,
             # so no need to keep walking the installroot
             break
 
@@ -210,11 +211,11 @@ def getAdobeSetupInfo(installroot):
                         payloadinfo = getPayloadInfo(itempath)
                         if payloadinfo:
                             payloads.append(payloadinfo)
-                        
-                # we found an extensions dir, 
+
+                # we found an extensions dir,
                 # so no need to keep walking the install root
                 break
-                   
+
     if payloads:
         if len(payloads) == 1:
             info['display_name'] = payloads[0]['display_name']
@@ -236,7 +237,7 @@ def getAdobeSetupInfo(installroot):
 def getAdobePackageInfo(installroot):
     '''Gets the package name from the AdobeUberInstaller.xml file;
     other info from the payloads folder'''
-    
+
     info = getAdobeSetupInfo(installroot)
     info['description'] = ""
     installerxml = os.path.join(installroot, "AdobeUberInstaller.xml")
@@ -274,18 +275,18 @@ def getAdobePackageInfo(installroot):
                         for node in prop.childNodes:
                             pkgname += node.nodeValue
                         info['display_name'] = pkgname
-                        
+
     if not info.get('display_name'):
-        info['display_name'] = os.path.basename(installroot)      
+        info['display_name'] = os.path.basename(installroot)
     return info
-    
-    
+
+
 def getAdobeInstallLog():
     '''Returns the current Adobe install log'''
-    
+
     logpath = "/Library/Logs/Adobe/Installers"
     # find the most recently-modified log file
-    proc = subprocess.Popen(['/bin/ls', '-t1', logpath], 
+    proc = subprocess.Popen(['/bin/ls', '-t1', logpath],
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (output, unused_err) = proc.communicate()
@@ -294,7 +295,7 @@ def getAdobeInstallLog():
         if firstitem.endswith(".log"):
             # get the last line of the most recently modified log
             return os.path.join(logpath, firstitem)
-            
+
     return None
 
 
@@ -302,10 +303,10 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
                                             previous_payloadname):
     '''Returns the number of completed Adobe payloads,
     and the name of the most recentlly completed payload.'''
-    
+
     completedpayloads = previous_completedpayloads
     lastpayloadname = previous_payloadname
-    
+
     logfile = getAdobeInstallLog()
     if logfile:
         # get number of completed payloads
@@ -313,7 +314,7 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
         regex += "|"
         regex += "(Physical payload uninstall result)"
         cmd = ['/usr/bin/grep', '-c', "-E", regex, logfile]
-        proc = subprocess.Popen(cmd, bufsize=1, 
+        proc = subprocess.Popen(cmd, bufsize=1,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         (output, unused_err) = proc.communicate()
@@ -322,14 +323,14 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
                 completedpayloads = int(str(output).rstrip("\n"))
             except (ValueError, TypeError):
                 completedpayloads = previous_completedpayloads
-                
+
         if completedpayloads > previous_completedpayloads:
             # now try to get the name of the most recently completed payload
             # this isn't 100% accurate, but it's mostly for show anyway...
             regex = " for payload \{.*\} "
             cmd = ['/usr/bin/grep', "-E", regex, logfile]
-            proc = subprocess.Popen(cmd, bufsize=1, 
-                                    stdout=subprocess.PIPE, 
+            proc = subprocess.Popen(cmd, bufsize=1,
+                                    stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             (output, unused_err) = proc.communicate()
             if output:
@@ -345,7 +346,7 @@ def getAdobeInstallProgressInfo(previous_completedpayloads,
                             if not name.startswith("returned :"):
                                 lastpayloadname = name
                                 break
-            
+
     return (completedpayloads, lastpayloadname)
 
 
@@ -369,7 +370,7 @@ def countPayloads(dirpath):
 
 
 def getPercent(current, maximum):
-    '''Returns a value useful with MunkiStatus to use when 
+    '''Returns a value useful with MunkiStatus to use when
     displaying precent-done stauts'''
     if maximum == 0:
         percentdone = -1
@@ -382,8 +383,8 @@ def getPercent(current, maximum):
     else:
         percentdone = int(float(current)/float(maximum)*100)
     return percentdone
-    
-    
+
+
 def findSetupApp(dirpath):
     '''Search dirpath and enclosed directories for Setup.app.
     Returns the path to the actual executable.'''
@@ -393,8 +394,8 @@ def findSetupApp(dirpath):
             if os.path.exists(setup_path):
                 return setup_path
     return ''
-    
-    
+
+
 def findInstallApp(dirpath):
     '''Searches dirpath and enclosed directories for Install.app.
     Returns the path to the actual executable.'''
@@ -407,7 +408,7 @@ def findInstallApp(dirpath):
 
 
 def findAdobePatchInstallerApp(dirpath):
-    '''Searches dirpath and enclosed directories for AdobePatchInstaller.app. 
+    '''Searches dirpath and enclosed directories for AdobePatchInstaller.app.
     Returns the path to the actual executable.'''
     for (path, unused_dirs, unused_files) in os.walk(dirpath):
         if path.endswith("AdobePatchInstaller.app"):
@@ -437,9 +438,9 @@ def killStupidProcesses():
                         "Adobe AIR Application Installer",
                         "InstallAdobeHelp",
                         "open -a /Library/Application Support/Adobe/SwitchBoard/SwitchBoard.app"]
-                        
+
     for procname in stupid_processes:
-        pid = munkicommon.getPIDforProcessName(procname)
+        pid = utils.getPIDforProcessName(procname)
         if pid:
             if not pid in secondsToLive:
                 secondsToLive[pid] = 30
@@ -464,14 +465,14 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
     if munkicommon.munkistatusoutput and not number_of_payloads:
         # indeterminate progress bar
         munkistatus.percent(-1)
-    
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1, 
-                            stdin=subprocess.PIPE, 
+
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                         
+
     old_payload_completed_count = 0
     payloadname = ""
-    while (proc.poll() == None): 
+    while (proc.poll() == None):
         time.sleep(1)
         (payload_completed_count, payloadname) = \
              getAdobeInstallProgressInfo(old_payload_completed_count,
@@ -493,7 +494,7 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
             if munkicommon.munkistatusoutput:
                 munkistatus.percent(getPercent(payload_completed_count,
                                                           number_of_payloads))
-        
+
         # Adobe AIR Installer workaround/hack
         # CSx installs at the loginwindow hang when Adobe AIR is installed.
         # So we check for this and kill the process. Ugly.
@@ -503,10 +504,10 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
                    munkicommon.getconsoleuser() == u"loginwindow"):
                 # we're at the loginwindow.
                 killStupidProcesses()
-                
-    # run of tool completed  
+
+    # run of tool completed
     retcode = proc.poll()
-    
+
     #check output for errors
     output = proc.stdout.readlines()
     for line in output:
@@ -519,15 +520,15 @@ def runAdobeInstallTool(cmd, number_of_payloads=0, killAdobeAIR=False):
                     retcode = int(line[11:])
                 except (ValueError, TypeError):
                     retcode = -1
-        
+
     if retcode != 0 and retcode != 8:
-        munkicommon.display_error("Adobe Setup error: %s: %s" % 
+        munkicommon.display_error("Adobe Setup error: %s: %s" %
                                    (retcode, adobeSetupError(retcode)))
     else:
         if munkicommon.munkistatusoutput:
             munkistatus.percent(100)
         munkicommon.display_status_minor('Done.')
-        
+
     return retcode
 
 
@@ -548,7 +549,7 @@ def runAdobeSetup(dmgpath, uninstalling=False):
                 if os.path.exists(uninstallxml):
                     deploymentfile = uninstallxml
                 else:
-                    # we've been asked to uninstall, 
+                    # we've been asked to uninstall,
                     # but found no uninstall.xml
                     # so we need to bail
                     munkicommon.unmountdmg(mountpoints[0])
@@ -559,24 +560,24 @@ def runAdobeSetup(dmgpath, uninstalling=False):
             else:
                 if os.path.exists(installxml):
                     deploymentfile = installxml
-            
-            # try to find and count the number of payloads 
+
+            # try to find and count the number of payloads
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(mountpoints[0])
             munkicommon.display_status_minor('Running Adobe Setup')
-            adobe_setup = [ setup_path, '--mode=silent',  
+            adobe_setup = [ setup_path, '--mode=silent',
                             '--skipProcessCheck=1' ]
             if deploymentfile:
                 adobe_setup.append('--deploymentFile=%s' % deploymentfile)
-                
+
             retcode = runAdobeInstallTool(adobe_setup, number_of_payloads)
-            
+
         else:
             munkicommon.display_error(
                 '%s doesn\'t appear to contain Adobe Setup.' %
                  os.path.basename(dmgpath))
             retcode = -1
-            
+
         munkicommon.unmountdmg(mountpoints[0])
         return retcode
     else:
@@ -614,17 +615,17 @@ def doAdobeCS5Uninstall(adobeInstallInfo):
     if not os.path.exists(setup):
         munkicommon.display_error("%s is not installed." % setupapp)
         return -1
-    uninstall_cmd = [ setup, 
-                    '--mode=silent', 
+    uninstall_cmd = [ setup,
+                    '--mode=silent',
                     '--action=uninstall',
-                    '--skipProcessCheck=1', 
+                    '--skipProcessCheck=1',
                     '--deploymentFile=%s' % deploymentFile ]
     munkicommon.display_status_minor('Running Adobe Uninstall')
     return runAdobeInstallTool(uninstall_cmd, payloadcount)
-    
-    
+
+
 def runAdobeCS5AAMEEInstall(dmgpath):
-    '''Installs a CS5 product using an AAMEE-generated package on a 
+    '''Installs a CS5 product using an AAMEE-generated package on a
     disk image.'''
     munkicommon.display_status_minor(
         'Mounting disk image %s' % os.path.basename(dmgpath))
@@ -632,7 +633,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
     if not mountpoints:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
-        
+
     deploymentmanager = findAdobeDeploymentManager(mountpoints[0])
     if deploymentmanager:
         # big hack to convince the Adobe tools to install off a mounted
@@ -647,33 +648,33 @@ def runAdobeCS5AAMEEInstall(dmgpath):
         basepath = os.path.dirname(deploymentmanager)
         number_of_payloads = countPayloads(basepath)
         tmpdir = tempfile.mkdtemp()
-        
+
         # make our symlinks
         os.symlink(os.path.join(basepath,"ASU"), os.path.join(tmpdir, "ASU"))
-        os.symlink(os.path.join(basepath,"ProvisioningTool"), 
+        os.symlink(os.path.join(basepath,"ProvisioningTool"),
                                     os.path.join(tmpdir, "ProvisioningTool"))
-        
+
         realsetupdir = os.path.join(basepath,"Setup")
         tmpsetupdir = os.path.join(tmpdir, "Setup")
         os.mkdir(tmpsetupdir)
         for item in munkicommon.listdir(realsetupdir):
-            os.symlink(os.path.join(realsetupdir, item), 
+            os.symlink(os.path.join(realsetupdir, item),
                                             os.path.join(tmpsetupdir, item))
-                                            
+
         optionXMLfile = os.path.join(basepath, "optionXML.xml")
         if (not munkicommon.getconsoleuser() or
                munkicommon.getconsoleuser() == u"loginwindow"):
             # we're at the loginwindow, so we need to run the deployment
             # manager in the loginwindow context using launchctl bsexec
-            loginwindowPID = munkicommon.getPIDforProcessName("loginwindow")
+            loginwindowPID = utils.getPIDforProcessName("loginwindow")
             cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
         else:
             cmd = []
-               
+
         cmd.extend([deploymentmanager, '--optXMLPath=%s' % optionXMLfile,
                 '--setupBasePath=%s' % tmpdir, '--installDirPath=/',
                 '--mode=install'])
-                
+
         munkicommon.display_status_minor('Starting Adobe CS5 installer...')
         retcode = runAdobeInstallTool(cmd, number_of_payloads,
                                                             killAdobeAIR=True)
@@ -684,10 +685,10 @@ def runAdobeCS5AAMEEInstall(dmgpath):
                        "%s doesn't appear to contain AdobeDeploymentManager" %
                        os.path.basename(dmgpath))
         retcode = -1
-        
+
     munkicommon.unmountdmg(mountpoints[0])
     return retcode
-    
+
 
 def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
     '''Runs the AdobePatchInstaller for CS5.
@@ -700,7 +701,7 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
         if copylocal:
             # copy the update to the local disk before installing
             updatedir = tempfile.mkdtemp()
-            retcode = subprocess.call(["/bin/cp", "-r", 
+            retcode = subprocess.call(["/bin/cp", "-r",
                                             mountpoints[0], updatedir])
             # unmount diskimage
             munkicommon.unmountdmg(mountpoints[0])
@@ -713,21 +714,21 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
             unused_result = subprocess.call(["/bin/rm", dmgpath])
         else:
             updatedir = mountpoints[0]
-            
+
         patchinstaller = findAdobePatchInstallerApp(updatedir)
         if patchinstaller:
-            # try to find and count the number of payloads 
+            # try to find and count the number of payloads
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(updatedir)
             munkicommon.display_status_minor('Running Adobe Patch Installer')
-            install_cmd = [ patchinstaller, 
-                            '--mode=silent',  
+            install_cmd = [ patchinstaller,
+                            '--mode=silent',
                             '--skipProcessCheck=1' ]
             retcode = runAdobeInstallTool(install_cmd,
                                           number_of_payloads)
         else:
             munkicommon.display_error(
-                    "%s doesn't appear to contain AdobePatchInstaller.app." % 
+                    "%s doesn't appear to contain AdobePatchInstaller.app." %
                     os.path.basename(dmgpath))
             retcode = -1
         if copylocal:
@@ -746,7 +747,7 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
     from a disk image and provides progress feedback.
     pkgname is the name of a directory at the top level of the dmg
     containing the AdobeUber tools and their XML files.'''
-    
+
     munkicommon.display_status_minor(
         'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mountAdobeDmg(dmgpath)
@@ -758,7 +759,7 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
         else:
             ubertool = os.path.join(installroot, pkgname,
                                     "AdobeUberInstaller")
-            
+
         if os.path.exists(ubertool):
             info = getAdobePackageInfo(installroot)
             packagename = info['display_name']
@@ -769,17 +770,17 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
             if munkicommon.munkistatusoutput:
                 munkistatus.detail('Starting %s' % os.path.basename(ubertool))
 
-            # try to find and count the number of payloads 
+            # try to find and count the number of payloads
             # so we can give a rough progress indicator
             number_of_payloads = countPayloads(installroot)
-            
+
             retcode = runAdobeInstallTool(
                 [ubertool], number_of_payloads, killAdobeAIR=True)
-            
+
         else:
             munkicommon.display_error("No %s found" % ubertool)
             retcode = -1
-        
+
         munkicommon.unmountdmg(installroot)
         return retcode
     else:
@@ -792,7 +793,7 @@ def runAdobeUberTool(dmgpath, pkgname='', uninstalling=False):
 #    '''Gets info from the Adobe Acrobat patch log'''
 #    global lastpatchlogline
 #    if os.path.exists(logpath):
-#        proc = subprocess.Popen(['/usr/bin/tail', '-1', logpath], 
+#        proc = subprocess.Popen(['/usr/bin/tail', '-1', logpath],
 #                                bufsize=1, stdout=subprocess.PIPE,
 #                                stderr=subprocess.PIPE)
 #        (output, err) = proc.communicate()
@@ -808,7 +809,7 @@ def findAcrobatPatchApp(dirpath):
     '''Attempts to find an AcrobatPro patching application
     in dirpath. If found, returns the path to the bundled
     patching script.'''
-    
+
     for (path, unused_dirs, unused_files) in os.walk(dirpath):
         if path.endswith(".app"):
             # look for Adobe's patching script
@@ -820,14 +821,14 @@ def findAcrobatPatchApp(dirpath):
 
 
 def updateAcrobatPro(dmgpath):
-    """Uses the scripts and Resources inside the Acrobat Patch application 
+    """Uses the scripts and Resources inside the Acrobat Patch application
     bundle to silently update Acrobat Pro and related apps
-    Why oh why does this use a different mechanism than the other Adobe 
+    Why oh why does this use a different mechanism than the other Adobe
     apps?"""
-    
+
     if munkicommon.munkistatusoutput:
         munkistatus.percent(-1)
-    
+
     #first mount the dmg
     munkicommon.display_status_minor(
         'Mounting disk image %s' % os.path.basename(dmgpath))
@@ -838,19 +839,19 @@ def updateAcrobatPro(dmgpath):
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
-        
+
     if not pathToAcrobatPatchApp:
         munkicommon.display_error("No Acrobat Patch app at %s" %
                                    pathToAcrobatPatchApp)
         munkicommon.unmountdmg(installroot)
         return -1
-        
+
     # some values needed by the patching script
-    resourcesDir = os.path.join(pathToAcrobatPatchApp, 
+    resourcesDir = os.path.join(pathToAcrobatPatchApp,
                                 "Contents", "Resources")
-    ApplyOperation = os.path.join(resourcesDir, "ApplyOperation.py")        
+    ApplyOperation = os.path.join(resourcesDir, "ApplyOperation.py")
     callingScriptPath = os.path.join(resourcesDir, "InstallUpdates.sh")
-    
+
     appList = []
     appListFile = os.path.join(resourcesDir, "app_list.txt")
     if os.path.exists(appListFile):
@@ -859,18 +860,18 @@ def updateAcrobatPro(dmgpath):
             for line in fileobj.readlines():
                 appList.append(line)
             fileobj.close()
-            
+
     if not appList:
         munkicommon.display_error("Did not find a list of apps to update.")
         munkicommon.unmountdmg(installroot)
         return -1
-        
+
     payloadNum = -1
     for line in appList:
         payloadNum = payloadNum + 1
         if munkicommon.munkistatusoutput:
             munkistatus.percent(getPercent(payloadNum + 1, len(appList) + 1))
-        
+
         (appname, status) = line.split("\t")
         munkicommon.display_status_minor('Searching for %s' % appname)
         # first look in the obvious place
@@ -883,7 +884,7 @@ def updateAcrobatPro(dmgpath):
             # use system_profiler to search for the app
             candidates = [item for item in munkicommon.getAppData()
                           if item['path'].endswith('/' + appname)]
-                      
+
         # hope there's only one!
         if len(candidates) == 0:
             if status == "optional":
@@ -894,54 +895,54 @@ def updateAcrobatPro(dmgpath):
                                           "disk." % appname)
                 munkicommon.unmountdmg(installroot)
                 return -1
-                
+
         if len(candidates) > 1:
             munkicommon.display_error("Cannot patch %s because we found "
                                       "more than one copy on the "
                                       "startup disk." % appname)
             munkicommon.unmountdmg(installroot)
             return -1
-        
+
         munkicommon.display_status_minor('Updating %s' % appname)
         apppath = os.path.dirname(candidates[0]["path"])
         cmd = [ApplyOperation, apppath, appname, resourcesDir,
                callingScriptPath, str(payloadNum)]
-        
+
         # figure out the log file path
         #patchappname = os.path.basename(pathToAcrobatPatchApp)
         #logfile_name = patchappname.split('.')[0] + str(payloadNum) + '.log'
         #homePath = os.path.expanduser("~")
-        #logfile_dir = os.path.join(homePath, "Library", "Logs", 
+        #logfile_dir = os.path.join(homePath, "Library", "Logs",
         #                                    "Adobe", "Acrobat")
         #logfile_path = os.path.join(logfile_dir, logfile_name)
-        
+
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE, 
+                                stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        while (proc.poll() == None): 
+        while (proc.poll() == None):
             time.sleep(1)
             #loginfo = getAcrobatPatchLogInfo(logfile_path)
             #if loginfo:
             #    print loginfo
-                
-        # run of patch tool completed  
+
+        # run of patch tool completed
         retcode = proc.poll()
         if retcode != 0:
-            munkicommon.display_error("Error patching %s: %s" % 
+            munkicommon.display_error("Error patching %s: %s" %
                                        (appname, retcode))
             break
         else:
             munkicommon.display_status_minor(
                 'Patching %s complete.' % appname)
-    
+
     munkicommon.display_status_minor('Done.')
     if munkicommon.munkistatusoutput:
         munkistatus.percent(100)
-    
+
     munkicommon.unmountdmg(installroot)
     return retcode
-    
+
 
 def getBundleInfo(path):
     """
@@ -960,8 +961,8 @@ def getBundleInfo(path):
             pass
 
     return None
-    
-    
+
+
 def getAdobeInstallInfo(installdir):
     '''Encapsulates info used by the Adobe Setup/Install app.'''
     adobeInstallInfo = {}
@@ -972,14 +973,14 @@ def getAdobeInstallInfo(installdir):
         if os.path.exists(optionXMLfile):
             adobeInstallInfo['uninstallxml'] = \
                                             getCS5uninstallXML(optionXMLfile)
-                                            
+
     return adobeInstallInfo
-    
+
 
 def getAdobeCatalogInfo(mountpoint, pkgname=""):
     '''Used by makepkginfo to build pkginfo data for Adobe
     installers/updaters'''
-    
+
     # look for AdobeDeploymentManager (AAMEE installer)
     deploymentmanager = findAdobeDeploymentManager(mountpoint)
     if deploymentmanager:
@@ -1008,9 +1009,9 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 installitem['type'] = 'file'
                 installs.append(installitem)
                 cataloginfo['installs'] = installs
-            
+
             return cataloginfo
-            
+
     # Look for Install.app (Bare metal CS5 install)
     # we don't handle this type, but we'll report it
     # back so makepkginfo can provide an error message
@@ -1019,7 +1020,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
         cataloginfo = {}
         cataloginfo['installer_type'] = "AdobeCS5Installer"
         return cataloginfo
-        
+
     # Look for AdobePatchInstaller.app (CS5 updater)
     installapp = findAdobePatchInstallerApp(mountpoint)
     if os.path.exists(installapp):
@@ -1033,7 +1034,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             cataloginfo['installer_type'] = "AdobeCS5PatchInstaller"
             if pkgname:
                 cataloginfo['package_path'] = pkgname
-                
+
             # make some (hopfully functional) installs items from the payloads
             installs = []
             uninstalldir = "/Library/Application Support/Adobe/Uninstall"
@@ -1050,7 +1051,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                         installitem['type'] = 'file'
                         installs.append(installitem)
                         break
-                        
+
             if installs == []:
                 # didn't find a payload with matching name
                 # just add all of the non-LangPack payloads
@@ -1067,10 +1068,10 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                         installitem['path'] = filepath
                         installitem['type'] = 'file'
                         installs.append(installitem)
-                        
-            cataloginfo['installs'] = installs 
+
+            cataloginfo['installs'] = installs
             return cataloginfo
-    
+
     # Look for AdobeUberInstaller items (CS4 install)
     pkgroot = os.path.join(mountpoint, pkgname)
     adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
@@ -1087,7 +1088,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             if pkgname:
                 cataloginfo['package_path'] = pkgname
             return cataloginfo
-            
+
     # maybe this is an Adobe update DMG or CS3 installer
     # look for Adobe Setup.app
     setuppath = findSetupApp(mountpoint)
@@ -1106,7 +1107,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 cataloginfo['uninstallable'] = False
                 cataloginfo['update_for'] = ["PleaseEditMe-1.0.0.0.0"]
             return cataloginfo
-            
+
     # maybe this is an Adobe Acrobat 9 Pro patcher?
     acrobatpatcherapp = findAcrobatPatchApp(mountpoint)
     if acrobatpatcherapp:
@@ -1124,21 +1125,21 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             [{'CFBundleIdentifier': 'com.adobe.Acrobat.Pro',
              'CFBundleName': 'Acrobat',
              'CFBundleShortVersionString': cataloginfo['version'],
-             'path': 
+             'path':
             '/Applications/Adobe Acrobat 9 Pro/Adobe Acrobat Pro.app',
               'type': 'application'}]
         return cataloginfo
-    
+
     # didn't find any Adobe installers/updaters we understand
     return None
 
 
 def adobeSetupError(errorcode):
     '''Returns text description for numeric error code
-    Reference:  
+    Reference:
     http://www.adobe.com/devnet/creativesuite/pdfs/DeployGuide.pdf'''
-    
-    errormessage = { 
+
+    errormessage = {
         0 : "Application installed successfully",
         1 : "Unable to parse command line",
         2 : "Unknown user interface mode specified",
@@ -1183,43 +1184,43 @@ def doAdobeRemoval(item):
     itempath = ""
     if "uninstaller_item" in item:
         managedinstallbase = munkicommon.pref('ManagedInstallDir')
-        itempath = os.path.join(managedinstallbase, 'Cache', 
+        itempath = os.path.join(managedinstallbase, 'Cache',
                                 item["uninstaller_item"])
         if not os.path.exists(itempath):
             munkicommon.display_error("%s package for %s was "
                                       "missing from the cache."
                                       % (uninstallmethod, item['name']))
             return -1
-    
+
     if uninstallmethod == "AdobeSetup":
         # CS3 uninstall
         retcode = runAdobeSetup(itempath, uninstalling=True)
-        
+
     elif uninstallmethod == "AdobeUberUninstaller":
         # CS4 uninstall
         pkgname = item.get("adobe_package_name") or \
                   item.get("package_path","")
         retcode = runAdobeUberTool(itempath, pkgname, uninstalling=True)
-        
+
     elif uninstallmethod == "AdobeCS5AAMEEPackage":
         # CS5 uninstall. Sheesh. Three releases, three methods.
         adobeInstallInfo = item.get('adobe_install_info')
         retcode = doAdobeCS5Uninstall(adobeInstallInfo)
-        
+
     if retcode:
         munkicommon.display_error("Uninstall of %s failed." % item['name'])
     return retcode
-    
-    
+
+
 def doAdobeInstall(item):
     '''Wrapper to handle all the Adobe installer methods.
     First get the path to the installer dmg. We know
     it exists because installer.py already checked.'''
-    
+
     managedinstallbase = \
                  munkicommon.pref('ManagedInstallDir')
     itempath = os.path.join(managedinstallbase,
-                            'Cache', 
+                            'Cache',
                             item["installer_item"])
     installer_type = item.get("installer_type","")
     if installer_type == "AdobeSetup":
