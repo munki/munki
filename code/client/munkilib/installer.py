@@ -751,7 +751,7 @@ def installWithInfo(
             utc_now_complete = datetime.datetime.utcnow()
             duration_seconds = (utc_now_complete - utc_now).seconds
 
-            download_speed = item.get('download_kbytes_per_sec', None)
+            download_speed = item.get('download_kbytes_per_sec', 0)
             install_result = {
                 'name': display_name,
                 'version': version_to_install,

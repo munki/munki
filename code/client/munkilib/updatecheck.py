@@ -1460,7 +1460,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
               download_speed = int(
                  iteminfo['installer_item_size'] / download_seconds)
             except (ValueError, ZeroDivisionError):
-              download_speed = None
+              download_speed = 0
             iteminfo['download_kbytes_per_sec'] = download_speed
 
             filename = getInstallerItemBasename(
