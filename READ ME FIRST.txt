@@ -5,4 +5,4 @@ Especially:
 http://code.google.com/p/munki/wiki/GettingStartedWithMunki
 
 and:
-http://code.google.com/p/munki/wiki/InstallingOnStandaloneMachine
+http://code.google.com/p/munki/wiki/DemonstrationSetup
