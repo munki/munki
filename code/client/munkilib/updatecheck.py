@@ -1005,7 +1005,7 @@ def enoughDiskSpace(manifestitem_pl, installlist=None,
             # subtract space needed for other items that are to be installed
             if item.get('installer_item'):
                 availablediskspace = availablediskspace - \
-                                     item.get('installed_size',0)
+                                     int(item.get('installed_size',0))
 
     if availablediskspace > diskspaceneeded:
         return True
