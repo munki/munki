@@ -662,8 +662,9 @@ def main():
 
         print
         for (name, key) in editfields:
-            print '%15s: %s' % (name, pkginfo.get(key,''))
-        print '%15s: %s' % ('Catalogs', ', '.join(pkginfo['catalogs']))
+            print '%15s: %s' % (name, pkginfo.get(key,'').encode('UTF-8'))
+        print '%15s: %s' % (
+            'Catalogs', ', '.join(pkginfo['catalogs']).encode('UTF-8'))
         print
         answer = raw_input('Import this item? [y/n] ')
         if not answer.lower().startswith('y'):
