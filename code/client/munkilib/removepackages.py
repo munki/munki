@@ -95,16 +95,6 @@ import FoundationPlist
 #                          perms INTEGER )
 #################################################################
 
-def local_display_percent_done(current, maximum):
-    '''Bump up verboseness so we get download percentage done feedback.'''
-    oldverbose = munkicommon.verbose
-    munkicommon.verbose = oldverbose + 1
-
-    munkicommon.display_percent_done(current, maximum)
-
-    # set verboseness back.
-    munkicommon.verbose = oldverbose
-
 
 def shouldRebuildDB(pkgdbpath):
     """
@@ -574,7 +564,7 @@ def initDatabase(forcerebuild=False):
     CreateTables(curs)
 
     currentpkgindex = 0
-    local_display_percent_done(0, pkgcount)
+    munkicommon.display_percent_done(0, pkgcount)
 
     if os.path.exists(receiptsdir):
         receiptlist = munkicommon.listdir(receiptsdir)
@@ -591,7 +581,7 @@ def initDatabase(forcerebuild=False):
                 munkicommon.display_detail("Importing %s..." % receiptpath)
                 ImportPackage(receiptpath, curs)
                 currentpkgindex += 1
-                local_display_percent_done(currentpkgindex, pkgcount)
+                munkicommon.display_percent_done(currentpkgindex, pkgcount)
 
     if os.path.exists(bomsdir):
         bomslist = munkicommon.listdir(bomsdir)
@@ -608,7 +598,7 @@ def initDatabase(forcerebuild=False):
                 munkicommon.display_detail("Importing %s..." % bompath)
                 ImportBom(bompath, curs)
                 currentpkgindex += 1
-                local_display_percent_done(currentpkgindex, pkgcount)
+                munkicommon.display_percent_done(currentpkgindex, pkgcount)
     if os_version >= (10, 6):  # Snow Leopard or later
         for pkg in pkglist:
             if munkicommon.stopRequested():
@@ -621,11 +611,11 @@ def initDatabase(forcerebuild=False):
             munkicommon.display_detail("Importing %s..." % pkg)
             ImportFromPkgutil(pkg, curs)
             currentpkgindex += 1
-            local_display_percent_done(currentpkgindex, pkgcount)
+            munkicommon.display_percent_done(currentpkgindex, pkgcount)
 
     # in case we didn't quite get to 100% for some reason
     if currentpkgindex < pkgcount:
-        local_display_percent_done(pkgcount, pkgcount)
+        munkicommon.display_percent_done(pkgcount, pkgcount)
 
     # commit and close the db when we're done.
     conn.commit()
@@ -738,7 +728,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     and optionally Apple's package database.
     """
     munkicommon.display_status_minor('Removing receipt info')
-    local_display_percent_done(0, 4)
+    munkicommon.display_percent_done(0, 4)
 
     conn = sqlite3.connect(packagedb)
     curs = conn.cursor()
@@ -750,7 +740,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
         aconn = sqlite3.connect(applepkgdb)
         acurs = aconn.cursor()
 
-    local_display_percent_done(1, 4)
+    munkicommon.display_percent_done(1, 4)
 
     for pkgkey in pkgkeylist:
         pkgid = ''
@@ -822,7 +812,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                     munkicommon.display_detail(
                         str(output).decode('UTF-8').rstrip('\n'))
 
-    local_display_percent_done(2, 4)
+    munkicommon.display_percent_done(2, 4)
 
     # now remove orphaned paths from paths table
     # first, Apple's database if option is passed
@@ -837,7 +827,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
             acurs.close()
             aconn.close()
 
-    local_display_percent_done(3, 4)
+    munkicommon.display_percent_done(3, 4)
 
     # we do our database last so its modtime is later than the modtime for the
     # Apple DB...
@@ -850,7 +840,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     curs.close()
     conn.close()
 
-    local_display_percent_done(4, 4)
+    munkicommon.display_percent_done(4, 4)
 
 
 def isBundle(pathname):
@@ -921,7 +911,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
 
     itemcount = len(removalpaths)
     itemindex = 0
-    local_display_percent_done(itemindex, itemcount)
+    munkicommon.display_percent_done(itemindex, itemcount)
 
     for item in removalpaths:
         itemindex += 1
@@ -997,7 +987,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     munkicommon.display_error(msg)
                     removalerrors = removalerrors + "\n" + msg
 
-        local_display_percent_done(itemindex, itemcount)
+        munkicommon.display_percent_done(itemindex, itemcount)
 
     if removalerrors:
         munkicommon.display_info(

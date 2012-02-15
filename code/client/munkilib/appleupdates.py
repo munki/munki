@@ -787,10 +787,6 @@ class AppleUpdates(object):
         # http://developer.apple.com/library/mac/#documentation/
         #        Cocoa/Conceptual/UserDefaults/Concepts/DefaultsDomains.html
         cmd = [softwareupdatecheck, '-CatalogURL', catalog_url]
-        # bump up verboseness so we get download percentage done feedback.
-        oldverbose = munkicommon.verbose
-        munkicommon.verbose = oldverbose + 1
-
         try:
             # now check for updates
             proc = subprocess.Popen(cmd, shell=False, bufsize=1,
@@ -844,8 +840,6 @@ class AppleUpdates(object):
         except OSError:
             pass
 
-        # set verboseness back.
-        munkicommon.verbose = oldverbose
         return retcode
 
     def _RunSoftwareUpdate(
@@ -893,9 +887,6 @@ class AppleUpdates(object):
             cmd.append('-v')
 
         cmd.extend(options_list)
-        # bump up verboseness so we get download percentage done feedback.
-        oldverbose = munkicommon.verbose
-        munkicommon.verbose = oldverbose + 1
 
         try:
             job = launchd.Job(cmd)
@@ -1003,10 +994,6 @@ class AppleUpdates(object):
             last_result_code = self.GetSoftwareUpdatePref('LastResultCode') or 0
             if last_result_code > 2:
                 retcode = last_result_code
-
-        # set verboseness back.
-        munkicommon.verbose = oldverbose
-        return retcode
 
     # TODO(jrand): The below functions are externally called. Should all
     #   others be private?
