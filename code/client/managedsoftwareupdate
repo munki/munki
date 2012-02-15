@@ -653,7 +653,9 @@ def main():
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
                     forcecheck=(options.manualcheck or
-                                runtype == 'checkandinstallatstartup'))
+                                runtype == 'checkandinstallatstartup' or
+                                (runtype == 'custom' and
+                                     applesoftwareupdatesonly)))
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.display_error(traceback.format_exc())

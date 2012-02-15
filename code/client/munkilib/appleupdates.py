@@ -260,7 +260,8 @@ class AppleUpdates(object):
                                             url,
                                             destinationpath,
                                             custom_headers=[user_agent_header],
-                                            resume=resume)
+                                            resume=resume,
+                                            follow_redirects=True)
 
     def CacheUpdateMetadata(self):
         """Copies ServerMetadata (.smd), Metadata (.pkm), and

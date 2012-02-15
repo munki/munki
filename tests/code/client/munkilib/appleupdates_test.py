@@ -1105,7 +1105,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.au.CacheAppleCatalog().AndReturn(None)
         self.au._IsForceCheckNeccessary('hash').AndReturn(False)
         appleupdates.munkicommon.log(
-            'Skipping Apple Software Update check because sucatalog is '
+            '    Skipping Apple Software Update check because sucatalog is '
             'unchanged, installed Apple packages are unchanged and we '
             'recently did a full check.')
         self.mox.ReplayAll()

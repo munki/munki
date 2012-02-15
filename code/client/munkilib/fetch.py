@@ -61,6 +61,10 @@ class CurlDownloadError(MunkiDownloadError):
 class FileCopyError(MunkiDownloadError):
     """Download failed because of file copy errors."""
     pass
+    
+class PackageVerificationError(MunkiDownloadError):
+    """Package failed verification"""
+    pass
 
 
 def getxattr(pathname, attr):
@@ -86,7 +90,7 @@ def writeCachedChecksum(file_path, fhash=None):
 WARNINGSLOGGED = {}
 def curl(url, destinationpath,
          cert_info=None, custom_headers=None, donotrecurse=False, etag=None,
-         message=None, onlyifnewer=False, resume=False):
+         message=None, onlyifnewer=False, resume=False, follow_redirects=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -122,6 +126,10 @@ def curl(url, destinationpath,
         print >> fileobj, 'output = "%s"' % tempdownloadpath
         print >> fileobj, 'ciphers = HIGH,!ADH' #use only secure >=128 bit SSL
         print >> fileobj, 'url = "%s"' % url
+        
+        munkicommon.display_debug2('follow_redirects is %s', follow_redirects)
+        if follow_redirects:
+            print >> fileobj, 'location'    # follow redirects
         
         if cert_info:
             cacert = cert_info.get('cacert')
@@ -203,6 +211,7 @@ def curl(url, destinationpath,
         if not donewithheaders:
             info = proc.stdout.readline().strip('\r\n')
             if info:
+                munkicommon.display_debug2(info)
                 if info.startswith('HTTP/'):
                     header['http_result_code'] = info.split(None, 2)[1]
                     header['http_result_description'] = info.split(None, 2)[2]
@@ -212,37 +221,46 @@ def curl(url, destinationpath,
                     header[fieldname] = part[1]
             else:
                 # we got an empty line; end of headers (or curl exited)
-                donewithheaders = True
-                try:
-                    # Prefer Content-Length header to determine download size,
-                    # otherwise fall back to a custom X-Download-Size header.
-                    # This is primary for servers that use chunked transfer
-                    # encoding, when Content-Length is forbidden by 
-                    # RFC2616 4.4. An example of such a server is
-                    # Google App Engine Blobstore.
-                    targetsize = (
-                        header.get('content-length') or
-                        header.get('x-download-size'))
-                    targetsize = int(targetsize)
-                except (ValueError, TypeError):
-                    targetsize = 0
-                if header.get('http_result_code') == '206':
-                    # partial content because we're resuming
-                    munkicommon.display_detail(
-                        'Resuming partial download for %s' %
-                                        os.path.basename(destinationpath))
-                    contentrange = header.get('content-range')
-                    if contentrange.startswith('bytes'):
-                        try:
-                            targetsize = int(contentrange.split('/')[1])
-                        except (ValueError, TypeError):
-                            targetsize = 0
+                if follow_redirects:
+                    if header.get('http_result_code') in ['301', '302', '303']:
+                        # redirect, so more headers are coming.
+                        # Throw away the headers we've received so far
+                        header = {}
+                        header['http_result_code'] = '000'
+                        header['http_result_description'] = ''
+                else:
+                    donewithheaders = True
+                    try:
+                        # Prefer Content-Length header to determine download 
+                        # size, otherwise fall back to a custom X-Download-Size 
+                        # header.
+                        # This is primary for servers that use chunked transfer
+                        # encoding, when Content-Length is forbidden by 
+                        # RFC2616 4.4. An example of such a server is
+                        # Google App Engine Blobstore.
+                        targetsize = (
+                            header.get('content-length') or
+                            header.get('x-download-size'))
+                        targetsize = int(targetsize)
+                    except (ValueError, TypeError):
+                        targetsize = 0
+                    if header.get('http_result_code') == '206':
+                        # partial content because we're resuming
+                        munkicommon.display_detail(
+                            'Resuming partial download for %s' %
+                                            os.path.basename(destinationpath))
+                        contentrange = header.get('content-range')
+                        if contentrange.startswith('bytes'):
+                            try:
+                                targetsize = int(contentrange.split('/')[1])
+                            except (ValueError, TypeError):
+                                targetsize = 0
 
-                if message and header.get('http_result_code') != '304':
-                    if message:
-                        # log always, display if verbose is 1 or more
-                        # also display in MunkiStatus detail field
-                        munkicommon.display_status_minor(message)
+                    if message and header.get('http_result_code') != '304':
+                        if message:
+                            # log always, display if verbose is 1 or more
+                            # also display in MunkiStatus detail field
+                            munkicommon.display_status_minor(message)
 
         elif targetsize and header.get('http_result_code').startswith('2'):
             # display progress if we get a 2xx result code
@@ -258,6 +276,7 @@ def curl(url, destinationpath,
         else:
             # Headers have finished, but not targetsize or HTTP2xx.
             # It's possible that Content-Length was not in the headers.
+            # so just sleep and loop again. We can't show progress.
             time.sleep(0.1)
 
         if (proc.poll() != None):
@@ -305,7 +324,8 @@ def curl(url, destinationpath,
                                 etag=etag,
                                 message=message,
                                 onlyifnewer=onlyifnewer,
-                                resume=resume)
+                                resume=resume,
+                                follow_redirects=follow_redirects)
             elif retcode == 22:
                 # TODO: Made http(s) connection but 400 series error.
                 # What should we do?
@@ -387,7 +407,8 @@ def getResourceIfChangedAtomically(url,
                                    expected_hash=None,
                                    message=None, 
                                    resume=False,
-                                   verify=False):
+                                   verify=False,
+                                   follow_redirects=False):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -428,7 +449,7 @@ def getResourceIfChangedAtomically(url,
         changed = getHTTPfileIfChangedAtomically(
             url, destinationpath,
             cert_info=cert_info, custom_headers=custom_headers,
-            message=message, resume=resume)
+            message=message, resume=resume, follow_redirects=follow_redirects)
     elif url_parse.scheme == 'file':
         changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
     else:
@@ -507,7 +528,8 @@ def getFileIfChangedAtomically(path, destinationpath):
 
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                    cert_info=None, custom_headers=None,
-                                   message=None, resume=False):
+                                   message=None, resume=False,
+                                   follow_redirects=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 
@@ -533,7 +555,8 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
                       etag=etag,
                       message=message,
                       onlyifnewer=getonlyifnewer,
-                      resume=resume)
+                      resume=resume,
+                      follow_redirects=follow_redirects)
 
     except CurlError, err:
         err = 'Error %s: %s' % tuple(err)

@@ -659,10 +659,6 @@ def getInstalledVersion(item_plist):
     # if we fall through to here we have no idea what version we have
     return 'UNKNOWN'
 
-class PackageVerificationError(fetch.MunkiDownloadError):
-    """Download failed because it could not be verified"""
-    pass
-
 
 def download_installeritem(item_pl, installinfo, uninstalling=False):
     """Downloads an (un)installer item.
@@ -1524,7 +1520,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                                                    cataloglist,
                                                    installinfo)
             return True
-        except PackageVerificationError:
+        except fetch.PackageVerificationError:
             munkicommon.display_warning(
                 'Can\'t install %s because the integrity check failed.'
                 % manifestitem)
@@ -1940,7 +1936,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 iteminfo['uninstaller_item'] = filename
                 iteminfo['adobe_package_name'] = \
                         uninstall_item.get('adobe_package_name','')
-            except PackageVerificationError:
+            except fetch.PackageVerificationError:
                 munkicommon.display_warning(
                     'Can\'t uninstall %s because the integrity check '
                     'failed.' % iteminfo['name'])
