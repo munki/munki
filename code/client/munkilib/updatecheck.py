@@ -662,6 +662,7 @@ def getInstalledVersion(item_plist):
 
 def download_installeritem(item_pl, installinfo, uninstalling=False):
     """Downloads an (un)installer item.
+    Returns True if the item was downloaded, False if it was already cached.
     Raises an error if there are issues..."""
 
     download_item_key = 'installer_item_location'
@@ -714,11 +715,11 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
     try:
-        unused_x = getResourceIfChangedAtomically(pkgurl, destinationpath,
-                                                  resume=True,
-                                                  message=dl_message,
-                                                  expected_hash=expected_hash,
-                                                  verify=True)
+        return getResourceIfChangedAtomically(pkgurl, destinationpath,
+                                              resume=True,
+                                              message=dl_message,
+                                              expected_hash=expected_hash,
+                                              verify=True)
     except fetch.MunkiDownloadError:
         raise
 
@@ -1001,7 +1002,7 @@ def enoughDiskSpace(manifestitem_pl, installlist=None,
             # subtract space needed for other items that are to be installed
             if item.get('installer_item'):
                 availablediskspace = availablediskspace - \
-                                     int(item.get('installed_size',0))
+                                     int(item.get('installed_size', 0))
 
     if availablediskspace > diskspaceneeded:
         return True
@@ -1447,20 +1448,22 @@ def processInstall(manifestitem, cataloglist, installinfo):
         try:
             # Get a timestamp, then run download the installer item.
             start = datetime.datetime.now()
-            download_installeritem(item_pl, installinfo)
-            # Record the download speed to the InstallResults output.
-            end = datetime.datetime.now()
-            download_seconds = (end - start).seconds
-            try:
-                if iteminfo['installer_item_size'] < 1024:
-                    # ignore downloads under 1 MB or speeds will be skewed.
-                    # we should care more about sustained speeds.
+            if download_installeritem(item_pl, installinfo):
+                # Record the download speed to the InstallResults output.
+                end = datetime.datetime.now()
+                download_seconds = (end - start).seconds
+                try:
+                    if iteminfo['installer_item_size'] < 1024:
+                        # ignore downloads under 1 MB or speeds will be skewed.
+                        download_speed = 0
+                    else:
+                        # installer_item_size is KBytes, so divide by seconds.
+                        download_speed = int(
+                            iteminfo['installer_item_size'] / download_seconds)
+                except (TypeError, ValueError, ZeroDivisionError):
                     download_speed = 0
-                else:
-                    # installer_item_size is in KBytes, so divide by seconds.
-                    download_speed = int(
-                        iteminfo['installer_item_size'] / download_seconds)
-            except (TypeError, ValueError, ZeroDivisionError):
+            else:
+                # Item was already in cache; set download_speed to 0.
                 download_speed = 0
             iteminfo['download_kbytes_per_sec'] = download_speed
 
