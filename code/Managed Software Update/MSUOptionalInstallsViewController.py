@@ -129,7 +129,7 @@ class MSUOptionalInstallsViewController(NSViewController):
             self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
         else:
             self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
-                                                  buffer(description),
+                                                  buffer(description.encode('UTF-8')),
                                                   u"text/plain", u"utf-8", None)
     def updateDescriptionView(self):
         #NSLog(u"MSUOptionalInstallsViewController.updateDescriptionView")
