@@ -76,6 +76,11 @@ def getManifestNames():
     manifests_path = os.path.join(pref('repo_path'), 'manifests')
     manifests = []
     for dirpath, dirnames, filenames in os.walk(manifests_path):
+        for dirname in dirnames:
+            # don't recurse into directories that start
+            # with a period.
+            if dirname.startswith('.'):
+                dirnames.remove(dirname)
         subdir = dirpath[len(manifests_path):]
         for name in filenames:
             if name.startswith("."):

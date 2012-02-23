@@ -93,7 +93,11 @@ def makecatalogs(repopath):
     catalogs = {}
     catalogs['all'] = []
     for dirpath, unused_dirnames, filenames in os.walk(pkgsinfopath):
-        #subdir = dirpath[len(pkgsinfopath):]
+        for dirname in dirnames:
+            # don't recurse into directories that start
+            # with a period.
+            if dirname.startswith('.'):
+                dirnames.remove(dirname)
         for name in filenames:
             if name.startswith("._") or name == ".DS_Store":
                 # don't process these
