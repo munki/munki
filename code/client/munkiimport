@@ -91,7 +91,7 @@ def mountRepoGUI():
     print 'Attempting to connect to munki repo...'
     cmd = ['/usr/bin/open', repo_url]
     unused_retcode = subprocess.call(cmd)
-    for i in range(60):
+    for unused_i in range(60):
         # wait up to 60 seconds to connect to repo
         if os.path.exists(repo_path):
             break
@@ -352,7 +352,7 @@ def findMatchingPkginfo(pkginfo):
         matchingindexes = db['hashes'].get(
                           pkginfo['installer_item_hash'])
         if matchingindexes:
-            matchingitem = db['items'][matchingindexes[0]] 
+            return db['items'][matchingindexes[0]] 
     
     if 'receipts' in pkginfo:
         pkgids = [item['packageid'] 
@@ -437,7 +437,8 @@ def makeCatalogs():
         output = proc.stdout.readline()
         if not output and (proc.poll() != None):
             break
-        print output.rstrip('\n')
+        if VERBOSE:
+            print output.rstrip('\n')
         
     errors = proc.stderr.read()
     if errors:
@@ -493,6 +494,7 @@ PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
                                             PREFSNAME))
 NOINTERACTIVE = False
 WE_MOUNTED_THE_REPO = False
+VERBOSE = False
 
 def main():
     """Main routine"""
@@ -519,6 +521,8 @@ def main():
                     if repo path is unavailable.""")
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
+    p.add_option('--verbose', '-v', action='store_true',
+                    help='Print more output.')
     
     options, arguments = p.parse_args()
     
@@ -531,7 +535,8 @@ def main():
         exit(0)
         
     NOINTERACTIVE = options.nointeractive
-        
+    VERBOSE = options.verbose
+    
     if len(arguments) == 0:
         p.print_usage()
         exit(0)

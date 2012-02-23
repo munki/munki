@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@ makecatalogs
 
 Created by Greg Neagle on 2009-03-30.
 
-Recursively scans a directory, looking for installer item info files.  
+Recursively scans a directory, looking for installer item info files.
 Builds a repo catalog from these files.
 
 Assumes a pkgsinfo directory under repopath.
@@ -33,22 +33,25 @@ import optparse
 
 try:
     from munkilib import FoundationPlist as plistlib
+    LOCAL_PREFS_SUPPORT = True
 except ImportError:
     try:
         import FoundationPlist as plistlib
+        LOCAL_PREFS_SUPPORT = True
     except ImportError:
         # maybe we're not on an OS X machine...
         print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
                               "using plistlib instead.")
         import plistlib
-        
+        LOCAL_PREFS_SUPPORT = False
+
 try:
     from munkilib.munkicommon import listdir, get_version
 except ImportError:
     # munkilib is not available
     def listdir(path):
         """OSX HFS+ string encoding safe listdir().
-
+        
         Args:
             path: path to list contents of
         Returns:
@@ -71,62 +74,62 @@ except ImportError:
         elif type(path) is not unicode:
             path = unicode(path)
         return os.listdir(path)
-        
+    
     def get_version():
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
-        
+
 def makecatalogs(repopath):
     '''Assembles all pkginfo files into catalogs.
     Assumes a pkgsinfo directory under repopath.
-    User calling this needs to be able to write to repo/catalogs.'''
+    User calling this needs to be able to write to the repo/catalogs
+    directory.'''
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
     if not os.path.exists(pkgsinfopath):
         print >> sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
         exit(-1)
-    
+        
+    errors = []
     catalogs = {}
-    catalogs['all'] = []    
-    for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
+    catalogs['all'] = []
+    for dirpath, unused_dirnames, filenames in os.walk(pkgsinfopath):
         #subdir = dirpath[len(pkgsinfopath):]
         for name in filenames:
             if name.startswith("._") or name == ".DS_Store":
                 # don't process these
                 continue
-                
+            
             filepath = os.path.join(dirpath, name)
             
             try:
                 pkginfo = plistlib.readPlist(filepath)
             except IOError, inst:
-                print >> sys.stderr, ("IO error for %s: %s" % 
-                                        (filepath, inst))
+                errors.append("IO error for %s: %s" % (filepath, inst))
                 continue
             except Exception, inst:
-                print >> sys.stderr, ("Unexpected error for %s: %s" % 
-                                        (filepath, inst))
+                errors.append("Unexpected error for %s: %s" % (filepath, inst))
                 continue
             
             #simple sanity checking
             if not 'installer_item_location' in pkginfo:
-                print >> sys.stderr, \
-                    ("WARNING: file %s is missing installer_item_location" % 
+                errors.append(
+                    "WARNING: file %s is missing installer_item_location" %
                                                 filepath[len(pkgsinfopath)+1:])
                 continue
             try:
                 installeritempath = os.path.join(repopath, "pkgs",
                             pkginfo['installer_item_location'])
             except TypeError:
-                print >> sys.stderr, ("WARNING: invalid installer_item_location"
+                errors.append("WARNING: invalid installer_item_location"
                     " in info file %s" % filepath[len(pkgsinfopath)+1:])
                 continue
             if not os.path.exists(installeritempath):
-                print >> sys.stderr, ("WARNING: Info file %s refers to "
-                                      "missing installer item: %s" % 
-                                        (filepath[len(pkgsinfopath)+1:],
-                                        pkginfo['installer_item_location']))
+                errors.append("WARNING: Info file %s refers to "
+                              "missing installer item: %s" %
+                              (filepath[len(pkgsinfopath)+1:],
+                               pkginfo['installer_item_location']))
                 continue
-                
+            
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
                 if not catalogname in catalogs:
@@ -134,7 +137,13 @@ def makecatalogs(repopath):
                 catalogs[catalogname].append(pkginfo)
                 print "Adding %s to %s..." % \
                     (filepath[len(pkgsinfopath)+1:], catalogname)
-               
+    
+    if errors:
+        # group all errors at the end for better visibility
+        print
+        for error in errors:
+            print >> sys.stderr, error
+            
     # clear out old catalogs
     catalogpath = os.path.join(repopath, "catalogs")
     if not os.path.exists(catalogpath):
@@ -151,15 +160,32 @@ def makecatalogs(repopath):
         if os.path.exists(catalogpath):
             print >> sys.stderr, ("WARNING: catalog %s already exists at "
                 "%s. Perhaps this is a non-case sensitive filesystem and you "
-                "have catalogs with names differing only in case?" 
+                "have catalogs with names differing only in case?"
                 % (key, catalogpath))
         else:
             plistlib.writePlist(catalogs[key], catalogpath)
-        
 
+
+def pref(prefname):
+    """Returns a preference for prefname"""
+    if not LOCAL_PREFS_SUPPORT:
+        return None
+    try:
+        _prefs = plistlib.readPlist(PREFSPATH)
+    except Exception:
+        return None
+    if prefname in _prefs:
+        return _prefs[prefname]
+    else:
+        return None
+
+
+PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
+PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
+                                            PREFSNAME))
 def main():
     '''Main'''
-    usage = "usage: %prog [options] /path/to/repo_root"
+    usage = "usage: %prog [options] [/path/to/repo_root]"
     p = optparse.OptionParser(usage=usage)
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
@@ -169,15 +195,21 @@ def main():
         print get_version()
         exit(0)
     
+    repopath = None
     if len(arguments) == 0:
-        print >> sys.stderr, "Need to specify a path to the repo root!"
-        exit(-1)
+        repopath = pref('repo_path')
+        if not repopath:
+            print >> sys.stderr, "Need to specify a path to the repo root!"
+            exit(-1)
+        else:
+            print "Using repo path: %s" % repopath
+    else:
+        repopath = arguments[0].rstrip("/")
         
-    repopath = arguments[0].rstrip("/")
     if not os.path.exists(repopath):
         print >> sys.stderr, "Repo root path %s doesn't exist!" % repopath
         exit(-1)
-            
+    
     makecatalogs(repopath)
 
 if __name__ == '__main__':
