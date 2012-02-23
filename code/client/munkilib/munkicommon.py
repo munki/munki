@@ -179,7 +179,7 @@ class Popen(subprocess.Popen):
             sys.stdin.write(input)
 
         returncode = None
-
+        inactive = 0
         while returncode is None:
             (rlist, unused_wlist, unused_xlist) = select.select(
                 fds, [], [], 1.0)
@@ -296,7 +296,7 @@ def concat_log_message(msg, *args):
         args = [str_to_ascii(arg) for arg in args]
         try:
             msg = msg % tuple(args)
-        except TypeError, err:
+        except TypeError, unused_err:
             warnings.warn(
                 'String format does not match concat args: %s' % (
                 str(sys.exc_info())))
@@ -1007,7 +1007,7 @@ class MunkiLooseVersion (version.LooseVersion):
         if vstring is not None:
             self.parse(str(vstring))
 
-    def __pad__(self, version_list, max_length):
+    def _pad(self, version_list, max_length):
         """Pad a version list by adding extra 0
         components to the end if needed"""
         # copy the version_list so we don't modify it
@@ -1021,8 +1021,8 @@ class MunkiLooseVersion (version.LooseVersion):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
-        self_cmp_version = self.__pad__(self.version, max_length)
-        other_cmp_version = self.__pad__(other.version, max_length)
+        self_cmp_version = self._pad(self.version, max_length)
+        other_cmp_version = self._pad(other.version, max_length)
 
         return cmp(self_cmp_version, other_cmp_version)
 
@@ -1107,47 +1107,65 @@ def getExtendedVersion(bundlepath):
     return '0.0.0.0.0'
 
 
-def parsePkgRefs(filename):
+def parsePkgRefs(filename, path_to_pkg=None):
     """Parses a .dist or PackageInfo file looking for pkg-ref or pkg-info tags
     to get info on included sub-packages"""
     info = []
     dom = minidom.parse(filename)
-    pkgrefs = dom.getElementsByTagName('pkg-ref')
+    pkgrefs = dom.getElementsByTagName('pkg-info')
     if pkgrefs:
         for ref in pkgrefs:
             keys = ref.attributes.keys()
-            if 'id' in keys and 'version' in keys:
+            if 'identifier' in keys and 'version' in keys:
                 pkginfo = {}
                 pkginfo['packageid'] = \
-                             ref.attributes['id'].value.encode('UTF-8')
+                       ref.attributes['identifier'].value.encode('UTF-8')
                 pkginfo['version'] = \
                     ref.attributes['version'].value.encode('UTF-8')
-                if 'installKBytes' in keys:
-                    pkginfo['installed_size'] = int(
-                        ref.attributes['installKBytes'].value.encode('UTF-8'))
-                if not pkginfo['packageid'].startswith('manual'):
-                    if not pkginfo in info:
-                        info.append(pkginfo)
+                payloads = ref.getElementsByTagName('payload')
+                if payloads:
+                    keys = payloads[0].attributes.keys()
+                    if 'installKBytes' in keys:
+                        pkginfo['installed_size'] = int(
+                            payloads[0].attributes[
+                                'installKBytes'].value.encode('UTF-8'))
+                if not pkginfo in info:
+                    info.append(pkginfo)
     else:
-        pkgrefs = dom.getElementsByTagName('pkg-info')
+        pkgrefs = dom.getElementsByTagName('pkg-ref')
         if pkgrefs:
+            pkgref_dict = {}
             for ref in pkgrefs:
                 keys = ref.attributes.keys()
-                if 'identifier' in keys and 'version' in keys:
-                    pkginfo = {}
-                    pkginfo['packageid'] = \
-                           ref.attributes['identifier'].value.encode('UTF-8')
-                    pkginfo['version'] = \
-                        ref.attributes['version'].value.encode('UTF-8')
-                    payloads = ref.getElementsByTagName('payload')
-                    if payloads:
-                        keys = payloads[0].attributes.keys()
-                        if 'installKBytes' in keys:
-                            pkginfo['installed_size'] = int(
-                                payloads[0].attributes[
-                                    'installKBytes'].value.encode('UTF-8'))
-                    if not pkginfo in info:
-                        info.append(pkginfo)
+                if 'id' in keys:
+                    pkgid = ref.attributes['id'].value.encode('UTF-8')
+                    if (not pkgid in pkgref_dict and 
+                        not pkgid.startswith('manual')):
+                        pkgref_dict[pkgid] = {'packageid': pkgid}
+                    if 'version' in keys:
+                        pkgref_dict[pkgid]['version'] = \
+                            ref.attributes['version'].value.encode('UTF-8')
+                    if 'installKBytes' in keys:
+                        pkgref_dict[pkgid]['installed_size'] = int(
+                            ref.attributes['installKBytes'].value.encode(
+                                                                   'UTF-8'))
+                    if ref.firstChild:
+                        text = ref.firstChild.wholeText
+                        if text.startswith('file:') and text.endswith('.pkg'):
+                            pkgref_dict[pkgid]['file'] = text[5:].encode(
+                                                                    'UTF-8')
+            for key in pkgref_dict.keys():
+                pkgref = pkgref_dict[key]
+                if 'file' in pkgref and path_to_pkg is not None:
+                    pkgdir = os.path.dirname(path_to_pkg)
+                    relativepath = urllib2.unquote(pkgref['file'])
+                    subpkgpath = os.path.join(pkgdir, relativepath)
+                    if os.path.exists(subpkgpath):
+                        info.extend(getReceiptInfo(subpkgpath))
+                        continue
+                if 'version' in pkgref:
+                    info.append(pkgref_dict[key])
+                    
     return info
 
 
@@ -1175,7 +1193,14 @@ def getFlatPackageInfo(pkgpath):
             infoarray = parsePkgRefs(packageinfofile)
 
         if not infoarray:
-            # didn't get any packageid info or no PackageInfo file
+            # found no PackageInfo file
+            # so let's look at the Distribution file
+            distributionfile = os.path.join(currentdir, 'Distribution')
+            if os.path.exists(distributionfile):
+                infoarray = parsePkgRefs(distributionfile, path_to_pkg=pkgpath)
+
+        if not infoarray:
+            # No PackageInfo file or Distribution file
             # look for subpackages at the top level
             for item in listdir(currentdir):
                 itempath = os.path.join(currentdir, item)
@@ -1183,13 +1208,6 @@ def getFlatPackageInfo(pkgpath):
                     packageinfofile = os.path.join(itempath, 'PackageInfo')
                     if os.path.exists(packageinfofile):
                         infoarray.extend(parsePkgRefs(packageinfofile))
-
-        if not infoarray:
-            # found no PackageInfo files and no subpackages,
-            # so let's look at the Distribution file
-            distributionfile = os.path.join(currentdir, 'Distribution')
-            if os.path.exists(distributionfile):
-                infoarray = parsePkgRefs(distributionfile)
 
     # change back to original working dir
     os.chdir(cwd)
@@ -1283,15 +1301,6 @@ def getOnePackageInfo(pkgpath):
     return pkginfo
 
 
-def getText(nodelist):
-    """Helper function to get text from XML child nodes"""
-    text = ""
-    for node in nodelist:
-        if node.nodeType == node.TEXT_NODE:
-            text = text + node.data
-    return text
-
-
 def getBundlePackageInfo(pkgpath):
     """Get metadata from a bundle-style package"""
     infoarray = []
@@ -1307,22 +1316,8 @@ def getBundlePackageInfo(pkgpath):
         for item in listdir(bundlecontents):
             if item.endswith('.dist'):
                 filename = os.path.join(bundlecontents, item)
-                dom = minidom.parse(filename)
-                pkgrefs = dom.getElementsByTagName('pkg-ref')
-                if pkgrefs:
-                    # try to find subpackages from the file: references
-                    for ref in pkgrefs:
-                        fileref = getText(ref.childNodes)
-                        if fileref.startswith('file:'):
-                            relativepath = urllib2.unquote(fileref[5:])
-                            subpkgpath = os.path.join(pkgpath, relativepath)
-                            if os.path.exists(subpkgpath):
-                                pkginfo = getBundlePackageInfo(subpkgpath)
-                                if pkginfo:
-                                    infoarray.extend(pkginfo)
-
-                    if infoarray:
-                        return infoarray
+                # return info using the distribution file
+                return parsePkgRefs(filename, path_to_pkg=bundlecontents)
 
         # no .dist file found, look for packages in subdirs
         dirsToSearch = []
@@ -1351,17 +1346,6 @@ def getBundlePackageInfo(pkgpath):
                             pkginfo = getBundlePackageInfo(itempath)
                             if pkginfo:
                                 infoarray.extend(pkginfo)
-
-        if infoarray:
-            return infoarray
-        else:
-            # couldn't find any subpackages,
-            # just return info from the .dist file
-            # if it exists
-            for item in listdir(bundlecontents):
-                if item.endswith('.dist'):
-                    distfile = os.path.join(bundlecontents, item)
-                    infoarray.extend(parsePkgRefs(distfile))
 
     return infoarray
 
@@ -1451,9 +1435,9 @@ def nameAndVersion(aString):
     # first try regex
     m = re.search(r'[0-9]+(\.[0-9]+)((\.|a|b|d|v)[0-9]+)+', aString)
     if m:
-        version = m.group(0)
-        name = aString[0:aString.find(version)].rstrip(' .-_v')
-        return (name, version)
+        vers = m.group(0)
+        name = aString[0:aString.find(vers)].rstrip(' .-_v')
+        return (name, vers)
 
     # try another way
     index = 0
@@ -1477,11 +1461,11 @@ def nameAndVersion(aString):
         # at the start)
         for char in possibleVersion:
             if not char in '0123456789':
-                index +=1
+                index += 1
             else:
                 break
-        version = aString[index:]
-        return (aString[0:index].rstrip(' .-_v'), version)
+        vers = aString[index:]
+        return (aString[0:index].rstrip(' .-_v'), vers)
     else:
         # no version number found,
         # just return original string and empty string
@@ -2020,7 +2004,7 @@ def findProcesses(user=None, exe=None):
     p = subprocess.Popen(
         argv,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, stderr) = p.communicate()
+    (stdout, unused_stderr) = p.communicate()
 
     pids = {}
 
