@@ -517,6 +517,8 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
+    p.add_option('--catalog', default=[], action='append',
+            help="""Specify target catalogs. (default: prompt)""")
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
     
@@ -646,7 +648,10 @@ def main():
                                         pkginfo.get(key,'').encode('UTF-8')))
             if newvalue:
                 pkginfo[key] = newvalue
-        
+
+        if options.catalog:
+            pkginfo['catalogs'] = options.catalog
+
         newvalue = raw_input('%15s [%s]: ' % ('Catalogs',
                                               ', '.join(pkginfo['catalogs'])))
         if newvalue:
