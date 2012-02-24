@@ -1139,8 +1139,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                 keys = ref.attributes.keys()
                 if 'id' in keys:
                     pkgid = ref.attributes['id'].value.encode('UTF-8')
-                    if (not pkgid in pkgref_dict and 
-                        not pkgid.startswith('manual')):
+                    if (not pkgid in pkgref_dict):
                         pkgref_dict[pkgid] = {'packageid': pkgid}
                     if 'version' in keys:
                         pkgref_dict[pkgid]['version'] = \
@@ -1151,19 +1150,32 @@ def parsePkgRefs(filename, path_to_pkg=None):
                                                                    'UTF-8'))
                     if ref.firstChild:
                         text = ref.firstChild.wholeText
-                        if text.startswith('file:') and text.endswith('.pkg'):
-                            pkgref_dict[pkgid]['file'] = text[5:].encode(
-                                                                    'UTF-8')
+                        if text.endswith('.pkg'):
+                            if text.startswith('file:'):
+                                relativepath = urllib2.unquote(
+                                    text[5:].encode('UTF-8'))
+                                pkgdir = os.path.dirname(
+                                    path_to_pkg or filename)
+                                pkgref_dict[pkgid]['file'] = os.path.join(
+                                    pkgdir, relativepath)
+                            else:
+                                if text.startswith('#'):
+                                    text = text[1:]
+                                relativepath = urllib2.unquote(
+                                    text.encode('UTF-8'))
+                                thisdir = os.path.dirname(filename)
+                                pkgref_dict[pkgid]['file'] = os.path.join(
+                                    thisdir, relativepath)
+                                
             for key in pkgref_dict.keys():
                 pkgref = pkgref_dict[key]
-                if 'file' in pkgref and path_to_pkg is not None:
-                    pkgdir = os.path.dirname(path_to_pkg)
-                    relativepath = urllib2.unquote(pkgref['file'])
-                    subpkgpath = os.path.join(pkgdir, relativepath)
-                    if os.path.exists(subpkgpath):
-                        info.extend(getReceiptInfo(subpkgpath))
+                if 'file' in pkgref:
+                    if os.path.exists(pkgref['file']):
+                        info.extend(getReceiptInfo(pkgref['file']))
                         continue
                 if 'version' in pkgref:
+                    if 'file' in pkgref:
+                        del pkgref['file']
                     info.append(pkgref_dict[key])
                     
     return info
