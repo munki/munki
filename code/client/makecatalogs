@@ -92,7 +92,7 @@ def makecatalogs(repopath):
     errors = []
     catalogs = {}
     catalogs['all'] = []
-    for dirpath, unused_dirnames, filenames in os.walk(pkgsinfopath):
+    for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
         for dirname in dirnames:
             # don't recurse into directories that start
             # with a period.
