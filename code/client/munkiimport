@@ -519,6 +519,8 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
+    p.add_option('--unattended-install', action='store_true',
+                    help="""Specify 'unattended_install' for the installer item.""")
     p.add_option('--catalog', default=[], action='append',
                     help="""Specify target catalogs.""")
     p.add_option('--min-os-ver', default=None, metavar='VERSION',
@@ -706,6 +708,9 @@ def main():
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
         cleanupAndExit(-1)
+
+    if options.unattended_install:
+        pkginfo['unattended_install'] = True
 
     # default OS versions
     if options.min_os_ver:
