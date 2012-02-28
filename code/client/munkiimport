@@ -520,9 +520,13 @@ def main():
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
     p.add_option('--catalog', default=[], action='append',
-            help="""Specify target catalogs. (default: prompt)""")
+                    help="""Specify target catalogs.""")
+    p.add_option('--min-os-ver', default=None, metavar='VERSION',
+                    help="""Minimum OS version for the installer item.""")
+    p.add_option('--max-os-ver', default=None, metavar='VERSION',
+                    help="""Maximum OS version for the installer item.""")
     p.add_option('--version', '-V', action='store_true',
-                      help='Print the version of the munki tools and exit.')
+                    help='Print the version of the munki tools and exit.')
     p.add_option('--verbose', '-v', action='store_true',
                     help='Print more output.')
     
@@ -702,7 +706,14 @@ def main():
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
         cleanupAndExit(-1)
-        
+
+    # default OS versions
+    if options.min_os_ver:
+        pkginfo['minimum_os_version'] = options.min_os_ver
+
+    if options.max_os_ver:
+        pkginfo['maximum_os_version'] = options.max_os_ver
+
     # adjust the installer_item_location to match the actual location and name
     pkginfo['installer_item_location'] = uploaded_pkgpath
         
