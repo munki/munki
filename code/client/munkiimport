@@ -430,6 +430,8 @@ def makeCatalogs():
     repo_path = pref('repo_path')
     if not repoAvailable():
         raise RepoCopyError('Could not connect to munki repo.')
+    if not VERBOSE:
+        print 'Rebuilding catalogs at %s...' % repo_path
     proc = subprocess.Popen([makecatalogs_path, repo_path],
                             bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
