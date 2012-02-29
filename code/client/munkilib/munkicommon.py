@@ -1004,6 +1004,9 @@ class MunkiLooseVersion (version.LooseVersion):
     "10.6" and "10.6.0" as equal'''
 
     def __init__ (self, vstring=None):
+        if vstring is None:
+            # treat None like an empty string
+            self.parse('')
         if vstring is not None:
             self.parse(str(vstring))
 

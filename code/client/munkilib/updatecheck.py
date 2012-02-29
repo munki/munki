@@ -270,7 +270,6 @@ def compareVersions(thisvers, thatvers):
     """Compares two version numbers to one another.
 
     Returns:
-      Boolean.
       -1 if thisvers is older than thatvers
       1 if thisvers is the same as thatvers
       2 if thisvers is newer than thatvers
@@ -1183,9 +1182,9 @@ def getAutoRemovalItems(installinfo, cataloglist):
     return autoremovalnames
 
 
-def lookForUpdates(manifestitem, cataloglist):
+def lookForUpdates(itemname, cataloglist):
     """Looks for updates for a given manifest item that is either
-    installed or scheduled to be installed. This handles not only
+    installed or scheduled to be installed or removed. This handles not only
     specific application updates, but also updates that aren't simply
     later versions of the manifest item.
     For example, AdobeCameraRaw is an update for Adobe Photoshop, but
@@ -1193,8 +1192,6 @@ def lookForUpdates(manifestitem, cataloglist):
     Returns a list of manifestitem names that are updates for
     manifestitem.
     """
-    nameWithVersion = os.path.split(manifestitem)[1]
-    (name, unused_includedversion) = nameAndVersion(nameWithVersion)
     # get a list of catalog items that are updates for other items
     update_list = []
     for catalogname in cataloglist:
@@ -1206,9 +1203,7 @@ def lookForUpdates(manifestitem, cataloglist):
         # list comprehension coming up...
         update_items = [catalogitem['name']
                         for catalogitem in updaters
-                        if (name in catalogitem.get('update_for', []) or
-                            nameWithVersion in
-                            catalogitem.get('update_for', []))]
+                        if (itemname in catalogitem.get('update_for', []))]
         if update_items:
             update_list.extend(update_items)
 
@@ -1511,17 +1506,44 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     iteminfo[key] = item_pl[key]
 
             installinfo['managed_installs'].append(iteminfo)
-            if nameAndVersion(manifestitemname)[1] == '':
+            
+            update_list = []
+            # (manifestitemname_withoutversion, includedversion) = 
+            # nameAndVersion(manifestitemname)
+            if includedversion:
+                # a specific version was specified in the manifest
+                # so look only for updates for this specific version
+                name_and_version = (
+                  '%s-%s' % (manifestitemname_withoutversion, includedversion))
+                alt_name_and_version = (
+                  '%s--%s' % (manifestitemname_withoutversion, includedversion))
+                update_list = lookForUpdates(name_and_version, cataloglist)
+                update_list.extend(
+                    lookForUpdates(alt_name_and_version, cataloglist))
+            else:
                 # didn't specify a specific version, so
-                # now look for updates for this item
-                update_list = lookForUpdates(iteminfo['name'],
+                # now look for all updates for this item
+                update_list = lookForUpdates(manifestitemname_withoutversion,
                                              cataloglist)
-                for update_item in update_list:
-                    # call processInstall recursively so we get the
-                    # latest version and dependencies
-                    unused_result = processInstall(update_item,
-                                                   cataloglist,
-                                                   installinfo)
+                # now append any updates specifically 
+                # for the version to be installed
+                name_and_version = (
+                  '%s-%s' % (manifestitemname_withoutversion, 
+                             iteminfo['version_to_install']))
+                alt_name_and_version = (
+                  '%s--%s' % (manifestitemname_withoutversion, 
+                              iteminfo['version_to_install']))
+                update_list.extend(
+                    lookForUpdates(name_and_version, cataloglist))
+                update_list.extend(
+                    lookForUpdates(alt_name_and_version, cataloglist))
+            
+            for update_item in update_list:
+                # call processInstall recursively so we get the
+                # latest version and dependencies
+                unused_result = processInstall(update_item,
+                                               cataloglist,
+                                               installinfo)
             return True
         except fetch.PackageVerificationError:
             munkicommon.display_warning(
@@ -1564,16 +1586,31 @@ def processInstall(manifestitem, cataloglist, installinfo):
         (name, includedversion) = nameAndVersion(manifestitemname)
         munkicommon.display_detail('%s version %s (or newer) is already '
                                     'installed.' % (name, item_pl['version']))
+        update_list = []
         if not includedversion:
             # no specific version is specified;
             # the item is already installed;
             # now look for updates for this item
-            update_list = lookForUpdates(iteminfo['name'], cataloglist)
-            for update_item in update_list:
-                # call processInstall recursively so we get the latest version
-                # and any dependencies
-                unused_result = processInstall(update_item, cataloglist,
-                                               installinfo)
+            update_list = lookForUpdates(name, cataloglist)
+        elif compareVersions(
+            item_pl['version'], iteminfo['installed_version']) == 1:
+            # manifest specifies a specific version
+            # if that's what's installed, look for any updates
+            # specific to this version
+            name_and_version = (
+              '%s-%s' % (manifestitemname_withoutversion, includedversion))
+            alt_name_and_version = (
+              '%s--%s' % (manifestitemname_withoutversion, includedversion))
+            update_list = lookForUpdates(name_and_version, cataloglist)
+            update_list.extend(
+                lookForUpdates(alt_name_and_version, cataloglist))
+        # if we have any updates, process them
+        for update_item in update_list:
+            # call processInstall recursively so we get updates
+            # and any dependencies
+            unused_result = processInstall(update_item, cataloglist,
+                                           installinfo)
+        
         return True
 
 
@@ -1831,6 +1868,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
 
     uninstall_item_name = uninstall_item.get('name')
+    uninstall_item_name_with_version = (
+        '%s-%s' % (uninstall_item.get('name'), uninstall_item.get('version')))
+    alt_uninstall_item_name_with_version = (
+        '%s--%s' % (uninstall_item.get('name'), uninstall_item.get('version')))
     processednames = []
     for catalogname in cataloglist:
         localcatalog = os.path.join(catalogsdir, catalogname)
@@ -1839,7 +1880,11 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             name = item_pl.get('name')
             if name not in processednames:
                 if 'requires' in item_pl:
-                    if uninstall_item_name in item_pl['requires']:
+                    if (uninstall_item_name in item_pl['requires'] 
+                        or uninstall_item_name_with_version 
+                           in item_pl['requires']
+                        or alt_uninstall_item_name_with_version 
+                           in item_pl['requires']):
                         munkicommon.display_debug1('%s requires %s, checking '
                                                    'to see if it\'s '
                                                    'installed...' %
@@ -1960,7 +2005,11 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     # before we add this removal to the list,
     # check for installed updates and add them to the
     # removal list as well:
-    update_list = lookForUpdates(iteminfo['name'], cataloglist)
+    update_list = lookForUpdates(uninstall_item_name, cataloglist)
+    update_list.extend(
+        lookForUpdates(uninstall_item_name_with_version, cataloglist))
+    update_list.extend(
+        lookForUpdates(alt_uninstall_item_name_with_version, cataloglist))
     for update_item in update_list:
         # call us recursively...
         unused_result = processRemoval(update_item, cataloglist, installinfo)
