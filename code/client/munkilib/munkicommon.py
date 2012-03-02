@@ -43,7 +43,7 @@ from distutils import version
 from types import StringType
 from xml.dom import minidom
 
-from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
+from Foundation import NSArray, NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
 from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesSetValue
 from Foundation import CFPreferencesAppSynchronize
@@ -1939,6 +1939,59 @@ def getMachineFacts():
         MACHINE['munki_version'] = get_version()
         MACHINE['ipv4_address'] = get_ipv4_addresses()
     return MACHINE
+
+
+CONDITIONS = {}
+def getConditions():
+    """Fetches key/value pairs from condition scripts
+    which can be placed into /usr/local/munki/conditions"""
+    if not CONDITIONS:
+        # define path to conditions directory which would contain admin created scripts
+        scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+        conditionsdir = os.path.join(scriptdir, "conditions")
+        if os.path.exists(conditionsdir):
+            from munkilib import utils
+            for condition_script in listdir(conditionsdir):
+                # grab path to each condition script
+                condition_script_path = os.path.join(conditionsdir, condition_script)
+                try:
+                    # attempt to execute condition script
+                    result, stdout, stderr = utils.runExternalScript(condition_script_path)
+                    # condition scripts may contain multi-line output,
+                    # each representing a key/value pair
+                    condition_stdout = stdout.splitlines()
+                    for condition in condition_stdout:
+                        # format and prepare each line for inclusion into the CONDITIONS dict
+                        condition = str(condition)
+                        key_value_pair = filter(len,[x.strip() for x in condition.split(',')])
+                        key_value_length = len(key_value_pair)
+                        if key_value_length == 2:
+                            # traditional key/value pairing
+                            condition_key = key_value_pair[0]
+                            condition_value = key_value_pair[1]
+                        elif key_value_length > 2:
+                            # 'complex' key/value pairing - value is a list of multiple values
+                            # keys with multiple values are cast as an NSArray.
+                            # This allows for a slightly different predicate evaluation
+                            condition_key = key_value_pair[0]
+                            condition_value = key_value_pair[1:]
+                            condition_value = NSArray.arrayWithArray_(condition_value)
+                        else:
+                            # key/value pair is invalid
+                            pass
+                        try:
+                            # Build dict of condition key/value pairs
+                            CONDITIONS[condition_key] = condition_value
+                        except:
+                            display_warning('No valid key/value pairs: %s', condition_script)                                
+                except utils.ScriptNotFoundError:
+                    pass  # script is not required, so pass
+                except utils.RunExternalScriptError, e:
+                    print >> sys.stderr, str(e)
+        else:
+            # /usr/local/munki/conditions does not exist 
+            pass
+    return CONDITIONS
 
 
 def isAppRunning(appname):
