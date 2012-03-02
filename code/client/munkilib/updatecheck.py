@@ -1593,7 +1593,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # now look for updates for this item
             update_list = lookForUpdates(name, cataloglist)
         elif compareVersions(
-            item_pl['version'], iteminfo['installed_version']) == 1:
+            includedversion, iteminfo['installed_version']) == 1:
             # manifest specifies a specific version
             # if that's what's installed, look for any updates
             # specific to this version
