@@ -1897,6 +1897,35 @@ def get_hardware_info():
     except Exception:
         return {}
 
+
+def get_ipv4_addresses():
+    '''Uses system profiler to get active IPv4 addresses for this machine'''
+    ip_addresses = []
+    cmd = ['/usr/sbin/system_profiler', 'SPNetworkDataType', '-xml']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, unused_error) = proc.communicate()
+    try:
+        plist = plistlib.readPlistFromString(output)
+        # system_profiler xml is an array of length 1
+        sp_dict = plist[0]
+        items = sp_dict['_items']
+    except Exception:
+        # something is wrong with system_profiler output
+        # so bail
+        return ip_addresses
+
+    for item in items:
+        try:
+            ip_addresses.extend(item['IPv4']['Addresses'])
+        except KeyError:
+            # 'IPv4" or 'Addresses' is empty, so we ignore
+            # this item
+            pass
+    return ip_addresses
+
+
 MACHINE = {}
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
@@ -1908,6 +1937,7 @@ def getMachineFacts():
         hardware_info = get_hardware_info()
         MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
         MACHINE['munki_version'] = get_version()
+        MACHINE['ipv4_address'] = get_ipv4_addresses()
     return MACHINE
 
 
