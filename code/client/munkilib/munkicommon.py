@@ -1907,7 +1907,7 @@ def get_ipv4_addresses():
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, unused_error) = proc.communicate()
     try:
-        plist = plistlib.readPlistFromString(output)
+        plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array of length 1
         sp_dict = plist[0]
         items = sp_dict['_items']
