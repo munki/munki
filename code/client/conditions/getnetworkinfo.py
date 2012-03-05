@@ -32,8 +32,8 @@ def getIPAddress(service_uuid):
     newpatterns = CFArrayCreate(None, (newpattern, ), 1, kCFTypeArrayCallBacks)
     ipaddressDict = SCDynamicStoreCopyMultiple(ds, None, newpatterns)
     for ipaddress in ipaddressDict.values():
-        ipaddy = ipaddress['Addresses'][0]
-        return ipaddy
+        ipv4address = ipaddress['Addresses'][0]
+        return ipv4address
 
 
 def getNetworkInfo():
