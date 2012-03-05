@@ -1961,9 +1961,11 @@ def getConditions():
             from munkilib import utils
             for conditionalscript in listdir(conditionalscriptdir):
                 if conditionalscript.startswith('.'):
+                    # skip files that start with a period
                     continue
                 conditionalscriptpath = os.path.join(conditionalscriptdir, conditionalscript)
                 if os.path.isdir(conditionalscriptpath):
+                    # skip directories in conditions directory
                     continue
                 try:
                     # attempt to execute condition script
@@ -1979,6 +1981,7 @@ def getConditions():
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
         else:
+            # either ConditionalItems.plist does not exist or does not pass validation
             CONDITIONS = {}
     return CONDITIONS
 
