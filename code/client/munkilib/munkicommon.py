@@ -1945,52 +1945,37 @@ CONDITIONS = {}
 def getConditions():
     """Fetches key/value pairs from condition scripts
     which can be placed into /usr/local/munki/conditions"""
+    global CONDITIONS
     if not CONDITIONS:
         # define path to conditions directory which would contain admin created scripts
         scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-        conditionsdir = os.path.join(scriptdir, "conditions")
-        if os.path.exists(conditionsdir):
+        conditionalscriptdir = os.path.join(scriptdir, "conditions")
+        # define path to ConditionalItems.plist
+        conditionalitemspath = os.path.join(pref('ManagedInstallDir'), 'ConditionalItems.plist')
+        try:
+            # delete CondtionalItems.plist so that we're starting fresh
+            os.unlink(conditionalitemspath)
+        except (OSError, IOError):
+            pass
+        if os.path.exists(conditionalscriptdir):
             from munkilib import utils
-            for condition_script in listdir(conditionsdir):
-                # grab path to each condition script
-                condition_script_path = os.path.join(conditionsdir, condition_script)
+            for conditionalscript in listdir(conditionalscriptdir):
+                conditiondalscriptpath = os.path.join(conditionalscriptdir, conditionalscript)
                 try:
                     # attempt to execute condition script
-                    result, stdout, stderr = utils.runExternalScript(condition_script_path)
-                    # condition scripts may contain multi-line output,
-                    # each representing a key/value pair
-                    condition_stdout = stdout.splitlines()
-                    for condition in condition_stdout:
-                        # format and prepare each line for inclusion into the CONDITIONS dict
-                        condition = str(condition)
-                        key_value_pair = filter(len,[x.strip() for x in condition.split(',')])
-                        key_value_length = len(key_value_pair)
-                        if key_value_length == 2:
-                            # traditional key/value pairing
-                            condition_key = key_value_pair[0]
-                            condition_value = key_value_pair[1]
-                        elif key_value_length > 2:
-                            # 'complex' key/value pairing - value is a list of multiple values
-                            # keys with multiple values are cast as an NSArray.
-                            # This allows for a slightly different predicate evaluation
-                            condition_key = key_value_pair[0]
-                            condition_value = key_value_pair[1:]
-                            condition_value = NSArray.arrayWithArray_(condition_value)
-                        else:
-                            # key/value pair is invalid
-                            pass
-                        try:
-                            # Build dict of condition key/value pairs
-                            CONDITIONS[condition_key] = condition_value
-                        except:
-                            display_warning('No valid key/value pairs: %s', condition_script)                                
+                    result, stdout, stderr = utils.runExternalScript(conditiondalscriptpath)
                 except utils.ScriptNotFoundError:
                     pass  # script is not required, so pass
                 except utils.RunExternalScriptError, e:
                     print >> sys.stderr, str(e)
         else:
-            # /usr/local/munki/conditions does not exist 
-            pass
+            # /usr/local/munki/conditions does not exist
+            pass    
+        if os.path.exists(conditionalitemspath):
+            # import conditions into CONDITIONS dict
+            CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
+        else:
+            CONDITIONS = {}
     return CONDITIONS
 
 

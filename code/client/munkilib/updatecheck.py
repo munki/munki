@@ -1637,21 +1637,6 @@ def makePredicateInfoObject():
 def predicateEvaluatesAsTrue(predicate_string):
     '''Evaluates predicate against our info object'''
     munkicommon.display_debug1('Evaluating predicate: %s' % predicate_string)
-
-    # Parse condition item key from the predicate string
-    condition_key = predicate_string.split()[0]
-    if not condition_key in INFO_OBJECT:
-        # Stop processing a predicate if it's conditional item key has not been defined
-        munkicommon.display_warning('Condition "%s" is undefined', condition_key)
-        return False
-
-    valueIsArray = False
-    if "array" in str(type(INFO_OBJECT[condition_key])).lower():
-        # Test if the key's value is an array and prepare a new predicate string
-        predicate_string_orig = predicate_string
-        # Manipulate predicate_string in prep for different evaluation
-        predicate_string = predicate_string.replace(condition_key,'SELF')
-        valueIsArray = True
     try:
         p = NSPredicate.predicateWithFormat_(predicate_string)
     except Exception, e:
@@ -1659,18 +1644,7 @@ def predicateEvaluatesAsTrue(predicate_string):
         # can't parse predicate, so return False
         return False
 
-    if not valueIsArray:
-        # Traditional key/value pair evaluation
-        result = p.evaluateWithObject_(INFO_OBJECT)
-    else:
-        # Complex key/value pair evaluation
-        if INFO_OBJECT[condition_key].filteredArrayUsingPredicate_(p):
-            result = True
-        else:
-            result = False
-        # Set predicate string back to it's original form for easier comprehension
-        predicate_string = predicate_string_orig
-
+    result = p.evaluateWithObject_(INFO_OBJECT)
     munkicommon.display_debug1(
         'Predicate %s is %s' % (predicate_string, result))
     return result

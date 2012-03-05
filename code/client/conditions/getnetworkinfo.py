@@ -1,8 +1,8 @@
 #!/usr/bin/python
 '''This is a basic example of a conditional script which outputs 2 key/value pairs:
 Examples:
-if_name,en0
-ip_address,192.168.1.128
+if_name: en0
+ip_address: 192.168.1.128
 
 NOTE: Information gathered is ONLY for the primary interface'''
 
@@ -10,8 +10,10 @@ from SystemConfiguration import *    # from pyObjC
 import socket
 import collections
 import os
+import plistlib
 
 NETWORK_INFO = {}
+PREFSPATH = "/Library/Managed Installs/ConditionalItems.plist"
 
 def getIPAddress(service_uuid):
     # print service_uuid
@@ -46,8 +48,19 @@ def getNetworkInfo():
         NETWORK_INFO['service_uuid'] = serviceDict[u'PrimaryService']
         NETWORK_INFO['router'] = serviceDict[u'Router']
         NETWORK_INFO['ip_address'] = getIPAddress(serviceDict[u'PrimaryService'])
-        print "if_name,%s" % ifname
-        print "ip_address,%s" % NETWORK_INFO['ip_address']
+        
+        new_dict = dict(
+            if_name = ifname,
+            ip_address = NETWORK_INFO['ip_address'],
+        )
+        
+        if os.path.exists(PREFSPATH):
+            existing_dict = plistlib.readPlist(PREFSPATH)
+            pl_dict = dict(existing_dict.items() + new_dict.items())
+        else:
+            pl_dict = new_dict
+        
+        plistlib.writePlist(pl_dict, PREFSPATH)
 
 
 getNetworkInfo()
