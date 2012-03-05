@@ -1971,7 +1971,7 @@ def getConditions():
         else:
             # /usr/local/munki/conditions does not exist
             pass    
-        if os.path.exists(conditionalitemspath):
+        if os.path.exists(conditionalitemspath) and validPlist(conditionalitemspath):
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
         else:
