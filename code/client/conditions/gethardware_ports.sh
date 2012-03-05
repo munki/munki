@@ -1,6 +1,7 @@
 #!/bin/sh
 
-plist_loc="/Library/Managed Installs/ConditionalItems"
+managedinstalldir="$(defaults read /Library/Preferences/ManagedInstalls ManagedInstallDir)"
+plist_loc="$managedinstalldir/ConditionalItems"
 
 IFS=$'\n'
 for hardware_port in `networksetup -listallhardwareports | awk -F ": " '/Hardware Port/{print $2}'`; do

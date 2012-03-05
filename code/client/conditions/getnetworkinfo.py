@@ -12,9 +12,15 @@ import collections
 import os
 import plistlib
 
-NETWORK_INFO = {}
-PREFSPATH = "/Library/Managed Installs/ConditionalItems.plist"
+from Foundation import CFPreferencesCopyAppValue
 
+BUNDLE_ID = 'ManagedInstalls'
+
+pref_name = 'ManagedInstallDir'
+managedinstalldir = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
+conditionalitemspath = os.path.join(managedinstalldir, 'ConditionalItems.plist')
+
+NETWORK_INFO = {}
 def getIPAddress(service_uuid):
     # print service_uuid
     ds = SCDynamicStoreCreate(None, 'GetIPv4Addresses', None, None)
@@ -54,13 +60,13 @@ def getNetworkInfo():
             ip_address = NETWORK_INFO['ip_address'],
         )
         
-        if os.path.exists(PREFSPATH):
-            existing_dict = plistlib.readPlist(PREFSPATH)
+        if os.path.exists(conditionalitemspath):
+            existing_dict = plistlib.readPlist(conditionalitemspath)
             pl_dict = dict(existing_dict.items() + new_dict.items())
         else:
             pl_dict = new_dict
         
-        plistlib.writePlist(pl_dict, PREFSPATH)
+        plistlib.writePlist(pl_dict, conditionalitemspath)
 
 
 getNetworkInfo()
