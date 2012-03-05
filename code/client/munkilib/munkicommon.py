@@ -1980,6 +1980,7 @@ def getConditions():
         if os.path.exists(conditionalitemspath) and validPlist(conditionalitemspath):
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
+            os.unlink(conditionalitemspath)
         else:
             # either ConditionalItems.plist does not exist or does not pass validation
             CONDITIONS = {}

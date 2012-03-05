@@ -2324,6 +2324,7 @@ def check(client_id='', localmanifestpath=None):
     global CONDITIONS
     munkicommon.getConditions()
     CONDITIONS = munkicommon.getConditions()
+    munkicommon.report['ConditionalItems'] = CONDITIONS
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     if munkicommon.munkistatusoutput:
