@@ -1960,10 +1960,14 @@ def getConditions():
         if os.path.exists(conditionalscriptdir):
             from munkilib import utils
             for conditionalscript in listdir(conditionalscriptdir):
-                conditiondalscriptpath = os.path.join(conditionalscriptdir, conditionalscript)
+                if conditionalscript.startswith('.'):
+                    continue
+                conditionalscriptpath = os.path.join(conditionalscriptdir, conditionalscript)
+                if os.path.isdir(conditionalscriptpath):
+                    continue
                 try:
                     # attempt to execute condition script
-                    result, stdout, stderr = utils.runExternalScript(conditiondalscriptpath)
+                    result, stdout, stderr = utils.runExternalScript(conditionalscriptpath)
                 except utils.ScriptNotFoundError:
                     pass  # script is not required, so pass
                 except utils.RunExternalScriptError, e:
