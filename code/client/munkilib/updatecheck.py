@@ -1180,8 +1180,8 @@ def getAutoRemovalItems(installinfo, cataloglist):
                         if item not in processed_installs_names
                         and item not in installinfo['processed_uninstalls']]
     return autoremovalnames
-
-
+    
+    
 def lookForUpdates(itemname, cataloglist):
     """Looks for updates for a given manifest item that is either
     installed or scheduled to be installed or removed. This handles not only
@@ -1192,6 +1192,8 @@ def lookForUpdates(itemname, cataloglist):
     Returns a list of manifestitem names that are updates for
     manifestitem.
     """
+    
+    munkicommon.display_debug1('Looking for updates for %s', itemname)
     # get a list of catalog items that are updates for other items
     update_list = []
     for catalogname in cataloglist:
@@ -1207,10 +1209,26 @@ def lookForUpdates(itemname, cataloglist):
         if update_items:
             update_list.extend(update_items)
 
-    if update_list:
-        # make sure the list has only unique items:
-        update_list = list(set(update_list))
+    # make sure the list has only unique items:
+    update_list = list(set(update_list))
+    
+    munkicommon.display_debug1('Found these updates: %s' % update_list)
+    return update_list
 
+
+def lookForUpdatesForVersion(itemname, itemversion, cataloglist):
+    """Looks for updates for a specific version of an item. Since these
+    can appear in manifests and pkginfo as item-version or item--version
+    we have to search twice."""
+    
+    name_and_version = '%s-%s' % (itemname, itemversion)
+    alt_name_and_version = '%s--%s' % (itemname, itemversion)
+    update_list = lookForUpdates(name_and_version, cataloglist)
+    update_list.extend(lookForUpdates(alt_name_and_version, cataloglist))
+    
+    # make sure the list has only unique items:
+    update_list = list(set(update_list))
+    
     return update_list
 
 
@@ -1513,13 +1531,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
             if includedversion:
                 # a specific version was specified in the manifest
                 # so look only for updates for this specific version
-                name_and_version = (
-                  '%s-%s' % (manifestitemname_withoutversion, includedversion))
-                alt_name_and_version = (
-                  '%s--%s' % (manifestitemname_withoutversion, includedversion))
-                update_list = lookForUpdates(name_and_version, cataloglist)
-                update_list.extend(
-                    lookForUpdates(alt_name_and_version, cataloglist))
+                update_list = lookForUpdatesForVersion(
+                    manifestitemname_withoutversion, includedversion)
             else:
                 # didn't specify a specific version, so
                 # now look for all updates for this item
@@ -1527,16 +1540,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
                                              cataloglist)
                 # now append any updates specifically 
                 # for the version to be installed
-                name_and_version = (
-                  '%s-%s' % (manifestitemname_withoutversion, 
-                             iteminfo['version_to_install']))
-                alt_name_and_version = (
-                  '%s--%s' % (manifestitemname_withoutversion, 
-                              iteminfo['version_to_install']))
                 update_list.extend(
-                    lookForUpdates(name_and_version, cataloglist))
-                update_list.extend(
-                    lookForUpdates(alt_name_and_version, cataloglist))
+                    lookForUpdatesForVersion(
+                        manifestitemname_withoutversion,
+                        iteminfo['version_to_install'], 
+                        cataloglist))
             
             for update_item in update_list:
                 # call processInstall recursively so we get the
@@ -1592,18 +1600,19 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # the item is already installed;
             # now look for updates for this item
             update_list = lookForUpdates(name, cataloglist)
+            # and also any for this specific version
+            installed_version = iteminfo['installed_version']
+            if not '(or newer)' in installed_version:
+                update_list.extend(
+                    lookForUpdatesForVersion(
+                        name, installed_version, cataloglist))
         elif compareVersions(
             includedversion, iteminfo['installed_version']) == 1:
             # manifest specifies a specific version
             # if that's what's installed, look for any updates
             # specific to this version
-            name_and_version = (
-              '%s-%s' % (manifestitemname_withoutversion, includedversion))
-            alt_name_and_version = (
-              '%s--%s' % (manifestitemname_withoutversion, includedversion))
-            update_list = lookForUpdates(name_and_version, cataloglist)
-            update_list.extend(
-                lookForUpdates(alt_name_and_version, cataloglist))
+            update_list = lookForUpdatesForVersion(
+                manifestitemname_withoutversion, includedversion, cataloglist)
         # if we have any updates, process them
         for update_item in update_list:
             # call processInstall recursively so we get updates
