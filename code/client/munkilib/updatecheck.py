@@ -1192,8 +1192,8 @@ def lookForUpdates(itemname, cataloglist):
     Returns a list of manifestitem names that are updates for
     manifestitem.
     """
-    
-    munkicommon.display_debug1('Looking for updates for %s', itemname)
+
+    munkicommon.display_debug1('Looking for updates for: %s', itemname)
     # get a list of catalog items that are updates for other items
     update_list = []
     for catalogname in cataloglist:
@@ -1211,8 +1211,14 @@ def lookForUpdates(itemname, cataloglist):
 
     # make sure the list has only unique items:
     update_list = list(set(update_list))
-    
-    munkicommon.display_debug1('Found these updates: %s' % update_list)
+
+    if update_list:
+        # updates were found, so let's display them
+        num_updates = len(update_list)
+        # format the update list for better on-screen viewing
+        update_list_display = ", ".join(str(x) for x in update_list)
+        munkicommon.display_debug1('Found %s update(s): %s' % (num_updates, update_list_display))
+
     return update_list
 
 
