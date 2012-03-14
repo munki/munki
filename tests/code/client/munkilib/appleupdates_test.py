@@ -49,7 +49,7 @@ class TestAppleUpdates(mox.MoxTestBase):
     def _MockMunkiDisplay(self):
         """Mock out all munkicommon.display_* methods."""
         for display in [
-            'percent_done', 'status_major', 'status_minor', 
+            'percent_done', 'status_major', 'status_minor',
             'info', 'detail', 'debug1', 'debug2', 'warning', 'error']:
             self.mox.StubOutWithMock(
                 appleupdates.munkicommon, 'display_%s' % display)
@@ -1335,7 +1335,9 @@ class TestAppleUpdates(mox.MoxTestBase):
         """Tests GetSoftwareUpdateInfo()."""
         self._MockFoundationPlist()
         self.mox.StubOutWithMock(appleupdates.os.path, 'exists')
+        self.mox.StubOutWithMock(self.au, 'GetBlockingApps')
 
+        blocking_apps = ['blocking1', 'blocking2']
         applicable_updates = {
             'phaseResultsArray': [
                 {'description': 'desc1', 'ignoreKey': 'name1',
@@ -1347,7 +1349,8 @@ class TestAppleUpdates(mox.MoxTestBase):
             ]
         }
         expected_output = [
-            {'description': 'desc1', 'name': 'name1',
+            {'blocking_applications': blocking_apps,
+             'description': 'desc1', 'name': 'name1',
              'version_to_install': 'ver1', 'display_name': 'display_name1',
              'installed_size': 1000, 'productKey': 'prodid1'},
             {'description': 'desc2', 'name': 'name2',
@@ -1360,6 +1363,12 @@ class TestAppleUpdates(mox.MoxTestBase):
             True)
         appleupdates.FoundationPlist.readPlist(
             self.au.applicable_updates_plist).AndReturn(applicable_updates)
+        self.au.GetBlockingApps(
+            applicable_updates['phaseResultsArray'][0]['productKey']).AndReturn(
+                blocking_apps)
+        self.au.GetBlockingApps(
+            applicable_updates['phaseResultsArray'][1]['productKey']).AndReturn(
+                [])
 
         self.mox.ReplayAll()
         self.assertEqual(expected_output, self.au.GetSoftwareUpdateInfo())
