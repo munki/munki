@@ -29,6 +29,7 @@ import subprocess
 import time
 import urllib2
 import urlparse
+from xml.dom import minidom
 
 from Foundation import NSDate
 from Foundation import CFPreferencesCopyAppValue
@@ -38,6 +39,7 @@ from Foundation import CFPreferencesAppSynchronize
 #from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
+from LaunchServices import LSFindApplicationForInfo
 
 import FoundationPlist
 import fetch
@@ -320,7 +322,88 @@ class AppleUpdates(object):
         # rewrite all URLs, including pkgs, to point to local caches.
         self.RewriteCatalogURLs(catalog, rewrite_pkg_urls=True)
         FoundationPlist.writePlist(catalog, self.local_catalog_path)
+        
+    def _GetPreferredLocalization(self, list_of_localizations):
+        '''Picks the best localization from a list of available
+        localizations.'''
+        try:
+            from Foundation import NSBundle
+        except ImportError:
+            # Foundation NSBundle isn't available
+            languages = ['English', 'en']
+            for language in languages:
+                if language in list_of_localizations:
+                    return language
+        else:
+            preferred_langs = \
+                NSBundle.preferredLocalizationsFromArray_forPreferences_(
+                    list_of_localizations, None)
+            if preferred_langs:
+                return preferred_langs[0]
+                
+        # first fallback, return en or English
+        if 'English' in list_of_localizations:
+            return 'English'
+        elif 'en' in list_of_localizations:
+            return 'en'
+            
+        # if we get this far, just return the first language
+        # in the list of available languages
+        return list_of_localizations[0]
+        
+    def GetDistributionForProductKey(self, product_key):
+        '''Returns the path to a distibution file from the local cache for the given
+        product_key.'''
+        try:
+            catalog = FoundationPlist.readPlist(self.local_catalog_path)
+        except FoundationPlist.NSPropertyListSerializationException:
+            return None
+        product = catalog.get('Products', {}).get(product_key, {})
+        if product:
+            distributions = product.get('Distributions', {})
+            if distributions:
+                available_languages = distributions.keys()
+                preferred_language = self._GetPreferredLocalization(
+                    available_languages)
+                fileurl = distributions[preferred_language]
+                if fileurl.startswith('file://localhost'):
+                    fileurl = fileurl[len('file://localhost'):]
+                    return urllib2.unquote(fileurl)
+        return None
+        
+    def GetBlockingApps(self, product_key):
+        '''Given a product key, finds the cached softwareupdate dist file, 
+        then parses it, looking for must-close apps and converting them to
+        Munki's blocking_applications'''
+        
+        distfile = self.GetDistributionForProductKey(product_key)
+        if not distfile:
+            return []
+            
+        dom = minidom.parse(distfile)
 
+        must_close_app_ids = []
+        must_close_items = dom.getElementsByTagName('must-close')
+        for item in must_close_items:
+            apps = item.getElementsByTagName('app')
+            for app in apps:
+                keys = app.attributes.keys()
+                if 'id' in keys:
+                    must_close_app_ids.append(app.attributes['id'].value)
+        
+        blocking_apps = []
+        for id in must_close_app_ids:
+            resultcode, fileref, nsurl = LSFindApplicationForInfo(
+                0, id, None, None, None)
+            fileurl = str(nsurl)
+            if fileurl.startswith('file://localhost'):
+                fileurl = fileurl[len('file://localhost'):]
+                pathname = urllib2.unquote(fileurl).rstrip('/')
+                appname = os.path.basename(pathname)
+                blocking_apps.append(appname)
+                
+        return blocking_apps
+        
     def _WriteFilteredCatalog(self, product_ids, catalog_path):
         """Write out a sucatalog containing only the updates in product_ids.
 
@@ -680,6 +763,9 @@ class AppleUpdates(object):
                 'installed_size': update['sizeInKB'],
                 'productKey': update['productKey']
             }
+            blocking_apps = self.GetBlockingApps(update['productKey'])
+            if blocking_apps:
+                iteminfo['blocking_applications'] = blocking_apps
             if update.get('restartRequired') == 'YES':
                 iteminfo['RestartAction'] = 'RequireRestart'
             infoarray.append(iteminfo)
