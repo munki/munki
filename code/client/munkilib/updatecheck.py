@@ -1538,7 +1538,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 # a specific version was specified in the manifest
                 # so look only for updates for this specific version
                 update_list = lookForUpdatesForVersion(
-                    manifestitemname_withoutversion, includedversion)
+                    manifestitemname_withoutversion, 
+                    includedversion, cataloglist)
             else:
                 # didn't specify a specific version, so
                 # now look for all updates for this item
