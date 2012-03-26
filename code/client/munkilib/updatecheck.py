@@ -1061,7 +1061,7 @@ def installedState(item_pl):
                     foundnewer = True
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(str(errmsg))
                 return 0
 
     # if there is no 'installs' key, then we'll use receipt info
@@ -1078,7 +1078,7 @@ def installedState(item_pl):
                     foundnewer = True
             except munkicommon.Error, errmsg:
                 # some problem with the receipts data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(str(errmsg))
                 return 0
 
     # if we got this far, we passed all the tests, so the item
@@ -1106,7 +1106,7 @@ def someVersionInstalled(item_pl):
                     return False
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(str(errmsg))
                 return False
 
     # if there is no 'installs' key, then we'll use receipt info
@@ -1120,7 +1120,7 @@ def someVersionInstalled(item_pl):
                     return False
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(str(errmsg))
                 return False
 
     # if we got this far, we passed all the tests, so the item
@@ -2095,7 +2095,7 @@ def getCatalogs(cataloglist):
                 munkicommon.display_error(
                     'Could not retrieve catalog %s from server.' %
                      catalogname)
-                munkicommon.display_error(err)
+                munkicommon.display_error(str(err))
 
             else:
                 try:

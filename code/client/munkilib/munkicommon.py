@@ -295,7 +295,7 @@ def concat_log_message(msg, *args):
     if args:
         args = [str_to_ascii(arg) for arg in args]
         try:
-            msg = msg % tuple(args)
+            msg = str_to_ascii(msg) % tuple(args)
         except TypeError, unused_err:
             warnings.warn(
                 'String format does not match concat args: %s' % (
@@ -1697,6 +1697,14 @@ def isExcludedFilesystem(path, _retry=False):
     if not path:
         return None
 
+    # always ignore these directories
+    skipdirs = ['Volumes', 'tmp', '.vol', '.Trashes', '.MobileBackups',
+                '.Spotlight-V100', '.fseventsd', 'Network', 'net',
+                'home', 'cores', 'dev']
+    path_components = path.split('/')
+    if len(path_components) > 1 and path_components[1] in skipdirs:
+        return True
+
     if not FILESYSTEMS or _retry:
         FILESYSTEMS = getFilesystems()
 
@@ -1769,22 +1777,17 @@ def getSpotlightInstalledApplications():
     Excludes most non-boot volumes.
     In future may include local r/w volumes.
     """
-    # Includes /Users.
-    skipdirs = ['Volumes', 'tmp', '.vol', '.Trashes',
-                '.Spotlight-V100', '.fseventsd', 'Network', 'net',
-                'home', 'cores', 'dev']
     dirlist = []
     applist = []
 
     for f in listdir(u'/'):
-        if not f in skipdirs:
-            p = os.path.join(u'/', f)
-            if os.path.isdir(p) and not os.path.islink(p) \
-                                and not isExcludedFilesystem(p):
-                if f.endswith('.app'):
-                    applist.append(p)
-                else:
-                    dirlist.append(p)
+        p = os.path.join(u'/', f)
+        if os.path.isdir(p) and not os.path.islink(p) \
+                            and not isExcludedFilesystem(p):
+            if f.endswith('.app'):
+                applist.append(p)
+            else:
+                dirlist.append(p)
 
     # Future code changes may mean we wish to look for Applications
     # installed on any r/w local volume.
