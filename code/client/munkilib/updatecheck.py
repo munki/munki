@@ -2087,7 +2087,7 @@ def getCatalogs(cataloglist):
             catalogurl = catalogbaseurl + urllib2.quote(catalogname)
             catalogpath = os.path.join(catalog_dir, catalogname)
             munkicommon.display_detail('Getting catalog %s...' % catalogname)
-            message = 'Retreiving catalog "%s"...' % catalogname
+            message = 'Retrieving catalog "%s"...' % catalogname
             try:
                 unused_value = getResourceIfChangedAtomically(
                     catalogurl, catalogpath, message=message)
