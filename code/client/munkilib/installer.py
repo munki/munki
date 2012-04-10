@@ -604,12 +604,14 @@ def installWithInfo(
                         item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
             elif installer_type == "appdmg":
+                munkicommon.display_warning(
+                    "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = copyAppFromDMG(itempath)
             elif installer_type != "":
                 # we've encountered an installer type
                 # we don't know how to handle
-                munkicommon.log("Unsupported install type: %s" %
-                                                            installer_type)
+                munkicommon.display_error(
+                    "Unsupported install type: %s" % installer_type)
                 retcode = -99
             else:
                 # better be Apple installer package
