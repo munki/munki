@@ -287,7 +287,9 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
 
 
 def copyAppFromDMG(dmgpath):
-    '''copies application from DMG to /Applications'''
+    '''copies application from DMG to /Applications
+    This type of installer_type is deprecated and should be
+    replaced with the more generic copyFromDMG'''
     munkicommon.display_status_minor(
         'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = munkicommon.mountdmg(dmgpath)
@@ -303,49 +305,121 @@ def copyAppFromDMG(dmgpath):
                 break
 
         if appname:
-            destpath = os.path.join("/Applications", appname)
-            if os.path.exists(destpath):
-                retcode = subprocess.call(["/bin/rm", "-r", destpath])
-                if retcode:
-                    munkicommon.display_error("Error removing existing "
-                                              "%s" % destpath)
+            # make an itemlist we can pass to copyItemsFromMountpoint
+            itemlist = []
+            item = {}
+            item['source_item'] = appname
+            item['destination_path'] = "/Applications"
+            itemlist.append(item)
+            retcode = copyItemsFromMountpoint(mountpoint, itemlist)
             if retcode == 0:
-                munkicommon.display_status_minor(
-                    'Copying %s to Applications folder' % appname)
-                retcode = subprocess.call(["/bin/cp", "-R",
-                                            itempath, destpath])
-                if retcode:
-                    munkicommon.display_error("Error copying %s to %s" %
-                                                (itempath, destpath))
-            if retcode == 0:
-                # remove com.apple.quarantine attribute from copied app
-                cmd = ["/usr/bin/xattr", destpath]
-                proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                (out, unused_err) = proc.communicate()
-                if out:
-                    xattrs = str(out).splitlines()
-                    if "com.apple.quarantine" in xattrs:
-                        unused_result = subprocess.call(
-                                            ["/usr/bin/xattr", "-d",
-                                             "com.apple.quarantine",
-                                              destpath])
                 # let the user know we completed successfully
                 munkicommon.display_status_minor(
-                    'The software was successfully installed.')
-        munkicommon.unmountdmg(mountpoint)
-        if not appname:
-            munkicommon.display_error("No application found on %s" %
-                                        os.path.basename(dmgpath))
+                    "The software was successfully installed.")
+        else:
+            munkicommon.display_error(
+                "No application found on %s" % os.path.basename(dmgpath))
             retcode = -2
-
+        munkicommon.unmountdmg(mountpoint)
         return retcode
     else:
         munkicommon.display_error("No mountable filesystems on %s" %
                                     os.path.basename(dmgpath))
         return -1
+
+
+def copyItemsFromMountpoint(mountpoint, itemlist):
+    '''copies items from the mountpoint to the startup disk
+    Returns 0 if no issues; some error code otherwise'''
+    for item in itemlist:
+        
+        # get itemname
+        itemname = item.get("source_item")
+        if not itemname:
+            munkicommon.display_error("Missing name of item to copy!")
+            return -1
+
+        # check source path
+        itempath = os.path.join(mountpoint, itemname)
+        if not os.path.exists(itempath):
+            munkicommon.display_error(
+                "Source item %s does not exist!" % itemname)
+            return -1
+
+        # check destination path
+        destpath = item.get("destination_path")
+        if not os.path.exists(destpath):
+            munkicommon.display_error(
+                "Destination path %s does not exist!" % destpath)
+            return -1
+            
+        # remove item if it already exists
+        olditem = os.path.join(destpath, os.path.basename(itemname))
+        if os.path.exists(olditem):
+            retcode = subprocess.call(["/bin/rm", "-rf", olditem])
+            if retcode:
+                munkicommon.display_error(
+                    "Error removing existing %s" % olditem)
+                return retcode
+
+        # all tests passed, OK to copy
+        munkicommon.display_status_minor(
+            "Copying %s to %s" % (itemname, destpath))
+        retcode = subprocess.call(["/bin/cp", "-pR",
+                                    itempath, destpath])
+        if retcode:
+            munkicommon.display_error(
+                "Error copying %s to %s" % (itempath, destpath))
+            return retcode
+
+        # set name of destination item for next set of operations
+        destitem = os.path.join(destpath, os.path.basename(itemname))
+
+        # set owner
+        user = item.get('user', 'root')
+        munkicommon.display_detail(
+            "Setting owner for '%s' to '%s'" % (destitem, user))
+        retcode = subprocess.call(['/usr/sbin/chown', '-R', user, destitem])
+        if retcode:
+            munkicommon.display_error(
+                "Error setting owner for %s" % (destitem))
+            return retcode
+
+        # set group
+        group = item.get('group', 'admin')
+        munkicommon.display_detail(
+            "Setting group for '%s' to '%s'" % (destitem, group))
+        retcode = subprocess.call(['/usr/bin/chgrp', '-R', group, destitem])
+        if retcode:
+            munkicommon.display_error(
+                "Error setting group for %s" % (destitem))
+            return retcode
+
+        # set mode
+        mode  = item.get('mode', 'o-w')
+        munkicommon.display_detail(
+            "Setting mode for '%s' to '%s'" % (destitem, mode))
+        retcode = subprocess.call(['/bin/chmod', '-R', mode, destitem])
+        if retcode:
+            munkicommon.display_error(
+                "Error setting mode for %s" % (destitem))
+            return retcode
+
+        # remove com.apple.quarantine attribute from copied item
+        cmd = ["/usr/bin/xattr", destitem]
+        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        (out, unused_err) = proc.communicate()
+        if out:
+            xattrs = str(out).splitlines()
+            if "com.apple.quarantine" in xattrs:
+                unused_result = subprocess.call(
+                    ["/usr/bin/xattr", "-d", "com.apple.quarantine", destitem])
+
+    # all items copied successfully!
+    return 0
 
 
 def copyFromDMG(dmgpath, itemlist):
@@ -359,105 +433,7 @@ def copyFromDMG(dmgpath, itemlist):
     mountpoints = munkicommon.mountdmg(dmgpath)
     if mountpoints:
         mountpoint = mountpoints[0]
-        retcode = 0
-        for item in itemlist:
-            itemname = item.get("source_item")
-            if not itemname:
-                munkicommon.display_error("Missing name of item to copy!")
-                retcode = -1
-
-            if retcode == 0:
-                itempath = os.path.join(mountpoint, itemname)
-                if os.path.exists(itempath):
-                    destpath = item.get("destination_path")
-                    if os.path.exists(destpath):
-                        # remove item if it already exists
-                        olditem = os.path.join(destpath,
-                                               os.path.basename(itemname))
-                        if os.path.exists(olditem):
-                            retcode = subprocess.call(
-                                                ["/bin/rm", "-rf", olditem])
-                            if retcode:
-                                munkicommon.display_error(
-                                    "Error removing existing %s" % olditem)
-                    else:
-                        munkicommon.display_error(
-                            "Destination path %s does not exist!" % destpath)
-                        retcode = -1
-                else:
-                    munkicommon.display_error(
-                        "Source item %s does not exist!" % itemname)
-                    retcode = -1
-
-            if retcode == 0:
-                munkicommon.display_status_minor(
-                    "Copying %s to %s" % (itemname, destpath))
-                retcode = subprocess.call(["/bin/cp", "-pR",
-                                            itempath, destpath])
-                if retcode:
-                    munkicommon.display_error(
-                        "Error copying %s to %s" %
-                                            (itempath, destpath))
-
-            destitem = os.path.join(destpath, os.path.basename(itemname))
-
-            if retcode == 0:
-                # set owner
-                user = item.get('user', 'root')
-                munkicommon.display_detail(
-                                        "Setting owner for '%s' to '%s'" %
-                                                    (destitem, user))
-                cmd = ['/usr/sbin/chown', '-R', user, destitem]
-                retcode = subprocess.call(cmd)
-                if retcode:
-                    munkicommon.display_error("Error setting owner for %s" %
-                                                (destitem))
-
-            if retcode == 0:
-                # set group
-                group = item.get('group', 'admin')
-                munkicommon.display_detail(
-                                        "Setting group for '%s' to '%s'" %
-                                                    (destitem, group))
-                cmd = ['/usr/bin/chgrp', '-R', group, destitem]
-                retcode = subprocess.call(cmd)
-                if retcode:
-                    munkicommon.display_error("Error setting group for %s" %
-                                                (destitem))
-
-            if retcode == 0:
-                # set mode
-                mode  = item.get('mode', 'o-w')
-                munkicommon.display_detail(
-                                        "Setting mode for '%s' to '%s'" %
-                                                    (destitem, mode))
-                cmd = ['/bin/chmod', '-R', mode, destitem]
-                retcode = subprocess.call(cmd)
-                if retcode:
-                    munkicommon.display_error("Error setting mode for %s" %
-                                                (destitem))
-
-            if retcode == 0:
-                # remove com.apple.quarantine attribute from copied item
-                cmd = ["/usr/bin/xattr", destitem]
-                proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                     stdin=subprocess.PIPE,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
-                (out, unused_err) = proc.communicate()
-                if out:
-                    xattrs = str(out).splitlines()
-                    if "com.apple.quarantine" in xattrs:
-                        unused_result = subprocess.call(
-                                                ["/usr/bin/xattr", "-d",
-                                                 "com.apple.quarantine",
-                                                 destitem])
-
-            if retcode:
-                # we encountered an error on this iteration;
-                # should not continue.
-                break
-
+        retcode = copyItemsFromMountpoint(mountpoint, itemlist)
         if retcode == 0:
             # let the user know we completed successfully
             munkicommon.display_status_minor(
@@ -465,8 +441,8 @@ def copyFromDMG(dmgpath, itemlist):
         munkicommon.unmountdmg(mountpoint)
         return retcode
     else:
-        munkicommon.display_error("No mountable filesystems on %s" %
-                                    os.path.basename(dmgpath))
+        munkicommon.display_error(
+            "No mountable filesystems on %s" % os.path.basename(dmgpath))
         return -1
 
 
