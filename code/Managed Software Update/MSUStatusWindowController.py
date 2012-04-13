@@ -20,9 +20,10 @@
 # limitations under the License.
 
 
+import objc
 import os
 import socket
-import objc
+import time
 import munki
 import FoundationPlist
 from Foundation import *
@@ -257,6 +258,7 @@ class MSUStatusWindowController(NSObject):
             while 1:
                 if self.restartAlertDismissed:
                     break
+                time.sleep(.25)  # slow a potential busy loop.
             return "1\n"
 
         return ""
