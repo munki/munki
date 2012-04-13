@@ -1081,6 +1081,8 @@ class AppleUpdates(object):
             if last_result_code > 2:
                 retcode = last_result_code
 
+        return retcode
+
     # TODO(jrand): The below functions are externally called. Should all
     #   others be private?
 
