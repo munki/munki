@@ -122,20 +122,33 @@ def makeCatalogDB(catalogitems):
     return pkgdb
 
 
-def addPackageids(catalogitems, pkgid_table):
-    """Adds packageids from each catalogitem to a dictionary"""
+def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
+    """Adds packageids from each catalogitem to two dictionaries.
+    One maps itemnames to receipt pkgids, the other maps receipt pkgids
+    to itemnames"""
     for item in catalogitems:
         name = item.get('name')
         if not name:
             continue
         if item.get('receipts'):
-            if not name in pkgid_table:
-                pkgid_table[name] = []
+            if not name in itemname_to_pkgid:
+                itemname_to_pkgid[name] = {}
 
             for receipt in item['receipts']:
                 if 'packageid' in receipt:
-                    if not receipt['packageid'] in pkgid_table[name]:
-                        pkgid_table[name].append(receipt['packageid'])
+                    pkgid = receipt['packageid']
+                    vers = receipt['version']
+                    if not pkgid in itemname_to_pkgid[name]:
+                        itemname_to_pkgid[name][pkgid] = []
+                    if not vers in itemname_to_pkgid[name][pkgid]:
+                        itemname_to_pkgid[name][pkgid].append(vers)
+                        
+                    if not pkgid in pkgid_to_itemname:
+                        pkgid_to_itemname[pkgid] = {}
+                    if not name in pkgid_to_itemname[pkgid]:
+                        pkgid_to_itemname[pkgid][name] = []
+                    if not vers in pkgid_to_itemname[pkgid][name]:
+                        pkgid_to_itemname[pkgid][name].append(vers)
 
 
 INSTALLEDPKGS = {}
@@ -183,39 +196,75 @@ def getInstalledPackages():
                         if (munkicommon.MunkiLooseVersion(thisversion) >
                             munkicommon.MunkiLooseVersion(storedversion)):
                             INSTALLEDPKGS[pkgid] = thisversion
-
-
+                            
+    #ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    #receiptsdatapath = os.path.join(ManagedInstallDir, 'FoundReceipts.plist')
+    #try:
+    #   FoundationPlist.writePlist(INSTALLEDPKGS, receiptsdatapath)
+    #except FoundationPlist.NSPropertyListWriteException:
+    #   pass
+       
+       
+def bestVersionMatch(vers_num, item_dict):
+    '''Attempts to find the best match in item_dict for vers_num'''
+    vers_tuple = vers_num.split('.')
+    precision = 1
+    while precision <= len(vers_tuple):
+        test_vers = '.'.join(vers_tuple[0:precision])
+        match_names = []
+        for item in item_dict.keys():
+            for item_version in item_dict[item]:
+                if (item_version.startswith(test_vers) and 
+                    item not in match_names):
+                    match_names.append(item)
+        if len(match_names) == 1:
+            return match_names[0]
+        precision = precision + 1
+        
+    return None
+    
+    
 # global pkgdata
 PKGDATA  = {}
 def analyzeInstalledPkgs():
     """Analyzed installed packages in an attempt to determine what is
        installed."""
     #global PKGDATA
-    managed_pkgids = {}
+    itemname_to_pkgid = {}
+    pkgid_to_itemname = {}
     for catalogname in CATALOG.keys():
         catalogitems = CATALOG[catalogname]['items']
-        addPackageids(catalogitems, managed_pkgids)
+        addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname)
+    # itemname_to_pkgid now contains all receipts (pkgids) we know about
+    # from items in all available catalogs
 
     if not INSTALLEDPKGS:
         getInstalledPackages()
+    # INSTALLEDPKGS now contains all receipts found on this machine
 
     installed = []
     partiallyinstalled = []
     installedpkgsmatchedtoname = {}
-    for name in managed_pkgids.keys():
+    for name in itemname_to_pkgid.keys():
+        # name is a Munki install item name
         somepkgsfound = False
         allpkgsfound = True
-        for pkg in managed_pkgids[name]:
-            if pkg in INSTALLEDPKGS.keys():
+        for pkgid in itemname_to_pkgid[name].keys():
+            if pkgid in INSTALLEDPKGS.keys():
                 somepkgsfound = True
                 if not name in installedpkgsmatchedtoname:
                     installedpkgsmatchedtoname[name] = []
-                installedpkgsmatchedtoname[name].append(pkg)
+                # record this pkgid for Munki install item name
+                installedpkgsmatchedtoname[name].append(pkgid)
             else:
+                # didn't find pkgid in INSTALLEDPKGS
                 allpkgsfound = False
         if allpkgsfound:
+            # we found all receipts by pkgid on disk
             installed.append(name)
         elif somepkgsfound:
+            # we found only some receipts for the item
+            # on disk
             partiallyinstalled.append(name)
 
     # we pay special attention to the items that seem partially installed.
@@ -237,18 +286,67 @@ def analyzeInstalledPkgs():
         uniquepkgs = list(set(pkgsforthisname) - set(allotherpkgs))
         if uniquepkgs:
             installed.append(name)
+            
+    # now filter partiallyinstalled to remove those items we moved to installed
+    partiallyinstalled = [item for item in partiallyinstalled 
+                          if item not in installed]
 
-    # build our reference table
+    # build our reference table. For each item we think is installed,
+    # record the receipts on disk matched to the item
     references = {}
     for name in installed:
-        for pkg in installedpkgsmatchedtoname[name]:
-            if not pkg in references:
-                references[pkg] = []
-            references[pkg].append(name)
-
+        for pkgid in installedpkgsmatchedtoname[name]:
+            if not pkgid in references:
+                references[pkgid] = []
+            references[pkgid].append(name)
+            
+    # look through all our INSTALLEDPKGS, looking for ones that have not been 
+    # attached to any Munki names yet
+    orphans = [pkgid for pkgid in INSTALLEDPKGS.keys() 
+               if pkgid not in references]
+               
+    # attempt to match orphans to Munki item names
+    matched_orphans = []
+    for pkgid in orphans:
+        if pkgid in pkgid_to_itemname:
+            installed_pkgid_version = INSTALLEDPKGS[pkgid]
+            possible_match_items = pkgid_to_itemname[pkgid]
+            best_match = bestVersionMatch(
+                installed_pkgid_version, possible_match_items)
+            if best_match:
+                matched_orphans.append(best_match)
+    
+    # process matched_orphans
+    for name in matched_orphans:
+        if name not in installed:
+            installed.append(name)
+        if name in partiallyinstalled:
+            partiallyinstalled.remove(name)
+        for pkgid in installedpkgsmatchedtoname[name]:
+            if not pkgid in references:
+                references[pkgid] = []
+            if not name in references[pkgid]:
+                references[pkgid].append(name)
+            
+    #PKGDATA['itemname_to_pkgid'] = itemname_to_pkgid
+    #PKGDATA['pkgid_to_itemname'] = pkgid_to_itemname
     PKGDATA['receipts_for_name'] = installedpkgsmatchedtoname
     PKGDATA['installed_names'] = installed
+    #PKGDATA['partiallyinstalled_names'] = partiallyinstalled
     PKGDATA['pkg_references'] = references
+    #PKGDATA['orphans'] = orphans
+    #PKGDATA['matched_orphans'] = matched_orphans
+    #ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    #pkgdatapath = os.path.join(ManagedInstallDir, 'PackageData.plist')
+    #try:
+    #    FoundationPlist.writePlist(PKGDATA, pkgdatapath)
+    #except FoundationPlist.NSPropertyListWriteException:
+    #    pass
+    #catalogdbpath =  os.path.join(ManagedInstallDir, 'CatalogDB.plist')
+    #try:
+    #    FoundationPlist.writePlist(CATALOG, catalogdbpath)
+    #except FoundationPlist.NSPropertyListWriteException:
+    #    pass
 
 
 def getAppBundleID(path):
@@ -1136,8 +1234,10 @@ def evidenceThisIsInstalled(item_pl):
     This is used when determining if we can remove the item, thus
     the attention given to the uninstall method.
     """
+    foundallinstallitems = False
     if ('installs' in item_pl and
           item_pl.get('uninstall_method') != 'removepackages'):
+        munkicommon.display_debug2("Checking 'installs' items...")
         installitems = item_pl['installs']
         foundallinstallitems = True
         for item in installitems:
@@ -1147,16 +1247,22 @@ def evidenceThisIsInstalled(item_pl):
                 # methods are currently even less clever
                 if not os.path.exists(item['path']):
                     # this item isn't on disk
+                    munkicommon.display_debug2(
+                        "%s not found on disk." % item['path'])
                     foundallinstallitems = False
-        if foundallinstallitems:
+        if (foundallinstallitems and
+            item_pl.get('uninstall_method') != 'removepackages'):
             return True
     if item_pl.get('receipts'):
+        munkicommon.display_debug2("Checking receipts...")
         if PKGDATA == {}:
             # build our database of installed packages
             analyzeInstalledPkgs()
         if item_pl['name'] in PKGDATA['installed_names']:
             return True
-
+        else:
+            munkicommon.display_debug2("Installed receipts don't match.")
+        
     # if we got this far, we failed all the tests, so the item
     # must not be installed (or we dont't have the right info...)
     return False
@@ -1970,11 +2076,12 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                 munkicommon.display_debug1('%s references are: %s' %
                                             (pkg,
                                              PKGDATA['pkg_references'][pkg]))
-                PKGDATA['pkg_references'][pkg].remove(iteminfo['name'])
-                if len(PKGDATA['pkg_references'][pkg]) == 0:
-                    munkicommon.display_debug1('Adding %s to removal list.' %
-                                                pkg)
-                    packagesToReallyRemove.append(pkg)
+                if iteminfo['name'] in PKGDATA['pkg_references'][pkg]:
+                    PKGDATA['pkg_references'][pkg].remove(iteminfo['name'])
+                    if len(PKGDATA['pkg_references'][pkg]) == 0:
+                        munkicommon.display_debug1(
+                            'Adding %s to removal list.' % pkg)
+                        packagesToReallyRemove.append(pkg)
             else:
                 # This shouldn't happen
                 munkicommon.display_warning('pkg id %s missing from pkgdata' %
