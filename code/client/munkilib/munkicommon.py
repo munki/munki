@@ -1698,9 +1698,9 @@ def isExcludedFilesystem(path, _retry=False):
         return None
 
     # always ignore these directories
-    skipdirs = ['Volumes', 'tmp', '.vol', '.Trashes', '.MobileBackups',
-                '.Spotlight-V100', '.fseventsd', 'Network', 'net',
-                'home', 'cores', 'dev']
+    skipdirs = set('Volumes', 'tmp', '.vol', '.Trashes', '.MobileBackups',
+                   '.Spotlight-V100', '.fseventsd', 'Network', 'net',
+                   'home', 'cores', 'dev', 'private')
     path_components = path.split('/')
     if len(path_components) > 1 and path_components[1] in skipdirs:
         return True
