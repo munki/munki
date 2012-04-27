@@ -421,12 +421,12 @@ def makePkgInfo(item_path):
 
 def makeCatalogs():
     """Calls makecatalogs to rebuild our catalogs"""
-    # first look for a makepkginfo in the same dir as us
+    # first look for a makecatalogs in the same dir as us
     mydir = os.path.dirname(os.path.abspath(__file__))
     makecatalogs_path = os.path.join(mydir, 'makecatalogs')
     if not os.path.exists(makecatalogs_path):
         # didn't find it; assume the default install path
-        makecatalogs_path = '/usr/local/munki/makepkginfo'
+        makecatalogs_path = '/usr/local/munki/makecatalogs'
     repo_path = pref('repo_path')
     if not repoAvailable():
         raise RepoCopyError('Could not connect to munki repo.')
