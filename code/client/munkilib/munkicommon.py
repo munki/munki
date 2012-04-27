@@ -1812,13 +1812,9 @@ def getLSInstalledApplications():
     apps = LaunchServices._LSCopyAllApplicationURLs(None)
     applist = []
     for app in apps:
-        (status, fsobj, unused_url) = LaunchServices.LSGetApplicationForURL(
-            app, _unsigned(LaunchServices.kLSRolesAll), None, None)
-        if status != 0:
-            continue
-        app_path = fsobj.as_pathname()
-        if (app_path and not app_path.startswith('/Volumes/') and not
-            isExcludedFilesystem(app_path)):
+        app_path = app.path()
+        if (app_path and not isExcludedFilesystem(app_path) and 
+            os.path.exists(app_path)):
             applist.append(app_path)
 
     return applist
