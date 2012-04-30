@@ -72,6 +72,13 @@ LOGINWINDOW = (
     "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow")
 
 
+# Always ignore these directories when discovering applications.
+APP_DISCOVERY_EXCLUSION_DIRS = set([
+    'Volumes', 'tmp', '.vol', '.Trashes', '.MobileBackups', '.Spotlight-V100',
+    '.fseventsd', 'Network', 'net', 'home', 'cores', 'dev', 'private',
+    ])
+
+
 class Error(Exception):
     """Class for domain specific exceptions."""
 
@@ -1169,7 +1176,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                                 thisdir = os.path.dirname(filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
                                     thisdir, relativepath)
-                                
+
             for key in pkgref_dict.keys():
                 pkgref = pkgref_dict[key]
                 if 'file' in pkgref:
@@ -1180,7 +1187,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                     if 'file' in pkgref:
                         del pkgref['file']
                     info.append(pkgref_dict[key])
-                    
+
     return info
 
 
@@ -1697,13 +1704,10 @@ def isExcludedFilesystem(path, _retry=False):
     if not path:
         return None
 
-    # always ignore these directories
-    skipdirs = ['Volumes', 'tmp', '.vol', '.Trashes', '.MobileBackups',
-                '.Spotlight-V100', '.fseventsd', 'Network', 'net',
-                'home', 'cores', 'dev']
     path_components = path.split('/')
-    if len(path_components) > 1 and path_components[1] in skipdirs:
-        return True
+    if len(path_components) > 1:
+        if path_components[1] in APP_DISCOVERY_EXCLUSION_DIRS:
+            return True
 
     if not FILESYSTEMS or _retry:
         FILESYSTEMS = getFilesystems()
@@ -1813,7 +1817,7 @@ def getLSInstalledApplications():
     applist = []
     for app in apps:
         app_path = app.path()
-        if (app_path and not isExcludedFilesystem(app_path) and 
+        if (app_path and not isExcludedFilesystem(app_path) and
             os.path.exists(app_path)):
             applist.append(app_path)
 
@@ -1975,7 +1979,7 @@ def getConditions():
                     print >> sys.stderr, str(e)
         else:
             # /usr/local/munki/conditions does not exist
-            pass    
+            pass
         if os.path.exists(conditionalitemspath) and validPlist(conditionalitemspath):
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
