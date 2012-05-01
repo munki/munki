@@ -699,6 +699,10 @@ def main():
         validActions=['RequireRestart','RequireLogout','RecommendRestart']
         if options.RestartAction in validActions:
             catinfo['RestartAction'] = options.RestartAction
+        elif 'restart' in options.RestartAction.lower():
+            catinfo['RestartAction'] = 'RequireRestart'
+        elif 'logout' in options.RestartAction.lower():
+            catinfo['RestartAction'] = 'RequireLogout'
     if options.update_for:
         catinfo['update_for'] = options.update_for
     if options.requires:
