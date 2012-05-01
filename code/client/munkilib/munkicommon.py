@@ -465,6 +465,15 @@ def format_time(timestamp=None):
         return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
+def validateForceInstallAfterDateFormat(datetime_string):
+    formatted_datetime_string = ''
+    try:
+        formatted_datetime_string = time.strftime('%Y-%m-%dT%H:%M:%SZ',
+                                    time.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ'))
+    except:
+        pass
+    return formatted_datetime_string
+
 def log(msg, logname=''):
     """Generic logging function"""
     # date/time format string

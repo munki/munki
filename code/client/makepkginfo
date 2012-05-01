@@ -338,6 +338,13 @@ def main():
                     
                     Specify that installer choices should be generated.
                     Note: Requires Mac OS X 10.6.6 or later.''')
+    p.add_option('--force_install_after_date',
+                    metavar='yyyy-dd-hhThh:mm:ssZ',
+                    help='''Optional flag.
+                    
+                    Specify a date after which the package will be forcefully installed.
+                    
+                    Example: '2011-08-03T13:00:00Z' equates to August 3rd 2011 at 1PM.''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -648,6 +655,10 @@ def main():
         catinfo['minimum_os_version'] = options.minimum_os_version
     if options.maximum_os_version:
         catinfo['maximum_os_version'] = options.maximum_os_version
+    if options.force_install_after_date:
+        force_install_after_date = munkicommon.validateForceInstallAfterDateFormat(options.force_install_after_date)
+        if force_install_after_date:
+            catinfo['force_install_after_date'] = force_install_after_date
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
