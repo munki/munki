@@ -315,14 +315,18 @@ def main():
                     
                     String description of the package.
                     Note: overrides any description in the package itself''')
+    p.add_option('--autoremove', action='store_true',
+                    help='''Optional flag.
+                    
+                    Implies 'true' for 'autoremove' for the installer item.''')
     p.add_option('--unattended_install', action='store_true',
                     help='''Optional flag.
                     
-                    Specify 'unattended_install' for the installer item.''')
+                    Implies 'true' for 'unattended_install' for the installer item.''')
     p.add_option('--unattended_uninstall', action='store_true',
                     help='''Optional flag.
                     
-                    Specify 'unattended_uninstall' for the installer item.''')
+                    Implies 'true' for 'unattended_uninstall' for the installer item.''')
     p.add_option('--minimum_os_version',
                     metavar='VERSION',
                     help='''Optional flag.
@@ -674,6 +678,8 @@ def main():
         if scriptstring:
             catinfo['uninstall_script'] = scriptstring
             catinfo['uninstall_method'] = 'uninstall_script'
+    if options.autoremove:
+        catinfo['autoremove'] = True
     if options.unattended_install:
         catinfo['unattended_install'] = True
     if options.unattended_uninstall:
