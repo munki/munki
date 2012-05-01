@@ -62,6 +62,10 @@ def getCatalogInfoFromDmg(dmgpath, options):
         pkgpath = os.path.join(mountpoints[0], options.pkgname)
         if os.path.exists(pkgpath):
             cataloginfo = munkicommon.getPackageMetaData(pkgpath)
+            if options.installer_choices_xml:
+                installer_choices_xml = munkicommon.getChoiceChangesXML(item)
+                if installer_choices_xml:
+                    cataloginfo['installer_choices_xml'] = installer_choices_xml
             if cataloginfo:
                 cataloginfo['package_path'] = options.pkgname
     elif not options.item:
@@ -70,6 +74,10 @@ def getCatalogInfoFromDmg(dmgpath, options):
             itempath = os.path.join(mountpoints[0], fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
+                if options.installer_choices_xml:
+                    installer_choices_xml = munkicommon.getChoiceChangesXML(item)
+                    if installer_choices_xml:
+                        cataloginfo['installer_choices_xml'] = installer_choices_xml
                 # get out of fsitem loop
                 break
                 
@@ -292,7 +300,7 @@ def main():
                     dest='item',
                     help='''Optional flag.
                     
-                    -If the installer item is a disk image with a 
+                    If the installer item is a disk image with a 
                     drag-and-drop item, ITEMNAME is the name or 
                     relative path of the item to be installed. 
                     Useful if there is more than one item at the 
@@ -307,6 +315,29 @@ def main():
                     
                     String description of the package.
                     Note: overrides any description in the package itself''')
+    p.add_option('--unattended_install', action='store_true',
+                    help='''Optional flag.
+                    
+                    Specify 'unattended_install' for the installer item.''')
+    p.add_option('--unattended_uninstall', action='store_true',
+                    help='''Optional flag.
+                    
+                    Specify 'unattended_uninstall' for the installer item.''')
+    p.add_option('--minimum_os_version',
+                    metavar='VERSION',
+                    help='''Optional flag.
+                    
+                    Minimum OS version for the installer item.''')
+    p.add_option('--maximum_os_version',
+                    metavar='VERSION',
+                    help='''Optional flag.
+                    
+                    Maximum OS version for the installer item.''')
+    p.add_option('--installer_choices_xml', action='store_true',
+                    help='''Optional flag
+                    
+                    Specify that installer choices should be generated.
+                    Note: Used with OS X 10.6.6 or later.''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -421,6 +452,11 @@ def main():
         print >> sys.stderr, 'Ignoring additional installer items:'
         print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
     
+    if options.installer_choices_xml:
+        os_version = munkicommon.getOsVersion(only_major_minor=False,as_tuple=True)
+        if os_version <= (10, 6, 6):
+            options.installer_choices_xml = False
+    
     catinfo = {}
     installs = []
     if arguments:
@@ -452,6 +488,10 @@ def main():
             
             elif item.endswith('.pkg') or item.endswith('.mpkg'):
                 catinfo = munkicommon.getPackageMetaData(item)
+                if options.installer_choices_xml:
+                    installer_choices_xml = munkicommon.getChoiceChangesXML(item)
+                    if installer_choices_xml:
+                        catinfo['installer_choices_xml'] = installer_choices_xml
                 if not catinfo:
                     print >> sys.stderr, \
                         "%s doesn't appear to be a valid installer item!" % \
@@ -600,6 +640,14 @@ def main():
         if scriptstring:
             catinfo['uninstall_script'] = scriptstring
             catinfo['uninstall_method'] = 'uninstall_script'
+    if options.unattended_install:
+        catinfo['unattended_install'] = True
+    if options.unattended_uninstall:
+        catinfo['unattended_uninstall'] = True
+    if options.minimum_os_version:
+        catinfo['minimum_os_version'] = options.minimum_os_version
+    if options.maximum_os_version:
+        catinfo['maximum_os_version'] = options.maximum_os_version
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)

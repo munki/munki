@@ -1504,6 +1504,24 @@ def isInstallerItem(path):
         return False
 
 
+def getChoiceChangesXML(pkgitem):
+    """Queries package for 'ChoiceChangesXML'"""
+    try:
+        proc = subprocess.Popen(['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
+                                bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, unused_err) = proc.communicate()
+        if out:
+            plist = FoundationPlist.readPlistFromString(out)
+            
+            # list comprehension to populate choices with those items
+            # whose 'choiceAttribute' value is 'selected'
+            choices = [item for item in plist if 'selected' in item['choiceAttribute']]
+    except:
+        # No choices found or something went wrong
+        return False
+    return choices
+
+
 def getPackageMetaData(pkgitem):
     """
     Queries an installer item (.pkg, .mpkg, .dist)
