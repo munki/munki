@@ -28,6 +28,7 @@ import os
 import optparse
 import subprocess
 import time
+import shlex
 #from distutils import version
 
 from munkilib import munkicommon
@@ -412,7 +413,7 @@ def makePkgInfo(item_path,options=[]):
     if options:
         cmd = [makepkginfo_path] + options + [item_path]
     else:
-        cmd = [makepkginfo_path] + [item_path]
+        cmd = [makepkginfo_path, item_path]
     proc = subprocess.Popen(cmd,
                             bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
@@ -603,7 +604,6 @@ def main():
     # generate pkginfo for the item
     makepkginfo_options=[]
     if options.makepkginfo_options:
-        import shlex
         makepkginfo_options = shlex.split(options.makepkginfo_options)
     pkginfo = makePkgInfo(installer_item,makepkginfo_options)
     
