@@ -345,6 +345,15 @@ def main():
                     Specify a date after which the package will be forcefully installed.
                     
                     Example: '2011-08-03T13:00:00Z' equates to August 3rd 2011 at 1PM.''')
+    p.add_option('--RestartAction',
+                    metavar='ACTION',
+                    help='''Optional flag.
+                    
+                    Specify a 'RestartAction' for the package.
+                    
+                    RequireRestart          
+                    RequireLogout           
+                    RecommendRestart''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -659,6 +668,10 @@ def main():
         force_install_after_date = munkicommon.validateForceInstallAfterDateFormat(options.force_install_after_date)
         if force_install_after_date:
             catinfo['force_install_after_date'] = force_install_after_date
+    if options.RestartAction:
+        validActions=['RequireRestart','RequireLogout','RecommendRestart']
+        if options.RestartAction in validActions:
+            catinfo['RestartAction'] = options.RestartAction
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
