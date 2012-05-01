@@ -63,7 +63,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
         if os.path.exists(pkgpath):
             cataloginfo = munkicommon.getPackageMetaData(pkgpath)
             if options.installer_choices_xml:
-                installer_choices_xml = munkicommon.getChoiceChangesXML(item)
+                installer_choices_xml = munkicommon.getChoiceChangesXML(pkgpath)
                 if installer_choices_xml:
                     cataloginfo['installer_choices_xml'] = installer_choices_xml
             if cataloginfo:
@@ -75,7 +75,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
                 if options.installer_choices_xml:
-                    installer_choices_xml = munkicommon.getChoiceChangesXML(item)
+                    installer_choices_xml = munkicommon.getChoiceChangesXML(itempath)
                     if installer_choices_xml:
                         cataloginfo['installer_choices_xml'] = installer_choices_xml
                 # get out of fsitem loop
@@ -337,7 +337,7 @@ def main():
                     help='''Optional flag
                     
                     Specify that installer choices should be generated.
-                    Note: Used with OS X 10.6.6 or later.''')
+                    Note: Requires Mac OS X 10.6.6 or later.''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -454,7 +454,7 @@ def main():
     
     if options.installer_choices_xml:
         os_version = munkicommon.getOsVersion(only_major_minor=False,as_tuple=True)
-        if os_version <= (10, 6, 6):
+        if os_version < (10, 6, 6):
             options.installer_choices_xml = False
     
     catinfo = {}

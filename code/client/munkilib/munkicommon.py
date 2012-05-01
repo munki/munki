@@ -1506,6 +1506,7 @@ def isInstallerItem(path):
 
 def getChoiceChangesXML(pkgitem):
     """Queries package for 'ChoiceChangesXML'"""
+    choices = []
     try:
         proc = subprocess.Popen(['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
                                 bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1518,7 +1519,7 @@ def getChoiceChangesXML(pkgitem):
             choices = [item for item in plist if 'selected' in item['choiceAttribute']]
     except:
         # No choices found or something went wrong
-        return False
+        pass
     return choices
 
 
