@@ -526,16 +526,10 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
-    p.add_option('--makepkginfo-options', default=None, metavar='"MAKEPKGINFO OPTIONS"',
-                    help="""These options will be passed to 'makepkginfo' for pkginfo file generation.""")
-    p.add_option('--unattended-install', action='store_true',
-                    help="""Specify 'unattended_install' for the installer item.""")
-    p.add_option('--catalog', default=[], action='append',
-                    help="""Specify target catalogs.""")
-    p.add_option('--min-os-ver', default=None, metavar='VERSION',
-                    help="""Minimum OS version for the installer item.""")
-    p.add_option('--max-os-ver', default=None, metavar='VERSION',
-                    help="""Maximum OS version for the installer item.""")
+    p.add_option('--makepkginfo-options', default=None, metavar='"OPTIONS"',
+                    help="""OPTIONS will be passed to 'makepkginfo' for pkginfo file generation.
+                    
+                    Example: --makepkginfo-options=\"-c production --unattended_install --description='A good description'\"""")
     p.add_option('--version', '-V', action='store_true',
                     help='Print the version of the munki tools and exit.')
     p.add_option('--verbose', '-v', action='store_true',
@@ -602,6 +596,7 @@ def main():
                 cleanupAndExit(-1)
                 
     # generate pkginfo for the item
+    # use '--makepkginfo_options' if specified
     makepkginfo_options=[]
     if options.makepkginfo_options:
         makepkginfo_options = shlex.split(options.makepkginfo_options)
