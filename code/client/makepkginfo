@@ -354,6 +354,24 @@ def main():
                     RequireRestart          
                     RequireLogout           
                     RecommendRestart''')
+    p.add_option('--update_for', '-U', action="append",
+                    help='''Optional flag.
+                    
+                    Specifies which package this is an update for. 
+                    Can be specified multiple times 
+                    to build an array of multiple packages.''')
+    p.add_option('--requires', '-r', action="append",
+                    help='''Optional flag.
+                    
+                    Specifies which package this package is requires. 
+                    Can be specified multiple times 
+                    to build an array of required packages.''')
+    p.add_option('--blocking_applications', '-b', action="append",
+                    help='''Optional flag.
+                    
+                    Specifies a blocking application that will prevent installation. 
+                    Can be specified multiple times 
+                    to build an array of blocking applications.''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -672,6 +690,12 @@ def main():
         validActions=['RequireRestart','RequireLogout','RecommendRestart']
         if options.RestartAction in validActions:
             catinfo['RestartAction'] = options.RestartAction
+    if options.update_for:
+        catinfo['update_for'] = options.update_for
+    if options.requires:
+        catinfo['requires'] = options.requires
+    if options.blocking_applications:
+        catinfo['blocking_applications'] = options.blocking_applications
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
