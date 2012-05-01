@@ -26,7 +26,7 @@
 "81.title" = "Mettre à jour";
 
 /* Class = "NSMenuItem"; title = "Update now "; ObjectID = "82"; */
-"82.title" = "Mettre à jour maintenant ";
+"82.title" = "Mettre à jour Maintenant";
 
 /* Class = "NSMenuItem"; title = "Update"; ObjectID = "83"; */
 "83.title" = "Mettre à jour";
@@ -167,7 +167,7 @@
 "380.title" = "Mettre à jour votre logiciel peut prendre un certain temps. Si vous n'êtes pas disponible maintenant, vous pouvez choisir de faire cela plus tard.";
 
 /* Class = "NSButtonCell"; title = "Update now"; ObjectID = "382"; */
-"382.title" = "Mettre à jour maintenant";
+"382.title" = "Mettre à jour";
 
 /* Class = "NSButtonCell"; title = "Later"; ObjectID = "384"; */
 "384.title" = "Pas maintenant";
