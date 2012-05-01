@@ -401,7 +401,7 @@ def findMatchingPkginfo(pkginfo):
     return {}
 
 
-def makePkgInfo(item_path):
+def makePkgInfo(item_path,options=[]):
     """Calls makepkginfo to generate the pkginfo for item_path."""
     # first look for a makepkginfo in the same dir as us
     mydir = os.path.dirname(os.path.abspath(__file__))
@@ -409,7 +409,11 @@ def makePkgInfo(item_path):
     if not os.path.exists(makepkginfo_path):
         # didn't find it; assume the default install path
         makepkginfo_path = '/usr/local/munki/makepkginfo'
-    proc = subprocess.Popen([makepkginfo_path, item_path],
+    if options:
+        cmd = [makepkginfo_path] + options + [item_path]
+    else:
+        cmd = [makepkginfo_path] + [item_path]
+    proc = subprocess.Popen(cmd,
                             bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
@@ -521,6 +525,8 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
+    p.add_option('--makepkginfo-options', default=None, metavar='"MAKEPKGINFO OPTIONS"',
+                    help="""These options will be passed to 'makepkginfo' for pkginfo file generation.""")
     p.add_option('--unattended-install', action='store_true',
                     help="""Specify 'unattended_install' for the installer item.""")
     p.add_option('--catalog', default=[], action='append',
@@ -595,7 +601,11 @@ def main():
                 cleanupAndExit(-1)
                 
     # generate pkginfo for the item
-    pkginfo = makePkgInfo(installer_item)
+    makepkginfo_options=[]
+    if options.makepkginfo_options:
+        import shlex
+        makepkginfo_options = shlex.split(options.makepkginfo_options)
+    pkginfo = makePkgInfo(installer_item,makepkginfo_options)
     
     if not pkginfo:
         # makepkginfo returned an error
