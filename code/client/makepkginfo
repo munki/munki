@@ -359,18 +359,21 @@ def main():
                     RequireLogout           
                     RecommendRestart''')
     p.add_option('--update_for', '-U', action="append",
+                    metavar='PACKAGE',
                     help='''Optional flag.
                     
                     Specifies which package this is an update for. 
                     Can be specified multiple times 
                     to build an array of multiple packages.''')
     p.add_option('--requires', '-r', action="append",
+                    metavar='PACKAGE',
                     help='''Optional flag.
                     
                     Specifies which package this package is requires. 
                     Can be specified multiple times 
                     to build an array of required packages.''')
     p.add_option('--blocking_applications', '-b', action="append",
+                    metavar='APPLICATION',
                     help='''Optional flag.
                     
                     Specifies a blocking application that will prevent installation. 
