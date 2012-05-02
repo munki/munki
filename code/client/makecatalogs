@@ -107,6 +107,8 @@ def makecatalogs(repopath):
             
             try:
                 pkginfo = plistlib.readPlist(filepath)
+                if pkginfo.get('notes'):
+                    del(pkginfo['notes'])
             except IOError, inst:
                 errors.append("IO error for %s: %s" % (filepath, inst))
                 continue
