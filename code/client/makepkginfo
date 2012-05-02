@@ -379,6 +379,13 @@ def main():
                     Specifies a blocking application that will prevent installation. 
                     Can be specified multiple times 
                     to build an array of blocking applications.''')
+    p.add_option('--notes',
+                    metavar='[STRING|PATH]',
+                    help='''Optional flag.
+                    
+                    Specifies administrator provided notes
+                    to be inserted into the pkginfo.
+                    Can be a PATH to a file.''')
     p.add_option('--destinationpath', '-d',
                     help='''Optional flag.
                     
@@ -681,6 +688,12 @@ def main():
         if scriptstring:
             catinfo['uninstall_script'] = scriptstring
             catinfo['uninstall_method'] = 'uninstall_script'
+    if options.notes:
+        if os.path.exists(os.path.expanduser(options.notes)):
+            notesString = readfile(options.notes)
+        else:
+            notesString = options.notes
+        catinfo['notes'] = notesString
     if options.autoremove:
         catinfo['autoremove'] = True
     if options.unattended_install:
