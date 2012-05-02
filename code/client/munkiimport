@@ -25,15 +25,30 @@ Assists with importing installer items into the munki repo
 
 import sys
 import os
-import optparse
 import subprocess
 import time
-import shlex
+from optparse import (OptionParser,BadOptionError,AmbiguousOptionError)
 #from distutils import version
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 
+class PassThroughOptionParser(OptionParser):
+    """
+    An unknown option pass-through implementation of OptionParser.
+
+    When unknown arguments are encountered, bundle with largs and try again,
+    until rargs is depleted.  
+
+    sys.exit(status) will still be called if a known argument is passed
+    incorrectly (e.g. missing arguments or bad argument types, etc.)        
+    """
+    def _process_args(self, largs, rargs, values):
+        while rargs:
+            try:
+                OptionParser._process_args(self,largs,rargs,values)
+            except (BadOptionError,AmbiguousOptionError), e:
+                largs.append(e.opt_str)
 
 def makeDMG(pkgpath):
     """Wraps a non-flat package into a disk image.
@@ -507,13 +522,22 @@ def main():
     """Main routine"""
     global NOINTERACTIVE
     
-    usage = """usage: %prog [options] [/path/to/installer_item]
+    usage = """usage: %prog [options] [makepkginfo options] /path/to/installer_item
        Imports an installer item into a munki repo.
        Installer item can be a pkg, mpkg, dmg, or app.
        Bundle-style pkgs and apps are wrapped in a dmg
-       file before upload."""
+       file before upload.
+       
+       In addition to options described below, makepkginfo
+       options may also be specified to futher customize
+       the resulting pkginfo file
+       
+       Example:
+       munkiimport -d apps -c production --minimum_os_vers 10.6.8 /path/to/example.dmg
+       """
     
-    p = optparse.OptionParser(usage=usage)
+    p = PassThroughOptionParser(usage=usage)
+    
     p.add_option('--configure', action='store_true',
                     help="""Configure munkiimport with details about your
                     munki repo, preferred editor, and the like. Any other
@@ -526,10 +550,6 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
-    p.add_option('--makepkginfo-options', default=None, metavar='"OPTIONS"',
-                    help="""OPTIONS will be passed to 'makepkginfo' for pkginfo file generation.
-                    
-                    Example: --makepkginfo-options=\"-c production --unattended_install --description='A good description'\"""")
     p.add_option('--unattended-install', action='store_true',
                     help="""Specify 'unattended_install' for the installer item.""")
     p.add_option('--catalog', default=[], action='append',
@@ -544,7 +564,7 @@ def main():
                     help='Print more output.')
     
     options, arguments = p.parse_args()
-    
+
     if options.version:
         print munkicommon.get_version()
         exit(0)
@@ -559,22 +579,18 @@ def main():
     if len(arguments) == 0:
         p.print_usage()
         exit(0)
-        
-    if len(arguments) > 1:
-        print >> sys.stderr, \
-            'This tool supports importing only one item at a time.'
-        print >> sys.stderr, 'Too many items given:'
-        print >> sys.stderr, '\t', '\n\t'.join(arguments)
-        exit(-1)
     
-    installer_item = arguments[0]
-    if not os.path.exists(installer_item):
-        print >> sys.stderr, '%s does not exist!' % installer_item
-        exit(-1)
+    # The target '/path/to/installer_item' should be the last item
+    installer_item = arguments[-1]
     
     item_ext = os.path.splitext(installer_item)[1]
     if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
-        print >> sys.stderr, '%s is an unknown type.' % installer_item
+        print >> sys.stderr, 'Unknown installer item type: "%s"' % installer_item
+        print >> sys.stderr, 'Ensure that "/path/to/installer_item" is specified last.'
+        exit(-1)
+    
+    if not os.path.exists(installer_item):
+        print >> sys.stderr, '%s does not exist!' % installer_item
         exit(-1)
     
     if not pref('repo_path'):
@@ -603,11 +619,12 @@ def main():
                                         % installer_item)
                 cleanupAndExit(-1)
                 
-    # generate pkginfo for the item
-    # use '--makepkginfo_options' if specified
+    # prepare makepkginfo_options from the remainder of 'arguments' (if any)
     makepkginfo_options=[]
-    if options.makepkginfo_options:
-        makepkginfo_options = shlex.split(options.makepkginfo_options)
+    if len(arguments) > 1:
+        arguments.remove(installer_item)
+        makepkginfo_options = arguments
+    # generate pkginfo for the item using makepkginfo options (if any)
     pkginfo = makePkgInfo(installer_item,makepkginfo_options)
     
     if not pkginfo:
