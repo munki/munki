@@ -417,7 +417,7 @@ def findMatchingPkginfo(pkginfo):
     return {}
 
 
-def makePkgInfo(item_path,options=[]):
+def makePkgInfo(item_path,options=None):
     """Calls makepkginfo to generate the pkginfo for item_path."""
     # first look for a makepkginfo in the same dir as us
     mydir = os.path.dirname(os.path.abspath(__file__))
@@ -434,7 +434,10 @@ def makePkgInfo(item_path,options=[]):
                             stderr=subprocess.PIPE)
     (pliststr, err) = proc.communicate()
     if proc.returncode:
-        print >> sys.stderr, err
+        # print >> sys.stderr, err
+        for line in err.split('\n'):
+            if 'error' in line:
+                print >> sys.stderr, line
         return {}
     return FoundationPlist.readPlistFromString(pliststr)
 
@@ -550,14 +553,6 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
-    p.add_option('--unattended-install', action='store_true',
-                    help="""Specify 'unattended_install' for the installer item.""")
-    p.add_option('--catalog', default=[], action='append',
-                    help="""Specify target catalogs.""")
-    p.add_option('--min-os-ver', default=None, metavar='VERSION',
-                    help="""Minimum OS version for the installer item.""")
-    p.add_option('--max-os-ver', default=None, metavar='VERSION',
-                    help="""Maximum OS version for the installer item.""")
     p.add_option('--version', '-V', action='store_true',
                     help='Print the version of the munki tools and exit.')
     p.add_option('--verbose', '-v', action='store_true',
@@ -619,16 +614,16 @@ def main():
                                         % installer_item)
                 cleanupAndExit(-1)
                 
-    # prepare makepkginfo_options from the remainder of 'arguments' (if any)
+    # collect 'makepkginfo' options from the remainder of 'arguments' (if any)
     makepkginfo_options=[]
     if len(arguments) > 1:
-        arguments.remove(installer_item)
-        makepkginfo_options = arguments
-    # generate pkginfo for the item using makepkginfo options (if any)
+        makepkginfo_options = arguments[0:-1]
+    # generate pkginfo for the item
     pkginfo = makePkgInfo(installer_item,makepkginfo_options)
     
     if not pkginfo:
         # makepkginfo returned an error
+        print >> sys.stderr, 'Getting package info failed.'
         cleanupAndExit(-1)
     
     if not options.nointeractive:
@@ -692,9 +687,6 @@ def main():
             if newvalue:
                 pkginfo[key] = newvalue
 
-        if options.catalog:
-            pkginfo['catalogs'] = options.catalog
-
         newvalue = raw_input('%15s [%s]: ' % ('Catalogs',
                                               ', '.join(pkginfo['catalogs'])))
         if newvalue:
@@ -740,16 +732,6 @@ def main():
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
         cleanupAndExit(-1)
-
-    if options.unattended_install:
-        pkginfo['unattended_install'] = True
-
-    # default OS versions
-    if options.min_os_ver:
-        pkginfo['minimum_os_version'] = options.min_os_ver
-
-    if options.max_os_ver:
-        pkginfo['maximum_os_version'] = options.max_os_ver
 
     # adjust the installer_item_location to match the actual location and name
     pkginfo['installer_item_location'] = uploaded_pkgpath
