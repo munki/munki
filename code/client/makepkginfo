@@ -319,7 +319,7 @@ def main():
                     help='''Optional flag.
                     
                     Implies 'true' for 'autoremove' for the installer item.''')
-    p.add_option('--unattended_install', action='store_true',
+    p.add_option('--unattended_install', '--unattended-install', action='store_true',
                     help='''Optional flag.
                     
                     Implies 'true' for 'unattended_install' for the installer item.''')
@@ -327,12 +327,12 @@ def main():
                     help='''Optional flag.
                     
                     Implies 'true' for 'unattended_uninstall' for the installer item.''')
-    p.add_option('--minimum_os_version',
+    p.add_option('--minimum_os_version', '--min-os-ver',
                     metavar='VERSION',
                     help='''Optional flag.
                     
                     Minimum OS version for the installer item.''')
-    p.add_option('--maximum_os_version',
+    p.add_option('--maximum_os_version', '--max-os-ver',
                     metavar='VERSION',
                     help='''Optional flag.
                     
