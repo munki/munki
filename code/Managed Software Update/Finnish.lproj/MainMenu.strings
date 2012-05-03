@@ -1,0 +1,245 @@
+﻿/* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "5"; */
+"5.title" = "Tuo kaikki eteen";
+
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Ikkuna";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Pienennä";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Ikkuna";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "Managed Software Update"; ObjectID = "56"; */
+"56.title" = "Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "NSMenu"; title = "Managed Software Update"; ObjectID = "57"; */
+"57.title" = "Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Update"; ObjectID = "58"; */
+"58.title" = "Tietoja: Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "NSMenu"; title = "Update"; ObjectID = "81"; */
+"81.title" = "Päivitä";
+
+/* Class = "NSMenuItem"; title = "Update now "; ObjectID = "82"; */
+"82.title" = "Päivitä nyt";
+
+/* Class = "NSMenuItem"; title = "Update"; ObjectID = "83"; */
+"83.title" = "Päivitä";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "Ohjeet";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "Ohjeet";
+
+/* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
+"111.title" = "Hallinnoitu ohjelmiston päivitys -ohje";
+
+/* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "129"; */
+"129.title" = "Asetukset...";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "Palvelut";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "Palvelut";
+
+/* Class = "NSMenuItem"; title = "Hide Managed Software Update"; ObjectID = "134"; */
+"134.title" = "Kätke Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "NSMenuItem"; title = "Quit Managed Software Update"; ObjectID = "136"; */
+"136.title" = "Lopeta Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "Kätke muut";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "Näytä kaikki";
+
+/* Class = "NSMenuItem"; title = "Stop Speaking"; ObjectID = "195"; */
+"195.title" = "Lopeta puhe";
+
+/* Class = "NSMenuItem"; title = "Start Speaking"; ObjectID = "196"; */
+"196.title" = "Aloita puhe";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "Kopioi";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "Valitse kaikki";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "Leikkaa";
+
+/* Class = "NSMenu"; title = "Spelling and Grammar"; ObjectID = "200"; */
+"200.title" = "Oikeinkirjoitus ja kielioppi";
+
+/* Class = "NSMenuItem"; title = "Check Spelling"; ObjectID = "201"; */
+"201.title" = "Tarkista oikeinkirjoitus";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "Poista";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "Liitä";
+
+/* Class = "NSMenuItem"; title = "Show Spelling…"; ObjectID = "204"; */
+"204.title" = "Näytä oikeinkirjoitus...";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "Muokkaa";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Peru";
+
+/* Class = "NSMenuItem"; title = "Find Next"; ObjectID = "208"; */
+"208.title" = "Etsi seuraava";
+
+/* Class = "NSMenuItem"; title = "Find…"; ObjectID = "209"; */
+"209.title" = "Etsi...";
+
+/* Class = "NSMenuItem"; title = "Jump to Selection"; ObjectID = "210"; */
+"210.title" = "Hyppää valintaan";
+
+/* Class = "NSMenuItem"; title = "Speech"; ObjectID = "211"; */
+"211.title" = "Puhe";
+
+/* Class = "NSMenu"; title = "Speech"; ObjectID = "212"; */
+"212.title" = "Puhe";
+
+/* Class = "NSMenuItem"; title = "Find Previous"; ObjectID = "213"; */
+"213.title" = "Etsi edellinen";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Tee sittenkin";
+
+/* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "216"; */
+"216.title" = "Oikeinkirjoitus ja kielioppi";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Muokkaa";
+
+/* Class = "NSMenuItem"; title = "Find"; ObjectID = "218"; */
+"218.title" = "Etsi";
+
+/* Class = "NSMenuItem"; title = "Check Spelling While Typing"; ObjectID = "219"; */
+"219.title" = "Tarkista oikeinkirjoitus kirjoitettaessa";
+
+/* Class = "NSMenu"; title = "Find"; ObjectID = "220"; */
+"220.title" = "Etsi";
+
+/* Class = "NSMenuItem"; title = "Use Selection for Find"; ObjectID = "221"; */
+"221.title" = "Käytä valintaa etsimiseen";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "Suurenna";
+
+/* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
+"346.title" = "Tarkista kielioppi oikeinkirjoituksen ohessa";
+
+/* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "348"; */
+"348.title" = "Korvaukset";
+
+/* Class = "NSMenu"; title = "Substitutions"; ObjectID = "349"; */
+"349.title" = "Korvaukset";
+
+/* Class = "NSMenuItem"; title = "Smart Copy/Paste"; ObjectID = "350"; */
+"350.title" = "Älykäs kopiointi/sijoitus";
+
+/* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "351"; */
+"351.title" = "Älykkäät lainausmerkit";
+
+/* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "354"; */
+"354.title" = "Älykkäät linkit";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "371"; */
+"371.title" = "Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
+"378.title" = "Tietokoneelle on saatavilla uusia ohjelmistoja.";
+
+/* Class = "NSTextFieldCell"; title = "Updating your software may take some time. If you're not ready to update now, you can choose to update later."; ObjectID = "380"; */
+"380.title" = "Päivittäminen saattaa kestää kauan. Jos et halua tehdä päivitystä nyt, valitse myöhemmin.";
+
+/* Class = "NSButtonCell"; title = "Update now"; ObjectID = "382"; */
+"382.title" = "Päivitä nyt";
+
+/* Class = "NSButtonCell"; title = "Later"; ObjectID = "384"; */
+"384.title" = "Myöhemmin";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "397"; */
+"397.headerCell.title" = "Nimi";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "398"; */
+"398.title" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "400"; */
+"400.headerCell.title" = "Versio";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "401"; */
+"401.title" = "Text Cell";
+
+/* Class = "NSTabViewItem"; label = "Updates"; ObjectID = "512"; */
+"512.label" = "Päivitykset";
+
+/* Class = "NSTabViewItem"; label = "Optional software"; ObjectID = "514"; */
+"514.label" = "Valinnaiset ohjelmat";
+
+/* Class = "NSButtonCell"; title = "Add or Remove"; ObjectID = "519"; */
+"519.title" = "Lisää tai poista";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "520"; */
+"520.title" = "Kumoa";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "527"; */
+"527.headerCell.title" = "Nimi";
+
+/* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "528"; */
+"528.headerCell.title" = "Versio";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "531"; */
+"531.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "532"; */
+"532.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Check an item to have it installed. Uncheck an item to have it removed."; ObjectID = "546"; */
+"546.title" = "Valitut kohteet asennetaan. Poista asennettu ohjelma poistamalla valinta.";
+
+/* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
+"547.title" = "Lisää tai poista valinnaisia ohjelmia";
+
+/* Class = "NSButtonCell"; title = "Optional software..."; ObjectID = "550"; */
+"550.title" = "Valinnaiset ohjelmat...";
+
+/* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "581"; */
+"581.headerCell.title" = "Koko";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "582"; */
+"582.title" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "585"; */
+"585.headerCell.title" = "Koko";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "586"; */
+"586.title" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Status"; ObjectID = "628"; */
+"628.headerCell.title" = "Tila";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "629"; */
+"629.title" = "Text Cell";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "633"; */
+"633.title" = "Hallinnoitu ohjelmiston päivitys";
+
+/* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "635"; */
+"635.title" = "BackdropWindow";
+
+/* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
+"645.title" = "Pysäytä";
