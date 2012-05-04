@@ -495,7 +495,7 @@ def pref(prefname):
         return None
 
 
-def configure(option, opt, value, parser):
+def configure():
     """Configures munkiimport for use"""
     _prefs = {}
     for (key, prompt) in [
@@ -512,7 +512,6 @@ def configure(option, opt, value, parser):
         FoundationPlist.writePlist(_prefs, PREFSPATH)
     except FoundationPlist.NSPropertyListWriteException:
         print >> sys.stderr, 'Could not save configuration to %s' % PREFSPATH
-    exit(0)
     
     
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
@@ -542,7 +541,7 @@ def main():
     
     p = PassThroughOptionParser(usage=usage)
     
-    p.add_option('--configure', action='callback', callback=configure,
+    p.add_option('--configure', action='store_true',
                     help="""Configure munkiimport with details about your
                     munki repo, preferred editor, and the like. Any other
                     options and arguments are ignored.""")
@@ -560,11 +559,15 @@ def main():
                     help='Print more output.')
     
     options, arguments = p.parse_args()
-    
+
     if options.version:
         print munkicommon.get_version()
         exit(0)
     
+    if options.configure:
+        configure()
+        exit(0)
+        
     NOINTERACTIVE = options.nointeractive
     VERBOSE = options.verbose
     
