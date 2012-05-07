@@ -278,6 +278,7 @@ def main():
     usage = """usage: %prog [options] [/path/to/installeritem]
        %prog --help for more information."""
     p = optparse.OptionParser(usage=usage)
+    p.add_option('--verify-options-only', action="store_true", help=optparse.SUPPRESS_HELP)
     p.add_option('--file', '-f', action="append",
                     help='''Path to a filesystem item installed by this 
                     package, typically an application. This generates an 
@@ -515,6 +516,14 @@ def main():
         print >> sys.stderr, 'Can process only one installer item at a time.'
         print >> sys.stderr, 'Ignoring additional installer items:'
         print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
+    
+    if options.verify_options_only:
+        if arguments:
+            print >> sys.stderr, 'Using installer item: %s' % arguments[0].rstrip("/")
+            print >> sys.stdout, arguments[0].rstrip("/")
+        if len(arguments) > 1:
+            exit(254)
+        exit(0)
     
     if options.installer_choices_xml:
         os_version = munkicommon.getOsVersion(only_major_minor=False,as_tuple=True)
