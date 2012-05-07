@@ -116,7 +116,7 @@
 "Restart will be required." = "Uudelleenkäynnistystä tullaan vaatimaan.";
 
 /* No comment provided by engineer. */
-"Scheduled removal of managed software." = "Hallinnoitujen ohjelmistojen ajastettu poisto.";
+"Scheduled removal of managed software." = "Hallinnoitujen ohjelmistojen poisto.";
 
 /* No comment provided by engineer. */
 "Show updates" = "Näytä päivitykset";
@@ -125,7 +125,7 @@
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Tietokone on käynnistettävä uudelleen kun päivitysten asennus tai ohjelmien poisto on suoritettu. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
 
 /* No comment provided by engineer. */
-"Software removals" = "Poistettavat ohjelmat";
+"Software removals" = "Ohjelmien poisto";
 
 /* No comment provided by engineer. */
 "Starting…" = "Aloitetaan…";
