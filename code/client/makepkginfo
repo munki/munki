@@ -514,15 +514,11 @@ def main():
     
     if len(arguments) > 1:
         print >> sys.stderr, 'Can process only one installer item at a time.'
-        print >> sys.stderr, 'Ignoring additional installer items:'
-        print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
+        p.print_usage
+        exit(-1)
     
     if options.verify_options_only:
-        if arguments:
-            print >> sys.stderr, 'Using installer item: %s' % arguments[0].rstrip("/")
-            print >> sys.stdout, arguments[0].rstrip("/")
-        if len(arguments) > 1:
-            exit(254)
+        print >> sys.stdout, arguments[0]
         exit(0)
     
     if options.installer_choices_xml:

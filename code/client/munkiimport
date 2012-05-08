@@ -434,8 +434,6 @@ def makePkgInfo(item_path,options=None):
     # Were options provided?
     if test_mode and options:
         cmd = [makepkginfo_path] + options + ['--verify-options-only']
-    elif test_mode and not options:
-        cmd = [makepkginfo_path] + ['--verify-options-only']
     elif not test_mode and options:
         cmd = [makepkginfo_path] + [item_path] + options
     elif not test_mode and not options:
@@ -446,19 +444,18 @@ def makePkgInfo(item_path,options=None):
     (stdout, stderr) = proc.communicate()
     if test_mode:
         if proc.returncode:
-            if proc.returncode == 254:
-                return stdout.rstrip('\n')
-            elif proc.returncode == 2:
+            if proc.returncode == 2:
                 for line in stderr.split('\n'):
                     if 'error' in line:
                         print >> sys.stderr, line
                 exit(-1)
             else:
-                return {}
+                print >> sys.stderr, stderr.rstrip('\n')
+                exit(-1)
         else:
             return stdout.rstrip('\n')
     if proc.returncode:
-        print >> sys.stderr, stderr
+        print >> sys.stderr, stderr.rstrip('\n')
         return {}
     return FoundationPlist.readPlistFromString(stdout)
 
@@ -597,16 +594,15 @@ def main():
         exit(0)
     
     # Verify that arguments, presumed to be for
-    # 'makepkginfo' are valid and derive installer_item
+    # 'makepkginfo' are valid and return installer_item
     installer_item = makePkgInfo(None,arguments)
     if not installer_item:
-        # no valid installer_item was returned from 'makepkginfo'
-        # print >> sys.stderr, 'makepkginfo options failed verification.'
-        # print >> sys.stderr, 'No installer_item was specified.'
         print >> sys.stderr, 'No installer item was provided.'
         cleanupAndExit(-1)
     
-    item_ext = os.path.splitext(installer_item)[1]
+    # store installer_item as 'orig_installer_item' for later user
+    orig_installer_item = installer_item
+    item_ext = os.path.splitext(installer_item.rstrip("/"))[1]
     if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
         print >> sys.stderr, 'Unknown installer item type: "%s"' % installer_item
         exit(-1)
@@ -635,7 +631,6 @@ def main():
             # we need to convert to dmg
             dmg_path = makeDMG(installer_item)
             if dmg_path:
-                option_removal_item = installer_item
                 installer_item = dmg_path
             else:
                 print >> sys.stderr, ('Could not convert %s to a disk image.' 
@@ -646,19 +641,12 @@ def main():
     # store them as 'makepkginfo_options'
     makepkginfo_options = arguments
     
-    # Attempt to clean-up makepkginfo_options by
-    # removing installer_item from the arguments
+    # Remove the item originally specified as
+    # the installer_item from makepkginfo_options
     try:
-        option_removal_item
-    except NameError:
-        option_removal_item = installer_item
-    try:
-        makepkginfo_options.remove(option_removal_item)
+        makepkginfo_options.remove(orig_installer_item)
     except:
-        try:
-            makepkginfo_options.remove(option_removal_item + '/')
-        except:
-            pass
+        pass
     
     pkginfo = makePkgInfo(installer_item,makepkginfo_options)
     if not pkginfo:
