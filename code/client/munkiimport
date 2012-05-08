@@ -435,20 +435,12 @@ def makePkgInfo(options=None,test_mode=False):
                             stderr=subprocess.PIPE)
     (stdout, stderr) = proc.communicate()
     if test_mode:
-        if proc.returncode == 1:
-            # No installer item provided
-            print >> sys.stderr, stderr.rstrip('\n')
-            return {}
-        elif proc.returncode == 2:
+        if proc.returncode == 2:
             # option syntax error or unknown option
-            for line in stderr.split('\n'):
-                if 'error' in line:
-                    print >> sys.stderr, line
+            syntax_error = [error for error in stderr.split('\n') if 'error' in error]
+            print >> sys.stderr, 'Option syntax error: %s' % syntax_error[-1].split(': ',2)[-1]
+            print >> sys.stderr, 'See \'%s --help\' for valid options that can be used with munkiimport.' % makepkginfo_path
             exit(-1)
-        elif proc.returncode == 3:
-            # more than one installer item provided
-            print >> sys.stderr, stderr.rstrip('\n')
-            return {}
         elif proc.returncode:
             # catch-all for any other error
             if stderr:
