@@ -432,7 +432,7 @@ def makePkgInfo(options=None,test_mode=False):
         makepkginfo_path = '/usr/local/munki/makepkginfo'
     if test_mode:
         # prepend verification option if in test mode
-        options.insert(0,'--verify-options-only')
+        options = ['--verify-options-only'] + options
     # build makepkginfo command from discovered path and options
     cmd = [makepkginfo_path] + options
     proc = subprocess.Popen(cmd,
@@ -452,7 +452,7 @@ def makePkgInfo(options=None,test_mode=False):
                 print >> sys.stderr, stderr.rstrip('\n')
             return {}
         else:
-            return stdout.rstrip('\n,/')
+            return stdout.rstrip('\n')
     if proc.returncode:
         print >> sys.stderr, stderr.rstrip('\n')
         return {}
@@ -603,6 +603,12 @@ def main():
     if not installer_item:
         cleanupAndExit(-1)
     
+    # Remove the installer_item from arguments
+    arguments.remove(installer_item)
+    
+    # Strip trailing '/' from installer_item
+    installer_item = installer_item.rstrip('/')
+    
     item_ext = os.path.splitext(installer_item)[1]
     if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
         print >> sys.stderr, 'Unknown installer item type: "%s"' % installer_item
@@ -638,7 +644,10 @@ def main():
                                         % installer_item)
                 cleanupAndExit(-1)
     
-    pkginfo = makePkgInfo(arguments)
+    # append the installer_item to arguments which
+    # may have changed if bundle was wrapped into dmg
+    arguments.append(installer_item)
+    pkginfo = makePkgInfo(arguments,False)
     if not pkginfo:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
