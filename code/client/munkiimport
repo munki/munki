@@ -49,6 +49,11 @@ class PassThroughOptionParser(OptionParser):
                 OptionParser._process_args(self,largs,rargs,values)
             except (BadOptionError,AmbiguousOptionError), e:
                 largs.append(e.opt_str)
+    def format_epilog(self, formatter):
+        if not self.epilog:
+            self.epilog=""
+        return self.epilog
+
 
 def makeDMG(pkgpath):
     """Wraps a non-flat package into a disk image.
@@ -75,7 +80,7 @@ def makeDMG(pkgpath):
     else:
         print 'Disk image created at: %s' % diskimagepath
         return diskimagepath
-        
+
 
 def repoAvailable():
     """Checks the repo path for proper directory structure.
@@ -537,21 +542,26 @@ def main():
     """Main routine"""
     global NOINTERACTIVE
     
-    usage = """usage: %prog [options] [makepkginfo options] /path/to/installer_item
+    usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
        Installer item can be a pkg, mpkg, dmg, or app.
        Bundle-style pkgs and apps are wrapped in a dmg
        file before upload.
        
-       In addition to options described below, makepkginfo
-       options may also be specified to futher customize
-       the resulting pkginfo file
-       
        Example:
-       munkiimport -d apps -c production --minimum_os_vers 10.6.8 /path/to/example.dmg
+       munkiimport --subdirectory apps /path/to/installer_item
        """
     
-    p = PassThroughOptionParser(usage=usage)
+    epilog = """\nExtended Options: (makepkginfo options)
+        In addition to the options described above,
+        options used with 'makepkginfo' may also
+        be specified to customize the resulting
+        pkginfo file.
+        
+        Example:
+        munkiimport --subdirectory apps -c production --minimum_os_vers 10.6.8 /path/to/installer_item\n"""
+    
+    p = PassThroughOptionParser(usage=usage,epilog=epilog)
     
     p.add_option('--configure', action='store_true',
                     help="""Configure munkiimport with details about your
