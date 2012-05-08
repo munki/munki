@@ -502,6 +502,18 @@ def main():
         print munkicommon.get_version()
         exit(0)
     
+    if options.verify_options_only:
+        if len(arguments) == 0:
+            print >> sys.stderr, 'makepkginfo options FAILED verification'
+            print >> sys.stderr, 'No installer item was provided.'
+            exit(1)
+        if len(arguments) > 1:
+            print >> sys.stderr, 'makepkginfo options FAILED verification'
+            print >> sys.stderr, 'Can process only one installer item at a time.'
+            exit(3)
+        print >> sys.stdout, arguments[0]
+        exit(0)
+    
     if (len(arguments) == 0 
         and not options.file 
         and not options.preinstall_script
@@ -514,12 +526,8 @@ def main():
     
     if len(arguments) > 1:
         print >> sys.stderr, 'Can process only one installer item at a time.'
-        p.print_usage
-        exit(-1)
-    
-    if options.verify_options_only:
-        print >> sys.stdout, arguments[0]
-        exit(0)
+        print >> sys.stderr, 'Ignoring additional installer items:'
+        print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
     
     if options.installer_choices_xml:
         os_version = munkicommon.getOsVersion(only_major_minor=False,as_tuple=True)

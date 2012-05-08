@@ -417,43 +417,45 @@ def findMatchingPkginfo(pkginfo):
     return {}
 
 
-def makePkgInfo(item_path,options=None):
+def makePkgInfo(options=None,test_mode=False):
     """Calls makepkginfo to generate the pkginfo for item_path."""
-    test_mode = False
-    if not item_path:
-        test_mode = True
     # first look for a makepkginfo in the same dir as us
     mydir = os.path.dirname(os.path.abspath(__file__))
     makepkginfo_path = os.path.join(mydir, 'makepkginfo')
     if not os.path.exists(makepkginfo_path):
         # didn't find it; assume the default install path
         makepkginfo_path = '/usr/local/munki/makepkginfo'
-    
-    # build makepkginfo command depending combination of:
-    # Are we in a 'testing mode?'
-    # Were options provided?
-    if test_mode and options:
-        cmd = [makepkginfo_path] + options + ['--verify-options-only']
-    elif not test_mode and options:
-        cmd = [makepkginfo_path] + [item_path] + options
-    elif not test_mode and not options:
-        cmd = [makepkginfo_path] + [item_path]
+    # build makepkginfo command from discovered path and options
+    cmd = [makepkginfo_path] + options
+    if test_mode:
+        # append verification option if in test mode
+        cmd.append('--verify-options-only')
     proc = subprocess.Popen(cmd,
                             bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
     (stdout, stderr) = proc.communicate()
     if test_mode:
-        if proc.returncode:
-            if proc.returncode == 2:
-                for line in stderr.split('\n'):
-                    if 'error' in line:
-                        print >> sys.stderr, line
-                exit(-1)
-            else:
+        if proc.returncode == 1:
+            # No installer item provided
+            print >> sys.stderr, stderr.rstrip('\n')
+            return {}
+        elif proc.returncode == 2:
+            # option syntax error or unknown option
+            for line in stderr.split('\n'):
+                if 'error' in line:
+                    print >> sys.stderr, line
+            exit(-1)
+        elif proc.returncode == 3:
+            # more than one installer item provided
+            print >> sys.stderr, stderr.rstrip('\n')
+            return {}
+        elif proc.returncode:
+            # catch-all for any other error
+            if stderr:
                 print >> sys.stderr, stderr.rstrip('\n')
-                exit(-1)
+            return {}
         else:
-            return stdout.rstrip('\n')
+            return stdout.rstrip('\n,/')
     if proc.returncode:
         print >> sys.stderr, stderr.rstrip('\n')
         return {}
@@ -595,14 +597,12 @@ def main():
     
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
-    installer_item = makePkgInfo(None,arguments)
+    installer_item = makePkgInfo(arguments,True)
     if not installer_item:
-        print >> sys.stderr, 'No installer item was provided.'
+        # print >> sys.stderr, 'No installer item was provided.'
         cleanupAndExit(-1)
     
-    # store installer_item as 'orig_installer_item' for later user
-    orig_installer_item = installer_item
-    item_ext = os.path.splitext(installer_item.rstrip("/"))[1]
+    item_ext = os.path.splitext(installer_item)[1]
     if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
         print >> sys.stderr, 'Unknown installer item type: "%s"' % installer_item
         exit(-1)
@@ -636,19 +636,8 @@ def main():
                 print >> sys.stderr, ('Could not convert %s to a disk image.' 
                                         % installer_item)
                 cleanupAndExit(-1)
-                
-    # Since 'arguments' have been validated by 'makepkginfo',
-    # store them as 'makepkginfo_options'
-    makepkginfo_options = arguments
     
-    # Remove the item originally specified as
-    # the installer_item from makepkginfo_options
-    try:
-        makepkginfo_options.remove(orig_installer_item)
-    except:
-        pass
-    
-    pkginfo = makePkgInfo(installer_item,makepkginfo_options)
+    pkginfo = makePkgInfo(arguments)
     if not pkginfo:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
