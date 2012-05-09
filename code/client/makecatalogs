@@ -136,6 +136,11 @@ def makecatalogs(repopath):
             
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
+                if not catalogname:
+                    errors.append("WARNING: Info file %s has an empty "
+                                  "catalog name!" %
+                                  filepath[len(pkgsinfopath)+1:])
+                    continue
                 if not catalogname in catalogs:
                     catalogs[catalogname] = []
                 catalogs[catalogname].append(pkginfo)
