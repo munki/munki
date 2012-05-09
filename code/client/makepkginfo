@@ -340,26 +340,26 @@ def main():
                     help='''Optional flag.
                     
                     Implies 'true' for 'unattended_install' for the installer item.''')
-    p.add_option('--unattended_uninstall', action='store_true',
+    p.add_option('--unattended_uninstall', '--unattended-uninstall', action='store_true',
                     help='''Optional flag.
                     
                     Implies 'true' for 'unattended_uninstall' for the installer item.''')
-    p.add_option('--minimum_os_version', '--min-os-ver',
+    p.add_option('--minimum_os_version', '--minimum-os-version', '--min-os-ver',
                     metavar='VERSION',
                     help='''Optional flag.
                     
                     Minimum OS version for the installer item.''')
-    p.add_option('--maximum_os_version', '--max-os-ver',
+    p.add_option('--maximum_os_version', '--maximum-os-version', '--max-os-ver',
                     metavar='VERSION',
                     help='''Optional flag.
                     
                     Maximum OS version for the installer item.''')
-    p.add_option('--installer_choices_xml', action='store_true',
+    p.add_option('--installer_choices_xml', '--installer-choices-xml', action='store_true',
                     help='''Optional flag
                     
                     Specify that installer choices should be generated.
                     Note: Requires Mac OS X 10.6.6 or later.''')
-    p.add_option('--force_install_after_date',
+    p.add_option('--force_install_after_date', '--force-install-after-date',
                     metavar='yyyy-dd-hhThh:mm:ssZ',
                     help='''Optional flag.
                     
@@ -375,7 +375,7 @@ def main():
                     RequireRestart          
                     RequireLogout           
                     RecommendRestart''')
-    p.add_option('--update_for', '-U', action="append",
+    p.add_option('--update_for', '--update-for', '-U', action="append",
                     metavar='PACKAGE',
                     help='''Optional flag.
                     
@@ -389,7 +389,7 @@ def main():
                     Specifies which package this package is requires. 
                     Can be specified multiple times 
                     to build an array of required packages.''')
-    p.add_option('--blocking_applications', '-b', action="append",
+    p.add_option('--blocking_applications', '--blocking-applications', '-b', action="append",
                     metavar='APPLICATION',
                     help='''Optional flag.
                     
@@ -418,35 +418,35 @@ def main():
                     Adobe CS3 deployment package, UNINSTALLERDMG is a path 
                     to a disk image containing an AdobeUberUninstaller for
                     this item.''')
-    p.add_option('--postinstall_script',
+    p.add_option('--postinstall_script', '--postinstall-script',
                     metavar='SCRIPT_PATH',
                     help='''Optional flag.
                     
                     Path to an optional postinstall script to be run after  
                     installation of the item. The script will be read and 
                     embedded into the pkginfo.''')
-    p.add_option('--preinstall_script',
+    p.add_option('--preinstall_script', '--preinstall-script',
                     metavar='SCRIPT_PATH',
                     help='''Optional flag.
                     
                     Path to an optional preinstall script to be run before 
                     installation of the item. The script will be read and 
                     embedded into the pkginfo.''')
-    p.add_option('--postuninstall_script',
+    p.add_option('--postuninstall_script', '--postuninstall-script',
                     metavar='SCRIPT_PATH',
                     help='''Optional flag.
 
                     Path to an optional postuninstall script to be run after  
                     removal of the item. The script will be read and 
                     embedded into the pkginfo.''')
-    p.add_option('--preuninstall_script',
+    p.add_option('--preuninstall_script', '--preuninstall-script',
                     metavar='SCRIPT_PATH',
                     help='''Optional flag.
 
                     Path to an optional preuninstall script to be run before 
                     removal of the item. The script will be read and 
                     embedded into the pkginfo.''')
-    p.add_option('--uninstall_script',
+    p.add_option('--uninstall_script', '--uninstall-script',
                     metavar='SCRIPT_PATH',
                     help='''Optional flag.
                     
