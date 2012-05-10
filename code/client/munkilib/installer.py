@@ -28,6 +28,7 @@ import subprocess
 import time
 
 import adobeutils
+import launchd
 import munkicommon
 import munkistatus
 import updatecheck
@@ -151,30 +152,45 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
         munkicommon.display_debug1(
             'Using custom installer environment variables: %s', env_vars)
 
-    # run installer, setting the program id of the process (all child
-    # processes will also use the same program id), making it easier to kill
-    # not only hung installer but also any child processes it started.
-    proc = munkicommon.Popen(cmd, shell=False, bufsize=1, env=env_vars,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
-                             preexec_fn=lambda: os.setpgid(
-                                 os.getpid(), os.getpid()))
-    timeout = 2 * 60 * 60
-    while True:
-        try:
-            installinfo = proc.timed_readline(proc.stdout, timeout=timeout)
-        except munkicommon.TimeoutError:
-            munkicommon.display_error(
-                "/usr/sbin/installer timeout after %d seconds" % timeout)
-            signal.signal(signal.SIGCHLD, signal.SIG_IGN)  # reap immed.
-            os.kill(-1 * proc.pid, signal.SIGTERM)
-            signal.signal(signal.SIGCHLD, signal.SIG_DFL)
-            break
+    # run installer as a launchd job
+    try:
+        job = launchd.Job(cmd, environment_vars=env_vars)
+        job.start()
+    except launchd.LaunchdJobException, err:
+        munkicommon.display_error(
+             'Error with launchd job (%s): %s', cmd, str(err))
+        munkicommon.display_error('Can\'t run installer.')
+        return (-3, False)
 
+    timeout = 2 * 60 * 60
+    inactive = 0
+    last_output = None
+    while True:
+        installinfo = job.stdout.readline()
+        if not installinfo:
+            if job.returncode() is not None:
+                break
+            else:
+                # no data, but we're still running
+                inactive += 1
+                if inactive >= timeout:
+                    # no output for too long, kill this installer session
+                    job.stop()
+                    break
+                # sleep a bit before checking for more output
+                time.sleep(1)
+                continue
+        
+        # we got non-empty output, reset inactive timer
+        inactive = 0
+        
+        # Don't bother parsing the stdout output if it hasn't changed since
+        # the last loop iteration.
+        if last_output == installinfo:
+            continue
+        last_output = installinfo
+        
         installinfo = installinfo.decode('UTF-8')
-        if not installinfo and (proc.poll() != None):
-            break
         if installinfo.startswith("installer:"):
             # save all installer output in case there is
             # an error so we can dump it to the log
@@ -209,15 +225,9 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
             else:
                 munkicommon.log(msg)
 
-    # try for a little bit to catch return code from exiting process...
-    retcode = proc.poll()
-    t = 0
-    while retcode is None and t < 5:
-        time.sleep(1)
-        t += 1
-        retcode = proc.poll()
-
-    if retcode != 0:  # this could be <0, >0, or even None (never returned)
+    # installer exited
+    retcode = job.returncode()
+    if retcode != 0: 
         munkicommon.display_status_minor(
             "Install of %s failed with return code %s" % (packagename, retcode))
         munkicommon.display_error("-"*78)
