@@ -161,7 +161,9 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
              'Error with launchd job (%s): %s', cmd, str(err))
         munkicommon.display_error('Can\'t run installer.')
         return (-3, False)
-    
+
+    timeout = 2 * 60 * 60
+    inactive = 0
     last_output = None
     while True:
         installinfo = job.stdout.readline()
@@ -170,10 +172,18 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                 break
             else:
                 # no data, but we're still running
+                inactive += 1
+                if inactive >= timeout:
+                    # no output for too long, kill this installer session
+                    job.stop()
+                    break
                 # sleep a bit before checking for more output
                 time.sleep(1)
                 continue
-                
+        
+        # we got non-empty output, reset inactive timer
+        inactive = 0
+        
         # Don't bother parsing the stdout output if it hasn't changed since
         # the last loop iteration.
         if last_output == installinfo:
