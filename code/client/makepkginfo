@@ -320,18 +320,27 @@ def main():
                     relative path of the item to be installed. 
                     Useful if there is more than one item at the 
                     root of the dmg.''')
+    p.add_option('--name',
+                    help='''Optional flag.
+                    
+                    String name of the package.
+                    Note: Overrides discovered package name''')
     p.add_option('--displayname',
                     help='''Optional flag.
                     
                     String display name of the package.
-                    Note: overrides any display_name in the package itself''')
+                    Note: Overrides discovered package display_name''')
     p.add_option('--description',
                     metavar='STRING|PATH',
                     help='''Optional flag.
                     
                     String description of the package.
-                    Can be a PATH to a file (plain text or html).
-                    Note: overrides any description in the package itself''')
+                    Can be a PATH to a file (plain text or html).''')
+    p.add_option('--vers',
+                    help='''Optional flag.
+
+                    Specify version for package.
+                    Note: Overrides discovered package version!''')
     p.add_option('--autoremove', action='store_true',
                     help='''Optional flag.
                     
@@ -594,9 +603,12 @@ def main():
             
             if options.description:
                 catinfo['description'] = readFileOrString(options.description)
-            
             if options.displayname:
                 catinfo['display_name'] = options.displayname
+            if options.name:
+                catinfo['name'] = options.name
+            if options.vers:
+                catinfo['version'] = options.vers
             
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash
