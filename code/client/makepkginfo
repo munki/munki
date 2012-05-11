@@ -336,7 +336,7 @@ def main():
                     
                     String description of the package.
                     Can be a PATH to a file (plain text or html).''')
-    p.add_option('--vers',
+    p.add_option('--pkgvers',
                     help='''Optional flag.
 
                     Specify version for package.
@@ -607,8 +607,8 @@ def main():
                 catinfo['display_name'] = options.displayname
             if options.name:
                 catinfo['name'] = options.name
-            if options.vers:
-                catinfo['version'] = options.vers
+            if options.pkgvers:
+                catinfo['version'] = options.pkgvers
             
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash
