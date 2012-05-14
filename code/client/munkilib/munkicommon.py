@@ -1823,12 +1823,36 @@ def getLSInstalledApplications():
 
     return applist
 
+
+# we save SP_APPCACHE in a global to avoid querying system_profiler more than
+# once per session for application data, which can be slow
+SP_APPCACHE = []
+def getSPApplicationData():
+    '''Uses system profiler to get application info for this machine'''
+    global SP_APPCACHE
+    if SP_APPCACHE == []:
+        cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
+        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, unused_error) = proc.communicate()
+        try:
+            plist = FoundationPlist.readPlistFromString(output)
+            # system_profiler xml is an array
+            sp_dict = plist[0]
+            SP_APPCACHE = sp_dict['_items']
+        except Exception:
+            pass
+    return SP_APPCACHE
+
+
 # we save APPDATA in a global to avoid querying LaunchServices more than
 # once per session
 APPDATA = []
 def getAppData():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
+    global APPDATA
     if APPDATA == []:
         display_debug1('Getting info on currently installed applications...')
         applist = set(getLSInstalledApplications())
@@ -1841,13 +1865,24 @@ def getAppData():
             if os.path.exists(plistpath):
                 try:
                     plist = FoundationPlist.readPlist(plistpath)
-                    iteminfo['bundleid' ] = plist.get('CFBundleIdentifier','')
+                    iteminfo['bundleid'] = plist.get('CFBundleIdentifier','')
                     if 'CFBundleName' in plist:
                         iteminfo['name'] = plist['CFBundleName']
                     iteminfo['version'] = getExtendedVersion(pathname)
                     APPDATA.append(iteminfo)
                 except Exception:
                     pass
+            else:
+                # possibly a non-bundle app. Use system_profiler data
+                # to get app name and version
+                sp_match = [item for item in getSPApplicationData()
+                            if item.get('path') == pathname]
+                if sp_match:
+                    iteminfo['bundleid'] = ''
+                    iteminfo['version'] = sp_match[0].get('version')
+                    if sp_match[0].get('_name'):
+                        iteminfo['name'] = sp_match[0]['_name']
+                    APPDATA.append(iteminfo)
     return APPDATA
 
 
