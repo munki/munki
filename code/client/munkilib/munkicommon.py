@@ -531,9 +531,15 @@ def saveappdata():
         inventory_item['name'] = \
             os.path.splitext(os.path.basename(inventory_item['path']))[0]
         app_inventory.append(inventory_item)
-
-    FoundationPlist.writePlist(app_inventory,
-        os.path.join(pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
+    try:
+        FoundationPlist.writePlist(
+            app_inventory,
+            os.path.join(
+                pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
+    except FoundationPlist.NSPropertyListSerializationException, err:
+        munkicommon.display_warning(
+            'Unable to save inventory report: %s' % err)
+        
 
 
 def printreportitem(label, value, indent=0):
@@ -1880,7 +1886,7 @@ def getAppData():
                 if pathname in sp_app_data:
                     item = sp_app_data[pathname]
                     iteminfo['bundleid'] = ''
-                    iteminfo['version'] = item.get('version', '0.0.0')
+                    iteminfo['version'] = item.get('version') or '0.0.0.0.0'
                     if item.get('_name'):
                         iteminfo['name'] = item['_name']
                     APPDATA.append(iteminfo)
