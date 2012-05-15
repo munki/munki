@@ -1826,11 +1826,11 @@ def getLSInstalledApplications():
 
 # we save SP_APPCACHE in a global to avoid querying system_profiler more than
 # once per session for application data, which can be slow
-SP_APPCACHE = []
+SP_APPCACHE = {}
 def getSPApplicationData():
     '''Uses system profiler to get application info for this machine'''
     global SP_APPCACHE
-    if SP_APPCACHE == []:
+    if not SP_APPCACHE:
         cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE,
@@ -1839,8 +1839,9 @@ def getSPApplicationData():
         try:
             plist = FoundationPlist.readPlistFromString(output)
             # system_profiler xml is an array
-            sp_dict = plist[0]
-            SP_APPCACHE = sp_dict['_items']
+            SP_APPCACHE = {}
+            for item in plist[0]['_items']:
+              SP_APPCACHE[item.get('path')] = item
         except Exception:
             pass
     return SP_APPCACHE
@@ -1875,13 +1876,13 @@ def getAppData():
             else:
                 # possibly a non-bundle app. Use system_profiler data
                 # to get app name and version
-                sp_match = [item for item in getSPApplicationData()
-                            if item.get('path') == pathname]
-                if sp_match:
+                sp_app_data = getSPApplicationData()
+                if pathname in sp_app_data:
+                    item = sp_app_data[pathname]
                     iteminfo['bundleid'] = ''
-                    iteminfo['version'] = sp_match[0].get('version')
-                    if sp_match[0].get('_name'):
-                        iteminfo['name'] = sp_match[0]['_name']
+                    iteminfo['version'] = item[0].get('version')
+                    if item[0].get('_name'):
+                        iteminfo['name'] = item[0]['_name']
                     APPDATA.append(iteminfo)
     return APPDATA
 
