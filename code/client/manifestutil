@@ -816,7 +816,8 @@ def handleSubcommand(args):
     if subcommand == 'exit':
        cleanupAndExit(0)
        
-    if subcommand not in ['version', 'configure', 'help']:
+    if (subcommand not in ['version', 'configure', 'help'] 
+        and '-h' not in args and '--help' not in args):
         if not repoAvailable():
             exit(-1)
     
