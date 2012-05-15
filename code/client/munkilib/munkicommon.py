@@ -1880,9 +1880,9 @@ def getAppData():
                 if pathname in sp_app_data:
                     item = sp_app_data[pathname]
                     iteminfo['bundleid'] = ''
-                    iteminfo['version'] = item[0].get('version')
-                    if item[0].get('_name'):
-                        iteminfo['name'] = item[0]['_name']
+                    iteminfo['version'] = item.get('version')
+                    if item.get('_name'):
+                        iteminfo['name'] = item['_name']
                     APPDATA.append(iteminfo)
     return APPDATA
 
