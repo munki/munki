@@ -977,6 +977,27 @@ def getItemDetail(name, cataloglist, vers=''):
             for index in indexlist:
                 item = CATALOG[catalogname]['items'][index]
                 # we have an item whose name and version matches the request.
+                if item.get('minimum_munki_version'):
+                    min_munki_vers = item['minimum_munki_version']
+                    munkicommon.display_debug1(
+                        'Considering item %s, ' % item['name'] +
+                        'version %s ' % item['version'] +
+                        'with minimum Munki version required %s' 
+                        % min_munki_vers)
+                    munkicommon.display_debug1('Our Munki version is %s' %
+                                                MACHINE['munki_version'])
+                    if (munkicommon.MunkiLooseVersion(MACHINE['munki_version'])
+                        < munkicommon.MunkiLooseVersion(min_munki_vers)):
+                        # skip this one, go to the next
+                        reason = (('Rejected item %s, version %s '
+                                  'with minimum Munki version required %s. '
+                                  "Our Munki version is %s.")
+                                  % (item['name'], item['version'],
+                                     item['minimum_munki_version'],
+                                     MACHINE['munki_version']))
+                        rejected_items.append(reason)
+                        continue
+                
                 # now check to see if it meets os and cpu requirements
                 if item.get('minimum_os_version', ''):
                     min_os_vers = item['minimum_os_version']
