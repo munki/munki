@@ -2371,11 +2371,11 @@ def getPrimaryManifest(alternate_id):
                         manifest = getmanifest(manifesturl + clientidentifier,
                                                 suppress_errors=True)
                     elif not manifest:
-                            # last resort - try for the site_default manifest
-                            clientidentifier = 'site_default'
-                            munkicommon.display_detail('Request failed. ' +
-                                                        'Trying %s...' %
-                                                        clientidentifier)
+                        # last resort - try for the site_default manifest
+                        clientidentifier = 'site_default'
+                        munkicommon.display_detail('Request failed. ' +
+                                                    'Trying %s...' %
+                                                    clientidentifier)
 
         if not manifest:
             manifest = getmanifest(
