@@ -2363,11 +2363,20 @@ def getPrimaryManifest(alternate_id):
                 manifest = getmanifest(manifesturl + clientidentifier,
                                         suppress_errors=True)
                 if not manifest:
-                    # last resort - try for the site_default manifest
-                    clientidentifier = 'site_default'
-                    munkicommon.display_detail('Request failed. ' +
-                                               'Trying %s...' %
-                                                clientidentifier)
+                	# try the machine serial number
+                	clientidentifier = subprocess.Popen("system_profiler SPHardwareDataType |grep -v tray |awk '/Serial/ {print $4}'", shell=True, stdout=subprocess.PIPE).communicate()[0].strip()
+                	if clientidentifier:
+                		munkicommon.display_detail('Request failed. Trying %s...' %
+                                                    clientidentifier)
+                        manifest = getmanifest(manifesturl + clientidentifier,
+                                                suppress_errors=True)
+
+                    	if not manifest:
+                        	# last resort - try for the site_default manifest
+                			clientidentifier = 'site_default'
+                			munkicommon.display_detail('Request failed. ' +
+														'Trying %s...' %
+														clientidentifier)
 
         if not manifest:
             manifest = getmanifest(
