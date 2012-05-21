@@ -1983,6 +1983,7 @@ def getMachineFacts():
         MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
         MACHINE['munki_version'] = get_version()
         MACHINE['ipv4_address'] = get_ipv4_addresses()
+        MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
     return MACHINE
 
 

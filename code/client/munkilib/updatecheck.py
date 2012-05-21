@@ -2356,29 +2356,28 @@ def getPrimaryManifest(alternate_id):
             manifest = getmanifest(manifesturl + clientidentifier,
                                    suppress_errors=True)
             if not manifest:
-                # try the short hostname
+				# try the short hostname
                 clientidentifier = hostname.split('.')[0]
                 munkicommon.display_detail('Request failed. Trying %s...' %
                                             clientidentifier)
                 manifest = getmanifest(manifesturl + clientidentifier,
                                         suppress_errors=True)
                 if not manifest:
-                	# try the machine serial number
-                	clientidentifier = subprocess.Popen("system_profiler SPHardwareDataType |grep -v tray |awk '/Serial/ {print $4}'", shell=True, stdout=subprocess.PIPE).communicate()[0].strip()
-                	if clientidentifier:
-                		munkicommon.display_detail('Request failed. Trying %s...' %
+					# try the machine serial number
+					clientidentifier = MACHINE['serial_number']
+					if clientidentifier != 'UNKNOWN':
+						munkicommon.display_detail('Request failed. Trying %s...' %
                                                     clientidentifier)
-                        manifest = getmanifest(manifesturl + clientidentifier,
-                                                suppress_errors=True)
-
-                    	if not manifest:
-                        	# last resort - try for the site_default manifest
-                			clientidentifier = 'site_default'
-                			munkicommon.display_detail('Request failed. ' +
+						manifest = getmanifest(manifesturl + clientidentifier,
+												suppress_errors=True)
+					elif not manifest:
+							# last resort - try for the site_default manifest
+							clientidentifier = 'site_default'
+							munkicommon.display_detail('Request failed. ' +
 														'Trying %s...' %
 														clientidentifier)
 
-        if not manifest:
+    	if not manifest:
             manifest = getmanifest(
                 manifesturl + urllib2.quote(clientidentifier.encode('utf-8')))
         if manifest:
