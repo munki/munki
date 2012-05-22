@@ -977,6 +977,27 @@ def getItemDetail(name, cataloglist, vers=''):
             for index in indexlist:
                 item = CATALOG[catalogname]['items'][index]
                 # we have an item whose name and version matches the request.
+                if item.get('minimum_munki_version'):
+                    min_munki_vers = item['minimum_munki_version']
+                    munkicommon.display_debug1(
+                        'Considering item %s, ' % item['name'] +
+                        'version %s ' % item['version'] +
+                        'with minimum Munki version required %s' 
+                        % min_munki_vers)
+                    munkicommon.display_debug1('Our Munki version is %s' %
+                                                MACHINE['munki_version'])
+                    if (munkicommon.MunkiLooseVersion(MACHINE['munki_version'])
+                        < munkicommon.MunkiLooseVersion(min_munki_vers)):
+                        # skip this one, go to the next
+                        reason = (('Rejected item %s, version %s '
+                                  'with minimum Munki version required %s. '
+                                  "Our Munki version is %s.")
+                                  % (item['name'], item['version'],
+                                     item['minimum_munki_version'],
+                                     MACHINE['munki_version']))
+                        rejected_items.append(reason)
+                        continue
+                
                 # now check to see if it meets os and cpu requirements
                 if item.get('minimum_os_version', ''):
                     min_os_vers = item['minimum_os_version']
@@ -1323,7 +1344,8 @@ def lookForUpdates(itemname, cataloglist):
         num_updates = len(update_list)
         # format the update list for better on-screen viewing
         update_list_display = ", ".join(str(x) for x in update_list)
-        munkicommon.display_debug1('Found %s update(s): %s' % (num_updates, update_list_display))
+        munkicommon.display_debug1(
+            'Found %s update(s): %s' % (num_updates, update_list_display))
 
     return update_list
 
@@ -2341,12 +2363,19 @@ def getPrimaryManifest(alternate_id):
                                             clientidentifier)
                 manifest = getmanifest(manifesturl + clientidentifier,
                                         suppress_errors=True)
-                if not manifest:
-                    # last resort - try for the site_default manifest
-                    clientidentifier = 'site_default'
-                    munkicommon.display_detail('Request failed. ' +
-                                               'Trying %s...' %
+            if not manifest:
+                # try the machine serial number
+                clientidentifier = MACHINE['serial_number']
+                if clientidentifier != 'UNKNOWN':
+                    munkicommon.display_detail('Request failed. Trying %s...' %
                                                 clientidentifier)
+                    manifest = getmanifest(manifesturl + clientidentifier,
+                                            suppress_errors=True)
+            if not manifest:
+                # last resort - try for the site_default manifest
+                clientidentifier = 'site_default'
+                munkicommon.display_detail('Request failed. Trying %s...' %
+                                            clientidentifier)
 
         if not manifest:
             manifest = getmanifest(
@@ -2447,7 +2476,6 @@ def check(client_id='', localmanifestpath=None):
     global CONDITIONS
     munkicommon.getConditions()
     CONDITIONS = munkicommon.getConditions()
-    munkicommon.report['ConditionalItems'] = CONDITIONS
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     if munkicommon.munkistatusoutput:
@@ -2476,6 +2504,7 @@ def check(client_id='', localmanifestpath=None):
 
         # set up INFO_OBJECT for conditional item comparisons
         makePredicateInfoObject()
+        munkicommon.report['Conditions'] = INFO_OBJECT
 
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',

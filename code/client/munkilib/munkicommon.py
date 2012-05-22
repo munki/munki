@@ -465,6 +465,15 @@ def format_time(timestamp=None):
         return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
+def validateDateFormat(datetime_string):
+    formatted_datetime_string = ''
+    try:
+        formatted_datetime_string = time.strftime('%Y-%m-%dT%H:%M:%SZ',
+                                    time.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ'))
+    except:
+        pass
+    return formatted_datetime_string
+
 def log(msg, logname=''):
     """Generic logging function"""
     # date/time format string
@@ -531,9 +540,15 @@ def saveappdata():
         inventory_item['name'] = \
             os.path.splitext(os.path.basename(inventory_item['path']))[0]
         app_inventory.append(inventory_item)
-
-    FoundationPlist.writePlist(app_inventory,
-        os.path.join(pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
+    try:
+        FoundationPlist.writePlist(
+            app_inventory,
+            os.path.join(
+                pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
+    except FoundationPlist.NSPropertyListSerializationException, err:
+        munkicommon.display_warning(
+            'Unable to save inventory report: %s' % err)
+        
 
 
 def printreportitem(label, value, indent=0):
@@ -1504,6 +1519,25 @@ def isInstallerItem(path):
         return False
 
 
+def getChoiceChangesXML(pkgitem):
+    """Queries package for 'ChoiceChangesXML'"""
+    choices = []
+    try:
+        proc = subprocess.Popen(['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
+                                bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, unused_err) = proc.communicate()
+        if out:
+            plist = FoundationPlist.readPlistFromString(out)
+            
+            # list comprehension to populate choices with those items
+            # whose 'choiceAttribute' value is 'selected'
+            choices = [item for item in plist if 'selected' in item['choiceAttribute']]
+    except:
+        # No choices found or something went wrong
+        pass
+    return choices
+
+
 def getPackageMetaData(pkgitem):
     """
     Queries an installer item (.pkg, .mpkg, .dist)
@@ -1823,12 +1857,37 @@ def getLSInstalledApplications():
 
     return applist
 
+
+# we save SP_APPCACHE in a global to avoid querying system_profiler more than
+# once per session for application data, which can be slow
+SP_APPCACHE = {}
+def getSPApplicationData():
+    '''Uses system profiler to get application info for this machine'''
+    global SP_APPCACHE
+    if not SP_APPCACHE:
+        cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
+        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, unused_error) = proc.communicate()
+        try:
+            plist = FoundationPlist.readPlistFromString(output)
+            # system_profiler xml is an array
+            SP_APPCACHE = {}
+            for item in plist[0]['_items']:
+              SP_APPCACHE[item.get('path')] = item
+        except Exception:
+            pass
+    return SP_APPCACHE
+
+
 # we save APPDATA in a global to avoid querying LaunchServices more than
 # once per session
 APPDATA = []
 def getAppData():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
+    global APPDATA
     if APPDATA == []:
         display_debug1('Getting info on currently installed applications...')
         applist = set(getLSInstalledApplications())
@@ -1841,13 +1900,24 @@ def getAppData():
             if os.path.exists(plistpath):
                 try:
                     plist = FoundationPlist.readPlist(plistpath)
-                    iteminfo['bundleid' ] = plist.get('CFBundleIdentifier','')
+                    iteminfo['bundleid'] = plist.get('CFBundleIdentifier','')
                     if 'CFBundleName' in plist:
                         iteminfo['name'] = plist['CFBundleName']
                     iteminfo['version'] = getExtendedVersion(pathname)
                     APPDATA.append(iteminfo)
                 except Exception:
                     pass
+            else:
+                # possibly a non-bundle app. Use system_profiler data
+                # to get app name and version
+                sp_app_data = getSPApplicationData()
+                if pathname in sp_app_data:
+                    item = sp_app_data[pathname]
+                    iteminfo['bundleid'] = ''
+                    iteminfo['version'] = item.get('version') or '0.0.0.0.0'
+                    if item.get('_name'):
+                        iteminfo['name'] = item['_name']
+                    APPDATA.append(iteminfo)
     return APPDATA
 
 
@@ -1941,6 +2011,7 @@ def getMachineFacts():
         MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
         MACHINE['munki_version'] = get_version()
         MACHINE['ipv4_address'] = get_ipv4_addresses()
+        MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
     return MACHINE
 
 

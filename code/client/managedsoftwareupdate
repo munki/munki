@@ -92,7 +92,7 @@ def networkUp():
         if 'inet' in line:
             parts = line.split()
             addr = parts[1]
-            if not addr in ['127.0.0.1', '0.0.0.0.0']:
+            if not addr in ['127.0.0.1', '0.0.0.0']:
                 return True
     return False
 
