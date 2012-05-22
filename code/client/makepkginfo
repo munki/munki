@@ -450,9 +450,10 @@ def main():
                     )
     forced_unattended_options.add_option(
                     '--force_install_after_date', '--force-install-after-date',
-                    metavar='yyyy-dd-hhThh:mm:ssZ',
-                    help=('''Specify a date, in local time, after which the package will be forcefully installed. '''
-                          '''Example: '2011-08-11T12:55:00Z' equates to August 11th 2011 at 12:55 PM.''')
+                    metavar='DATE',
+                    help=('''Specify a date, in local time, after which the package will be forcefully installed. 
+                             DATE format: yyyy-dd-hhThh:mm:ssZ
+                             Example: '2011-08-11T12:55:00Z' equates to August 11th 2011 at 12:55 PM.''')
                     )
     p.add_option_group(forced_unattended_options)
     
@@ -474,7 +475,7 @@ def main():
     additional_options.add_option(
                     '--autoremove',
                     action='store_true',
-                    help='''Implies 'true' for 'autoremove' for the installer item.'''
+                    help='''Implies 'true' for 'autoremove' of the installer item.'''
                     )
     additional_options.add_option(
                     '--minimum_os_version', '--minimum-os-version', '--min-os-ver',
