@@ -465,6 +465,15 @@ def format_time(timestamp=None):
         return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
+def validateDateFormat(datetime_string):
+    formatted_datetime_string = ''
+    try:
+        formatted_datetime_string = time.strftime('%Y-%m-%dT%H:%M:%SZ',
+                                    time.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ'))
+    except:
+        pass
+    return formatted_datetime_string
+
 def log(msg, logname=''):
     """Generic logging function"""
     # date/time format string
@@ -1508,6 +1517,25 @@ def isInstallerItem(path):
         return True
     else:
         return False
+
+
+def getChoiceChangesXML(pkgitem):
+    """Queries package for 'ChoiceChangesXML'"""
+    choices = []
+    try:
+        proc = subprocess.Popen(['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
+                                bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, unused_err) = proc.communicate()
+        if out:
+            plist = FoundationPlist.readPlistFromString(out)
+            
+            # list comprehension to populate choices with those items
+            # whose 'choiceAttribute' value is 'selected'
+            choices = [item for item in plist if 'selected' in item['choiceAttribute']]
+    except:
+        # No choices found or something went wrong
+        pass
+    return choices
 
 
 def getPackageMetaData(pkgitem):

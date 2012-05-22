@@ -2476,7 +2476,6 @@ def check(client_id='', localmanifestpath=None):
     global CONDITIONS
     munkicommon.getConditions()
     CONDITIONS = munkicommon.getConditions()
-    munkicommon.report['ConditionalItems'] = CONDITIONS
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     if munkicommon.munkistatusoutput:
@@ -2505,6 +2504,7 @@ def check(client_id='', localmanifestpath=None):
 
         # set up INFO_OBJECT for conditional item comparisons
         makePredicateInfoObject()
+        munkicommon.report['Conditions'] = INFO_OBJECT
 
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',

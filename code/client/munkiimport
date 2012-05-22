@@ -25,13 +25,34 @@ Assists with importing installer items into the munki repo
 
 import sys
 import os
-import optparse
 import subprocess
 import time
+from optparse import (OptionParser,BadOptionError,AmbiguousOptionError)
 #from distutils import version
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
+
+class PassThroughOptionParser(OptionParser):
+    """
+    An unknown option pass-through implementation of OptionParser.
+
+    When unknown arguments are encountered, bundle with largs and try again,
+    until rargs is depleted.  
+
+    sys.exit(status) will still be called if a known argument is passed
+    incorrectly (e.g. missing arguments or bad argument types, etc.)        
+    """
+    def _process_args(self, largs, rargs, values):
+        while rargs:
+            try:
+                OptionParser._process_args(self,largs,rargs,values)
+            except (BadOptionError,AmbiguousOptionError), e:
+                largs.append(e.opt_str)
+    def format_epilog(self, formatter):
+        if not self.epilog:
+            self.epilog=""
+        return self.epilog
 
 
 def makeDMG(pkgpath):
@@ -59,7 +80,7 @@ def makeDMG(pkgpath):
     else:
         print 'Disk image created at: %s' % diskimagepath
         return diskimagepath
-        
+
 
 def repoAvailable():
     """Checks the repo path for proper directory structure.
@@ -401,7 +422,7 @@ def findMatchingPkginfo(pkginfo):
     return {}
 
 
-def makePkgInfo(item_path):
+def makePkgInfo(options=None,test_mode=False):
     """Calls makepkginfo to generate the pkginfo for item_path."""
     # first look for a makepkginfo in the same dir as us
     mydir = os.path.dirname(os.path.abspath(__file__))
@@ -409,14 +430,33 @@ def makePkgInfo(item_path):
     if not os.path.exists(makepkginfo_path):
         # didn't find it; assume the default install path
         makepkginfo_path = '/usr/local/munki/makepkginfo'
-    proc = subprocess.Popen([makepkginfo_path, item_path],
+    if test_mode:
+        # prepend verification option if in test mode
+        options = ['--verify-options-only'] + options
+    # build makepkginfo command from discovered path and options
+    cmd = [makepkginfo_path] + options
+    proc = subprocess.Popen(cmd,
                             bufsize=-1, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
-    (pliststr, err) = proc.communicate()
+    (stdout, stderr) = proc.communicate()
+    if test_mode:
+        if proc.returncode == 2:
+            # option syntax error or unknown option
+            syntax_error = [error for error in stderr.splitlines() if 'error' in error]
+            print >> sys.stderr, 'Option syntax error: %s' % syntax_error[-1].split(': ',2)[-1]
+            print >> sys.stderr, 'See \'%s --help\' for valid options that can be used with munkiimport.' % makepkginfo_path
+            exit(-1)
+        elif proc.returncode:
+            # catch-all for any other error
+            if stderr:
+                print >> sys.stderr, stderr.rstrip('\n')
+            return {}
+        else:
+            return stdout.rstrip('\n')
     if proc.returncode:
-        print >> sys.stderr, err
+        print >> sys.stderr, stderr.rstrip('\n')
         return {}
-    return FoundationPlist.readPlistFromString(pliststr)
+    return FoundationPlist.readPlistFromString(stdout)
 
 
 def makeCatalogs():
@@ -502,13 +542,27 @@ def main():
     """Main routine"""
     global NOINTERACTIVE
     
-    usage = """usage: %prog [options] [/path/to/installer_item]
+    usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
        Installer item can be a pkg, mpkg, dmg, or app.
        Bundle-style pkgs and apps are wrapped in a dmg
-       file before upload."""
+       file before upload.
+       
+       Example:
+       munkiimport --subdirectory apps /path/to/installer_item
+       """
     
-    p = optparse.OptionParser(usage=usage)
+    epilog = """\nExtended Options: (makepkginfo options)
+        In addition to the options described above,
+        options used with 'makepkginfo' may also
+        be specified to customize the resulting
+        pkginfo file.
+        
+        Example:
+        munkiimport --subdirectory apps -c production --minimum_os_vers 10.6.8 /path/to/installer_item\n"""
+    
+    p = PassThroughOptionParser(usage=usage,epilog=epilog)
+    
     p.add_option('--configure', action='store_true',
                     help="""Configure munkiimport with details about your
                     munki repo, preferred editor, and the like. Any other
@@ -521,21 +575,13 @@ def main():
     p.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
-    p.add_option('--unattended-install', action='store_true',
-                    help="""Specify 'unattended_install' for the installer item.""")
-    p.add_option('--catalog', default=[], action='append',
-                    help="""Specify target catalogs.""")
-    p.add_option('--min-os-ver', default=None, metavar='VERSION',
-                    help="""Minimum OS version for the installer item.""")
-    p.add_option('--max-os-ver', default=None, metavar='VERSION',
-                    help="""Maximum OS version for the installer item.""")
     p.add_option('--version', '-V', action='store_true',
                     help='Print the version of the munki tools and exit.')
     p.add_option('--verbose', '-v', action='store_true',
                     help='Print more output.')
     
     options, arguments = p.parse_args()
-    
+
     if options.version:
         print munkicommon.get_version()
         exit(0)
@@ -550,22 +596,26 @@ def main():
     if len(arguments) == 0:
         p.print_usage()
         exit(0)
-        
-    if len(arguments) > 1:
-        print >> sys.stderr, \
-            'This tool supports importing only one item at a time.'
-        print >> sys.stderr, 'Too many items given:'
-        print >> sys.stderr, '\t', '\n\t'.join(arguments)
-        exit(-1)
     
-    installer_item = arguments[0]
-    if not os.path.exists(installer_item):
-        print >> sys.stderr, '%s does not exist!' % installer_item
-        exit(-1)
+    # Verify that arguments, presumed to be for
+    # 'makepkginfo' are valid and return installer_item
+    installer_item = makePkgInfo(arguments,True)
+    if not installer_item:
+        cleanupAndExit(-1)
+    
+    # Remove the installer_item from arguments
+    arguments.remove(installer_item)
+    
+    # Strip trailing '/' from installer_item
+    installer_item = installer_item.rstrip('/')
     
     item_ext = os.path.splitext(installer_item)[1]
     if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
-        print >> sys.stderr, '%s is an unknown type.' % installer_item
+        print >> sys.stderr, 'Unknown installer item type: "%s"' % installer_item
+        exit(-1)
+    
+    if not os.path.exists(installer_item):
+        print >> sys.stderr, '%s does not exist!' % installer_item
         exit(-1)
     
     if not pref('repo_path'):
@@ -593,12 +643,14 @@ def main():
                 print >> sys.stderr, ('Could not convert %s to a disk image.' 
                                         % installer_item)
                 cleanupAndExit(-1)
-                
-    # generate pkginfo for the item
-    pkginfo = makePkgInfo(installer_item)
     
+    # append the installer_item to arguments which
+    # may have changed if bundle was wrapped into dmg
+    arguments.append(installer_item)
+    pkginfo = makePkgInfo(arguments,False)
     if not pkginfo:
         # makepkginfo returned an error
+        print >> sys.stderr, 'Getting package info failed.'
         cleanupAndExit(-1)
     
     if not options.nointeractive:
@@ -662,9 +714,6 @@ def main():
             if newvalue:
                 pkginfo[key] = newvalue
 
-        if options.catalog:
-            pkginfo['catalogs'] = options.catalog
-
         newvalue = raw_input('%15s [%s]: ' % ('Catalogs',
                                               ', '.join(pkginfo['catalogs'])))
         if newvalue:
@@ -710,16 +759,6 @@ def main():
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
         cleanupAndExit(-1)
-
-    if options.unattended_install:
-        pkginfo['unattended_install'] = True
-
-    # default OS versions
-    if options.min_os_ver:
-        pkginfo['minimum_os_version'] = options.min_os_ver
-
-    if options.max_os_ver:
-        pkginfo['maximum_os_version'] = options.max_os_ver
 
     # adjust the installer_item_location to match the actual location and name
     pkginfo['installer_item_location'] = uploaded_pkgpath
