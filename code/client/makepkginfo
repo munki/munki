@@ -422,6 +422,17 @@ def main():
                     help='''Generate installer choices for metapackages. 
                     Note: Requires Mac OS X 10.6.6 or later.'''
                     )
+    apple_options.add_option(
+                    '--installer_environment', '--installer-environment', '-E',
+                    action="append",
+                    metavar='KEY=VALUE',
+                    help=('''Specifies key/value pairs to set environment variables '''
+                          '''for use by /usr/sbin/installer. '''
+                          '''A key/value pair of USER=CURRENT_CONSOLE_USER '''
+                          '''indicates that USER be set to the current logged in user '''
+                          '''or root if at the login window. '''
+                          '''Can be specified multiple times.''')
+                    )
     p.add_option_group(apple_options)
     
     # Adobe package specific options
@@ -786,6 +797,13 @@ def main():
         catinfo['requires'] = options.requires
     if options.blocking_application:
         catinfo['blocking_application'] = options.blocking_application
+    if options.installer_environment:
+        try:
+            installer_environment_dict = dict((k,v) for k,v in (kv.split('=') for kv in options.installer_environment))
+        except:
+            pass
+        if installer_environment_dict:
+            catinfo['installer_environment'] = installer_environment_dict
     if options.notes:
         catinfo['notes'] = readFileOrString(options.notes)
 
