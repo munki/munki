@@ -475,7 +475,8 @@ def main():
     additional_options.add_option(
                     '--autoremove',
                     action='store_true',
-                    help='''Implies 'true' for 'autoremove' of the installer item.'''
+                    help=('''Indicates this package should be automatically removed '''
+                          '''if it is not listed in any applicable 'managed_installs'.''')
                     )
     additional_options.add_option(
                     '--minimum_munki_version', '--minimum-munki-version',
@@ -497,18 +498,18 @@ def main():
                     '--update_for', '--update-for', '-u',
                     action="append",
                     metavar='PKG_NAME',
-                    help=('''Specifies which package this is an update for. '''
+                    help=('''Specifies a package for which the current package is an update. '''
                           '''Can be specified multiple times to build an array of multiple packages.''')
                     )
     additional_options.add_option(
                     '--requires', '-r',
                     action="append",
                     metavar='PKG_NAME',
-                    help=('''Specifies which package this package is requires. '''
+                    help=('''Specifies a package required by the current package. '''
                           '''Can be specified multiple times to build an array of required packages.''')
                     )
     additional_options.add_option(
-                    '--blocking_applications', '--blocking-applications', '-b',
+                    '--blocking_application', '--blocking-application', '-b',
                     action="append",
                     metavar='APP_NAME',
                     help=('''Specifies an application that blocks installation. '''
@@ -525,7 +526,7 @@ def main():
     additional_options.add_option(
                     '--notes',
                     metavar='STRING|PATH',
-                    help=('''Specifies administrator provided notes to be inserted into the pkginfo. '''
+                    help=('''Specifies administrator provided notes to be embedded into the pkginfo. '''
                           '''Can be a PATH to a file.''')
                     )
     p.add_option_group(additional_options)
@@ -783,8 +784,8 @@ def main():
         catinfo['update_for'] = options.update_for
     if options.requires:
         catinfo['requires'] = options.requires
-    if options.blocking_applications:
-        catinfo['blocking_applications'] = options.blocking_applications
+    if options.blocking_application:
+        catinfo['blocking_application'] = options.blocking_application
     if options.notes:
         catinfo['notes'] = readFileOrString(options.notes)
 
