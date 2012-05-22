@@ -496,21 +496,21 @@ def main():
     additional_options.add_option(
                     '--update_for', '--update-for', '-u',
                     action="append",
-                    metavar='PACKAGE_NAME',
+                    metavar='PKG_NAME',
                     help=('''Specifies which package this is an update for. '''
                           '''Can be specified multiple times to build an array of multiple packages.''')
                     )
     additional_options.add_option(
                     '--requires', '-r',
                     action="append",
-                    metavar='PACKAGE_NAME',
+                    metavar='PKG_NAME',
                     help=('''Specifies which package this package is requires. '''
                           '''Can be specified multiple times to build an array of required packages.''')
                     )
     additional_options.add_option(
                     '--blocking_applications', '--blocking-applications', '-b',
                     action="append",
-                    metavar='APPLICATION_NAME',
+                    metavar='APP_NAME',
                     help=('''Specifies an application that blocks installation. '''
                           '''Can be specified multiple times to build an array of blocking applications.''')
                     )
