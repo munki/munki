@@ -311,11 +311,8 @@ def main():
     default_override_options.add_option(
                     '--RestartAction',
                     metavar='ACTION',
-                    help='''Specify a 'RestartAction' for the package.
-                    Supported actions:
-                        RequireRestart
-                        RequireLogout
-                        RecommendRestart'''
+                    help=('''Specify a 'RestartAction' for the package. '''
+                          '''Supported actions: RequireRestart, RequireLogout, or RecommendRestart''')
                     )
     p.add_option_group(default_override_options)
     
@@ -367,8 +364,8 @@ def main():
     dragdrop_options.add_option(
                     '--destinationpath', '-d',
                     metavar='PATH',
-                    help='''Path to which the item should be copied.
-                    Defaults to "/Applications".'''
+                    help=('''Path to which the item should be copied. '''
+                          '''Defaults to "/Applications".''')
                     )
     dragdrop_options.add_option(
                     '-o', '--owner',
@@ -393,10 +390,10 @@ def main():
                     action='callback',
                     type='string',
                     callback=check_mode,
-                    help=("Sets the mode of the item specified by the --item flag. "
-                          "The specified mode must be in symbolic form. "
-                          "See the manpage for chmod(1) for more information. "
-                          "The mode is applied recursively.")
+                    help=('''Sets the mode of the item specified by the --item flag. '''
+                          '''The specified mode must be in symbolic form. '''
+                          '''See the manpage for chmod(1) for more information. '''
+                          '''The mode is applied recursively.''')
                     )
     p.add_option_group(dragdrop_options)
     
@@ -521,7 +518,7 @@ def main():
     additional_options.add_option(
                     '--notes',
                     metavar='STRING|PATH',
-                    help=('''Specifies administrator provided notes to be inserted into the pkginfo.'''
+                    help=('''Specifies administrator provided notes to be inserted into the pkginfo. '''
                           '''Can be a PATH to a file.''')
                     )
     p.add_option_group(additional_options)
