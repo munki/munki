@@ -825,13 +825,12 @@ def main():
     if options.blocking_application:
         catinfo['blocking_application'] = options.blocking_application
     if options.installer_environment:
-        installer_environment_dict={}
         try:
             installer_environment_dict = dict(
                 (k,v) for k,v in (
                     kv.split('=') for kv in options.installer_environment))
-        except:
-            pass
+        except Exception:
+            installer_environment_dict={}
         if installer_environment_dict:
             catinfo['installer_environment'] = installer_environment_dict
     if options.notes:
