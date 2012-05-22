@@ -346,13 +346,15 @@ def main():
     script_options.add_option(
                     '--uninstall_script', '--uninstall-script',
                     metavar='SCRIPT_PATH',
-                    help='''Path to an uninstall script to be run in order to uninstall this item.'''
+                    help=('''Path to an uninstall script to be run in order '''
+                          '''to uninstall this item.''')
                     )
     p.add_option_group(script_options)
     
     # Drag-n-Drop options
     dragdrop_options = optparse.OptionGroup(p, 'Drag-n-Drop Options',
-                    'These options apply to installer items that are "drag-n-drop" disk images.')
+                    'These options apply to installer items that are \
+                    "drag-n-drop" disk images.')
     dragdrop_options.add_option(
                     '--itemname', '-i', '--appname', '-a',
                     metavar='ITEM',
@@ -371,16 +373,18 @@ def main():
                     '-o', '--owner',
                     metavar='USER',
                     dest='user',
-                    help=('''Sets the owner of the item specified by the --item flag. '''
-                          '''The owner may be either a UID or a symbolic name. '''
+                    help=('''Sets the owner of the item specified by the '''
+                          '''--item flag. The owner may be either a UID or '''
+                          '''a symbolic name. '''
                           '''The owner will be set recursively on the item.''')
                     )
     dragdrop_options.add_option(
                     '-g', '--group',
                     metavar='GROUP',
                     dest='group',
-                    help=('''Sets the group of the item specified by the --item flag. '''
-                          '''The group may be either a GID or a symbolic name. '''
+                    help=('''Sets the group of the item specified by the '''
+                          '''--item flag. The group may be either a GID or '''
+                          '''a symbolic name. '''
                           '''The group will be set recursively on the item.''')
                     )
     dragdrop_options.add_option(
@@ -390,9 +394,10 @@ def main():
                     action='callback',
                     type='string',
                     callback=check_mode,
-                    help=('''Sets the mode of the item specified by the --item flag. '''
-                          '''The specified mode must be in symbolic form. '''
-                          '''See the manpage for chmod(1) for more information. '''
+                    help=('''Sets the mode of the item specified by the '''
+                          '''--item flag. The specified mode must be in '''
+                          '''symbolic form. See the manpage for chmod(1) '''
+                          '''for more information. '''
                           '''The mode is applied recursively.''')
                     )
     p.add_option_group(dragdrop_options)
@@ -426,17 +431,18 @@ def main():
                     '--installer_environment', '--installer-environment', '-E',
                     action="append",
                     metavar='KEY=VALUE',
-                    help=('''Specifies key/value pairs to set environment variables '''
-                          '''for use by /usr/sbin/installer. '''
+                    help=('''Specifies key/value pairs to set environment '''
+                          '''variables for use by /usr/sbin/installer. '''
                           '''A key/value pair of USER=CURRENT_CONSOLE_USER '''
-                          '''indicates that USER be set to the current logged in user '''
-                          '''or root if at the login window. '''
+                          '''indicates that USER be set to the GUI user, '''
+                          '''otherwise root. '''
                           '''Can be specified multiple times.''')
                     )
     p.add_option_group(apple_options)
     
     # Adobe package specific options
-    adobe_options = optparse.OptionGroup(p, 'Adobe-specific Options')
+    adobe_options = optparse.OptionGroup(
+                    p, 'Adobe-specific Options')
     adobe_options.add_option(
                     '--uninstallerdmg', '-U',
                     help='''If the installer item is a disk image containing an
@@ -448,60 +454,75 @@ def main():
     p.add_option_group(adobe_options)
     
     # Forced/Unattended (install) options
-    forced_unattended_options = optparse.OptionGroup(p, 'Forced/Unattended Options')
+    forced_unattended_options = optparse.OptionGroup(
+                    p, 'Forced/Unattended Options')
     forced_unattended_options.add_option(
                     '--unattended_install', '--unattended-install',
                     action='store_true',
-                    help='''Implies 'true' for 'unattended_install' for the installer item.'''
+                    help='''Implies 'true' for 'unattended_install' '''
+                         '''for the installer item.'''
                     )
     forced_unattended_options.add_option(
                     '--unattended_uninstall', '--unattended-uninstall',
                     action='store_true',
-                    help='''Implies 'true' for 'unattended_uninstall' for the installer item.'''
+                    help='''Implies 'true' for 'unattended_uninstall' '''
+                         '''for the installer item.'''
                     )
     forced_unattended_options.add_option(
                     '--force_install_after_date', '--force-install-after-date',
                     metavar='DATE',
-                    help=('''Specify a date, in local time, after which the package will be forcefully installed. 
-                             DATE format: yyyy-dd-hhThh:mm:ssZ
-                             Example: '2011-08-11T12:55:00Z' equates to August 11th 2011 at 12:55 PM.''')
+                    help=('''Specify a date, in local time, after which '''
+                          '''the package will be forcefully installed. 
+                             DATE format: yyyy-mm-ddThh:mm:ssZ
+                             Example: '2011-08-11T12:55:00Z' equates to '''
+                             '''August 11th 2011 at 12:55 PM.''')
                     )
     p.add_option_group(forced_unattended_options)
     
-    # 'installs' generation options (by itself since no installer_item needs to be specified)
-    gen_installs_options = optparse.OptionGroup(p, '''Generating 'installs' items''')
+    # 'installs' generation options
+    # (by itself since no installer_item needs to be specified)
+    gen_installs_options = optparse.OptionGroup(
+                    p, '''Generating 'installs' items''')
     gen_installs_options.add_option(
                     '--file', '-f',
                     action="append",
                     metavar='PATH',
-                    help=('''Path to a filesystem item installed by this package, typically an application. '''
-                          '''This generates an "installs" item for the pkginfo, to be used to determine if this software has been installed. '''
+                    help=('''Path to a filesystem item installed by this '''
+                          '''package, typically an application. '''
+                          '''This generates an "installs" item for the '''
+                          '''pkginfo, to be used to determine if this '''
+                          '''software has been installed. '''
                           '''Can be specified multiple times.''')
                     )
     p.add_option_group(gen_installs_options)
     
     # Additional options - misc. options that don't fit into other categories,
     # and don't necessarily warrant the creation of their own option group
-    additional_options = optparse.OptionGroup(p, 'Additional Options')
+    additional_options = optparse.OptionGroup(
+                    p, 'Additional Options')
     additional_options.add_option(
                     '--autoremove',
                     action='store_true',
-                    help=('''Indicates this package should be automatically removed '''
-                          '''if it is not listed in any applicable 'managed_installs'.''')
+                    help=('''Indicates this package should be automatically '''
+                          '''removed if it is not listed in any applicable '''
+                          ''''managed_installs'.''')
                     )
     additional_options.add_option(
                     '--minimum_munki_version', '--minimum-munki-version',
                     metavar='VERSION',
-                    help=('''Minimum version of munki required to perform installation. '''
-                          '''Uses format produced by '--version' query from any munki utility.''')
+                    help=('''Minimum version of munki required to perform '''
+                          '''installation. Uses format produced by '''
+                          ''''--version' query from any munki utility.''')
                     )
     additional_options.add_option(
-                    '--minimum_os_version', '--minimum-os-version', '--min-os-ver',
+                    '--minimum_os_version', '--minimum-os-version',
+                    '--min-os-ver',
                     metavar='VERSION',
                     help='''Minimum OS version for the installer item.'''
                     )
     additional_options.add_option(
-                    '--maximum_os_version', '--maximum-os-version', '--max-os-ver',
+                    '--maximum_os_version', '--maximum-os-version',
+                    '--max-os-ver',
                     metavar='VERSION',
                     help='''Maximum OS version for the installer item.'''
                     )
@@ -509,35 +530,40 @@ def main():
                     '--update_for', '--update-for', '-u',
                     action="append",
                     metavar='PKG_NAME',
-                    help=('''Specifies a package for which the current package is an update. '''
-                          '''Can be specified multiple times to build an array of multiple packages.''')
+                    help=('''Specifies a package for which the current '''
+                          '''package is an update. Can be specified '''
+                          '''multiple times to build an array of packages.''')
                     )
     additional_options.add_option(
                     '--requires', '-r',
                     action="append",
                     metavar='PKG_NAME',
-                    help=('''Specifies a package required by the current package. '''
-                          '''Can be specified multiple times to build an array of required packages.''')
+                    help=('''Specifies a package required by the current '''
+                          '''package. Can be specified multiple times to '''
+                          '''build an array of required packages.''')
                     )
     additional_options.add_option(
                     '--blocking_application', '--blocking-application', '-b',
                     action="append",
                     metavar='APP_NAME',
-                    help=('''Specifies an application that blocks installation. '''
-                          '''Can be specified multiple times to build an array of blocking applications.''')
+                    help=('''Specifies an application that blocks '''
+                          '''installation. Can be specified multiple times '''
+                          '''to build an array of blocking applications.''')
                     )
     additional_options.add_option(
                     '--catalog', '-c',
                     action="append",
                     metavar='CATALOG_NAME',
-                    help=('''Specifies in which catalog the item should appear. '''
-                          '''The default is 'testing'. '''
-                          '''Can be specified multiple times to add the item to multiple catalogs.''')
+                    help=('''Specifies in which catalog the item should '''
+                          '''appear. The default is 'testing'. Can be '''
+                          '''specified multiple times to add the item to '''
+                          '''multiple catalogs.''')
                     )
     additional_options.add_option(
                     '--notes',
                     metavar='STRING|PATH',
-                    help=('''Specifies administrator provided notes to be embedded into the pkginfo. '''
+                    help=('''Specifies administrator provided notes to be '''
+                          '''embedded into the pkginfo. '''
                           '''Can be a PATH to a file.''')
                     )
     p.add_option_group(additional_options)
@@ -780,7 +806,8 @@ def main():
     if options.maximum_os_version:
         catinfo['maximum_os_version'] = options.maximum_os_version
     if options.force_install_after_date:
-        force_install_after_date = munkicommon.validateForceInstallAfterDateFormat(options.force_install_after_date)
+        force_install_after_date = (
+            munkicommon.validateDateFormat(options.force_install_after_date))
         if force_install_after_date:
             catinfo['force_install_after_date'] = force_install_after_date
     if options.RestartAction:
@@ -799,7 +826,9 @@ def main():
         catinfo['blocking_application'] = options.blocking_application
     if options.installer_environment:
         try:
-            installer_environment_dict = dict((k,v) for k,v in (kv.split('=') for kv in options.installer_environment))
+            installer_environment_dict = dict(
+                (k,v) for k,v in (
+                    kv.split('=') for kv in options.installer_environment))
         except:
             pass
         if installer_environment_dict:
