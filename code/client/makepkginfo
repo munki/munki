@@ -478,6 +478,12 @@ def main():
                     help='''Implies 'true' for 'autoremove' of the installer item.'''
                     )
     additional_options.add_option(
+                    '--minimum_munki_version', '--minimum-munki-version',
+                    metavar='VERSION',
+                    help=('''Minimum version of munki required to perform installation. '''
+                          '''Uses format produced by '--version' query from any munki utility.''')
+                    )
+    additional_options.add_option(
                     '--minimum_os_version', '--minimum-os-version', '--min-os-ver',
                     metavar='VERSION',
                     help='''Minimum OS version for the installer item.'''
@@ -749,10 +755,10 @@ def main():
         if scriptstring:
             catinfo['uninstall_script'] = scriptstring
             catinfo['uninstall_method'] = 'uninstall_script'
-    if options.notes:
-        catinfo['notes'] = readFileOrString(options.notes)
     if options.autoremove:
         catinfo['autoremove'] = True
+    if options.minimum_munki_version:
+        catinfo['minimum_munki_version'] = options.minimum_munki_version
     if options.unattended_install:
         catinfo['unattended_install'] = True
     if options.unattended_uninstall:
@@ -779,6 +785,8 @@ def main():
         catinfo['requires'] = options.requires
     if options.blocking_applications:
         catinfo['blocking_applications'] = options.blocking_applications
+    if options.notes:
+        catinfo['notes'] = readFileOrString(options.notes)
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
