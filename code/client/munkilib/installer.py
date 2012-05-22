@@ -175,6 +175,9 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                 inactive += 1
                 if inactive >= timeout:
                     # no output for too long, kill this installer session
+                    munkicommon.display_error(
+                        "/usr/sbin/installer timeout after %d seconds" 
+                        % timeout)
                     job.stop()
                     break
                 # sleep a bit before checking for more output
