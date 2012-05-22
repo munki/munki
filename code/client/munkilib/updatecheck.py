@@ -1344,7 +1344,8 @@ def lookForUpdates(itemname, cataloglist):
         num_updates = len(update_list)
         # format the update list for better on-screen viewing
         update_list_display = ", ".join(str(x) for x in update_list)
-        munkicommon.display_debug1('Found %s update(s): %s' % (num_updates, update_list_display))
+        munkicommon.display_debug1(
+            'Found %s update(s): %s' % (num_updates, update_list_display))
 
     return update_list
 
@@ -2362,20 +2363,19 @@ def getPrimaryManifest(alternate_id):
                                             clientidentifier)
                 manifest = getmanifest(manifesturl + clientidentifier,
                                         suppress_errors=True)
-                if not manifest:
-                    # try the machine serial number
-                    clientidentifier = MACHINE['serial_number']
-                    if clientidentifier != 'UNKNOWN':
-                        munkicommon.display_detail('Request failed. Trying %s...' %
-                                                    clientidentifier)
-                        manifest = getmanifest(manifesturl + clientidentifier,
-                                                suppress_errors=True)
-                    elif not manifest:
-                        # last resort - try for the site_default manifest
-                        clientidentifier = 'site_default'
-                        munkicommon.display_detail('Request failed. ' +
-                                                    'Trying %s...' %
-                                                    clientidentifier)
+            if not manifest:
+                # try the machine serial number
+                clientidentifier = MACHINE['serial_number']
+                if clientidentifier != 'UNKNOWN':
+                    munkicommon.display_detail('Request failed. Trying %s...' %
+                                                clientidentifier)
+                    manifest = getmanifest(manifesturl + clientidentifier,
+                                            suppress_errors=True)
+            if not manifest:
+                # last resort - try for the site_default manifest
+                clientidentifier = 'site_default'
+                munkicommon.display_detail('Request failed. Trying %s...' %
+                                            clientidentifier)
 
         if not manifest:
             manifest = getmanifest(
