@@ -107,6 +107,7 @@ def makecatalogs(repopath):
             
             try:
                 pkginfo = plistlib.readPlist(filepath)
+                # don't copy admin notes to catalogs.
                 if pkginfo.get('notes'):
                     del(pkginfo['notes'])
             except IOError, inst:
