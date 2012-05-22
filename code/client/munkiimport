@@ -27,8 +27,7 @@ import sys
 import os
 import subprocess
 import time
-from optparse import (OptionParser,BadOptionError,AmbiguousOptionError)
-#from distutils import version
+from optparse import OptionParser, BadOptionError, AmbiguousOptionError
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
@@ -46,12 +45,12 @@ class PassThroughOptionParser(OptionParser):
     def _process_args(self, largs, rargs, values):
         while rargs:
             try:
-                OptionParser._process_args(self,largs,rargs,values)
-            except (BadOptionError,AmbiguousOptionError), e:
+                OptionParser._process_args(self, largs, rargs, values)
+            except (BadOptionError, AmbiguousOptionError), e:
                 largs.append(e.opt_str)
     def format_epilog(self, formatter):
         if not self.epilog:
-            self.epilog=""
+            self.epilog = ""
         return self.epilog
 
 
@@ -422,7 +421,7 @@ def findMatchingPkginfo(pkginfo):
     return {}
 
 
-def makePkgInfo(options=None,test_mode=False):
+def makePkgInfo(options=None, test_mode=False):
     """Calls makepkginfo to generate the pkginfo for item_path."""
     # first look for a makepkginfo in the same dir as us
     mydir = os.path.dirname(os.path.abspath(__file__))
@@ -442,9 +441,12 @@ def makePkgInfo(options=None,test_mode=False):
     if test_mode:
         if proc.returncode == 2:
             # option syntax error or unknown option
-            syntax_error = [error for error in stderr.splitlines() if 'error' in error]
-            print >> sys.stderr, 'Option syntax error: %s' % syntax_error[-1].split(': ',2)[-1]
-            print >> sys.stderr, 'See \'%s --help\' for valid options that can be used with munkiimport.' % makepkginfo_path
+            syntax_error = [error for error in stderr.splitlines() 
+                            if 'error' in error]
+            print >> sys.stderr, ('Option syntax error: %s' % 
+                syntax_error[-1].split(': ',2)[-1])
+            print >> sys.stderr, ('See \'%s --help\' for valid options that '
+                'can be used with munkiimport.') % makepkginfo_path
             exit(-1)
         elif proc.returncode:
             # catch-all for any other error
@@ -489,6 +491,7 @@ def makeCatalogs():
         
 
 def cleanupAndExit(exitcode):
+    """Unmounts the repo if we mounted it, then exits"""
     result = 0
     if WE_MOUNTED_THE_REPO:
         if not NOINTERACTIVE:
@@ -541,27 +544,26 @@ VERBOSE = False
 def main():
     """Main routine"""
     global NOINTERACTIVE
+    global VERBOSE
     
     usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
        Installer item can be a pkg, mpkg, dmg, or app.
-       Bundle-style pkgs and apps are wrapped in a dmg
-       file before upload.
+       Bundle-style pkgs and apps are wrapped in a dmg file before upload.
        
        Example:
        munkiimport --subdirectory apps /path/to/installer_item
        """
     
     epilog = """\nExtended Options: (makepkginfo options)
-        In addition to the options described above,
-        options used with 'makepkginfo' may also
-        be specified to customize the resulting
+        In addition to the options described above, options used with  
+        'makepkginfo' may also be specified to customize the resulting 
         pkginfo file.
         
         Example:
         munkiimport --subdirectory apps -c production --minimum_os_vers 10.6.8 /path/to/installer_item\n"""
     
-    p = PassThroughOptionParser(usage=usage,epilog=epilog)
+    p = PassThroughOptionParser(usage=usage, epilog=epilog)
     
     p.add_option('--configure', action='store_true',
                     help="""Configure munkiimport with details about your
@@ -599,7 +601,7 @@ def main():
     
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
-    installer_item = makePkgInfo(arguments,True)
+    installer_item = makePkgInfo(arguments, True)
     if not installer_item:
         cleanupAndExit(-1)
     
@@ -611,7 +613,8 @@ def main():
     
     item_ext = os.path.splitext(installer_item)[1]
     if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
-        print >> sys.stderr, 'Unknown installer item type: "%s"' % installer_item
+        print >> sys.stderr, (
+            'Unknown installer item type: "%s"' % installer_item)
         exit(-1)
     
     if not os.path.exists(installer_item):
@@ -647,7 +650,7 @@ def main():
     # append the installer_item to arguments which
     # may have changed if bundle was wrapped into dmg
     arguments.append(installer_item)
-    pkginfo = makePkgInfo(arguments,False)
+    pkginfo = makePkgInfo(arguments, False)
     if not pkginfo:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
