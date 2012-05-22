@@ -825,6 +825,7 @@ def main():
     if options.blocking_application:
         catinfo['blocking_application'] = options.blocking_application
     if options.installer_environment:
+        installer_environment_dict={}
         try:
             installer_environment_dict = dict(
                 (k,v) for k,v in (
