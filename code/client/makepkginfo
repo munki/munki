@@ -570,7 +570,8 @@ def main():
         exit(0)
     
     if (len(arguments) == 0 
-        and not options.file 
+        and not options.file
+        and not options.installer_environment
         and not options.preinstall_script
         and not options.postinstall_script
         and not options.preuninstall_script
