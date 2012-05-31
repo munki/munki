@@ -675,7 +675,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
                 '--setupBasePath=%s' % tmpdir, '--installDirPath=/',
                 '--mode=install'])
 
-        munkicommon.display_status_minor('Starting Adobe CS5 installer...')
+        munkicommon.display_status_minor('Starting Adobe installer...')
         retcode = runAdobeInstallTool(cmd, number_of_payloads,
                                                             killAdobeAIR=True)
         # now clean up our symlink hackfest
