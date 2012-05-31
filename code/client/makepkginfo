@@ -318,6 +318,14 @@ def main():
               'Supported actions: RequireRestart, RequireLogout, or '
               'RecommendRestart')
         )
+    default_override_options.add_option(
+        '--uninstall_method', '--uninstall-method',
+        metavar='METHOD|PATH',
+        help=('Specify an \'uninstall_method\' for the package. '
+              'Default method depends on the package type: i.e. '
+              'drag-n-drop, Apple package, or an embedded uninstall script. '
+              'Can be a path to a script on the client computer.')
+        )
     p.add_option_group(default_override_options)
     
     # Script options
@@ -810,6 +818,8 @@ def main():
         catinfo['requires'] = options.requires
     if options.blocking_application:
         catinfo['blocking_application'] = options.blocking_application
+    if options.uninstall_method:
+        catinfo['uninstall_method'] = options.uninstall_method
     if options.installer_environment:
         try:
             installer_environment_dict = dict(
