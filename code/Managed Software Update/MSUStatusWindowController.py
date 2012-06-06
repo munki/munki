@@ -57,8 +57,7 @@ def getLoginwindowPicture():
         return theImage
     else:
         return NSImage.imageNamed_("Solid Aqua Blue")
-
-
+        
 
 class MSUStatusWindowController(NSObject):
     '''
@@ -94,15 +93,7 @@ class MSUStatusWindowController(NSObject):
         NSLog(u"Managed Software Update.app PID: %s" % os.getpid())
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
-            if self.backdropWindow:
-                self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
-                self.backdropWindow.setLevel_(NSStatusWindowLevel)
-                screenRect = NSScreen.mainScreen().frame()
-                self.backdropWindow.setFrame_display_(screenRect, True)
-                if self.backdropImageFld:
-                    bgImage = getLoginwindowPicture()
-                    self.backdropImageFld.setImage_(bgImage)
-                self.backdropWindow.orderFrontRegardless()
+            self.displayBackdropWindow()
 
         if self.window:
             if consoleuser == None or consoleuser == u"loginwindow":
@@ -134,6 +125,26 @@ class MSUStatusWindowController(NSObject):
             self.session_started = True
             #NSApp.activateIgnoringOtherApps_(True)
 
+    def displayBackdropWindow(self):
+        if self.backdropWindow:
+            self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
+            self.backdropWindow.setLevel_(NSStatusWindowLevel)
+            screenRect = NSScreen.mainScreen().frame()
+            self.backdropWindow.setFrame_display_(screenRect, True)
+            
+            darwin_vers = os.uname()[2].split('.')[0]
+            if darwin_vers < '11':
+                if self.backdropImageFld:
+                    bgImage = getLoginwindowPicture()
+                    self.backdropImageFld.setImage_(bgImage)
+                    self.backdropWindow.orderFrontRegardless()
+            else:
+                self.backdropImageFld.setHidden_(True)
+                translucentColor = NSColor.blackColor().colorWithAlphaComponent_(0.3)
+                self.backdropWindow.setBackgroundColor_(translucentColor)
+                self.backdropWindow.setOpaque_(False)
+                self.backdropWindow.setIgnoresMouseEvents_(False)
+                self.backdropWindow.orderFrontRegardless()
 
     def sessionStarted(self):
         return self.session_started

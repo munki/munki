@@ -23,7 +23,7 @@
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="639"/>
 			<integer value="29"/>
-			<integer value="516"/>
+			<integer value="371"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1019,7 +1019,6 @@
 																<reference key="NSHScroller" ref="227702984"/>
 																<reference key="NSContentView" ref="245956467"/>
 																<reference key="NSHeaderClipView" ref="499561695"/>
-																<reference key="NSCornerView" ref="168932780"/>
 																<bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
 															</object>
 														</object>
@@ -1072,12 +1071,7 @@
 																			<string>WebKitDefaultFixedFontSize</string>
 																			<string>WebKitDefaultFontSize</string>
 																			<string>WebKitFixedFont</string>
-																			<string>WebKitJavaEnabled</string>
-																			<string>WebKitJavaScriptCanOpenWindowsAutomatically</string>
-																			<string>WebKitJavaScriptEnabled</string>
 																			<string>WebKitMinimumFontSize</string>
-																			<string>WebKitPluginsEnabled</string>
-																			<string>WebKitSansSerifFont</string>
 																			<string>WebKitSerifFont</string>
 																			<string>WebKitStandardFont</string>
 																		</object>
@@ -1085,15 +1079,10 @@
 																			<bool key="EncodedWithXMLCoder">YES</bool>
 																			<integer value="12"/>
 																			<integer value="12"/>
-																			<string>Lucida Sans</string>
-																			<boolean value="NO"/>
-																			<boolean value="NO"/>
-																			<boolean value="NO"/>
+																			<string>Lucida Grande</string>
 																			<integer value="1"/>
-																			<boolean value="NO"/>
-																			<string>Lucida Sans</string>
-																			<string>Lucida Sans</string>
-																			<string>Lucida Sans</string>
+																			<string>Lucida Grande</string>
+																			<string>Lucida Grande</string>
 																		</object>
 																	</object>
 																</object>
@@ -1583,7 +1572,7 @@
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSSearchFieldCell" key="NSCell" id="487857812">
 													<int key="NSCellFlags">343014976</int>
-													<int key="NSCellFlags2">268436544</int>
+													<int key="NSCellFlags2">268436480</int>
 													<string key="NSContents"/>
 													<reference key="NSSupport" ref="901400326"/>
 													<reference key="NSControlView" ref="573024794"/>
