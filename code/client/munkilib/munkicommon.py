@@ -478,7 +478,7 @@ def validateDateFormat(datetime_string):
 def log(msg, logname=''):
     """Generic logging function"""
     # date/time format string
-    formatstr = '%b %d %H:%M:%S'
+    formatstr = '%b %d %Y %H:%M:%S %z'
     if not logname:
         # use our regular logfile
         logpath = pref('LogFile')
@@ -549,7 +549,7 @@ def saveappdata():
     except FoundationPlist.NSPropertyListSerializationException, err:
         munkicommon.display_warning(
             'Unable to save inventory report: %s' % err)
-        
+
 
 
 def printreportitem(label, value, indent=0):
