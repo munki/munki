@@ -465,6 +465,16 @@ def format_time(timestamp=None):
         return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
+def validateDateFormat(datetime_string):
+    formatted_datetime_string = ''
+    try:
+        formatted_datetime_string = time.strftime(
+            '%Y-%m-%dT%H:%M:%SZ', time.strptime(datetime_string, 
+                                                '%Y-%m-%dT%H:%M:%SZ'))
+    except:
+        pass
+    return formatted_datetime_string
+
 def log(msg, logname=''):
     """Generic logging function"""
     # date/time format string
@@ -1510,6 +1520,27 @@ def isInstallerItem(path):
         return False
 
 
+def getChoiceChangesXML(pkgitem):
+    """Queries package for 'ChoiceChangesXML'"""
+    choices = []
+    try:
+        proc = subprocess.Popen(
+            ['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
+            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, unused_err) = proc.communicate()
+        if out:
+            plist = FoundationPlist.readPlistFromString(out)
+            
+            # list comprehension to populate choices with those items
+            # whose 'choiceAttribute' value is 'selected'
+            choices = [item for item in plist 
+                       if 'selected' in item['choiceAttribute']]
+    except:
+        # No choices found or something went wrong
+        pass
+    return choices
+
+
 def getPackageMetaData(pkgitem):
     """
     Queries an installer item (.pkg, .mpkg, .dist)
@@ -1847,7 +1878,7 @@ def getSPApplicationData():
             # system_profiler xml is an array
             SP_APPCACHE = {}
             for item in plist[0]['_items']:
-              SP_APPCACHE[item.get('path')] = item
+                SP_APPCACHE[item.get('path')] = item
         except Exception:
             pass
     return SP_APPCACHE
@@ -1983,6 +2014,7 @@ def getMachineFacts():
         MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
         MACHINE['munki_version'] = get_version()
         MACHINE['ipv4_address'] = get_ipv4_addresses()
+        MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
     return MACHINE
 
 
@@ -1992,11 +2024,13 @@ def getConditions():
     which can be placed into /usr/local/munki/conditions"""
     global CONDITIONS
     if not CONDITIONS:
-        # define path to conditions directory which would contain admin created scripts
+        # define path to conditions directory which would contain 
+        # admin created scripts
         scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
         conditionalscriptdir = os.path.join(scriptdir, "conditions")
         # define path to ConditionalItems.plist
-        conditionalitemspath = os.path.join(pref('ManagedInstallDir'), 'ConditionalItems.plist')
+        conditionalitemspath = os.path.join(
+            pref('ManagedInstallDir'), 'ConditionalItems.plist')
         try:
             # delete CondtionalItems.plist so that we're starting fresh
             os.unlink(conditionalitemspath)
@@ -2008,13 +2042,15 @@ def getConditions():
                 if conditionalscript.startswith('.'):
                     # skip files that start with a period
                     continue
-                conditionalscriptpath = os.path.join(conditionalscriptdir, conditionalscript)
+                conditionalscriptpath = os.path.join(
+                    conditionalscriptdir, conditionalscript)
                 if os.path.isdir(conditionalscriptpath):
                     # skip directories in conditions directory
                     continue
                 try:
                     # attempt to execute condition script
-                    result, stdout, stderr = utils.runExternalScript(conditionalscriptpath)
+                    result, stdout, stderr = utils.runExternalScript(
+                        conditionalscriptpath)
                 except utils.ScriptNotFoundError:
                     pass  # script is not required, so pass
                 except utils.RunExternalScriptError, e:
@@ -2022,12 +2058,14 @@ def getConditions():
         else:
             # /usr/local/munki/conditions does not exist
             pass
-        if os.path.exists(conditionalitemspath) and validPlist(conditionalitemspath):
+        if (os.path.exists(conditionalitemspath) and 
+            validPlist(conditionalitemspath)):
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
             os.unlink(conditionalitemspath)
         else:
-            # either ConditionalItems.plist does not exist or does not pass validation
+            # either ConditionalItems.plist does not exist 
+            # or does not pass validation
             CONDITIONS = {}
     return CONDITIONS
 

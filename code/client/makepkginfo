@@ -37,7 +37,6 @@ import os
 import re
 import optparse
 from optparse import OptionValueError
-import subprocess
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
@@ -62,6 +61,10 @@ def getCatalogInfoFromDmg(dmgpath, options):
         pkgpath = os.path.join(mountpoints[0], options.pkgname)
         if os.path.exists(pkgpath):
             cataloginfo = munkicommon.getPackageMetaData(pkgpath)
+            if options.installer_choices_xml:
+                installer_choices_xml = munkicommon.getChoiceChangesXML(pkgpath)
+                if installer_choices_xml:
+                    cataloginfo['installer_choices_xml'] = installer_choices_xml
             if cataloginfo:
                 cataloginfo['package_path'] = options.pkgname
     elif not options.item:
@@ -70,6 +73,12 @@ def getCatalogInfoFromDmg(dmgpath, options):
             itempath = os.path.join(mountpoints[0], fsitem)
             if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
+                if options.installer_choices_xml:
+                    installer_choices_xml = munkicommon.getChoiceChangesXML(
+                        itempath)
+                    if installer_choices_xml:
+                        cataloginfo['installer_choices_xml'] = \
+                            installer_choices_xml
                 # get out of fsitem loop
                 break
                 
@@ -129,26 +138,21 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo['version'] = \
                 iteminfo.get('CFBundleShortVersionString', "0")
             cataloginfo['installs'] = [iteminfo]
-            if options.appdmg:
-                cataloginfo['installer_type'] = "appdmg"
-                cataloginfo['uninstallable'] = True
-                cataloginfo['uninstall_method'] = "remove_app"
-            else:
-                cataloginfo['installer_type'] = "copy_from_dmg"
-                item_to_copy = {}
-                item_to_copy['source_item'] = item
-                item_to_copy['destination_path'] = \
-                            options.destinationpath or "/Applications"
-                if options.user:
-                    item_to_copy['user'] = options.user
-                if options.group:
-                    item_to_copy['group'] = options.group
-                if options.mode:
-                    item_to_copy['mode'] = options.mode
-                cataloginfo['items_to_copy'] = [item_to_copy]
-                cataloginfo['uninstallable'] = True
-                cataloginfo['uninstall_method'] = "remove_copied_items"
-                    
+            cataloginfo['installer_type'] = "copy_from_dmg"
+            item_to_copy = {}
+            item_to_copy['source_item'] = item
+            item_to_copy['destination_path'] = \
+                        options.destinationpath or "/Applications"
+            if options.user:
+                item_to_copy['user'] = options.user
+            if options.group:
+                item_to_copy['group'] = options.group
+            if options.mode:
+                item_to_copy['mode'] = options.mode
+            cataloginfo['items_to_copy'] = [item_to_copy]
+            cataloginfo['uninstallable'] = True
+            cataloginfo['uninstall_method'] = "remove_copied_items"
+            
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
@@ -184,6 +188,20 @@ def readfile(path):
         print >> sys.stderr, "Couldn't read %s" % path
         return ""
 
+
+def readFileOrString(option_value):
+    """
+    If option_value is a path to a file,
+    return contents of file.
+    
+    Otherwise, return the string.
+    """
+    if os.path.exists(os.path.expanduser(option_value)):
+        string = readfile(option_value)
+    else:
+        string = option_value
+    
+    return string
 
 def getiteminfo(itempath):
     """
@@ -256,149 +274,289 @@ def main():
     usage = """usage: %prog [options] [/path/to/installeritem]
        %prog --help for more information."""
     p = optparse.OptionParser(usage=usage)
-    p.add_option('--file', '-f', action="append",
-                    help='''Path to a filesystem item installed by this 
-                    package, typically an application. This generates an 
-                    "installs" item for the pkginfo, an item munki can 
-                    use to determine if this software has been installed.
-                    Can be specified multiple times.''')
-    p.add_option('--pkgname', '-p',
-                    help='''Optional flag.
-                    
-                    -If the installer item is a disk image containing
-                    multiple packages, or the package to be installed
-                    is not at the root of the mounted disk image, PKGNAME
-                    is a relative path from the root of the mounted
-                    disk image to the specific package to be installed.
-                    
-                    -If the installer item is a disk image containing
-                    an Adobe CS4 Deployment Toolkit installation, PKGNAME
-                    is the name of an Adobe CS4 Deployment Toolkit 
-                    installer package folder at the top level of the 
-                    mounted dmg.
-                    
-                    If this flag is missing, the AdobeUber* files should
-                    be at the top level of the mounted dmg.''')
-    p.add_option('--appdmg', action="store_true",
-                    help='''Optional flag.
-                    
-                    Causes makepkginfo to create a pkginfo item describing 
-                    an appdmg install instead of the newer copy_from_dmg 
-                    installer type. Meant for use with older munki 
-                    clients, as copy_from_dmg replaces appdmg in munki 
-                    0.6.0 and later.''')
-    p.add_option('--itemname', '-i', '--appname', '-a',
-                    metavar='ITEM',
-                    dest='item',
-                    help='''Optional flag.
-                    
-                    -If the installer item is a disk image with a 
-                    drag-and-drop item, ITEMNAME is the name or 
-                    relative path of the item to be installed. 
-                    Useful if there is more than one item at the 
-                    root of the dmg.''')
-    p.add_option('--displayname',
-                    help='''Optional flag.
-                    
-                    String display name of the package.
-                    Note: overrides any display_name in the package itself''')
-    p.add_option('--description',
-                    help='''Optional flag.
-                    
-                    String description of the package.
-                    Note: overrides any description in the package itself''')
-    p.add_option('--destinationpath', '-d',
-                    help='''Optional flag.
-                    
-                    If the installer item is a disk image with a 
-                    drag-and-drop item, this is the path to which 
-                    the item should be copied. Defaults to 
-                    "/Applications".''')
-    p.add_option('--uninstallerdmg', '-u',
-                    help='''Optional flag.
-                    
-                    If the installer item is a disk image containing an
-                    Adobe CS4 Deployment Toolkit installation package or 
-                    Adobe CS3 deployment package, UNINSTALLERDMG is a path 
-                    to a disk image containing an AdobeUberUninstaller for
-                    this item.''')
-    p.add_option('--postinstall_script',
-                    metavar='SCRIPT_PATH',
-                    help='''Optional flag.
-                    
-                    Path to an optional postinstall script to be run after  
-                    installation of the item. The script will be read and 
-                    embedded into the pkginfo.''')
-    p.add_option('--preinstall_script',
-                    metavar='SCRIPT_PATH',
-                    help='''Optional flag.
-                    
-                    Path to an optional preinstall script to be run before 
-                    installation of the item. The script will be read and 
-                    embedded into the pkginfo.''')
-    p.add_option('--postuninstall_script',
-                    metavar='SCRIPT_PATH',
-                    help='''Optional flag.
+    p.add_option(
+        '--verify-options-only',
+        action="store_true",
+        help=optparse.SUPPRESS_HELP
+        )
+    p.add_option(
+        '--version', '-V',
+        action='store_true',
+        help='Print the version of the munki tools and exit.'
+        )
 
-                    Path to an optional postuninstall script to be run after  
-                    removal of the item. The script will be read and 
-                    embedded into the pkginfo.''')
-    p.add_option('--preuninstall_script',
-                    metavar='SCRIPT_PATH',
-                    help='''Optional flag.
-
-                    Path to an optional preuninstall script to be run before 
-                    removal of the item. The script will be read and 
-                    embedded into the pkginfo.''')
-    p.add_option('--uninstall_script',
-                    metavar='SCRIPT_PATH',
-                    help='''Optional flag.
-                    
-                    Path to an uninstall script to be run in order to
-                    uninstall this item. The script will be read and 
-                    embedded into the pkginfo.''')
-    p.add_option('--catalog', '-c', action="append",
-                    help='''Optional flag.
-                    
-                    Specifies in which catalog the item should appear. The 
-                    default is 'testing'. Can be specified multiple times 
-                    to add the item to multiple catalogs.''')
-    p.add_option('-o', '--owner',
-                    metavar='USER',
-                    dest='user',
-                    help='''Optional flag.
-                    
-                    If the installer item is a disk image used with
-                    the copy_from_dmg installer type, this sets the 
-                    owner of the item specified by the --item flag. 
-                    The owner may be either a UID or a symbolic name. 
-                    The owner will be set recursively on the item.''')
-    p.add_option('-g', '--group',
-                    metavar='GROUP',
-                    dest='group',
-                    help='''Optional flag.
-                    
-                    If the installer item is a disk image used with
-                    the copy_from_dmg installer type, this sets the 
-                    group of the item specified by the --item flag. 
-                    The group may be either a GID or a symbolic name. 
-                    The group will be set recursively on the item.''')
-    p.add_option('-m', '--mode',
-                    metavar='MODE',
-                    dest='mode',
-                    action='callback',
-                    type='string',
-                    callback=check_mode,
-                    help='''Optional flag.
-                    
-                    If the installer item is a disk used with
-                    the copy_from_dmg installer type, this sets the 
-                    mode of the item specified by the --item flag. 
-                    The specified mode must be in symbolic form.
-                    See the manpage for chmod(1) for more information. 
-                    The mode is applied recursively.''')
-    p.add_option('--version', '-V', action='store_true',
-                      help='Print the version of the munki tools and exit.')
+    # Default override options
+    default_override_options = optparse.OptionGroup(
+        p, 'Default Override Options',
+        ('Options specified will override information automatically derived '
+         'from the package.'))
+    default_override_options.add_option(
+        '--name',
+        metavar='NAME',
+        help='Name of the package.'
+        )
+    default_override_options.add_option(
+        '--displayname',
+        metavar='DISPLAY_NAME',
+        help='Display name of the package.'
+        )
+    default_override_options.add_option(
+        '--description',
+        metavar='STRING|PATH',
+        help=('Description of the package. '       
+              'Can be a PATH to a file (plain text or html).')
+        )
+    default_override_options.add_option(
+        '--pkgvers',
+        metavar='PACKAGE_VERSION',
+        help='Version of the package.'
+        )
+    default_override_options.add_option(
+        '--RestartAction',
+        metavar='ACTION',
+        help=('Specify a \'RestartAction\' for the package. '
+              'Supported actions: RequireRestart, RequireLogout, or '
+              'RecommendRestart')
+        )
+    default_override_options.add_option(
+        '--uninstall_method', '--uninstall-method',
+        metavar='METHOD|PATH',
+        help=('Specify an \'uninstall_method\' for the package. '
+              'Default method depends on the package type: i.e. '
+              'drag-n-drop, Apple package, or an embedded uninstall script. '
+              'Can be a path to a script on the client computer.')
+        )
+    p.add_option_group(default_override_options)
+    
+    # Script options
+    script_options = optparse.OptionGroup(
+        p, 'Script Options', 
+        'All scripts are read and embedded into the pkginfo.')
+    script_options.add_option(
+        '--preinstall_script', '--preinstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional preinstall script to be '
+              'run before installation of the item.')
+        )
+    script_options.add_option(
+        '--postinstall_script', '--postinstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional postinstall script to be '
+              'run after installation of the item.')
+        )
+    script_options.add_option(
+        '--preuninstall_script', '--preuninstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional preuninstall script to be run '
+              'before removal of the item.')
+        )
+    script_options.add_option(
+        '--postuninstall_script', '--postuninstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional postuninstall script to be run '
+              'after removal of the item.')
+        )
+    script_options.add_option(
+        '--uninstall_script', '--uninstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an uninstall script to be run in order '
+              'to uninstall this item.')
+        )
+    p.add_option_group(script_options)
+    
+    # Drag-n-Drop options
+    dragdrop_options = optparse.OptionGroup(
+        p, 'Drag-n-Drop Options',
+        ('These options apply to installer items that are "drag-n-drop" '
+         'disk images.')
+        )
+    dragdrop_options.add_option(
+        '--itemname', '-i', '--appname', '-a',
+        metavar='ITEM',
+        dest='item',
+        help=('Name or relative path of the item to be installed. '
+              'Useful if there is more than one item at the root of the dmg.')
+        )
+    dragdrop_options.add_option(
+        '--destinationpath', '-d',
+        metavar='PATH',
+        help=('Path to which the item should be copied. Defaults to '
+              '"/Applications".')
+        )
+    dragdrop_options.add_option(
+        '-o', '--owner',
+        metavar='USER',
+        dest='user',
+        help=('Sets the owner of the item specified by the --item flag. '
+              'The owner may be either a UID or a symbolic name. '
+              'The owner will be set recursively on the item.')
+        )
+    dragdrop_options.add_option(
+        '-g', '--group',
+        metavar='GROUP',
+        dest='group',
+        help=('Sets the group of the item specified by the --item flag. '
+              'The group may be either a GID or a symbolic name. '
+              'The group will be set recursively on the item.')
+        )
+    dragdrop_options.add_option(
+        '-m', '--mode',
+        metavar='MODE',
+        dest='mode',
+        action='callback',
+        type='string',
+        callback=check_mode,
+        help=('Sets the mode of the item specified by the --item flag. '
+              'The specified mode must be in symbolic form. '
+              'See the manpage for chmod(1) for more information. '
+              'The mode is applied recursively.')
+        )
+    p.add_option_group(dragdrop_options)
+    
+    # Apple package specific options
+    apple_options = optparse.OptionGroup(p, 'Apple Package Options')
+    apple_options.add_option(
+        '--pkgname', '-p',
+        help=('If the installer item is a disk image containing multiple '
+              'packages, or the package to be installed is not at the root '
+              'of the mounted disk image, PKGNAME is a relative path from '
+              'the root of the mounted disk image to the specific package to '
+              'be installed.'
+              'If the installer item is a disk image containing an Adobe '
+              'CS4 Deployment Toolkit installation, PKGNAME is the name of '
+              'an Adobe CS4 Deployment Toolkit installer package folder at '
+              'the top level of the mounted dmg.'
+              'If this flag is missing, the AdobeUber* files should be at '  
+              'the top level of the mounted dmg.')
+        )
+    apple_options.add_option(
+        '--installer_choices_xml', '--installer-choices-xml',
+        action='store_true',
+        help=('Generate installer choices for metapackages. '
+              'Note: Requires Mac OS X 10.6.6 or later.')
+        )
+    apple_options.add_option(
+        '--installer_environment', '--installer-environment', '-E',
+        action="append",
+        metavar='KEY=VALUE',
+        help=('Specifies key/value pairs to set environment variables for use '
+              'by /usr/sbin/installer. A key/value pair of '
+              'USER=CURRENT_CONSOLE_USER indicates that USER be set to the '
+              'GUI user, otherwise root. Can be specified multiple times.')
+        )
+    p.add_option_group(apple_options)
+    
+    # Adobe package specific options
+    adobe_options = optparse.OptionGroup(p, 'Adobe-specific Options')
+    adobe_options.add_option(
+        '--uninstallerdmg', '-U',
+        help=('If the installer item is a disk image containing an Adobe CS4 '
+              'Deployment Toolkit installation package or Adobe CS3 deployment '
+              'package, UNINSTALLERDMG is a path to a disk image containing an '
+              'AdobeUberUninstaller for this item.')
+        )
+    p.add_option_group(adobe_options)
+    
+    # Forced/Unattended (install) options
+    forced_unattended_options = optparse.OptionGroup(
+        p, 'Forced/Unattended Options')
+    forced_unattended_options.add_option(
+        '--unattended_install', '--unattended-install',
+        action='store_true',
+        help='Item can be installed without notifying the user.')
+    forced_unattended_options.add_option(
+        '--unattended_uninstall', '--unattended-uninstall',
+        action='store_true',
+        help='Item can be uninstalled without notifiying the user.')
+    forced_unattended_options.add_option(
+        '--force_install_after_date', '--force-install-after-date',
+        metavar='DATE',
+        help=('Specify a date, in local time, after which the package will '
+              'be forcefully installed. DATE format: yyyy-mm-ddThh:mm:ssZ '
+              'Example: \'2011-08-11T12:55:00Z\' equates to 11 August 2011 '
+              'at 12:55 PM local time.')
+        )
+    p.add_option_group(forced_unattended_options)
+    
+    # 'installs' generation options
+    # (by itself since no installer_item needs to be specified)
+    gen_installs_options = optparse.OptionGroup(
+        p, 'Generating \'installs\' items')
+    gen_installs_options.add_option(
+        '--file', '-f',
+        action="append",
+        metavar='PATH',
+        help=('Path to a filesystem item installed by this package, typically '
+              'an application. This generates an "installs" item for the '
+              'pkginfo, to be used to determine if this software has been '
+              'installed. Can be specified multiple times.')
+        )
+    p.add_option_group(gen_installs_options)
+    
+    # Additional options - misc. options that don't fit into other categories,
+    # and don't necessarily warrant the creation of their own option group
+    additional_options = optparse.OptionGroup(p, 'Additional Options')
+    additional_options.add_option(
+        '--autoremove',
+        action='store_true',
+        help=('Indicates this package should be automatically removed if it is '
+              'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
+        '--minimum_munki_version', '--minimum-munki-version',
+        metavar='VERSION',
+        help=('Minimum version of munki required to perform installation. '
+              'Uses format produced by \'--version\' query from any munki '
+              'utility.')
+        )
+    additional_options.add_option(
+        '--minimum_os_version', '--minimum-os-version', '--min-os-ver',
+        metavar='VERSION',
+        help='Minimum OS version for the installer item.'
+        )
+    additional_options.add_option(
+        '--maximum_os_version', '--maximum-os-version', '--max-os-ver',
+        metavar='VERSION',
+        help='Maximum OS version for the installer item.'
+        )
+    additional_options.add_option(
+        '--update_for', '--update-for', '-u',
+        action="append",
+        metavar='PKG_NAME',
+        help=('Specifies a package for which the current package is an update. '
+              'Can be specified multiple times to build an array of packages.')
+        )
+    additional_options.add_option(
+        '--requires', '-r',
+        action="append",
+        metavar='PKG_NAME',
+        help=('Specifies a package required by the current package. Can be '
+              'specified multiple times to build an array of required '
+              'packages.')
+        )
+    additional_options.add_option(
+        '--blocking_application', '--blocking-application', '-b',
+        action="append",
+        metavar='APP_NAME',
+        help=('Specifies an application that blocks installation. Can be '
+              'specified multiple times to build an array of blocking '
+              'applications.')
+        )
+    additional_options.add_option(
+        '--catalog', '-c',
+        action="append",
+        metavar='CATALOG_NAME',
+        help=('Specifies in which catalog the item should appear. The default '
+              'is \'testing\'. Can be specified multiple times to add the item '
+              'to multiple catalogs.')
+        )
+    additional_options.add_option(
+        '--notes',
+        metavar='STRING|PATH',
+        help=('Specifies administrator provided notes to be embedded into the '
+        'pkginfo. Can be a PATH to a file.')
+        )
+    p.add_option_group(additional_options)
     
     options, arguments = p.parse_args()
     
@@ -406,8 +564,22 @@ def main():
         print munkicommon.get_version()
         exit(0)
     
+    if options.verify_options_only:
+        if len(arguments) == 0:
+            print >> sys.stderr, 'makepkginfo options FAILED verification'
+            print >> sys.stderr, 'No installer item was provided.'
+            exit(1)
+        if len(arguments) > 1:
+            print >> sys.stderr, 'makepkginfo options FAILED verification'
+            print >> sys.stderr, \
+                'Can process only one installer item at a time.'
+            exit(3)
+        print >> sys.stdout, arguments[0]
+        exit(0)
+    
     if (len(arguments) == 0 
-        and not options.file 
+        and not options.file
+        and not options.installer_environment
         and not options.preinstall_script
         and not options.postinstall_script
         and not options.preuninstall_script
@@ -420,6 +592,12 @@ def main():
         print >> sys.stderr, 'Can process only one installer item at a time.'
         print >> sys.stderr, 'Ignoring additional installer items:'
         print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
+    
+    if options.installer_choices_xml:
+        os_version = munkicommon.getOsVersion(
+            only_major_minor=False, as_tuple=True)
+        if os_version < (10, 6, 6):
+            options.installer_choices_xml = False
     
     catinfo = {}
     installs = []
@@ -452,10 +630,15 @@ def main():
             
             elif item.endswith('.pkg') or item.endswith('.mpkg'):
                 catinfo = munkicommon.getPackageMetaData(item)
+                if options.installer_choices_xml:
+                    installer_choices_xml = munkicommon.getChoiceChangesXML(
+                                                                        item)
+                    if installer_choices_xml:
+                        catinfo['installer_choices_xml'] = installer_choices_xml
                 if not catinfo:
-                    print >> sys.stderr, \
-                        "%s doesn't appear to be a valid installer item!" % \
-                         item
+                    print >> sys.stderr, (
+                        "%s doesn't appear to be a valid installer item!" % 
+                         item)
                     exit(-1)
                 if os.path.isdir(item):
                     print >> sys.stderr, (
@@ -470,19 +653,23 @@ def main():
                             itemsize += int(os.lstat(filename).st_size)
                     # convert to kbytes
                     itemsize = int(itemsize/1024)
-           
+            
             else:
                 print >> sys.stderr, "%s is not an installer package!" % item
                 exit(-1)
             
             if options.description:
-                catinfo['description'] = options.description
+                catinfo['description'] = readFileOrString(options.description)
             if options.displayname:
                 catinfo['display_name'] = options.displayname
-
+            if options.name:
+                catinfo['name'] = options.name
+            if options.pkgvers:
+                catinfo['version'] = options.pkgvers
+            
             catinfo['installer_item_size'] = int(itemsize/1024)
             catinfo['installer_item_hash'] = itemhash
-
+            
             # try to generate the correct item location
             temppath = item
             location = ""
@@ -600,6 +787,50 @@ def main():
         if scriptstring:
             catinfo['uninstall_script'] = scriptstring
             catinfo['uninstall_method'] = 'uninstall_script'
+    if options.autoremove:
+        catinfo['autoremove'] = True
+    if options.minimum_munki_version:
+        catinfo['minimum_munki_version'] = options.minimum_munki_version
+    if options.unattended_install:
+        catinfo['unattended_install'] = True
+    if options.unattended_uninstall:
+        catinfo['unattended_uninstall'] = True
+    if options.minimum_os_version:
+        catinfo['minimum_os_version'] = options.minimum_os_version
+    if options.maximum_os_version:
+        catinfo['maximum_os_version'] = options.maximum_os_version
+    if options.force_install_after_date:
+        force_install_after_date = (
+            munkicommon.validateDateFormat(options.force_install_after_date))
+        if force_install_after_date:
+            catinfo['force_install_after_date'] = force_install_after_date
+    if options.RestartAction:
+        validActions = ['RequireRestart', 'RequireLogout', 'RecommendRestart']
+        if options.RestartAction in validActions:
+            catinfo['RestartAction'] = options.RestartAction
+        elif 'restart' in options.RestartAction.lower():
+            catinfo['RestartAction'] = 'RequireRestart'
+        elif 'logout' in options.RestartAction.lower():
+            catinfo['RestartAction'] = 'RequireLogout'
+    if options.update_for:
+        catinfo['update_for'] = options.update_for
+    if options.requires:
+        catinfo['requires'] = options.requires
+    if options.blocking_application:
+        catinfo['blocking_application'] = options.blocking_application
+    if options.uninstall_method:
+        catinfo['uninstall_method'] = options.uninstall_method
+    if options.installer_environment:
+        try:
+            installer_environment_dict = dict(
+                (k,v) for k,v in (
+                    kv.split('=') for kv in options.installer_environment))
+        except Exception:
+            installer_environment_dict = {}
+        if installer_environment_dict:
+            catinfo['installer_environment'] = installer_environment_dict
+    if options.notes:
+        catinfo['notes'] = readFileOrString(options.notes)
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)

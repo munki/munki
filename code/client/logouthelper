@@ -110,7 +110,7 @@ def main():
     ID = 'com.googlecode.munki.logouthelper'
     munkicommon.log('%s invoked' % ID)
     sent_notifications = []
-    logout_time_override = False
+    logout_time_override = None
     minimum_notifications_logout_time = NSDate.date().addTimeInterval_(
         60 * MINIMUM_NOTIFICATION_MINS + 30)
     while True:
@@ -121,8 +121,17 @@ def main():
             munkicommon.log('%s exited' % ID)
             exit(0)
 
-        if not logout_time_override:
-            logout_time = earliestForceInstallDate()
+        tmp_logout_time = earliestForceInstallDate()
+        if logout_time_override is None:
+            logout_time = tmp_logout_time
+        else:
+            # allow the new (tmp_)logout_time from InstallInfo to be used
+            # if it has changed since when we decided to override it.
+            if logout_time_override != tmp_logout_time:
+                logout_time = tmp_logout_time
+                logout_time_override = None
+                sent_notifications = []
+
         if not logout_time:
             # no forced logout needed, so bail
             munkicommon.log('%s: no forced installs found' % ID)
@@ -137,7 +146,7 @@ def main():
                   MINIMUM_NOTIFICATION_MINS))
               logout_time = minimum_notifications_logout_time
               munkicommon.log('Reset logout_time to: %s' % logout_time)
-              logout_time_override = True
+              logout_time_override = logout_time
 
         minutes_until_logout = int(logout_time.timeIntervalSinceNow() / 60)
         info = {'logout_time': logout_time}
