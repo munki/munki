@@ -59,7 +59,7 @@ from munkilib import utils
 
 
 def getIdleSeconds():
-    """Returns the number of seconds since the last mouse 
+    """Returns the number of seconds since the last mouse
     or keyboard event."""
     cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
@@ -265,7 +265,7 @@ def doRestart():
     else:
         munkicommon.display_info(restartMessage)
 
-    # TODO: temporary fix for forced logout problem where we've killed 
+    # TODO: temporary fix for forced logout problem where we've killed
     # loginwindow sessions, but munkicommon.currentGUIusers() still returns
     # users. Need to find a better solution, though.
     #if not munkicommon.currentGUIusers():
@@ -317,7 +317,7 @@ def sendUpdateNotification():
     MSU.app registers to receive these events.'''
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
-        'com.googlecode.munki.ManagedSoftwareUpdate.update', 
+        'com.googlecode.munki.ManagedSoftwareUpdate.update',
         None, None,
         NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
 
@@ -325,7 +325,7 @@ def sendUpdateNotification():
 def notifyUserOfUpdates(force=False):
     """Notify the logged-in user of available updates.
 
-    Args: 
+    Args:
       force: bool, default False, forcefully notify user regardless
           of LastNotifiedDate.
     Returns:
@@ -359,6 +359,9 @@ def notifyUserOfUpdates(force=False):
     if force or now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
         # record current notification date
         munkicommon.set_pref('LastNotifiedDate', now)
+
+        munkicommon.log('Notifying user of available updates.')
+        munkicommon.log('LastNotifiedDate was %s' % lastNotifiedString)
 
         # notify user of available updates using LaunchAgent to start
         # Managed Software Update.app in the user context.
@@ -521,7 +524,7 @@ def main():
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
-    
+   
     if options.installonly:
         # we're only installing, not checking, so we should copy
         # some report values from the prior run
@@ -548,7 +551,7 @@ def main():
     if result:
         # non-zero return code means don't run
         munkicommon.display_info(
-            'managedsoftwareupdate run aborted by preflight script: %s' 
+            'managedsoftwareupdate run aborted by preflight script: %s'
             % result)
         # record the check result for use by Managed Software Update.app
         # right now, we'll return the same code as if the munki server
@@ -605,7 +608,7 @@ def main():
         result = updatecheck.checkServer(server)
         if result != (0, 'OK'):
             munkicommon.display_error(
-                'managedsoftwareupdate: server check for %s failed: %s' 
+                'managedsoftwareupdate: server check for %s failed: %s'
                 % (server, str(result)))
             if options.manualcheck:
                 # record our result
@@ -620,7 +623,7 @@ def main():
     munkicommon.reset_errors()
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
-    
+   
     # archive the previous session's report
     munkicommon.archive_report()
 
@@ -640,9 +643,9 @@ def main():
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-        
+       
     updatesavailable = munkiUpdatesAvailable()
-    appleupdatesavailable = False 
+    appleupdatesavailable = False
     if (not updatesavailable and not options.installonly and
         not munkicommon.stopRequested()):
         # if there are no munki updates,
@@ -676,8 +679,8 @@ def main():
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
             exit(-1)
-            
-    # send a notification event so MSU can update its display 
+           
+    # send a notification event so MSU can update its display
     # if needed
     sendUpdateNotification()
 
@@ -710,10 +713,10 @@ def main():
                 else:
                     munkicommon.log('Skipping unattended installs because '
                                      'SuppressAutoInstall is true.')
-                # send a notification event so MSU can update its display 
+                # send a notification event so MSU can update its display
                 # if needed
                 sendUpdateNotification()
-                
+               
                 force_action = updatecheck.checkForceInstallPackages()
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
@@ -730,7 +733,7 @@ def main():
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
-                    
+                   
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
                    'updates.' % myname)
@@ -809,7 +812,7 @@ def main():
                     time.sleep(15)
                     idleseconds = getIdleSeconds()
                 if idleseconds > 10:
-                    # no-one is logged in and the machine has been idle 
+                    # no-one is logged in and the machine has been idle
                     # for a few seconds; kill the loginwindow
                     # (which will cause us to run again)
                     #munkicommon.log(
