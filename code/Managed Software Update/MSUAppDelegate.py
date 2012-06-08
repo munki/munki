@@ -49,6 +49,12 @@ class MSUAppDelegate(NSObject):
     logout_required = False
     runmode = "Normal"
     managedsoftwareupdate_task = None
+    
+    def applicationWillFinishLaunching_(self, sender):
+        consoleuser = munki.getconsoleuser()
+        if consoleuser == None or consoleuser == u"loginwindow":
+            # don't show menu bar
+            NSMenu.setMenuBarVisible_(NO)
 
     def applicationDidFinishLaunching_(self, sender):
         NSLog(u"Managed Software Update finished launching.")
@@ -63,7 +69,12 @@ class MSUAppDelegate(NSObject):
         if runmode:
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
-
+        else:
+            consoleuser = munki.getconsoleuser()
+            if consoleuser == None or consoleuser == u"loginwindow":
+                # we're at the loginwindow, so display MunkiStatus
+                self.runmode = "MunkiStatus"
+        
         # Prevent automatic relaunching at login on Lion
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
@@ -88,12 +99,7 @@ class MSUAppDelegate(NSObject):
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
 
-        consoleuser = munki.getconsoleuser()
-        if consoleuser == None or consoleuser == u"loginwindow":
-            # Status Window only
-            NSMenu.setMenuBarVisible_(NO)
-            self.munkiStatusController.startMunkiStatusSession()
-        elif self.runmode == "MunkiStatus":
+        if self.runmode == "MunkiStatus":
             self.munkiStatusController.startMunkiStatusSession()
         else:
             # user may have launched the app manually, or it may have

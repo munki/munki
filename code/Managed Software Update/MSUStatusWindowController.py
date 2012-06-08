@@ -124,7 +124,12 @@ class MSUStatusWindowController(NSObject):
 
             self.session_started = True
             #NSApp.activateIgnoringOtherApps_(True)
-
+            
+    def cleanUpWindows(self):
+        if self.backdropWindow and self.backdropWindow.isVisible():
+            self.backdropWindow.orderOut_(self)
+        self.window.orderOut_(self)
+                
     def displayBackdropWindow(self):
         if self.backdropWindow:
             self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
@@ -140,11 +145,14 @@ class MSUStatusWindowController(NSObject):
                     self.backdropWindow.orderFrontRegardless()
             else:
                 self.backdropImageFld.setHidden_(True)
-                translucentColor = NSColor.blackColor().colorWithAlphaComponent_(0.3)
+                translucentColor = NSColor.blackColor().colorWithAlphaComponent_(0.35)
                 self.backdropWindow.setBackgroundColor_(translucentColor)
                 self.backdropWindow.setOpaque_(False)
                 self.backdropWindow.setIgnoresMouseEvents_(False)
+                self.backdropWindow.setAlphaValue_(0.0)
                 self.backdropWindow.orderFrontRegardless()
+                self.backdropWindow.animator().setAlphaValue_(1.0)
+                
 
     def sessionStarted(self):
         return self.session_started
@@ -215,10 +223,8 @@ class MSUStatusWindowController(NSObject):
         except OSError:
             pass
 
-        self.window.orderOut_(self)
         self.session_started = False
         self.session_connected = False
-        #NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
                 self.socketEnded_,socketSessionResult, objc.NO)
 
@@ -226,6 +232,7 @@ class MSUStatusWindowController(NSObject):
         del pool
 
     def socketEnded_(self, socketSessionResult):
+        self.cleanUpWindows()
         NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
         
     def processSocketMsg_(self, message):
