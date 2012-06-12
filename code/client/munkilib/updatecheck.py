@@ -1181,7 +1181,8 @@ def installedState(item_pl):
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
                 munkicommon.display_error(str(errmsg))
-                return 0
+                # return 1 so we're marked as not needing to be installed
+                return 1
 
     # if there is no 'installs' key, then we'll use receipt info
     # to determine install status.
@@ -1198,7 +1199,8 @@ def installedState(item_pl):
             except munkicommon.Error, errmsg:
                 # some problem with the receipts data
                 munkicommon.display_error(str(errmsg))
-                return 0
+                # return 1 so we're marked as not needing to be installed
+                return 1
 
     # if we got this far, we passed all the tests, so the item
     # must be installed (or we don't have enough info...)
