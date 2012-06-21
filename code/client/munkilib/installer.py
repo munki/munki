@@ -345,7 +345,7 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
     '''copies items from the mountpoint to the startup disk
     Returns 0 if no issues; some error code otherwise.
     
-    If the 'copy_as' key is provided, items will be copied as its value.'''
+    If the 'dest_item' key is provided, items will be copied as its value.'''
     for item in itemlist:
         
         # get itemname
