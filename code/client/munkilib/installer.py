@@ -343,11 +343,14 @@ def copyAppFromDMG(dmgpath):
 
 def copyItemsFromMountpoint(mountpoint, itemlist):
     '''copies items from the mountpoint to the startup disk
-    Returns 0 if no issues; some error code otherwise'''
+    Returns 0 if no issues; some error code otherwise.
+    
+    If the 'copy_as' key is provided, items will be copied as its value.'''
     for item in itemlist:
         
         # get itemname
         itemname = item.get("source_item")
+        copy_as = item.get("copy_as")
         if not itemname:
             munkicommon.display_error("Missing name of item to copy!")
             return -1
@@ -367,7 +370,10 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             return -1
             
         # remove item if it already exists
-        olditem = os.path.join(destpath, os.path.basename(itemname))
+        if copy_as:
+            olditem = os.path.join(destpath, os.path.basename(copy_as))
+        else:
+            olditem = os.path.join(destpath, os.path.basename(itemname))
         if os.path.exists(olditem):
             retcode = subprocess.call(["/bin/rm", "-rf", olditem])
             if retcode:
@@ -376,6 +382,8 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
                 return retcode
 
         # all tests passed, OK to copy
+        if copy_as:
+            destpath = os.path.join(destpath, os.path.basename(copy_as))
         munkicommon.display_status_minor(
             "Copying %s to %s" % (itemname, destpath))
         retcode = subprocess.call(["/bin/cp", "-pR",
@@ -385,8 +393,11 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
                 "Error copying %s to %s" % (itempath, destpath))
             return retcode
 
-        # set name of destination item for next set of operations
-        destitem = os.path.join(destpath, os.path.basename(itemname))
+        # set name of destination item if 'copy_as' has been set
+        if copy_as:
+            destitem = destpath
+        else:
+            destitem = os.path.join(destpath, os.path.basename(itemname))
 
         # set owner
         user = item.get('user', 'root')
