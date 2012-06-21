@@ -349,17 +349,17 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
     for item in itemlist:
         
         # get itemname
-        itemname = item.get("source_item")
-        copy_as = item.get("copy_as")
-        if not itemname:
+        source_itemname = item.get("source_item")
+        dest_itemname = item.get("dest_item")
+        if not source_itemname:
             munkicommon.display_error("Missing name of item to copy!")
             return -1
 
         # check source path
-        itempath = os.path.join(mountpoint, itemname)
-        if not os.path.exists(itempath):
+        source_itempath = os.path.join(mountpoint, source_itemname)
+        if not os.path.exists(source_itempath):
             munkicommon.display_error(
-                "Source item %s does not exist!" % itemname)
+                "Source item %s does not exist!" % source_itemname)
             return -1
 
         # check destination path
@@ -370,67 +370,67 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             return -1
             
         # remove item if it already exists
-        if copy_as:
-            olditem = os.path.join(destpath, os.path.basename(copy_as))
+        if dest_itemname:
+            old_itempath = os.path.join(destpath, os.path.basename(dest_itemname))
         else:
-            olditem = os.path.join(destpath, os.path.basename(itemname))
-        if os.path.exists(olditem):
-            retcode = subprocess.call(["/bin/rm", "-rf", olditem])
+            old_itempath = os.path.join(destpath, os.path.basename(source_itemname))
+        if os.path.exists(old_itempath):
+            retcode = subprocess.call(["/bin/rm", "-rf", old_itempath])
             if retcode:
                 munkicommon.display_error(
-                    "Error removing existing %s" % olditem)
+                    "Error removing existing %s" % old_itempath)
                 return retcode
 
         # all tests passed, OK to copy
-        if copy_as:
-            destpath = os.path.join(destpath, os.path.basename(copy_as))
+        if dest_itemname:
+            destpath = os.path.join(destpath, os.path.basename(dest_itemname))
         munkicommon.display_status_minor(
-            "Copying %s to %s" % (itemname, destpath))
+            "Copying %s to %s" % (source_itemname, destpath))
         retcode = subprocess.call(["/bin/cp", "-pR",
-                                    itempath, destpath])
+                                    source_itempath, destpath])
         if retcode:
             munkicommon.display_error(
-                "Error copying %s to %s" % (itempath, destpath))
+                "Error copying %s to %s" % (source_itempath, destpath))
             return retcode
 
-        # set name of destination item if 'copy_as' has been set
-        if copy_as:
-            destitem = destpath
+        # set the item's full destination path for upcoming operations
+        if dest_itemname:
+            dest_itempath = destpath
         else:
-            destitem = os.path.join(destpath, os.path.basename(itemname))
+            dest_itempath = os.path.join(destpath, os.path.basename(source_itemname))
 
         # set owner
         user = item.get('user', 'root')
         munkicommon.display_detail(
-            "Setting owner for '%s' to '%s'" % (destitem, user))
-        retcode = subprocess.call(['/usr/sbin/chown', '-R', user, destitem])
+            "Setting owner for '%s' to '%s'" % (dest_itempath, user))
+        retcode = subprocess.call(['/usr/sbin/chown', '-R', user, dest_itempath])
         if retcode:
             munkicommon.display_error(
-                "Error setting owner for %s" % (destitem))
+                "Error setting owner for %s" % (dest_itempath))
             return retcode
 
         # set group
         group = item.get('group', 'admin')
         munkicommon.display_detail(
-            "Setting group for '%s' to '%s'" % (destitem, group))
-        retcode = subprocess.call(['/usr/bin/chgrp', '-R', group, destitem])
+            "Setting group for '%s' to '%s'" % (dest_itempath, group))
+        retcode = subprocess.call(['/usr/bin/chgrp', '-R', group, dest_itempath])
         if retcode:
             munkicommon.display_error(
-                "Error setting group for %s" % (destitem))
+                "Error setting group for %s" % (dest_itempath))
             return retcode
 
         # set mode
         mode  = item.get('mode', 'o-w')
         munkicommon.display_detail(
-            "Setting mode for '%s' to '%s'" % (destitem, mode))
-        retcode = subprocess.call(['/bin/chmod', '-R', mode, destitem])
+            "Setting mode for '%s' to '%s'" % (dest_itempath, mode))
+        retcode = subprocess.call(['/bin/chmod', '-R', mode, dest_itempath])
         if retcode:
             munkicommon.display_error(
-                "Error setting mode for %s" % (destitem))
+                "Error setting mode for %s" % (dest_itempath))
             return retcode
 
         # remove com.apple.quarantine attribute from copied item
-        cmd = ["/usr/bin/xattr", destitem]
+        cmd = ["/usr/bin/xattr", dest_itempath]
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
@@ -440,7 +440,7 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             xattrs = str(out).splitlines()
             if "com.apple.quarantine" in xattrs:
                 unused_result = subprocess.call(
-                    ["/usr/bin/xattr", "-d", "com.apple.quarantine", destitem])
+                    ["/usr/bin/xattr", "-d", "com.apple.quarantine", dest_itempath])
 
     # all items copied successfully!
     return 0
