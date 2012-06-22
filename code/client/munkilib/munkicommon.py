@@ -44,10 +44,12 @@ from types import StringType
 from xml.dom import minidom
 
 from Foundation import NSArray, NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
-from Foundation import CFPreferencesCopyAppValue
-from Foundation import CFPreferencesSetValue
 from Foundation import CFPreferencesAppSynchronize
+from Foundation import CFPreferencesCopyAppValue
+from Foundation import CFPreferencesCopyKeyList
+from Foundation import CFPreferencesSetValue
 from Foundation import kCFPreferencesAnyUser
+from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 
 import munkistatus
@@ -469,7 +471,7 @@ def validateDateFormat(datetime_string):
     formatted_datetime_string = ''
     try:
         formatted_datetime_string = time.strftime(
-            '%Y-%m-%dT%H:%M:%SZ', time.strptime(datetime_string, 
+            '%Y-%m-%dT%H:%M:%SZ', time.strptime(datetime_string,
                                                 '%Y-%m-%dT%H:%M:%SZ'))
     except:
         pass
@@ -906,6 +908,65 @@ def isApplication(pathname):
 #####################################################
 # managed installs preferences/metadata
 #####################################################
+
+class Preferences(object):
+    """Class which directly reads/writes Apple CF preferences."""
+
+    def __init__(self, bundle_id, user=kCFPreferencesAnyUser):
+        """Init.
+
+        Args:
+            bundle_id: str, like 'ManagedInstalls'
+        """
+        if bundle_id.endswith('.plist'):
+            bundle_id = bundle_id[:-6]
+        self.bundle_id = bundle_id
+        self.user = user
+
+    def __iter__(self):
+        keys = CFPreferencesCopyKeyList(
+            self.bundle_id, self.user, kCFPreferencesCurrentHost)
+        if keys is not None:
+            for i in keys:
+                yield i
+
+    def __contains__(self, pref_name):
+        pref_value = CFPreferencesCopyAppValue(pref_name, self.bundle_id)
+        return pref_value is not None
+
+    def __getitem__(self, pref_name):
+        return CFPreferencesCopyAppValue(pref_name, self.bundle_id)
+
+    def __setitem__(self, pref_name, pref_value):
+        CFPreferencesSetValue(
+            pref_name, pref_value, self.bundle_id, self.user,
+            kCFPreferencesCurrentHost)
+        CFPreferencesAppSynchronize(self.bundle_id)
+
+    def __delitem__(self, pref_name):
+        self.__setitem__(pref_name, None)
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.bundle_id)
+
+    def get(self, pref_name, default=None):
+        if not pref_name in self:
+            return default
+        else:
+            return self.__getitem__(pref_name)
+
+
+class ManagedInstallsPreferences(Preferences):
+    """Preferences which read from /L/P/ManagedInstalls."""
+    def __init__(self):
+        Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
+
+
+class SecureManagedInstallsPreferences(Preferences):
+    """Preferences which read from /private/var/root/L/P/ManagedInstalls."""
+    def __init__(self):
+        Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
+
 
 def reload_prefs():
     """Uses CFPreferencesAppSynchronize(BUNDLE_ID)
@@ -1530,10 +1591,10 @@ def getChoiceChangesXML(pkgitem):
         (out, unused_err) = proc.communicate()
         if out:
             plist = FoundationPlist.readPlistFromString(out)
-            
+
             # list comprehension to populate choices with those items
             # whose 'choiceAttribute' value is 'selected'
-            choices = [item for item in plist 
+            choices = [item for item in plist
                        if 'selected' in item['choiceAttribute']]
     except:
         # No choices found or something went wrong
@@ -2024,7 +2085,7 @@ def getConditions():
     which can be placed into /usr/local/munki/conditions"""
     global CONDITIONS
     if not CONDITIONS:
-        # define path to conditions directory which would contain 
+        # define path to conditions directory which would contain
         # admin created scripts
         scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
         conditionalscriptdir = os.path.join(scriptdir, "conditions")
@@ -2058,13 +2119,13 @@ def getConditions():
         else:
             # /usr/local/munki/conditions does not exist
             pass
-        if (os.path.exists(conditionalitemspath) and 
+        if (os.path.exists(conditionalitemspath) and
             validPlist(conditionalitemspath)):
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
             os.unlink(conditionalitemspath)
         else:
-            # either ConditionalItems.plist does not exist 
+            # either ConditionalItems.plist does not exist
             # or does not pass validation
             CONDITIONS = {}
     return CONDITIONS
