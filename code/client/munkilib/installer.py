@@ -345,12 +345,12 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
     '''copies items from the mountpoint to the startup disk
     Returns 0 if no issues; some error code otherwise.
     
-    If the 'dest_item' key is provided, items will be copied as its value.'''
+    If the 'destination_item' key is provided, items will be copied as its value.'''
     for item in itemlist:
         
         # get itemname
         source_itemname = item.get("source_item")
-        dest_itemname = item.get("dest_item")
+        dest_itemname = item.get("destination_item")
         if not source_itemname:
             munkicommon.display_error("Missing name of item to copy!")
             return -1
@@ -479,7 +479,10 @@ def removeCopiedItems(itemlist):
         return -1
 
     for item in itemlist:
-        itemname = item.get("source_item")
+        if 'destination_item' in item:
+            itemname = item.get("destination_item")
+        else:
+            itemname = item.get("source_item")
         if not itemname:
             munkicommon.display_error("Missing item name to remove.")
             retcode = -1
