@@ -425,7 +425,7 @@ def getRunningBlockingApps(appnames):
         if appname.endswith('.app'):
             # search by filename
             matching_items = [item for item in proc_list
-                              if '/'+ appname + '/' in item]
+                              if '/'+ appname + '/Contents/MacOS/' in item]
         else:
             # check executable name
             matching_items = [item for item in proc_list
@@ -434,7 +434,7 @@ def getRunningBlockingApps(appnames):
         if not matching_items:
             # try adding '.app' to the name and check again
             matching_items = [item for item in proc_list
-                              if '/' + appname + '.app/' in item]
+                              if '/' + appname + '.app/Contents/MacOS/' in item]
 
         matching_items = set(matching_items)
         for path in matching_items:
