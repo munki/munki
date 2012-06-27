@@ -757,6 +757,27 @@ def getFirstPlist(textString):
 
 # dmg helpers
 
+def DMGisWritable(dmgpath):
+    '''Attempts to determine if the given disk image is writable'''
+    proc = subprocess.Popen(
+                ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
+                bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if err:
+        print >> sys.stderr, (
+            'hdiutil error %s with image %s.' % (err, dmgpath))
+    (pliststr, out) = getFirstPlist(out)
+    if pliststr:
+        try:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            format = plist.get('Format')
+            if format in ['UDSB', 'UDSP', 'UDRW', 'RdWr']:
+                return True
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return False
+
+
 def DMGhasSLA(dmgpath):
     '''Returns true if dmg has a Software License Agreement.
     These dmgs normally cannot be attached without user intervention'''
