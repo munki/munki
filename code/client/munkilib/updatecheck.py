@@ -656,6 +656,14 @@ def compareReceiptVersion(item):
 
     Raises munkicommon.Error if there's an error in the input
     """
+    if item.get('optional'):
+        # receipt has been marked as optional, so it doesn't matter
+        # if it's installed or not. Return 1
+        # only check receipts not marked as optional
+        munkicommon.display_debug1(
+            'Skipping %s because it is marked as optional'
+            % item.get('packageid', item.get('name')))
+        return 1
     if not INSTALLEDPKGS:
         getInstalledPackages()
     if 'packageid' in item and 'version' in item:
