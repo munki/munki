@@ -582,7 +582,7 @@ def installWithInfo(
 
         retcode = 0
         if 'preinstall_script' in item:
-            retcode = runEmbeddedScript('preinstall_script', item)
+            retcode = munkicommon.runEmbeddedScript('preinstall_script', item)
 
         if retcode == 0 and 'installer_item' in item:
             display_name = item.get('display_name') or item.get('name')
@@ -708,7 +708,8 @@ def installWithInfo(
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if the install did not
                 # return a failure code
-                retcode = runEmbeddedScript('postinstall_script', item)
+                retcode = munkicommon.runEmbeddedScript(
+                    'postinstall_script', item)
                 if retcode:
                     # we won't consider postinstall script failures as fatal
                     # since the item has been installed via package/disk image
@@ -806,98 +807,6 @@ def installWithInfo(
     return (restartflag, skipped_installs)
 
 
-def writefile(stringdata, path):
-    '''Writes string data to path.
-    Returns the path on success, empty string on failure.'''
-    try:
-        fileobject = open(path, mode='w', buffering=1)
-        print >> fileobject, stringdata.encode('UTF-8')
-        fileobject.close()
-        return path
-    except (OSError, IOError):
-        munkicommon.display_error("Couldn't write %s" % stringdata)
-        return ""
-
-
-def runEmbeddedScript(scriptname, pkginfo_item):
-    '''Runs a script embedded in the pkginfo.
-    Returns the result code.'''
-
-    # get the script text from the pkginfo
-    script_text = pkginfo_item.get(scriptname)
-    itemname =  pkginfo_item.get('name')
-    if not script_text:
-        munkicommon.display_error(
-            'Missing script %s for %s' % (scriptname, itemname))
-        return -1
-
-    # write the script to a temp file
-    scriptpath = os.path.join(munkicommon.tmpdir, scriptname)
-    if writefile(script_text, scriptpath):
-        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
-        retcode = subprocess.call(cmd)
-        if retcode:
-            munkicommon.display_error(
-                'Error setting script mode in %s for %s'
-                % (scriptname, itemname))
-            return -1
-    else:
-        munkicommon.display_error(
-            'Cannot write script %s for %s' % (scriptname, itemname))
-        return -1
-
-    # now run the script
-    return runScript(itemname, scriptpath, scriptname)
-
-
-def runScript(itemname, path, scriptname):
-    '''Runs a script, Returns return code.'''
-    munkicommon.display_status_minor(
-        'Running %s for %s ' % (scriptname, itemname))
-    if munkicommon.munkistatusoutput:
-        # set indeterminate progress bar
-        munkistatus.percent(-1)
-
-    scriptoutput = []
-    try:
-        proc = subprocess.Popen(path, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-    except OSError, e:
-        munkicommon.display_error(
-            'Error executing script %s: %s' % (scriptname, str(e)))
-        return -1
-
-    while True:
-        msg = proc.stdout.readline().decode('UTF-8')
-        if not msg and (proc.poll() != None):
-            break
-        # save all script output in case there is
-        # an error so we can dump it to the log
-        scriptoutput.append(msg)
-        msg = msg.rstrip("\n")
-        munkicommon.display_info(msg)
-
-    retcode = proc.poll()
-    if retcode:
-        munkicommon.display_error(
-            'Running %s for %s failed.' % (scriptname, itemname))
-        munkicommon.display_error("-"*78)
-        for line in scriptoutput:
-            munkicommon.display_error("\t%s" % line.rstrip("\n"))
-        munkicommon.display_error("-"*78)
-    else:
-        munkicommon.log(
-            'Running %s for %s was successful.' % (scriptname, itemname))
-
-    if munkicommon.munkistatusoutput:
-        # clear indeterminate progress bar
-        munkistatus.percent(0)
-
-    return retcode
-
-
 def skippedItemsThatRequireThisItem(item, skipped_items):
     '''Looks for items in the skipped_items that require or are update_for
     the current item. Returns a list of matches.'''
@@ -963,7 +872,7 @@ def processRemovals(removallist, only_unattended=False):
         retcode = 0
         # run preuninstall_script if it exists
         if 'preuninstall_script' in item:
-            retcode = runEmbeddedScript('preuninstall_script', item)
+            retcode = munkicommon.runEmbeddedScript('preuninstall_script', item)
 
         if retcode == 0 and 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method']
@@ -1008,7 +917,8 @@ def processRemovals(removallist, only_unattended=False):
                                               name)
 
             elif uninstallmethod == 'uninstall_script':
-                retcode = runEmbeddedScript('uninstall_script', item)
+                retcode = munkicommon.runEmbeddedScript(
+                    'uninstall_script', item)
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
@@ -1016,7 +926,7 @@ def processRemovals(removallist, only_unattended=False):
             elif os.path.exists(uninstallmethod) and \
                  os.access(uninstallmethod, os.X_OK):
                 # it's a script or program to uninstall
-                retcode = runScript(
+                retcode = munkicommon.runScript(
                     name, uninstallmethod, 'uninstall script')
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
@@ -1029,7 +939,8 @@ def processRemovals(removallist, only_unattended=False):
                 retcode = -99
 
             if retcode == 0 and item.get('postuninstall_script'):
-                retcode = runEmbeddedScript('postuninstall_script', item)
+                retcode = munkicommon.runEmbeddedScript(
+                    'postuninstall_script', item)
                 if retcode:
                     # we won't consider postuninstall script failures as fatal
                     # since the item has been uninstalled

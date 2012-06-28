@@ -22,18 +22,12 @@ Created by Greg Neagle on 2008-11-13.
 """
 
 # standard libs
-#import calendar
-#import errno
 import datetime
 import os
-#import re
-#import shutil
 import subprocess
 import socket
-#import time
 import urllib2
 import urlparse
-#import xattr
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 # our libs
@@ -328,12 +322,14 @@ def analyzeInstalledPkgs():
             if not name in references[pkgid]:
                 references[pkgid].append(name)
             
-    #PKGDATA['itemname_to_pkgid'] = itemname_to_pkgid
-    #PKGDATA['pkgid_to_itemname'] = pkgid_to_itemname
     PKGDATA['receipts_for_name'] = installedpkgsmatchedtoname
     PKGDATA['installed_names'] = installed
-    #PKGDATA['partiallyinstalled_names'] = partiallyinstalled
     PKGDATA['pkg_references'] = references
+    
+    # left here for future debugging/testing use....
+    #PKGDATA['itemname_to_pkgid'] = itemname_to_pkgid
+    #PKGDATA['pkgid_to_itemname'] = pkgid_to_itemname
+    #PKGDATA['partiallyinstalled_names'] = partiallyinstalled
     #PKGDATA['orphans'] = orphans
     #PKGDATA['matched_orphans'] = matched_orphans
     #ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
@@ -1157,7 +1153,20 @@ def installedState(item_pl):
     Returns 0 otherwise.
     """
     foundnewer = False
-
+    
+    if item_pl.get('installcheck_script'):
+        retcode = munkicommon.runEmbeddedScript(
+            'installcheck_script', item)
+        munkicommon.display_debug1(
+            'installcheck_script returned %s' % retcode)
+        # retcode 0 means install is needed
+        if retcode == 0:
+            return 0
+        # non-zero could be an error or successfully indicating
+        # that an install is not needed
+        # return 1 so we're marked as not needing to be installed
+        return 1
+        
     if item_pl.get('softwareupdatename'):
         availableAppleUpdates = appleupdates.softwareUpdateList()
         munkicommon.display_debug2(
@@ -1174,8 +1183,8 @@ def installedState(item_pl):
                  item_pl['softwareupdatename'])
             # return 1 so we're marked as not needing to be installed
             return 1
-
-    # does 'installs' exist and is it non-empty?
+            
+     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
         for item in installitems:
@@ -1223,7 +1232,23 @@ def someVersionInstalled(item_pl):
 
     Args:
       item_pl: item plist for the item to check for version of.
+      
+    Returns a boolean.
     """
+    if item_pl.get('installcheck_script'):
+        retcode = munkicommon.runEmbeddedScript(
+            'installcheck_script', item)
+        munkicommon.display_debug1(
+            'installcheck_script returned %s' % retcode)
+        # retcode 0 means install is needed 
+        # (ie, item is not installed)
+        if retcode == 0:
+            return False
+        # non-zero could be an error or successfully indicating
+        # that an install is not needed
+        # return True
+        return True
+    
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs'):
         installitems = item_pl['installs']
@@ -1264,7 +1289,23 @@ def evidenceThisIsInstalled(item_pl):
     If any tests pass, the item might be installed.
     This is used when determining if we can remove the item, thus
     the attention given to the uninstall method.
+    
+    Returns a boolean.
     """
+    if item_pl.get('installcheck_script'):
+        retcode = munkicommon.runEmbeddedScript(
+            'installcheck_script', item)
+        munkicommon.display_debug1(
+            'installcheck_script returned %s' % retcode)
+        # retcode 0 means install is needed 
+        # (ie, item is not installed)
+        if retcode == 0:
+            return False
+        # non-zero could be an error or successfully indicating
+        # that an install is not needed
+        # return True
+        return True
+        
     foundallinstallitems = False
     if ('installs' in item_pl and
           item_pl.get('uninstall_method') != 'removepackages'):

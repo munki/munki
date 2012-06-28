@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2012 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -549,7 +549,7 @@ def saveappdata():
             os.path.join(
                 pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
     except FoundationPlist.NSPropertyListSerializationException, err:
-        munkicommon.display_warning(
+        display_warning(
             'Unable to save inventory report: %s' % err)
 
 
@@ -2289,6 +2289,100 @@ def findProcesses(user=None, exe=None):
 
     return pids
 
+
+# utility functions for running scripts from pkginfo files
+# used by updatecheck.py and installer.py
+
+def writefile(stringdata, path):
+    '''Writes string data to path.
+    Returns the path on success, empty string on failure.'''
+    try:
+        fileobject = open(path, mode='w', buffering=1)
+        print >> fileobject, stringdata.encode('UTF-8')
+        fileobject.close()
+        return path
+    except (OSError, IOError):
+        display_error("Couldn't write %s" % stringdata)
+        return ""
+
+
+def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
+    '''Runs a script embedded in the pkginfo.
+    Returns the result code.'''
+
+    # get the script text from the pkginfo
+    script_text = pkginfo_item.get(scriptname)
+    itemname =  pkginfo_item.get('name')
+    if not script_text:
+        display_error(
+            'Missing script %s for %s' % (scriptname, itemname))
+        return -1
+
+    # write the script to a temp file
+    scriptpath = os.path.join(tmpdir, scriptname)
+    if writefile(script_text, scriptpath):
+        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
+        retcode = subprocess.call(cmd)
+        if retcode:
+            display_error(
+                'Error setting script mode in %s for %s'
+                % (scriptname, itemname))
+            return -1
+    else:
+        display_error(
+            'Cannot write script %s for %s' % (scriptname, itemname))
+        return -1
+
+    # now run the script
+    return runScript(
+        itemname, scriptpath, scriptname, suppress_error=suppress_error)
+
+
+def runScript(itemname, path, scriptname, suppress_error=False):
+    '''Runs a script, Returns return code.'''
+    display_status_minor(
+        'Running %s for %s ' % (scriptname, itemname))
+    if munkistatusoutput:
+        # set indeterminate progress bar
+        munkistatus.percent(-1)
+
+    scriptoutput = []
+    try:
+        proc = subprocess.Popen(path, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except OSError, e:
+        display_error(
+            'Error executing script %s: %s' % (scriptname, str(e)))
+        return -1
+
+    while True:
+        msg = proc.stdout.readline().decode('UTF-8')
+        if not msg and (proc.poll() != None):
+            break
+        # save all script output in case there is
+        # an error so we can dump it to the log
+        scriptoutput.append(msg)
+        msg = msg.rstrip("\n")
+        display_info(msg)
+
+    retcode = proc.poll()
+    if retcode and not suppress_error:
+        display_error(
+            'Running %s for %s failed.' % (scriptname, itemname))
+        display_error("-"*78)
+        for line in scriptoutput:
+            display_error("\t%s" % line.rstrip("\n"))
+        display_error("-"*78)
+    elif not suppress_error:
+        log('Running %s for %s was successful.' % (scriptname, itemname))
+
+    if munkistatusoutput:
+        # clear indeterminate progress bar
+        munkistatus.percent(0)
+
+    return retcode
 
 
 def forceLogoutNow():
