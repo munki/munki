@@ -1156,14 +1156,14 @@ def installedState(item_pl):
     
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
-            'installcheck_script', item)
+            'installcheck_script', item_pl, suppress_error=True)
         munkicommon.display_debug1(
             'installcheck_script returned %s' % retcode)
         # retcode 0 means install is needed
         if retcode == 0:
             return 0
         # non-zero could be an error or successfully indicating
-        # that an install is not needed
+        # that an install is not needed. We hope it's the latter.
         # return 1 so we're marked as not needing to be installed
         return 1
         
@@ -1237,7 +1237,7 @@ def someVersionInstalled(item_pl):
     """
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
-            'installcheck_script', item)
+            'installcheck_script', item_pl, suppress_error=True)
         munkicommon.display_debug1(
             'installcheck_script returned %s' % retcode)
         # retcode 0 means install is needed 
@@ -1245,8 +1245,7 @@ def someVersionInstalled(item_pl):
         if retcode == 0:
             return False
         # non-zero could be an error or successfully indicating
-        # that an install is not needed
-        # return True
+        # that an install is not needed. We hope it's the latter.
         return True
     
     # does 'installs' exist and is it non-empty?
@@ -1292,9 +1291,22 @@ def evidenceThisIsInstalled(item_pl):
     
     Returns a boolean.
     """
+    if item_pl.get('uninstallcheck_script'):
+        retcode = munkicommon.runEmbeddedScript(
+            'uninstallcheck_script', item_pl, suppress_error=True)
+        munkicommon.display_debug1(
+            'uninstallcheck_script returned %s' % retcode)
+        # retcode 0 means uninstall is needed 
+        # (ie, item is installed)
+        if retcode == 0:
+            return True
+        # non-zero could be an error or successfully indicating
+        # that an uninstall is not needed
+        return False
+
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
-            'installcheck_script', item)
+            'installcheck_script', item_pl, suppress_error=True)
         munkicommon.display_debug1(
             'installcheck_script returned %s' % retcode)
         # retcode 0 means install is needed 
@@ -1303,7 +1315,6 @@ def evidenceThisIsInstalled(item_pl):
             return False
         # non-zero could be an error or successfully indicating
         # that an install is not needed
-        # return True
         return True
         
     foundallinstallitems = False
