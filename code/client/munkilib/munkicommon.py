@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2012 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -44,10 +44,12 @@ from types import StringType
 from xml.dom import minidom
 
 from Foundation import NSArray, NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
-from Foundation import CFPreferencesCopyAppValue
-from Foundation import CFPreferencesSetValue
 from Foundation import CFPreferencesAppSynchronize
+from Foundation import CFPreferencesCopyAppValue
+from Foundation import CFPreferencesCopyKeyList
+from Foundation import CFPreferencesSetValue
 from Foundation import kCFPreferencesAnyUser
+from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 
 import munkistatus
@@ -469,7 +471,7 @@ def validateDateFormat(datetime_string):
     formatted_datetime_string = ''
     try:
         formatted_datetime_string = time.strftime(
-            '%Y-%m-%dT%H:%M:%SZ', time.strptime(datetime_string, 
+            '%Y-%m-%dT%H:%M:%SZ', time.strptime(datetime_string,
                                                 '%Y-%m-%dT%H:%M:%SZ'))
     except:
         pass
@@ -547,7 +549,7 @@ def saveappdata():
             os.path.join(
                 pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
     except FoundationPlist.NSPropertyListSerializationException, err:
-        munkicommon.display_warning(
+        display_warning(
             'Unable to save inventory report: %s' % err)
 
 
@@ -755,6 +757,27 @@ def getFirstPlist(textString):
 
 # dmg helpers
 
+def DMGisWritable(dmgpath):
+    '''Attempts to determine if the given disk image is writable'''
+    proc = subprocess.Popen(
+                ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
+                bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if err:
+        print >> sys.stderr, (
+            'hdiutil error %s with image %s.' % (err, dmgpath))
+    (pliststr, out) = getFirstPlist(out)
+    if pliststr:
+        try:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            format = plist.get('Format')
+            if format in ['UDSB', 'UDSP', 'UDRW', 'RdWr']:
+                return True
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return False
+
+
 def DMGhasSLA(dmgpath):
     '''Returns true if dmg has a Software License Agreement.
     These dmgs normally cannot be attached without user intervention'''
@@ -906,6 +929,65 @@ def isApplication(pathname):
 #####################################################
 # managed installs preferences/metadata
 #####################################################
+
+class Preferences(object):
+    """Class which directly reads/writes Apple CF preferences."""
+
+    def __init__(self, bundle_id, user=kCFPreferencesAnyUser):
+        """Init.
+
+        Args:
+            bundle_id: str, like 'ManagedInstalls'
+        """
+        if bundle_id.endswith('.plist'):
+            bundle_id = bundle_id[:-6]
+        self.bundle_id = bundle_id
+        self.user = user
+
+    def __iter__(self):
+        keys = CFPreferencesCopyKeyList(
+            self.bundle_id, self.user, kCFPreferencesCurrentHost)
+        if keys is not None:
+            for i in keys:
+                yield i
+
+    def __contains__(self, pref_name):
+        pref_value = CFPreferencesCopyAppValue(pref_name, self.bundle_id)
+        return pref_value is not None
+
+    def __getitem__(self, pref_name):
+        return CFPreferencesCopyAppValue(pref_name, self.bundle_id)
+
+    def __setitem__(self, pref_name, pref_value):
+        CFPreferencesSetValue(
+            pref_name, pref_value, self.bundle_id, self.user,
+            kCFPreferencesCurrentHost)
+        CFPreferencesAppSynchronize(self.bundle_id)
+
+    def __delitem__(self, pref_name):
+        self.__setitem__(pref_name, None)
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.bundle_id)
+
+    def get(self, pref_name, default=None):
+        if not pref_name in self:
+            return default
+        else:
+            return self.__getitem__(pref_name)
+
+
+class ManagedInstallsPreferences(Preferences):
+    """Preferences which read from /L/P/ManagedInstalls."""
+    def __init__(self):
+        Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
+
+
+class SecureManagedInstallsPreferences(Preferences):
+    """Preferences which read from /private/var/root/L/P/ManagedInstalls."""
+    def __init__(self):
+        Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
+
 
 def reload_prefs():
     """Uses CFPreferencesAppSynchronize(BUNDLE_ID)
@@ -1530,10 +1612,10 @@ def getChoiceChangesXML(pkgitem):
         (out, unused_err) = proc.communicate()
         if out:
             plist = FoundationPlist.readPlistFromString(out)
-            
+
             # list comprehension to populate choices with those items
             # whose 'choiceAttribute' value is 'selected'
-            choices = [item for item in plist 
+            choices = [item for item in plist
                        if 'selected' in item['choiceAttribute']]
     except:
         # No choices found or something went wrong
@@ -2024,7 +2106,7 @@ def getConditions():
     which can be placed into /usr/local/munki/conditions"""
     global CONDITIONS
     if not CONDITIONS:
-        # define path to conditions directory which would contain 
+        # define path to conditions directory which would contain
         # admin created scripts
         scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
         conditionalscriptdir = os.path.join(scriptdir, "conditions")
@@ -2058,13 +2140,13 @@ def getConditions():
         else:
             # /usr/local/munki/conditions does not exist
             pass
-        if (os.path.exists(conditionalitemspath) and 
+        if (os.path.exists(conditionalitemspath) and
             validPlist(conditionalitemspath)):
             # import conditions into CONDITIONS dict
             CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
             os.unlink(conditionalitemspath)
         else:
-            # either ConditionalItems.plist does not exist 
+            # either ConditionalItems.plist does not exist
             # or does not pass validation
             CONDITIONS = {}
     return CONDITIONS
@@ -2079,7 +2161,7 @@ def isAppRunning(appname):
     if appname.endswith('.app'):
         # search by filename
         matching_items = [item for item in proc_list
-                          if '/'+ appname + '/' in item]
+                          if '/'+ appname + '/Contents/MacOS/' in item]
     else:
         # check executable name
         matching_items = [item for item in proc_list
@@ -2087,7 +2169,7 @@ def isAppRunning(appname):
     if not matching_items:
         # try adding '.app' to the name and check again
         matching_items = [item for item in proc_list
-                          if '/'+ appname + '.app/' in item]
+                          if '/'+ appname + '.app/Contents/MacOS/' in item]
 
     if matching_items:
         # it's running!
@@ -2207,6 +2289,100 @@ def findProcesses(user=None, exe=None):
 
     return pids
 
+
+# utility functions for running scripts from pkginfo files
+# used by updatecheck.py and installer.py
+
+def writefile(stringdata, path):
+    '''Writes string data to path.
+    Returns the path on success, empty string on failure.'''
+    try:
+        fileobject = open(path, mode='w', buffering=1)
+        print >> fileobject, stringdata.encode('UTF-8')
+        fileobject.close()
+        return path
+    except (OSError, IOError):
+        display_error("Couldn't write %s" % stringdata)
+        return ""
+
+
+def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
+    '''Runs a script embedded in the pkginfo.
+    Returns the result code.'''
+
+    # get the script text from the pkginfo
+    script_text = pkginfo_item.get(scriptname)
+    itemname =  pkginfo_item.get('name')
+    if not script_text:
+        display_error(
+            'Missing script %s for %s' % (scriptname, itemname))
+        return -1
+
+    # write the script to a temp file
+    scriptpath = os.path.join(tmpdir, scriptname)
+    if writefile(script_text, scriptpath):
+        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
+        retcode = subprocess.call(cmd)
+        if retcode:
+            display_error(
+                'Error setting script mode in %s for %s'
+                % (scriptname, itemname))
+            return -1
+    else:
+        display_error(
+            'Cannot write script %s for %s' % (scriptname, itemname))
+        return -1
+
+    # now run the script
+    return runScript(
+        itemname, scriptpath, scriptname, suppress_error=suppress_error)
+
+
+def runScript(itemname, path, scriptname, suppress_error=False):
+    '''Runs a script, Returns return code.'''
+    display_status_minor(
+        'Running %s for %s ' % (scriptname, itemname))
+    if munkistatusoutput:
+        # set indeterminate progress bar
+        munkistatus.percent(-1)
+
+    scriptoutput = []
+    try:
+        proc = subprocess.Popen(path, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except OSError, e:
+        display_error(
+            'Error executing script %s: %s' % (scriptname, str(e)))
+        return -1
+
+    while True:
+        msg = proc.stdout.readline().decode('UTF-8')
+        if not msg and (proc.poll() != None):
+            break
+        # save all script output in case there is
+        # an error so we can dump it to the log
+        scriptoutput.append(msg)
+        msg = msg.rstrip("\n")
+        display_info(msg)
+
+    retcode = proc.poll()
+    if retcode and not suppress_error:
+        display_error(
+            'Running %s for %s failed.' % (scriptname, itemname))
+        display_error("-"*78)
+        for line in scriptoutput:
+            display_error("\t%s" % line.rstrip("\n"))
+        display_error("-"*78)
+    elif not suppress_error:
+        log('Running %s for %s was successful.' % (scriptname, itemname))
+
+    if munkistatusoutput:
+        # clear indeterminate progress bar
+        munkistatus.percent(0)
+
+    return retcode
 
 
 def forceLogoutNow():

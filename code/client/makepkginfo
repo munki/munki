@@ -612,6 +612,14 @@ def main():
                 itemhash = munkicommon.getsha256hash(item)
             
             if item.endswith('.dmg'):
+                if munkicommon.DMGisWritable(item):
+                    print >> sys.stderr, ("WARNING: %s is a writable disk "
+                        "image. Checksum verification is not supported." 
+                        % item)
+                    print >> sys.stderr, ("WARNING: Consider converting "
+                        "%s to a read-only disk image." 
+                        % item)
+                    itemhash = "N/A"
                 catinfo = getCatalogInfoFromDmg(item, options)
                 if (catinfo and 
                     catinfo.get('installer_type') == "AdobeCS5Installer"):
@@ -668,7 +676,8 @@ def main():
                 catinfo['version'] = options.pkgvers
             
             catinfo['installer_item_size'] = int(itemsize/1024)
-            catinfo['installer_item_hash'] = itemhash
+            if itemhash != "N/A":
+                catinfo['installer_item_hash'] = itemhash
             
             # try to generate the correct item location
             temppath = item
