@@ -1528,7 +1528,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.NSDate.dateWithString_(recent_date_str).AndReturn(
             recent_date_nsdate)
 
-        self.au.CheckForSoftwareUpdates(force_check=True)
+        self.au.CheckForSoftwareUpdates(force_check=True).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
         self.au.DisplayAppleUpdateInfo().AndReturn(None)
@@ -1565,7 +1565,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.NSDate.dateWithString_(recent_date_str).AndReturn(
             recent_date_nsdate)
 
-        self.au.CheckForSoftwareUpdates(force_check=False)
+        self.au.CheckForSoftwareUpdates(force_check=False).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
         self.au.DisplayAppleUpdateInfo().AndReturn(None)
@@ -1588,7 +1588,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.munkicommon.pref('LastAppleSoftwareUpdateCheck').AndReturn(
             'zomg this is not a date!!!!!')
 
-        self.au.CheckForSoftwareUpdates(force_check=True)
+        self.au.CheckForSoftwareUpdates(force_check=True).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
         self.au.DisplayAppleUpdateInfo().AndReturn(None)
@@ -1606,7 +1606,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
         self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
 
-        self.au.CheckForSoftwareUpdates(force_check=True)
+        self.au.CheckForSoftwareUpdates(force_check=True).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
         self.au.DisplayAppleUpdateInfo().AndReturn(None)
