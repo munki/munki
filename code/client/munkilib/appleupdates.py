@@ -1186,6 +1186,7 @@ class AppleUpdates(object):
         Returns:
           Boolean. True if Apple updates are available, False otherwise.
         """
+        success = True
         if suppress_check:
             # typically because we're doing a logout install; if
             # there are no waiting Apple Updates we shouldn't
@@ -1194,7 +1195,7 @@ class AppleUpdates(object):
         elif force_check:
             # typically because user initiated the check from
             # Managed Software Update.app
-            self.CheckForSoftwareUpdates(force_check=True)
+            success = self.CheckForSoftwareUpdates(force_check=True)
         else:
             # have we checked recently?  Don't want to check with
             # Apple Software Update server too frequently
@@ -1214,9 +1215,11 @@ class AppleUpdates(object):
                 except (ValueError, TypeError):
                     pass
             if now.timeIntervalSinceDate_(next_su_check) >= 0:
-                self.CheckForSoftwareUpdates(force_check=True)
+                success = self.CheckForSoftwareUpdates(force_check=True)
             else:
-                self.CheckForSoftwareUpdates(force_check=False)
+                success = self.CheckForSoftwareUpdates(force_check=False)
+        if not success:
+            return False
         if munkicommon.stopRequested():
             return False
         if self.WriteAppleUpdatesFile():
