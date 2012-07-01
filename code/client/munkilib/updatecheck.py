@@ -1682,7 +1682,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             else:
                 # Packageless install
                 download_speed = 0
-                filename = 'packageless_install'
+                filename = '!packageless_install!'
                 
             iteminfo['download_kbytes_per_sec'] = download_speed
 

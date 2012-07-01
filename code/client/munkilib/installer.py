@@ -592,7 +592,7 @@ def installWithInfo(
                 % (display_name, itemindex, len(installlist)))
                 
             # Check if packageless install
-            if item["installer_item"] != 'packageless_install':
+            if item["installer_item"] != '!packageless_install!':
             
                 itempath = os.path.join(dirpath, item["installer_item"])
                 if not os.path.exists(itempath):
