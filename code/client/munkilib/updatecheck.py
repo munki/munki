@@ -1657,7 +1657,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
         try:
             # Get a timestamp, then run download the installer item.
             start = datetime.datetime.now()
-            if not item_pl.get('packageless_install', 0):
+            if item_pl.get('installer_type', 0) == 'nopkg':
+                # Packageless install
+                download_speed = 0
+                filename = 'packageless_install'
+            else:
                 if download_installeritem(item_pl, installinfo):
                     # Record the download speed to the InstallResults output.
                     end = datetime.datetime.now()
@@ -1678,11 +1682,6 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     
                 filename = getInstallerItemBasename(
                     item_pl['installer_item_location'])
-                
-            else:
-                # Packageless install
-                download_speed = 0
-                filename = '!packageless_install!'
                 
             iteminfo['download_kbytes_per_sec'] = download_speed
 

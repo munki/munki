@@ -590,127 +590,125 @@ def installWithInfo(
             munkicommon.display_status_major(
                 "Installing %s (%s of %s)"
                 % (display_name, itemindex, len(installlist)))
-                
-            # Check if packageless install
-            if item["installer_item"] != '!packageless_install!':
             
-                itempath = os.path.join(dirpath, item["installer_item"])
-                if not os.path.exists(itempath):
-                    # can't install, so we should stop. Since later items might
-                    # depend on this one, we shouldn't continue
-                    munkicommon.display_error("Installer item %s was not found." %
-                                               item["installer_item"])
-                    return restartflag, skipped_installs
+            installer_type = item.get("installer_type","")
 
-                installer_type = item.get("installer_type","")
-                if installer_type.startswith("Adobe"):
-                    retcode = adobeutils.doAdobeInstall(item)
-                    if retcode == 0:
-                        if (item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                            restartflag = True
-                    if retcode == 8:
-                        # Adobe Setup says restart needed.
+            itempath = os.path.join(dirpath, item["installer_item"])
+            if installer_type != "nopkg" and not os.path.exists(itempath):
+                # can't install, so we should stop. Since later items might
+                # depend on this one, we shouldn't continue
+                munkicommon.display_error("Installer item %s was not found." %
+                                           item["installer_item"])
+                return restartflag, skipped_installs
+
+            if installer_type.startswith("Adobe"):
+                retcode = adobeutils.doAdobeInstall(item)
+                if retcode == 0:
+                    if (item.get("RestartAction") == "RequireRestart" or
+                        item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
-                        retcode = 0
-                elif installer_type == "copy_from_dmg":
-                    retcode = copyFromDMG(itempath, item.get('items_to_copy'))
-                    if retcode == 0:
-                        if (item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                            restartflag = True
-                elif installer_type == "appdmg":
-                    munkicommon.display_warning(
-                        "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
-                    retcode = copyAppFromDMG(itempath)
-                elif installer_type != "":
-                    # we've encountered an installer type
-                    # we don't know how to handle
-                    munkicommon.display_error(
-                        "Unsupported install type: %s" % installer_type)
-                    retcode = -99
-                else:
-                    # better be Apple installer package
-                    suppressBundleRelocation = item.get(
-                                        "suppress_bundle_relocation", False)
-                    munkicommon.display_debug1("suppress_bundle_relocation: %s" %
-                                                        suppressBundleRelocation )
-                    if 'installer_choices_xml' in item:
-                        choicesXMLfile = os.path.join(munkicommon.tmpdir,
-                                                      "choices.xml")
-                        FoundationPlist.writePlist(item['installer_choices_xml'],
-                                                   choicesXMLfile)
-                    else:
-                        choicesXMLfile = ''
-                    installer_environment = item.get('installer_environment')
-                    if itempath.endswith(".dmg"):
-                        munkicommon.display_status_minor(
-                            "Mounting disk image %s" % item["installer_item"])
-                        mountWithShadow = suppressBundleRelocation
-                        # we need to mount the diskimage as read/write to
-                        # be able to modify the package to suppress bundle
-                        # relocation
-                        mountpoints = munkicommon.mountdmg(itempath,
-                                                    use_shadow=mountWithShadow)
-                        if mountpoints == []:
-                            munkicommon.display_error("No filesystems mounted "
-                                                      "from %s" %
-                                                      item["installer_item"])
-                            return restartflag, skipped_installs
-                        if munkicommon.stopRequested():
-                            munkicommon.unmountdmg(mountpoints[0])
-                            return restartflag, skipped_installs
-
-                        retcode = -99 # in case we find nothing to install
-                        needtorestart = False
-                        if item.get('package_path','').endswith('.pkg') or \
-                           item.get('package_path','').endswith('.mpkg'):
-                            # admin has specified the relative path of the pkg
-                            # on the DMG
-                            # this is useful if there is more than one pkg on
-                            # the DMG, or the actual pkg is not at the root
-                            # of the DMG
-                            fullpkgpath = os.path.join(mountpoints[0],
-                                                        item['package_path'])
-                            if os.path.exists(fullpkgpath):
-                                (retcode, needtorestart) = install(fullpkgpath,
-                                                         choicesXMLfile,
-                                                         suppressBundleRelocation,
-                                                         installer_environment)
-                        else:
-                            # no relative path to pkg on dmg, so just install all
-                            # pkgs found at the root of the first mountpoint
-                            # (hopefully there's only one)
-                            (retcode, needtorestart) = installall(mountpoints[0],
-                                                         choicesXMLfile,
-                                                         suppressBundleRelocation,
-                                                         installer_environment)
-                        if (needtorestart or
-                            item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                            restartflag = True
-                        munkicommon.unmountdmg(mountpoints[0])
-                    elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg")
-                          or itempath.endswith(".dist")):
-                        (retcode, needtorestart) = install(itempath,
-                                                         choicesXMLfile,
-                                                         suppressBundleRelocation,
-                                                         installer_environment)
-                        if (needtorestart or
-                            item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                            restartflag = True
-
-                    else:
-                        # we didn't find anything we know how to install
-                        munkicommon.log(
-                            "Found nothing we know how to install in %s"
-                            % itempath)
-                        retcode = -99
-            else: # Packageless install can have restart action too
+                if retcode == 8:
+                    # Adobe Setup says restart needed.
+                    restartflag = True
+                    retcode = 0
+            elif installer_type == "copy_from_dmg":
+                retcode = copyFromDMG(itempath, item.get('items_to_copy'))
+                if retcode == 0:
+                    if (item.get("RestartAction") == "RequireRestart" or
+                        item.get("RestartAction") == "RecommendRestart"):
+                        restartflag = True
+            elif installer_type == "appdmg":
+                munkicommon.display_warning(
+                    "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
+                retcode = copyAppFromDMG(itempath)
+            elif installer_type == "nopkg": # Packageless install
                 if (item.get("RestartAction") == "RequireRestart" or
                     item.get("RestartAction") == "RecommendRestart"):
                     restartflag = True
+            elif installer_type != "":
+                # we've encountered an installer type
+                # we don't know how to handle
+                munkicommon.display_error(
+                    "Unsupported install type: %s" % installer_type)
+                retcode = -99
+            else:
+                # better be Apple installer package
+                suppressBundleRelocation = item.get(
+                                    "suppress_bundle_relocation", False)
+                munkicommon.display_debug1("suppress_bundle_relocation: %s" %
+                                                    suppressBundleRelocation )
+                if 'installer_choices_xml' in item:
+                    choicesXMLfile = os.path.join(munkicommon.tmpdir,
+                                                  "choices.xml")
+                    FoundationPlist.writePlist(item['installer_choices_xml'],
+                                               choicesXMLfile)
+                else:
+                    choicesXMLfile = ''
+                installer_environment = item.get('installer_environment')
+                if itempath.endswith(".dmg"):
+                    munkicommon.display_status_minor(
+                        "Mounting disk image %s" % item["installer_item"])
+                    mountWithShadow = suppressBundleRelocation
+                    # we need to mount the diskimage as read/write to
+                    # be able to modify the package to suppress bundle
+                    # relocation
+                    mountpoints = munkicommon.mountdmg(itempath,
+                                                use_shadow=mountWithShadow)
+                    if mountpoints == []:
+                        munkicommon.display_error("No filesystems mounted "
+                                                  "from %s" %
+                                                  item["installer_item"])
+                        return restartflag, skipped_installs
+                    if munkicommon.stopRequested():
+                        munkicommon.unmountdmg(mountpoints[0])
+                        return restartflag, skipped_installs
+
+                    retcode = -99 # in case we find nothing to install
+                    needtorestart = False
+                    if item.get('package_path','').endswith('.pkg') or \
+                       item.get('package_path','').endswith('.mpkg'):
+                        # admin has specified the relative path of the pkg
+                        # on the DMG
+                        # this is useful if there is more than one pkg on
+                        # the DMG, or the actual pkg is not at the root
+                        # of the DMG
+                        fullpkgpath = os.path.join(mountpoints[0],
+                                                    item['package_path'])
+                        if os.path.exists(fullpkgpath):
+                            (retcode, needtorestart) = install(fullpkgpath,
+                                                     choicesXMLfile,
+                                                     suppressBundleRelocation,
+                                                     installer_environment)
+                    else:
+                        # no relative path to pkg on dmg, so just install all
+                        # pkgs found at the root of the first mountpoint
+                        # (hopefully there's only one)
+                        (retcode, needtorestart) = installall(mountpoints[0],
+                                                     choicesXMLfile,
+                                                     suppressBundleRelocation,
+                                                     installer_environment)
+                    if (needtorestart or
+                        item.get("RestartAction") == "RequireRestart" or
+                        item.get("RestartAction") == "RecommendRestart"):
+                        restartflag = True
+                    munkicommon.unmountdmg(mountpoints[0])
+                elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg")
+                      or itempath.endswith(".dist")):
+                    (retcode, needtorestart) = install(itempath,
+                                                     choicesXMLfile,
+                                                     suppressBundleRelocation,
+                                                     installer_environment)
+                    if (needtorestart or
+                        item.get("RestartAction") == "RequireRestart" or
+                        item.get("RestartAction") == "RecommendRestart"):
+                        restartflag = True
+
+                else:
+                    # we didn't find anything we know how to install
+                    munkicommon.log(
+                        "Found nothing we know how to install in %s"
+                        % itempath)
+                    retcode = -99
                 
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if the install did not
