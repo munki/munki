@@ -1668,12 +1668,15 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     download_seconds = (end - start).seconds
                     try:
                         if iteminfo['installer_item_size'] < 1024:
-                            # ignore downloads under 1 MB or speeds will be skewed.
+                            # ignore downloads under 1 MB or speeds will 
+                            # be skewed.
                             download_speed = 0
                         else:
-                            # installer_item_size is KBytes, so divide by seconds.
+                            # installer_item_size is KBytes, so divide 
+                            # by seconds.
                             download_speed = int(
-                                iteminfo['installer_item_size'] / download_seconds)
+                                iteminfo['installer_item_size'] /
+                                download_seconds)
                     except (TypeError, ValueError, ZeroDivisionError):
                         download_speed = 0
                 else:
