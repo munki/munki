@@ -118,7 +118,7 @@ def makecatalogs(repopath):
                 continue
             
             #simple sanity checking
-            if 'installer_type' in pkginfo and pkginfo['installer_type'] != 'nopkg':
+            if not (pkginfo.get('installer_type') == 'nopkg'):
                 if not 'installer_item_location' in pkginfo:
                     errors.append(
                         "WARNING: file %s is missing installer_item_location" %
