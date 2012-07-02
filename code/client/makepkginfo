@@ -333,6 +333,22 @@ def main():
         p, 'Script Options', 
         'All scripts are read and embedded into the pkginfo.')
     script_options.add_option(
+        '--installcheck_script', '--installcheck-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional installcheck script to be '
+              'run to determine if item should be installed. '
+              'An exit code of 0 indicates installation should occur. '
+              'Takes precendence over installs items and receipts.')
+        )
+    script_options.add_option(
+        '--uninstallcheck_script', '--uninstallcheck-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional uninstallcheck script to be '
+              'run to determine if item should be uninstalled. '
+              'An exit code of 0 indicates uninstallation should occur. '
+              'Takes precendence over installs items and receipts.')
+        )
+    script_options.add_option(
         '--preinstall_script', '--preinstall-script',
         metavar='SCRIPT_PATH',
         help=('Path to an optional preinstall script to be '
@@ -580,6 +596,8 @@ def main():
     if (len(arguments) == 0 
         and not options.file
         and not options.installer_environment
+        and not options.installcheck_script
+        and not options.uninstallcheck_script
         and not options.preinstall_script
         and not options.postinstall_script
         and not options.preuninstall_script
@@ -774,7 +792,15 @@ def main():
 
     if installs:
         catinfo['installs'] = installs
-        
+
+    if options.installcheck_script:
+        scriptstring = readfile(options.installcheck_script)
+        if scriptstring:
+            catinfo['installcheck_script'] = scriptstring
+    if options.uninstallcheck_script:
+        scriptstring = readfile(options.uninstallcheck_script)
+        if scriptstring:
+            catinfo['uninstallcheck_script'] = scriptstring
     if options.postinstall_script:
         scriptstring = readfile(options.postinstall_script)
         if scriptstring:
