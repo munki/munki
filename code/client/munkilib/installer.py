@@ -23,7 +23,7 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 import datetime
 import os
 import pwd
-import signal
+#import signal
 import subprocess
 import time
 
@@ -62,7 +62,7 @@ def removeBundleRelocationInfo(pkgpath):
                         "Removed Contents/Resources/TokenDefinitions.plist")
             except OSError:
                 pass
-
+        
         plist = {}
         infoplist = os.path.join(pkgpath, "Contents/Info.plist")
         if os.path.exists(infoplist):
@@ -70,7 +70,7 @@ def removeBundleRelocationInfo(pkgpath):
                 plist = FoundationPlist.readPlist(infoplist)
             except FoundationPlist.NSPropertyListSerializationException:
                 pass
-
+        
         if 'IFPkgPathMappings' in plist:
             del plist['IFPkgPathMappings']
             try:
@@ -89,17 +89,17 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     Returns a tuple:
     the installer return code and restart needed as a boolean.
     """
-
+    
     restartneeded = False
     installeroutput = []
-
+    
     if os.path.islink(pkgpath):
         # resolve links before passing them to /usr/bin/installer
         pkgpath = os.path.realpath(pkgpath)
-
+    
     if suppressBundleRelocation:
         removeBundleRelocationInfo(pkgpath)
-
+    
     packagename = ''
     restartaction = 'None'
     pkginfo = munkicommon.getInstallerPkgInfo(pkgpath)
@@ -124,7 +124,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
         munkicommon.display_status_minor(
             '%s requires a restart after installation.' % packagename)
         restartneeded = True
-
+    
     # get the OS version; we need it later when processing installer's output,
     # which varies depending on OS version.
     os_version = munkicommon.getOsVersion()
@@ -132,7 +132,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                                   '-target', '/']
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-
+    
     # set up environment for installer
     env_vars = os.environ.copy()
     # get info for root
@@ -151,7 +151,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                 env_vars[key] = environment[key]
         munkicommon.display_debug1(
             'Using custom installer environment variables: %s', env_vars)
-
+    
     # run installer as a launchd job
     try:
         job = launchd.Job(cmd, environment_vars=env_vars)
@@ -161,7 +161,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
              'Error with launchd job (%s): %s', cmd, str(err))
         munkicommon.display_error('Can\'t run installer.')
         return (-3, False)
-
+    
     timeout = 2 * 60 * 60
     inactive = 0
     last_output = None
@@ -176,7 +176,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                 if inactive >= timeout:
                     # no output for too long, kill this installer session
                     munkicommon.display_error(
-                        "/usr/sbin/installer timeout after %d seconds" 
+                        "/usr/sbin/installer timeout after %d seconds"
                         % timeout)
                     job.stop()
                     break
@@ -227,10 +227,10 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
                     munkistatus.detail(msg)
             else:
                 munkicommon.log(msg)
-
+    
     # installer exited
     retcode = job.returncode()
-    if retcode != 0: 
+    if retcode != 0:
         munkicommon.display_status_minor(
             "Install of %s failed with return code %s" % (packagename, retcode))
         munkicommon.display_error("-"*78)
@@ -242,7 +242,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
         munkicommon.log("Install of %s was successful." % packagename)
         if munkicommon.munkistatusoutput:
             munkistatus.percent(100)
-
+    
     return (retcode, restartneeded)
 
 
@@ -283,9 +283,9 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
                     # ran into error; should unmount and stop.
                     munkicommon.unmountdmg(mountpoints[0])
                     return (retcode, restartflag)
-
+            
             munkicommon.unmountdmg(mountpoints[0])
-
+        
         if (item.endswith(".pkg") or item.endswith(".mpkg")):
             (retcode, needsrestart) = install(itempath, choicesXMLpath,
                                                 suppressBundleRelocation,
@@ -295,7 +295,7 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
             if retcode:
                 # ran into error; should stop.
                 return (retcode, restartflag)
-
+    
     return (retcode, restartflag)
 
 
@@ -316,7 +316,7 @@ def copyAppFromDMG(dmgpath):
             if munkicommon.isApplication(itempath):
                 appname = item
                 break
-
+        
         if appname:
             # make an itemlist we can pass to copyItemsFromMountpoint
             itemlist = []
@@ -345,7 +345,8 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
     '''copies items from the mountpoint to the startup disk
     Returns 0 if no issues; some error code otherwise.
     
-    If the 'destination_item' key is provided, items will be copied as its value.'''
+    If the 'destination_item' key is provided, items will be copied
+    as its value.'''
     for item in itemlist:
         
         # get itemname
@@ -354,27 +355,29 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
         if not source_itemname:
             munkicommon.display_error("Missing name of item to copy!")
             return -1
-
+        
         # check source path
         source_itempath = os.path.join(mountpoint, source_itemname)
         if not os.path.exists(source_itempath):
             munkicommon.display_error(
                 "Source item %s does not exist!" % source_itemname)
             return -1
-
+        
         # check destination path
         destpath = item.get("destination_path")
         if not os.path.exists(destpath):
             munkicommon.display_error(
                 "Destination path %s does not exist!" % destpath)
             return -1
-
+        
         # setup full destination path using 'destination_item', if supplied
         if dest_itemname:
-            full_destpath = os.path.join(destpath, os.path.basename(dest_itemname))
+            full_destpath = os.path.join(
+                destpath, os.path.basename(dest_itemname))
         else:
-            full_destpath = os.path.join(destpath, os.path.basename(source_itemname))
-
+            full_destpath = os.path.join(
+                destpath, os.path.basename(source_itemname))
+        
         # remove item if it already exists
         if os.path.exists(full_destpath):
             retcode = subprocess.call(["/bin/rm", "-rf", full_destpath])
@@ -382,7 +385,7 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
                 munkicommon.display_error(
                     "Error removing existing %s" % full_destpath)
                 return retcode
-
+        
         # all tests passed, OK to copy
         munkicommon.display_status_minor(
             "Copying %s to %s" % (source_itemname, full_destpath))
@@ -392,27 +395,29 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             munkicommon.display_error(
                 "Error copying %s to %s" % (source_itempath, full_destpath))
             return retcode
-
+        
         # set owner
         user = item.get('user', 'root')
         munkicommon.display_detail(
             "Setting owner for '%s' to '%s'" % (full_destpath, user))
-        retcode = subprocess.call(['/usr/sbin/chown', '-R', user, full_destpath])
+        retcode = subprocess.call(
+            ['/usr/sbin/chown', '-R', user, full_destpath])
         if retcode:
             munkicommon.display_error(
                 "Error setting owner for %s" % (full_destpath))
             return retcode
-
+        
         # set group
         group = item.get('group', 'admin')
         munkicommon.display_detail(
             "Setting group for '%s' to '%s'" % (full_destpath, group))
-        retcode = subprocess.call(['/usr/bin/chgrp', '-R', group, full_destpath])
+        retcode = subprocess.call(
+            ['/usr/bin/chgrp', '-R', group, full_destpath])
         if retcode:
             munkicommon.display_error(
                 "Error setting group for %s" % (full_destpath))
             return retcode
-
+        
         # set mode
         mode  = item.get('mode', 'o-w')
         munkicommon.display_detail(
@@ -422,7 +427,7 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             munkicommon.display_error(
                 "Error setting mode for %s" % (full_destpath))
             return retcode
-
+        
         # remove com.apple.quarantine attribute from copied item
         cmd = ["/usr/bin/xattr", full_destpath]
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
@@ -434,8 +439,9 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             xattrs = str(out).splitlines()
             if "com.apple.quarantine" in xattrs:
                 unused_result = subprocess.call(
-                    ["/usr/bin/xattr", "-d", "com.apple.quarantine", full_destpath])
-
+                    ["/usr/bin/xattr", "-d", "com.apple.quarantine",
+                     full_destpath])
+    
     # all items copied successfully!
     return 0
 
@@ -445,7 +451,7 @@ def copyFromDMG(dmgpath, itemlist):
     if not itemlist:
         munkicommon.display_error("No items to copy!")
         return -1
-
+    
     munkicommon.display_status_minor(
         'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = munkicommon.mountdmg(dmgpath)
@@ -471,7 +477,7 @@ def removeCopiedItems(itemlist):
     if not itemlist:
         munkicommon.display_error("Nothing to remove!")
         return -1
-
+    
     for item in itemlist:
         if 'destination_item' in item:
             itemname = item.get("destination_item")
@@ -499,7 +505,7 @@ def removeCopiedItems(itemlist):
             # note it, but not an error
             munkicommon.display_detail("Path %s doesn't exist." %
                                                             path_to_remove)
-
+    
     return retcode
 
 
@@ -509,7 +515,7 @@ def itemPrereqsInSkippedItems(item, skipped_items):
     munkicommon.display_debug1(
         'Checking for skipped prerequisites for %s-%s'
         % (item['name'], item.get('version_to_install')))
-
+    
     # get list of prerequisites for this item
     prerequisites = item.get('requires', [])
     prerequisites.extend(item.get('update_for', []))
@@ -519,7 +525,7 @@ def itemPrereqsInSkippedItems(item, skipped_items):
             % (item['name'], item.get('version_to_install')))
         return []
     munkicommon.display_debug1('Prerequisites: %s' % ", ".join(prerequisites))
-
+    
     # build a dictionary of names and versions of skipped items
     skipped_item_dict = {}
     for skipped_item in skipped_items:
@@ -530,7 +536,7 @@ def itemPrereqsInSkippedItems(item, skipped_items):
         munkicommon.display_debug1('Adding skipped item: %s-%s'
                                 % (skipped_item['name'], normalized_version))
         skipped_item_dict[skipped_item['name']].append(normalized_version)
-
+    
     # now check prereqs against the skipped items
     matched_prereqs = []
     for prereq in prerequisites:
@@ -584,14 +590,14 @@ def installWithInfo(
                     'prerequisites were skipped: %s'
                     % (item['name'], ", ".join(skipped_prereqs)))
                 continue
-
+        
         if munkicommon.stopRequested():
             return restartflag, skipped_installs
-
+        
         retcode = 0
         if 'preinstall_script' in item:
             retcode = munkicommon.runEmbeddedScript('preinstall_script', item)
-
+        
         if retcode == 0 and 'installer_item' in item:
             display_name = item.get('display_name') or item.get('name')
             version_to_install = item.get('version_to_install','')
@@ -600,7 +606,7 @@ def installWithInfo(
                 % (display_name, itemindex, len(installlist)))
             
             installer_type = item.get("installer_type","")
-
+            
             itempath = os.path.join(dirpath, item["installer_item"])
             if installer_type != "nopkg" and not os.path.exists(itempath):
                 # can't install, so we should stop. Since later items might
@@ -608,7 +614,7 @@ def installWithInfo(
                 munkicommon.display_error("Installer item %s was not found." %
                                            item["installer_item"])
                 return restartflag, skipped_installs
-
+            
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.doAdobeInstall(item)
                 if retcode == 0:
@@ -670,7 +676,7 @@ def installWithInfo(
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag, skipped_installs
-
+                    
                     retcode = -99 # in case we find nothing to install
                     needtorestart = False
                     if item.get('package_path','').endswith('.pkg') or \
@@ -710,14 +716,14 @@ def installWithInfo(
                         item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
-
+                
                 else:
                     # we didn't find anything we know how to install
                     munkicommon.log(
                         "Found nothing we know how to install in %s"
                         % itempath)
                     retcode = -99
-                
+            
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if the install did not
                 # return a failure code
@@ -733,29 +739,29 @@ def installWithInfo(
                     # reset retcode to 0 so we will mark this install
                     # as successful
                     retcode = 0
-
+            
             # record install success/failure
             if not 'InstallResults' in munkicommon.report:
                 munkicommon.report['InstallResults'] = []
-
+            
             if applesus:
                 message = "Apple SUS install of %s-%s: %s"
             else:
                 message = "Install of %s-%s: %s"
-
+            
             if retcode == 0:
                 status = "SUCCESSFUL"
             else:
                 status = "FAILED with return code: %s" % retcode
-
+            
             log_msg = message % (display_name, version_to_install, status)
             munkicommon.log(log_msg, "Install.log")
-
+            
             # Calculate install duration; note, if a machine is put to sleep
             # during the install this time may be inaccurate.
             utc_now_complete = datetime.datetime.utcnow()
             duration_seconds = (utc_now_complete - utc_now).seconds
-
+            
             download_speed = item.get('download_kbytes_per_sec', 0)
             install_result = {
                 'name': display_name,
@@ -767,7 +773,7 @@ def installWithInfo(
                 'download_kbytes_per_sec': download_speed,
             }
             munkicommon.report['InstallResults'].append(install_result)
-
+            
             # check to see if this installer item is needed by any additional
             # items in installinfo
             # this might happen if there are multiple things being installed
@@ -786,7 +792,7 @@ def installWithInfo(
                         current_installer_item):
                         foundagain = True
                         break
-
+            
             # need to check skipped_installs as well
             if not foundagain:
                 for skipped_item in skipped_installs:
@@ -794,7 +800,7 @@ def installWithInfo(
                         current_installer_item):
                         foundagain = True
                         break
-
+            
             if not foundagain:
                 # now remove the item from the install cache
                 # (if it's still there)
@@ -816,7 +822,7 @@ def installWithInfo(
                             if os.path.exists(shadowfile):
                                 retcode = subprocess.call(
                                     ["/bin/rm", shadowfile])
-
+    
     return (restartflag, skipped_installs)
 
 
@@ -825,7 +831,7 @@ def skippedItemsThatRequireThisItem(item, skipped_items):
     the current item. Returns a list of matches.'''
     munkicommon.display_debug1(
         'Checking for skipped items that require %s' % item['name'])
-
+    
     matched_skipped_items = []
     for skipped_item in skipped_items:
         # get list of prerequisites for this skipped_item
@@ -870,23 +876,23 @@ def processRemovals(removallist, only_unattended=False):
                     'skipped items required it: %s'
                     % (item['name'], ", ".join(dependent_skipped_items)))
                 continue
-
+        
         if munkicommon.stopRequested():
             return restartFlag
         if not item.get('installed'):
             # not installed, so skip it (this shouldn't happen...)
             continue
-
+        
         index += 1
         name = item.get('display_name') or item.get('name')
         munkicommon.display_status_major(
             "Removing %s (%s of %s)..." % (name, index, len(removallist)))
-
+        
         retcode = 0
         # run preuninstall_script if it exists
         if 'preuninstall_script' in item:
             retcode = munkicommon.runEmbeddedScript('preuninstall_script', item)
-
+        
         if retcode == 0 and 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method']
             if uninstallmethod == "removepackages":
@@ -905,13 +911,13 @@ def processRemovals(removallist, only_unattended=False):
                     else:
                         munkicommon.log("Uninstall of %s was "
                                         "successful." % name)
-
+            
             elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
-
+            
             elif uninstallmethod == "remove_copied_items":
                 retcode = removeCopiedItems(item.get('items_to_remove'))
-
+            
             elif uninstallmethod == "remove_app":
                 remove_app_info = item.get('remove_app_info', None)
                 if remove_app_info:
@@ -928,14 +934,14 @@ def processRemovals(removallist, only_unattended=False):
                     munkicommon.display_error("Application removal "
                                               "info missing from %s" %
                                               name)
-
+            
             elif uninstallmethod == 'uninstall_script':
                 retcode = munkicommon.runEmbeddedScript(
                     'uninstall_script', item)
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
-
+            
             elif os.path.exists(uninstallmethod) and \
                  os.access(uninstallmethod, os.X_OK):
                 # it's a script or program to uninstall
@@ -944,13 +950,13 @@ def processRemovals(removallist, only_unattended=False):
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
-
+            
             else:
                 munkicommon.log("Uninstall of %s failed because "
                                 "there was no valid uninstall "
                                 "method." % name)
                 retcode = -99
-
+            
             if retcode == 0 and item.get('postuninstall_script'):
                 retcode = munkicommon.runEmbeddedScript(
                     'postuninstall_script', item)
@@ -964,7 +970,7 @@ def processRemovals(removallist, only_unattended=False):
                     # reset retcode to 0 so we will mark this uninstall
                     # as successful
                     retcode = 0
-
+        
         # record removal success/failure
         if not 'RemovalResults' in munkicommon.report:
             munkicommon.report['RemovalResults'] = []
@@ -979,7 +985,7 @@ def processRemovals(removallist, only_unattended=False):
                           " FAILED with return code: %s" % retcode
             munkicommon.log(failure_msg, "Install.log")
             munkicommon.report['RemovalResults'].append(failure_msg)
-
+    
     return (restartFlag, skipped_removals)
 
 
@@ -1010,7 +1016,7 @@ def blockingApplicationsRunning(pkginfoitem):
     """Returns true if any application in the blocking_applications list
     is running or, if there is no blocking_applications list, if any
     application in the installs list is running."""
-
+    
     if 'blocking_applications' in pkginfoitem:
         appnames = pkginfoitem['blocking_applications']
     else:
@@ -1019,7 +1025,7 @@ def blockingApplicationsRunning(pkginfoitem):
         appnames = [os.path.basename(item.get('path'))
                     for item in pkginfoitem.get('installs', [])
                     if item['type'] == 'application']
-
+    
     munkicommon.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
                     if munkicommon.isAppRunning(appname)]
@@ -1034,20 +1040,20 @@ def blockingApplicationsRunning(pkginfoitem):
 
 def run(only_unattended=False):
     """Runs the install/removal session.
-
+    
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
-
+    
     removals_need_restart = installs_need_restart = False
-
+    
     if only_unattended:
         munkicommon.log("### Beginning unattended installer session ###")
     else:
         munkicommon.log("### Beginning managed installer session ###")
-
+    
     installinfopath = os.path.join(managedinstallbase, 'InstallInfo.plist')
     if os.path.exists(installinfopath):
         try:
@@ -1055,7 +1061,7 @@ def run(only_unattended=False):
         except FoundationPlist.NSPropertyListSerializationException:
             munkicommon.display_error("Invalid %s" % installinfopath)
             return -1
-
+        
         # remove the install info file
         # it's no longer valid once we start running
         try:
@@ -1063,11 +1069,11 @@ def run(only_unattended=False):
         except (OSError, IOError):
             munkicommon.display_warning(
                 "Could not remove %s" % installinfopath)
-
+        
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
             munkistatus.hideStopButton()
-
+        
         if "removals" in installinfo:
             # filter list to items that need to be removed
             removallist = [item for item in installinfo['removals']
@@ -1089,7 +1095,7 @@ def run(only_unattended=False):
                      removallist, only_unattended=only_unattended)
                 # if any removals were skipped, record them for later
                 installinfo['removals'] = skipped_removals
-
+        
         if "managed_installs" in installinfo:
             if not munkicommon.stopRequested():
                 # filter list to items that need to be installed
@@ -1115,7 +1121,7 @@ def run(only_unattended=False):
                         only_unattended=only_unattended)
                     # if any installs were skipped record them for later
                     installinfo['managed_installs'] = skipped_installs
-
+        
         if (only_unattended and
             installinfo['managed_installs'] or installinfo['removals']):
             # need to write the installinfo back out minus the stuff we
@@ -1126,17 +1132,17 @@ def run(only_unattended=False):
                 # not fatal
                 munkicommon.display_warning(
                     "Could not write to %s" % installinfopath)
-
+    
     else:
         if not only_unattended:  # no need to log that no unattended pkgs found.
             munkicommon.log("No %s found." % installinfo)
-
+    
     if only_unattended:
         munkicommon.log("###    End unattended installer session    ###")
     else:
         munkicommon.log("###    End managed installer session    ###")
-
+    
     munkicommon.savereport()
-
+    
     return (removals_need_restart or installs_need_restart)
 
