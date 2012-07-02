@@ -598,16 +598,17 @@ def installWithInfo(
             munkicommon.display_status_major(
                 "Installing %s (%s of %s)"
                 % (display_name, itemindex, len(installlist)))
+            
+            installer_type = item.get("installer_type","")
 
             itempath = os.path.join(dirpath, item["installer_item"])
-            if not os.path.exists(itempath):
+            if installer_type != "nopkg" and not os.path.exists(itempath):
                 # can't install, so we should stop. Since later items might
                 # depend on this one, we shouldn't continue
                 munkicommon.display_error("Installer item %s was not found." %
                                            item["installer_item"])
                 return restartflag, skipped_installs
 
-            installer_type = item.get("installer_type","")
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.doAdobeInstall(item)
                 if retcode == 0:
@@ -628,6 +629,10 @@ def installWithInfo(
                 munkicommon.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = copyAppFromDMG(itempath)
+            elif installer_type == "nopkg": # Packageless install
+                if (item.get("RestartAction") == "RequireRestart" or
+                    item.get("RestartAction") == "RecommendRestart"):
+                    restartflag = True
             elif installer_type != "":
                 # we've encountered an installer type
                 # we don't know how to handle
@@ -712,7 +717,7 @@ def installWithInfo(
                         "Found nothing we know how to install in %s"
                         % itempath)
                     retcode = -99
-
+                
             if retcode == 0  and 'postinstall_script' in item:
                 # only run embedded postinstall script if the install did not
                 # return a failure code

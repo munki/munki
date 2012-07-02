@@ -118,24 +118,25 @@ def makecatalogs(repopath):
                 continue
             
             #simple sanity checking
-            if not 'installer_item_location' in pkginfo:
-                errors.append(
-                    "WARNING: file %s is missing installer_item_location" %
-                                                filepath[len(pkgsinfopath)+1:])
-                continue
-            try:
-                installeritempath = os.path.join(repopath, "pkgs",
-                            pkginfo['installer_item_location'])
-            except TypeError:
-                errors.append("WARNING: invalid installer_item_location"
-                    " in info file %s" % filepath[len(pkgsinfopath)+1:])
-                continue
-            if not os.path.exists(installeritempath):
-                errors.append("WARNING: Info file %s refers to "
-                              "missing installer item: %s" %
-                              (filepath[len(pkgsinfopath)+1:],
-                               pkginfo['installer_item_location']))
-                continue
+            if 'installer_type' in pkginfo and pkginfo['installer_type'] != 'nopkg':
+                if not 'installer_item_location' in pkginfo:
+                    errors.append(
+                        "WARNING: file %s is missing installer_item_location" %
+                                                    filepath[len(pkgsinfopath)+1:])
+                    continue
+                try:
+                    installeritempath = os.path.join(repopath, "pkgs",
+                                pkginfo['installer_item_location'])
+                except TypeError:
+                    errors.append("WARNING: invalid installer_item_location"
+                        " in info file %s" % filepath[len(pkgsinfopath)+1:])
+                    continue
+                if not os.path.exists(installeritempath):
+                    errors.append("WARNING: Info file %s refers to "
+                                  "missing installer item: %s" %
+                                  (filepath[len(pkgsinfopath)+1:],
+                                   pkginfo['installer_item_location']))
+                    continue
             
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
