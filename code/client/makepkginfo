@@ -127,11 +127,17 @@ def getCatalogInfoFromDmg(dmgpath, options):
                         break
                         
         if iteminfo:
+            item_to_copy = {}
+            if options.destinationitem:
+                dest_item = options.destinationitem
+                item_to_copy['destination_item'] = options.destinationitem
+            else:
+                dest_item = item
             if options.destinationpath:
                 iteminfo['path'] = os.path.join(options.destinationpath,
-                                                                    item)
-            else:          
-                iteminfo['path'] = os.path.join("/Applications", item)
+                                                                    dest_item)
+            else:
+                iteminfo['path'] = os.path.join("/Applications", dest_item)
             cataloginfo = {}
             cataloginfo['name'] = iteminfo.get('CFBundleName',
                                             os.path.splitext(item)[0])
@@ -139,7 +145,6 @@ def getCatalogInfoFromDmg(dmgpath, options):
                 iteminfo.get('CFBundleShortVersionString', "0")
             cataloginfo['installs'] = [iteminfo]
             cataloginfo['installer_type'] = "copy_from_dmg"
-            item_to_copy = {}
             item_to_copy['source_item'] = item
             item_to_copy['destination_path'] = \
                         options.destinationpath or "/Applications"
@@ -398,6 +403,11 @@ def main():
         metavar='PATH',
         help=('Path to which the item should be copied. Defaults to '
               '"/Applications".')
+        )
+    dragdrop_options.add_option(
+        '--destinationitem',
+        metavar='NAME',
+        help='Alternate name for which the item should be copied as.'
         )
     dragdrop_options.add_option(
         '-o', '--owner',
