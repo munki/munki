@@ -210,8 +210,8 @@ class AppleUpdates(object):
             return
 
         for product_key in catalog['Products'].keys():
-            p = catalog['Products'][product_key]
-            self.RewriteProductURLs(p, rewrite_pkg_urls=rewrite_pkg_urls)
+            product = catalog['Products'][product_key]
+            self.RewriteProductURLs(product, rewrite_pkg_urls=rewrite_pkg_urls)
 
     def RetrieveURLToCacheDir(self, full_url, copy_only_if_missing=False):
         """Downloads a URL and stores it in the same relative path on our
@@ -354,8 +354,8 @@ class AppleUpdates(object):
         return list_of_localizations[0]
 
     def GetDistributionForProductKey(self, product_key):
-        '''Returns the path to a distibution file from the local cache for the given
-        product_key.'''
+        '''Returns the path to a distibution file from the local cache for the 
+        given product_key.'''
         try:
             catalog = FoundationPlist.readPlist(self.local_catalog_path)
         except FoundationPlist.NSPropertyListSerializationException:
@@ -397,9 +397,9 @@ class AppleUpdates(object):
                     must_close_app_ids.append(app.attributes['id'].value)
 
         blocking_apps = []
-        for id in must_close_app_ids:
-            resultcode, fileref, nsurl = LSFindApplicationForInfo(
-                0, id, None, None, None)
+        for app_id in must_close_app_ids:
+            unused_resultcode, unused_fileref, nsurl = LSFindApplicationForInfo(
+                0, app_id, None, None, None)
             fileurl = str(nsurl)
             if fileurl.startswith('file://localhost'):
                 fileurl = fileurl[len('file://localhost'):]
@@ -588,8 +588,8 @@ class AppleUpdates(object):
         """
         try:
             catalog_url = self._GetAppleCatalogURL()
-        except CatalogNotFoundError, e:
-            munkicommon.display_error(str(e))
+        except CatalogNotFoundError, err:
+            munkicommon.display_error(str(err))
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
@@ -600,7 +600,7 @@ class AppleUpdates(object):
         self._ResetMunkiStatusAndDisplayMessage(msg)
         munkicommon.display_detail('Caching CatalogURL %s', catalog_url)
         try:
-            file_changed = self.GetSoftwareUpdateResource(
+            unused_file_changed = self.GetSoftwareUpdateResource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
             self.ExtractAndCopyDownloadedCatalog()
         except fetch.MunkiDownloadError:
