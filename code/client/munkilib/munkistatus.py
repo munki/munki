@@ -42,7 +42,7 @@ def launchMunkiStatus():
     is created; and that launch agent then runs MunkiStatus.app.'''
     launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     cmd = ['/usr/bin/touch', launchfile]
-    retcode = subprocess.call(cmd)
+    unused_retcode = subprocess.call(cmd)
     time.sleep(0.1)
     if os.path.exists(launchfile):
         os.unlink(launchfile)
@@ -75,7 +75,7 @@ def sendCommand(command_text):
             # we can send only a single line.
             messagelines = command_text.splitlines(True)
             SOCK.send(messagelines[0].encode('UTF-8'))
-        except socket.error, (err, errmsg):
+        except socket.error, (err, unused_errmsg):
             if err == 32 or err == 9:
                 # broken pipe
                 SOCK.close()
