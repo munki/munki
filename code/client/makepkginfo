@@ -416,7 +416,7 @@ def main():
         '-o', '--owner',
         metavar='USER',
         dest='user',
-        help=('Sets the owner of the item specified by the --item flag. '
+        help=('Sets the owner of the copied item. '
               'The owner may be either a UID or a symbolic name. '
               'The owner will be set recursively on the item.')
         )
@@ -424,7 +424,7 @@ def main():
         '-g', '--group',
         metavar='GROUP',
         dest='group',
-        help=('Sets the group of the item specified by the --item flag. '
+        help=('Sets the group of the copied item. '
               'The group may be either a GID or a symbolic name. '
               'The group will be set recursively on the item.')
         )
@@ -435,7 +435,7 @@ def main():
         action='callback',
         type='string',
         callback=check_mode,
-        help=('Sets the mode of the item specified by the --item flag. '
+        help=('Sets the mode of the copied item. '
               'The specified mode must be in symbolic form. '
               'See the manpage for chmod(1) for more information. '
               'The mode is applied recursively.')
