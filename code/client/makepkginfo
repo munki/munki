@@ -407,7 +407,9 @@ def main():
     dragdrop_options.add_option(
         '--destinationitem',
         metavar='NAME',
-        help='Alternate name for which the item should be copied as.'
+        help=('Alternate name for which the item should be copied as. '
+              'Specifying this option also alters the corresponding '
+              '"installs" item\'s path with the provided name.')
         )
     dragdrop_options.add_option(
         '-o', '--owner',
