@@ -129,6 +129,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
         if iteminfo:
             item_to_copy = {}
             if options.destinationitem:
+                # An alternate 'destination_item' name has been specified
                 dest_item = options.destinationitem
                 item_to_copy['destination_item'] = options.destinationitem
             else:
