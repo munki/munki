@@ -1,0 +1,192 @@
+"Checking for available updates..." = "Buscando actualizaciones disponibles...";
+
+/* No comment provided by engineer. */
+" (will be removed)" = " (será eliminado)";
+
+"Checking for additional changes..." = "Buscando cambios adicionales...";
+
+/* No comment provided by engineer. */
+"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nTodas las actualizaciones pendientes serán instaladas. Cualquier cambio no guardado se perderá.\nPuede evitar el cierre forzado de la sesión cerrandola ahora.";
+
+/* No comment provided by engineer. */
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Se recomienda cerrar la sesión antes de actualizar. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora?";
+
+"Checking for available Apple Software Updates..." = "Buscando actualizaciones de Apple...";
+
+/* No comment provided by engineer. */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Es necesario cerrar la sesión antes de actualizar. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora?";
+
+/* No comment provided by engineer. */
+"This item will be removed." = "Este elemento será eliminado.";
+
+/* No comment provided by engineer. */
+"A logout will be forced at approximately %s." = "Se va a forzar el cierre de la sesión en aproximadamente %s.";
+
+/* No comment provided by engineer. */
+"A logout will be forced in less than %s minutes." = "Se va a forzar el cierre de la sesión en menos de %s minutos.";
+
+/* No comment provided by engineer. */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Se va a forzar el cierre de la sesión en menos de un minuto.\nTodas las actualizaciones pendientes serán instaladas. Los cambios no guardados se perderán.";
+
+/* No comment provided by engineer. */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora? ";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancelar";
+
+/* No comment provided by engineer. */
+"Cannot check for updates" = "Impossible comprobar las actualizaciones";
+
+/* No comment provided by engineer. */
+"Cannot start installation session" = "Impossible iniciar la instalación";
+
+/* No comment provided by engineer. */
+"Conflicting applications running" = "Aplicaciones conflictivas abiertas";
+
+/* No comment provided by engineer. */
+"Continue" = "Continuar";
+
+/* No comment provided by engineer. */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Para obtener buenos resultados, es recomendable que conecte su ordenador a una fuente de alimentación antes de iniciar la instalación. ¿Seguro que desea continuar con la instalación?";
+
+/* No comment provided by engineer. */
+"Forced Logout for Mandatory Install" = "Cierre de sesión forzado para una instalación obligatoria";
+
+/* No comment provided by engineer. */
+"Install session failed" = "Error en la sesión instalación";
+
+/* No comment provided by engineer. */
+"Installed" = "Instalado";
+
+/* No comment provided by engineer. */
+"Logout and update" = "Cerrar sesión y actualizar";
+
+/* No comment provided by engineer. */
+"Logout and update now" = "Cerrar sesión y actualizar ahora";
+
+/* No comment provided by engineer. */
+"Logout Recommended" = "Recomendado cerrar la sesión";
+
+/* No comment provided by engineer. */
+"Logout Required" = "Cerrar sesión obligatorio";
+
+/* No comment provided by engineer. */
+"Logout will be required." = "Será necesario cerrar la sesión";
+
+/* No comment provided by engineer. */
+"Manadatory Updates Pending" = "Actualizaciones obligatorias pendientes";
+
+/* No comment provided by engineer. */
+"Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Actualización controlada de software no ha podido contactar con el servidor.\nSi este problema continua, contacte con su administrador.";
+
+/* No comment provided by engineer. */
+"Managed Software Update failed its preflight check.\nTry again later." = "Actualización controlada de software ha fallado en su comprobación previa.\nPruebe más tarde.";
+
+/* No comment provided by engineer. */
+"Not installed" = "No instalado";
+
+/* No comment provided by engineer. */
+"Not removable" = "No desinstalable";
+
+/* No comment provided by engineer. */
+"OK" = "Si";
+
+/* No comment provided by engineer. */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Una o más actualizaciones obligatorias ha cumplido su fecha. Pronto se forzará un cierre de sesión";
+
+/* No comment provided by engineer. */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Una o más actualizaciones necesitan ser instaladas por %s. Se forzará un cierre de sesión si espera demasiado en instalar la actualización.";
+
+/* No comment provided by engineer. */
+"Optional software..." = "Software opcional...";
+
+/* No comment provided by engineer. */
+"Other users logged in" = "Hay otros usuario con sesiones abiertas";
+
+/* No comment provided by engineer. */
+"Quit" = "Salir";
+
+/* No comment provided by engineer. */
+"Restart" = "Reiniciar";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Necesario reiniciar";
+
+/* No comment provided by engineer. */
+"Restart will be required." = "Será necesario reiniciar.";
+
+/* No comment provided by engineer. */
+"Scheduled removal of managed software." = "Desinstalación programada de software.";
+
+/* No comment provided by engineer. */
+"Show updates" = "Mostrar actualizaciones";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "El software instalado necesita reiniciar su ordenador. Tendrá oportunidad de guardar sus documentos";
+
+/* No comment provided by engineer. */
+"Software removals" = "Desintalación de software";
+
+/* No comment provided by engineer. */
+"Starting…" = "Empezando…";
+
+/* No comment provided by engineer. */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Hay otros usuarios con sesiones abiertas en este ordenador.\nActualizar ahora puede causarles perdidas en su trabajo.\n\nPor favor pruebe más tarde cuando los otros usuarios hayan cerrado sus sesiones.";
+
+/* No comment provided by engineer. */
+"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator." = "Existe un problema de configuración con el instalador de software controlado. No se ha podido iniciar la sesión de instalación. Contacte con su administrador de sistemas.";
+
+/* No comment provided by engineer. */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Existe un problema de configuración con el instalador de software controlado. No se ha podido iniciar el proceso. Contacte con su administrador de sistemas.";
+
+/* No comment provided by engineer. */
+"There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator." = "Existe un problema de configuración con el instalador de software controlado. No se ha podido iniciar la comprobación de actualizaciones. Contacte con su administrador de sistemas.";
+
+/* No comment provided by engineer. */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Existe un problema de configuración con el instalador de software controlado. El proceso se ha cerrado inesperadamente. Contacte con su administrador de sistemas.";
+
+/* No comment provided by engineer. */
+"There is no new software for your computer at this time." = "Actualmente no existen actualizaciones de software disponibles.";
+
+/* No comment provided by engineer. */
+"This item must be installed by " = "Este elemento necesita ser instalado por ";
+
+/* No comment provided by engineer. */
+"Update available" = "Actualización disponible";
+
+/* No comment provided by engineer. */
+"Update check failed" = "Comprobación fallida";
+
+/* No comment provided by engineer. */
+"Update later" = "Actualizar más tarde";
+
+/* No comment provided by engineer. */
+"Update without logging out" = "Actualizar sin cerrar sesión";
+
+/* No comment provided by engineer. */
+"Will be installed" = "Será instalado";
+
+/* No comment provided by engineer. */
+"Will be removed" = "Será desinstalado";
+
+/* No comment provided by engineer. */
+"Will be updated" = "Será actualizado";
+
+/* No comment provided by engineer. */
+"Will not be installed" = "No será instalado";
+
+/* No comment provided by engineer. */
+"Will not be removed" = "No será desinstalado";
+
+/* No comment provided by engineer. */
+"You must quit the following applications before proceeding with installation:\n\n%s" = "Es necesario que cierre las siguientes aplicaciones antes de continuar actualizando:\n\n%s";
+
+/* No comment provided by engineer. */
+"Your computer is not connected to a power source." = "El ordenador no está conectado a una fuente de alimentación.";
+
+/* No comment provided by engineer. */
+"Your software is up to date." = "Su software está actualizado.";
+
+"Checking Apple Software Update catalog..." = "Comprobando el catalogo de actualizaciones de Apple...";
+
+"Finishing..." = "Terminando...";
