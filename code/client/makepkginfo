@@ -128,10 +128,10 @@ def getCatalogInfoFromDmg(dmgpath, options):
                         
         if iteminfo:
             item_to_copy = {}
-            if options.destinationitem:
+            if options.destitemname:
                 # An alternate 'destination_item' name has been specified
-                dest_item = options.destinationitem
-                item_to_copy['destination_item'] = options.destinationitem
+                dest_item = options.destitemname
+                item_to_copy['destination_item'] = options.destitemname
             else:
                 dest_item = item
             if options.destinationpath:
@@ -406,8 +406,9 @@ def main():
               '"/Applications".')
         )
     dragdrop_options.add_option(
-        '--destinationitem',
+        '--destinationitemname', '--destinationitem',
         metavar='NAME',
+        dest='destitemname',
         help=('Alternate name for which the item should be copied as. '
               'Specifying this option also alters the corresponding '
               '"installs" item\'s path with the provided name.')
