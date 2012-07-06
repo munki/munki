@@ -865,7 +865,7 @@ def main():
     if options.requires:
         catinfo['requires'] = options.requires
     if options.blocking_application:
-        catinfo['blocking_application'] = options.blocking_application
+        catinfo['blocking_applications'] = options.blocking_application
     if options.uninstall_method:
         catinfo['uninstall_method'] = options.uninstall_method
     if options.installer_environment:
