@@ -1698,7 +1698,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # restart or logout...
             if (item_pl.get('unattended_install') or
                 item_pl.get('forced_install')):
-                if item_pl.get('RestartAction'):
+                if item_pl.get('RestartAction', 'None') != 'None':
                     munkicommon.display_warning(
                         'Ignoring unattended_install key for %s '
                         'because RestartAction is %s.'
