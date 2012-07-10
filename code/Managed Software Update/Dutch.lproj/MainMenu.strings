@@ -1,0 +1,246 @@
+﻿
+/* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "5"; */
+"5.title" = "Alles Naar Voren Brengen";
+
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Venster";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Minimaliseren";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Venster";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "Managed Software Update"; ObjectID = "56"; */
+"56.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "NSMenu"; title = "Managed Software Update"; ObjectID = "57"; */
+"57.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Update"; ObjectID = "58"; */
+"58.title" = "Over Beheerde Softwarebijwerking";
+
+/* Class = "NSMenu"; title = "Update"; ObjectID = "81"; */
+"81.title" = "Bijwerken";
+
+/* Class = "NSMenuItem"; title = "Update now "; ObjectID = "82"; */
+"82.title" = "Werk nu bij ";
+
+/* Class = "NSMenuItem"; title = "Update"; ObjectID = "83"; */
+"83.title" = "Bijwerken";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "Help";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "Help";
+
+/* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
+"111.title" = "Beheerde Softwarebijwerking Help";
+
+/* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "129"; */
+"129.title" = "Voorkeuren…";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Hide Managed Software Update"; ObjectID = "134"; */
+"134.title" = "Verberg Beheerde Softwarebijwerking";
+
+/* Class = "NSMenuItem"; title = "Quit Managed Software Update"; ObjectID = "136"; */
+"136.title" = "Sluit Beheerde Softwarebijwerking af";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "Verberg Anderen";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "Toon Alles";
+
+/* Class = "NSMenuItem"; title = "Stop Speaking"; ObjectID = "195"; */
+"195.title" = "Stop Spraak";
+
+/* Class = "NSMenuItem"; title = "Start Speaking"; ObjectID = "196"; */
+"196.title" = "Start Spraak";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "Kopiër";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "Alles Selecteren";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "Knippen";
+
+/* Class = "NSMenu"; title = "Spelling and Grammar"; ObjectID = "200"; */
+"200.title" = "Spelling en Grammatica";
+
+/* Class = "NSMenuItem"; title = "Check Spelling"; ObjectID = "201"; */
+"201.title" = "Spelling Controleren";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "Verwijder";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "Plakken";
+
+/* Class = "NSMenuItem"; title = "Show Spelling…"; ObjectID = "204"; */
+"204.title" = "Toon Spelling…";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "Bewerken";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Ontdoe";
+
+/* Class = "NSMenuItem"; title = "Find Next"; ObjectID = "208"; */
+"208.title" = "Vind Volgende";
+
+/* Class = "NSMenuItem"; title = "Find…"; ObjectID = "209"; */
+"209.title" = "Vind…";
+
+/* Class = "NSMenuItem"; title = "Jump to Selection"; ObjectID = "210"; */
+"210.title" = "Ga Naar Selectie";
+
+/* Class = "NSMenuItem"; title = "Speech"; ObjectID = "211"; */
+"211.title" = "Spraak";
+
+/* Class = "NSMenu"; title = "Speech"; ObjectID = "212"; */
+"212.title" = "Spraak";
+
+/* Class = "NSMenuItem"; title = "Find Previous"; ObjectID = "213"; */
+"213.title" = "Vind Vorige";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Opnieuw";
+
+/* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "216"; */
+"216.title" = "Spelling en Grammatica";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Bewerken";
+
+/* Class = "NSMenuItem"; title = "Find"; ObjectID = "218"; */
+"218.title" = "Vind";
+
+/* Class = "NSMenuItem"; title = "Check Spelling While Typing"; ObjectID = "219"; */
+"219.title" = "Spelling Controleren Tijdens Typen";
+
+/* Class = "NSMenu"; title = "Find"; ObjectID = "220"; */
+"220.title" = "Vind";
+
+/* Class = "NSMenuItem"; title = "Use Selection for Find"; ObjectID = "221"; */
+"221.title" = "Gebruik Selectie voor Vinden";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "Zoom";
+
+/* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
+"346.title" = "Check Grammatica Met Spelling";
+
+/* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "348"; */
+"348.title" = "Substituties";
+
+/* Class = "NSMenu"; title = "Substitutions"; ObjectID = "349"; */
+"349.title" = "Substituties";
+
+/* Class = "NSMenuItem"; title = "Smart Copy/Paste"; ObjectID = "350"; */
+"350.title" = "Smart Knip/Plak";
+
+/* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "351"; */
+"351.title" = "Smart Aanhalingstekens";
+
+/* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "354"; */
+"354.title" = "Smart Links";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "371"; */
+"371.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
+"378.title" = "Software updates zijn beschikbaar voor Uw computer.";
+
+/* Class = "NSTextFieldCell"; title = "Updating your software may take some time. If you're not ready to update now, you can choose to update later."; ObjectID = "380"; */
+"380.title" = "Het bijwerken van Uw software kan enige tijd duren. Als u nog niet klaar bent om nu bij te werken, kunt u ervoor kiezen om later bij te werken.";
+
+/* Class = "NSButtonCell"; title = "Update now"; ObjectID = "382"; */
+"382.title" = "Werk nu bij";
+
+/* Class = "NSButtonCell"; title = "Later"; ObjectID = "384"; */
+"384.title" = "Later";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "397"; */
+"397.headerCell.title" = "Naam";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "398"; */
+"398.title" = "Tekst Cel";
+
+/* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "400"; */
+"400.headerCell.title" = "Versie";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "401"; */
+"401.title" = "Tekst Cel";
+
+/* Class = "NSTabViewItem"; label = "Updates"; ObjectID = "512"; */
+"512.label" = "Updates";
+
+/* Class = "NSTabViewItem"; label = "Optional software"; ObjectID = "514"; */
+"514.label" = "Optionele software";
+
+/* Class = "NSButtonCell"; title = "Add or Remove"; ObjectID = "519"; */
+"519.title" = "Toevoegen of Verwijderen";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "520"; */
+"520.title" = "Annuleren";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "527"; */
+"527.headerCell.title" = "Naam";
+
+/* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "528"; */
+"528.headerCell.title" = "Versie";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "531"; */
+"531.title" = "Tekst Cel";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "532"; */
+"532.title" = "Tekst Cel";
+
+/* Class = "NSTextFieldCell"; title = "Check an item to have it installed. Uncheck an item to have it removed."; ObjectID = "546"; */
+"546.title" = "Vink een item aan om het te installeren. Haal de vink weg voor een item aan om het te verwijderen.";
+
+/* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
+"547.title" = "Voeg optionele software toe of verwijder het";
+
+/* Class = "NSButtonCell"; title = "Optional software..."; ObjectID = "550"; */
+"550.title" = "Optionele software...";
+
+/* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "581"; */
+"581.headerCell.title" = "Grootte";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "582"; */
+"582.title" = "Tekst Cel";
+
+/* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "585"; */
+"585.headerCell.title" = "Grootte";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "586"; */
+"586.title" = "Tekst Cel";
+
+/* Class = "NSTableColumn"; headerCell.title = "Status"; ObjectID = "628"; */
+"628.headerCell.title" = "Staat";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "629"; */
+"629.title" = "Tekst Cel";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "633"; */
+"633.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "635"; */
+"635.title" = "BackdropWindow";
+
+/* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
+"645.title" = "Stop";
