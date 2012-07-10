@@ -57,6 +57,10 @@
 		9C31DF831552EBE100541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Finnish; path = Finnish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9C31DF841552EBFD00541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Finnish; path = Finnish.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		9C31DF851552EC1900541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Finnish; path = Finnish.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9C40244915ACF23B001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Spanish; path = Spanish.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9C40244A15ACF268001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
+		9C40244B15ACF280001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9C40244C15ACF294001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		9CB75D9815505CC200DE19F0 /* French */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = French; path = French.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		9CB75D9915505CFA00DE19F0 /* French */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = French; path = French.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9CB75D9A15505D3100DE19F0 /* French */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = French; path = French.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
@@ -244,6 +248,7 @@
 				French,
 				German,
 				Finnish,
+				Spanish,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Managed Software Update */;
 			projectDirPath = "";
@@ -316,7 +321,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to Finnish --utf8";
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Finnish --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -341,6 +346,7 @@
 				C0C5492D12B96869002C76CD /* German */,
 				9CB75D9915505CFA00DE19F0 /* French */,
 				9C31DF831552EBE100541665 /* Finnish */,
+				9C40244B15ACF280001002D4 /* Spanish */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -352,6 +358,7 @@
 				C0C5492C12B9685D002C76CD /* German */,
 				9CB75DA715505FA200DE19F0 /* French */,
 				9C31DF851552EC1900541665 /* Finnish */,
+				9C40244915ACF23B001002D4 /* Spanish */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -363,6 +370,7 @@
 				C054583B13D4FDD000ED615D /* English */,
 				9CB75D9A15505D3100DE19F0 /* French */,
 				9C31DF841552EBFD00541665 /* Finnish */,
+				9C40244A15ACF268001002D4 /* Spanish */,
 			);
 			name = Localizable.strings;
 			path = German.lproj;
@@ -375,6 +383,7 @@
 				C0C5493312B9693E002C76CD /* German */,
 				9CB75D9815505CC200DE19F0 /* French */,
 				9C31DF821552EB8A00541665 /* Finnish */,
+				9C40244C15ACF294001002D4 /* Spanish */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
