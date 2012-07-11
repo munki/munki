@@ -611,7 +611,7 @@ def main():
     # Strip trailing '/' from installer_item
     installer_item = installer_item.rstrip('/')
     
-    if not munkicommon.hasValidDiskImageExt(installer_item) and \
+    if not munkicommon.hasValidInstallerItemExt(installer_item) and \
        not munkicommon.isApplication(installer_item):
         print >> sys.stderr, (
             'Unknown installer item type: "%s"' % installer_item)
