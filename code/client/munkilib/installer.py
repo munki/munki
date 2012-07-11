@@ -260,7 +260,7 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
         if munkicommon.stopRequested():
             return (retcode, restartflag)
         itempath = os.path.join(dirpath, item)
-        if item.endswith(".dmg"):
+        if munkicommon.hasValidDiskImageExt(item):
             munkicommon.display_info("Mounting disk image %s" % item)
             mountpoints = munkicommon.mountdmg(itempath, use_shadow=True)
             if mountpoints == []:
@@ -286,7 +286,7 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
             
             munkicommon.unmountdmg(mountpoints[0])
         
-        if (item.endswith(".pkg") or item.endswith(".mpkg")):
+        if munkicommon.hasValidInstallerItemExt(item):
             (retcode, needsrestart) = install(itempath, choicesXMLpath,
                                                 suppressBundleRelocation,
                                                 environment)
@@ -659,7 +659,7 @@ def installWithInfo(
                 else:
                     choicesXMLfile = ''
                 installer_environment = item.get('installer_environment')
-                if itempath.endswith(".dmg"):
+                if munkicommon.hasValidDiskImageExt(itempath):
                     munkicommon.display_status_minor(
                         "Mounting disk image %s" % item["installer_item"])
                     mountWithShadow = suppressBundleRelocation
@@ -679,8 +679,7 @@ def installWithInfo(
                     
                     retcode = -99 # in case we find nothing to install
                     needtorestart = False
-                    if item.get('package_path','').endswith('.pkg') or \
-                       item.get('package_path','').endswith('.mpkg'):
+                    if munkicommon.hasValidInstallerItemExt(item.get('package_path', '')):
                         # admin has specified the relative path of the pkg
                         # on the DMG
                         # this is useful if there is more than one pkg on
@@ -706,8 +705,8 @@ def installWithInfo(
                         item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
                     munkicommon.unmountdmg(mountpoints[0])
-                elif (itempath.endswith(".pkg") or itempath.endswith(".mpkg")
-                      or itempath.endswith(".dist")):
+                elif munkicommon.hasValidPackageExt(itempath) or \
+                     itempath.endswith(".dist"):
                     (retcode, needtorestart) = install(itempath,
                                                      choicesXMLfile,
                                                      suppressBundleRelocation,
@@ -817,7 +816,7 @@ def installWithInfo(
                     else:
                         # flat pkg or dmg
                         retcode = subprocess.call(["/bin/rm", itempath])
-                        if itempath.endswith('.dmg'):
+                        if munkicommon.hasValidDiskImageExt(itempath):
                             shadowfile = os.path.join(itempath,".shadow")
                             if os.path.exists(shadowfile):
                                 retcode = subprocess.call(

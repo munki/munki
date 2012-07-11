@@ -71,7 +71,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
         # search for first package at root
         for fsitem in munkicommon.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
-            if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
+            if munkicommon.hasValidInstallerItemExt(itempath):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
                 if options.installer_choices_xml:
                     installer_choices_xml = munkicommon.getChoiceChangesXML(
@@ -127,11 +127,18 @@ def getCatalogInfoFromDmg(dmgpath, options):
                         break
                         
         if iteminfo:
+            item_to_copy = {}
+            if options.destitemname:
+                # An alternate 'destination_item' name has been specified
+                dest_item = options.destitemname
+                item_to_copy['destination_item'] = options.destitemname
+            else:
+                dest_item = item
             if options.destinationpath:
                 iteminfo['path'] = os.path.join(options.destinationpath,
-                                                                    item)
-            else:          
-                iteminfo['path'] = os.path.join("/Applications", item)
+                                                                    dest_item)
+            else:
+                iteminfo['path'] = os.path.join("/Applications", dest_item)
             cataloginfo = {}
             cataloginfo['name'] = iteminfo.get('CFBundleName',
                                             os.path.splitext(item)[0])
@@ -139,7 +146,6 @@ def getCatalogInfoFromDmg(dmgpath, options):
                 iteminfo.get('CFBundleShortVersionString', "0")
             cataloginfo['installs'] = [iteminfo]
             cataloginfo['installer_type'] = "copy_from_dmg"
-            item_to_copy = {}
             item_to_copy['source_item'] = item
             item_to_copy['destination_path'] = \
                         options.destinationpath or "/Applications"
@@ -400,10 +406,18 @@ def main():
               '"/Applications".')
         )
     dragdrop_options.add_option(
+        '--destinationitemname', '--destinationitem',
+        metavar='NAME',
+        dest='destitemname',
+        help=('Alternate name for which the item should be copied as. '
+              'Specifying this option also alters the corresponding '
+              '"installs" item\'s path with the provided name.')
+        )
+    dragdrop_options.add_option(
         '-o', '--owner',
         metavar='USER',
         dest='user',
-        help=('Sets the owner of the item specified by the --item flag. '
+        help=('Sets the owner of the copied item. '
               'The owner may be either a UID or a symbolic name. '
               'The owner will be set recursively on the item.')
         )
@@ -411,7 +425,7 @@ def main():
         '-g', '--group',
         metavar='GROUP',
         dest='group',
-        help=('Sets the group of the item specified by the --item flag. '
+        help=('Sets the group of the copied item. '
               'The group may be either a GID or a symbolic name. '
               'The group will be set recursively on the item.')
         )
@@ -422,7 +436,7 @@ def main():
         action='callback',
         type='string',
         callback=check_mode,
-        help=('Sets the mode of the item specified by the --item flag. '
+        help=('Sets the mode of the copied item. '
               'The specified mode must be in symbolic form. '
               'See the manpage for chmod(1) for more information. '
               'The mode is applied recursively.')
@@ -629,7 +643,7 @@ def main():
                 itemsize = int(os.path.getsize(item))
                 itemhash = munkicommon.getsha256hash(item)
             
-            if item.endswith('.dmg'):
+            if munkicommon.hasValidDiskImageExt(item):
                 if munkicommon.DMGisWritable(item):
                     print >> sys.stderr, ("WARNING: %s is a writable disk "
                         "image. Checksum verification is not supported." 
@@ -654,7 +668,7 @@ def main():
                          item
                     exit(-1)
             
-            elif item.endswith('.pkg') or item.endswith('.mpkg'):
+            elif munkicommon.hasValidPackageExt(item):
                 catinfo = munkicommon.getPackageMetaData(item)
                 if options.installer_choices_xml:
                     installer_choices_xml = munkicommon.getChoiceChangesXML(
@@ -852,7 +866,7 @@ def main():
     if options.requires:
         catinfo['requires'] = options.requires
     if options.blocking_application:
-        catinfo['blocking_application'] = options.blocking_application
+        catinfo['blocking_applications'] = options.blocking_application
     if options.uninstall_method:
         catinfo['uninstall_method'] = options.uninstall_method
     if options.installer_environment:
