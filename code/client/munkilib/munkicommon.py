@@ -1473,7 +1473,7 @@ def getBundlePackageInfo(pkgpath):
 def getReceiptInfo(pkgname):
     """Get receipt info from a package"""
     info = []
-    if pkgname.endswith('.pkg') or pkgname.endswith('.mpkg'):
+    if hasValidPackageExt(pkgname):
         display_debug2('Examining %s' % pkgname)
         if os.path.isfile(pkgname):       # new flat package
             info = getFlatPackageInfo(pkgname)
@@ -1592,14 +1592,21 @@ def nameAndVersion(aString):
         return (aString, '')
 
 
+def hasValidPackageExt(path):
+    """Verifies a path ends in '.pkg' or '.mpkg'"""
+    ext = os.path.splitext(path)[1]
+    return ext.lower() in ['.pkg', '.mpkg']
 
-def isInstallerItem(path):
+
+def hasValidDiskImageExt(path):
+    """Verifies a path ends in '.dmg' or '.iso'"""
+    ext = os.path.splitext(path)[1]
+    return ext.lower() in ['.dmg', '.iso']
+
+
+def hasValidInstallerItemExt(path):
     """Verifies we have an installer item"""
-    if (path.endswith('.pkg') or path.endswith('.mpkg') or
-        path.endswith('.dmg') or path.endswith('.dist')):
-        return True
-    else:
-        return False
+    return hasValidPackageExt(path) or hasValidDiskImageExt(path)
 
 
 def getChoiceChangesXML(pkgitem):
@@ -1642,7 +1649,7 @@ def getPackageMetaData(pkgitem):
               (some may not be installed on some machines)
     """
 
-    if not isInstallerItem(pkgitem):
+    if not hasValidInstallerItemExt(pkgitem):
         return {}
 
     # first get the data /usr/sbin/installer will give us

@@ -611,8 +611,8 @@ def main():
     # Strip trailing '/' from installer_item
     installer_item = installer_item.rstrip('/')
     
-    item_ext = os.path.splitext(installer_item)[1]
-    if item_ext not in ['.pkg', '.mpkg', '.dmg', '.app']:
+    if not munkicommon.hasValidDiskImageExt(installer_item) and \
+       not munkicommon.isApplication(installer_item):
         print >> sys.stderr, (
             'Unknown installer item type: "%s"' % installer_item)
         exit(-1)
@@ -633,8 +633,8 @@ def main():
         exit(-1)
                     
     if os.path.isdir(installer_item):
-        if item_ext == '.dmg':
-            # a directory named foo.dmg!
+        if munkicommon.hasValidDiskImageExt(installer_item):
+            # a directory named foo.dmg or foo.iso!
             print >> sys.stderr, '%s is an unknown type.' % installer_item
             cleanupAndExit(-1)
         else:
