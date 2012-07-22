@@ -26,6 +26,7 @@ import pwd
 #import signal
 import subprocess
 import time
+import stat
 
 import adobeutils
 import launchd
@@ -366,10 +367,29 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
         # check destination path
         destpath = item.get("destination_path")
         if not os.path.exists(destpath):
-            munkicommon.display_error(
-                "Destination path %s does not exist!" % destpath)
-            return -1
-        
+            munkicommon.display_detail(
+                "Destination path %s does not exist, will determine owner/permissions from parent" % destpath)
+            parent_path = destpath
+            new_paths = []
+
+            # work our way back up to an existing path and build a list
+            while not os.path.exists(parent_path):
+                new_paths.insert(0, parent_path)
+                parent_path = os.path.split(parent_path)[0]
+
+            # stat the parent, get uid/gid/mode
+            parent_stat = os.stat(parent_path)
+            parent_uid, parent_gid = parent_stat.st_uid, parent_stat.st_gid
+            parent_mode = stat.S_IMODE(parent_stat.st_mode)
+
+            # make the new tree with the parent's mode
+            os.makedirs(destpath, mode=parent_mode)
+
+            # chown each new dir
+            for new_path in new_paths:
+                os.chown(new_path, parent_uid, parent_gid)
+
+
         # setup full destination path using 'destination_item', if supplied
         if dest_itemname:
             full_destpath = os.path.join(
