@@ -71,7 +71,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
         # search for first package at root
         for fsitem in munkicommon.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
-            if itempath.endswith('.pkg') or itempath.endswith('.mpkg'):
+            if munkicommon.hasValidInstallerItemExt(itempath):
                 cataloginfo = munkicommon.getPackageMetaData(itempath)
                 if options.installer_choices_xml:
                     installer_choices_xml = munkicommon.getChoiceChangesXML(
@@ -643,7 +643,7 @@ def main():
                 itemsize = int(os.path.getsize(item))
                 itemhash = munkicommon.getsha256hash(item)
             
-            if item.endswith('.dmg'):
+            if munkicommon.hasValidDiskImageExt(item):
                 if munkicommon.DMGisWritable(item):
                     print >> sys.stderr, ("WARNING: %s is a writable disk "
                         "image. Checksum verification is not supported." 
@@ -668,7 +668,7 @@ def main():
                          item
                     exit(-1)
             
-            elif item.endswith('.pkg') or item.endswith('.mpkg'):
+            elif munkicommon.hasValidPackageExt(item):
                 catinfo = munkicommon.getPackageMetaData(item)
                 if options.installer_choices_xml:
                     installer_choices_xml = munkicommon.getChoiceChangesXML(
