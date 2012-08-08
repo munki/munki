@@ -137,8 +137,8 @@ class MSUStatusWindowController(NSObject):
             screenRect = NSScreen.mainScreen().frame()
             self.backdropWindow.setFrame_display_(screenRect, True)
             
-            darwin_vers = os.uname()[2].split('.')[0]
-            if darwin_vers < '11':
+            darwin_vers = int(os.uname()[2].split('.')[0])
+            if darwin_vers < 11:
                 if self.backdropImageFld:
                     bgImage = getLoginwindowPicture()
                     self.backdropImageFld.setImage_(bgImage)
