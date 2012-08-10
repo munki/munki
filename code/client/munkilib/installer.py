@@ -383,7 +383,16 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             parent_mode = stat.S_IMODE(parent_stat.st_mode)
 
             # make the new tree with the parent's mode
-            os.makedirs(destpath, mode=parent_mode)
+            try:
+                os.makedirs(destpath, mode=parent_mode)
+            except IOError:
+                munkicommon.display_error(
+                    "There was an IO error in creating the path %s!" % destpath)
+                return -1
+            except:
+                munkicommon.display_error(
+                    "There was an unknown error in creating the path %s!" % destpath)
+                return -1
 
             # chown each new dir
             for new_path in new_paths:
