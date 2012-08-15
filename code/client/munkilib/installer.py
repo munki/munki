@@ -1064,6 +1064,18 @@ def blockingApplicationsRunning(pkginfoitem):
             "    %s" % running_apps)
         return True
     return False
+    
+    
+def assertNoIdleSleep():
+    try:
+        noIdleSleepAssertion = launchd.Job(['/usr/bin/pmset', 'noidle'])
+        noIdleSleepAssertion.start()
+    except launchd.LaunchdJobException, err:
+        munkicommon.display_warning(
+             'Error with launchd job (%s): %s', cmd, str(err))
+        munkicommon.display_warning('Can\'t prevent idle sleep.')
+        return None
+    return noIdleSleepAssertion
 
 
 def run(only_unattended=False):
@@ -1072,6 +1084,7 @@ def run(only_unattended=False):
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
+    sleepassertion = assertNoIdleSleep()
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
     
