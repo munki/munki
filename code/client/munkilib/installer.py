@@ -1067,8 +1067,10 @@ def blockingApplicationsRunning(pkginfoitem):
     
     
 def assertNoIdleSleep():
+    """Runs `pmset noidle` to prevent idle sleep"""
+    cmd = ['/usr/bin/pmset', 'noidle']
     try:
-        noIdleSleepAssertion = launchd.Job(['/usr/bin/pmset', 'noidle'])
+        noIdleSleepAssertion = launchd.Job(cmd)
         noIdleSleepAssertion.start()
     except launchd.LaunchdJobException, err:
         munkicommon.display_warning(
