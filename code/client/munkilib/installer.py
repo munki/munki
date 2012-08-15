@@ -1085,6 +1085,10 @@ def run(only_unattended=False):
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
     sleepassertion = assertNoIdleSleep()
+    # we hold onto the launchd job object in order to keep
+    # pmset noidle running. When this object is destroyed the
+    # job is unloaded and removed.
+    
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
     
