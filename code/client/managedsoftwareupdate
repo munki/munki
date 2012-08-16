@@ -23,6 +23,7 @@ import optparse
 import os
 import re
 #import stat
+import signal
 import subprocess
 import sys
 import time
@@ -56,6 +57,15 @@ from munkilib import munkistatus
 from munkilib import appleupdates
 from munkilib import FoundationPlist
 from munkilib import utils
+
+
+def signal_handler(signum, frame):
+    """Handle any signals we've been told to.
+    Right now just handle SIGTERM so clean up can happen, like
+    garbage collection, which will trigger object destructors and
+    kill any launchd processes we've started."""
+    if signum == signal.SIGTERM:
+        sys.exit()
 
 
 def getIdleSeconds():
@@ -377,6 +387,9 @@ def notifyUserOfUpdates(force=False):
 
 def main():
     """Main"""
+    # install handler for SIGTERM
+    signal.signal(signal.SIGTERM, signal_handler)
+
     # check to see if we're root
     if os.geteuid() != 0:
         print >> sys.stderr, 'You must run this as root!'
