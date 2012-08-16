@@ -37,6 +37,34 @@ import FoundationPlist
 from removepackages import removepackages
 from Foundation import NSDate
 
+# stuff for IOKit/PowerManager, courtesy Michael Lynn, pudquick@github
+from ctypes import c_uint32, cdll, c_int, c_void_p, POINTER, byref
+from CoreFoundation import CFStringCreateWithCString, CFRelease
+from CoreFoundation import kCFStringEncodingASCII
+from objc import pyobjc_id
+
+libIOKit = cdll.LoadLibrary('/System/Library/Frameworks/IOKit.framework/IOKit')
+libIOKit.IOPMAssertionCreateWithName.argtypes = [ 
+    c_void_p, c_uint32, c_void_p, POINTER(c_uint32) ]
+libIOKit.IOPMAssertionRelease.argtypes = [ c_uint32 ]
+
+def CFSTR(py_string):
+    return CFStringCreateWithCString(None, py_string, kCFStringEncodingASCII)
+
+def raw_ptr(pyobjc_string):
+    return pyobjc_id(pyobjc_string.nsstring())
+
+def IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
+    assertID = c_uint32(0)
+    p_assert_name = raw_ptr(CFSTR(assert_name))
+    p_assert_msg = raw_ptr(CFSTR(assert_msg))
+    errcode = libIOKit.IOPMAssertionCreateWithName(p_assert_name,
+        assert_level, p_assert_msg, byref(assertID))
+    return (errcode, assertID)
+
+IOPMAssertionRelease = libIOKit.IOPMAssertionRelease
+# end IOKit/PowerManager bindings
+
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -1064,20 +1092,21 @@ def blockingApplicationsRunning(pkginfoitem):
             "    %s" % running_apps)
         return True
     return False
-    
-    
+
+
 def assertNoIdleSleep():
-    """Runs `pmset noidle` to prevent idle sleep"""
-    cmd = ['/usr/bin/pmset', 'noidle']
-    try:
-        noIdleSleepAssertion = launchd.Job(cmd)
-        noIdleSleepAssertion.start()
-    except launchd.LaunchdJobException, err:
-        munkicommon.display_warning(
-             'Error with launchd job (%s): %s', cmd, str(err))
-        munkicommon.display_warning('Can\'t prevent idle sleep.')
-        return None
-    return noIdleSleepAssertion
+    """Uses IOKit functions to prevent idle sleep"""
+    # based on code by Michael Lynn, pudquick@github
+    
+    kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
+    kIOPMAssertionLevelOn = 255
+    reason = "Munki is installing software"
+    
+    errcode, assertID = IOPMAssertionCreateWithName(
+        kIOPMAssertionTypeNoIdleSleep,
+        kIOPMAssertionLevelOn, 
+        reason)
+    return assertID
 
 
 def run(only_unattended=False):
@@ -1086,10 +1115,8 @@ def run(only_unattended=False):
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
-    sleepassertion = assertNoIdleSleep()
-    # we hold onto the launchd job object in order to keep
-    # pmset noidle running. When this object is destroyed the
-    # job is unloaded and removed.
+    # hold onto the assertionID so we can release it later
+    no_idle_sleep_assertion_id = assertNoIdleSleep()
     
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase , 'Cache')
@@ -1190,6 +1217,9 @@ def run(only_unattended=False):
         munkicommon.log("###    End managed installer session    ###")
     
     munkicommon.savereport()
+    
+    # release our Power Manager assertion
+    errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
     
     return (removals_need_restart or installs_need_restart)
 
