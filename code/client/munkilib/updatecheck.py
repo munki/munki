@@ -2359,7 +2359,7 @@ def getmanifest(partialurl, suppress_errors=False):
     munkicommon.display_debug2('Manifest base URL is: %s' % manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...' % partialurl)
     manifestpath = os.path.join(manifest_dir, manifestname)
-    message = 'Retreiving list of software for this machine...'
+    message = 'Retrieving list of software for this machine...'
     try:
         unused_value = getResourceIfChangedAtomically(
             manifesturl, manifestpath, message=message)
