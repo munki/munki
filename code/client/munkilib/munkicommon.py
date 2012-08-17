@@ -1148,35 +1148,42 @@ def padVersionString(versString, tupleCount):
     return '.'.join(components)
 
 
-def getVersionString(plist):
+def getVersionString(plist,key='CFBundleShortVersionString'):
     """Gets a version string from the plist.
-    If there's a valid CFBundleShortVersionString, returns that.
+    By default, if there's a CFBundleShortVersionString, returns that.
     else if there's a CFBundleVersion, returns that
-    else returns an empty string."""
-    CFBundleShortVersionString = ''
-    if plist.get('CFBundleShortVersionString'):
-        CFBundleShortVersionString = \
-            plist['CFBundleShortVersionString'].split()[0]
+    else returns an empty string.
+
+    If a 'key' other than CFBundleShortVersionString is passed,
+    and the 'key' exists in the plist, its value is returned,
+    otherwise, returns an empty string and does NOT attempt to
+    retrieve the version from CFBundleVersion.
+    """
+    VersionString = ''
+    if plist.get(key):
+        VersionString = plist[key].split()[0]
     if 'Bundle versions string, short' in plist:
-        CFBundleShortVersionString = \
-            plist['Bundle versions string, short'].split()[0]
-    if CFBundleShortVersionString:
-        if CFBundleShortVersionString[0] in '0123456789':
+        VersionString = plist['Bundle versions string, short'].split()[0]
+    if VersionString:
+        if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
             # replace commas with periods
-            CFBundleShortVersionString = \
-                CFBundleShortVersionString.replace(',','.')
-            return CFBundleShortVersionString
+            VersionString = VersionString.replace(',','.')
+            return VersionString
+    if key != 'CFBundleShortVersionString':
+        # an arbitrary key has been provided so return its value or,
+        # if it doesn't exist, an empty string
+        return VersionString
     if plist.get('CFBundleVersion'):
         # no CFBundleShortVersionString, or bad one
-        CFBundleVersion = str(plist['CFBundleVersion']).split()[0]
-        if CFBundleVersion[0] in '0123456789':
+        VersionString = str(plist['CFBundleVersion']).split()[0]
+        if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
             # replace commas with periods
-            CFBundleVersion = CFBundleVersion.replace(',','.')
-            return CFBundleVersion
+            VersionString = VersionString.replace(',','.')
+            return VersionString
 
     return ''
 
