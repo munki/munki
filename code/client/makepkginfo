@@ -625,11 +625,15 @@ def main():
         print >> sys.stderr, 'Ignoring additional installer items:'
         print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
     
+    os_version = munkicommon.getOsVersion(
+        only_major_minor=False, as_tuple=True)
     if options.installer_choices_xml:
-        os_version = munkicommon.getOsVersion(
-            only_major_minor=False, as_tuple=True)
         if os_version < (10, 6, 6):
             options.installer_choices_xml = False
+    
+    # circumvent cfprefsd plist scanning
+    if os_version >= (10, 8):
+        os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
     
     catinfo = {}
     installs = []
