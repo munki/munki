@@ -849,12 +849,12 @@ def unmountdmg(mountpoint):
                             stderr=subprocess.PIPE)
     (unused_output, err) = proc.communicate()
     if proc.returncode:
-        cmd.append('-force')
+        # ordinary unmount unsuccessful, try forcing
         display_warning('Polite unmount failed: %s' % err)
         display_warning('Attempting to force unmount %s' % mountpoint)
-        # try forcing the unmount
+        cmd.append('-force')
         proc = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE)
         if proc.returncode:
             display_warning('Failed to unmount %s' % mountpoint)
 
