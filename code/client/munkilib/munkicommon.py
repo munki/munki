@@ -845,7 +845,7 @@ def unmountdmg(mountpoint):
     Unmounts the dmg at mountpoint
     """
     cmd = ['/usr/bin/hdiutil', 'detach', mountpoint]
-    proc = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE,
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (unused_output, err) = proc.communicate()
     if proc.returncode:
@@ -853,10 +853,11 @@ def unmountdmg(mountpoint):
         display_warning('Polite unmount failed: %s' % err)
         display_warning('Attempting to force unmount %s' % mountpoint)
         cmd.append('-force')
-        proc = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE,
+        proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
+        (unused_output, err) = proc.communicate()
         if proc.returncode:
-            display_warning('Failed to unmount %s' % mountpoint)
+            display_warning('Failed to unmount %s' % mountpoint, err)
 
 
 def gethash(filename, hash_function):

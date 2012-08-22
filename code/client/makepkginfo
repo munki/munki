@@ -42,6 +42,9 @@ from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
 
+# circumvent cfprefsd plist scanning
+os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
+
 
 def getCatalogInfoFromDmg(dmgpath, options):
     """
@@ -630,10 +633,6 @@ def main():
     if options.installer_choices_xml:
         if os_version < (10, 6, 6):
             options.installer_choices_xml = False
-    
-    # circumvent cfprefsd plist scanning
-    if os_version >= (10, 8):
-        os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
     
     catinfo = {}
     installs = []
