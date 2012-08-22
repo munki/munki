@@ -857,7 +857,7 @@ def unmountdmg(mountpoint):
                                 stderr=subprocess.PIPE)
         (unused_output, err) = proc.communicate()
         if proc.returncode:
-            display_warning('Failed to unmount %s' % mountpoint, err)
+            display_warning('Failed to unmount %s' % (mountpoint, err))
 
 
 def gethash(filename, hash_function):
