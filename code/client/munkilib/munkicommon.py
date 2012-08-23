@@ -1306,9 +1306,11 @@ def getFlatPackageInfo(pkgpath):
     cwd = os.getcwd()
     # change into our tmpdir so we can use xar to unarchive the flat package
     os.chdir(pkgtmp)
-    returncode = subprocess.call(['/usr/bin/xar', '-xf', abspkgpath,
-                                  '--exclude', 'Payload'])
-    if returncode == 0:
+    cmd = ['/usr/bin/xar', '-xf', abspkgpath, '--exclude', 'Payload']
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    (unused_output, err) = proc.communicate()
+    if proc.returncode == 0:
         currentdir = pkgtmp
         packageinfofile = os.path.join(currentdir, 'PackageInfo')
         if os.path.exists(packageinfofile):
@@ -1330,6 +1332,8 @@ def getFlatPackageInfo(pkgpath):
                     packageinfofile = os.path.join(itempath, 'PackageInfo')
                     if os.path.exists(packageinfofile):
                         infoarray.extend(parsePkgRefs(packageinfofile))
+    else:
+        display_warning(err)
 
     # change back to original working dir
     os.chdir(cwd)
