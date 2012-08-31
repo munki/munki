@@ -32,10 +32,10 @@
 "83.title" = "Päivitä";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
-"103.title" = "Ohjeet";
+"103.title" = "Ohje";
 
 /* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
-"106.title" = "Ohjeet";
+"106.title" = "Ohje";
 
 /* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
 "111.title" = "Hallinnoitu ohjelmiston päivitys -ohje";
@@ -137,7 +137,7 @@
 "221.title" = "Käytä valintaa etsimiseen";
 
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
-"239.title" = "Suurenna";
+"239.title" = "Zoomaa";
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
 "346.title" = "Tarkista kielioppi oikeinkirjoituksen ohessa";
@@ -242,4 +242,4 @@
 "635.title" = "BackdropWindow";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
-"645.title" = "Pysäytä";
+"645.title" = "Kumoa";

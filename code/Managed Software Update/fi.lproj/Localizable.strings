@@ -29,7 +29,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Kirjautuminen ulos suoritetaan alle minuutin kuluttua pakotetusti.\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.";
 
 /* No comment provided by engineer. */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Tietokone on käynnistettävä uudelleen, kun päivitysten asennus on suoritettu. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaa ulos ja päivitä nyt?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Tietokone on käynnistettävä uudelleen kun päivitysten asennus on suoritettu. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaa ulos ja päivitä nyt?";
 
 /* No comment provided by engineer. */
 "Cancel" = "Kumoa";
@@ -50,7 +50,7 @@
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Tietokone tulisi varmuuden vuoksi liittää virtalähteeseen ennen päivittämistä. Oletko varma että haluat jatkaa?";
 
 /* No comment provided by engineer. */
-"Forced Logout for Mandatory Install" = "Pakotettu kirjautuminen ulos pakolliselle asennukselle";
+"Forced Logout for Mandatory Install" = "Pakotettu uloskirjautuminen pakolliselle asennukselle";
 
 /* No comment provided by engineer. */
 "Install session failed" = "Asennus epäonnistui";
@@ -65,13 +65,13 @@
 "Logout and update now" = "Kirjaudu ulos ja päivitä nyt";
 
 /* No comment provided by engineer. */
-"Logout Recommended" = "Suositellaan kirjautumista ulos";
+"Logout Recommended" = "Uloskirjautumista suositellaan";
 
 /* No comment provided by engineer. */
-"Logout Required" = "Vaatii kirjautumista ulos";
+"Logout Required" = "Vaatii uloskirjautumisen";
 
 /* No comment provided by engineer. */
-"Logout will be required." = "Kirjautumista ulos tullaan vaatimaan.";
+"Logout will be required." = "Uloskirjautumista tullaan vaatimaan.";
 
 /* No comment provided by engineer. */
 "Manadatory Updates Pending" = "Pakollisia päivityksiä odottamassa";
@@ -80,7 +80,7 @@
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Päivityspalvelimeen ei saada yhteyttä.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* No comment provided by engineer. */
-"Managed Software Update failed its preflight check.\nTry again later." = "Esitarkistuksia suoritettaessa tapahtui virhe.\nYritä myöhemmin uudelleen.";
+"Managed Software Update failed its preflight check.\nTry again later." = "Ennen päivitystä tehtävissä tarkistuksissa tapahtui virhe.\nYritä myöhemmin uudelleen.";
 
 /* No comment provided by engineer. */
 "Not installed" = "Ei asennettu";
@@ -92,7 +92,7 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Yksi tai useampi pakotettu päivitys on myöhässä. Uloskirjautuminen tullaan pakottamaan pian.";
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Yksi tai useampi pakollinen päivitys on myöhässä. Uloskirjautuminen tullaan suorittamaan pakotetusti pian.";
 
 /* No comment provided by engineer. */
 "One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Yksi tai useampi päivitys täytyy asentaa ennen %s. Uloskirjautuminen saatetaan pakottaa jos odotat liian pitkään ennen päivittämistä.";
@@ -110,13 +110,13 @@
 "Restart" = "Käynnistä uudelleen";
 
 /* No comment provided by engineer. */
-"Restart Required" = "Uudelleenkäynnistys vaadittu";
+"Restart Required" = "Vaatii uudelleenkäynnistyksen";
 
 /* No comment provided by engineer. */
 "Restart will be required." = "Uudelleenkäynnistystä tullaan vaatimaan.";
 
 /* No comment provided by engineer. */
-"Scheduled removal of managed software." = "Hallinnoitujen ohjelmien ajastettu poisto.";
+"Scheduled removal of managed software." = "Hallinnoitujen ohjelmistojen poisto.";
 
 /* No comment provided by engineer. */
 "Show updates" = "Näytä päivitykset";
@@ -125,10 +125,10 @@
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Tietokone on käynnistettävä uudelleen kun päivitysten asennus tai ohjelmien poisto on suoritettu. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
 
 /* No comment provided by engineer. */
-"Software removals" = "Poistettavat ohjelmat";
+"Software removals" = "Ohjelmien poisto";
 
 /* No comment provided by engineer. */
-"Starting…" = "Käynnistetään…";
+"Starting…" = "Aloitetaan…";
 
 /* No comment provided by engineer. */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Tietokoneelle on kirjautuneena muita käyttäjiä.\nMuut käyttäjät saattavat menettää tallentamattomia muutoksia jos päivitys tehdään nyt.\n\nYritä uudelleen kun muut käyttäjät ovat kirjautuneet ulos.";
@@ -146,7 +146,7 @@
 "There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Asennusohjelmassa on konfiguraatiovirhe. Prosessi päättyi odottamatta. Ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* No comment provided by engineer. */
-"There is no new software for your computer at this time." = "Tietokoneellesi ei ole tällä hetkellä saatavilla uusia päivityksiä.";
+"There is no new software for your computer at this time." = "Tietokoneelle ei ole tällä hetkellä saatavilla uusia päivityksiä.";
 
 /* No comment provided by engineer. */
 "This item must be installed by " = "Tämä kohde on asennettava ennen ";
