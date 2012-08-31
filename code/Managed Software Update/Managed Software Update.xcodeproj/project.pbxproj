@@ -53,10 +53,9 @@
 		77C8C1F80C07829500965286 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Managed Software Update.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Update.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9C31DF821552EB8A00541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Finnish; path = Finnish.lproj/MainMenu.strings; sourceTree = "<group>"; };
-		9C31DF831552EBE100541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Finnish; path = Finnish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9C31DF841552EBFD00541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Finnish; path = Finnish.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
-		9C31DF851552EC1900541665 /* Finnish */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Finnish; path = Finnish.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9C0BC20515F1617F00CF98A3 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		9C0BC20615F1618C00CF98A3 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9C0BC20715F161A500CF98A3 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		9C40244915ACF23B001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Spanish; path = Spanish.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		9C40244A15ACF268001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		9C40244B15ACF280001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -254,6 +253,7 @@
 				Finnish,
 				Spanish,
 				Dutch,
+				fi,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Managed Software Update */;
 			projectDirPath = "";
@@ -326,7 +326,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to Finnish --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8";
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -350,9 +350,9 @@
 				089C165DFE840E0CC02AAC07 /* English */,
 				C0C5492D12B96869002C76CD /* German */,
 				9CB75D9915505CFA00DE19F0 /* French */,
-				9C31DF831552EBE100541665 /* Finnish */,
 				9C40244B15ACF280001002D4 /* Spanish */,
 				9CF76DB615ADCF3900EC7445 /* Dutch */,
+				9C0BC20615F1618C00CF98A3 /* fi */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -363,7 +363,6 @@
 				77C8C1F80C07829500965286 /* English */,
 				C0C5492C12B9685D002C76CD /* German */,
 				9CB75DA715505FA200DE19F0 /* French */,
-				9C31DF851552EC1900541665 /* Finnish */,
 				9C40244915ACF23B001002D4 /* Spanish */,
 				9CF76DB715ADCF4600EC7445 /* Dutch */,
 			);
@@ -376,9 +375,9 @@
 				C0C548F912B6E52B002C76CD /* German */,
 				C054583B13D4FDD000ED615D /* English */,
 				9CB75D9A15505D3100DE19F0 /* French */,
-				9C31DF841552EBFD00541665 /* Finnish */,
 				9C40244A15ACF268001002D4 /* Spanish */,
 				9CF76DB815ADCF5300EC7445 /* Dutch */,
+				9C0BC20715F161A500CF98A3 /* fi */,
 			);
 			name = Localizable.strings;
 			path = German.lproj;
@@ -390,9 +389,9 @@
 				C0C5493112B9691B002C76CD /* English */,
 				C0C5493312B9693E002C76CD /* German */,
 				9CB75D9815505CC200DE19F0 /* French */,
-				9C31DF821552EB8A00541665 /* Finnish */,
 				9C40244C15ACF294001002D4 /* Spanish */,
 				9CF76DB515ADCF2900EC7445 /* Dutch */,
+				9C0BC20515F1617F00CF98A3 /* fi */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
