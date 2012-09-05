@@ -1706,6 +1706,10 @@ def getPackageMetaData(pkgitem):
 
     cataloginfo['receipts'] = receiptinfo
 
+    if os.path.isfile(pkgitem) and not pkgitem.endswith('.dist'):
+        # flat packages require 10.5.0+
+        cataloginfo['minimum_os_version'] = "10.5.0"
+        
     return cataloginfo
 
 
