@@ -990,6 +990,7 @@ class AppleUpdates(object):
 
         results['installed'] = []
         results['download'] = []
+        results['failures'] = []
 
         last_output = None
         while True:
@@ -1057,6 +1058,7 @@ class AppleUpdates(object):
                 # Doesn't tell us which package.
                 munkicommon.display_error(
                     'Apple update failed to install: %s' % output)
+                results['failures'].append(output)
             elif output.startswith('x '):
                 # don't display this, it's just confusing
                 pass
@@ -1085,6 +1087,9 @@ class AppleUpdates(object):
             last_result_code = self.GetSoftwareUpdatePref('LastResultCode') or 0
             if last_result_code > 2:
                 retcode = last_result_code
+            
+            if results['failures']:
+                return 1
 
         return retcode
 
