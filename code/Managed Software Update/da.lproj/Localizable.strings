@@ -3,9 +3,9 @@
 
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
 
-"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Det anbefales, at du logger ud før opdatering. Hav tålmodighed - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Det anbefales, at du logger ud før opdatering. Vent et øjeblik - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Du skal logge ud før opdatering. Hav tålmodighed - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Du skal logge ud før opdatering. Vent et øjeblik - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
 "A logout will be forced at approximately %s." = "En tvungen log ud vil ske ca. %s.";
 
@@ -13,7 +13,7 @@
 
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle uarkiverede oplysninger vil gå tabt.";
 
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Computeren skal genstartes efter opdatering. Hav tålmodighed - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Computeren skal genstartes efter opdatering. Vent et øjeblik - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
 "Cancel" = "Annuller";
 
