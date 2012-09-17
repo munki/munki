@@ -53,8 +53,8 @@ import munkistatus
 DEFAULT_CATALOG_URLS = {
     '10.5': 'http://swscan.apple.com/content/catalogs/others/index-leopard.merged-1.sucatalog',
     '10.6': 'http://swscan.apple.com/content/catalogs/others/index-leopard-snowleopard.merged-1.sucatalog',
-    '10.7': 'http://swscan.apple.com/content/catalogs/others/index-lion-snowleopard-leopard.merged-1.sucatalog.gz',
-    '10.8': 'http://swscan.apple.com/content/catalogs/others/index-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog.gz'
+    '10.7': 'http://swscan.apple.com/content/catalogs/others/index-lion-snowleopard-leopard.merged-1.sucatalog',
+    '10.8': 'http://swscan.apple.com/content/catalogs/others/index-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 }
 
 # Preference domain for Apple Software Update.
