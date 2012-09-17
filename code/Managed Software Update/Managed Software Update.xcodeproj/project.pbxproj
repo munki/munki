@@ -60,6 +60,11 @@
 		9C40244A15ACF268001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		9C40244B15ACF280001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9C40244C15ACF294001002D4 /* Spanish */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Spanish; path = Spanish.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		9C5652C6160771FA006120E1 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		9C5652C716077216006120E1 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9C5652C81607722A006120E1 /* da */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = da; path = da.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9C5652C91607723E006120E1 /* fi */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fi; path = fi.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9C5652CA16077254006120E1 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		9CB75D9815505CC200DE19F0 /* French */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = French; path = French.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		9CB75D9915505CFA00DE19F0 /* French */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = French; path = French.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9CB75D9A15505D3100DE19F0 /* French */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = French; path = French.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
@@ -254,6 +259,7 @@
 				Spanish,
 				Dutch,
 				fi,
+				da,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Managed Software Update */;
 			projectDirPath = "";
@@ -326,7 +332,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8";
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to da --utf8\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -353,6 +359,7 @@
 				9C40244B15ACF280001002D4 /* Spanish */,
 				9CF76DB615ADCF3900EC7445 /* Dutch */,
 				9C0BC20615F1618C00CF98A3 /* fi */,
+				9C5652C716077216006120E1 /* da */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -365,6 +372,8 @@
 				9CB75DA715505FA200DE19F0 /* French */,
 				9C40244915ACF23B001002D4 /* Spanish */,
 				9CF76DB715ADCF4600EC7445 /* Dutch */,
+				9C5652C81607722A006120E1 /* da */,
+				9C5652C91607723E006120E1 /* fi */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -378,6 +387,7 @@
 				9C40244A15ACF268001002D4 /* Spanish */,
 				9CF76DB815ADCF5300EC7445 /* Dutch */,
 				9C0BC20715F161A500CF98A3 /* fi */,
+				9C5652CA16077254006120E1 /* da */,
 			);
 			name = Localizable.strings;
 			path = German.lproj;
@@ -392,6 +402,7 @@
 				9C40244C15ACF294001002D4 /* Spanish */,
 				9CF76DB515ADCF2900EC7445 /* Dutch */,
 				9C0BC20515F1617F00CF98A3 /* fi */,
+				9C5652C6160771FA006120E1 /* da */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
