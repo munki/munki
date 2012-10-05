@@ -349,10 +349,14 @@ class MSUAppDelegate(NSObject):
             if installinfo.get("removals"):
                 removallist = installinfo.get("removals")
                 restartNeeded = False
+                logoutNeeded = False
                 showRemovalDetail = munki.getRemovalDetailPrefs()
                 for item in removallist:
-                    if item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
+                    restartAction = item.get("RestartAction")
+                    if restartAction in ["RequireRestart", "RecommendRestart"]:
                         restartNeeded = True
+                    if restartAction in ["RequireLogout", "RecommendLogout"]:
+                        logoutNeeded = True
                     if showRemovalDetail:
                         item["display_name"] = ((item.get("display_name") or item.get("name", ""))
                                                 + NSLocalizedString(u" (will be removed)", None))
@@ -365,6 +369,8 @@ class MSUAppDelegate(NSObject):
                     row["description"] = NSLocalizedString(u"Scheduled removal of managed software.", None)
                     if restartNeeded:
                         row["RestartAction"] = "RequireRestart"
+                    elif logoutNeeded:
+                        row["RestartAction"] = "RequireLogout"
                     updatelist.append(row)
 
         if updatelist:
