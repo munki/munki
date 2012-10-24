@@ -226,7 +226,7 @@ def doInstallTasks(only_unattended=False):
         except:
             munkicommon.display_error(
                 'Unexpected error in munkilib.installer:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
             raise
 
@@ -243,7 +243,7 @@ def doInstallTasks(only_unattended=False):
         except:
             munkicommon.display_error(
                 'Unexpected error in appleupdates.installAppleUpdates:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
             raise
 
@@ -648,7 +648,7 @@ def main():
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
             munkicommon.display_error('Unexpected error in updatecheck:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
             raise
 
@@ -672,7 +672,7 @@ def main():
                                      applesoftwareupdatesonly)))
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
-                munkicommon.display_error(traceback.format_exc())
+                munkicommon.log(traceback.format_exc())
                 munkicommon.savereport()
                 raise
 
@@ -687,7 +687,7 @@ def main():
                 appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True)
         except:
             munkicommon.display_error('Unexpected error in appleupdates:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
             raise
            
