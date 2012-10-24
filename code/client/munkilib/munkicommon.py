@@ -57,6 +57,20 @@ import FoundationPlist
 import LaunchServices
 
 
+# NOTE: it's very important that defined exit codes are never changed!
+
+# Preflight exit codes.
+EXIT_STATUS_PREFLIGHT_FAILURE = 1  # Python crash yields 1.
+# Client config exit codes.
+EXIT_STATUS_OBJC_MISSING = 100
+EXIT_STATUS_MUNKI_DIRS_FAILURE = 101
+# Server connection exit codes.
+EXIT_STATUS_SERVER_UNAVAILABLE = 150
+# User related exit codes.
+EXIT_STATUS_INVALID_PARAMETERS = 200
+EXIT_STATUS_ROOT_REQUIRED = 201
+
+
 # our preferences "bundle_id"
 BUNDLE_ID = 'ManagedInstalls'
 

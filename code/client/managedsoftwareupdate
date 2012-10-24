@@ -18,11 +18,9 @@
 managedsoftwareupdate
 """
 
-#import grp
 import optparse
 import os
 import re
-#import stat
 import signal
 import subprocess
 import sys
@@ -48,7 +46,7 @@ except:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, e:
         print >> sys.stderr, str(e)
-    sys.exit(1)
+    sys.exit(200)  # should match munkicommon.EXIT_STATUS_OBJC_MISSING
 
 from munkilib import munkicommon
 from munkilib import updatecheck
@@ -230,7 +228,7 @@ def doInstallTasks(only_unattended=False):
                 'Unexpected error in munkilib.installer:')
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
 
         # clear any Apple update info since it may no longer
         # be relevant
@@ -247,7 +245,7 @@ def doInstallTasks(only_unattended=False):
                 'Unexpected error in appleupdates.installAppleUpdates:')
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
 
     munkicommon.savereport()
     return need_to_restart
@@ -393,7 +391,7 @@ def main():
     # check to see if we're root
     if os.geteuid() != 0:
         print >> sys.stderr, 'You must run this as root!'
-        exit(-1)
+        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
 
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -532,7 +530,7 @@ def main():
     if options.checkonly and options.installonly:
         print >> sys.stderr, \
               '--checkonly and --installonly options are mutually exclusive!'
-        exit(-1)
+        exit(munkicommon.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
@@ -576,13 +574,13 @@ def main():
             munkistatus.activate()
             munkistatus.quit()
         munkicommon.cleanUpTmpDir()
-        exit(-1)
+        exit(result)
     # Force a prefs refresh, in case preflight modified the prefs file.
     munkicommon.reload_prefs()
 
     # create needed directories if necessary
     if not initMunkiDirs():
-        exit(-1)
+        exit(munkicommon.EXIT_STATUS_MUNKI_DIRS_FAILURE)
 
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])
@@ -630,7 +628,7 @@ def main():
                 munkistatus.activate()
                 munkistatus.quit()
             munkicommon.cleanUpTmpDir()
-            exit(-1)
+            exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -652,7 +650,7 @@ def main():
             munkicommon.display_error('Unexpected error in updatecheck:')
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
@@ -676,7 +674,7 @@ def main():
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.display_error(traceback.format_exc())
                 munkicommon.savereport()
-                exit(-1)
+                raise
 
     if (not updatesavailable and options.installonly and
         not options.munkipkgsonly and
@@ -691,7 +689,7 @@ def main():
             munkicommon.display_error('Unexpected error in appleupdates:')
             munkicommon.display_error(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
            
     # send a notification event so MSU can update its display
     # if needed
