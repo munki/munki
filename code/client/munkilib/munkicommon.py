@@ -857,7 +857,7 @@ def unmountdmg(mountpoint):
                                 stderr=subprocess.PIPE)
         (unused_output, err) = proc.communicate()
         if proc.returncode:
-            display_warning('Failed to unmount %s' % (mountpoint, err))
+            display_warning('Failed to unmount %s: %s', mountpoint, err)
 
 
 def gethash(filename, hash_function):
@@ -1709,7 +1709,7 @@ def getPackageMetaData(pkgitem):
     if os.path.isfile(pkgitem) and not pkgitem.endswith('.dist'):
         # flat packages require 10.5.0+
         cataloginfo['minimum_os_version'] = "10.5.0"
-        
+
     return cataloginfo
 
 
