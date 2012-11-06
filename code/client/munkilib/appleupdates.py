@@ -120,8 +120,8 @@ class AppleUpdates(object):
 
     def __init__(self):
         self._managed_install_dir = munkicommon.pref('ManagedInstallDir')
-
-        self.cache_dir = os.path.join(self._managed_install_dir, 'swupd')
+        
+        self.cache_dir = os.path.join(self._managed_install_dir, 'swupd')            
         self.temp_cache_dir = os.path.join(self.cache_dir, 'mirror')
         self.local_catalog_dir = os.path.join(
             self.cache_dir, LOCAL_CATALOG_DIR_REL_PATH)
@@ -295,6 +295,12 @@ class AppleUpdates(object):
                         product_key)
                     self.RetrieveURLToCacheDir(
                         package['MetadataURL'], copy_only_if_missing=True)
+                #if 'URL' in package:
+                #    munkicommon.display_status_minor(
+                #        'Caching package for product ID %s',
+                #        product_key)
+                #    self.RetrieveURLToCacheDir(
+                #        package['URL'], copy_only_if_missing=True)
 
             distributions = product['Distributions']
             for dist_lang in distributions.keys():
@@ -304,8 +310,13 @@ class AppleUpdates(object):
                     'Caching %s distribution for product ID %s',
                     dist_lang, product_key)
                 dist_url = distributions[dist_lang]
-                self.RetrieveURLToCacheDir(
-                    dist_url, copy_only_if_missing=True)
+                try:
+                    self.RetrieveURLToCacheDir(
+                        dist_url, copy_only_if_missing=True)
+                except ReplicationError:
+                    munkicommon.display_warning(
+                        'Could not cache %s distribution for product ID %s',
+                        dist_lang, product_key)
 
         if munkicommon.stopRequested():
             return
