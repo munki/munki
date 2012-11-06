@@ -121,7 +121,26 @@ class AppleUpdates(object):
     def __init__(self):
         self._managed_install_dir = munkicommon.pref('ManagedInstallDir')
         
-        self.cache_dir = os.path.join(self._managed_install_dir, 'swupd')            
+        real_cache_dir = os.path.join(self._managed_install_dir, 'swupd')
+        # symlink to work around an issue with paths containing spaces
+        # in 10.8.2's SoftwareUpdate
+        self.cache_dir = os.path.join('/tmp', 'munki_swupd_cache')
+        try:
+            if os.path.islink(self.cache_dir):
+                # remove any pre-existing symlink
+                os.unlink(self.cache_dir)
+            if os.path.exists(self.cache_dir):
+                # there should not be a file or directory at that path!
+                # move it
+                new_name = os.path.join('/tmp', 
+                    ('munki_swupd_cache_moved_%s' % 
+                        time.strftime('%Y.%m.%d.%H.%M.%S')))
+                os.rename(self.cache_dir, new_name)
+            os.symlink(real_cache_dir, self.cache_dir)
+        except (OSError, IOError), err:
+            # error in setting up the cache directories
+            raise Error('Could not configure cache directory: %s' % err)
+                            
         self.temp_cache_dir = os.path.join(self.cache_dir, 'mirror')
         self.local_catalog_dir = os.path.join(
             self.cache_dir, LOCAL_CATALOG_DIR_REL_PATH)
