@@ -206,6 +206,7 @@ def curl(url, destinationpath,
     targetsize = 0
     downloadedpercent = -1
     donewithheaders = False
+    maxheaders = 15
 
     while True:
         if not donewithheaders:
@@ -280,7 +281,11 @@ def curl(url, destinationpath,
             time.sleep(0.1)
 
         if (proc.poll() != None):
-            break
+            # For small download files curl may exit before all headers
+            # have been parsed, don't immediately exit.
+            maxheaders -= 1
+            if donewithheaders or maxheaders <= 0:
+                break
 
     retcode = proc.poll()
     if retcode:
