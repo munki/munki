@@ -124,7 +124,7 @@ class AppleUpdates(object):
         real_cache_dir = os.path.join(self._managed_install_dir, 'swupd')
         if os.path.exists(real_cache_dir):
             if not os.path.isdir(real_cache_dir):
-                munki_common.display_error(
+                munkicommon.display_error(
                     '%s exists but is not a dir.', real_cache_dir)
         else:
             os.mkdir(real_cache_dir)
