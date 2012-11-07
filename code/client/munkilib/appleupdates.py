@@ -122,6 +122,8 @@ class AppleUpdates(object):
         self._managed_install_dir = munkicommon.pref('ManagedInstallDir')
         
         real_cache_dir = os.path.join(self._managed_install_dir, 'swupd')
+        if not os.path.isdir(real_cache_dir):
+            os.mkdir(real_cache_dir)
         # symlink to work around an issue with paths containing spaces
         # in 10.8.2's SoftwareUpdate
         self.cache_dir = os.path.join('/tmp', 'munki_swupd_cache')
