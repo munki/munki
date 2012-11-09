@@ -137,8 +137,8 @@ def set_file_nonblock(f, non_blocking=True):
 
 
 class Popen(subprocess.Popen):
-    '''Subclass of subprocess.Popen to add support for
-    timeouts for some operations.'''
+    """Subclass of subprocess.Popen to add support for timeouts."""
+
     def timed_readline(self, f, timeout):
         """Perform readline-like operation with timeout.
 
@@ -198,8 +198,9 @@ class Popen(subprocess.Popen):
         if self.stderr is not None:
             set_file_nonblock(self.stderr)
             fds.append(self.stderr)
-        if input is not None and sys.stdin is not None:
-            sys.stdin.write(input)
+
+        if std_in is not None and sys.stdin is not None:
+            sys.stdin.write(std_in)
 
         returncode = None
         inactive = 0
@@ -1982,10 +1983,15 @@ def getSPApplicationData():
     global SP_APPCACHE
     if not SP_APPCACHE:
         cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (output, unused_error) = proc.communicate()
+        proc = Popen(cmd, shell=False, bufsize=-1,
+                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE)
+        try:
+            output, unused_error = proc.communicate(timeout=60)
+        except TimeoutError:
+            display_error(
+                'system_profiler hung; skipping SPApplicationsDataType query')
+            return SP_APPCACHE
         try:
             plist = FoundationPlist.readPlistFromString(output)
             # system_profiler xml is an array
