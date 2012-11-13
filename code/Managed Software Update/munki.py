@@ -125,6 +125,7 @@ def pref(pref_name):
     default_prefs = {
         'ManagedInstallDir': '/Library/Managed Installs',
         'InstallAppleSoftwareUpdates': False,
+        'AppleSoftwareUpdatesOnly': False,
         'ShowRemovalDetail': False,
         'InstallRequiresLogout': False
     }
@@ -269,7 +270,8 @@ def getAppleUpdates():
     plist = {}
     appleUpdatesFile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
     if (os.path.exists(appleUpdatesFile) and
-            pref('InstallAppleSoftwareUpdates')):
+            (pref('InstallAppleSoftwareUpdates') or
+            pref('AppleSoftwareUpdatesOnly'))):
         try:
             plist = FoundationPlist.readPlist(appleUpdatesFile)
         except FoundationPlist.NSPropertyListSerializationException:
