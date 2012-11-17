@@ -1071,6 +1071,17 @@ def getItemDetail(name, cataloglist, vers=''):
                         rejected_items.append(reason)
                         continue
 
+                if item.get('predicate_check'):
+                    pkginfo_predicate = item['predicate_check']
+                    if not predicateEvaluatesAsTrue(pkginfo_predicate):
+                        reason = (('Rejected item %s, version %s '
+                                    'with predicate_check: %s.')
+                                    % (item['name'], item['version'],
+                                        item['predicate_check']))
+                        rejected_items.append(reason)
+                        continue
+
+
                 # item name, version, minimum_os_version, and
                 # supported_architecture are all OK
                 munkicommon.display_debug1(
