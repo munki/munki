@@ -1071,16 +1071,15 @@ def getItemDetail(name, cataloglist, vers=''):
                         rejected_items.append(reason)
                         continue
 
-                if item.get('predicate_check'):
-                    pkginfo_predicate = item['predicate_check']
+                if item.get('installable_condition'):
+                    pkginfo_predicate = item['installable_condition']
                     if not predicateEvaluatesAsTrue(pkginfo_predicate):
                         reason = (('Rejected item %s, version %s '
-                                    'with predicate_check: %s.')
+                                    'with installable_condition: %s.')
                                     % (item['name'], item['version'],
-                                        item['predicate_check']))
+                                       item['installable_condition']))
                         rejected_items.append(reason)
                         continue
-
 
                 # item name, version, minimum_os_version, and
                 # supported_architecture are all OK
