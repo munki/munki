@@ -260,6 +260,8 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     # installer exited
     retcode = job.returncode()
     if retcode != 0:
+        # append stdout to our installer output
+        installeroutput.extend(job.stderr.read().splitlines())
         munkicommon.display_status_minor(
             "Install of %s failed with return code %s" % (packagename, retcode))
         munkicommon.display_error("-"*78)
