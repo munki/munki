@@ -1,4 +1,4 @@
-﻿
+ 
 /* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "5"; */
 "5.title" = "Anbring alle forrest";
 
@@ -210,7 +210,7 @@
 "532.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Check an item to have it installed. Uncheck an item to have it removed."; ObjectID = "546"; */
-"546.title" = "Marker et emne for at installere det. Fjern markeringen for at afinstallere det.";
+"546.title" = "Marker et emne for at installere det. Fjern markeringen for at afinstallere emnet.";
 
 /* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
 "547.title" = "Tilføj eller fjern valgfri software";
