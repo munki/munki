@@ -859,7 +859,9 @@ def installWithInfo(
                         foundagain = True
                         break
 
-            if not foundagain:
+            # ensure package is not deleted from cache if installation
+            # fails by checking retcode
+            if not foundagain and retcode == 0:
                 # now remove the item from the install cache
                 # (if it's still there)
                 itempath = os.path.join(dirpath, current_installer_item)
@@ -1224,4 +1226,3 @@ def run(only_unattended=False):
     errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
 
     return (removals_need_restart or installs_need_restart)
-
