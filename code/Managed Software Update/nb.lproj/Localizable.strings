@@ -21,6 +21,12 @@
 
 "Cannot start installation session" = "Kan ikke starte installeringen";
 
+"Checking for available updates..." = "Ser etter tilgjengelige oppdateringer...";
+
+"Checking for additional changes..." = "Ser etter ytterligere endringer...";
+
+"Checking for available Apple Software Updates..." = "Ser etter tilgjengelige oppdateringer fra Apple...";
+
 "Conflicting applications running" = "Det er åpne programmer som hindrer installasjonen";
 
 "Continue" = "Fortsett";
