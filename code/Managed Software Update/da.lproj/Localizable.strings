@@ -1,4 +1,4 @@
-﻿/* No comment provided by engineer. */
+ /* No comment provided by engineer. */
 " (will be removed)" = " (bliver fjernet)";
 
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
@@ -21,7 +21,7 @@
 
 "Cannot start installation session" = "Kan ikke starte installeringen";
 
-"Conflicting applications running" = "Der er åbne programmer, som skaber konflikt med installeringen";
+"Conflicting applications running" = "Der er åbne programmer, som giver konflikt med installeringen";
 
 "Continue" = "Fortsæt";
 
@@ -57,7 +57,7 @@
 
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "En eller flere obligatoriske opdateringer burde have været installeret. Der vil inden længe ske en tvungen log ud.";
 
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "En eller flere opdateringer skal installeres af %s. Hvis du venter for længe, vil der ske en tvungen log ud.";
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "En eller flere opdateringer skal installeres inden %s. Hvis du venter for længe, vil der ske en tvungen log ud.";
 
 "Optional software..." = "Valgfri software…";
 
@@ -93,11 +93,11 @@
 
 "There is no new software for your computer at this time." = "Der er ingen nye opdateringer.";
 
-"This item must be installed by " = "Dette emne skal installeres af ";
+"This item must be installed by " = "Dette emne skal installeres inden ";
 
 "This item will be removed." = "Dette emne bliver fjernet.";
 
-"Update available" = "Der er nye opdateringer";
+"Update available" = "Kan opdateres";
 
 "Update check failed" = "Søgning efter opdateringer mislykkedes";
 
