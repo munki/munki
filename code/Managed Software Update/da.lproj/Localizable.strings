@@ -1,4 +1,4 @@
-﻿/* No comment provided by engineer. */
+ /* No comment provided by engineer. */
 " (will be removed)" = " (bliver fjernet)";
 
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
@@ -21,7 +21,7 @@
 
 "Cannot start installation session" = "Kan ikke starte installeringen";
 
-"Conflicting applications running" = "Der er åbne programmer, som skaber konflikt med installeringen";
+"Conflicting applications running" = "Der er åbne programmer, som giver konflikt med installeringen";
 
 "Continue" = "Fortsæt";
 
@@ -97,7 +97,7 @@
 
 "This item will be removed." = "Dette emne bliver fjernet.";
 
-"Update available" = "Der er nye opdateringer";
+"Update available" = "Kan opdateres";
 
 "Update check failed" = "Søgning efter opdateringer mislykkedes";
 
