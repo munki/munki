@@ -49,7 +49,7 @@ class MSUAppDelegate(NSObject):
     logout_required = False
     runmode = "Normal"
     managedsoftwareupdate_task = None
-    
+
     def applicationWillFinishLaunching_(self, sender):
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
@@ -74,7 +74,7 @@ class MSUAppDelegate(NSObject):
             if consoleuser == None or consoleuser == u"loginwindow":
                 # we're at the loginwindow, so display MunkiStatus
                 self.runmode = "MunkiStatus"
-        
+
         # Prevent automatic relaunching at login on Lion
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
@@ -264,7 +264,7 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Your software is up to date.", None),
                 NSLocalizedString(u"Quit", None),
                 NSLocalizedString(u"Optional software...", None),
-                objc.nil,
+                NSLocalizedString(u"Refresh", None),
                 NSLocalizedString(u"There is no new software for your computer at this time.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -759,6 +759,7 @@ class MSUAppDelegate(NSObject):
             self.update_view_controller.optionalSoftwareBtn.setHidden_(NO)
             self.buildOptionalInstallsData()
             self.mainWindowController.theTabView.selectNextTabViewItem_(self)
-
-
-
+        elif returncode == NSAlertOtherReturn:
+            munki.log("user", "refresh_clicked")
+            self.checkForUpdates()
+            return
