@@ -24,6 +24,8 @@ import os
 import munki
 import PyObjCTools
 
+DEFAULT_GUI_CACHE_AGE_SECS = 60
+
 munki.setupLogging()
 
 class MSUAppDelegate(NSObject):
@@ -111,19 +113,32 @@ class MSUAppDelegate(NSObject):
                 lastcheck = NSDate.date()
             else:
                 lastcheck = NSDate.dateWithString_(munki.pref('LastCheckDate'))
-            if not lastcheck or lastcheck.timeIntervalSinceNow() < -60:
-                # it's been more than a minute since the last check
+            # if there is no lastcheck timestamp, check for updates.
+            if not lastcheck:
                 self.checkForUpdates()
                 return
-            # do we have existing updates to display?
+
+            # otherwise, only check for updates if the last check is over the
+            # configured manualcheck cache age max.
+            max_cache_age = (
+                munki.pref('GuiCacheAgeSecs') or DEFAULT_GUI_CACHE_AGE_SECS)
+            if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
+                self.checkForUpdates()
+                return
+
+            # if needed, get updates from InstallInfo.
             if not self._listofupdates:
                 self.getAvailableUpdates()
+            # if updates exist, display them.
             if self._listofupdates:
                 self.displayUpdatesWindow()
             else:
-                # no updates available. Should we check for some?
-                self.checkForUpdates()
-
+                # only check for updates if GuiCacheAgeSecs is not defined.
+                if munki.pref('GuiCacheAgeSecs'):
+                    self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
+                    self.noUpdatesAlert()
+                else:
+                    self.checkForUpdates()
 
     def _sortUpdateList(self, l):
         # pop any forced install items off the list.
@@ -264,7 +279,7 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Your software is up to date.", None),
                 NSLocalizedString(u"Quit", None),
                 NSLocalizedString(u"Optional software...", None),
-                NSLocalizedString(u"Refresh", None),
+                NSLocalizedString(u"Check again", None),
                 NSLocalizedString(u"There is no new software for your computer at this time.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
