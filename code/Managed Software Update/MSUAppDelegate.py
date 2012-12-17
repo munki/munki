@@ -289,7 +289,7 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Your software is up to date.", None),
                 NSLocalizedString(u"Quit", None),
                 objc.nil,
-                objc.nil,
+                NSLocalizedString(u"Check again", None),
                 NSLocalizedString(u"There is no new software for your computer at this time.", None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
