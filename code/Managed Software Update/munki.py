@@ -128,6 +128,7 @@ def pref(pref_name):
         'AppleSoftwareUpdatesOnly': False,
         'ShowRemovalDetail': False,
         'InstallRequiresLogout': False
+        'CheckResultsCacheSeconds': None,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:
@@ -211,25 +212,25 @@ def earliestForceInstallDate():
     Returns None or earliest force_install_after_date converted to local time
     """
     earliest_date = None
-    
+
     installinfo = getInstallInfo()
-            
+
     for install in installinfo.get('managed_installs', []):
         this_force_install_date = install.get('force_install_after_date')
-        
+
         if this_force_install_date:
             this_force_install_date = discardTimeZoneFromDate(
                 this_force_install_date)
             if not earliest_date or this_force_install_date < earliest_date:
                 earliest_date = this_force_install_date
-            
+
     return earliest_date
 
 
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC.
-    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes 
+    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
@@ -356,7 +357,7 @@ def logoutAndUpdate():
 
     try:
         if not os.path.exists(INSTALLATLOGOUTFILE):
-            open(INSTALLATLOGOUTFILE, 'w').close()    
+            open(INSTALLATLOGOUTFILE, 'w').close()
         logoutNow()
     except (OSError, IOError):
         return 1
@@ -384,7 +385,7 @@ def justUpdate():
         return 0
     except (OSError, IOError):
         return 1
-    
+
 
 def getRunningProcesses():
     """Returns a list of paths of running processes"""

@@ -121,7 +121,8 @@ class MSUAppDelegate(NSObject):
             # otherwise, only check for updates if the last check is over the
             # configured manualcheck cache age max.
             max_cache_age = (
-                munki.pref('GuiCacheAgeSecs') or DEFAULT_GUI_CACHE_AGE_SECS)
+                munki.pref('CheckResultsCacheSeconds') or
+                DEFAULT_GUI_CACHE_AGE_SECS)
             if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
                 self.checkForUpdates()
                 return
@@ -133,8 +134,8 @@ class MSUAppDelegate(NSObject):
             if self._listofupdates:
                 self.displayUpdatesWindow()
             else:
-                # only check for updates if GuiCacheAgeSecs is not defined.
-                if munki.pref('GuiCacheAgeSecs'):
+                # only check for updates if cache secs config is not defined.
+                if munki.pref('CheckResultsCacheSeconds'):
                     self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
                     self.noUpdatesAlert()
                 else:
