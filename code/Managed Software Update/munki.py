@@ -127,7 +127,7 @@ def pref(pref_name):
         'InstallAppleSoftwareUpdates': False,
         'AppleSoftwareUpdatesOnly': False,
         'ShowRemovalDetail': False,
-        'InstallRequiresLogout': False
+        'InstallRequiresLogout': False,
         'CheckResultsCacheSeconds': None,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
