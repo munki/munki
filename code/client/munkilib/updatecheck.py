@@ -38,7 +38,7 @@ import appleupdates
 import FoundationPlist
 
 # Apple's libs
-from Foundation import NSDate, NSPredicate
+from Foundation import NSDate, NSPredicate, NSTimeZone
 
 
 # This many hours before a force install deadline, start notifying the user.
@@ -1836,7 +1836,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # and any dependencies
             unused_result = processInstall(update_item, cataloglist,
                                            installinfo)
-        
+
         return True
 
 
@@ -1847,6 +1847,11 @@ def makePredicateInfoObject():
         return
     for key in MACHINE.keys():
         INFO_OBJECT[key] = MACHINE[key]
+    # use our start time for "current" date.
+    # and add the timezone offset to it so we can compare
+    # UTC dates as though they were local dates.
+    INFO_OBJECT['date'] = addTimeZoneOffsetToDate(
+        NSDate.dateWithString_(munkicommon.report['StartTime']))
     os_vers = MACHINE['os_vers']
     os_vers = os_vers + '.0.0'
     INFO_OBJECT['os_vers_major'] = int(os_vers.split('.')[0])
@@ -2879,21 +2884,43 @@ def check(client_id='', localmanifestpath=None):
         return 0
 
 
-def discardTimeZoneFromDate(the_date):
+def subtractTimeZoneOffsetFromDate(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC.
     In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
+    This allows a pkginfo item to reference a time in UTC that
+    gets translated to the same relative local time.
+    A force_install_after_date for '2011-06-20T12:00:00Z' will happen
+    after 2011-06-20 12:00:00 local time.
     """
-    # get local offset
-    offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
-        '%z', None, None)
-    hour_offset = int(offset[0:3])
-    minute_offset = int(offset[0] + offset[3:])
-    seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
+    # find our time zone offset in seconds
+    tz = NSTimeZone.defaultTimeZone()
+    seconds_offset = tz.secondsFromGMTForDate_(the_date)
     # return new NSDate minus local_offset
-    return the_date.dateByAddingTimeInterval_(-seconds_offset)
+    return NSDate.alloc().initWithTimeInterval_sinceDate_(
+                                        -seconds_offset, the_date)
+
+
+def addTimeZoneOffsetToDate(the_date):
+    """Input: NSDate object
+    Output: NSDate object with timezone difference added
+    to the date. This allows conditional_item conditions to
+    be written like so:
+    
+    <Key>condition</key>
+    <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
+    
+    with the intent being that the comparision is against local time.
+    
+    """
+    # find our time zone offset in seconds
+    tz = NSTimeZone.defaultTimeZone()
+    seconds_offset = tz.secondsFromGMTForDate_(the_date)
+    # return new NSDate minus local_offset
+    return NSDate.alloc().initWithTimeInterval_sinceDate_(
+                                        seconds_offset, the_date)
 
 
 def checkForceInstallPackages():
@@ -2930,7 +2957,7 @@ def checkForceInstallPackages():
         force_install_after_date = install.get('force_install_after_date')
 
         if force_install_after_date:
-            force_install_after_date = discardTimeZoneFromDate(
+            force_install_after_date = subtractTimeZoneOffsetFromDate(
                 force_install_after_date)
             munkicommon.display_debug1(
                 'Forced install for %s at %s',
