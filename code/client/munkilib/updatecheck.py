@@ -70,18 +70,15 @@ def makeCatalogDB(catalogitems):
         name_table[name][vers].append(itemindex)
 
         # build table of receipts
-        if 'receipts' in item:
-            for receipt in item['receipts']:
-                if 'packageid' in receipt and 'version' in receipt:
-                    if not receipt['packageid'] in pkgid_table:
-                        pkgid_table[receipt['packageid']] = {}
-                    if not (receipt['version'] in
-                            pkgid_table[receipt['packageid']]):
-                        pkgid_table[
-                            receipt['packageid']][receipt['version']] = []
-                    pkgid_table[
-                        receipt['packageid']][
-                            receipt['version']].append(itemindex)
+        for receipt in item.get('receipts', []):
+            if 'packageid' in receipt and 'version' in receipt:
+                pkg_id = receipt['packageid']
+                version = receipt['version']
+                if not pkg_id in pkgid_table:
+                    pkgid_table[pkg_id] = {}
+                if not version in pkgid_table[pkg_id]:
+                    pkgid_table[pkg_id][version] = []
+                pkgid_table[pkg_id][version].append(itemindex)
 
     # build table of update items with a list comprehension --
     # filter all items from the catalogitems that have a non-empty
@@ -136,7 +133,7 @@ def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
                         itemname_to_pkgid[name][pkgid] = []
                     if not vers in itemname_to_pkgid[name][pkgid]:
                         itemname_to_pkgid[name][pkgid].append(vers)
-                        
+
                     if not pkgid in pkgid_to_itemname:
                         pkgid_to_itemname[pkgid] = {}
                     if not name in pkgid_to_itemname[pkgid]:
@@ -190,15 +187,15 @@ def getInstalledPackages():
                         if (munkicommon.MunkiLooseVersion(thisversion) >
                             munkicommon.MunkiLooseVersion(storedversion)):
                             INSTALLEDPKGS[pkgid] = thisversion
-                            
+
     #ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     #receiptsdatapath = os.path.join(ManagedInstallDir, 'FoundReceipts.plist')
     #try:
     #   FoundationPlist.writePlist(INSTALLEDPKGS, receiptsdatapath)
     #except FoundationPlist.NSPropertyListWriteException:
     #   pass
-       
-       
+
+
 def bestVersionMatch(vers_num, item_dict):
     '''Attempts to find the best match in item_dict for vers_num'''
     vers_tuple = vers_num.split('.')
@@ -208,16 +205,16 @@ def bestVersionMatch(vers_num, item_dict):
         match_names = []
         for item in item_dict.keys():
             for item_version in item_dict[item]:
-                if (item_version.startswith(test_vers) and 
+                if (item_version.startswith(test_vers) and
                     item not in match_names):
                     match_names.append(item)
         if len(match_names) == 1:
             return match_names[0]
         precision = precision + 1
-        
+
     return None
-    
-    
+
+
 # global pkgdata
 PKGDATA  = {}
 def analyzeInstalledPkgs():
@@ -280,9 +277,9 @@ def analyzeInstalledPkgs():
         uniquepkgs = list(set(pkgsforthisname) - set(allotherpkgs))
         if uniquepkgs:
             installed.append(name)
-            
+
     # now filter partiallyinstalled to remove those items we moved to installed
-    partiallyinstalled = [item for item in partiallyinstalled 
+    partiallyinstalled = [item for item in partiallyinstalled
                           if item not in installed]
 
     # build our reference table. For each item we think is installed,
@@ -293,12 +290,12 @@ def analyzeInstalledPkgs():
             if not pkgid in references:
                 references[pkgid] = []
             references[pkgid].append(name)
-            
-    # look through all our INSTALLEDPKGS, looking for ones that have not been 
+
+    # look through all our INSTALLEDPKGS, looking for ones that have not been
     # attached to any Munki names yet
-    orphans = [pkgid for pkgid in INSTALLEDPKGS.keys() 
+    orphans = [pkgid for pkgid in INSTALLEDPKGS.keys()
                if pkgid not in references]
-               
+
     # attempt to match orphans to Munki item names
     matched_orphans = []
     for pkgid in orphans:
@@ -309,7 +306,7 @@ def analyzeInstalledPkgs():
                 installed_pkgid_version, possible_match_items)
             if best_match:
                 matched_orphans.append(best_match)
-    
+
     # process matched_orphans
     for name in matched_orphans:
         if name not in installed:
@@ -321,11 +318,11 @@ def analyzeInstalledPkgs():
                 references[pkgid] = []
             if not name in references[pkgid]:
                 references[pkgid].append(name)
-            
+
     PKGDATA['receipts_for_name'] = installedpkgsmatchedtoname
     PKGDATA['installed_names'] = installed
     PKGDATA['pkg_references'] = references
-    
+
     # left here for future debugging/testing use....
     #PKGDATA['itemname_to_pkgid'] = itemname_to_pkgid
     #PKGDATA['pkgid_to_itemname'] = pkgid_to_itemname
@@ -986,7 +983,7 @@ def getItemDetail(name, cataloglist, vers=''):
                     munkicommon.display_debug1(
                         'Considering item %s, ' % item['name'] +
                         'version %s ' % item['version'] +
-                        'with minimum Munki version required %s' 
+                        'with minimum Munki version required %s'
                         % min_munki_vers)
                     munkicommon.display_debug1('Our Munki version is %s' %
                                                 MACHINE['munki_version'])
@@ -1001,7 +998,7 @@ def getItemDetail(name, cataloglist, vers=''):
                                      MACHINE['munki_version']))
                         rejected_items.append(reason)
                         continue
-                
+
                 # now check to see if it meets os and cpu requirements
                 if item.get('minimum_os_version', ''):
                     min_os_vers = item['minimum_os_version']
@@ -1163,7 +1160,7 @@ def installedState(item_pl):
     Returns 0 otherwise.
     """
     foundnewer = False
-    
+
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'installcheck_script', item_pl, suppress_error=True)
@@ -1176,7 +1173,7 @@ def installedState(item_pl):
         # that an install is not needed. We hope it's the latter.
         # return 1 so we're marked as not needing to be installed
         return 1
-        
+
     if item_pl.get('softwareupdatename'):
         availableAppleUpdates = appleupdates.softwareUpdateList()
         munkicommon.display_debug2(
@@ -1193,7 +1190,7 @@ def installedState(item_pl):
                  item_pl['softwareupdatename'])
             # return 1 so we're marked as not needing to be installed
             return 1
-            
+
      # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
@@ -1242,7 +1239,7 @@ def someVersionInstalled(item_pl):
 
     Args:
       item_pl: item plist for the item to check for version of.
-      
+
     Returns a boolean.
     """
     if item_pl.get('installcheck_script'):
@@ -1250,14 +1247,14 @@ def someVersionInstalled(item_pl):
             'installcheck_script', item_pl, suppress_error=True)
         munkicommon.display_debug1(
             'installcheck_script returned %s' % retcode)
-        # retcode 0 means install is needed 
+        # retcode 0 means install is needed
         # (ie, item is not installed)
         if retcode == 0:
             return False
         # non-zero could be an error or successfully indicating
         # that an install is not needed. We hope it's the latter.
         return True
-    
+
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs'):
         installitems = item_pl['installs']
@@ -1298,7 +1295,7 @@ def evidenceThisIsInstalled(item_pl):
     If any tests pass, the item might be installed.
     This is used when determining if we can remove the item, thus
     the attention given to the uninstall method.
-    
+
     Returns a boolean.
     """
     if item_pl.get('uninstallcheck_script'):
@@ -1306,7 +1303,7 @@ def evidenceThisIsInstalled(item_pl):
             'uninstallcheck_script', item_pl, suppress_error=True)
         munkicommon.display_debug1(
             'uninstallcheck_script returned %s' % retcode)
-        # retcode 0 means uninstall is needed 
+        # retcode 0 means uninstall is needed
         # (ie, item is installed)
         if retcode == 0:
             return True
@@ -1319,14 +1316,14 @@ def evidenceThisIsInstalled(item_pl):
             'installcheck_script', item_pl, suppress_error=True)
         munkicommon.display_debug1(
             'installcheck_script returned %s' % retcode)
-        # retcode 0 means install is needed 
+        # retcode 0 means install is needed
         # (ie, item is not installed)
         if retcode == 0:
             return False
         # non-zero could be an error or successfully indicating
         # that an install is not needed
         return True
-        
+
     foundallinstallitems = False
     if ('installs' in item_pl and
           item_pl.get('uninstall_method') != 'removepackages'):
@@ -1355,7 +1352,7 @@ def evidenceThisIsInstalled(item_pl):
             return True
         else:
             munkicommon.display_debug2("Installed receipts don't match.")
-        
+
     # if we got this far, we failed all the tests, so the item
     # must not be installed (or we dont't have the right info...)
     return False
@@ -1379,8 +1376,8 @@ def getAutoRemovalItems(installinfo, cataloglist):
                         if item not in processed_installs_names
                         and item not in installinfo['processed_uninstalls']]
     return autoremovalnames
-    
-    
+
+
 def lookForUpdates(itemname, cataloglist):
     """Looks for updates for a given manifest item that is either
     installed or scheduled to be installed or removed. This handles not only
@@ -1426,15 +1423,15 @@ def lookForUpdatesForVersion(itemname, itemversion, cataloglist):
     """Looks for updates for a specific version of an item. Since these
     can appear in manifests and pkginfo as item-version or item--version
     we have to search twice."""
-    
+
     name_and_version = '%s-%s' % (itemname, itemversion)
     alt_name_and_version = '%s--%s' % (itemname, itemversion)
     update_list = lookForUpdates(name_and_version, cataloglist)
     update_list.extend(lookForUpdates(alt_name_and_version, cataloglist))
-    
+
     # make sure the list has only unique items:
     update_list = list(set(update_list))
-    
+
     return update_list
 
 
@@ -1678,11 +1675,11 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     download_seconds = (end - start).seconds
                     try:
                         if iteminfo['installer_item_size'] < 1024:
-                            # ignore downloads under 1 MB or speeds will 
+                            # ignore downloads under 1 MB or speeds will
                             # be skewed.
                             download_speed = 0
                         else:
-                            # installer_item_size is KBytes, so divide 
+                            # installer_item_size is KBytes, so divide
                             # by seconds.
                             download_speed = int(
                                 iteminfo['installer_item_size'] /
@@ -1692,10 +1689,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 else:
                     # Item was already in cache; set download_speed to 0.
                     download_speed = 0
-                    
+
                 filename = getInstallerItemBasename(
                     item_pl['installer_item_location'])
-                
+
             iteminfo['download_kbytes_per_sec'] = download_speed
 
             # required keys
@@ -1740,29 +1737,29 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     iteminfo[key] = item_pl[key]
 
             installinfo['managed_installs'].append(iteminfo)
-            
+
             update_list = []
-            # (manifestitemname_withoutversion, includedversion) = 
+            # (manifestitemname_withoutversion, includedversion) =
             # nameAndVersion(manifestitemname)
             if includedversion:
                 # a specific version was specified in the manifest
                 # so look only for updates for this specific version
                 update_list = lookForUpdatesForVersion(
-                    manifestitemname_withoutversion, 
+                    manifestitemname_withoutversion,
                     includedversion, cataloglist)
             else:
                 # didn't specify a specific version, so
                 # now look for all updates for this item
                 update_list = lookForUpdates(manifestitemname_withoutversion,
                                              cataloglist)
-                # now append any updates specifically 
+                # now append any updates specifically
                 # for the version to be installed
                 update_list.extend(
                     lookForUpdatesForVersion(
                         manifestitemname_withoutversion,
-                        iteminfo['version_to_install'], 
+                        iteminfo['version_to_install'],
                         cataloglist))
-            
+
             for update_item in update_list:
                 # call processInstall recursively so we get the
                 # latest version and dependencies
@@ -2113,10 +2110,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             name = item_pl.get('name')
             if name not in processednames:
                 if 'requires' in item_pl:
-                    if (uninstall_item_name in item_pl['requires'] 
-                        or uninstall_item_name_with_version 
+                    if (uninstall_item_name in item_pl['requires']
+                        or uninstall_item_name_with_version
                            in item_pl['requires']
-                        or alt_uninstall_item_name_with_version 
+                        or alt_uninstall_item_name_with_version
                            in item_pl['requires']):
                         munkicommon.display_debug1('%s requires %s, checking '
                                                    'to see if it\'s '
@@ -2908,12 +2905,12 @@ def addTimeZoneOffsetToDate(the_date):
     Output: NSDate object with timezone difference added
     to the date. This allows conditional_item conditions to
     be written like so:
-    
+
     <Key>condition</key>
     <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
-    
+
     with the intent being that the comparision is against local time.
-    
+
     """
     # find our time zone offset in seconds
     tz = NSTimeZone.defaultTimeZone()
