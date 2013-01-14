@@ -33,9 +33,24 @@ try:
     from Foundation import NSDistributedNotificationCenter
     from Foundation import NSNotificationDeliverImmediately
     from Foundation import NSNotificationPostToAllSessions
-except:
-    # Python is missing ObjC bindings. Run external report script.
+except ImportError:
     from munkilib import utils
+    report_broken_python()
+    sys.exit(200)
+else:
+    from munkilib import munkicommon
+    from munkilib import updatecheck
+    from munkilib import installer
+    from munkilib import munkistatus
+    from munkilib import appleupdates
+    from munkilib import FoundationPlist
+    from munkilib import utils
+
+
+def report_broken_python():
+    """Python is missing ObjC bindings. Run external report script."""
+    # Moved this to a function to prevent PyLint from complaining
+    # about redefining names from outer scope
     print >> sys.stderr, 'Python is missing ObjC bindings.'
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     script = os.path.join(scriptdir, 'report_broken_client')
@@ -44,20 +59,11 @@ except:
         print >> sys.stderr, result, stdout, stderr
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, e:
-        print >> sys.stderr, str(e)
-    sys.exit(200)  # should match munkicommon.EXIT_STATUS_OBJC_MISSING
-
-from munkilib import munkicommon
-from munkilib import updatecheck
-from munkilib import installer
-from munkilib import munkistatus
-from munkilib import appleupdates
-from munkilib import FoundationPlist
-from munkilib import utils
+    except utils.RunExternalScriptError, err:
+        print >> sys.stderr, str(err)
 
 
-def signal_handler(signum, frame):
+def signal_handler(signum, unused_frame):
     """Handle any signals we've been told to.
     Right now just handle SIGTERM so clean up can happen, like
     garbage collection, which will trigger object destructors and
@@ -75,7 +81,7 @@ def getIdleSeconds():
     (output, unused_err) = proc.communicate()
     ioreglines = str(output).splitlines()
     idle_time = 0
-    regex = re.compile('"?HIDIdleTime"?\s+=\s+(\d+)')
+    regex = re.compile(r'"?HIDIdleTime"?\s+=\s+(\d+)')
     for line in ioreglines:
         idle_re = regex.search(line)
         if idle_re:
@@ -436,7 +442,7 @@ def main():
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
 
-    options, arguments = p.parse_args()
+    options, unused_arguments = p.parse_args()
     runtype = 'custom'
 
     checkandinstallatstartupflag = \
@@ -705,25 +711,47 @@ def main():
             mustrestart = doInstallTasks()
         elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
-                if getIdleSeconds() > 10:
-                    if not munkicommon.pref('SuppressAutoInstall'):
-                        # no GUI users, system is idle, so install
-                        # enable status output over login window
-                        munkicommon.munkistatusoutput = True
-                        mustrestart = doInstallTasks()
-                    else:
-                        munkicommon.log('Skipping auto install because '
-                                        'SuppressAutoInstall is true.')
-                else:
-                    munkicommon.log('Skipping auto install because system is '
-                                    'not idle (keyboard or mouse activity).')
-            else:  # there are GUI users
-                unused_force_action = updatecheck.checkForceInstallPackages()
-                if not munkicommon.pref('SuppressAutoInstall'):
+                if munkicommon.pref('SuppressAutoInstall'):
+                    # admin says we can never install packages
+                    # without user approval/initiation
+                    munkicommon.log('Skipping auto install because '
+                                    'SuppressAutoInstall is true.')
+                elif munkicommon.pref('SuppressLoginwindowInstall'):
+                    # admin says we can't install pkgs at loginwindow
+                    # unless they don't require a logout or restart
+                    # (and are marked with unattended_install = True)
+                    #
+                    # check for packages that need to be force installed
+                    # soon and convert them to unattended_installs if they
+                    # don't require a logout
+                    unused_action = updatecheck.checkForceInstallPackages()
+                    # now install anything that can be done unattended
+                    munkicommon.log('Installing only items marked unattended '
+                                    'because SuppressLoginwindowInstall is '
+                                    'true.')
                     doInstallTasks(only_unattended=True)
+                elif getIdleSeconds() < 10:
+                    munkicommon.log('Skipping auto install at loginwindow '
+                                    'because system is not idle '
+                                    '(keyboard or mouse activity).')
                 else:
+                    # no GUI users, system is idle, so we can install
+                    # but first, enable status output over login window
+                    munkicommon.munkistatusoutput = True
+                    mustrestart = doInstallTasks()
+                    
+            else:  # there are GUI users
+                if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
                                      'SuppressAutoInstall is true.')
+                else:
+                    # check for packages that need to be force installed
+                    # soon and convert them to unattended_installs if they
+                    # don't require a logout
+                    unused_action = updatecheck.checkForceInstallPackages()
+                    # install anything that can be done unattended
+                    doInstallTasks(only_unattended=True)
+
                 # send a notification event so MSU can update its display
                 # if needed
                 sendUpdateNotification()
@@ -805,6 +833,9 @@ def main():
                             'SuppressUserNotification is true.')
 
     munkicommon.cleanUpTmpDir()
+    if mustlogout:
+        # not handling this currently
+        pass
     if mustrestart:
         doRestart()
     elif munkicommon.munkistatusoutput:
