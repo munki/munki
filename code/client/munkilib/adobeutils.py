@@ -647,7 +647,7 @@ def runAdobeCS5AAMEEInstall(dmgpath):
         # installation tools, they are now happy.
         basepath = os.path.dirname(deploymentmanager)
         number_of_payloads = countPayloads(basepath)
-        tmpdir = tempfile.mkdtemp()
+        tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
 
         # make our symlinks
         os.symlink(os.path.join(basepath,"ASU"), os.path.join(tmpdir, "ASU"))
@@ -700,7 +700,7 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False):
     if mountpoints:
         if copylocal:
             # copy the update to the local disk before installing
-            updatedir = tempfile.mkdtemp()
+            updatedir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
             retcode = subprocess.call(["/bin/cp", "-r",
                                             mountpoints[0], updatedir])
             # unmount diskimage

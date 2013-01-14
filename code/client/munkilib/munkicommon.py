@@ -2453,7 +2453,7 @@ def forceLogoutNow():
 #debug = False
 verbose = 1
 munkistatusoutput = False
-tmpdir = tempfile.mkdtemp()
+tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
 report = {}
 
 def main():
