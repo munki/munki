@@ -84,6 +84,8 @@ def makecatalogs(repopath):
     Assumes a pkgsinfo directory under repopath.
     User calling this needs to be able to write to the repo/catalogs
     directory.'''
+    
+    # Make sure the pkgsinfo directory exists
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
     if not os.path.exists(pkgsinfopath):
         print >> sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
@@ -92,6 +94,8 @@ def makecatalogs(repopath):
     errors = []
     catalogs = {}
     catalogs['all'] = []
+    
+    # Walk through the pkginfo files
     for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
         for dirname in dirnames:
             # don't recurse into directories that start
@@ -105,6 +109,7 @@ def makecatalogs(repopath):
             
             filepath = os.path.join(dirpath, name)
             
+            # Try to read the pkginfo file
             try:
                 pkginfo = plistlib.readPlist(filepath)
                 # don't copy admin notes to catalogs.
@@ -118,7 +123,10 @@ def makecatalogs(repopath):
                 continue
             
             #simple sanity checking
+            # Simple sanity checking
             if not (pkginfo.get('installer_type') == 'nopkg'):
+                # This is not a nopkg type pkginfo
+                # so check for installer_item_location key
                 if not 'installer_item_location' in pkginfo:
                     errors.append(
                         "WARNING: file %s is missing installer_item_location" %
@@ -126,6 +134,9 @@ def makecatalogs(repopath):
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
                         continue
+                
+                # Try to form a path and fail if the 
+                # installer_item_location is not a valid type
                 try:
                     installeritempath = os.path.join(repopath, "pkgs",
                                 pkginfo['installer_item_location'])
@@ -133,6 +144,8 @@ def makecatalogs(repopath):
                     errors.append("WARNING: invalid installer_item_location"
                         " in info file %s" % filepath[len(pkgsinfopath)+1:])
                     continue
+                
+                # Check if the installer item actually exists
                 if not os.path.exists(installeritempath):
                     errors.append("WARNING: Info file %s refers to "
                                   "missing installer item: %s" %
@@ -216,6 +229,7 @@ def main():
         print get_version()
         exit(0)
     
+    # Make sure we have a path to work with
     repopath = None
     if len(arguments) == 0:
         repopath = pref('repo_path')
@@ -227,10 +241,12 @@ def main():
     else:
         repopath = arguments[0].rstrip("/")
         
+    # Make sure the repo path exists
     if not os.path.exists(repopath):
         print >> sys.stderr, "Repo root path %s doesn't exist!" % repopath
         exit(-1)
     
+    # Make the catalogs
     makecatalogs(repopath)
 
 if __name__ == '__main__':
