@@ -90,7 +90,10 @@ def makecatalogs(repopath):
     if not os.path.exists(pkgsinfopath):
         print >> sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
         exit(-1)
-        
+    
+    # Set a default exit code
+    exitCode = 0
+    
     errors = []
     catalogs = {}
     catalogs['all'] = []
@@ -117,12 +120,13 @@ def makecatalogs(repopath):
                     del(pkginfo['notes'])
             except IOError, inst:
                 errors.append("IO error for %s: %s" % (filepath, inst))
+                exitCode = -1
                 continue
             except Exception, inst:
                 errors.append("Unexpected error for %s: %s" % (filepath, inst))
+                exitCode = -1
                 continue
             
-            #simple sanity checking
             # Simple sanity checking
             if not (pkginfo.get('installer_type') == 'nopkg'):
                 # This is not a nopkg type pkginfo
@@ -133,6 +137,7 @@ def makecatalogs(repopath):
                                                     filepath[len(pkgsinfopath)+1:])
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
+                        exitCode = -1
                         continue
                 
                 # Try to form a path and fail if the 
@@ -143,6 +148,7 @@ def makecatalogs(repopath):
                 except TypeError:
                     errors.append("WARNING: invalid installer_item_location"
                         " in info file %s" % filepath[len(pkgsinfopath)+1:])
+                    exitCode = -1
                     continue
                 
                 # Check if the installer item actually exists
@@ -153,6 +159,7 @@ def makecatalogs(repopath):
                                    pkginfo['installer_item_location']))
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
+                        exitCode = -1
                         continue
             
             catalogs['all'].append(pkginfo)
@@ -161,6 +168,7 @@ def makecatalogs(repopath):
                     errors.append("WARNING: Info file %s has an empty "
                                   "catalog name!" %
                                   filepath[len(pkgsinfopath)+1:])
+                    exitCode = -1
                     continue
                 if not catalogname in catalogs:
                     catalogs[catalogname] = []
@@ -185,6 +193,7 @@ def makecatalogs(repopath):
                 os.remove(itempath)
     
     # write the new catalogs
+    print
     for key in catalogs.keys():
         catalogpath = os.path.join(repopath, "catalogs", key)
         if os.path.exists(catalogpath):
@@ -192,8 +201,21 @@ def makecatalogs(repopath):
                 "%s. Perhaps this is a non-case sensitive filesystem and you "
                 "have catalogs with names differing only in case?"
                 % (key, catalogpath))
-        else:
+            exitCode = -1
+        elif len(catalogs[key]) != 0:
             plistlib.writePlist(catalogs[key], catalogpath)
+            print "Created catalog %s..." % (catalogpath)
+        else:
+            print >> sys.stderr, (
+                "WARNING: Did not create catalog %s "
+                "because it is empty "
+                % (key))
+            exitCode = -1
+    
+    # Exit with "exitCode" if we got this far.
+    # This will be -1 if there were any errors
+    # that prevented the catalogs to be written.
+    exit(exitCode)
 
 
 def pref(prefname):
