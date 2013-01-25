@@ -123,7 +123,9 @@ def makecatalogs(repopath):
                     errors.append(
                         "WARNING: file %s is missing installer_item_location" %
                                                     filepath[len(pkgsinfopath)+1:])
-                    continue
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        continue
                 try:
                     installeritempath = os.path.join(repopath, "pkgs",
                                 pkginfo['installer_item_location'])
@@ -136,7 +138,9 @@ def makecatalogs(repopath):
                                   "missing installer item: %s" %
                                   (filepath[len(pkgsinfopath)+1:],
                                    pkginfo['installer_item_location']))
-                    continue
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        continue
             
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
@@ -202,6 +206,10 @@ def main():
     p = optparse.OptionParser(usage=usage)
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
+    p.add_option('--force', '-f', action='store_true', dest='force',
+                      help='Disable sanity checks.')
+    p.set_defaults(force=False)
+    global options
     options, arguments = p.parse_args()
     
     if options.version:
