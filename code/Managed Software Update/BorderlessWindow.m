@@ -1,8 +1,8 @@
 //
 //  BorderlessWindow.m
 //
-//  Created by Greg Neagle on 5/16/09.
-// Copyright 2009-2011 Greg Neagle.
+// Created by Greg Neagle on 5/16/09.
+// Copyright 2009-2013 Greg Neagle.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
