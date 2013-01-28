@@ -2479,51 +2479,69 @@ def checkServer(url):
     """A function we can call to check to see if the server is
     available before we kick off a full run. This can be fooled by
     ISPs that return results for non-existent web servers..."""
+    # rewritten 24 Jan 2013 to attempt to support IPv6
+    
     # deconstruct URL so we can check availability
-    (scheme, netloc,
-     path, unused_query, unused_fragment) = urlparse.urlsplit(url)
-    if scheme == 'http':
-        port = 80
-    elif scheme == 'https':
-        port = 443
-    elif scheme == 'file':
-        if os.path.exists(path):
+    url_parts = urlparse.urlsplit(url)
+    if url_parts.scheme == 'http':
+        default_port = 80
+    elif url_parts.scheme == 'https':
+        default_port = 443
+    elif url_parts.scheme == 'file':
+        if url_parts.hostname not in [None, '', 'localhost']:
+            return (-1, 'Non-local hostnames not supported for file:// URLs')
+        if os.path.exists(url_parts.path):
             return (0, 'OK')
         else:
-            return (-1, '%s does not exist' % path)
+            return (-1, 'File %s does not exist' % url_parts.path)
     else:
         return (-1, 'Unsupported URL scheme')
 
-    # get rid of any embedded username/password
-    netlocparts = netloc.split('@')
-    netloc = netlocparts[-1]
-    # split into host and port if present
-    netlocparts = netloc.split(':')
-    host = netlocparts[0]
-    if host == "":
+    # get hostname and port
+    host = url_parts.hostname
+    if not host:
         return (-1, 'Bad URL')
-    if len(netlocparts) == 2:
-        port = int(netlocparts[1])
-    sock = socket.socket()
-    # set timeout to 5 secs
-    sock.settimeout(5.0)
+    port = url_parts.port or default_port
+    
+    # following code based on the IPv6-ready example code here
+    # http://docs.python.org/2/library/socket.html#example
+    s = None
+    socket_err = None
+    addr_info = []
     try:
-        sock.connect((host, port))
-        sock.close()
-        return (0, 'OK')
+        addr_info = socket.getaddrinfo(
+                host, port, socket.AF_UNSPEC, socket.SOCK_STREAM)
     except socket.error, err:
-        if type(err) == str:
-            return (-1, err)
+        socket_err = err
+    else:
+        for res in addr_info:
+            af, socktype, proto, canonname, sa = res
+            try:
+                s = socket.socket(af, socktype, proto)
+            except socket.error, err:
+                s = None
+                socket_err = err
+                continue
+            s.settimeout(5.0)
+            try:
+                s.connect(sa)
+                s.close()
+            except (socket.error, socket.timeout), err:
+                s = None
+                socket_err = err
+                continue
+            except Exception, err:
+                s = None
+                socket_err = tuple(err)
+                continue
+            break
+    if s:
+        return (0, 'OK')
+    else:
+        if type(socket_err) == str:
+            return (-1, socket_err)
         else:
-            return err
-    except socket.timeout, err:
-        return (-1, err)
-    except Exception, err:
-        # common errors
-        # (50, 'Network is down')
-        # (8, 'nodename nor servname provided, or not known')
-        # (61, 'Connection refused')
-        return tuple(err)
+            return socket_err
 
 
 def getInstallerItemBasename(url):
