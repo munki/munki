@@ -25,9 +25,12 @@ Assists with importing installer items into the munki repo
 
 import sys
 import os
+import readline
 import subprocess
 import time
 from optparse import OptionParser, BadOptionError, AmbiguousOptionError
+
+from Quartz import CGEventCreateKeyboardEvent, CGEventPost, kCGHIDEventTap
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
@@ -52,6 +55,45 @@ class PassThroughOptionParser(OptionParser):
         if not self.epilog:
             self.epilog = ""
         return self.epilog
+
+
+def raw_input_with_default(prompt='', default=''):
+    '''Uses readline and some hacking under OS X to provide
+    an editable default value for input.'''
+
+    def readline_pre_input_hook():
+        '''Inserts default into the input stream. This doesn't work with 
+        the system Python on OS X because it's linked to BSD libedit instead 
+        of GNU readline'''
+        readline.insert_text(default)
+        readline.redisplay()
+
+    def insertUpArrowKeyboardEvent():
+        '''Inserts an up-arrow keypress into the OS X event queue'''
+        UP_ARROW = 126
+        myevent = CGEventCreateKeyboardEvent(None, UP_ARROW, True)
+        CGEventPost(kCGHIDEventTap, myevent)
+        myevent = CGEventCreateKeyboardEvent(None, UP_ARROW, False)
+        CGEventPost(kCGHIDEventTap, myevent)
+
+    if default:
+        if sys.platform == 'darwin':
+            # append our default value to history
+            readline.add_history(default)
+            # fake an up-arrow to cause last history
+            # item to be displayed
+            insertUpArrowKeyboardEvent()
+            return raw_input(prompt)
+        else:
+            # set up out pre input hook
+            readline.set_pre_input_hook(readline_pre_input_hook)
+            response = raw_input(prompt)
+            # remove our pre input hook
+            readline.set_pre_input_hook()
+            return response
+    else:
+        # no default value, just call raw_input
+        return raw_input(prompt)
 
 
 def makeDMG(pkgpath):
@@ -529,8 +571,7 @@ def configure():
         ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
         ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
         
-        newvalue = raw_input('%15s [%s]: ' % (prompt, pref(key)))
-        _prefs[key] = newvalue or pref(key) or ''
+        _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
     
     try:
         FoundationPlist.writePlist(_prefs, PREFSPATH)
@@ -716,16 +757,16 @@ def main():
                       ('Description', 'description'),
                       ('Version', 'version'))
         for (name, key) in editfields:
-            newvalue = raw_input('%15s [%s]: ' % (name,
-                                        pkginfo.get(key,'').encode('UTF-8')))
-            if newvalue:
-                pkginfo[key] = newvalue
-
-        newvalue = raw_input('%15s [%s]: ' % ('Catalogs',
-                                              ', '.join(pkginfo['catalogs'])))
-        if newvalue:
-            pkginfo['catalogs'] = [item.strip() 
-                                   for item in newvalue.split(',')]
+            prompt = '%15s: ' % name
+            default = pkginfo.get(key,'').encode('UTF-8')
+            pkginfo[key] = raw_input_with_default(prompt, default)
+        
+        # special handling for catalogs array
+        prompt = '%15s: ' % 'Catalogs'
+        default = ', '.join(pkginfo['catalogs'])
+        newvalue = raw_input_with_default(prompt, default)
+        pkginfo['catalogs'] = [item.strip() 
+                               for item in newvalue.split(',')]
         
         if 'receipts' not in pkginfo and 'installs' not in pkginfo:
             print >> sys.stderr, ('WARNING: There are no receipts and no '
