@@ -253,7 +253,11 @@ def openPkginfoInEditor(pkginfo_path):
             cmd = ['/usr/bin/open', '-a', editor, pkginfo_path]
         else:
             cmd = [editor, pkginfo_path]
-        unused_returncode = subprocess.call(cmd)
+        try:
+            unused_returncode = subprocess.check_call(cmd)
+        except (OSError, subprocess.CalledProcessError), err:
+            print >> sys.stderr, 'Problem running editor %s: %s.' % (
+                                    editor, err)
         
         
 def promptForSubdirectory(subdirectory):
