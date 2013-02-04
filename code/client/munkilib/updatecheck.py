@@ -499,17 +499,7 @@ def compareBundleVersion(item):
 
     Raises munkicommon.Error if there's an error in the input
     """
-    version_comparison_key = item.get(
-        'version_comparison_key', 'CFBundleShortVersionString')
-    versionstring = item.get(version_comparison_key, None)
-    
-    if 'path' in item and versionstring:
-        minupvers = item.get('minimum_update_version')
-    else:
-        raise munkicommon.Error('Missing bundle path or version!')
-
-    munkicommon.display_debug1('Checking bundle %s for %s %s...' %
-                        (item['path'], version_comparison_key, versionstring))
+    # look for an Info.plist inside the bundle
     filepath = os.path.join(item['path'], 'Contents', 'Info.plist')
     if not os.path.exists(filepath):
         munkicommon.display_debug1('\tNo Info.plist found at %s' % filepath)
@@ -520,34 +510,9 @@ def compareBundleVersion(item):
             return 0
 
     munkicommon.display_debug1('\tFound Info.plist at %s' % filepath)
-    try:
-        plist = FoundationPlist.readPlist(filepath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        munkicommon.display_debug1('\t%s may not be a plist!' % filepath)
-        return 0
-
-    if 'version_comparison_key' in item:
-        # specific key has been supplied,
-        # so use this to determine installed version
-        munkicommon.display_debug1(
-            '\tUsing supplied plist key %s for comparison' 
-            % version_comparison_key)
-        installedvers = munkicommon.getVersionString(
-            plist, version_comparison_key)
-    else:
-        # use default behavior
-        installedvers = munkicommon.getVersionString(plist)
-    if installedvers:
-        if minupvers:
-            if compareVersions(installedvers, minupvers) < 1:
-                munkicommon.display_debug1(
-                    '\tVersion %s too old < %s' % (installedvers, minupvers))
-                return 0
-
-        return compareVersions(installedvers, versionstring)
-    else:
-        munkicommon.display_debug1('\tNo version info in %s.' % filepath)
-        return 0
+    # just let comparePlistVersion do the comparison
+    item['path'] = filepath
+    return comparePlistVersion(item)
 
 
 def comparePlistVersion(item):
@@ -569,7 +534,7 @@ def comparePlistVersion(item):
     else:
         raise munkicommon.Error('Missing plist path or version!')
 
-    munkicommon.display_debug1('Checking %s for version %s %s...' %
+    munkicommon.display_debug1('\tChecking %s for version %s %s...' %
                             (filepath, version_comparison_key, versionstring))
     if not os.path.exists(filepath):
         munkicommon.display_debug1('\tNo plist found at %s' % filepath)
@@ -593,6 +558,7 @@ def comparePlistVersion(item):
         # default behavior
         installedvers = munkicommon.getVersionString(plist)
     if installedvers:
+        munkicommon.display_debug1('\tInstalled version is %s', installedvers)
         if minupvers:
             if compareVersions(installedvers, minupvers) < 1:
                 munkicommon.display_debug1(
