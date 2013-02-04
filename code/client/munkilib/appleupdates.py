@@ -650,7 +650,7 @@ class AppleUpdates(object):
 
         Returns:
           Boolean. False if the checksums match, True if they differ."""
-        cmd = ['/usr/sbin/pkgutil', '--regexp', '-pkg-info-plist',
+        cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
                'com\.apple\.*']
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                                 stdin=subprocess.PIPE,
