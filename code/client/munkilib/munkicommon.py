@@ -1165,22 +1165,34 @@ def padVersionString(versString, tupleCount):
     return '.'.join(components)
 
 
-def getVersionString(plist,key='CFBundleShortVersionString'):
+def getVersionString(plist, key=None):
     """Gets a version string from the plist.
-    By default, if there's a CFBundleShortVersionString, returns that.
+    
+    If a key is explictly specified, the value of that key is
+    returned without modification, or an empty string if the
+    key does not exist.
+    
+    If key is not specified:
+    if there's a valid CFBundleShortVersionString, returns that.
     else if there's a CFBundleVersion, returns that
     else returns an empty string.
 
-    If a 'key' other than CFBundleShortVersionString is passed,
-    and the 'key' exists in the plist, its value is returned,
-    otherwise, returns an empty string and does NOT attempt to
-    retrieve the version from CFBundleVersion.
     """
     VersionString = ''
+    if key:
+        return plist.get(key, '')
+
+    # default to CFBundleShortVersionString plus magic
+    key = 'CFBundleShortVersionString'
+    if not 'CFBundleShortVersionString' in plist:
+        if 'Bundle versions string, short' in plist:
+            # workaround for broken Composer packages
+            # where the key is actually named
+            # 'Bundle versions string, short' instead of
+            # 'CFBundleShortVersionString'
+            key = 'Bundle versions string, short'
     if plist.get(key):
         VersionString = plist[key].split()[0]
-    if 'Bundle versions string, short' in plist:
-        VersionString = plist['Bundle versions string, short'].split()[0]
     if VersionString:
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
@@ -1188,12 +1200,11 @@ def getVersionString(plist,key='CFBundleShortVersionString'):
             # replace commas with periods
             VersionString = VersionString.replace(',','.')
             return VersionString
-    if key != 'CFBundleShortVersionString':
-        # an arbitrary key has been provided so return its value or,
-        # if it doesn't exist, an empty string
-        return VersionString
     if plist.get('CFBundleVersion'):
         # no CFBundleShortVersionString, or bad one
+        # a future version of the Munki tools may drop this magic
+        # and require admins to explicitly choose the CFBundleVersion
+        # but for now Munki does some magic
         VersionString = str(plist['CFBundleVersion']).split()[0]
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
@@ -1205,15 +1216,20 @@ def getVersionString(plist,key='CFBundleShortVersionString'):
     return ''
 
 
-def getExtendedVersion(bundlepath):
+def getBundleVersion(bundlepath, key=None):
     """
-    Returns five-part version number like Apple uses in distribution
-    and flat packages
+    Returns version number from a bundle.
+    Some extra code to deal with very old-style bundle packages
+    
+    Specify key to use a specific key in the Info.plist for
+    the version string.
     """
     infoPlist = os.path.join(bundlepath, 'Contents', 'Info.plist')
+    if not os.path.exists(infoPlist):
+        infoPlist = os.path.join(bundlepath, 'Resources', 'Info.plist')
     if os.path.exists(infoPlist):
         plist = FoundationPlist.readPlist(infoPlist)
-        versionstring = getVersionString(plist)
+        versionstring = getVersionString(plist, key)
         if versionstring:
             return versionstring
 
@@ -1409,7 +1425,7 @@ def getOnePackageInfo(pkgpath):
             if 'IFPkgFlagInstalledSize' in plist:
                 pkginfo['installed_size'] = plist['IFPkgFlagInstalledSize']
 
-            pkginfo['version'] = getExtendedVersion(pkgpath)
+            pkginfo['version'] = getBundleVersion(pkgpath)
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
@@ -1689,7 +1705,7 @@ def getPackageMetaData(pkgitem):
 
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
-    metaversion = getExtendedVersion(pkgitem)
+    metaversion = getBundleVersion(pkgitem)
     if metaversion == '0.0.0.0.0':
         metaversion = nameAndVersion(shortname)[1]
 
@@ -2032,7 +2048,7 @@ def getAppData():
                     iteminfo['bundleid'] = plist.get('CFBundleIdentifier','')
                     if 'CFBundleName' in plist:
                         iteminfo['name'] = plist['CFBundleName']
-                    iteminfo['version'] = getExtendedVersion(pathname)
+                    iteminfo['version'] = getBundleVersion(pathname)
                     APPDATA.append(iteminfo)
                 except Exception:
                     pass
