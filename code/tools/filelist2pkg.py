@@ -29,7 +29,7 @@ import optparse
 import tempfile
 
 # change these to suit yourself
-packagemaker = "/Developer/usr/bin/packagemaker"
+packagemaker = '/Developer/usr/bin/packagemaker'
 pkgidprefix = "com.myorg.pkg."
 pkgoutputdir = "/Users/Shared/pkgs"
 
