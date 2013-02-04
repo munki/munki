@@ -392,7 +392,7 @@ def compareApplicationVersion(app):
 
     Raises munkicommon.Error if there's an error in the input
     """
-    if 'path' in app and 'CFBundleShortVersionString' in app:
+    if 'path' in app and 'VersionString' in app:
         filepath = os.path.join(app['path'], 'Contents', 'Info.plist')
         if os.path.exists(filepath):
             return compareBundleVersion(app)
@@ -400,7 +400,8 @@ def compareApplicationVersion(app):
     # not in default location, so let's search:
     name = app.get('CFBundleName','')
     bundleid = app.get('CFBundleIdentifier','')
-    versionstring = app.get('CFBundleShortVersionString')
+    versionstring = app.get('VersionString')
+    plist_version_key = app.get('plist_version_key')
     minupvers = app.get('minimum_update_version')
 
     if name == '' and bundleid == '':
@@ -445,10 +446,20 @@ def compareApplicationVersion(app):
             munkicommon.display_debug2(
                 '\tName: \t %s' % item['name'])
         if 'path' in item:
+            apppath = item['path']
             munkicommon.display_debug2(
-                '\tPath: \t %s' % item['path'])
+                '\tPath: \t %s' % apppath)
             munkicommon.display_debug2(
                 '\tCFBundleIdentifier: \t %s' % item['bundleid'])
+
+        if plist_version_key and apppath:
+            # if a specific plist version key has been supplied,
+            # add the following keys to the discovered 'item'
+            # so that a bundle version comparison can be made
+            item['VersionString'] = versionstring
+            item['plist_version_key'] = plist_version_key
+            item['minimum_update_version'] = minupvers
+            return compareBundleVersion(item)
 
         if minupvers:
             if compareVersions(item['version'], minupvers) < 1:
@@ -486,8 +497,8 @@ def compareBundleVersion(item):
 
     Raises munkicommon.Error if there's an error in the input
     """
-    if 'path' in item and 'CFBundleShortVersionString' in item:
-        vers = item['CFBundleShortVersionString']
+    if 'path' in item and 'VersionString' in item:
+        vers = item['VersionString']
         minupvers = item.get('minimum_update_version')
     else:
         raise munkicommon.Error('Missing bundle path or version!')
@@ -510,7 +521,15 @@ def compareBundleVersion(item):
         munkicommon.display_debug1('\t%s may not be a plist!' % filepath)
         return 0
 
-    installedvers = munkicommon.getVersionString(plist)
+    if 'plist_version_key' in item:
+        # arbitrary key has been supplied,
+        # so use this to determine installed version
+        plist_version_key = item['plist_version_key']
+        munkicommon.display_debug1(
+            '\tUsing supplied plist key %s for comparison' % plist_version_key)
+        installedvers = munkicommon.getVersionString(plist, plist_version_key)
+    else:
+        installedvers = munkicommon.getVersionString(plist)
     if installedvers:
         if minupvers:
             if compareVersions(installedvers, minupvers) < 1:
@@ -534,9 +553,9 @@ def comparePlistVersion(item):
 
     Raises munkicommon.Error if there's an error in the input
     """
-    if 'path' in item and 'CFBundleShortVersionString' in item:
+    if 'path' in item and 'VersionString' in item:
+        vers = item['VersionString']
         filepath = item['path']
-        vers = item['CFBundleShortVersionString']
         minupvers = item.get('minimum_update_version')
     else:
         raise munkicommon.Error('Missing plist path or version!')
@@ -553,7 +572,15 @@ def comparePlistVersion(item):
         munkicommon.display_debug1('\t%s may not be a plist!' % filepath)
         return 0
 
-    installedvers = munkicommon.getVersionString(plist)
+    if 'plist_version_key' in item:
+        # arbitrary key has been supplied,
+        # so use this to determine installed version
+        plist_version_key = item['plist_version_key']
+        munkicommon.display_debug1(
+            '\tUsing supplied plist key %s for comparison' % plist_version_key)
+        installedvers = munkicommon.getVersionString(plist, plist_version_key)
+    else:
+        installedvers = munkicommon.getVersionString(plist)
     if installedvers:
         if minupvers:
             if compareVersions(installedvers, minupvers) < 1:
@@ -624,6 +651,10 @@ def compareItemVersion(item):
                 (or there is no checksum)
            -1 if the filesystem item exists but the checksum does not match.
     '''
+    if not 'VersionString' in item and 'CFBundleShortVersionString' in item:
+        # Ensure that 'VersionString', if not present, is populated
+        # with the value of 'CFBundleShortVersionString' if present
+        item['VersionString'] = item['CFBundleShortVersionString']
     itemtype = item.get('type')
     if itemtype == 'application':
         return compareApplicationVersion(item)
