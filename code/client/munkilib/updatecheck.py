@@ -457,34 +457,35 @@ def compareApplicationVersion(app):
         if apppath and version_comparison_key != 'CFBundleShortVersionString':
             # if a specific plist version key has been supplied,
             # if we're suppose to compare against a key other than
-            # 'CFBundleShortVersionString' we can't use item['version'] as-is
-            # so update item['version'] with info from the specific
-            # version key
-            item['version'] = munkicommon.getBundleVersion(
+            # 'CFBundleShortVersionString' we can't use item['version'] 
+            installed_version = munkicommon.getBundleVersion(
                 apppath, version_comparison_key)
+        else:
+            # item['version'] is CFBundleShortVersionString
+            installed_version = item['version']
 
         if minupvers:
-            if compareVersions(item['version'], minupvers) < 1:
+            if compareVersions(installed_version, minupvers) < 1:
                 munkicommon.display_debug1(
                     '\tVersion %s too old < %s' % (
-                            item['version'], minupvers))
+                            installed_version, minupvers))
                 # installed version is < minimum_update_version,
                 # too old to match
                 return 0
 
         if 'version' in item:
             munkicommon.display_debug2(
-                '\tVersion: \t %s' % item['version'])
-            if compareVersions(item['version'], versionstring) == 1:
+                '\tVersion: \t %s' % installed_version)
+            if compareVersions(installed_version, versionstring) == 1:
                 # version is the same
                 return 1
-            if compareVersions(item['version'], versionstring) == 2:
+            if compareVersions(installed_version, versionstring) == 2:
                 # version is newer
                 return 2
 
     # if we got this far, must only be older
     munkicommon.display_debug1(
-        'An older version of this application is present.')
+                'An older version of this application is present.')
     return -1
 
 
@@ -511,8 +512,11 @@ def compareBundleVersion(item):
 
     munkicommon.display_debug1('\tFound Info.plist at %s' % filepath)
     # just let comparePlistVersion do the comparison
+    saved_path = item['path']
     item['path'] = filepath
-    return comparePlistVersion(item)
+    compare_result = comparePlistVersion(item)
+    item['path'] = saved_path
+    return compare_result
 
 
 def comparePlistVersion(item):
@@ -564,7 +568,11 @@ def comparePlistVersion(item):
                 munkicommon.display_debug1(
                     '\tVersion %s too old < %s' % (installedvers, minupvers))
                 return 0
-        return compareVersions(installedvers, versionstring)
+        compare_result = compareVersions(installedvers, versionstring)
+        results = ['older', 'not installed?!', 'the same', 'newer']
+        munkicommon.display_debug1('\tInstalled item is %s.' 
+                                   % results[compare_result + 1])
+        return compare_result
     else:
         munkicommon.display_debug1('\tNo version info in %s.' % filepath)
         return 0
@@ -685,7 +693,7 @@ def compareReceiptVersion(item):
 
 
 def getInstalledVersion(item_plist):
-    """Attempts to determine the currently installed version an item.
+    """Attempts to determine the currently installed version of an item.
 
     Args:
       item_plist: pkginfo plist of an item to get the version for.
@@ -715,7 +723,7 @@ def getInstalledVersion(item_plist):
                 name = install_item.get('CFBundleName')
                 bundleid = install_item.get('CFBundleIdentifier')
                 munkicommon.display_debug2(
-                    'Looking for application %s, version %s' %
+                    'Looking for application %s, bundleid %s' %
                     (name, install_item.get('CFBundleIdentifier')))
                 try:
                     # check default location for app
