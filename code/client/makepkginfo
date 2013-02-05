@@ -212,6 +212,7 @@ def readFileOrString(option_value):
     
     return string
 
+
 def getiteminfo(itempath):
     """
     Gets info for filesystem items passed to makecatalog item, to be used for
@@ -224,12 +225,10 @@ def getiteminfo(itempath):
         infodict['type'] = 'application'
         infodict['path'] = itempath
         plist = getBundleInfo(itempath)
-        if 'CFBundleName' in plist:
-            infodict['CFBundleName'] = plist['CFBundleName']
-        if 'CFBundleIdentifier' in plist:
-            infodict['CFBundleIdentifier'] = plist['CFBundleIdentifier']
-        infodict['CFBundleShortVersionString'] = \
-            munkicommon.getVersionString(plist)
+        for key in ['CFBundleName', 'CFBundleIdentifier',  
+                    'CFBundleShortVersionString', 'CFBundleVersion']:
+            if key in plist:
+                infodict[key] = plist[key]
         if 'LSMinimumSystemVersion' in plist:
             infodict['minosversion'] = plist['LSMinimumSystemVersion']
         elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
@@ -241,8 +240,9 @@ def getiteminfo(itempath):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
         plist = getBundleInfo(itempath)
-        infodict['CFBundleShortVersionString'] = \
-            munkicommon.getVersionString(plist)
+        for key in ['CFBundleShortVersionString', 'CFBundleVersion']:
+            if key in plist:
+                infodict[key] = plist[key]
             
     elif itempath.endswith("Info.plist") or \
          itempath.endswith("version.plist"):
@@ -250,10 +250,22 @@ def getiteminfo(itempath):
         infodict['path'] = itempath
         try:
             plist = FoundationPlist.readPlist(itempath)
-            infodict['CFBundleShortVersionString'] = \
-                munkicommon.getVersionString(plist)
+            for key in ['CFBundleShortVersionString', 'CFBundleVersion']:
+                if key in plist:
+                    infodict[key] = plist[key]
         except FoundationPlist.NSPropertyListSerializationException:
             pass
+            
+    # let's help the admin -- if CFBundleShortVersionString is empty
+    # or doesn't start with a digit, and CFBundleVersion is there
+    # use CFBundleVersion as the version_comparison_key
+    if (not infodict.get('CFBundleShortVersionString') or 
+        infodict['CFBundleShortVersionString'][0]
+        not in '0123456789'):
+        if infodict.get('CFBundleVersion'):
+            infodict['version_comparison_key'] = 'CFBundleVersion'
+    elif 'CFBundleShortVersionString' in infodict:
+        infodict['version_comparison_key'] = 'CFBundleShortVersionString'
         
     if not 'CFBundleShortVersionString' in infodict and \
        not 'CFBundleVersion' in infodict:
