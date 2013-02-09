@@ -949,7 +949,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.hashlib, 'sha256')
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'pref')
 
-        cmd = ['/usr/sbin/pkgutil', '--regexp', '-pkg-info-plist',
+        cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
                'com\.apple\.*']
         output = 'output!'
 
