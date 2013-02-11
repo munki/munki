@@ -66,8 +66,8 @@ class MSUAppDelegate(NSObject):
         NSLog("MSU GUI version: %s" % ver)
         munki.log("MSU", "launched", "VER=%s" % ver)
 
-        runmode = NSUserDefaults.standardUserDefaults().stringForKey_("mode") or \
-                  os.environ.get("ManagedSoftwareUpdateMode")
+        runmode = (NSUserDefaults.standardUserDefaults().stringForKey_("mode") 
+                   or os.environ.get("ManagedSoftwareUpdateMode"))
         if runmode:
             self.runmode = runmode
             NSLog("Runmode: %s" % runmode)
@@ -81,8 +81,8 @@ class MSUAppDelegate(NSObject):
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
 
-        # register for notification messages so we can be told if available updates
-        # change while we are open
+        # register for notification messages so we can be told if available 
+        # updates change while we are open
         notification_center = NSDistributedNotificationCenter.defaultCenter()
         notification_center.addObserver_selector_name_object_suspensionBehavior_(
             self,
@@ -199,7 +199,8 @@ class MSUAppDelegate(NSObject):
 
         alertMessageText = NSLocalizedString(u"Update check failed", None)
         if self.managedsoftwareupdate_task == "installwithnologout":
-            alertMessageText = NSLocalizedString(u"Install session failed", None)
+            alertMessageText = NSLocalizedString(
+                                            u"Install session failed", None)
 
         if socketSessionResult == -1:
             # connection was dropped unexpectedly
@@ -209,9 +210,13 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Quit", None),
                 objc.nil,
                 objc.nil,
-                NSLocalizedString(u"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator.", None))
+                NSLocalizedString(
+                    (u"There is a configuration problem with the managed "
+                    "software installer. The process ended unexpectedly. "
+                    "Contact your systems administrator."), None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
             return
 
         elif socketSessionResult == -2:
@@ -222,9 +227,13 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Quit", None),
                 objc.nil,
                 objc.nil,
-                NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.", None))
+                NSLocalizedString(
+                    (u"There is a configuration problem with the managed "
+                    "software installer. Could not start the process. "
+                    "Contact your systems administrator."), None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self,
+                self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
             return
 
         if self.managedsoftwareupdate_task == "installwithnologout":
@@ -260,9 +269,13 @@ class MSUAppDelegate(NSObject):
                     NSLocalizedString(u"Quit", None),
                     objc.nil,
                     objc.nil,
-                    NSLocalizedString(u"Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator.", None))
+                    NSLocalizedString(
+                        (u"Managed Software Update cannot contact the update "
+                        "server at this time.\nIf this situation continues, "
+                        "contact your systems administrator."), None))
                 alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                    self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                    self.mainWindowController.theWindow, self, 
+                    self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
             elif lastCheckResult == -2:
                 munki.log("MSU", "cant_update", "failed preflight")
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
@@ -270,9 +283,12 @@ class MSUAppDelegate(NSObject):
                     NSLocalizedString(u"Quit",  None),
                     objc.nil,
                     objc.nil,
-                    NSLocalizedString(u"Managed Software Update failed its preflight check.\nTry again later.", None))
+                    NSLocalizedString(
+                        (u"Managed Software Update failed its preflight "
+                        "check.\nTry again later."), None))
                 alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                    self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                    self.mainWindowController.theWindow, self, 
+                    self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
     def noUpdatesAlert(self):
         if self._optionalInstalls:
@@ -281,7 +297,9 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Quit", None),
                 NSLocalizedString(u"Optional software...", None),
                 NSLocalizedString(u"Check again", None),
-                NSLocalizedString(u"There is no new software for your computer at this time.", None))
+                NSLocalizedString(
+                    u"There is no new software for your computer at this time.",
+                    None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
@@ -290,9 +308,12 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Quit", None),
                 objc.nil,
                 NSLocalizedString(u"Check again", None),
-                NSLocalizedString(u"There is no new software for your computer at this time.", None))
+                NSLocalizedString(
+                    u"There is no new software for your computer at this time.",
+                    None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self,
+                self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
 
     def checkForUpdates(self):
@@ -321,9 +342,13 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Quit", None),
                 objc.nil,
                 objc.nil,
-                NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator.", None))
+                NSLocalizedString(
+                    (u"There is a configuration problem with the managed "
+                    "software installer. Could not start the update check "
+                    "process. Contact your systems administrator."), None))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
     def applicationDidBecomeActive_(self, sender):
         pass
@@ -349,70 +374,78 @@ class MSUAppDelegate(NSObject):
     def getAvailableUpdates(self):
         updatelist = []
         installinfo = munki.getInstallInfo()
+        munki_updates_contain_apple_items = \
+                                    munki.munkiUpdatesContainAppleItems()
         if installinfo:
-            updatelist = installinfo.get("managed_installs", [])
-            for update in updatelist:
-                force_install_after_date = update.get('force_install_after_date')
-                if force_install_after_date:
-                    # insert installation deadline into description
-                    local_date = munki.discardTimeZoneFromDate(force_install_after_date)
-                    date_str = munki.stringFromDate(local_date)
-                    forced_date_text = NSLocalizedString(u"This item must be installed by ", None)
-                    description = update["description"]
-                    # prepend deadline info to description. This will fail if the description is HTML...
-                    update["description"] = forced_date_text + date_str + "\n\n" + description
+            updatelist.extend(installinfo.get('managed_installs', []))
+        if not munki_updates_contain_apple_items:
+            appleupdates = munki.getAppleUpdates()
+            updatelist.extend(appleupdates.get("AppleUpdates", []))
+        for update in updatelist:
+            force_install_after_date = update.get(
+                                            'force_install_after_date')
+            if force_install_after_date:
+                # insert installation deadline into description
+                local_date = munki.discardTimeZoneFromDate(
+                                                force_install_after_date)
+                date_str = munki.stringFromDate(local_date)
+                forced_date_text = NSLocalizedString(
+                                u"This item must be installed by ", None)
+                description = update["description"]
+                # prepend deadline info to description. This will fail if 
+                # the description is HTML...
+                update["description"] = (forced_date_text + date_str 
+                                         + "\n\n" + description)
 
-            if installinfo.get("removals"):
-                removallist = installinfo.get("removals")
-                restartNeeded = False
-                logoutNeeded = False
-                showRemovalDetail = munki.getRemovalDetailPrefs()
-                for item in removallist:
-                    restartAction = item.get("RestartAction")
-                    if restartAction in ["RequireRestart", "RecommendRestart"]:
-                        restartNeeded = True
-                    if restartAction in ["RequireLogout", "RecommendLogout"]:
-                        logoutNeeded = True
-                    if showRemovalDetail:
-                        item["display_name"] = ((item.get("display_name") or item.get("name", ""))
-                                                + NSLocalizedString(u" (will be removed)", None))
-                        item["description"] = NSLocalizedString(u"This item will be removed.", None)
-                        updatelist.append(item)
-                if not showRemovalDetail:
-                    row = {}
-                    row["display_name"] = NSLocalizedString(u"Software removals", None)
-                    row["version"] = ""
-                    row["description"] = NSLocalizedString(u"Scheduled removal of managed software.", None)
-                    if restartNeeded:
-                        row["RestartAction"] = "RequireRestart"
-                    elif logoutNeeded:
-                        row["RestartAction"] = "RequireLogout"
-                    updatelist.append(row)
+        if installinfo.get("removals"):
+            removallist = installinfo.get("removals")
+            restartNeeded = False
+            logoutNeeded = False
+            showRemovalDetail = munki.getRemovalDetailPrefs()
+            for item in removallist:
+                restartAction = item.get("RestartAction")
+                if restartAction in ["RequireRestart", "RecommendRestart"]:
+                    restartNeeded = True
+                if restartAction in ["RequireLogout", "RecommendLogout"]:
+                    logoutNeeded = True
+                if showRemovalDetail:
+                    item["display_name"] = (
+                        (item.get("display_name") or item.get("name", ""))
+                        + NSLocalizedString(u" (will be removed)", None))
+                    item["description"] = NSLocalizedString(
+                        u"This item will be removed.", None)
+                    updatelist.append(item)
+            if not showRemovalDetail:
+                row = {}
+                row["display_name"] = NSLocalizedString(
+                                                u"Software removals", None)
+                row["version"] = ""
+                row["description"] = NSLocalizedString(
+                            u"Scheduled removal of managed software.", None)
+                if restartNeeded:
+                    row["RestartAction"] = "RequireRestart"
+                elif logoutNeeded:
+                    row["RestartAction"] = "RequireLogout"
+                updatelist.append(row)
 
         if updatelist:
-            self._sortUpdateList(updatelist)
+            #self._sortUpdateList(updatelist)
             self._listofupdates = updatelist
             self.enableUpdateNowBtn_(YES)
-            #self.performSelector_withObject_afterDelay_("enableUpdateNowBtn:", YES, 4)
+            #self.performSelector_withObject_afterDelay_(
+            #                                  "enableUpdateNowBtn:", YES, 4)
             self.getOptionalInstalls()
         else:
-            appleupdates = munki.getAppleUpdates()
-            if appleupdates:
-                munki.log("MSU", "appleupdates")
-                self._listofupdates = appleupdates.get("AppleUpdates", [])
-                self.update_view_controller.updateNowBtn.setEnabled_(YES)
-                self.update_view_controller.optionalSoftwareBtn.setHidden_(YES)
-            else:
-                self._listofupdates = []
-                self.update_view_controller.updateNowBtn.setEnabled_(NO)
-                self.getOptionalInstalls()
+            self._listofupdates = []
+            self.update_view_controller.updateNowBtn.setEnabled_(NO)
+            self.getOptionalInstalls()
 
 
     def buildOptionalInstallsData(self):
         table = []
         selfservedata = munki.readSelfServiceManifest()
-        selfserve_installs = selfservedata.get('managed_installs',[])
-        selfserve_uninstalls = selfservedata.get('managed_uninstalls',[])
+        selfserve_installs = selfservedata.get('managed_installs', [])
+        selfserve_uninstalls = selfservedata.get('managed_uninstalls', [])
 
         for item in self._optionalInstalls:
             row = {}
@@ -424,10 +457,12 @@ class MSUAppDelegate(NSObject):
             row['original_managed'] = (item['name'] in selfserve_installs)
             row['itemname'] = item['name']
             row['name'] = item.get("display_name") or item['name']
-            row['version'] = munki.trimVersionString(item.get("version_to_install"))
+            row['version'] = munki.trimVersionString(
+                                            item.get("version_to_install"))
             row['description'] = item.get("description", "")
             if item.get("installer_item_size"):
-                row['size'] = munki.humanReadable(item.get("installer_item_size"))
+                row['size'] = munki.humanReadable(
+                                                item.get("installer_item_size"))
             elif item.get("installed_size"):
                 row['size'] = munki.humanReadable(item.get("installed_size"))
             else:
@@ -472,7 +507,8 @@ class MSUAppDelegate(NSObject):
                 # user selected for install
                 optional_install_choices['managed_installs'].append(row['itemname'])
             elif row['original_managed']:
-                # was managed, but user deselected it; we should remove it if possible
+                # was managed, but user deselected it; we should remove it if 
+                # possible
                 optional_install_choices['managed_uninstalls'].append(row['itemname'])
         munki.writeSelfServiceManifest(optional_install_choices)
         self.checkForUpdates()
@@ -485,18 +521,22 @@ class MSUAppDelegate(NSObject):
         for item in self._listofupdates:
             row = {}
             row['image'] = self._emptyImage
-            if item.get("RestartAction") == "RequireRestart" or item.get("RestartAction") == "RecommendRestart":
+            if (item.get("RestartAction") == "RequireRestart" 
+                or item.get("RestartAction") == "RecommendRestart"):
                 row['image'] = self._restartImage
                 self.restart_required = True
-            elif item.get("RestartAction") == "RequireLogout" or item.get("RestartAction") == "RecommendLogout":
+            elif (item.get("RestartAction") == "RequireLogout" 
+                  or item.get("RestartAction") == "RecommendLogout"):
                 row['image'] = self._logoutImage
                 self.logout_required = True
             if item.get("force_install_after_date"):
                 row['image'] = self._exclamationImage
             row['name'] = item.get("display_name") or item.get("name","")
-            row['version'] = munki.trimVersionString(item.get("version_to_install"))
+            row['version'] = munki.trimVersionString(
+                                            item.get("version_to_install"))
             if item.get("installer_item_size"):
-                row['size'] = munki.humanReadable(item.get("installer_item_size"))
+                row['size'] = munki.humanReadable(
+                                            item.get("installer_item_size"))
             elif item.get("installed_size"):
                 row['size'] = munki.humanReadable(item.get("installed_size"))
             else:
@@ -510,18 +550,21 @@ class MSUAppDelegate(NSObject):
         if self.restart_required:
             self.update_view_controller.restartInfoFld.setStringValue_(
                 NSLocalizedString(u"Restart will be required.", None))
-            self.update_view_controller.restartImageFld.setImage_(self._restartImage)
+            self.update_view_controller.restartImageFld.setImage_(
+                                                            self._restartImage)
         elif self.logout_required:
             self.update_view_controller.restartInfoFld.setStringValue_(
                 NSLocalizedString(u"Logout will be required.", None))
-            self.update_view_controller.restartImageFld.setImage_(self._logoutImage)
+            self.update_view_controller.restartImageFld.setImage_(
+                                                            self._logoutImage)
 
 
     def forcedLogoutWarning(self, notification_obj):
         NSApp.activateIgnoringOtherApps_(True)
         info = notification_obj.userInfo()
         moreText = NSLocalizedString(
-            u"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now.", None)
+            (u"\nAll pending updates will be installed. Unsaved work will be "
+            "lost.\nYou may avoid the forced logout by logging out now."), None)
         logout_time = None
         if info:
             logout_time = info.get('logout_time')
@@ -533,13 +576,19 @@ class MSUAppDelegate(NSObject):
         if time_til_logout > 55:
             deadline_str = munki.stringFromDate(logout_time)
             munki.log("user", "forced_logout_warning_initial")
-            infoText = NSLocalizedString(u"A logout will be forced at approximately %s.", None) % deadline_str + moreText
+            formatString = NSLocalizedString(
+                    u"A logout will be forced at approximately %s.", None) 
+            infoText = formatString % deadline_str + moreText
         elif time_til_logout > 0:
             munki.log("user", "forced_logout_warning_%s" % time_til_logout)
-            infoText = NSLocalizedString(u"A logout will be forced in less than %s minutes.", None) % time_til_logout + moreText
+            formatString = NSLocalizedString(
+                    u"A logout will be forced in less than %s minutes.", None) 
+            infoText = formatString % time_til_logout + moreText
         else:
             munki.log("user", "forced_logout_warning_final")
-            infoText = NSLocalizedString(u"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost.", None)
+            infoText = NSLocalizedString(
+                (u"A logout will be forced in less than a minute.\nAll pending "
+                "updates will be installed. Unsaved work will be lost."), None)
 
         # Set the OK button to default, unless less than 5 minutes to logout
         # in which case only the Logout button should be displayed.
@@ -561,7 +610,8 @@ class MSUAppDelegate(NSObject):
             NSApp.endSheet_(self._currentAlert.window())
             self._currentAlert = None
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Forced Logout for Mandatory Install", None),
+                    NSLocalizedString(
+                        u"Forced Logout for Mandatory Install", None),
                     self._force_warning_btns[NSAlertDefaultReturn],
                     self._force_warning_btns[NSAlertAlternateReturn],
                     objc.nil,
@@ -576,9 +626,14 @@ class MSUAppDelegate(NSObject):
             time_til_logout = deadline.timeIntervalSinceNow()
             if time_til_logout > 0:
                 deadline_str = munki.stringFromDate(deadline)
-                infoText = NSLocalizedString("One or more updates must be installed by %s. A logout may be forced if you wait too long to update.", None) % deadline_str
+                formatString = NSLocalizedString(
+                    (u"One or more updates must be installed by %s. A logout "
+                    "may be forced if you wait too long to update."), None) 
+                infoText = formatString % deadline_str
             else:
-                infoText = NSLocalizedString("One or more mandatory updates are overdue for installation. A logout will be forced soon.", None)
+                infoText = NSLocalizedString(
+                    (u"One or more mandatory updates are overdue for "
+                    "installation. A logout will be forced soon."), None)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                     NSLocalizedString(u"Manadatory Updates Pending", None),
                     NSLocalizedString(u"Show updates", None),
@@ -587,7 +642,8 @@ class MSUAppDelegate(NSObject):
                     infoText)
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.confirmLaterAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                self.confirmLaterAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
             munki.log("user", "exit_later_clicked")
             NSApp.terminate_(self)
@@ -601,7 +657,11 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
                 objc.nil,
-                NSLocalizedString("There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out.", None))
+                NSLocalizedString(
+                    (u"There are other users logged into this computer.\n"
+                     "Updating now could cause other users to lose their "
+                     "work.\n\nPlease try again later after the other users "
+                     "have logged out."), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.multipleUserAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -611,17 +671,24 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Logout and update", None),
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
-                NSLocalizedString(u"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?", None))
+                NSLocalizedString(
+                    (u"A restart is required after updating. Please be patient "
+                    "as there may be a short delay at the login window. Logout "
+                    "and update now?"), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         elif self.logout_required or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Required", None),
                 NSLocalizedString(u"Logout and update", None),
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
-                NSLocalizedString(u"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?", None))
+                NSLocalizedString(
+                    (u"A logout is required before updating. Please be patient "
+                    "as there may be a short delay at the login window. Logout "
+                    "and update now?"), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -631,10 +698,14 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Logout and update", None),
                 NSLocalizedString(u"Cancel", None),
                 NSLocalizedString(u"Update without logging out", None),
-                NSLocalizedString(u"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?", None))
+                NSLocalizedString(
+                    (u"A logout is recommended before updating. Please be "
+                    "patient as there may be a short delay at the login "
+                    "window. Logout and update now?"), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
 
     def alertIfBlockingAppsRunning(self):
@@ -650,15 +721,21 @@ class MSUAppDelegate(NSObject):
         running_apps = munki.getRunningBlockingApps(apps_to_check)
         if running_apps:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Conflicting applications running", None),
+                    NSLocalizedString(
+                        u"Conflicting applications running", None),
                     NSLocalizedString(u"OK", None),
                     objc.nil,
                     objc.nil,
-                    NSLocalizedString(u"You must quit the following applications before proceeding with installation:\n\n%s", None) % '\n'.join(running_apps))
+                    NSLocalizedString(
+                        (u"You must quit the following applications before "
+                        "proceeding with installation:\n\n%s"), None) 
+                        % '\n'.join(running_apps))
             munki.log("MSU", "conflicting_apps", ','.join(running_apps))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.blockingAppsRunningAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                self.blockingAppsRunningAlertDidEnd_returnCode_contextInfo_,
+                objc.nil)
             return True
         else:
             return False
@@ -669,16 +746,20 @@ class MSUAppDelegate(NSObject):
         if (power_info.get('PowerSource') == 'Battery Power'
             and power_info.get('BatteryCharge', 0) < 50):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                        NSLocalizedString(u"Your computer is not connected to a power source.", None),
-                        NSLocalizedString(u"Continue", None),
-                        NSLocalizedString(u"Cancel", None),
-                        objc.nil,
-                        NSLocalizedString(u"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?", None))
+                NSLocalizedString(
+                    u"Your computer is not connected to a power source.", None),
+                NSLocalizedString(u"Continue", None),
+                NSLocalizedString(u"Cancel", None),
+                objc.nil,
+                NSLocalizedString(
+                    (u"For best results, you should connect your computer to a "
+                    "power source before updating. Are you sure you want to "
+                    "continue the update?"), None))
             munki.log("MSU", "alert_on_battery_power")
             # making UI consistent with Apple Software Update...
             # set Cancel button to be activated by return key
             alert.buttons()[1].setKeyEquivalent_('\r')
-            # set Ccontinue button to be activated by Escape key
+            # set Continue button to be activated by Escape key
             alert.buttons()[0].setKeyEquivalent_(chr(27))
             buttonPressed = alert.runModal()
             if buttonPressed == NSAlertAlternateReturn:
@@ -692,15 +773,20 @@ class MSUAppDelegate(NSObject):
                 NSLocalizedString(u"Quit", None),
                 objc.nil,
                 objc.nil,
-                NSLocalizedString(u"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator.", None))
+                NSLocalizedString(
+                    (u"There is a configuration problem with the managed "
+                    "software installer. Could not start the install session. "
+                    "Contact your systems administrator."), None))
         munki.log("MSU", "cannot_start")
         self._currentAlert = alert
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-            self.mainWindowController.theWindow, self, self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
+            self.mainWindowController.theWindow, self, 
+            self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def logoutAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def logoutAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
             if self.alertIfRunnningOnBattery():
@@ -736,17 +822,20 @@ class MSUAppDelegate(NSObject):
 
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self._currentAlert = None
 
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def multipleUserAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def multipleUserAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self._currentAlert = None
 
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def confirmLaterAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def confirmLaterAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self._currentAlert = None
         if returncode == NSAlertAlternateReturn:
             munki.log("user", "exit_later_clicked")
@@ -754,7 +843,8 @@ class MSUAppDelegate(NSObject):
 
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def forceLogoutWarningDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def forceLogoutWarningDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self._currentAlert = None
         btn_pressed = self._force_warning_btns.get(returncode)
         if btn_pressed == self._force_warning_logout_btn:
@@ -765,7 +855,8 @@ class MSUAppDelegate(NSObject):
 
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def quitAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def quitAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
             munki.log("user", "quit")

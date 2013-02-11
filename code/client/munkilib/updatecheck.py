@@ -1451,6 +1451,24 @@ def lookForUpdatesForVersion(itemname, itemversion, cataloglist):
     return update_list
 
 
+def isAppleItem(item_pl):
+    """Returns True if the item to be installed or removed appears to be from
+    Apple. If we are installing or removing any Apple items in a check/install
+    cycle, we skip checking/installing Apple updates from an Apple Software
+    Update server so we don't stomp on each other"""
+    # check receipts
+    for receipt in item_pl.get('receipts', []):
+        if receipt.get('packageid', '').startswith('com.apple.'):
+            return True
+    # check installs items
+    for install_item in item_pl.get('installs', []):
+        if install_item.get('CFBundleIdentifier', '').startswith('com.apple.'):
+            return True
+    # if we get here, no receipts or installs items have Apple
+    # identifiers
+    return False
+
+
 def processManagedUpdate(manifestitem, cataloglist, installinfo):
     """Process a managed_updates item to see if it is installed, and if so,
     if it needs an update.
@@ -1746,11 +1764,18 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'postinstall_script',
                              'items_to_copy',  # used w/ copy_from_dmg
                              'copy_local',     # used w/ AdobeCS5 Updaters
-                             'force_install_after_date']
+                             'force_install_after_date',
+                             'apple_item']
 
             for key in optional_keys:
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
+
+            if not 'apple_item' in iteminfo:
+                # admin did not explictly mark this item; let's determine if
+                # it's from Apple
+                if isAppleItem(item_pl):
+                    iteminfo['apple_item'] = True
 
             installinfo['managed_installs'].append(iteminfo)
 
@@ -2186,6 +2211,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
+            
+    if isAppleItem(item_pl):
+        iteminfo['apple_item'] = True
 
     if packagesToRemove:
         # remove references for each package
@@ -2866,10 +2894,30 @@ def check(client_id='', localmanifestpath=None):
             munkicommon.report['ItemsToRemove'] = \
                 installinfo.get('removals', [])
 
+    munkicommon.savereport()
+    munkicommon.log('###    End managed software check    ###')
+
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
 
-    munkicommon.log('')
+    if installcount or removalcount:
+        return 1
+    else:
+        return 0
+
+
+def displayUpdateInfo():
+    '''Prints info about available updates'''
+    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
+    try:
+        installinfo = FoundationPlist.readPlist(installinfopath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        installinfo = {}
+
+    installcount = len(installinfo.get('managed_installs', []))
+    removalcount = len(installinfo.get('removals', []))
+
     if installcount:
         munkicommon.display_info('')
         munkicommon.display_info(
@@ -2905,14 +2953,6 @@ def check(client_id='', localmanifestpath=None):
     if installcount == 0 and removalcount == 0:
         munkicommon.display_info(
             'No changes to managed software are available.')
-
-    munkicommon.savereport()
-    munkicommon.log('###    End managed software check    ###')
-
-    if installcount or removalcount:
-        return 1
-    else:
-        return 0
 
 
 def subtractTimeZoneOffsetFromDate(the_date):

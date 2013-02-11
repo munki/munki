@@ -1221,6 +1221,23 @@ def getVersionString(plist, key=None):
     return ''
 
 
+def getAppBundleExecutable(bundlepath):
+    """Returns path to the actual executable in an app bundle or None"""
+    infoPlist = os.path.join(bundlepath, 'Contents', 'Info.plist')
+    if os.path.exists(infoPlist):
+        plist = FoundationPlist.readPlist(infoPlist)
+        if 'CFBundleExecutable' in plist:
+            executable = plist['CFBundleExecutable']
+        elif 'CFBundleName' in plist:
+            executable = plist['CFBundleName']
+        else:
+            executable = os.path.splitext(os.path.basename(bundlepath))[0]
+        executable_path = os.path.join(bundlepath, 'Contents/MacOS', executable)
+        if os.path.exists(executable_path):
+            return executable_path
+    return None
+
+
 def getBundleVersion(bundlepath, key=None):
     """
     Returns version number from a bundle.
