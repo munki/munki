@@ -724,7 +724,10 @@ class AppleUpdates(object):
             #return False
             # instead of returning False, return True if we have cached updates
             # False otherwise
-            return self.WriteAppleUpdatesFile()
+            if self.GetSoftwareUpdateInfo():
+                return True
+            else:
+                return False
 
         product_ids = self.GetAvailableUpdateProductIDs()
         if not product_ids:
