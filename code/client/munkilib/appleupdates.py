@@ -441,8 +441,8 @@ class AppleUpdates(object):
             if fileurl.startswith('file://localhost'):
                 fileurl = fileurl[len('file://localhost'):]
                 pathname = urllib2.unquote(fileurl).rstrip('/')
-                appname = os.path.basename(pathname)
-                blocking_apps.append(appname)
+                executable = munkicommon.getAppBundleExecutable(pathname)
+                blocking_apps.append(executable or pathname)
 
         return blocking_apps
 
@@ -721,7 +721,13 @@ class AppleUpdates(object):
             munkicommon.display_info('Skipping Apple Software Update check '
                 'because sucatalog is unchanged, installed Apple packages are '
                 'unchanged and we recently did a full check.')
-            return False
+            #return False
+            # instead of returning False, return True if we have cached updates
+            # False otherwise
+            if self.GetSoftwareUpdateInfo():
+                return True
+            else:
+                return False
 
         product_ids = self.GetAvailableUpdateProductIDs()
         if not product_ids:
@@ -840,11 +846,13 @@ class AppleUpdates(object):
                 'Error reading: %s', self.apple_updates_plist)
             return
         apple_updates = pl_dict.get('AppleUpdates', [])
-        if apple_updates:
-            munkicommon.report['AppleUpdates'] = apple_updates
-            munkicommon.display_info(
-                'The following Apple Software Updates are available to '
-                'install:')
+        if not apple_updates:
+            munkicommon.display_info('No available Apple Software Updates.')
+            return
+        munkicommon.report['AppleUpdates'] = apple_updates
+        munkicommon.display_info(
+            'The following Apple Software Updates are available to '
+            'install:')
         for item in apple_updates:
             munkicommon.display_info(
                 '    + %s-%s' % (
@@ -1264,11 +1272,8 @@ class AppleUpdates(object):
             return False
         if munkicommon.stopRequested():
             return False
-        if self.WriteAppleUpdatesFile():
-            self.DisplayAppleUpdateInfo()
-            return True
-        else:
-            return False
+        return self.WriteAppleUpdatesFile()
+
 
     def SoftwareUpdateList(self):
         """Returns a list of str update names using softwareupdate -l."""
@@ -1325,3 +1330,8 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
     return getAppleUpdatesInstance().AppleSoftwareUpdatesAvailable(
         force_check=forcecheck, suppress_check=suppresscheck)
+
+
+def displayAppleUpdateInfo():
+    """Method for drop-in appleupdates replacement; see primary method docs."""
+    getAppleUpdatesInstance().DisplayAppleUpdateInfo()

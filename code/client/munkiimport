@@ -572,7 +572,8 @@ def configure():
         ('repo_url', 
          'Repo fileshare URL (example: afp://munki.example.com/repo)'),
         ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
-        ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
+        ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
+        ('default_catalog', 'Default catalog to use (example: testing)')]:
         
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
     
@@ -653,7 +654,7 @@ def main():
         APPLEMETADATA = True
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
-    installer_item = makePkgInfo(arguments, True)
+    installer_item = makePkgInfo(options=arguments, test_mode=True)
     if not installer_item and not APPLEMETADATA:
         cleanupAndExit(-1)
     
@@ -686,7 +687,7 @@ def main():
         exit(-1)
     
     if not APPLEMETADATA:
-        if os.path.isdir(installer_item):
+        if os.path.isdir(installer_item): # Start of indent
             if munkicommon.hasValidDiskImageExt(installer_item):
                 # a directory named foo.dmg or foo.iso!
                 print >> sys.stderr, '%s is an unknown type.' % installer_item
@@ -703,7 +704,13 @@ def main():
         
         # append the installer_item to arguments which
         # may have changed if bundle was wrapped into dmg
-        arguments.append(installer_item)
+        arguments.append(installer_item) # End of indent
+    
+    # if catalog/catalogs have not been explictly specified via command-line, 
+    # append our default catalog
+    if not '--catalog' in arguments and not '-c' in arguments:
+        default_catalog = pref('default_catalog') or 'testing'
+        arguments.extend(['--catalog', default_catalog])
     pkginfo = makePkgInfo(arguments, False)
     if not pkginfo:
         # makepkginfo returned an error

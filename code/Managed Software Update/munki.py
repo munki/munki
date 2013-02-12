@@ -190,6 +190,20 @@ def getInstallInfo():
     return plist
 
 
+def munkiUpdatesContainAppleItems():
+    """Return True if there are any Apple items in the list of updates"""
+    installinfo = getInstallInfo()
+    # check managed_installs
+    for item in installinfo.get('managed_installs', []):
+        if item.get('apple_item'):
+            return True
+    # check removals
+    for item in installinfo.get('removals', []):
+        if item.get('apple_item'):
+            return True
+    return False
+
+
 def thereAreUpdatesToBeForcedSoon(hours=72):
     '''Return True if any updates need to be installed within the next
     X hours, false otherwise'''

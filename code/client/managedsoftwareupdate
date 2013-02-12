@@ -169,20 +169,20 @@ def runScript(script, display_name, runtype):
 
     try:
         utils.verifyFileOnlyWritableByMunkiAndRoot(script)
-    except utils.VerifyFilePermissionsError, e:
+    except utils.VerifyFilePermissionsError, err:
         # preflight/postflight is insecure, but if the currently executing
         # file is insecure too we are no worse off.
         try:
             utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
-        except utils.VerifyFilePermissionsError, e:
+        except utils.VerifyFilePermissionsError, err:
             # OK, managedsoftwareupdate is insecure anyway - warn & execute.
             munkicommon.display_warning('Multiple munki executable scripts '
                 'have insecure file permissions. Executing '
-                '%s anyway. Error: %s' % (display_name, e))
+                '%s anyway. Error: %s' % (display_name, err))
         else:
             # Just the preflight/postflight is insecure. Do not execute.
             munkicommon.display_warning('Skipping execution of %s due to '
-                'insecure file permissions. Error: %s' % (display_name, e))
+                'insecure file permissions. Error: %s' % (display_name, err))
             return result
 
     try:
@@ -197,16 +197,17 @@ def runScript(script, display_name, runtype):
             munkicommon.display_info('%s stderr: %s' % (display_name, stderr))
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, e:
-        munkicommon.display_warning(str(e))
+    except utils.RunExternalScriptError, err:
+        munkicommon.display_warning(str(err))
     return result
 
 
-def doInstallTasks(only_unattended=False):
+def doInstallTasks(do_apple_updates, only_unattended=False):
     """Perform our installation/removal tasks.
 
     Args:
-      only_unattended: Boolean. If True, only do unattended_(un)install items.
+      do_apple_updates: Boolean. If True, install Apple updates
+      only_unattended:  Boolean. If True, only do unattended_(un)install items.
 
     Returns:
       Boolean. True if a restart is required, False otherwise.
@@ -218,31 +219,20 @@ def doInstallTasks(only_unattended=False):
         clearLastNotifiedDate()
 
     need_to_restart = False
-    # munki updates take priority over Apple Updates, because
-    # a munki install or (especially) removal could make a
-    # pending Apple update no longer necessary or even complicate
-    # or prevent the removal of another item.
-    # Therefore we only install Apple updates if there are no
-    # pending munki updates.
 
     if munkiUpdatesAvailable():
         # install munki updates
         try:
             need_to_restart = installer.run(only_unattended=only_unattended)
         except:
-            munkicommon.display_error(
-                'Unexpected error in munkilib.installer:')
+            munkicommon.display_error('Unexpected error in munkilib.installer:')
             munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
             raise
 
-        # clear any Apple update info since it may no longer
-        # be relevant
-        if not only_unattended:
-            appleupdates.clearAppleUpdateInfo()
-    elif ((munkicommon.pref('InstallAppleSoftwareUpdates') or
-           munkicommon.pref('AppleSoftwareUpdatesOnly'))
-           and not only_unattended):
+    if do_apple_updates and not only_unattended:
+        # (note we do not currently support doing Apple updates
+        # as unattended_installs. Support may be added in the future)
         # are we supposed to handle Apple Software Updates?
         try:
             need_to_restart = appleupdates.installAppleUpdates()
@@ -317,6 +307,28 @@ def munkiUpdatesAvailable():
             munkicommon.display_error('Install info at %s is invalid.' %
                                        installinfo)
     return updatesavailable
+    
+
+def munkiUpdatesContainAppleItems():
+    """Return True if there are any Apple items in the list of updates"""
+    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                               'InstallInfo.plist')
+    if os.path.exists(installinfo):
+        try:
+            plist = FoundationPlist.readPlist(installinfo)
+        except FoundationPlist.NSPropertyListSerializationException:
+            munkicommon.display_error('Install info at %s is invalid.' %
+                                           installinfo)
+        else:
+            # check managed_installs
+            for item in plist.get('managed_installs', []):
+                if item.get('apple_item'):
+                    return True
+            # check removals
+            for item in plist.get('removals', []):
+                if item.get('apple_item'):
+                    return True
+    return False
 
 
 def recordUpdateCheckResult(result):
@@ -557,7 +569,7 @@ def main():
     munkicommon.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print 'Managed Software Update Tool'
-        print 'Copyright 2010-2012 The Munki Project'
+        print 'Copyright 2010-2013 The Munki Project'
         print 'http://code.google.com/p/munki\n'
 
     munkicommon.display_status_major('Starting...')
@@ -660,43 +672,63 @@ def main():
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-       
+
     updatesavailable = munkiUpdatesAvailable()
     appleupdatesavailable = False
-    if (not updatesavailable and not options.installonly and
-        not munkicommon.stopRequested()):
-        # if there are no munki updates,
-        # are we supposed to check for and install Apple Software Updates?
-        if ((munkicommon.pref('InstallAppleSoftwareUpdates') or
-            applesoftwareupdatesonly) and not options.munkipkgsonly):
+
+    # should we do Apple Software updates this run?
+    if applesoftwareupdatesonly:
+        # admin told us to only do Apple updates this run
+        should_do_apple_updates = True
+    elif options.munkipkgsonly:
+        # admin told us to skip Apple updates for this run
+        should_do_apple_updates = False
+    elif munkiUpdatesContainAppleItems():
+        # shouldn't run Software Update if we're doing Apple items
+        # with Munki items
+        should_do_apple_updates = False
+    else:
+        # check the normal preferences
+        should_do_apple_updates = munkicommon.pref(
+                                        'InstallAppleSoftwareUpdates') 
+
+    if should_do_apple_updates:
+        if (not options.installonly and not munkicommon.stopRequested()):
+            force_update_check = False
+            if (options.manualcheck or runtype == 'checkandinstallatstartup'):
+                force_update_check = True
+            if (runtype == 'custom' and applesoftwareupdatesonly):
+                force_update_check = True
             try:
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
-                    forcecheck=(options.manualcheck or
-                                runtype == 'checkandinstallatstartup' or
-                                (runtype == 'custom' and
-                                     applesoftwareupdatesonly)))
+                        forcecheck=force_update_check)
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.log(traceback.format_exc())
                 munkicommon.savereport()
                 raise
 
-    if (not updatesavailable and options.installonly and
-        not options.munkipkgsonly and
-        (munkicommon.pref('InstallAppleSoftwareUpdates') or
-         applesoftwareupdatesonly)):
-        # just look and see if there are already downloaded Apple updates
-        # to install; don't run softwareupdate to check with Apple
-        try:
-            appleupdatesavailable = \
-                appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True)
-        except:
-            munkicommon.display_error('Unexpected error in appleupdates:')
-            munkicommon.log(traceback.format_exc())
-            munkicommon.savereport()
-            raise
-           
+        if options.installonly:
+            # just look and see if there are already downloaded Apple updates
+            # to install; don't run softwareupdate to check with Apple
+            try:
+                appleupdatesavailable = \
+                    appleupdates.appleSoftwareUpdatesAvailable(
+                        suppresscheck=True)
+            except:
+                munkicommon.display_error('Unexpected error in appleupdates:')
+                munkicommon.log(traceback.format_exc())
+                munkicommon.savereport()
+                raise
+
+    if not options.installonly:
+        # display any available update information
+        if updatecheckresult:
+            updatecheck.displayUpdateInfo()
+        if appleupdatesavailable:
+            appleupdates.displayAppleUpdateInfo()
+
     # send a notification event so MSU can update its display
     # if needed
     sendUpdateNotification()
@@ -708,7 +740,7 @@ def main():
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
-            mustrestart = doInstallTasks()
+            mustrestart = doInstallTasks(appleupdatesavailable)
         elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
@@ -729,7 +761,7 @@ def main():
                     munkicommon.log('Installing only items marked unattended '
                                     'because SuppressLoginwindowInstall is '
                                     'true.')
-                    doInstallTasks(only_unattended=True)
+                    doInstallTasks(appleupdatesavailable, only_unattended=True)
                 elif getIdleSeconds() < 10:
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because system is not idle '
@@ -738,7 +770,7 @@ def main():
                     # no GUI users, system is idle, so we can install
                     # but first, enable status output over login window
                     munkicommon.munkistatusoutput = True
-                    mustrestart = doInstallTasks()
+                    mustrestart = doInstallTasks(appleupdatesavailable)
                     
             else:  # there are GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
@@ -750,7 +782,7 @@ def main():
                     # don't require a logout
                     unused_action = updatecheck.checkForceInstallPackages()
                     # install anything that can be done unattended
-                    doInstallTasks(only_unattended=True)
+                    doInstallTasks(appleupdatesavailable, only_unattended=True)
 
                 # send a notification event so MSU can update its display
                 # if needed
