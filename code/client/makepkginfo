@@ -942,7 +942,7 @@ def main():
         else:
             catinfo['version'] = "1.0"
         catinfo['name'] = options.apple_update
-        catinfo['installer_type'] = 'apple-update-metadata'
+        catinfo['installer_type'] = 'apple_update_metadata'
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)

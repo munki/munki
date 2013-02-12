@@ -119,7 +119,7 @@ def makecatalogs(repopath):
             
             #simple sanity checking
             installer_type = pkginfo.get('installer_type')
-            if not installer_type in ['nopkg', 'apple-update-metadata']:
+            if not installer_type in ['nopkg', 'apple_update_metadata']:
                 if not 'installer_item_location' in pkginfo:
                     errors.append(
                         "WARNING: file %s is missing installer_item_location" %
