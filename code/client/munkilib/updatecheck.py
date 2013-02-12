@@ -44,11 +44,20 @@ from Foundation import NSDate, NSPredicate, NSTimeZone
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
+# Flag denoting a check from appleupdates for apple_update_metadata
+APPLE_UPDATE_MD_ONLY = False
+
 def makeCatalogDB(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database"""
     name_table = {}
     pkgid_table = {}
+
+    # Filter catalogitems so that they only contain apple_update_metadata items
+    if APPLE_UPDATE_MD_ONLY:
+        catalogitems = [item for item in catalogitems
+                        if item.get('installer_type') ==
+                            'apple_update_metadata']
 
     itemindex = -1
     for item in catalogitems:
@@ -2609,10 +2618,13 @@ def getDownloadCachePath(destinationpathprefix, url):
 
 MACHINE = {}
 CONDITIONS = {}
-def check(client_id='', localmanifestpath=None):
+def check(client_id='', localmanifestpath=None, apple_update_md_only=False):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
+
+    global APPLE_UPDATE_MD_ONLY
+    APPLE_UPDATE_MD_ONLY = apple_update_md_only
 
     global MACHINE
     munkicommon.getMachineFacts()
@@ -2627,9 +2639,6 @@ def check(client_id='', localmanifestpath=None):
     if munkicommon.munkistatusoutput:
         munkistatus.activate()
 
-    munkicommon.log('### Beginning managed software check ###')
-    munkicommon.display_status_major('Checking for available updates...')
-
     if localmanifestpath:
         mainmanifestpath = localmanifestpath
     else:
@@ -2638,6 +2647,14 @@ def check(client_id='', localmanifestpath=None):
         return 0
 
     installinfo = {}
+
+    if APPLE_UPDATE_MD_ONLY:
+        munkicommon.display_detail('**Checking for Apple Update Metadata**')
+        print munkicommon.pref('AppleSoftwareUpdatesOnly')
+        return getAppleUpdateMetaData(mainmanifestpath)
+
+    munkicommon.log('### Beginning managed software check ###')
+    munkicommon.display_status_major('Checking for available updates...')
 
     if mainmanifestpath:
         # initialize our installinfo record
@@ -3121,6 +3138,17 @@ def getResourceIfChangedAtomically(url,
                                                 message=message,
                                                 resume=resume,
                                                 verify=verify)
+
+
+def getAppleUpdateMetaData(manifest):
+    global CATALOG
+    CATALOG = {}
+    if manifest:
+        manifestdata = getManifestData(manifest)
+        cataloglist = manifestdata.get('catalogs')
+        if cataloglist:
+            getCatalogs(cataloglist)
+    return CATALOG
 
 
 def main():

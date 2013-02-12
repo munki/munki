@@ -47,6 +47,7 @@ import fetch
 import launchd
 import munkicommon
 import munkistatus
+import updatecheck
 
 
 # Apple Software Update Catalog URLs.
@@ -172,6 +173,10 @@ class AppleUpdates(object):
             self.local_catalog_dir, LOCAL_DOWNLOAD_CATALOG_NAME)
 
         self._update_list_cache = None
+        
+        # apple_update_metadata support
+        self.apple_md = {}
+        self.client_id = CLIENT_ID
 
     def _ResetMunkiStatusAndDisplayMessage(self, message):
         """Resets MunkiStatus detail/percent, logs and msgs GUI.
@@ -825,8 +830,33 @@ class AppleUpdates(object):
         Returns:
           Boolean. True if apple updates was updated, False otherwise.
         """
+        metadata_exclusions = ['catalogs',
+                               'installed_size',
+                               'installer_type',
+                               'name',
+                               'version',
+                               'version_to_install']
         apple_updates = self.GetSoftwareUpdateInfo()
         if apple_updates:
+            # Process update metadata only if AppleSoftwareUpdatesOnly is false
+            if not munkicommon.pref('AppleSoftwareUpdatesOnly'):
+                self.apple_md = updatecheck.check(
+                                    self.client_id, apple_update_md_only=True)
+                for update in apple_updates:
+                    matching_items = self.getAllItemsWithProductKey(
+                                        update['productKey'])
+                    if matching_items:
+                        update_metadata = matching_items[0]
+                        for key in update_metadata:
+                            # Don't overwrite items in exclusions list
+                            if key in metadata_exclusions:
+                                continue
+                            else:
+                                # Apply non-empty metadata
+                                if update_metadata[key]:
+                                    munkicommon.display_debug2(
+                                        'Applying %s to %s...' % (key, update['display_name']))
+                                    update[key] = update_metadata[key]
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
             return True
@@ -1297,6 +1327,45 @@ class AppleUpdates(object):
         return updates
 
 
+    def getAllItemsWithProductKey(self, productKey):
+        """Searches apple_md for all items matching a given Apple productKey
+
+        Returns:
+          list of pkginfo items; sorted with newest version first. No precedence
+          is given to catalog order.
+        """
+        def compare_item_versions(a, b):
+            """Internal comparison function for use with sorting"""
+            return cmp(munkicommon.MunkiLooseVersion(b['version']),
+                       munkicommon.MunkiLooseVersion(a['version']))
+
+        itemlist = []
+
+        munkicommon.display_debug1(
+            'Looking for metadata matching: %s...' % productKey)
+        # is productKey in the catalog name table?
+        for catalogname in self.apple_md.keys():
+            if productKey in self.apple_md[catalogname]['named']:
+                versionsmatchingproductKey = \
+                    self.apple_md[catalogname]['named'][productKey]
+                for vers in versionsmatchingproductKey.keys():
+                    if vers != 'latest':
+                        indexlist = \
+                            self.apple_md[catalogname]['named'][productKey][vers]
+                        for index in indexlist:
+                            thisitem = self.apple_md[catalogname]['items'][index]
+                            if not thisitem in itemlist:
+                                munkicommon.display_debug1(
+                                 'Adding item %s, version %s from catalog %s...' %
+                                     (productKey, thisitem['version'], catalogname))
+                                itemlist.append(thisitem)
+
+        if itemlist:
+            # sort so latest version is first
+            itemlist.sort(compare_item_versions)
+        return itemlist
+
+
 
 # Make the new appleupdates module easily dropped in with exposed funcs for now.
 
@@ -1326,8 +1395,10 @@ def installAppleUpdates():
     return getAppleUpdatesInstance().InstallAppleUpdates()
 
 
-def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
+def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False, client_id=''):
     """Method for drop-in appleupdates replacement; see primary method docs."""
+    global CLIENT_ID
+    CLIENT_ID = client_id
     return getAppleUpdatesInstance().AppleSoftwareUpdatesAvailable(
         force_check=forcecheck, suppress_check=suppresscheck)
 

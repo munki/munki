@@ -702,7 +702,7 @@ def main():
             try:
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
-                        forcecheck=force_update_check)
+                        forcecheck=force_update_check, client_id=options.id)
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.log(traceback.format_exc())
@@ -715,7 +715,7 @@ def main():
             try:
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
-                        suppresscheck=True)
+                        suppresscheck=True, client_id=options.id)
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.log(traceback.format_exc())
