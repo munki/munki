@@ -569,7 +569,8 @@ def configure():
         ('repo_url', 
          'Repo fileshare URL (example: afp://munki.example.com/repo)'),
         ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
-        ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)')]:
+        ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
+        ('default_catalog', 'Default catalog to use (example: testing)')]:
         
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
     
@@ -646,7 +647,7 @@ def main():
     
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
-    installer_item = makePkgInfo(arguments, True)
+    installer_item = makePkgInfo(options=arguments, test_mode=True)
     if not installer_item:
         cleanupAndExit(-1)
     
@@ -692,10 +693,16 @@ def main():
                                         % installer_item)
                 cleanupAndExit(-1)
     
+    # if catalog/catalogs have not been explictly specified via command-line, 
+    # append our default catalog
+    if not '--catalog' in arguments and not '-c' in arguments:
+        default_catalog = pref('default_catalog') or 'testing'
+        arguments.extend(['--catalog', default_catalog])
+    
     # append the installer_item to arguments which
     # may have changed if bundle was wrapped into dmg
     arguments.append(installer_item)
-    pkginfo = makePkgInfo(arguments, False)
+    pkginfo = makePkgInfo(options=arguments)
     if not pkginfo:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
