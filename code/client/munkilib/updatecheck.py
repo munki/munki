@@ -44,20 +44,12 @@ from Foundation import NSDate, NSPredicate, NSTimeZone
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
-# Flag denoting a check from appleupdates for apple_update_metadata
-APPLE_UPDATE_MD_ONLY = False
 
 def makeCatalogDB(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database"""
     name_table = {}
     pkgid_table = {}
-
-    # Filter catalogitems so that they only contain apple_update_metadata items
-    if APPLE_UPDATE_MD_ONLY:
-        catalogitems = [item for item in catalogitems
-                        if item.get('installer_type') ==
-                            'apple_update_metadata']
 
     itemindex = -1
     for item in catalogitems:
@@ -952,7 +944,7 @@ def trimVersionString(version_string):
     return '.'.join(version_parts)
 
 
-def getItemDetail(name, cataloglist, vers=''):
+def getItemDetail(name, cataloglist, vers='', apple_update_metadata=False):
     """Searches the catalogs in list for an item matching the given name.
 
     If no version is supplied, but the version is appended to the name
@@ -965,14 +957,17 @@ def getItemDetail(name, cataloglist, vers=''):
         return cmp(munkicommon.MunkiLooseVersion(b),
                    munkicommon.MunkiLooseVersion(a))
 
-    (name, includedversion) = nameAndVersion(name)
-    if vers == '':
-        if includedversion:
-            vers = includedversion
-    if vers:
-        vers = trimVersionString(vers)
-    else:
+    if apple_update_metadata:
         vers = 'latest'
+    else:
+        (name, includedversion) = nameAndVersion(name)
+        if vers == '':
+            if includedversion:
+                vers = includedversion
+        if vers:
+            vers = trimVersionString(vers)
+        else:
+            vers = 'latest'
 
     munkicommon.display_debug1('Looking for detail for: %s, version %s...' %
                                 (name, vers))
@@ -2616,15 +2611,13 @@ def getDownloadCachePath(destinationpathprefix, url):
     return os.path.join(
         destinationpathprefix, getInstallerItemBasename(url))
 
+
 MACHINE = {}
 CONDITIONS = {}
-def check(client_id='', localmanifestpath=None, apple_update_md_only=False):
+def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
-
-    global APPLE_UPDATE_MD_ONLY
-    APPLE_UPDATE_MD_ONLY = apple_update_md_only
 
     global MACHINE
     munkicommon.getMachineFacts()
@@ -2639,6 +2632,9 @@ def check(client_id='', localmanifestpath=None, apple_update_md_only=False):
     if munkicommon.munkistatusoutput:
         munkistatus.activate()
 
+    munkicommon.log('### Beginning managed software check ###')
+    munkicommon.display_status_major('Checking for available updates...')
+
     if localmanifestpath:
         mainmanifestpath = localmanifestpath
     else:
@@ -2647,14 +2643,6 @@ def check(client_id='', localmanifestpath=None, apple_update_md_only=False):
         return 0
 
     installinfo = {}
-
-    if APPLE_UPDATE_MD_ONLY:
-        munkicommon.display_detail('**Checking for Apple Update Metadata**')
-        print munkicommon.pref('AppleSoftwareUpdatesOnly')
-        return getAppleUpdateMetaData(mainmanifestpath)
-
-    munkicommon.log('### Beginning managed software check ###')
-    munkicommon.display_status_major('Checking for available updates...')
 
     if mainmanifestpath:
         # initialize our installinfo record
@@ -3140,15 +3128,19 @@ def getResourceIfChangedAtomically(url,
                                                 verify=verify)
 
 
-def getAppleUpdateMetaData(manifest):
-    global CATALOG
-    CATALOG = {}
+def getAppleUpdateMetaData(client_id=''):
+    """Used by appleupdates in determining
+    metadata to apply to available Apple updates"""
+    
+    cataloglist = []
+    munkicommon.display_detail('**Checking for Apple Update Metadata**')
+    manifest = getPrimaryManifest(client_id)
     if manifest:
         manifestdata = getManifestData(manifest)
         cataloglist = manifestdata.get('catalogs')
         if cataloglist:
             getCatalogs(cataloglist)
-    return CATALOG
+    return cataloglist, CATALOG
 
 
 def main():

@@ -830,33 +830,22 @@ class AppleUpdates(object):
         Returns:
           Boolean. True if apple updates was updated, False otherwise.
         """
-        metadata_exclusions = ['catalogs',
-                               'installed_size',
-                               'installer_type',
-                               'name',
-                               'version',
-                               'version_to_install']
         apple_updates = self.GetSoftwareUpdateInfo()
         if apple_updates:
-            # Process update metadata only if AppleSoftwareUpdatesOnly is false
             if not munkicommon.pref('AppleSoftwareUpdatesOnly'):
-                self.apple_md = updatecheck.check(
-                                    self.client_id, apple_update_md_only=True)
-                for update in apple_updates:
-                    matching_items = self.getAllItemsWithProductKey(
-                                        update['productKey'])
-                    if matching_items:
-                        update_metadata = matching_items[0]
-                        for key in update_metadata:
-                            # Don't overwrite items in exclusions list
-                            if key in metadata_exclusions:
-                                continue
-                            else:
-                                # Apply non-empty metadata
-                                if update_metadata[key]:
-                                    munkicommon.display_debug2(
-                                        'Applying %s to %s...' % (key, update['display_name']))
-                                    update[key] = update_metadata[key]
+                # Gather available apple_update_metadata
+                cataloglist, self.apple_md = \
+                    updatecheck.getAppleUpdateMetaData(self.client_id)
+                for item in apple_updates:
+                    # Find matching metadata item
+                    metadata_item = updatecheck.getItemDetail(
+                                        item['productKey'], cataloglist,
+                                        apple_update_metadata=True)
+                    if metadata_item:
+                        munkicommon.display_debug1(
+                            'Processing metadata for %s, %s...'
+                            % (item['productKey'], item['display_name']))
+                        self.copyUpdateMetadata(item, metadata_item)
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
             return True
@@ -1327,43 +1316,43 @@ class AppleUpdates(object):
         return updates
 
 
-    def getAllItemsWithProductKey(self, productKey):
-        """Searches apple_md for all items matching a given Apple productKey
 
-        Returns:
-          list of pkginfo items; sorted with newest version first. No precedence
-          is given to catalog order.
+    def copyUpdateMetadata(self, item, metadata):
+        """Applies metadata to Apple update item restricted
+        to keys contained in 'metadata_to_copy'.
         """
-        def compare_item_versions(a, b):
-            """Internal comparison function for use with sorting"""
-            return cmp(munkicommon.MunkiLooseVersion(b['version']),
-                       munkicommon.MunkiLooseVersion(a['version']))
+        metadata_to_copy = ['blocking_applications',
+                            'description',
+                            'display_name',
+                            'force_install_after_date',
+                            'unattended_install',
+                            'RestartAction']
 
-        itemlist = []
+        # Mapping of supported RestartActions to
+        # equal or greater auxiliary actions
+        RestartActions = {
+            'RequireRestart'  : ['RequireRestart', 'RecommendRestart'],
+            'RecommendRestart': ['RequireRestart', 'RecommendRestart'],
+            'RequireLogout'   : ['RequireRestart', 'RecommendRestart',
+                                 'RequireLogout'],
+            'None'            : ['RequireRestart', 'RecommendRestart',
+                                 'RequireLogout']
+        }
 
-        munkicommon.display_debug1(
-            'Looking for metadata matching: %s...' % productKey)
-        # is productKey in the catalog name table?
-        for catalogname in self.apple_md.keys():
-            if productKey in self.apple_md[catalogname]['named']:
-                versionsmatchingproductKey = \
-                    self.apple_md[catalogname]['named'][productKey]
-                for vers in versionsmatchingproductKey.keys():
-                    if vers != 'latest':
-                        indexlist = \
-                            self.apple_md[catalogname]['named'][productKey][vers]
-                        for index in indexlist:
-                            thisitem = self.apple_md[catalogname]['items'][index]
-                            if not thisitem in itemlist:
-                                munkicommon.display_debug1(
-                                 'Adding item %s, version %s from catalog %s...' %
-                                     (productKey, thisitem['version'], catalogname))
-                                itemlist.append(thisitem)
-
-        if itemlist:
-            # sort so latest version is first
-            itemlist.sort(compare_item_versions)
-        return itemlist
+        for key in metadata:
+            # Apply 'white-listed', non-empty metadata keys
+            if key in metadata_to_copy and metadata[key]:
+                if key == 'RestartAction':
+                    # Ensure that a heavier weighted 'RestartAction' is not
+                    # overriden by one supplied in metadata
+                    if metadata[key] not in RestartActions.get(item.get(key, 'None')):
+                        munkicommon.display_debug2(
+                            '\tSkipping %s \'%s\', \'%s\' is preferred.'
+                             % (key, metadata[key], item[key]))
+                        continue
+                munkicommon.display_debug2('\tApplying %s...' % key)
+                item[key] = metadata[key]
+        return item
 
 
 
