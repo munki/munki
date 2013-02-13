@@ -79,7 +79,7 @@ except ImportError:
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
 
-def makecatalogs(repopath):
+def makecatalogs(repopath, options):
     '''Assembles all pkginfo files into catalogs.
     Assumes a pkgsinfo directory under repopath.
     User calling this needs to be able to write to the repo/catalogs
@@ -133,8 +133,8 @@ def makecatalogs(repopath):
                 # so check for installer_item_location key
                 if not 'installer_item_location' in pkginfo:
                     errors.append(
-                        "WARNING: file %s is missing installer_item_location" %
-                                                    filepath[len(pkgsinfopath)+1:])
+                        "WARNING: file %s is missing installer_item_location" 
+                        % filepath[len(pkgsinfopath)+1:])
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
                         exitCode = -1
@@ -244,7 +244,6 @@ def main():
     p.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
     p.set_defaults(force=False)
-    global options
     options, arguments = p.parse_args()
     
     if options.version:
@@ -269,7 +268,7 @@ def main():
         exit(-1)
     
     # Make the catalogs
-    makecatalogs(repopath)
+    makecatalogs(repopath, options)
 
 if __name__ == '__main__':
     main()
