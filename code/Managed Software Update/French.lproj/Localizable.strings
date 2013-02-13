@@ -9,12 +9,12 @@
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nToutes les mises à jour en attente vont être installées. Les travaux non sauvegardés seront perdu.\nPour éviter cela fermer maintenant votre session.";
 
 /* No comment provided by engineer. */
-"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Il est recommandé de fermer la session avant de mettre à jour. Soyez patient car il peut y avoir un délai à la reconnexion ? Fermer et mettre à jour maintenant ?";
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Il est recommandé de fermer la session avant de mettre à jour. Soyez patient car il peut y avoir un délai à la reconnexion ? Fermer et mettre à jour maintenant ?";
 
 "Checking for available Apple Software Updates..." = "Recherche des mises à jour Apple...";
 
 /* No comment provided by engineer. */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Il est nécessaire de fermer la session avant de mettre à jour. Soyez patient car il peut y avoir un délai à la reconnexion ? Fermer et mettre à jour maintenant ?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Il est nécessaire de fermer la session avant de mettre à jour. Soyez patient car il peut y avoir un délai à la reconnexion ? Fermer et mettre à jour maintenant ?";
 
 /* No comment provided by engineer. */
 "This item will be removed." = "Cet élément sera supprimé.";
@@ -29,7 +29,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "La fermeture de session sera forcée dans moins d'une minute.\nToutes les mises à jour en attente seront installées. Le travail non sauvegardé sera perdu.";
 
 /* No comment provided by engineer. */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Un redémarrage est nécessaire après la mise à jour. Soyez patient car il peut avoir un petit délai lors de la reconnexion. Déconnecter et mettre à jour maintenant ?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Un redémarrage est nécessaire après la mise à jour. Soyez patient car il peut avoir un petit délai lors de la reconnexion. Déconnecter et mettre à jour maintenant ?";
 
 /* No comment provided by engineer. */
 "Cancel" = "Annuler";
@@ -59,10 +59,10 @@
 "Installed" = "Installé";
 
 /* No comment provided by engineer. */
-"Logout and update" = "Déconnecter et mettre à jour";
+"Log out and update" = "Déconnecter et mettre à jour";
 
 /* No comment provided by engineer. */
-"Logout and update now" = "Déconnecter et mettre à jour maintenant";
+"Log out and update now" = "Déconnecter et mettre à jour maintenant";
 
 /* No comment provided by engineer. */
 "Logout Recommended" = "Fermeture de session recommandée";

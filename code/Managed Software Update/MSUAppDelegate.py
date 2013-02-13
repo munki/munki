@@ -136,7 +136,8 @@ class MSUAppDelegate(NSObject):
             else:
                 # only check for updates if cache secs config is not defined.
                 if munki.pref('CheckResultsCacheSeconds'):
-                    self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
+                    self.mainWindowController.theWindow.makeKeyAndOrderFront_(
+                        self)
                     self.noUpdatesAlert()
                 else:
                     self.checkForUpdates()
@@ -505,11 +506,13 @@ class MSUAppDelegate(NSObject):
         for row in self.optional_array_controller.arrangedObjects():
             if row['managed']:
                 # user selected for install
-                optional_install_choices['managed_installs'].append(row['itemname'])
+                optional_install_choices['managed_installs'].append(
+                    row['itemname'])
             elif row['original_managed']:
                 # was managed, but user deselected it; we should remove it if 
                 # possible
-                optional_install_choices['managed_uninstalls'].append(row['itemname'])
+                optional_install_choices['managed_uninstalls'].append(
+                    row['itemname'])
         munki.writeSelfServiceManifest(optional_install_choices)
         self.checkForUpdates()
 
@@ -593,7 +596,7 @@ class MSUAppDelegate(NSObject):
         # Set the OK button to default, unless less than 5 minutes to logout
         # in which case only the Logout button should be displayed.
         self._force_warning_logout_btn = NSLocalizedString(
-            u"Logout and update now", None)
+            u"Log out and update now", None)
         self._force_warning_ok_btn = NSLocalizedString(u"OK", None)
         if time_til_logout > 5:
             self._force_warning_btns = {
@@ -668,7 +671,7 @@ class MSUAppDelegate(NSObject):
         elif self.restart_required:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Restart Required", None),
-                NSLocalizedString(u"Logout and update", None),
+                NSLocalizedString(u"Log out and update", None),
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
                 NSLocalizedString(
@@ -682,7 +685,7 @@ class MSUAppDelegate(NSObject):
         elif self.logout_required or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Required", None),
-                NSLocalizedString(u"Logout and update", None),
+                NSLocalizedString(u"Log out and update", None),
                 NSLocalizedString(u"Cancel", None),
                 objc.nil,
                 NSLocalizedString(
@@ -691,17 +694,18 @@ class MSUAppDelegate(NSObject):
                     "and update now?"), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.mainWindowController.theWindow, self, self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
+                self.mainWindowController.theWindow, self, 
+                    self.logoutAlertDidEnd_returnCode_contextInfo_, objc.nil)
         else:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Recommended", None),
-                NSLocalizedString(u"Logout and update", None),
+                NSLocalizedString(u"Log out and update", None),
                 NSLocalizedString(u"Cancel", None),
                 NSLocalizedString(u"Update without logging out", None),
                 NSLocalizedString(
                     (u"A logout is recommended before updating. Please be "
                     "patient as there may be a short delay at the login "
-                    "window. Logout and update now?"), None))
+                    "window. Log out and update now?"), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, 

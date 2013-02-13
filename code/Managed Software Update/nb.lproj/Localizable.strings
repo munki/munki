@@ -3,9 +3,9 @@
 
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle ventende oppdateringer vil bli installert. Data som ikke er lagret vil gå tapt.\nDu kan unngå tvungen avlogging, ved selv å logge ut nå.";
 
-"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Det anbefales at du logger ut før oppdateringen. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Det anbefales at du logger ut før oppdateringen. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
 
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Du må logge ut før oppdatering. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du må logge ut før oppdatering. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
 
 "A logout will be forced at approximately %s." = "En tvungen utlogging vil skje ca. %s.";
 
@@ -13,7 +13,7 @@
 
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen utlogging vil skje om mindre enn et minutt.\nAlle ventende oppdateringer vil bli installeret. Alle data som ikke er lagret vil gå tapt.";
 
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "En omstart er påkrevd etter oppdateringen. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdateringen. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
 
 "Cancel" = "Avbryt";
 
@@ -39,9 +39,9 @@
 
 "Installed" = "Installert";
 
-"Logout and update" = "Logg ut og oppdater";
+"Log out and update" = "Logg ut og oppdater";
 
-"Logout and update now" = "Logg ut og oppdater nå";
+"Log out and update now" = "Logg ut og oppdater nå";
 
 "Logout Recommended" = "Utlogging er anbefalt";
 

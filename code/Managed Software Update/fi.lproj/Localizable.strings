@@ -9,12 +9,12 @@
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.\nVoit ohittaa pakotetun uloskirjaamisen kirjautumalla ulos nyt.";
 
 /* No comment provided by engineer. */
-"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Ennen päivitysten asentamista on suositeltavaa kirjautua ulos. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Ennen päivitysten asentamista on suositeltavaa kirjautua ulos. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
 
 "Checking for available Apple Software Updates..." = "Etsitään päivityksiä Applen ohjelmistoihin...";
 
 /* No comment provided by engineer. */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Päivitysten asentamiseksi tulee kirjautua ulos. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentamiseksi tulee kirjautua ulos. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
 
 /* No comment provided by engineer. */
 "This item will be removed." = "Tämä kohde poistetaan";
@@ -29,7 +29,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Kirjautuminen ulos suoritetaan alle minuutin kuluttua pakotetusti.\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.";
 
 /* No comment provided by engineer. */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Tietokone on käynnistettävä uudelleen kun päivitysten asennus on suoritettu. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaa ulos ja päivitä nyt?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Tietokone on käynnistettävä uudelleen kun päivitysten asennus on suoritettu. Olethan kärsivällinen sillä kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaa ulos ja päivitä nyt?";
 
 /* No comment provided by engineer. */
 "Cancel" = "Kumoa";
@@ -59,10 +59,10 @@
 "Installed" = "Asennettu";
 
 /* No comment provided by engineer. */
-"Logout and update" = "Kirjaudu ulos ja päivitä";
+"Log out and update" = "Kirjaudu ulos ja päivitä";
 
 /* No comment provided by engineer. */
-"Logout and update now" = "Kirjaudu ulos ja päivitä nyt";
+"Log out and update now" = "Kirjaudu ulos ja päivitä nyt";
 
 /* No comment provided by engineer. */
 "Logout Recommended" = "Uloskirjautumista suositellaan";
