@@ -194,7 +194,7 @@ class MSUStatusWindowController(NSObject):
                     NSLog(repr(data))
                 a_buffer = a_buffer + data
                 # do we have at least one return character?
-                if buffer.count('\n'):
+                if a_buffer.count('\n'):
                     lines = a_buffer.splitlines(True)
                     a_buffer = ''
                     for line in lines:
