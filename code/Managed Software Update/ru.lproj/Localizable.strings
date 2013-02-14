@@ -41,10 +41,10 @@
 "Software removals" = "Software verwijderingen";
 "Starting…" = "Запуск…";
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls U nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer opnieuw nadat de andere gebruikers zijn uitgelogd.";
-"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software installatie. Kon de installatiesessie niet starten. Neem kontakt op met uw systeembeheerder.";
-"There is a configuration problem with the managed software installer. Could not start the proces. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software installatie. Kon de bewerking niet starten. Neem kontakt op met uw systeembeheerder.";
-"There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software installatie. Kon de update check niet uitvoeren. Neem kontakt op met uw systeembeheerder.";
-"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software installatie. De bewerking werd onverwacht beëindigd. Neem kontakt op met uw systeembeheerder.";
+"There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator." = "Ошибка конфигурации приложения. Невозможно запустить сессию установки. Обратитесь к системному администратору.";
+"There is a configuration problem with the managed software installer. Could not start the proces. Contact your systems administrator." = "Ошибка в конфигурации приложения. Невозможно запустить процесс. Обратитесь к системному администратору.";
+"There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator." = "Ошибка в конфигурации приложения. Невозможно запустить процесс проверки наличия обновлений. Обратитесь к системному администратору.";
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Ошибка в конфигурации приложения. Процесс неожиданно завершился. Обратитесь к системному администратору.";
 "There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor uw computer.";
 "This item must be installed by " = "Dit item moet worden geïnstalleerd voor ";
 "This item will be removed." = "Dit item zal verwijderd worden.";
