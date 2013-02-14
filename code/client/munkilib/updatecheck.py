@@ -944,7 +944,7 @@ def trimVersionString(version_string):
     return '.'.join(version_parts)
 
 
-def getItemDetail(name, cataloglist, vers='', apple_update_metadata=False):
+def getItemDetail(name, cataloglist, vers=''):
     """Searches the catalogs in list for an item matching the given name.
 
     If no version is supplied, but the version is appended to the name
@@ -957,7 +957,7 @@ def getItemDetail(name, cataloglist, vers='', apple_update_metadata=False):
         return cmp(munkicommon.MunkiLooseVersion(b),
                    munkicommon.MunkiLooseVersion(a))
 
-    if apple_update_metadata:
+    if vers == 'apple_update_metadata':
         vers = 'latest'
     else:
         (name, includedversion) = nameAndVersion(name)
@@ -3140,7 +3140,7 @@ def getAppleUpdateMetaData(client_id=''):
         cataloglist = manifestdata.get('catalogs')
         if cataloglist:
             getCatalogs(cataloglist)
-    return cataloglist, CATALOG
+    return cataloglist
 
 
 def main():

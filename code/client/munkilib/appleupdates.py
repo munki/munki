@@ -175,7 +175,6 @@ class AppleUpdates(object):
         self._update_list_cache = None
         
         # apple_update_metadata support
-        self.apple_md = {}
         self.client_id = CLIENT_ID
 
     def _ResetMunkiStatusAndDisplayMessage(self, message):
@@ -834,13 +833,13 @@ class AppleUpdates(object):
         if apple_updates:
             if not munkicommon.pref('AppleSoftwareUpdatesOnly'):
                 # Gather available apple_update_metadata
-                cataloglist, self.apple_md = \
+                cataloglist = \
                     updatecheck.getAppleUpdateMetaData(self.client_id)
                 for item in apple_updates:
                     # Find matching metadata item
                     metadata_item = updatecheck.getItemDetail(
                                         item['productKey'], cataloglist,
-                                        apple_update_metadata=True)
+                                        vers='apple_update_metadata')
                     if metadata_item:
                         munkicommon.display_debug1(
                             'Processing metadata for %s, %s...'
