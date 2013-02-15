@@ -122,14 +122,14 @@
 /* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "216"; */
 "216.title" = "Правописание и грамматика";
 
-/* Class = "NSMenuItem"; title = "Правка"; ObjectID = "217"; */
-"217.title" = "Bewerken";
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Правка";
 
 /* Class = "NSMenuItem"; title = "Find"; ObjectID = "218"; */
 "218.title" = "Поиск";
 
 /* Class = "NSMenuItem"; title = "Check Spelling While Typing"; ObjectID = "219"; */
-"219.title" = "Spelling Controleren Tijdens Typen";
+"219.title" = "Проверять правописание при вводе текста";
 
 /* Class = "NSMenu"; title = "Find"; ObjectID = "220"; */
 "220.title" = "Поиск";
@@ -141,7 +141,7 @@
 "239.title" = "Изменить масштаб";
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
-"346.title" = "Check Grammatica Met Spelling";
+"346.title" = "Проверять грамматику и правописание";
 
 /* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "348"; */
 "348.title" = "Замены";
@@ -162,19 +162,19 @@
 "371.title" = "Управление обновлением ПО";
 
 /* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
-"378.title" = "Software updates zijn beschikbaar voor Uw computer.";
+"378.title" = "Для Вашего компьютера доступны обновления ПО.";
 
 /* Class = "NSTextFieldCell"; title = "Updating your software may take some time. If you're not ready to update now, you can choose to update later."; ObjectID = "380"; */
-"380.title" = "Het bijwerken van Uw software kan enige tijd duren. Als u nog niet klaar bent om nu bij te werken, kunt u ervoor kiezen om later bij te werken.";
+"380.title" = "Установка обновлений займет некоторое время. Если Вы не готовы к установке обновлений, Вы можете установить их позже.";
 
 /* Class = "NSButtonCell"; title = "Update now"; ObjectID = "382"; */
-"382.title" = "Werk nu bij";
+"382.title" = "Обновить сейчас";
 
 /* Class = "NSButtonCell"; title = "Later"; ObjectID = "384"; */
-"384.title" = "Later";
+"384.title" = "Позже";
 
 /* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "397"; */
-"397.headerCell.title" = "Naam";
+"397.headerCell.title" = "Название";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "398"; */
 "398.title" = "Tekst Cel";
@@ -186,22 +186,22 @@
 "401.title" = "Tekst Cel";
 
 /* Class = "NSTabViewItem"; label = "Updates"; ObjectID = "512"; */
-"512.label" = "Updates";
+"512.label" = "Обновления";
 
 /* Class = "NSTabViewItem"; label = "Optional software"; ObjectID = "514"; */
-"514.label" = "Optionele software";
+"514.label" = "Дополнительное ПО";
 
 /* Class = "NSButtonCell"; title = "Add or Remove"; ObjectID = "519"; */
-"519.title" = "Toevoegen of Verwijderen";
+"519.title" = "Установить или удалить";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "520"; */
-"520.title" = "Annuleren";
+"520.title" = "Отменить";
 
 /* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "527"; */
-"527.headerCell.title" = "Naam";
+"527.headerCell.title" = "Название";
 
 /* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "528"; */
-"528.headerCell.title" = "Versie";
+"528.headerCell.title" = "Версия";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "531"; */
 "531.title" = "Tekst Cel";
@@ -210,22 +210,22 @@
 "532.title" = "Tekst Cel";
 
 /* Class = "NSTextFieldCell"; title = "Check an item to have it installed. Uncheck an item to have it removed."; ObjectID = "546"; */
-"546.title" = "Vink een item aan om het te installeren. Haal de vink weg voor een item aan om het te verwijderen.";
+"546.title" = "Выберите программы для установки. Для удаления программ – омените выбор.";
 
 /* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
-"547.title" = "Voeg optionele software toe of verwijder het";
+"547.title" = "Установить или удалить дополнительное ПО";
 
 /* Class = "NSButtonCell"; title = "Optional software..."; ObjectID = "550"; */
-"550.title" = "Optionele software...";
+"550.title" = "Дополнительное ПО...";
 
 /* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "581"; */
-"581.headerCell.title" = "Grootte";
+"581.headerCell.title" = "Размер";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "582"; */
 "582.title" = "Tekst Cel";
 
 /* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "585"; */
-"585.headerCell.title" = "Grootte";
+"585.headerCell.title" = "Размер";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "586"; */
 "586.title" = "Tekst Cel";
