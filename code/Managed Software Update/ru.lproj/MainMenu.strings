@@ -1,12 +1,12 @@
 ﻿
 /* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "5"; */
-"5.title" = "Alles Naar Voren Brengen";
+"5.title" = "Все окна – на передний план";
 
 /* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
 "19.title" = "Окно";
 
 /* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Minimaliseren";
+"23.title" = "Свернуть";
 
 /* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
 "24.title" = "Окно";
@@ -21,16 +21,16 @@
 "57.title" = "Управление обновлением ПО";
 
 /* Class = "NSMenuItem"; title = "About Managed Software Update"; ObjectID = "58"; */
-"58.title" = "Over Beheerde Softwarebijwerking";
+"58.title" = "Об Управением обновлением ПО";
 
 /* Class = "NSMenu"; title = "Update"; ObjectID = "81"; */
-"81.title" = "Bijwerken";
+"81.title" = "Обновить";
 
 /* Class = "NSMenuItem"; title = "Update now "; ObjectID = "82"; */
 "82.title" = "Обновить сейчас ";
 
 /* Class = "NSMenuItem"; title = "Update"; ObjectID = "83"; */
-"83.title" = "Bijwerken";
+"83.title" = "Обновить";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Справка";
@@ -39,127 +39,127 @@
 "106.title" = "Справка";
 
 /* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
-"111.title" = "Beheerde Softwarebijwerking Help";
+"111.title" = "Справка Управление обновлением ПО";
 
 /* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "129"; */
-"129.title" = "Voorkeuren…";
+"129.title" = "Настройки...";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
-"130.title" = "Services";
+"130.title" = "Службы";
 
 /* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
-"131.title" = "Services";
+"131.title" = "Службы";
 
 /* Class = "NSMenuItem"; title = "Hide Managed Software Update"; ObjectID = "134"; */
-"134.title" = "Verberg Beheerde Softwarebijwerking";
+"134.title" = "Скрыть Управлением обновлением ПО";
 
 /* Class = "NSMenuItem"; title = "Quit Managed Software Update"; ObjectID = "136"; */
-"136.title" = "Sluit Beheerde Softwarebijwerking af";
+"136.title" = "Завершить Управление обновлением ПО";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
-"145.title" = "Verberg Anderen";
+"145.title" = "Скрыть остальные";
 
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
-"150.title" = "Toon Alles";
+"150.title" = "Показать все";
 
 /* Class = "NSMenuItem"; title = "Stop Speaking"; ObjectID = "195"; */
-"195.title" = "Stop Spraak";
+"195.title" = "Остановить";
 
 /* Class = "NSMenuItem"; title = "Start Speaking"; ObjectID = "196"; */
-"196.title" = "Start Spraak";
+"196.title" = "Начать";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
-"197.title" = "Kopiër";
+"197.title" = "Скопировать";
 
 /* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
-"198.title" = "Alles Selecteren";
+"198.title" = "Выбрать все";
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
-"199.title" = "Knippen";
+"199.title" = "Вырезать";
 
 /* Class = "NSMenu"; title = "Spelling and Grammar"; ObjectID = "200"; */
-"200.title" = "Spelling en Grammatica";
+"200.title" = "Правописание и грамматика";
 
 /* Class = "NSMenuItem"; title = "Check Spelling"; ObjectID = "201"; */
-"201.title" = "Spelling Controleren";
+"201.title" = "Правописание";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
-"202.title" = "Verwijder";
+"202.title" = "Удалить";
 
 /* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
-"203.title" = "Plakken";
+"203.title" = "Вставить";
 
 /* Class = "NSMenuItem"; title = "Show Spelling…"; ObjectID = "204"; */
-"204.title" = "Toon Spelling…";
+"204.title" = "Показать правописание…";
 
 /* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
-"205.title" = "Bewerken";
+"205.title" = "Правка";
 
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
-"207.title" = "Ontdoe";
+"207.title" = "Отменить";
 
 /* Class = "NSMenuItem"; title = "Find Next"; ObjectID = "208"; */
-"208.title" = "Vind Volgende";
+"208.title" = "Найти далее";
 
 /* Class = "NSMenuItem"; title = "Find…"; ObjectID = "209"; */
-"209.title" = "Vind…";
+"209.title" = "Найти…";
 
 /* Class = "NSMenuItem"; title = "Jump to Selection"; ObjectID = "210"; */
-"210.title" = "Ga Naar Selectie";
+"210.title" = "Перейти к выбранному";
 
 /* Class = "NSMenuItem"; title = "Speech"; ObjectID = "211"; */
-"211.title" = "Spraak";
+"211.title" = "Проговаривание текста";
 
 /* Class = "NSMenu"; title = "Speech"; ObjectID = "212"; */
-"212.title" = "Spraak";
+"212.title" = "Проговаривание текста";
 
 /* Class = "NSMenuItem"; title = "Find Previous"; ObjectID = "213"; */
-"213.title" = "Vind Vorige";
+"213.title" = "Найти ранее";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
-"215.title" = "Opnieuw";
+"215.title" = "Повторить";
 
 /* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "216"; */
-"216.title" = "Spelling en Grammatica";
+"216.title" = "Правописание и грамматика";
 
-/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+/* Class = "NSMenuItem"; title = "Правка"; ObjectID = "217"; */
 "217.title" = "Bewerken";
 
 /* Class = "NSMenuItem"; title = "Find"; ObjectID = "218"; */
-"218.title" = "Vind";
+"218.title" = "Поиск";
 
 /* Class = "NSMenuItem"; title = "Check Spelling While Typing"; ObjectID = "219"; */
 "219.title" = "Spelling Controleren Tijdens Typen";
 
 /* Class = "NSMenu"; title = "Find"; ObjectID = "220"; */
-"220.title" = "Vind";
+"220.title" = "Поиск";
 
 /* Class = "NSMenuItem"; title = "Use Selection for Find"; ObjectID = "221"; */
-"221.title" = "Gebruik Selectie voor Vinden";
+"221.title" = "Найти выбранное";
 
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
-"239.title" = "Zoom";
+"239.title" = "Изменить масштаб";
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
 "346.title" = "Check Grammatica Met Spelling";
 
 /* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "348"; */
-"348.title" = "Substituties";
+"348.title" = "Замены";
 
 /* Class = "NSMenu"; title = "Substitutions"; ObjectID = "349"; */
-"349.title" = "Substituties";
+"349.title" = "Показать замены";
 
 /* Class = "NSMenuItem"; title = "Smart Copy/Paste"; ObjectID = "350"; */
-"350.title" = "Smart Knip/Plak";
+"350.title" = "Смарт-копирование/вставка";
 
 /* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "351"; */
-"351.title" = "Smart Aanhalingstekens";
+"351.title" = "Смарт-кавычки";
 
 /* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "354"; */
-"354.title" = "Smart Links";
+"354.title" = "Смарт-ссылки";
 
 /* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "371"; */
-"371.title" = "Beheerde Softwarebijwerking";
+"371.title" = "Управление обновлением ПО";
 
 /* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
 "378.title" = "Software updates zijn beschikbaar voor Uw computer.";
@@ -180,7 +180,7 @@
 "398.title" = "Tekst Cel";
 
 /* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "400"; */
-"400.headerCell.title" = "Versie";
+"400.headerCell.title" = "Версия";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "401"; */
 "401.title" = "Tekst Cel";
@@ -231,16 +231,16 @@
 "586.title" = "Tekst Cel";
 
 /* Class = "NSTableColumn"; headerCell.title = "Status"; ObjectID = "628"; */
-"628.headerCell.title" = "Staat";
+"628.headerCell.title" = "Статус";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "629"; */
 "629.title" = "Tekst Cel";
 
 /* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "633"; */
-"633.title" = "Beheerde Softwarebijwerking";
+"633.title" = "Управление обновлением ПО";
 
 /* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "635"; */
 "635.title" = "BackdropWindow";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
-"645.title" = "Stop";
+"645.title" = "Остановить";
