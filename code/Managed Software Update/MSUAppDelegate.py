@@ -317,7 +317,7 @@ class MSUAppDelegate(NSObject):
                 self.quitAlertDidEnd_returnCode_contextInfo_, objc.nil)
 
 
-    def checkForUpdates(self):
+    def checkForUpdates(self, suppress_apple_update_check=False):
         # kick off an update check
 
         # close main window
@@ -331,7 +331,7 @@ class MSUAppDelegate(NSObject):
         self.optional_view_controller.setOptionallist_([])
 
         # attempt to start the update check
-        result = munki.startUpdateCheck()
+        result = munki.startUpdateCheck(suppress_apple_update_check)
         if result == 0:
             self.managedsoftwareupdate_task = "manualcheck"
             self.munkiStatusController.window.makeKeyAndOrderFront_(self)
@@ -514,7 +514,7 @@ class MSUAppDelegate(NSObject):
                 optional_install_choices['managed_uninstalls'].append(
                     row['itemname'])
         munki.writeSelfServiceManifest(optional_install_choices)
-        self.checkForUpdates()
+        self.checkForUpdates(suppress_apple_update_check=True)
 
 
     def buildUpdateTableData(self):

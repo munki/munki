@@ -269,11 +269,17 @@ def stringFromDate(nsdate):
     return unicode(df.stringForObjectValue_(nsdate))
 
 
-def startUpdateCheck():
+def startUpdateCheck(suppress_apple_update_check=False):
     '''Does launchd magic to run managedsoftwareupdate as root.'''
     try:
         if not os.path.exists(UPDATECHECKLAUNCHFILE):
-            open(UPDATECHECKLAUNCHFILE, 'w').close()
+            plist = {}
+            plist['SuppressAppleUpdateCheck'] = suppress_apple_update_check
+            try:
+                FoundationPlist.writePlist(plist, UPDATECHECKLAUNCHFILE)
+            except FoundationPlist.FoundationPlistException:
+                # problem creating the trigger file
+                return 1
         return 0
     except (OSError, IOError):
         return 1

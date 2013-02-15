@@ -534,6 +534,12 @@ def main():
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.updatecheck.launchd'
         if os.path.exists(launchdtriggerfile):
+            try:
+                launch_options = FoundationPlist.readPlist(launchdtriggerfile)
+                options.munkipkgsonly =  launch_options.get(
+                    'SuppressAppleUpdateCheck')
+            except FoundationPlist.FoundationPlistException:
+                pass
             # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
         runtype = 'manualcheck'
