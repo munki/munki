@@ -230,12 +230,13 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             munkicommon.savereport()
             raise
 
-    if do_apple_updates and not only_unattended:
+    if do_apple_updates:
         # (note we do not currently support doing Apple updates
         # as unattended_installs. Support may be added in the future)
         # are we supposed to handle Apple Software Updates?
         try:
-            need_to_restart = appleupdates.installAppleUpdates()
+            need_to_restart = appleupdates.installAppleUpdates(
+                                            only_unattended=only_unattended)
         except:
             munkicommon.display_error(
                 'Unexpected error in appleupdates.installAppleUpdates:')
