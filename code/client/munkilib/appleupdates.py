@@ -1174,8 +1174,9 @@ class AppleUpdates(object):
             # Creating an 'unattended_install' filtered catalog
             # against the existing filtered catalog is not an option as
             # cached downloads are purged if they do not exist in the
-            # filter catalog.
-            unattended_install_items = ' '.join(self.GetUnattendedInstalls())
+            # filtered catalog.  Instead, get a list of updates
+            # that are eligible for unattended_install.
+            unattended_install_items = self.GetUnattendedInstalls()
         else:
             msg = 'Installing available Apple Software Updates...'
 
@@ -1194,11 +1195,15 @@ class AppleUpdates(object):
 
         catalog_url = 'file://localhost' + urllib2.quote(
             self.local_catalog_path)
+        su_options = ['--CatalogURL', catalog_url, '-i']
+
         if only_unattended:
-            su_options = ['--CatalogURL', catalog_url, '-i',
-                          unattended_install_items]
+            # Append list of unattended_install items
+            su_options.extend(unattended_install_items)
         else:
-            su_options = ['--CatalogURL', catalog_url, '-i', '-a']
+            # We're installing all available updates
+            su_options.extend(['-a'])
+
         retcode = self._RunSoftwareUpdate(su_options, mode='install',
                                           results=installresults)
         if not 'InstallResults' in munkicommon.report:
