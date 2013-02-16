@@ -784,11 +784,12 @@ def main():
         pkginfo['catalogs'] = [item.strip() 
                                for item in newvalue.split(',')]
         
-        if 'receipts' not in pkginfo and 'installs' not in pkginfo:
-            print >> sys.stderr, ('WARNING: There are no receipts and no '
-                                  '\'installs\' items for this installer '
-                                  'item. You will need to add at least one '
-                                  'item to the \'installs\' list.')
+        if not APPLEMETADATA:
+            if 'receipts' not in pkginfo and 'installs' not in pkginfo:
+                print >> sys.stderr, ('WARNING: There are no receipts and no '
+                                      '\'installs\' items for this installer '
+                                      'item. You will need to add at least '
+                                      'one item to the \'installs\' list.')
         #TO-DO: provide a way to add 'installs' items right here
 
         print

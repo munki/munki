@@ -231,9 +231,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             raise
 
     if do_apple_updates:
-        # (note we do not currently support doing Apple updates
-        # as unattended_installs. Support may be added in the future)
-        # are we supposed to handle Apple Software Updates?
+        # install Apple updates
         try:
             need_to_restart = appleupdates.installAppleUpdates(
                                             only_unattended=only_unattended)
