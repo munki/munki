@@ -42,7 +42,7 @@
 "Starting…" = "Запуск…";
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другой пользователь сейчас в системе.\nОбновление может привести к потере несохраненных документов.\n\nПовторите попытку после выхода другого пользователя из системы.";
 "There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator." = "Ошибка конфигурации приложения. Невозможно запустить сессию установки. Обратитесь к системному администратору.";
-"There is a configuration problem with the managed software installer. Could not start the proces. Contact your systems administrator." = "Ошибка в конфигурации приложения. Невозможно запустить процесс. Обратитесь к системному администратору.";
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Ошибка в конфигурации приложения. Невозможно запустить процесс. Обратитесь к системному администратору.";
 "There is a configuration problem with the managed software installer. Could not start the update check process. Contact your systems administrator." = "Ошибка в конфигурации приложения. Невозможно запустить процесс проверки наличия обновлений. Обратитесь к системному администратору.";
 "There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Ошибка в конфигурации приложения. Процесс неожиданно завершился. Обратитесь к системному администратору.";
 "There is no new software for your computer at this time." = "Для Вашего компьютера нет обновлений.";
@@ -52,7 +52,7 @@
 "Update check failed" = "Не удалось проверить наличие обновлений";
 "Update later" = "Установить обновления позже";
 "Update without logging out" = "Установить обновления без выхода";
-"Will be installed" = "ZБудет установлено";
+"Will be installed" = "Будет установлено";
 "Will be removed" = "Будет удалено";
 "Will be updated" = "Будет обновлено";
 "Will not be installed" = "Не будет установлено";
