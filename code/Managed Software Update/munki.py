@@ -442,7 +442,11 @@ def getRunningBlockingApps(appnames):
     filemanager = NSFileManager.alloc().init()
     for appname in appnames:
         matching_items = []
-        if appname.endswith('.app'):
+        if appname.startswith('/'):
+            # search by exact path
+            matching_items = [item for item in proc_list
+                              if item == appname]
+        elif appname.endswith('.app'):
             # search by filename
             matching_items = [item for item in proc_list
                               if '/'+ appname + '/Contents/MacOS/' in item]

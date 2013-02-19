@@ -2240,7 +2240,11 @@ def isAppRunning(appname):
     display_detail('Checking if %s is running...' % appname)
     proc_list = getRunningProcesses()
     matching_items = []
-    if appname.endswith('.app'):
+    if appname.startswith('/'):
+        # search by exact path
+        matching_items = [item for item in proc_list
+                          if item == appname]
+    elif appname.endswith('.app'):
         # search by filename
         matching_items = [item for item in proc_list
                           if '/'+ appname + '/Contents/MacOS/' in item]
@@ -2492,6 +2496,31 @@ def forceLogoutNow():
 
     except Exception, e:
         display_error('Exception in forceLogoutNow(): %s' % str(e))
+
+
+def blockingApplicationsRunning(pkginfoitem):
+    """Returns true if any application in the blocking_applications list
+    is running or, if there is no blocking_applications list, if any
+    application in the installs list is running."""
+
+    if 'blocking_applications' in pkginfoitem:
+        appnames = pkginfoitem['blocking_applications']
+    else:
+        # if no blocking_applications specified, get appnames
+        # from 'installs' list if it exists
+        appnames = [os.path.basename(item.get('path'))
+                    for item in pkginfoitem.get('installs', [])
+                    if item['type'] == 'application']
+
+    display_debug1("Checking for %s" % appnames)
+    running_apps = [appname for appname in appnames
+                    if isAppRunning(appname)]
+    if running_apps:
+        display_detail(
+            "Blocking apps for %s are running:" % pkginfoitem['name'])
+        display_detail("    %s" % running_apps)
+        return True
+    return False
 
 
 # module globals

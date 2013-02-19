@@ -796,9 +796,17 @@ def main():
                     mustlogout = True
 
                 # it's possible that we no longer have any available updates
-                # so we need to check InstallInfo.plist again
-                # however Apple Updates have not been affected by the
-                # unattended install tasks (so that check is still valid).
+                # so we need to check InstallInfo.plist and
+                # AppleUpdates.plist again
+                try:
+                    appleupdatesavailable = \
+                        appleupdates.appleSoftwareUpdatesAvailable(
+                            suppresscheck=True, client_id=options.id)
+                except:
+                    munkicommon.display_error('Unexpected error in appleupdates:')
+                    munkicommon.log(traceback.format_exc())
+                    munkicommon.savereport()
+                    raise
                 if appleupdatesavailable or munkiUpdatesAvailable():
                     # set a flag to notify the user of available updates
                     # after we conclude this run.

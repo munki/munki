@@ -443,7 +443,9 @@ class AppleUpdates(object):
             if fileurl.startswith('file://localhost'):
                 fileurl = fileurl[len('file://localhost'):]
                 pathname = urllib2.unquote(fileurl).rstrip('/')
+                dirname = os.path.dirname(pathname)
                 executable = munkicommon.getAppBundleExecutable(pathname)
+                executable = executable[len(dirname + '/'):]
                 blocking_apps.append(executable or pathname)
 
         return blocking_apps
@@ -1174,15 +1176,19 @@ class AppleUpdates(object):
             # Creating an 'unattended_install' filtered catalog
             # against the existing filtered catalog is not an option as
             # cached downloads are purged if they do not exist in the
-            # filtered catalog.  Instead, get a list of updates
-            # that are eligible for unattended_install.
-            unattended_install_items = self.GetUnattendedInstalls()
+            # filtered catalog.  Instead, get a list of updates, and their
+            # product_ids, that are eligible for unattended_install.
+            unattended_install_items, unattended_install_product_ids = \
+                self.GetUnattendedInstalls()
+            restartneeded = False
+            if not unattended_install_items:
+                return False
         else:
             msg = 'Installing available Apple Software Updates...'
+            restartneeded = self.IsRestartNeeded()
 
         self._ResetMunkiStatusAndDisplayMessage(msg)
 
-        restartneeded = self.IsRestartNeeded()
         # use our filtered local catalog
         if not os.path.exists(self.local_catalog_path):
             munkicommon.display_error(
@@ -1200,6 +1206,11 @@ class AppleUpdates(object):
         if only_unattended:
             # Append list of unattended_install items
             su_options.extend(unattended_install_items)
+            # Filter installist to only include items
+            # which we're attempting to install
+            installlist = [item for item in installlist
+                           if item.get('productKey') in
+                           unattended_install_product_ids]
         else:
             # We're installing all available updates
             su_options.extend(['-a'])
@@ -1373,28 +1384,50 @@ class AppleUpdates(object):
                             '\tSkipping %s \'%s\', \'%s\' is preferred.'
                              % (key, metadata[key], item[key]))
                         continue
+                elif key == 'unattended_install':
+                    # Don't apply unattended_install if a RestartAction exists
+                    # in either the original item or metadata
+                    if metadata.get('RestartAction', 'None') != 'None' or \
+                       item.get('RestartAction', 'None') != 'None':
+                        munkicommon.display_warning(
+                            '\tIgnoring unattended_install key '
+                            'because RestartAction is %s.'
+                            % metadata.get('RestartAction'))
+                        continue
                 munkicommon.display_debug2('\tApplying %s...' % key)
                 item[key] = metadata[key]
         return item
 
     def GetUnattendedInstalls(self):
         """Processes AppleUpdates.plist to return a list
-        consisting of NAME-VERSION formatted items
-        which have been marked as unattended_installs.
+        of NAME-VERSION formatted items and a list of product_ids
+        which are elgible for unattended installation.
         """
         item_list = []
+        product_ids = []
         try:
             pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.FoundationPlistException:
             munkicommon.display_error(
                 'Error reading: %s', self.apple_updates_plist)
-            return item_list
+            return item_list, product_ids
         apple_updates = pl_dict.get('AppleUpdates', [])
         for item in apple_updates:
             if item.get('unattended_install'):
-               install_item = item['name'] + '-' + item['version_to_install']
-               item_list.append(install_item)
-        return item_list
+                if munkicommon.blockingApplicationsRunning(item):
+                    munkicommon.display_detail(
+                        'Skipping unattended install of %s because '
+                        'blocking application(s) running.'
+                        % item['display_name'])
+                    continue
+                install_item = item['name'] + '-' + item['version_to_install']
+                item_list.append(install_item)
+                product_ids.append(item['productKey'])
+            else:
+                munkicommon.display_detail(
+                    'Skipping install of %s because it\'s not unattended.'
+                    % item['display_name'])
+        return item_list, product_ids
 
 
 
