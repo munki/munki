@@ -445,6 +445,7 @@ class AppleUpdates(object):
                 pathname = urllib2.unquote(fileurl).rstrip('/')
                 dirname = os.path.dirname(pathname)
                 executable = munkicommon.getAppBundleExecutable(pathname)
+                # path to executable should be location agnostic
                 executable = executable[len(dirname + '/'):]
                 blocking_apps.append(executable or pathname)
 
@@ -1180,9 +1181,10 @@ class AppleUpdates(object):
             # product_ids, that are eligible for unattended_install.
             unattended_install_items, unattended_install_product_ids = \
                 self.GetUnattendedInstalls()
+            # ensure that we don't restart for unattended installations
             restartneeded = False
             if not unattended_install_items:
-                return False
+                return False # didn't find any unattended installs
         else:
             msg = 'Installing available Apple Software Updates...'
             restartneeded = self.IsRestartNeeded()
@@ -1253,6 +1255,7 @@ class AppleUpdates(object):
             munkicommon.display_error('softwareupdate error: %s' % retcode)
         
         # Refresh Applicable updates and catalogs
+        # since we may have performed some unattended installs
         if only_unattended:
             product_ids = self.GetAvailableUpdateProductIDs(
                           catalog_path=self.filtered_catalog_path)
