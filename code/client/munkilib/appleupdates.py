@@ -47,6 +47,7 @@ import fetch
 import launchd
 import munkicommon
 import munkistatus
+import updatecheck
 
 
 # Apple Software Update Catalog URLs.
@@ -166,12 +167,13 @@ class AppleUpdates(object):
             self.local_catalog_dir, LOCAL_CATALOG_NAME)
         self.extracted_catalog_path = os.path.join(
             self.local_catalog_dir, APPLE_EXTRACTED_CATALOG_NAME)
-        self.filtered_catalog_path = os.path.join(
-            self.local_catalog_dir, FILTERED_CATALOG_NAME)
         self.local_download_catalog_path = os.path.join(
             self.local_catalog_dir, LOCAL_DOWNLOAD_CATALOG_NAME)
 
         self._update_list_cache = None
+        
+        # apple_update_metadata support
+        self.client_id = CLIENT_ID
 
     def _ResetMunkiStatusAndDisplayMessage(self, message):
         """Resets MunkiStatus detail/percent, logs and msgs GUI.
@@ -441,7 +443,10 @@ class AppleUpdates(object):
             if fileurl.startswith('file://localhost'):
                 fileurl = fileurl[len('file://localhost'):]
                 pathname = urllib2.unquote(fileurl).rstrip('/')
+                dirname = os.path.dirname(pathname)
                 executable = munkicommon.getAppBundleExecutable(pathname)
+                # path to executable should be location agnostic
+                executable = executable[len(dirname + '/'):]
                 blocking_apps.append(executable or pathname)
 
         return blocking_apps
@@ -516,14 +521,16 @@ class AppleUpdates(object):
             return False
         return True
 
-    def GetAvailableUpdateProductIDs(self):
+    def GetAvailableUpdateProductIDs(self, catalog_path=''):
         """Returns a list of product IDs of available Apple updates.
 
         Returns:
           A list of string Apple update products ids.
         """
-        msg = 'Checking for available Apple Software Updates...'
-        self._ResetMunkiStatusAndDisplayMessage(msg)
+        if not catalog_path:
+            catalog_path = self.extracted_catalog_path
+            msg = 'Checking for available Apple Software Updates...'
+            self._ResetMunkiStatusAndDisplayMessage(msg)
 
         try:  # remove any old ApplicableUpdates.plist, but ignore errors.
             os.unlink(self.applicable_updates_plist)
@@ -531,8 +538,7 @@ class AppleUpdates(object):
             pass
 
         # use our locally-cached Apple catalog
-        catalog_url = 'file://localhost' + urllib2.quote(
-            self.extracted_catalog_path)
+        catalog_url = 'file://localhost' + urllib2.quote(catalog_path)
         su_options = ['--CatalogURL', catalog_url, '-l', '-f',
                       self.applicable_updates_plist]
 
@@ -789,7 +795,7 @@ class AppleUpdates(object):
         return True
 
     def GetSoftwareUpdateInfo(self):
-        """Uses AvailableUpdates.plist to generate the AppleUpdates.plist,
+        """Uses ApplicableUpdates.plist to generate the AppleUpdates.plist,
         which records available updates in the format that
         Managed Software Update.app expects.
 
@@ -827,6 +833,20 @@ class AppleUpdates(object):
         """
         apple_updates = self.GetSoftwareUpdateInfo()
         if apple_updates:
+            if not munkicommon.pref('AppleSoftwareUpdatesOnly'):
+                # Gather available apple_update_metadata
+                cataloglist = \
+                    updatecheck.getAppleUpdateMetaData(self.client_id)
+                for item in apple_updates:
+                    # Find matching metadata item
+                    metadata_item = updatecheck.getItemDetail(
+                                        item['productKey'], cataloglist,
+                                        vers='apple_update_metadata')
+                    if metadata_item:
+                        munkicommon.display_debug1(
+                            'Processing metadata for %s, %s...'
+                            % (item['productKey'], item['display_name']))
+                        self.copyUpdateMetadata(item, metadata_item)
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
             return True
@@ -1141,7 +1161,7 @@ class AppleUpdates(object):
     # TODO(jrand): The below functions are externally called. Should all
     #   others be private?
 
-    def InstallAppleUpdates(self):
+    def InstallAppleUpdates(self, only_unattended=False):
         """Uses softwareupdate to install previously downloaded updates.
 
         Returns:
@@ -1150,11 +1170,27 @@ class AppleUpdates(object):
         # disable Stop button if we are presenting GUI status
         if munkicommon.munkistatusoutput:
             munkistatus.hideStopButton()
+        
+        # Get list of unattended_installs
+        if only_unattended:
+            msg = 'Installing unattended Apple Software Updates...'
+            # Creating an 'unattended_install' filtered catalog
+            # against the existing filtered catalog is not an option as
+            # cached downloads are purged if they do not exist in the
+            # filtered catalog.  Instead, get a list of updates, and their
+            # product_ids, that are eligible for unattended_install.
+            unattended_install_items, unattended_install_product_ids = \
+                self.GetUnattendedInstalls()
+            # ensure that we don't restart for unattended installations
+            restartneeded = False
+            if not unattended_install_items:
+                return False # didn't find any unattended installs
+        else:
+            msg = 'Installing available Apple Software Updates...'
+            restartneeded = self.IsRestartNeeded()
 
-        msg = 'Installing available Apple Software Updates...'
         self._ResetMunkiStatusAndDisplayMessage(msg)
 
-        restartneeded = self.IsRestartNeeded()
         # use our filtered local catalog
         if not os.path.exists(self.local_catalog_path):
             munkicommon.display_error(
@@ -1167,10 +1203,22 @@ class AppleUpdates(object):
 
         catalog_url = 'file://localhost' + urllib2.quote(
             self.local_catalog_path)
-        retcode = self._RunSoftwareUpdate(
-            ['--CatalogURL', catalog_url, '-i', '-a'],
-            mode='install', results=installresults)
+        su_options = ['--CatalogURL', catalog_url, '-i']
 
+        if only_unattended:
+            # Append list of unattended_install items
+            su_options.extend(unattended_install_items)
+            # Filter installist to only include items
+            # which we're attempting to install
+            installlist = [item for item in installlist
+                           if item.get('productKey') in
+                           unattended_install_product_ids]
+        else:
+            # We're installing all available updates
+            su_options.extend(['-a'])
+
+        retcode = self._RunSoftwareUpdate(su_options, mode='install',
+                                          results=installresults)
         if not 'InstallResults' in munkicommon.report:
             munkicommon.report['InstallResults'] = []
 
@@ -1205,8 +1253,16 @@ class AppleUpdates(object):
 
         if retcode:  # there was an error
             munkicommon.display_error('softwareupdate error: %s' % retcode)
+        
+        # Refresh Applicable updates and catalogs
+        # since we may have performed some unattended installs
+        if only_unattended:
+            product_ids = self.GetAvailableUpdateProductIDs(
+                          catalog_path=self.filtered_catalog_path)
+            self._WriteFilteredCatalog(product_ids, self.filtered_catalog_path)
+
         # clean up our now stale local cache
-        if os.path.exists(self.cache_dir):
+        if os.path.exists(self.cache_dir) and not only_unattended:
             # TODO(unassigned): change this to Pythonic delete.
             unused_retcode = subprocess.call(['/bin/rm', '-rf', self.cache_dir])
         # remove the now invalid AppleUpdates.plist file.
@@ -1298,6 +1354,86 @@ class AppleUpdates(object):
 
 
 
+    def copyUpdateMetadata(self, item, metadata):
+        """Applies metadata to Apple update item restricted
+        to keys contained in 'metadata_to_copy'.
+        """
+        metadata_to_copy = ['blocking_applications',
+                            'description',
+                            'display_name',
+                            'force_install_after_date',
+                            'unattended_install',
+                            'RestartAction']
+
+        # Mapping of supported RestartActions to
+        # equal or greater auxiliary actions
+        RestartActions = {
+            'RequireRestart'  : ['RequireRestart', 'RecommendRestart'],
+            'RecommendRestart': ['RequireRestart', 'RecommendRestart'],
+            'RequireLogout'   : ['RequireRestart', 'RecommendRestart',
+                                 'RequireLogout'],
+            'None'            : ['RequireRestart', 'RecommendRestart',
+                                 'RequireLogout']
+        }
+
+        for key in metadata:
+            # Apply 'white-listed', non-empty metadata keys
+            if key in metadata_to_copy and metadata[key]:
+                if key == 'RestartAction':
+                    # Ensure that a heavier weighted 'RestartAction' is not
+                    # overriden by one supplied in metadata
+                    if metadata[key] not in RestartActions.get(item.get(key, 'None')):
+                        munkicommon.display_debug2(
+                            '\tSkipping %s \'%s\', \'%s\' is preferred.'
+                             % (key, metadata[key], item[key]))
+                        continue
+                elif key == 'unattended_install':
+                    # Don't apply unattended_install if a RestartAction exists
+                    # in either the original item or metadata
+                    if metadata.get('RestartAction', 'None') != 'None' or \
+                       item.get('RestartAction', 'None') != 'None':
+                        munkicommon.display_warning(
+                            '\tIgnoring unattended_install key '
+                            'because RestartAction is %s.'
+                            % metadata.get('RestartAction'))
+                        continue
+                munkicommon.display_debug2('\tApplying %s...' % key)
+                item[key] = metadata[key]
+        return item
+
+    def GetUnattendedInstalls(self):
+        """Processes AppleUpdates.plist to return a list
+        of NAME-VERSION formatted items and a list of product_ids
+        which are elgible for unattended installation.
+        """
+        item_list = []
+        product_ids = []
+        try:
+            pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
+        except FoundationPlist.FoundationPlistException:
+            munkicommon.display_error(
+                'Error reading: %s', self.apple_updates_plist)
+            return item_list, product_ids
+        apple_updates = pl_dict.get('AppleUpdates', [])
+        for item in apple_updates:
+            if item.get('unattended_install'):
+                if munkicommon.blockingApplicationsRunning(item):
+                    munkicommon.display_detail(
+                        'Skipping unattended install of %s because '
+                        'blocking application(s) running.'
+                        % item['display_name'])
+                    continue
+                install_item = item['name'] + '-' + item['version_to_install']
+                item_list.append(install_item)
+                product_ids.append(item['productKey'])
+            else:
+                munkicommon.display_detail(
+                    'Skipping install of %s because it\'s not unattended.'
+                    % item['display_name'])
+        return item_list, product_ids
+
+
+
 # Make the new appleupdates module easily dropped in with exposed funcs for now.
 
 apple_updates_object = None
@@ -1321,13 +1457,15 @@ def clearAppleUpdateInfo():
     return getAppleUpdatesInstance().ClearAppleUpdateInfo()
 
 
-def installAppleUpdates():
+def installAppleUpdates(only_unattended=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
-    return getAppleUpdatesInstance().InstallAppleUpdates()
+    return getAppleUpdatesInstance().InstallAppleUpdates(only_unattended=only_unattended)
 
 
-def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False):
+def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False, client_id=''):
     """Method for drop-in appleupdates replacement; see primary method docs."""
+    global CLIENT_ID
+    CLIENT_ID = client_id
     return getAppleUpdatesInstance().AppleSoftwareUpdatesAvailable(
         force_check=forcecheck, suppress_check=suppresscheck)
 

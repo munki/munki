@@ -538,6 +538,20 @@ def main():
         )
     p.add_option_group(gen_installs_options)
     
+    # Apple update metadata pkg options
+    # (by itself since no installer_item needs to be specified)
+    apple_update_metdata_options = optparse.OptionGroup(
+        p, 'Generating Apple update metadata items')
+    apple_update_metdata_options.add_option(
+        '--apple_update', '--apple-update',
+        metavar='PRODUCTKEY',
+        help=('Specify an Apple update \'productKey\' used to manipulate '
+              'the behavior of a pending Apple software update. '
+              'For example, a \'force_install_after_date\' key could be added '
+              'as opposed to importing the update into the munki repo.')
+        )
+    p.add_option_group(apple_update_metdata_options)
+    
     # Additional options - misc. options that don't fit into other categories,
     # and don't necessarily warrant the creation of their own option group
     additional_options = optparse.OptionGroup(p, 'Additional Options')
@@ -610,7 +624,7 @@ def main():
         exit(0)
     
     if options.verify_options_only:
-        if len(arguments) == 0:
+        if len(arguments) == 0 and not options.apple_update:
             print >> sys.stderr, 'makepkginfo options FAILED verification'
             print >> sys.stderr, 'No installer item was provided.'
             exit(1)
@@ -619,7 +633,8 @@ def main():
             print >> sys.stderr, \
                 'Can process only one installer item at a time.'
             exit(3)
-        print >> sys.stdout, arguments[0]
+        if not options.apple_update:
+            print >> sys.stdout, arguments[0]
         exit(0)
     
     if (len(arguments) == 0 
@@ -631,7 +646,8 @@ def main():
         and not options.postinstall_script
         and not options.preuninstall_script
         and not options.postuninstall_script
-        and not options.uninstall_script):
+        and not options.uninstall_script
+        and not options.apple_update):
         p.print_usage()
         exit(-1)
 
@@ -914,6 +930,19 @@ def main():
             catinfo['installer_environment'] = installer_environment_dict
     if options.notes:
         catinfo['notes'] = readFileOrString(options.notes)
+    if options.apple_update:
+        # remove minimum_os_version as we don't include it for this option
+        catinfo.pop('minimum_os_version')
+        if options.catalog:
+            catinfo['catalogs'] = options.catalog
+        else:
+            catinfo['catalogs'] = ['testing']
+        if options.pkgvers:
+            catinfo['version'] = options.pkgvers
+        else:
+            catinfo['version'] = "1.0"
+        catinfo['name'] = options.apple_update
+        catinfo['installer_type'] = 'apple_update_metadata'
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)

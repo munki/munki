@@ -282,7 +282,10 @@ def promptForSubdirectory(subdirectory):
             repo_path = pref('repo_path')
             if not repoAvailable():
                 raise RepoCopyError('Could not connect to munki repo.')
-            destination_path = os.path.join(repo_path, 'pkgs', newdir)
+            if APPLEMETADATA:
+                destination_path = os.path.join(repo_path, 'pkgsinfo', newdir)
+            else:
+                destination_path = os.path.join(repo_path, 'pkgs', newdir)
             if not os.path.exists(destination_path):
                 answer = raw_input('Path %s doesn\'t exist. Create it? [y/n] '
                                     % destination_path)
@@ -425,7 +428,7 @@ def findMatchingPkginfo(pkginfo):
 
     # no matches by receipts or installed applications, 
     # let's try to match based on installer_item_name
-    installer_item_name = os.path.basename(pkginfo['installer_item_location'])
+    installer_item_name = os.path.basename(pkginfo.get('installer_item_location',''))
     possiblematches = db['installer_items'].get(installer_item_name)
     if possiblematches:
         versionlist = possiblematches.keys()
@@ -553,12 +556,14 @@ def configure():
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
 PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',    
                                             PREFSNAME))
+APPLEMETADATA = False
 NOINTERACTIVE = False
 WE_MOUNTED_THE_REPO = False
 VERBOSE = False
 
 def main():
     """Main routine"""
+    global APPLEMETADATA
     global NOINTERACTIVE
     global VERBOSE
     
@@ -615,27 +620,30 @@ def main():
         p.print_usage()
         exit(0)
     
+    if '--apple-update' in arguments:
+        APPLEMETADATA = True
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
     installer_item = makePkgInfo(options=arguments, test_mode=True)
-    if not installer_item:
+    if not installer_item and not APPLEMETADATA:
         cleanupAndExit(-1)
     
-    # Remove the installer_item from arguments
-    arguments.remove(installer_item)
+    if not APPLEMETADATA:
+        # Remove the installer_item from arguments
+        arguments.remove(installer_item)
     
-    # Strip trailing '/' from installer_item
-    installer_item = installer_item.rstrip('/')
+        # Strip trailing '/' from installer_item
+        installer_item = installer_item.rstrip('/')
     
-    if not munkicommon.hasValidInstallerItemExt(installer_item) and \
-       not munkicommon.isApplication(installer_item):
-        print >> sys.stderr, (
-            'Unknown installer item type: "%s"' % installer_item)
-        exit(-1)
+        if not munkicommon.hasValidInstallerItemExt(installer_item) and \
+           not munkicommon.isApplication(installer_item):
+            print >> sys.stderr, (
+                'Unknown installer item type: "%s"' % installer_item)
+            exit(-1)
     
-    if not os.path.exists(installer_item):
-        print >> sys.stderr, '%s does not exist!' % installer_item
-        exit(-1)
+        if not os.path.exists(installer_item):
+            print >> sys.stderr, '%s does not exist!' % installer_item
+            exit(-1)
     
     if not pref('repo_path'):
         print >> sys.stderr, ('Path to munki repo has not been defined. '
@@ -647,32 +655,33 @@ def main():
         print >> sys.stderr, ('Could not connect to munki repo. Check the '
                               'configuration and try again.')
         exit(-1)
-                    
-    if os.path.isdir(installer_item):
-        if munkicommon.hasValidDiskImageExt(installer_item):
-            # a directory named foo.dmg or foo.iso!
-            print >> sys.stderr, '%s is an unknown type.' % installer_item
-            cleanupAndExit(-1)
-        else:
-            # we need to convert to dmg
-            dmg_path = makeDMG(installer_item)
-            if dmg_path:
-                installer_item = dmg_path
-            else:
-                print >> sys.stderr, ('Could not convert %s to a disk image.' 
-                                        % installer_item)
+    
+    if not APPLEMETADATA:
+        if os.path.isdir(installer_item): # Start of indent
+            if munkicommon.hasValidDiskImageExt(installer_item):
+                # a directory named foo.dmg or foo.iso!
+                print >> sys.stderr, '%s is an unknown type.' % installer_item
                 cleanupAndExit(-1)
+            else:
+                # we need to convert to dmg
+                dmg_path = makeDMG(installer_item)
+                if dmg_path:
+                    installer_item = dmg_path
+                else:
+                    print >> sys.stderr, ('Could not convert %s to a disk image.'
+                                            % installer_item)
+                    cleanupAndExit(-1)
+        
+        # append the installer_item to arguments which
+        # may have changed if bundle was wrapped into dmg
+        arguments.append(installer_item) # End of indent
     
     # if catalog/catalogs have not been explictly specified via command-line, 
     # append our default catalog
     if not '--catalog' in arguments and not '-c' in arguments:
         default_catalog = pref('default_catalog') or 'testing'
         arguments.extend(['--catalog', default_catalog])
-    
-    # append the installer_item to arguments which
-    # may have changed if bundle was wrapped into dmg
-    arguments.append(installer_item)
-    pkginfo = makePkgInfo(options=arguments)
+    pkginfo = makePkgInfo(arguments, False)
     if not pkginfo:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
@@ -745,11 +754,12 @@ def main():
         pkginfo['catalogs'] = [item.strip() 
                                for item in newvalue.split(',')]
         
-        if 'receipts' not in pkginfo and 'installs' not in pkginfo:
-            print >> sys.stderr, ('WARNING: There are no receipts and no '
-                                  '\'installs\' items for this installer '
-                                  'item. You will need to add at least one '
-                                  'item to the \'installs\' list.')
+        if not APPLEMETADATA:
+            if 'receipts' not in pkginfo and 'installs' not in pkginfo:
+                print >> sys.stderr, ('WARNING: There are no receipts and no '
+                                      '\'installs\' items for this installer '
+                                      'item. You will need to add at least '
+                                      'one item to the \'installs\' list.')
         #TO-DO: provide a way to add 'installs' items right here
 
         print
@@ -764,7 +774,7 @@ def main():
         
         if options.subdirectory == '':
             pkgs_path = os.path.join(pref('repo_path'), 'pkgs')
-            if installer_item.startswith(pkgs_path):
+            if installer_item.startswith(pkgs_path) and not APPLEMETADATA:
                 # the installer item is already in the repo.
                 # use its relative path as the subdirectory
                 installer_item_dirpath = os.path.dirname(installer_item)
@@ -776,17 +786,18 @@ def main():
     # fix in case user accidentally starts subdirectory with a slash
     if options.subdirectory.startswith('/'):
         options.subdirectory = options.subdirectory[1:]
-            
-    try:
-        uploaded_pkgpath = copyItemToRepo(installer_item,
-                                          pkginfo.get('version'),
-                                          options.subdirectory)
-    except RepoCopyError, errmsg:
-        print >> sys.stderr, errmsg
-        cleanupAndExit(-1)
 
-    # adjust the installer_item_location to match the actual location and name
-    pkginfo['installer_item_location'] = uploaded_pkgpath
+    if not APPLEMETADATA:
+        try:
+            uploaded_pkgpath = copyItemToRepo(installer_item,
+                                              pkginfo.get('version'),
+                                              options.subdirectory)
+        except RepoCopyError, errmsg:
+            print >> sys.stderr, errmsg
+            cleanupAndExit(-1)
+    
+        # adjust the installer_item_location to match the actual location and name
+        pkginfo['installer_item_location'] = uploaded_pkgpath
         
     # installer_item upload was successful, so upload pkginfo to repo
     try:

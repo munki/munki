@@ -207,11 +207,13 @@ def munkiUpdatesContainAppleItems():
 def thereAreUpdatesToBeForcedSoon(hours=72):
     '''Return True if any updates need to be installed within the next
     X hours, false otherwise'''
-    installinfo = getInstallInfo()
+    installinfo = getInstallInfo().get('managed_installs', [])
+    installinfo.extend(getAppleUpdates().get('AppleUpdates', []))
+
     if installinfo:
         now = NSDate.date()
         now_xhours = NSDate.dateWithTimeIntervalSinceNow_(hours * 3600)
-        for item in installinfo.get('managed_installs', []):
+        for item in installinfo:
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
                 force_install_after_date = discardTimeZoneFromDate(
@@ -227,9 +229,10 @@ def earliestForceInstallDate():
     """
     earliest_date = None
 
-    installinfo = getInstallInfo()
+    installinfo = getInstallInfo().get('managed_installs', [])
+    installinfo.extend(getAppleUpdates().get('AppleUpdates', []))
 
-    for install in installinfo.get('managed_installs', []):
+    for install in installinfo:
         this_force_install_date = install.get('force_install_after_date')
 
         if this_force_install_date:
@@ -445,7 +448,11 @@ def getRunningBlockingApps(appnames):
     filemanager = NSFileManager.alloc().init()
     for appname in appnames:
         matching_items = []
-        if appname.endswith('.app'):
+        if appname.startswith('/'):
+            # search by exact path
+            matching_items = [item for item in proc_list
+                              if item == appname]
+        elif appname.endswith('.app'):
             # search by filename
             matching_items = [item for item in proc_list
                               if '/'+ appname + '/Contents/MacOS/' in item]

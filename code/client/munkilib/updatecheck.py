@@ -44,6 +44,7 @@ from Foundation import NSDate, NSPredicate, NSTimeZone
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
+
 def makeCatalogDB(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database"""
@@ -956,14 +957,17 @@ def getItemDetail(name, cataloglist, vers=''):
         return cmp(munkicommon.MunkiLooseVersion(b),
                    munkicommon.MunkiLooseVersion(a))
 
-    (name, includedversion) = nameAndVersion(name)
-    if vers == '':
-        if includedversion:
-            vers = includedversion
-    if vers:
-        vers = trimVersionString(vers)
-    else:
+    if vers == 'apple_update_metadata':
         vers = 'latest'
+    else:
+        (name, includedversion) = nameAndVersion(name)
+        if vers == '':
+            if includedversion:
+                vers = includedversion
+        if vers:
+            vers = trimVersionString(vers)
+        else:
+            vers = 'latest'
 
     munkicommon.display_debug1('Looking for detail for: %s, version %s...' %
                                 (name, vers))
@@ -2607,6 +2611,7 @@ def getDownloadCachePath(destinationpathprefix, url):
     return os.path.join(
         destinationpathprefix, getInstallerItemBasename(url))
 
+
 MACHINE = {}
 CONDITIONS = {}
 def check(client_id='', localmanifestpath=None):
@@ -2995,9 +3000,10 @@ def addTimeZoneOffsetToDate(the_date):
 
 
 def checkForceInstallPackages():
-    """Check installable packages for force install parameters.
+    """Check installable packages and applicable Apple updates
+    for force install parameters.
 
-    This method has a side effect of modifying InstallInfo in one scenario:
+    This method modifies InstallInfo and/or AppleUpdates in one scenario:
     It enables the unattended_install flag on all packages which need to be
     force installed and do not have a RestartAction.
 
@@ -3011,49 +3017,58 @@ def checkForceInstallPackages():
     result = None
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
-
-    try:
-        installinfo = FoundationPlist.readPlist(installinfopath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        return result
-
+    
+    installinfo_types = {
+        'InstallInfo.plist' : 'managed_installs',
+        'AppleUpdates.plist': 'AppleUpdates'
+    }
+    
     now = NSDate.date()
     now_xhours = NSDate.dateWithTimeIntervalSinceNow_(
             FORCE_INSTALL_WARNING_HOURS * 3600)
-    writeback = False
+    
+    for installinfo_plist in installinfo_types.keys():
+        pl_dict = installinfo_types[installinfo_plist]
+        installinfopath = os.path.join(ManagedInstallDir, installinfo_plist)
+        try:
+            installinfo = FoundationPlist.readPlist(installinfopath)
+        except FoundationPlist.NSPropertyListSerializationException:
+            continue
+        
+        writeback = False
 
-    for i in xrange(len(installinfo.get('managed_installs', []))):
-        install = installinfo['managed_installs'][i]
-        force_install_after_date = install.get('force_install_after_date')
-
-        if force_install_after_date:
-            force_install_after_date = subtractTimeZoneOffsetFromDate(
-                force_install_after_date)
-            munkicommon.display_debug1(
-                'Forced install for %s at %s',
-                install['name'], force_install_after_date)
-            if now >= force_install_after_date:
-                result = 'now'
-                if install.get('RestartAction'):
-                    if install['RestartAction'] == 'RequireLogout':
-                        result = 'logout'
-                    elif install['RestartAction'] == 'RequireRestart':
-                        result = 'restart'
-                elif not install.get('unattended_install', False):
-                    munkicommon.display_debug1(
-                        'Setting unattended install for %s', install['name'])
-                    install['unattended_install'] = True
-                    installinfo['managed_installs'][i] = install
-                    writeback = True
-
-            if now_xhours >= force_install_after_date:
-                if not result:
-                    result = 'soon'
-
-    if writeback:
-        FoundationPlist.writePlist(installinfo, installinfopath)
-
+        for i in xrange(len(installinfo.get(pl_dict, []))):
+            install = installinfo[pl_dict][i]
+            force_install_after_date = install.get('force_install_after_date')
+            
+            if force_install_after_date:
+                force_install_after_date = subtractTimeZoneOffsetFromDate(
+                    force_install_after_date)
+                munkicommon.display_debug1(
+                    'Forced install for %s at %s',
+                    install['name'], force_install_after_date)
+                if now >= force_install_after_date:
+                    result = 'now'
+                    if install.get('RestartAction'):
+                        if install['RestartAction'] == 'RequireLogout':
+                            result = 'logout'
+                        elif install['RestartAction'] == 'RequireRestart' or \
+                             install['RestartAction'] == 'RecommendRestart':
+                            result = 'restart'
+                    elif not install.get('unattended_install', False):
+                        munkicommon.display_debug1(
+                            'Setting unattended install for %s', install['name'])
+                        install['unattended_install'] = True
+                        installinfo[pl_dict][i] = install
+                        writeback = True
+                
+                if now_xhours >= force_install_after_date:
+                    if not result:
+                        result = 'soon'
+        
+        if writeback:
+            FoundationPlist.writePlist(installinfo, installinfopath)
+    
     return result
 
 
@@ -3121,6 +3136,21 @@ def getResourceIfChangedAtomically(url,
                                                 message=message,
                                                 resume=resume,
                                                 verify=verify)
+
+
+def getAppleUpdateMetaData(client_id=''):
+    """Used by appleupdates in determining
+    metadata to apply to available Apple updates"""
+    
+    cataloglist = []
+    munkicommon.display_detail('**Checking for Apple Update Metadata**')
+    manifest = getPrimaryManifest(client_id)
+    if manifest:
+        manifestdata = getManifestData(manifest)
+        cataloglist = manifestdata.get('catalogs')
+        if cataloglist:
+            getCatalogs(cataloglist)
+    return cataloglist
 
 
 def main():
