@@ -174,6 +174,7 @@ class AppleUpdates(object):
         
         # apple_update_metadata support
         self.client_id = CLIENT_ID
+        self.force_catalog_refresh = FORCE_CATALOG_REFRESH
 
     def _ResetMunkiStatusAndDisplayMessage(self, message):
         """Resets MunkiStatus detail/percent, logs and msgs GUI.
@@ -835,19 +836,23 @@ class AppleUpdates(object):
         apple_updates = self.GetSoftwareUpdateInfo()
         if apple_updates:
             if not munkicommon.pref('AppleSoftwareUpdatesOnly'):
-                # Gather available apple_update_metadata
                 cataloglist = \
-                    updatecheck.getAppleUpdateMetaData(self.client_id)
-                for item in apple_updates:
-                    # Find matching metadata item
-                    metadata_item = updatecheck.getItemDetail(
-                                        item['productKey'], cataloglist,
-                                        vers='apple_update_metadata')
-                    if metadata_item:
-                        munkicommon.display_debug1(
-                            'Processing metadata for %s, %s...'
-                            % (item['productKey'], item['display_name']))
-                        self.copyUpdateMetadata(item, metadata_item)
+                    updatecheck.getPrimaryManifestCatalogs(self.client_id,
+                        force_refresh=self.force_catalog_refresh)
+                if cataloglist:
+                    # Check for apple_update_metadata
+                    munkicommon.display_detail(
+                        '**Checking for Apple Update Metadata**')
+                    for item in apple_updates:
+                        # Find matching metadata item
+                        metadata_item = updatecheck.getItemDetail(
+                                            item['productKey'], cataloglist,
+                                            vers='apple_update_metadata')
+                        if metadata_item:
+                            munkicommon.display_debug1(
+                                'Processing metadata for %s, %s...'
+                                % (item['productKey'], item['display_name']))
+                            self.copyUpdateMetadata(item, metadata_item)
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
             return True
@@ -1463,10 +1468,14 @@ def installAppleUpdates(only_unattended=False):
     return getAppleUpdatesInstance().InstallAppleUpdates(only_unattended=only_unattended)
 
 
-def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False, client_id=''):
+def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False, client_id='', forcecatalogrefresh=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
     global CLIENT_ID
     CLIENT_ID = client_id
+    
+    global FORCE_CATALOG_REFRESH
+    FORCE_CATALOG_REFRESH = forcecatalogrefresh
+
     return getAppleUpdatesInstance().AppleSoftwareUpdatesAvailable(
         force_check=forcecheck, suppress_check=suppresscheck)
 

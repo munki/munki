@@ -700,14 +700,17 @@ def main():
     if should_do_apple_updates:
         if (not options.installonly and not munkicommon.stopRequested()):
             force_update_check = False
+            force_catalog_refresh = False
             if (options.manualcheck or runtype == 'checkandinstallatstartup'):
                 force_update_check = True
             if (runtype == 'custom' and applesoftwareupdatesonly):
                 force_update_check = True
+                force_catalog_refresh = True
             try:
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
-                        forcecheck=force_update_check, client_id=options.id)
+                        forcecheck=force_update_check, client_id=options.id,
+                        forcecatalogrefresh=force_catalog_refresh)
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
                 munkicommon.log(traceback.format_exc())

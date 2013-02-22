@@ -3138,17 +3138,34 @@ def getResourceIfChangedAtomically(url,
                                                 verify=verify)
 
 
-def getAppleUpdateMetaData(client_id=''):
-    """Used by appleupdates in determining
-    metadata to apply to available Apple updates"""
+def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
+    """Return list of catalogs from primary client manifest
     
+    Args:
+      force_refresh: Boolean. If True, downloads primary manifest
+      and listed catalogs; False, uses locally cached information.
+    Returns:
+      cataloglist: list of catalogs from primary manifest
+    """
+    global MACHINE
+    if not MACHINE:
+        MACHINE = munkicommon.getMachineFacts()
+
     cataloglist = []
-    munkicommon.display_detail('**Checking for Apple Update Metadata**')
-    manifest = getPrimaryManifest(client_id)
+    if force_refresh:
+        # Fetch manifest from repo
+        manifest = getPrimaryManifest(client_id)
+    else:
+        # Use locally stored manifest
+        manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                                    'manifests')
+        manifestname = 'client_manifest.plist'
+        manifest = os.path.join(manifest_dir, manifestname)
+
     if manifest:
         manifestdata = getManifestData(manifest)
         cataloglist = manifestdata.get('catalogs')
-        if cataloglist:
+        if cataloglist and force_refresh:
             getCatalogs(cataloglist)
     return cataloglist
 
