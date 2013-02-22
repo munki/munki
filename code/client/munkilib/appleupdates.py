@@ -436,7 +436,8 @@ class AppleUpdates(object):
                     must_close_app_ids.append(app.attributes['id'].value)
 
         blocking_apps = []
-        for app_id in must_close_app_ids:
+        # use set() to eliminate any duplicate application ids
+        for app_id in set(must_close_app_ids):
             unused_resultcode, unused_fileref, nsurl = LSFindApplicationForInfo(
                 0, app_id, None, None, None)
             fileurl = str(nsurl)
