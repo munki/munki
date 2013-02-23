@@ -173,8 +173,8 @@ class AppleUpdates(object):
         self._update_list_cache = None
         
         # apple_update_metadata support
-        self.client_id = CLIENT_ID
-        self.force_catalog_refresh = FORCE_CATALOG_REFRESH
+        self.client_id = ''
+        self.force_catalog_refresh = False
 
     def _ResetMunkiStatusAndDisplayMessage(self, message):
         """Resets MunkiStatus detail/percent, logs and msgs GUI.
@@ -1468,15 +1468,14 @@ def installAppleUpdates(only_unattended=False):
     return getAppleUpdatesInstance().InstallAppleUpdates(only_unattended=only_unattended)
 
 
-def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False, client_id='', forcecatalogrefresh=False):
+def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
+    client_id='', forcecatalogrefresh=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
-    global CLIENT_ID
-    CLIENT_ID = client_id
+    appleUpdatesObject = getAppleUpdatesInstance()
+    appleUpdatesObject.client_id = client_id
+    appleUpdatesObject.force_catalog_refresh = forcecatalogrefresh
     
-    global FORCE_CATALOG_REFRESH
-    FORCE_CATALOG_REFRESH = forcecatalogrefresh
-
-    return getAppleUpdatesInstance().AppleSoftwareUpdatesAvailable(
+    return appleUpdatesObject.AppleSoftwareUpdatesAvailable(
         force_check=forcecheck, suppress_check=suppresscheck)
 
 
