@@ -65,6 +65,12 @@ class TestAppleUpdates(mox.MoxTestBase):
             'readPlist', 'readPlistFromString', 'writePlist',
             'writePlistToString']:
             self.mox.StubOutWithMock(appleupdates.FoundationPlist, func_name)
+            
+    def _MockUpdateCheck(self):
+        """Mock out all updatecheck functions."""
+        for func_name in [
+            'getPrimaryManifestCatalogs', 'getItemDetail']:
+            self.mox.StubOutWithMock(appleupdates.updatecheck, func_name)
 
     def testResetMunkiStatusAndDisplayMessageMunkiStatusOutputTrue(self):
         """Tests _ResetMunkiStatusAndDisplayMessage(), GUI is present."""
@@ -1387,8 +1393,11 @@ class TestAppleUpdates(mox.MoxTestBase):
     def testWriteAppleUpdatesFile(self):
         """Tests WriteAppleUpdatesFile()."""
         self._MockFoundationPlist()
+        self._MockUpdateCheck()
         self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateInfo')
         self.au.GetSoftwareUpdateInfo().AndReturn('appleupdates')
+        appleupdates.updatecheck.getPrimaryManifestCatalogs(
+            '', force_refresh=False).AndReturn(None)
         appleupdates.FoundationPlist.writePlist(
             {'AppleUpdates': 'appleupdates'},
             self.au.apple_updates_plist).AndReturn(None)
@@ -1399,6 +1408,7 @@ class TestAppleUpdates(mox.MoxTestBase):
     def testWriteAppleUpdatesFileFailure(self):
         """Tests WriteAppleUpdatesFile() with failure."""
         self._MockFoundationPlist()
+        self._MockUpdateCheck()
         self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateInfo')
         self.mox.StubOutWithMock(appleupdates.os, 'unlink')
         self.au.GetSoftwareUpdateInfo().AndReturn(None)
