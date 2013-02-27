@@ -145,8 +145,10 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo = {}
             cataloginfo['name'] = iteminfo.get('CFBundleName',
                                             os.path.splitext(item)[0])
+            version_comparison_key = iteminfo.get(
+                'version_comparison_key', "CFBundleShortVersionString")
             cataloginfo['version'] = \
-                iteminfo.get('CFBundleShortVersionString', "0")
+                iteminfo.get(version_comparison_key, "0")
             cataloginfo['installs'] = [iteminfo]
             cataloginfo['installer_type'] = "copy_from_dmg"
             item_to_copy['source_item'] = item
