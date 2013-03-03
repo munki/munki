@@ -49,12 +49,15 @@ libIOKit.IOPMAssertionCreateWithName.argtypes = [
 libIOKit.IOPMAssertionRelease.argtypes = [ c_uint32 ]
 
 def CFSTR(py_string):
+    '''Returns a CFString given a Python string'''
     return CFStringCreateWithCString(None, py_string, kCFStringEncodingASCII)
 
 def raw_ptr(pyobjc_string):
+    '''Returns a pointer to a CFString'''
     return pyobjc_id(pyobjc_string.nsstring())
 
 def IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
+    '''Creaes a PowerManager assertion'''
     assertID = c_uint32(0)
     p_assert_name = raw_ptr(CFSTR(assert_name))
     p_assert_msg = raw_ptr(CFSTR(assert_msg))
@@ -398,7 +401,8 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
         destpath = item.get("destination_path")
         if not os.path.exists(destpath):
             munkicommon.display_detail(
-                "Destination path %s does not exist, will determine owner/permissions from parent" % destpath)
+                "Destination path %s does not exist, will determine "
+                "owner/permissions from parent" % destpath)
             parent_path = destpath
             new_paths = []
 
@@ -421,7 +425,8 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
                 return -1
             except:
                 munkicommon.display_error(
-                    "There was an unknown error in creating the path %s!" % destpath)
+                    "There was an unknown error in creating the path %s!" 
+                    % destpath)
                 return -1
 
             # chown each new dir
@@ -738,7 +743,8 @@ def installWithInfo(
 
                     retcode = -99 # in case we find nothing to install
                     needtorestart = False
-                    if munkicommon.hasValidInstallerItemExt(item.get('package_path', '')):
+                    if munkicommon.hasValidInstallerItemExt(
+                        item.get('package_path', '')):
                         # admin has specified the relative path of the pkg
                         # on the DMG
                         # this is useful if there is more than one pkg on
