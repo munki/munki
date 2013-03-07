@@ -195,21 +195,20 @@ def copyItemToRepo(itempath, vers, subdirectory=''):
         # just return the relative path
         return os.path.join(subdirectory, item_name)
     
-    if os.path.exists(destination_path_name) and vers:
-        if not vers in item_name:
-            # try adding the version
-            item_name = '%s-%s%s' % (os.path.splitext(item_name)[0],
-                                     vers,
-                                     os.path.splitext(item_name)[1])
+    if vers:
+        name, ext = os.path.splitext(item_name)
+        if not name.endswith(vers):
+            # add the version number to the end of the filename
+            item_name = '%s-%s%s' % (name, item_version, ext)
             destination_path_name = os.path.join(destination_path, item_name)
-                     
+    
     index = 0
+    name, ext = os.path.splitext(item_name)
     while os.path.exists(destination_path_name):
         print 'File %s already exists...' % destination_path_name
+        # try appending numbers until we have a unique name
         index += 1
-        original_name = os.path.basename(itempath)
-        item_name = '%s__%s%s' % (os.path.splitext(original_name)[0],
-                                  index, os.path.splitext(original_name)[1])
+        item_name = '%s__%s%s' % (name, index, ext)
         destination_path_name = os.path.join(destination_path, item_name)
  
     print 'Copying %s to %s...' % (os.path.basename(itempath), 
