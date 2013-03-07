@@ -199,7 +199,7 @@ def copyItemToRepo(itempath, vers, subdirectory=''):
         name, ext = os.path.splitext(item_name)
         if not name.endswith(vers):
             # add the version number to the end of the filename
-            item_name = '%s-%s%s' % (name, item_version, ext)
+            item_name = '%s-%s%s' % (name, vers, ext)
             destination_path_name = os.path.join(destination_path, item_name)
     
     index = 0
