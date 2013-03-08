@@ -692,6 +692,18 @@ def main():
         # shouldn't run Software Update if we're doing Apple items
         # with Munki items
         should_do_apple_updates = False
+        # if there are force_install_after_date items in a pre-existing
+        # AppleUpdates.plist this means we are blocking those updates.
+        # we need to delete AppleUpdates.plist so that other code doesn't
+        # mistakenly alert for forced installs it isn't actually going to
+        # install.
+        appleupdates_plist = os.path.join(
+            munkicommon.pref('ManagedInstallDir'), 'AppleUpdates.plist')
+        try:
+            os.unlink(appleupdates_plist)
+        except OSError:
+            pass
+        
     else:
         # check the normal preferences
         should_do_apple_updates = munkicommon.pref(
@@ -812,7 +824,8 @@ def main():
                         appleupdates.appleSoftwareUpdatesAvailable(
                             suppresscheck=True, client_id=options.id)
                 except:
-                    munkicommon.display_error('Unexpected error in appleupdates:')
+                    munkicommon.display_error(
+                        'Unexpected error in appleupdates:')
                     munkicommon.log(traceback.format_exc())
                     munkicommon.savereport()
                     raise
