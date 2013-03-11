@@ -1862,7 +1862,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             update_list = lookForUpdates(name, cataloglist)
             # and also any for this specific version
             installed_version = iteminfo['installed_version']
-            if not '(or newer)' in installed_version:
+            if not installed_version.startswith('(newer than '):
                 update_list.extend(
                     lookForUpdatesForVersion(
                         name, installed_version, cataloglist))
