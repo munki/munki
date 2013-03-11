@@ -816,6 +816,7 @@ class AppleUpdates(object):
                 'name': update['ignoreKey'],
                 'version_to_install': update['version'],
                 'display_name': update['name'],
+                'apple_product_name': update['name'],
                 'installed_size': update['sizeInKB'],
                 'productKey': update['productKey']
             }
@@ -1230,7 +1231,7 @@ class AppleUpdates(object):
 
         for item in installlist:
             rep = {}
-            rep['name'] = item.get('display_name')
+            rep['name'] = item.get('apple_product_name')
             rep['version'] = item.get('version_to_install', '')
             rep['applesus'] = True
             rep['time'] = NSDate.new()
