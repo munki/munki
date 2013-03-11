@@ -851,10 +851,11 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
             if (item['name'] == manifestitem_pl['name']):
                 if not vers:
                     return True
-                if item.get('installed'):
+                #if the version already installed or processed to be
+                #installed is the same or greater, then we're good.
+                if item.get('installed') and (compareVersions(
+                    item.get('installed_version'), vers) in (1, 2)):
                     return True
-                #if the version already processed is the same or greater,
-                #then we're good
                 if (compareVersions(
                         item.get('version_to_install'), vers) in (1, 2)):
                     return True
