@@ -60,10 +60,10 @@ def raw_input_with_default(prompt='', default=''):
     
     if default:
         prompt = '%s [%s]: ' % (prompt, default)
-        return raw_input(prompt) or default
+        return raw_input(prompt).decode('UTF-8') or default.decode('UTF-8')
     else:
         # no default value, just call raw_input
-        return raw_input(prompt + ": ")
+        return raw_input(prompt + ": ").decode('UTF-8')
 
 
 def makeDMG(pkgpath):
@@ -82,7 +82,7 @@ def makeDMG(pkgpath):
         output =  proc.stdout.readline()
         if not output and (proc.poll() != None):
             break
-        print output.rstrip('\n')
+        print output.rstrip('\n').encode('UTF-8')
         sys.stdout.flush()
     retcode = proc.poll()
     if retcode:
@@ -511,7 +511,7 @@ def makeCatalogs():
         if not output and (proc.poll() != None):
             break
         if VERBOSE:
-            print output.rstrip('\n')
+            print output.rstrip('\n').encode('UTF-8')
     
     errors = proc.stderr.read()
     if errors:
@@ -745,7 +745,8 @@ def main():
                             'requires',
                             'update_for']:
                     if key in matchingpkginfo:
-                        print 'Copying %s: %s' % (key, matchingpkginfo[key])
+                        print 'Copying %s: %s' % (key,
+                            matchingpkginfo[key])
                         pkginfo[key] = matchingpkginfo[key]
         
         # now let user do some basic editing
