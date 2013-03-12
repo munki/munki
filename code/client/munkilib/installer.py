@@ -644,16 +644,21 @@ def installWithInfo(
                     'blocking application(s) running.'
                     % item['name'])
                 continue
-            skipped_prereqs = itemPrereqsInSkippedItems(
-                                                    item, skipped_installs)
-            if skipped_prereqs:
-                # need to skip this too
-                skipped_installs.append(item)
-                munkicommon.display_detail(
-                    'Skipping unattended install of %s because these '
-                    'prerequisites were skipped: %s'
-                    % (item['name'], ", ".join(skipped_prereqs)))
-                continue
+
+        skipped_prereqs = itemPrereqsInSkippedItems(item, skipped_installs)
+        if skipped_prereqs:
+            # one or more prerequisite for this item was skipped or failed;
+            # need to skip this item too
+            skipped_installs.append(item)
+            if only_unattended:
+                format_str = ('Skipping unattended install of %s because these '
+                              'prerequisites were skipped: %s')
+            else:
+                format_str = ('Skipping install of %s because these '
+                              'prerequisites were not installed: %s')
+            munkicommon.display_detail(
+                format_str % (item['name'], ", ".join(skipped_prereqs)))
+            continue
 
         if munkicommon.stopRequested():
             return restartflag, skipped_installs
@@ -661,6 +666,13 @@ def installWithInfo(
         retcode = 0
         if 'preinstall_script' in item:
             retcode = munkicommon.runEmbeddedScript('preinstall_script', item)
+        if retcode:
+            # non-zero return code means we should not proceed with
+            # install of this item.
+            # add this failed install to the skipped_installs list
+            # so that any item later in the list that requires this
+            # item is skipped as well.
+            skipped_installs.append(item)
 
         if retcode == 0 and 'installer_item' in item:
             display_name = item.get('display_name') or item.get('name')
@@ -817,6 +829,10 @@ def installWithInfo(
                 status = "SUCCESSFUL"
             else:
                 status = "FAILED with return code: %s" % retcode
+                # add this failed install to the skipped_installs list
+                # so that any item later in the list that requires this
+                # item is skipped as well.
+                skipped_installs.append(item)
 
             log_msg = message % (display_name, version_to_install, status)
             munkicommon.log(log_msg, "Install.log")
