@@ -850,9 +850,28 @@ def dmgIsMounted(dmgpath):
             imagepath = imageProperties['image-path']
             if imagepath == dmgpath:
                 isMounted = True
-                break    
+                break
     return isMounted
 
+
+def dmgForMountPoint(path):
+    """
+    Checks if the given file system path 
+    is a mount point for a disk image
+    
+    Returns the dmg path or None
+    """
+    dmgpath = None
+    infoplist = hdiutilInfo()
+    for imageProperties in infoplist.get('images'):
+        if 'image-path' in imageProperties:
+            imagepath = imageProperties['image-path']
+            for entity in imageProperties.get('system-entities', []):
+                if 'mount-point' in entity:
+                    mountpoint = entity['mount-point']
+                    if os.path.samefile(path, mountpoint):
+                        dmgpath = imagepath
+    return dmgpath
 
 def mountPointsForDmg(dmgpath):
     """
