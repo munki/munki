@@ -48,13 +48,14 @@ os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
 
 def getCatalogInfoFromDmg(dmgpath, options):
     """
-    * Mounts a disk image 
+    * Mounts a disk image if it's not already mounted
     * Gets catalog info for the first installer item found at the root level.
-    * Unmounts the disk image
+    * Unmounts the disk image if it wasn't already mounted
     
     To-do: handle multiple installer items on a disk image(?)
     """
     cataloginfo = None
+    dmgWasAlreadyMounted = munkicommon.dmgIsMounted(dmgpath)
     mountpoints = munkicommon.mountdmg(dmgpath)
     if not mountpoints:
         print >> sys.stderr, "Could not mount %s!" % dmgpath
@@ -165,7 +166,8 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo['uninstall_method'] = "remove_copied_items"
             
     #eject the dmg
-    munkicommon.unmountdmg(mountpoints[0])
+    if not dmgWasAlreadyMounted:
+        munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
 
 
