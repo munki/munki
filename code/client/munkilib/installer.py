@@ -576,6 +576,12 @@ def removeCopiedItems(itemlist):
 def itemPrereqsInSkippedItems(item, skipped_items):
     '''Looks for item prerequisites (requires and update_for) in the list
     of skipped items. Returns a list of matches.'''
+    
+    # shortcut -- if we have no skipped items, just return an empty list
+    # also reduces log noise in the common case
+    if not skipped_items:
+        return []
+    
     munkicommon.display_debug1(
         'Checking for skipped prerequisites for %s-%s'
         % (item['name'], item.get('version_to_install')))
@@ -663,20 +669,14 @@ def installWithInfo(
         if munkicommon.stopRequested():
             return restartflag, skipped_installs
 
+        display_name = item.get('display_name') or item.get('name')
+        version_to_install = item.get('version_to_install','')
+
         retcode = 0
         if 'preinstall_script' in item:
             retcode = munkicommon.runEmbeddedScript('preinstall_script', item)
-        if retcode:
-            # non-zero return code means we should not proceed with
-            # install of this item.
-            # add this failed install to the skipped_installs list
-            # so that any item later in the list that requires this
-            # item is skipped as well.
-            skipped_installs.append(item)
 
         if retcode == 0 and 'installer_item' in item:
-            display_name = item.get('display_name') or item.get('name')
-            version_to_install = item.get('version_to_install','')
             munkicommon.display_status_major(
                 "Installing %s (%s of %s)"
                 % (display_name, itemindex, len(installlist)))
@@ -800,110 +800,105 @@ def installWithInfo(
                         % itempath)
                     retcode = -99
 
-            if retcode == 0  and 'postinstall_script' in item:
-                # only run embedded postinstall script if the install did not
-                # return a failure code
-                retcode = munkicommon.runEmbeddedScript(
-                    'postinstall_script', item)
-                if retcode:
-                    # we won't consider postinstall script failures as fatal
-                    # since the item has been installed via package/disk image
-                    # but admin should be notified
-                    munkicommon.display_warning(
-                        'Postinstall script for %s returned %s'
-                        % (item['name'], retcode))
-                    # reset retcode to 0 so we will mark this install
-                    # as successful
-                    retcode = 0
+        if retcode == 0  and 'postinstall_script' in item:
+            # only run embedded postinstall script if the install did not
+            # return a failure code
+            retcode = munkicommon.runEmbeddedScript(
+                'postinstall_script', item)
+            if retcode:
+                # we won't consider postinstall script failures as fatal
+                # since the item has been installed via package/disk image
+                # but admin should be notified
+                munkicommon.display_warning(
+                    'Postinstall script for %s returned %s'
+                    % (item['name'], retcode))
+                # reset retcode to 0 so we will mark this install
+                # as successful
+                retcode = 0
 
-            # record install success/failure
-            if not 'InstallResults' in munkicommon.report:
-                munkicommon.report['InstallResults'] = []
+        # record install success/failure
+        if not 'InstallResults' in munkicommon.report:
+            munkicommon.report['InstallResults'] = []
 
-            if applesus:
-                message = "Apple SUS install of %s-%s: %s"
-            else:
-                message = "Install of %s-%s: %s"
+        if applesus:
+            message = "Apple SUS install of %s-%s: %s"
+        else:
+            message = "Install of %s-%s: %s"
 
-            if retcode == 0:
-                status = "SUCCESSFUL"
-            else:
-                status = "FAILED with return code: %s" % retcode
-                # add this failed install to the skipped_installs list
-                # so that any item later in the list that requires this
-                # item is skipped as well.
-                skipped_installs.append(item)
+        if retcode == 0:
+            status = "SUCCESSFUL"
+        else:
+            status = "FAILED with return code: %s" % retcode
+            # add this failed install to the skipped_installs list
+            # so that any item later in the list that requires this
+            # item is skipped as well.
+            skipped_installs.append(item)
 
-            log_msg = message % (display_name, version_to_install, status)
-            munkicommon.log(log_msg, "Install.log")
+        log_msg = message % (display_name, version_to_install, status)
+        munkicommon.log(log_msg, "Install.log")
 
-            # Calculate install duration; note, if a machine is put to sleep
-            # during the install this time may be inaccurate.
-            utc_now_complete = datetime.datetime.utcnow()
-            duration_seconds = (utc_now_complete - utc_now).seconds
+        # Calculate install duration; note, if a machine is put to sleep
+        # during the install this time may be inaccurate.
+        utc_now_complete = datetime.datetime.utcnow()
+        duration_seconds = (utc_now_complete - utc_now).seconds
 
-            download_speed = item.get('download_kbytes_per_sec', 0)
-            install_result = {
-                'name': display_name,
-                'version': version_to_install,
-                'applesus': applesus,
-                'status': retcode,
-                'time': NSDate.new(),
-                'duration_seconds': duration_seconds,
-                'download_kbytes_per_sec': download_speed,
-            }
-            munkicommon.report['InstallResults'].append(install_result)
+        download_speed = item.get('download_kbytes_per_sec', 0)
+        install_result = {
+            'name': display_name,
+            'version': version_to_install,
+            'applesus': applesus,
+            'status': retcode,
+            'time': NSDate.new(),
+            'duration_seconds': duration_seconds,
+            'download_kbytes_per_sec': download_speed,
+        }
+        munkicommon.report['InstallResults'].append(install_result)
 
-            # check to see if this installer item is needed by any additional
-            # items in installinfo
-            # this might happen if there are multiple things being installed
-            # with choicesXML files applied to a metapackage or
-            # multiple packages being installed from a single DMG
-            foundagain = False
-            current_installer_item = item['installer_item']
-            # are we at the end of the installlist?
-            # (we already incremented itemindex for display
-            # so with zero-based arrays itemindex now points to the item
-            # after the current item)
-            if itemindex < len(installlist):
-                # nope, let's check the remaining items
-                for lateritem in installlist[itemindex:]:
-                    if (lateritem.get('installer_item') ==
-                        current_installer_item):
-                        foundagain = True
-                        break
+        # check to see if this installer item is needed by any additional
+        # items in installinfo
+        # this might happen if there are multiple things being installed
+        # with choicesXML files applied to a metapackage or
+        # multiple packages being installed from a single DMG
+        foundagain = False
+        current_installer_item = item['installer_item']
+        # are we at the end of the installlist?
+        # (we already incremented itemindex for display
+        # so with zero-based arrays itemindex now points to the item
+        # after the current item)
+        if itemindex < len(installlist):
+            # nope, let's check the remaining items
+            for lateritem in installlist[itemindex:]:
+                if (lateritem.get('installer_item') ==
+                    current_installer_item):
+                    foundagain = True
+                    break
 
-            # need to check skipped_installs as well
-            if not foundagain:
-                for skipped_item in skipped_installs:
-                    if (skipped_item.get('installer_item') ==
-                        current_installer_item):
-                        foundagain = True
-                        break
+        # need to check skipped_installs as well
+        if not foundagain:
+            for skipped_item in skipped_installs:
+                if (skipped_item.get('installer_item') ==
+                    current_installer_item):
+                    foundagain = True
+                    break
 
-            # ensure package is not deleted from cache if installation
-            # fails by checking retcode
-            if not foundagain and retcode == 0:
-                # now remove the item from the install cache
-                # (if it's still there)
-                itempath = os.path.join(dirpath, current_installer_item)
-                if os.path.exists(itempath):
-                    if os.path.isdir(itempath):
-                        retcode = subprocess.call(
-                            ["/bin/rm", "-rf", itempath])
-                    elif itempath.endswith('MunkiGenerated.dist'):
-                        # softwareupdate item handled by munki
-                        # remove enclosing directory
-                        retcode = subprocess.call(
-                            ["/bin/rm", "-rf", os.path.dirname(itempath)])
-                    else:
-                        # flat pkg or dmg
-                        retcode = subprocess.call(["/bin/rm", itempath])
-                        if munkicommon.hasValidDiskImageExt(itempath):
-                            shadowfile = os.path.join(itempath,".shadow")
-                            if os.path.exists(shadowfile):
-                                retcode = subprocess.call(
-                                    ["/bin/rm", shadowfile])
+        # ensure package is not deleted from cache if installation
+        # fails by checking retcode
+        if not foundagain and retcode == 0:
+            # now remove the item from the install cache
+            # (if it's still there)
+            itempath = os.path.join(dirpath, current_installer_item)
+            if os.path.exists(itempath):
+                if os.path.isdir(itempath):
+                    retcode = subprocess.call(
+                        ["/bin/rm", "-rf", itempath])
+                else:
+                    # flat pkg or dmg
+                    retcode = subprocess.call(["/bin/rm", itempath])
+                    if munkicommon.hasValidDiskImageExt(itempath):
+                        shadowfile = os.path.join(itempath,".shadow")
+                        if os.path.exists(shadowfile):
+                            retcode = subprocess.call(
+                                ["/bin/rm", shadowfile])
 
     return (restartflag, skipped_installs)
 
@@ -911,6 +906,12 @@ def installWithInfo(
 def skippedItemsThatRequireThisItem(item, skipped_items):
     '''Looks for items in the skipped_items that require or are update_for
     the current item. Returns a list of matches.'''
+
+    # shortcut -- if we have no skipped items, just return an empty list
+    # also reduces log noise in the common case
+    if not skipped_items:
+        return []
+
     munkicommon.display_debug1(
         'Checking for skipped items that require %s' % item['name'])
 
@@ -948,16 +949,17 @@ def processRemovals(removallist, only_unattended=False):
                     'Skipping unattended removal of %s because '
                     'blocking application(s) running.' % item['name'])
                 continue
-            dependent_skipped_items = skippedItemsThatRequireThisItem(
-                                                    item, skipped_removals)
-            if dependent_skipped_items:
-                # need to skip this too
-                skipped_removals.append(item)
-                munkicommon.display_detail(
-                    'Skipping unattended removal of %s because these '
-                    'skipped items required it: %s'
-                    % (item['name'], ", ".join(dependent_skipped_items)))
-                continue
+
+        dependent_skipped_items = skippedItemsThatRequireThisItem(
+                                                item, skipped_removals)
+        if dependent_skipped_items:
+            # need to skip this too
+            skipped_removals.append(item)
+            munkicommon.display_detail(
+                'Skipping removal of %s because these '
+                'skipped items required it: %s'
+                % (item['name'], ", ".join(dependent_skipped_items)))
+            continue
 
         if munkicommon.stopRequested():
             return restartFlag, skipped_removals
@@ -1067,6 +1069,9 @@ def processRemovals(removallist, only_unattended=False):
                           " FAILED with return code: %s" % retcode
             munkicommon.log(failure_msg, "Install.log")
             munkicommon.report['RemovalResults'].append(failure_msg)
+            # append failed removal to skipped_removals so dependencies
+            # aren't removed yet.
+            skipped_removals.append(item)
 
     return (restartFlag, skipped_removals)
 
@@ -1128,7 +1133,7 @@ def assertNoIdleSleep():
     kIOPMAssertionLevelOn = 255
     reason = "Munki is installing software"
 
-    errcode, assertID = IOPMAssertionCreateWithName(
+    unused_errcode, assertID = IOPMAssertionCreateWithName(
         kIOPMAssertionTypeNoIdleSleep,
         kIOPMAssertionLevelOn,
         reason)
@@ -1245,6 +1250,6 @@ def run(only_unattended=False):
     munkicommon.savereport()
 
     # release our Power Manager assertion
-    errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
+    unused_errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
 
     return (removals_need_restart or installs_need_restart)
