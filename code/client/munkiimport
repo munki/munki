@@ -645,6 +645,12 @@ def main():
         # Strip trailing '/' from installer_item
         installer_item = installer_item.rstrip('/')
         
+        # Check if the item is a mount point for a disk image
+        if munkicommon.pathIsVolumeMountPoint(installer_item):
+            # Get the disk image path for the mount point
+            # and use that instead of the original item
+            installer_item = munkicommon.diskImageForMountPoint(installer_item)
+        
         if not munkicommon.hasValidInstallerItemExt(installer_item) and \
            not munkicommon.isApplication(installer_item):
             print >> sys.stderr, (
