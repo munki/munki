@@ -890,7 +890,7 @@ def mountPointsForDmg(dmgpath):
     return mountpoints
 
 
-def mountdmg(dmgpath, use_shadow=False):
+def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
@@ -899,11 +899,12 @@ def mountdmg(dmgpath, use_shadow=False):
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
     
-    # Check if this dmg is already mounted
-    # and if so, bail out and return the mountpoints
-    if dmgIsMounted(dmgpath):
-        mountpoints = mountPointsForDmg(dmgpath)
-        return mountpoints
+    if (use_existing_mounts):
+        # Check if this dmg is already mounted
+        # and if so, bail out and return the mountpoints
+        if diskImageIsMounted(dmgpath):
+            mountpoints = mountPointsForDiskImage(dmgpath)
+            return mountpoints
     
     # Attempt to mount the dmg
     stdin = ''
