@@ -820,6 +820,7 @@ def DMGhasSLA(dmgpath):
 def hdiutilInfo():
     """
     Convenience method for running 'hdiutil info -plist'
+    
     Returns the root object parsed with readPlistFromString()
     """
     proc = subprocess.Popen(
@@ -839,7 +840,7 @@ def hdiutilInfo():
     return None
 
 
-def dmgIsMounted(dmgpath):
+def diskImageIsMounted(dmgpath):
     """
     Returns true if the given disk image is currently mounted
     """
@@ -854,12 +855,32 @@ def dmgIsMounted(dmgpath):
     return isMounted
 
 
-def dmgForMountPoint(path):
+def pathIsVolumeMountPoint(path):
     """
-    Checks if the given file system path 
-    is a mount point for a disk image
+    Checks if the given path is a volume for an attached disk image
     
-    Returns the dmg path or None
+    Returns true if the given path is a mount point or false if it isn't
+    """
+    isMountPoint = False
+    infoplist = hdiutilInfo()
+    for imageProperties in infoplist.get('images'):
+        if 'image-path' in imageProperties:
+            imagepath = imageProperties['image-path']
+            for entity in imageProperties.get('system-entities', []):
+                if 'mount-point' in entity:
+                    mountpoint = entity['mount-point']
+                    if path == mountpoint:
+                        isMountPoint = True
+                        break                
+    return isMountPoint
+
+
+def diskImageForMountPoint(path):
+    """
+    Resolves the given mount point path to an attached disk image path
+    
+    Returns a path to a disk image file or None if the path is not
+    a valid mount point
     """
     dmgpath = None
     infoplist = hdiutilInfo()
@@ -873,7 +894,7 @@ def dmgForMountPoint(path):
                         dmgpath = imagepath
     return dmgpath
 
-def mountPointsForDmg(dmgpath):
+def mountPointsForDiskImage(dmgpath):
     """
     Returns a list of mountpoints for the given disk image
     """

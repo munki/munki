@@ -55,8 +55,8 @@ def getCatalogInfoFromDmg(dmgpath, options):
     To-do: handle multiple installer items on a disk image(?)
     """
     cataloginfo = None
-    dmgWasAlreadyMounted = munkicommon.dmgIsMounted(dmgpath)
-    mountpoints = munkicommon.mountdmg(dmgpath)
+    dmgWasAlreadyMounted = munkicommon.diskImageIsMounted(dmgpath)
+    mountpoints = munkicommon.mountdmg(dmgpath, use_existing_mounts=True)
     if not mountpoints:
         print >> sys.stderr, "Could not mount %s!" % dmgpath
         exit(-1)
@@ -701,10 +701,10 @@ def main():
         if item and os.path.exists(item):
             
             # Check if the item is a mount point for a disk image
-            if munkicommon.dmgForMountPoint(item):
+            if munkicommon.pathIsVolumeMountPoint(item):
                 # Get the disk image path for the mount point
                 # and use that instead of the original item
-                item = munkicommon.dmgForMountPoint(item)
+                item = munkicommon.diskImageForMountPoint(item)
             
             # get size of installer item
             itemsize = 0 
