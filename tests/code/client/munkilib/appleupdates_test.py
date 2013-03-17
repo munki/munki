@@ -642,7 +642,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.assertEqual(output, [])
         self.mox.VerifyAll()
 
-    def testGetAvailableUpdateProductIDsFailureReadingApplicalbeUpdates(self):
+    def testGetAvailableUpdateProductIDsFailureReadingApplicableUpdates(self):
         """Tests GetAvailableUpdateProductIDs() failed applicable updates."""
         self._MockFoundationPlist()
         self.mox.StubOutWithMock(self.au, '_RunSoftwareUpdate')
@@ -1101,8 +1101,8 @@ class TestAppleUpdates(mox.MoxTestBase):
 
     def testCheckForSoftwareUpdatesWhenForceCheckNotNeeded(self):
         """Tests CheckForSoftwareUpdates() when a force check is not needed."""
+        self._MockMunkiDisplay()
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'getsha256hash')
-        self.mox.StubOutWithMock(appleupdates.munkicommon, 'log')
         self.mox.StubOutWithMock(self.au, 'CacheAppleCatalog')
         self.mox.StubOutWithMock(self.au, '_IsForceCheckNeccessary')
 
@@ -1110,12 +1110,13 @@ class TestAppleUpdates(mox.MoxTestBase):
             self.au.apple_download_catalog_path).AndReturn('hash')
         self.au.CacheAppleCatalog().AndReturn(None)
         self.au._IsForceCheckNeccessary('hash').AndReturn(False)
-        appleupdates.munkicommon.log(
-            '    Skipping Apple Software Update check because sucatalog is '
+        appleupdates.munkicommon.display_info(
+            'Skipping Apple Software Update check because sucatalog is '
             'unchanged, installed Apple packages are unchanged and we '
             'recently did a full check.')
+
         self.mox.ReplayAll()
-        self.assertTrue(self.au.CheckForSoftwareUpdates(force_check=False))
+        self.assertFalse(self.au.CheckForSoftwareUpdates(force_check=False))
         self.mox.VerifyAll()
 
     def testCheckForSoftwareUpdatesWhenUpdateListEmpty(self):
@@ -1355,13 +1356,21 @@ class TestAppleUpdates(mox.MoxTestBase):
             ]
         }
         expected_output = [
-            {'blocking_applications': blocking_apps,
-             'description': 'desc1', 'name': 'name1',
-             'version_to_install': 'ver1', 'display_name': 'display_name1',
-             'installed_size': 1000, 'productKey': 'prodid1'},
-            {'description': 'desc2', 'name': 'name2',
-             'version_to_install': 'ver2', 'display_name': 'display_name2',
-             'installed_size': 2000, 'productKey': 'prodid2',
+            {'apple_product_name': 'display_name1',
+             'blocking_applications': blocking_apps,
+             'description': 'desc1', 
+             'name': 'name1',
+             'version_to_install': 'ver1', 
+             'display_name': 'display_name1',
+             'installed_size': 1000, 
+             'productKey': 'prodid1'},
+            {'apple_product_name': 'display_name2',
+             'description': 'desc2', 
+             'name': 'name2',
+             'version_to_install': 'ver2', 
+             'display_name': 'display_name2',
+             'installed_size': 2000, 
+             'productKey': 'prodid2',
              'RestartAction': 'RequireRestart'},
         ]
 
@@ -1643,7 +1652,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.assertTrue(out)
         self.mox.VerifyAll()
 
-    def testAppleSoftwareUpdatesAvailableSupressCheckNoneAvailable(self):
+    def testAppleSoftwareUpdatesAvailableSuppressCheckNoneAvailable(self):
         """Tests AppleSoftwareUpdatesAvailable() when no updates available."""
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'stopRequested')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
