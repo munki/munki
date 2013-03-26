@@ -1331,11 +1331,11 @@ class AppleUpdates(object):
                 success = self.CheckForSoftwareUpdates(force_check=True)
             else:
                 success = self.CheckForSoftwareUpdates(force_check=False)
-        if not success:
-            return False
+        # always update or remove AppleUpdates.plist
+        result = self.WriteAppleUpdatesFile()
         if munkicommon.stopRequested():
             return False
-        return self.WriteAppleUpdatesFile()
+        return result
 
 
     def SoftwareUpdateList(self):
