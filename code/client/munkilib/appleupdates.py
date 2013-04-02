@@ -1389,20 +1389,33 @@ class AppleUpdates(object):
                 if key == 'RestartAction':
                     # Ensure that a heavier weighted 'RestartAction' is not
                     # overriden by one supplied in metadata
-                    if metadata[key] not in RestartActions.get(item.get(key, 'None')):
+                    if metadata[key] not in RestartActions.get(
+                        item.get(key, 'None')):
                         munkicommon.display_debug2(
-                            '\tSkipping %s \'%s\', \'%s\' is preferred.'
-                             % (key, metadata[key], item[key]))
+                            '\tSkipping metadata RestartAction\'%s\' '
+                            'for item %s (ProductKey %s), '
+                            'item\'s original \'%s\' is preferred.'
+                             % (metadata[key], item.get('name'), 
+                                item.get('productKey'), item[key]))
                         continue
                 elif key == 'unattended_install':
                     # Don't apply unattended_install if a RestartAction exists
                     # in either the original item or metadata
-                    if metadata.get('RestartAction', 'None') != 'None' or \
-                       item.get('RestartAction', 'None') != 'None':
+                    if metadata.get('RestartAction', 'None') != 'None':
                         munkicommon.display_warning(
-                            '\tIgnoring unattended_install key '
-                            'because RestartAction is %s.'
-                            % metadata.get('RestartAction'))
+                            '\tIgnoring unattended_install key for Apple '
+                            'update %s (ProductKey %s) '
+                            'because metadata RestartAction is %s.'
+                            % (item.get('name'), item.get('productKey'),
+                               metadata.get('RestartAction')))
+                        continue
+                    if item.get('RestartAction', 'None') != 'None':
+                        munkicommon.display_warning(
+                            '\tIgnoring unattended_install key for Apple '
+                            'update %s (ProductKey %s) '
+                            'because item RestartAction is %s.'
+                            % (item.get('name'), item.get('productKey'),
+                               item.get('RestartAction')))
                         continue
                 munkicommon.display_debug2('\tApplying %s...' % key)
                 item[key] = metadata[key]
