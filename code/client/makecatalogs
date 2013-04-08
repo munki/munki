@@ -41,7 +41,7 @@ except ImportError:
     except ImportError:
         # maybe we're not on an OS X machine...
         print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
-                              "using plistlib instead.")
+                             "using plistlib instead.")
         import plistlib
         LOCAL_PREFS_SUPPORT = False
 
@@ -79,6 +79,16 @@ except ImportError:
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
 
+
+def print_utf8(text):
+    '''Print Unicode text as UTF-8'''
+    print text.encode('UTF-8')
+
+def print_err_utf8(text):
+    '''Print Unicode text to stderr as UTF-8'''
+    print >> sys.stderr, text.encode('UTF-8')
+
+
 def makecatalogs(repopath, options):
     '''Assembles all pkginfo files into catalogs.
     Assumes a pkgsinfo directory under repopath.
@@ -87,8 +97,15 @@ def makecatalogs(repopath, options):
     
     # Make sure the pkgsinfo directory exists
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
+    # make sure pkgsinfopath is Unicode so that os.walk later gives us 
+    # Unicode names back.
+    if type(pkgsinfopath) is str:
+        pkgsinfopath = unicode(pkgsinfopath, 'utf-8')
+    elif type(pkgsinfopath) is not unicode:
+        pkgsinfopath = unicode(pkgsinfopath)
+        
     if not os.path.exists(pkgsinfopath):
-        print >> sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
+        print_err_utf8("pkgsinfo path %s doesn't exist!" % pkgsinfopath)
         exit(-1)
     
     # Set a default exit code
@@ -105,12 +122,12 @@ def makecatalogs(repopath, options):
             # with a period.
             if dirname.startswith('.'):
                 dirnames.remove(dirname)
-        for name in filenames:
-            if name.startswith('.'):
+        for filename in filenames:
+            if filename.startswith('.'):
                 # skip files that start with a period as well
                 continue
             
-            filepath = os.path.join(dirpath, name)
+            filepath = os.path.join(dirpath, filename)
             
             # Try to read the pkginfo file
             try:
@@ -163,23 +180,22 @@ def makecatalogs(repopath, options):
             
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
+                infofilename = filepath[len(pkgsinfopath)+1:]
                 if not catalogname:
                     errors.append("WARNING: Info file %s has an empty "
-                                  "catalog name!" %
-                                  filepath[len(pkgsinfopath)+1:])
+                                  "catalog name!" % infofilename)
                     exitCode = -1
                     continue
                 if not catalogname in catalogs:
                     catalogs[catalogname] = []
                 catalogs[catalogname].append(pkginfo)
-                print "Adding %s to %s..." % \
-                    (filepath[len(pkgsinfopath)+1:], catalogname)
+                print_utf8("Adding %s to %s..." % (infofilename, catalogname))
     
     if errors:
         # group all errors at the end for better visibility
         print
         for error in errors:
-            print >> sys.stderr, error
+            print_err_utf8(error)
             
     # clear out old catalogs
     catalogpath = os.path.join(repopath, "catalogs")
@@ -196,7 +212,7 @@ def makecatalogs(repopath, options):
     for key in catalogs.keys():
         catalogpath = os.path.join(repopath, "catalogs", key)
         if os.path.exists(catalogpath):
-            print >> sys.stderr, ("WARNING: catalog %s already exists at "
+            print_err_utf8("WARNING: catalog %s already exists at "
                 "%s. Perhaps this is a non-case sensitive filesystem and you "
                 "have catalogs with names differing only in case?"
                 % (key, catalogpath))
@@ -205,7 +221,7 @@ def makecatalogs(repopath, options):
             plistlib.writePlist(catalogs[key], catalogpath)
             print "Created catalog %s..." % (catalogpath)
         else:
-            print >> sys.stderr, (
+            print_err_utf8(
                 "WARNING: Did not create catalog %s "
                 "because it is empty "
                 % (key))
@@ -254,16 +270,16 @@ def main():
     if len(arguments) == 0:
         repopath = pref('repo_path')
         if not repopath:
-            print >> sys.stderr, "Need to specify a path to the repo root!"
+            print_err_utf8("Need to specify a path to the repo root!")
             exit(-1)
         else:
-            print "Using repo path: %s" % repopath
+            print_utf8("Using repo path: %s" % repopath)
     else:
         repopath = arguments[0].rstrip("/")
         
     # Make sure the repo path exists
     if not os.path.exists(repopath):
-        print >> sys.stderr, "Repo root path %s doesn't exist!" % repopath
+        print_err_utf8("Repo root path %s doesn't exist!" % repopath)
         exit(-1)
     
     # Make the catalogs

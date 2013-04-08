@@ -668,7 +668,7 @@ def add_catalog(args):
 def remove_catalog(args):
     '''Removes a catalog from a manifest.'''
     p = MyOptionParser()
-    p.set_usage('''remove-catalog PKGNAME --manifest MANIFESTNAME
+    p.set_usage('''remove-catalog CATALOGNAME --manifest MANIFESTNAME
        Removes a catalog from a manifest''')
     p.add_option('--manifest',
                  metavar='MANIFESTNAME',
