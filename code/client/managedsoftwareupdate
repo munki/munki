@@ -878,16 +878,15 @@ def main():
         # original updatecheck so tickle the updatecheck time
         # so MSU.app knows to display results immediately
         recordUpdateCheckResult(1)
-        consoleuser = munkicommon.getconsoleuser()
-        if consoleuser == u'loginwindow':
+        if force_action:
+            notifyUserOfUpdates(force=True)
+            time.sleep(2)
+            startLogoutHelper()
+        elif munkicommon.getconsoleuser() == u'loginwindow':
             # someone is logged in, but we're sitting at
             # the loginwindow due to fast user switching
             # so do nothing
             pass
-        elif force_action:
-            notifyUserOfUpdates(force=True)
-            time.sleep(2)
-            startLogoutHelper()
         elif not munkicommon.pref('SuppressUserNotification'):
             notifyUserOfUpdates()
         else:
