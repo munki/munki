@@ -268,11 +268,7 @@ def doRestart():
     else:
         munkicommon.display_info(restartMessage)
 
-    # TODO: temporary fix for forced logout problem where we've killed
-    # loginwindow sessions, but munkicommon.currentGUIusers() still returns
-    # users. Need to find a better solution, though.
-    #if not munkicommon.currentGUIusers():
-    #    # no-one is logged in and we're at the loginwindow
+    # check current console user
     consoleuser = munkicommon.getconsoleuser()
     if not consoleuser or consoleuser == u'loginwindow':
         # no-one is logged in or we're at the loginwindow
@@ -502,7 +498,7 @@ def main():
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for i in range(5):
+                    for unused_i in range(5):
                         if networkUp():
                             break
                         time.sleep(2)
@@ -786,6 +782,11 @@ def main():
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because system is not idle '
                                     '(keyboard or mouse activity).')
+                elif munkicommon.isAppRunning(
+                    '/System/Library/CoreServices/FileSyncAgent.app'):
+                    munkicommon.log('Skipping auto install at loginwindow '
+                                    'because FileSyncAgent.app is running '
+                                    '(HomeSyncing a mobile account on login?).')
                 else:
                     # no GUI users, system is idle, so we can install
                     # but first, enable status output over login window
@@ -877,16 +878,15 @@ def main():
         # original updatecheck so tickle the updatecheck time
         # so MSU.app knows to display results immediately
         recordUpdateCheckResult(1)
-        consoleuser = munkicommon.getconsoleuser()
-        if consoleuser == u'loginwindow':
+        if force_action:
+            notifyUserOfUpdates(force=True)
+            time.sleep(2)
+            startLogoutHelper()
+        elif munkicommon.getconsoleuser() == u'loginwindow':
             # someone is logged in, but we're sitting at
             # the loginwindow due to fast user switching
             # so do nothing
             pass
-        elif force_action:
-            notifyUserOfUpdates(force=True)
-            time.sleep(2)
-            startLogoutHelper()
         elif not munkicommon.pref('SuppressUserNotification'):
             notifyUserOfUpdates()
         else:

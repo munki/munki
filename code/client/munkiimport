@@ -97,17 +97,16 @@ def repoAvailable():
     """Checks the repo path for proper directory structure.
     If the directories look wrong we probably don't have a
     valid repo path. Returns True if things look OK."""
-    repo_path = pref('repo_path')
-    if not repo_path:
+    if not REPO_PATH:
         print >> sys.stderr, 'No repo path specified.'
         return False
-    if not os.path.exists(repo_path):
+    if not os.path.exists(REPO_PATH):
         mountRepoCLI()
-    if not os.path.exists(repo_path):
+    if not os.path.exists(REPO_PATH):
         return False
     for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
-        if not os.path.exists(os.path.join(repo_path, subdir)):
-            print >> sys.stderr, "%s is missing %s" % (repo_path, subdir)
+        if not os.path.exists(os.path.join(REPO_PATH, subdir)):
+            print >> sys.stderr, "%s is missing %s" % (REPO_PATH, subdir)
             return False
     # if we get this far, the repo path looks OK
     return True
@@ -116,16 +115,14 @@ def repoAvailable():
 def mountRepoGUI():
     """Attempts to connect to the repo fileshare
     Returns nothing whether we succeed or fail"""
-    repo_path = pref('repo_path')
-    repo_url = pref('repo_url')
-    if not repo_path or not repo_url:
+    if not REPO_PATH or not REPO_URL:
         return
     print 'Attempting to connect to munki repo...'
-    cmd = ['/usr/bin/open', repo_url]
+    cmd = ['/usr/bin/open', REPO_URL]
     unused_retcode = subprocess.call(cmd)
     for unused_i in range(60):
         # wait up to 60 seconds to connect to repo
-        if os.path.exists(repo_path):
+        if os.path.exists(REPO_PATH):
             break
         time.sleep(1)
 
@@ -133,34 +130,31 @@ def mountRepoGUI():
 def mountRepoCLI():
     """Attempts to connect to the repo fileshare"""
     global WE_MOUNTED_THE_REPO
-    repo_path = pref('repo_path')
-    repo_url = pref('repo_url')
-    if os.path.exists(repo_path):
+    if os.path.exists(REPO_PATH):
         return
-    os.mkdir(repo_path)
-    print 'Attempting to mount fileshare %s:' % repo_url
-    if repo_url.startswith('afp:'):
-        cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
-    elif repo_url.startswith('smb:'):
-        cmd = ['/sbin/mount_smbfs', repo_url[4:], repo_path]
-    elif repo_url.startswith('nfs://'):
-        cmd = ['/sbin/mount_nfs', repo_url[6:], repo_path]
+    os.mkdir(REPO_PATH)
+    print 'Attempting to mount fileshare %s:' % REPO_URL
+    if REPO_URL.startswith('afp:'):
+        cmd = ['/sbin/mount_afp', '-i', REPO_URL, REPO_PATH]
+    elif REPO_URL.startswith('smb:'):
+        cmd = ['/sbin/mount_smbfs', REPO_URL[4:], REPO_PATH]
+    elif REPO_URL.startswith('nfs://'):
+        cmd = ['/sbin/mount_nfs', REPO_URL[6:], REPO_PATH]
     else:
         print >> sys.stderr, 'Unsupported filesystem URL!'
         return
     retcode = subprocess.call(cmd)
     if retcode:
-        os.rmdir(repo_path)
+        os.rmdir(REPO_PATH)
     else:
         WE_MOUNTED_THE_REPO = True
 
 
 def unmountRepoCLI():
     """Attempts to unmount the repo fileshare"""
-    repo_path = pref('repo_path')
-    if not os.path.exists(repo_path):
+    if not os.path.exists(REPO_PATH):
         return
-    cmd = ['/sbin/umount', repo_path]
+    cmd = ['/sbin/umount', REPO_PATH]
     return subprocess.call(cmd)
 
 
@@ -175,11 +169,10 @@ def copyItemToRepo(itempath, vers, subdirectory=''):
     Renames the item if an item already exists with that name.
     Returns the relative path to the item."""
     
-    repo_path = pref('repo_path')
-    if not os.path.exists(repo_path):
+    if not os.path.exists(REPO_PATH):
         raise RepoCopyError('Could not connect to munki repo.')
     
-    destination_path = os.path.join(repo_path, 'pkgs', subdirectory)
+    destination_path = os.path.join(REPO_PATH, 'pkgs', subdirectory)
     if not os.path.exists(destination_path):
         try:
             os.makedirs(destination_path)
@@ -227,8 +220,7 @@ def copyPkginfoToRepo(pkginfo, subdirectory=''):
     """Saves pkginfo to munki_repo_path/pkgsinfo/subdirectory"""
     # less error checking because we copy the installer_item
     # first and bail if it fails...
-    repo_path = pref('repo_path')
-    destination_path = os.path.join(repo_path, 'pkgsinfo', subdirectory)
+    destination_path = os.path.join(REPO_PATH, 'pkgsinfo', subdirectory)
     if not os.path.exists(destination_path):
         try:
             os.makedirs(destination_path)
@@ -278,13 +270,12 @@ def promptForSubdirectory(subdirectory):
                     'Upload item to subdirectory path [%s]: '
                     % subdirectory)
         if newdir:
-            repo_path = pref('repo_path')
             if not repoAvailable():
                 raise RepoCopyError('Could not connect to munki repo.')
             if APPLEMETADATA:
-                destination_path = os.path.join(repo_path, 'pkgsinfo', newdir)
+                destination_path = os.path.join(REPO_PATH, 'pkgsinfo', newdir)
             else:
-                destination_path = os.path.join(repo_path, 'pkgs', newdir)
+                destination_path = os.path.join(REPO_PATH, 'pkgs', newdir)
             if not os.path.exists(destination_path):
                 answer = raw_input('Path %s doesn\'t exist. Create it? [y/n] '
                                     % destination_path)
@@ -305,7 +296,7 @@ class CatalogDBException(Exception):
 def makeCatalogDB():
     """Returns a dict we can use like a database"""
     
-    all_items_path = os.path.join(pref('repo_path'), 'catalogs', 'all')
+    all_items_path = os.path.join(REPO_PATH, 'catalogs', 'all')
     if not os.path.exists(all_items_path):
         raise CatalogDBException
     try:
@@ -498,12 +489,11 @@ def makeCatalogs():
     if not os.path.exists(makecatalogs_path):
         # didn't find it; assume the default install path
         makecatalogs_path = '/usr/local/munki/makecatalogs'
-    repo_path = pref('repo_path')
     if not repoAvailable():
         raise RepoCopyError('Could not connect to munki repo.')
     if not VERBOSE:
-        print 'Rebuilding catalogs at %s...' % repo_path
-    proc = subprocess.Popen([makecatalogs_path, repo_path],
+        print 'Rebuilding catalogs at %s...' % REPO_PATH
+    proc = subprocess.Popen([makecatalogs_path, REPO_PATH],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
@@ -570,12 +560,16 @@ APPLEMETADATA = False
 NOINTERACTIVE = False
 WE_MOUNTED_THE_REPO = False
 VERBOSE = False
+REPO_PATH = ""
+REPO_URL = ""
 
 def main():
     """Main routine"""
     global APPLEMETADATA
     global NOINTERACTIVE
     global VERBOSE
+    global REPO_PATH
+    global REPO_URL
     
     usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
@@ -608,6 +602,12 @@ def main():
     parser.add_option('--nointeractive', '-n', action='store_true',
                     help="""No interactive prompts. May cause a failure
                     if repo path is unavailable.""")
+    parser.add_option('--repo_path', '--repo-path', default='',
+                    help="""Optional path to munki repo that takes precedence
+                    over the default repo_path specified via --configure.""")
+    parser.add_option('--repo_url', '--repo-url', default='',
+                    help="""Optional repo fileshare URL that takes precedence
+                    over the default repo_url specified via --configure.""")
     parser.add_option('--version', '-V', action='store_true',
                     help='Print the version of the munki tools and exit.')
     parser.add_option('--verbose', '-v', action='store_true',
@@ -625,7 +625,22 @@ def main():
     
     NOINTERACTIVE = options.nointeractive
     VERBOSE = options.verbose
-    
+    REPO_PATH = pref('repo_path')
+    REPO_URL = pref('repo_url')
+
+    if options.repo_path:
+        if not os.path.exists(options.repo_path) and not options.repo_url:
+            print >> sys.stderr, ('Munki repo path override provided but '
+                                  'folder does not exist. Please either '
+                                  'provide --repo_url if you wish to map a '
+                                  'share, or correct the path and try again.')
+            exit(-1)
+
+        REPO_PATH = options.repo_path
+        
+    if options.repo_url:
+        REPO_URL = options.repo_url
+        
     if len(arguments) == 0:
         parser.print_usage()
         exit(0)
@@ -661,10 +676,10 @@ def main():
             print >> sys.stderr, '%s does not exist!' % installer_item
             exit(-1)
     
-    if not pref('repo_path'):
+    if not REPO_PATH:
         print >> sys.stderr, ('Path to munki repo has not been defined. '
                               'Run with --configure option to configure this '
-                              'tool.')
+                              'tool, or provide with --repo-path')
         exit(-1)
     
     if not repoAvailable():
@@ -791,7 +806,7 @@ def main():
             cleanupAndExit(0)
         
         if options.subdirectory == '':
-            pkgs_path = os.path.join(pref('repo_path'), 'pkgs')
+            pkgs_path = os.path.join(REPO_PATH, 'pkgs')
             if installer_item.startswith(pkgs_path) and not APPLEMETADATA:
                 # the installer item is already in the repo.
                 # use its relative path as the subdirectory

@@ -2212,13 +2212,17 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'requires',
                     'update_for',
                     'preuninstall_script',
-                    'postuninstall_script']
+                    'postuninstall_script',
+                    'apple_item']
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
             
-    if isAppleItem(item_pl):
-        iteminfo['apple_item'] = True
+    if not 'apple_item' in iteminfo:
+        # admin did not explictly mark this item; let's determine if
+        # it's from Apple
+        if isAppleItem(item_pl):
+            iteminfo['apple_item'] = True
 
     if packagesToRemove:
         # remove references for each package

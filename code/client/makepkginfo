@@ -36,14 +36,37 @@ import sys
 import os
 import re
 import optparse
+import time
 from optparse import OptionValueError
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
 
+from Foundation import NSDate
+
 # circumvent cfprefsd plist scanning
 os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
+
+
+def convertDateStringToNSDate(datetime_string):
+    '''Converts a string in the "2013-04-25T20:00:00Z" format or
+    "2013-04-25 20:00:00 +0000" format to an NSDate'''
+    NSDateFormat = '%Y-%m-%dT%H:%M:%SZ'
+    ISOFormat = '%Y-%m-%d %H:%M:%S +0000'
+    FallBackFormat = '%Y-%m-%d %H:%M:%S'
+    try:
+        dt = time.strptime(datetime_string, NSDateFormat)
+    except ValueError:
+        try:
+            dt = time.strptime(datetime_string, ISOFormat)
+        except ValueError:
+            try:
+                dt = time.strptime(datetime_string, FallBackFormat)
+            except ValueError:
+                return None
+    iso_date_string = time.strftime(ISOFormat, dt)
+    return NSDate.dateWithString_(iso_date_string)
 
 
 def getCatalogInfoFromDmg(dmgpath, options):
@@ -932,10 +955,13 @@ def main():
     if options.maximum_os_version:
         catinfo['maximum_os_version'] = options.maximum_os_version
     if options.force_install_after_date:
-        force_install_after_date = (
-            munkicommon.validateDateFormat(options.force_install_after_date))
-        if force_install_after_date:
-            catinfo['force_install_after_date'] = force_install_after_date
+        date_obj = convertDateStringToNSDate(options.force_install_after_date)
+        if date_obj:
+            catinfo['force_install_after_date'] = date_obj
+        else:
+            print >> sys.stderr, (
+                "Invalid date format %s for force_install_after_date" 
+                % options.force_install_after_date)
     if options.RestartAction:
         validActions = ['RequireRestart', 'RequireLogout', 'RecommendRestart']
         if options.RestartAction in validActions:
