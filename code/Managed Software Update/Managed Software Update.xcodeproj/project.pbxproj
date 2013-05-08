@@ -77,6 +77,10 @@
 		9CD833BD16D3E14D00BE1ABF /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9CD833BE16D3E16100BE1ABF /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ru; path = ru.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		9CD833BF16D3E16E00BE1ABF /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
+		9CD85DA6173AF76600DFD6A7 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		9CD85DA7173AF78C00DFD6A7 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9CD85DA8173AF79B00DFD6A7 /* sv */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = sv; path = sv.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9CD85DA9173AF7AA00DFD6A7 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = SOURCE_ROOT; };
 		9CF76DB515ADCF2900EC7445 /* Dutch */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Dutch; path = Dutch.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		9CF76DB615ADCF3900EC7445 /* Dutch */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Dutch; path = Dutch.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9CF76DB715ADCF4600EC7445 /* Dutch */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Dutch; path = Dutch.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -270,6 +274,7 @@
 				da,
 				nb,
 				ru,
+				sv,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Managed Software Update */;
 			projectDirPath = "";
@@ -342,7 +347,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8\n./Localize.py --from English --to da --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to nb --utf8\n./Localize.py --from English --to ru --utf8";
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8\n./Localize.py --from English --to da --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to nb --utf8\n./Localize.py --from English --to ru --utf8\n./Localize.py --from English --to sv --utf8";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -372,6 +377,7 @@
 				9C5652C716077216006120E1 /* da */,
 				9C1EA58A1666B5C70047469A /* nb */,
 				9CD833BD16D3E14D00BE1ABF /* ru */,
+				9CD85DA7173AF78C00DFD6A7 /* sv */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -388,6 +394,7 @@
 				9C5652C91607723E006120E1 /* fi */,
 				9C1EA5AE1666B7B40047469A /* nb */,
 				9CD833BE16D3E16100BE1ABF /* ru */,
+				9CD85DA8173AF79B00DFD6A7 /* sv */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -404,6 +411,7 @@
 				9C5652CA16077254006120E1 /* da */,
 				9C1EA58B1666B5F60047469A /* nb */,
 				9CD833BF16D3E16E00BE1ABF /* ru */,
+				9CD85DA9173AF7AA00DFD6A7 /* sv */,
 			);
 			name = Localizable.strings;
 			path = German.lproj;
@@ -421,6 +429,7 @@
 				9C5652C6160771FA006120E1 /* da */,
 				9C1EA5891666B5B50047469A /* nb */,
 				9CD833BC16D3E13A00BE1ABF /* ru */,
+				9CD85DA6173AF76600DFD6A7 /* sv */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
