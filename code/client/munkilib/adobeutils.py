@@ -79,13 +79,18 @@ def getCS5mediaSignature(dirpath):
     '''Returns the CS5 mediaSignature for an AAMEE CS5 install.
     dirpath is typically the root of a mounted dmg'''
 
-    deploymentmgr = findAdobeDeploymentManager(dirpath)
-    if deploymentmgr:
-        parentdir = os.path.join(os.path.dirname(deploymentmgr), "Setup")
-    else:
+    payloads_dir = ""
+    # look for a payloads folder
+    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+        if path.endswith("/payloads"):
+            payloads_dir = path
+
+    # return empty-handed if we didn't find a payloads folder
+    if not payloads_dir:
         return ""
+
     # now look for setup.xml
-    setupxml = os.path.join(parentdir, "payloads", "Setup.xml")
+    setupxml = os.path.join(payloads_dir, "Setup.xml")
     if os.path.exists(setupxml) and os.path.isfile(setupxml):
         # parse the XML
         dom = minidom.parse(setupxml)
