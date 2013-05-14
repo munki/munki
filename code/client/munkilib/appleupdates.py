@@ -171,7 +171,7 @@ class AppleUpdates(object):
             self.local_catalog_dir, LOCAL_DOWNLOAD_CATALOG_NAME)
 
         self._update_list_cache = None
-        
+
         # apple_update_metadata support
         self.client_id = ''
         self.force_catalog_refresh = False
@@ -447,9 +447,10 @@ class AppleUpdates(object):
                 pathname = urllib2.unquote(fileurl).rstrip('/')
                 dirname = os.path.dirname(pathname)
                 executable = munkicommon.getAppBundleExecutable(pathname)
-                # path to executable should be location agnostic
-                executable = executable[len(dirname + '/'):]
-                blocking_apps.append(executable or pathname)
+                if executable:
+                    # path to executable should be location agnostic
+                    executable = executable[len(dirname + '/'):]
+                    blocking_apps.append(executable or pathname)
 
         return blocking_apps
 
@@ -1177,7 +1178,7 @@ class AppleUpdates(object):
         # disable Stop button if we are presenting GUI status
         if munkicommon.munkistatusoutput:
             munkistatus.hideStopButton()
-        
+
         # Get list of unattended_installs
         if only_unattended:
             msg = 'Installing unattended Apple Software Updates...'
@@ -1260,7 +1261,7 @@ class AppleUpdates(object):
 
         if retcode:  # there was an error
             munkicommon.display_error('softwareupdate error: %s' % retcode)
-        
+
         # Refresh Applicable updates and catalogs
         # since we may have performed some unattended installs
         if only_unattended:
@@ -1395,7 +1396,7 @@ class AppleUpdates(object):
                             '\tSkipping metadata RestartAction\'%s\' '
                             'for item %s (ProductKey %s), '
                             'item\'s original \'%s\' is preferred.'
-                             % (metadata[key], item.get('name'), 
+                             % (metadata[key], item.get('name'),
                                 item.get('productKey'), item[key]))
                         continue
                 elif key == 'unattended_install':
@@ -1488,7 +1489,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
     appleUpdatesObject = getAppleUpdatesInstance()
     appleUpdatesObject.client_id = client_id
     appleUpdatesObject.force_catalog_refresh = forcecatalogrefresh
-    
+
     return appleUpdatesObject.AppleSoftwareUpdatesAvailable(
         force_check=forcecheck, suppress_check=suppresscheck)
 
