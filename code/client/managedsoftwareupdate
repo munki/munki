@@ -34,23 +34,8 @@ try:
     from Foundation import NSNotificationDeliverImmediately
     from Foundation import NSNotificationPostToAllSessions
 except ImportError:
+    # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
-    report_broken_python()
-    sys.exit(200)
-else:
-    from munkilib import munkicommon
-    from munkilib import updatecheck
-    from munkilib import installer
-    from munkilib import munkistatus
-    from munkilib import appleupdates
-    from munkilib import FoundationPlist
-    from munkilib import utils
-
-
-def report_broken_python():
-    """Python is missing ObjC bindings. Run external report script."""
-    # Moved this to a function to prevent PyLint from complaining
-    # about redefining names from outer scope
     print >> sys.stderr, 'Python is missing ObjC bindings.'
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     script = os.path.join(scriptdir, 'report_broken_client')
@@ -61,6 +46,15 @@ def report_broken_python():
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, err:
         print >> sys.stderr, str(err)
+    sys.exit(200)
+else:
+    from munkilib import munkicommon
+    from munkilib import updatecheck
+    from munkilib import installer
+    from munkilib import munkistatus
+    from munkilib import appleupdates
+    from munkilib import FoundationPlist
+    from munkilib import utils
 
 
 def signal_handler(signum, unused_frame):
