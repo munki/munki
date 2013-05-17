@@ -67,6 +67,39 @@ def convertDateStringToNSDate(datetime_string):
                 return None
     iso_date_string = time.strftime(ISOFormat, dt)
     return NSDate.dateWithString_(iso_date_string)
+    
+    
+def getCatalogInfoFromPath(pkgpath, options):
+    """Gets package metadata for the package at pathname.
+    Returns cataloginfo"""
+    cataloginfo = {}
+    if os.path.exists(pkgpath):
+        cataloginfo = munkicommon.getPackageMetaData(pkgpath)
+        if options.installer_choices_xml:
+            installer_choices_xml = munkicommon.getChoiceChangesXML(pkgpath)
+            if installer_choices_xml:
+                cataloginfo['installer_choices_xml'] = installer_choices_xml
+            
+    if cataloginfo:
+        # we found a package, but let's see if it's an Adobe CS5 install 
+        # (AAMEE) package
+        if 'receipts' in cataloginfo:
+            try:
+                pkgid = cataloginfo['receipts'][0].get('packageid')
+            except IndexError:
+                pkgid = ""
+            if pkgid.startswith("com.adobe.Enterprise.install"):
+                # we have an Adobe CS5 install package, process
+                # as Adobe install
+                #adobepkgname = cataloginfo['receipts'][0].get('filename')
+                cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath)
+                                            #mountpoints[0], adobepkgname)
+
+    else:
+        # maybe an Adobe installer/updater/patcher?
+        cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath, 
+                                                    options.pkgname or '')
+    return cataloginfo
 
 
 def getCatalogInfoFromDmg(dmgpath, options):
@@ -85,49 +118,23 @@ def getCatalogInfoFromDmg(dmgpath, options):
         
     if options.pkgname:
         pkgpath = os.path.join(mountpoints[0], options.pkgname)
-        if os.path.exists(pkgpath):
-            cataloginfo = munkicommon.getPackageMetaData(pkgpath)
-            if options.installer_choices_xml:
-                installer_choices_xml = munkicommon.getChoiceChangesXML(pkgpath)
-                if installer_choices_xml:
-                    cataloginfo['installer_choices_xml'] = installer_choices_xml
-            if cataloginfo:
-                cataloginfo['package_path'] = options.pkgname
+        cataloginfo = getCatalogInfoFromPath(pkgpath, options)
+        if cataloginfo:
+            cataloginfo['package_path'] = options.pkgname
     elif not options.item:
         # search for first package at root
         for fsitem in munkicommon.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
             if munkicommon.hasValidInstallerItemExt(itempath):
-                cataloginfo = munkicommon.getPackageMetaData(itempath)
-                if options.installer_choices_xml:
-                    installer_choices_xml = munkicommon.getChoiceChangesXML(
-                        itempath)
-                    if installer_choices_xml:
-                        cataloginfo['installer_choices_xml'] = \
-                            installer_choices_xml
+                cataloginfo = getCatalogInfoFromPath(itempath, options)
                 # get out of fsitem loop
                 break
                 
-        if cataloginfo:
-            # we found a package, but let's see if it's an Adobe CS5 install 
-            # (AAMEE) package
-            if 'receipts' in cataloginfo:
-                try:
-                    pkgid = cataloginfo['receipts'][0].get('packageid')
-                except IndexError:
-                    pkgid = ""
-                if pkgid.startswith("com.adobe.Enterprise.install"):
-                    # we have an Adobe CS5 install package, process
-                    # as Adobe install
-                    adobepkgname = cataloginfo['receipts'][0].get('filename')
-                    cataloginfo = adobeutils.getAdobeCatalogInfo(
-                                                mountpoints[0], adobepkgname)
-                
-        else:
-            # maybe an Adobe installer/updater/patcher?
-            cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
-                                                        options.pkgname or '')
-                    
+    if not cataloginfo:
+        # look for one of the many possible Adobe installer/updaters
+        cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
+                                                    options.pkgname or '')
+        
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
         # look for given item or an app at the top level of the dmg
@@ -731,12 +738,7 @@ def main():
                     exit(-1)
             
             elif munkicommon.hasValidPackageExt(item):
-                catinfo = munkicommon.getPackageMetaData(item)
-                if options.installer_choices_xml:
-                    installer_choices_xml = munkicommon.getChoiceChangesXML(
-                                                                        item)
-                    if installer_choices_xml:
-                        catinfo['installer_choices_xml'] = installer_choices_xml
+                catinfo = getCatalogInfoFromPath(item, options)
                 if not catinfo:
                     print >> sys.stderr, (
                         "%s doesn't appear to be a valid installer item!" % 
