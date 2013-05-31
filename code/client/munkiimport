@@ -594,7 +594,7 @@ def main():
                     help="""Configure munkiimport with details about your
                     munki repo, preferred editor, and the like. Any other
                     options and arguments are ignored.""")
-    parser.add_option('--subdirectory', '-d', default='',
+    parser.add_option('--subdirectory', default='',
                     help="""When importing an installer item, item will be
                     uploaded to this subdirectory path in the repo pkgs
                     directory, and the pkginfo file will be stored under
