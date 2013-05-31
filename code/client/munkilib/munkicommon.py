@@ -2426,8 +2426,12 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
 
 def runScript(itemname, path, scriptname, suppress_error=False):
     '''Runs a script, Returns return code.'''
-    display_status_minor(
-        'Running %s for %s ' % (scriptname, itemname))
+    if suppress_error:
+        display_detail(
+            'Running %s for %s ' % (scriptname, itemname))
+    else:
+        display_status_minor(
+            'Running %s for %s ' % (scriptname, itemname))
     if munkistatusoutput:
         # set indeterminate progress bar
         munkistatus.percent(-1)
