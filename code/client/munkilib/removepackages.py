@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -218,7 +218,7 @@ def ImportPackage(packagepath, curs):
     pkgname = os.path.basename(packagepath)
 
     if not os.path.exists(packagepath):
-        munkicommon.display_error("%s not found." % packagepath)
+        munkicommon.display_error("%s not found.", packagepath)
         return
 
     if not os.path.isdir(packagepath):
@@ -226,7 +226,7 @@ def ImportPackage(packagepath, curs):
         # so we won't print a warning for that specific one.
         if pkgname != "BSD.pkg":
             munkicommon.display_warning(
-                "%s is not a valid receipt. Skipping." % packagepath)
+                "%s is not a valid receipt. Skipping.", packagepath)
         return
 
     if not os.path.exists(bompath):
@@ -235,13 +235,13 @@ def ImportPackage(packagepath, curs):
         bompath = os.path.join(packagepath, "Contents/Resources",
                                 bomname)
         if not os.path.exists(bompath):
-            munkicommon.display_warning("%s has no BOM file. Skipping." %
-                                        packagepath)
+            munkicommon.display_warning(
+                "%s has no BOM file. Skipping.", packagepath)
             return
 
     if not os.path.exists(infopath):
-        munkicommon.display_warning("%s has no Info.plist. Skipping." %
-                                    packagepath)
+        munkicommon.display_warning(
+            "%s has no Info.plist. Skipping.", packagepath)
         return
 
     timestamp = os.stat(packagepath).st_mtime
@@ -578,7 +578,7 @@ def initDatabase(forcerebuild=False):
 
             if item.endswith(".pkg"):
                 receiptpath = os.path.join(receiptsdir, item)
-                munkicommon.display_detail("Importing %s..." % receiptpath)
+                munkicommon.display_detail("Importing %s...", receiptpath)
                 ImportPackage(receiptpath, curs)
                 currentpkgindex += 1
                 munkicommon.display_percent_done(currentpkgindex, pkgcount)
@@ -595,7 +595,7 @@ def initDatabase(forcerebuild=False):
 
             if item.endswith(".bom"):
                 bompath = os.path.join(bomsdir, item)
-                munkicommon.display_detail("Importing %s..." % bompath)
+                munkicommon.display_detail("Importing %s...", bompath)
                 ImportBom(bompath, curs)
                 currentpkgindex += 1
                 munkicommon.display_percent_done(currentpkgindex, pkgcount)
@@ -608,7 +608,7 @@ def initDatabase(forcerebuild=False):
                 os.remove(packagedb)
                 return False
 
-            munkicommon.display_detail("Importing %s..." % pkg)
+            munkicommon.display_detail("Importing %s...", pkg)
             ImportFromPkgutil(pkg, curs)
             currentpkgindex += 1
             munkicommon.display_percent_done(currentpkgindex, pkgcount)
@@ -640,18 +640,18 @@ def getpkgkeys(pkgnames):
     for pkg in pkgnames:
         values_t = (pkg, )
         munkicommon.display_debug1(
-                    "select pkg_key from pkgs where pkgid = %s" % pkg)
+                    "select pkg_key from pkgs where pkgid = %s", pkg)
         pkg_keys = curs.execute('select pkg_key from pkgs where pkgid = ?',
                              values_t).fetchall()
         if not pkg_keys:
             # try pkgname
             munkicommon.display_debug1(
-                        "select pkg_key from pkgs where pkgname = %s" % pkg)
+                        "select pkg_key from pkgs where pkgname = %s", pkg)
             pkg_keys = curs.execute(
                 'select pkg_key from pkgs where pkgname = ?',
                                                         values_t).fetchall()
         if not pkg_keys:
-            munkicommon.display_error("%s not found in database." % pkg)
+            munkicommon.display_error("%s not found in database.", pkg)
             pkgerror = True
         else:
             for row in pkg_keys:
@@ -662,7 +662,7 @@ def getpkgkeys(pkgnames):
 
     curs.close()
     conn.close()
-    munkicommon.display_debug1("pkgkeys: %s" % pkgkeyslist)
+    munkicommon.display_debug1("pkgkeys: %s", pkgkeyslist)
     return pkgkeyslist
 
 
@@ -763,7 +763,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                 receiptpath = findBundleReceiptFromID(pkgid)
 
             if receiptpath and os.path.exists(receiptpath):
-                munkicommon.display_detail("Removing %s..." % receiptpath)
+                munkicommon.display_detail("Removing %s...", receiptpath)
                 unused_retcode = subprocess.call(
                                             ["/bin/rm", "-rf", receiptpath])
 
@@ -937,8 +937,8 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     try:
                         os.rmdir(pathtoremove)
                     except (OSError, IOError), err:
-                        msg = "Couldn't remove directory %s - %s" % \
-                               (pathtoremove, err)
+                        msg = "Couldn't remove directory %s - %s" % (
+                            pathtoremove, err)
                         munkicommon.display_error(msg)
                         removalerrors = removalerrors + "\n" + msg
                 else:
@@ -948,7 +948,7 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
                     # around
                     if (forcedeletebundles and isBundle(pathtoremove)):
                         munkicommon.display_warning(
-                            "Removing non-empty bundle: %s" % pathtoremove)
+                            "Removing non-empty bundle: %s", pathtoremove)
                         retcode = subprocess.call(['/bin/rm', '-r',
                                                    pathtoremove])
                         if retcode:

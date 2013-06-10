@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import optparse
 import tempfile
 
 # change these to suit yourself
-packagemaker = "/Developer/usr/bin/packagemaker"
+packagemaker = '/Developer/usr/bin/packagemaker'
 pkgidprefix = "com.myorg.pkg."
 pkgoutputdir = "/Users/Shared/pkgs"
 

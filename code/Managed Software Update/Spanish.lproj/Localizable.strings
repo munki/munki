@@ -9,12 +9,12 @@
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nTodas las actualizaciones pendientes serán instaladas. Cualquier cambio no guardado se perderá.\nPuede evitar el cierre forzado de la sesión cerrandola ahora.";
 
 /* No comment provided by engineer. */
-"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Se recomienda cerrar la sesión antes de actualizar. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora?";
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Se recomienda cerrar la sesión antes de actualizar. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora?";
 
 "Checking for available Apple Software Updates..." = "Buscando actualizaciones de Apple...";
 
 /* No comment provided by engineer. */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Es necesario cerrar la sesión antes de actualizar. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario cerrar la sesión antes de actualizar. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora?";
 
 /* No comment provided by engineer. */
 "This item will be removed." = "Este elemento será eliminado.";
@@ -29,7 +29,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Se va a forzar el cierre de la sesión en menos de un minuto.\nTodas las actualizaciones pendientes serán instaladas. Los cambios no guardados se perderán.";
 
 /* No comment provided by engineer. */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora? ";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. Por favor sea paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar la sesión y actualizar ahora? ";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancelar";
@@ -59,10 +59,10 @@
 "Installed" = "Instalado";
 
 /* No comment provided by engineer. */
-"Logout and update" = "Cerrar sesión y actualizar";
+"Log out and update" = "Cerrar sesión y actualizar";
 
 /* No comment provided by engineer. */
-"Logout and update now" = "Cerrar sesión y actualizar ahora";
+"Log out and update now" = "Cerrar sesión y actualizar ahora";
 
 /* No comment provided by engineer. */
 "Logout Recommended" = "Recomendado cerrar la sesión";

@@ -4,7 +4,7 @@
 #  Managed Software Update
 #
 #  Created by Greg Neagle on 2/11/10.
-#  Copyright 2010-2011 Greg Neagle.
+#  Copyright 2010-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -125,8 +125,10 @@ def pref(pref_name):
     default_prefs = {
         'ManagedInstallDir': '/Library/Managed Installs',
         'InstallAppleSoftwareUpdates': False,
+        'AppleSoftwareUpdatesOnly': False,
         'ShowRemovalDetail': False,
-        'InstallRequiresLogout': False
+        'InstallRequiresLogout': False,
+        'CheckResultsCacheSeconds': None,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:
@@ -188,14 +190,30 @@ def getInstallInfo():
     return plist
 
 
+def munkiUpdatesContainAppleItems():
+    """Return True if there are any Apple items in the list of updates"""
+    installinfo = getInstallInfo()
+    # check managed_installs
+    for item in installinfo.get('managed_installs', []):
+        if item.get('apple_item'):
+            return True
+    # check removals
+    for item in installinfo.get('removals', []):
+        if item.get('apple_item'):
+            return True
+    return False
+
+
 def thereAreUpdatesToBeForcedSoon(hours=72):
     '''Return True if any updates need to be installed within the next
     X hours, false otherwise'''
-    installinfo = getInstallInfo()
+    installinfo = getInstallInfo().get('managed_installs', [])
+    installinfo.extend(getAppleUpdates().get('AppleUpdates', []))
+
     if installinfo:
         now = NSDate.date()
         now_xhours = NSDate.dateWithTimeIntervalSinceNow_(hours * 3600)
-        for item in installinfo.get('managed_installs', []):
+        for item in installinfo:
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
                 force_install_after_date = discardTimeZoneFromDate(
@@ -210,25 +228,26 @@ def earliestForceInstallDate():
     Returns None or earliest force_install_after_date converted to local time
     """
     earliest_date = None
-    
-    installinfo = getInstallInfo()
-            
-    for install in installinfo.get('managed_installs', []):
+
+    installinfo = getInstallInfo().get('managed_installs', [])
+    installinfo.extend(getAppleUpdates().get('AppleUpdates', []))
+
+    for install in installinfo:
         this_force_install_date = install.get('force_install_after_date')
-        
+
         if this_force_install_date:
             this_force_install_date = discardTimeZoneFromDate(
                 this_force_install_date)
             if not earliest_date or this_force_install_date < earliest_date:
                 earliest_date = this_force_install_date
-            
+
     return earliest_date
 
 
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC.
-    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes 
+    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
@@ -253,11 +272,17 @@ def stringFromDate(nsdate):
     return unicode(df.stringForObjectValue_(nsdate))
 
 
-def startUpdateCheck():
+def startUpdateCheck(suppress_apple_update_check=False):
     '''Does launchd magic to run managedsoftwareupdate as root.'''
     try:
         if not os.path.exists(UPDATECHECKLAUNCHFILE):
-            open(UPDATECHECKLAUNCHFILE, 'w').close()
+            plist = {}
+            plist['SuppressAppleUpdateCheck'] = suppress_apple_update_check
+            try:
+                FoundationPlist.writePlist(plist, UPDATECHECKLAUNCHFILE)
+            except FoundationPlist.FoundationPlistException:
+                # problem creating the trigger file
+                return 1
         return 0
     except (OSError, IOError):
         return 1
@@ -269,7 +294,8 @@ def getAppleUpdates():
     plist = {}
     appleUpdatesFile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
     if (os.path.exists(appleUpdatesFile) and
-            pref('InstallAppleSoftwareUpdates')):
+            (pref('InstallAppleSoftwareUpdates') or
+            pref('AppleSoftwareUpdatesOnly'))):
         try:
             plist = FoundationPlist.readPlist(appleUpdatesFile)
         except FoundationPlist.NSPropertyListSerializationException:
@@ -354,7 +380,7 @@ def logoutAndUpdate():
 
     try:
         if not os.path.exists(INSTALLATLOGOUTFILE):
-            open(INSTALLATLOGOUTFILE, 'w').close()    
+            open(INSTALLATLOGOUTFILE, 'w').close()
         logoutNow()
     except (OSError, IOError):
         return 1
@@ -382,7 +408,7 @@ def justUpdate():
         return 0
     except (OSError, IOError):
         return 1
-    
+
 
 def getRunningProcesses():
     """Returns a list of paths of running processes"""
@@ -422,7 +448,11 @@ def getRunningBlockingApps(appnames):
     filemanager = NSFileManager.alloc().init()
     for appname in appnames:
         matching_items = []
-        if appname.endswith('.app'):
+        if appname.startswith('/'):
+            # search by exact path
+            matching_items = [item for item in proc_list
+                              if item == appname]
+        elif appname.endswith('.app'):
             # search by filename
             matching_items = [item for item in proc_list
                               if '/'+ appname + '/Contents/MacOS/' in item]

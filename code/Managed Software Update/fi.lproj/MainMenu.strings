@@ -32,10 +32,10 @@
 "83.title" = "Päivitä";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
-"103.title" = "Ohjeet";
+"103.title" = "Ohje";
 
 /* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
-"106.title" = "Ohjeet";
+"106.title" = "Ohje";
 
 /* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
 "111.title" = "Hallinnoitu ohjelmiston päivitys -ohje";
@@ -137,7 +137,7 @@
 "221.title" = "Käytä valintaa etsimiseen";
 
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
-"239.title" = "Suurenna";
+"239.title" = "Zoomaa";
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
 "346.title" = "Tarkista kielioppi oikeinkirjoituksen ohessa";
@@ -190,7 +190,7 @@
 /* Class = "NSTabViewItem"; label = "Optional software"; ObjectID = "514"; */
 "514.label" = "Valinnaiset ohjelmat";
 
-/* Class = "NSButtonCell"; title = "Add or Remove"; ObjectID = "519"; */
+/* Class = "NSButtonCell"; title = "Update software list…"; ObjectID = "519"; */
 "519.title" = "Lisää tai poista";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "520"; */
@@ -208,7 +208,7 @@
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "532"; */
 "532.title" = "Text Cell";
 
-/* Class = "NSTextFieldCell"; title = "Check an item to have it installed. Uncheck an item to have it removed."; ObjectID = "546"; */
+/* Class = "NSTextFieldCell"; title = "Check an item to have it added to the list of software to be installed and kept up-to-date. Uncheck an item to have it removed from the list and uninstalled."; ObjectID = "546"; */
 "546.title" = "Valitut kohteet asennetaan. Poista asennettu ohjelma poistamalla valinta.";
 
 /* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
@@ -242,4 +242,4 @@
 "635.title" = "BackdropWindow";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
-"645.title" = "Pysäytä";
+"645.title" = "Kumoa";

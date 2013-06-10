@@ -1,180 +1,180 @@
-﻿
+﻿ 
 /* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "5"; */
-"5.title" = "Alle nach vorne bringen";
+"5.title" = "Lägg alla överst";
 
 /* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "Fenster";
+"19.title" = "Fönster";
 
 /* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Minimieren";
+"23.title" = "Minimera";
 
 /* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "Fenster";
+"24.title" = "Fönster";
 
 /* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMainMenu";
+"29.title" = "AHuvudmeny";
 
 /* Class = "NSMenuItem"; title = "Managed Software Update"; ObjectID = "56"; */
-"56.title" = "Geführte Softwareaktualisierung";
+"56.title" = "Managed Software Update";
 
 /* Class = "NSMenu"; title = "Managed Software Update"; ObjectID = "57"; */
-"57.title" = "Geführte Softwareaktualisierung";
+"57.title" = "Managed Software Update";
 
 /* Class = "NSMenuItem"; title = "About Managed Software Update"; ObjectID = "58"; */
-"58.title" = "Über Geführte Softwareaktualisierung";
+"58.title" = "Om Managed Software Update";
 
 /* Class = "NSMenu"; title = "Update"; ObjectID = "81"; */
-"81.title" = "Aktualisierung";
+"81.title" = "Uppdatera";
 
 /* Class = "NSMenuItem"; title = "Update now "; ObjectID = "82"; */
-"82.title" = "Jetzt aktualisieren";
+"82.title" = "Uppdatera nu ";
 
 /* Class = "NSMenuItem"; title = "Update"; ObjectID = "83"; */
-"83.title" = "Aktualisieren";
+"83.title" = "Uppdatera";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
-"103.title" = "Hilfe";
+"103.title" = "Hjälp";
 
 /* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
-"106.title" = "Hilfe";
+"106.title" = "Hjälp";
 
 /* Class = "NSMenuItem"; title = "Managed Software Update Help"; ObjectID = "111"; */
-"111.title" = "Softwareaktualiserung-Hilfe";
+"111.title" = "Hjälp om Managed Software Update";
 
 /* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "129"; */
-"129.title" = "Einstellungen…";
+"129.title" = "Inställningar…";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
-"130.title" = "Dienste";
+"130.title" = "Tjänster";
 
 /* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
-"131.title" = "Dienste";
+"131.title" = "Tjänster";
 
 /* Class = "NSMenuItem"; title = "Hide Managed Software Update"; ObjectID = "134"; */
-"134.title" = "Softwareaktualiserung ausblenden";
+"134.title" = "Göm Managed Software Update";
 
 /* Class = "NSMenuItem"; title = "Quit Managed Software Update"; ObjectID = "136"; */
-"136.title" = "Softwareaktualisierung beenden";
+"136.title" = "Avsluta Managed Software Update";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
-"145.title" = "Andere ausblenden";
+"145.title" = "Göm övriga";
 
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
-"150.title" = "Alle einblenden";
+"150.title" = "Visa alla";
 
 /* Class = "NSMenuItem"; title = "Stop Speaking"; ObjectID = "195"; */
-"195.title" = "Sprachausgabe starten";
+"195.title" = "Sluta tala";
 
 /* Class = "NSMenuItem"; title = "Start Speaking"; ObjectID = "196"; */
-"196.title" = "Sprachausgabe stoppen";
+"196.title" = "Börja tala";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
-"197.title" = "Kopieren";
+"197.title" = "Kopiera";
 
 /* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
-"198.title" = "Alles auswählen";
+"198.title" = "Markera alla";
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
-"199.title" = "Ausschneiden";
+"199.title" = "Klipp ut";
 
 /* Class = "NSMenu"; title = "Spelling and Grammar"; ObjectID = "200"; */
-"200.title" = "Rechtschreibung und Grammatik";
+"200.title" = "Stavningskontroll och grammatik";
 
 /* Class = "NSMenuItem"; title = "Check Spelling"; ObjectID = "201"; */
-"201.title" = "Dokument jetzt prüfen";
+"201.title" = "Kontrollera stavning";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
-"202.title" = "Löschen";
+"202.title" = "Radera";
 
 /* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
-"203.title" = "Einfügen";
+"203.title" = "Klistra in";
 
 /* Class = "NSMenuItem"; title = "Show Spelling…"; ObjectID = "204"; */
-"204.title" = "Rechtschreibung und Grammatik einblenden";
+"204.title" = "Visa Stavning…";
 
 /* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
-"205.title" = "Bearbeiten";
+"205.title" = "Redigera";
 
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
-"207.title" = "Widerrufen";
+"207.title" = "Ångra";
 
 /* Class = "NSMenuItem"; title = "Find Next"; ObjectID = "208"; */
-"208.title" = "Weitersuchen (vorwärts)";
+"208.title" = "Sök nästa";
 
 /* Class = "NSMenuItem"; title = "Find…"; ObjectID = "209"; */
-"209.title" = "Suchen";
+"209.title" = "Hitta…";
 
 /* Class = "NSMenuItem"; title = "Jump to Selection"; ObjectID = "210"; */
-"210.title" = "Auswahl anzeigen";
+"210.title" = "Hoppa till markering";
 
 /* Class = "NSMenuItem"; title = "Speech"; ObjectID = "211"; */
-"211.title" = "Sprachausgabe";
+"211.title" = "Tala";
 
 /* Class = "NSMenu"; title = "Speech"; ObjectID = "212"; */
-"212.title" = "Sprachausgabe";
+"212.title" = "Tala";
 
 /* Class = "NSMenuItem"; title = "Find Previous"; ObjectID = "213"; */
-"213.title" = "Weitersuchen (rückwärts)";
+"213.title" = "Sök föregående";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
-"215.title" = "Wiederholen";
+"215.title" = "Ångra";
 
 /* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "216"; */
-"216.title" = "Rechtschreibung und Grammatik";
+"216.title" = "Stavning och grammatik";
 
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
-"217.title" = "Bearbeiten";
+"217.title" = "Redigera";
 
 /* Class = "NSMenuItem"; title = "Find"; ObjectID = "218"; */
-"218.title" = "Suchen";
+"218.title" = "Sök";
 
 /* Class = "NSMenuItem"; title = "Check Spelling While Typing"; ObjectID = "219"; */
-"219.title" = "Rechtschreibung automatisch prüfen";
+"219.title" = "Kontrollera stavning medan jag skriver	";
 
 /* Class = "NSMenu"; title = "Find"; ObjectID = "220"; */
-"220.title" = "Suchen";
+"220.title" = "Sök";
 
 /* Class = "NSMenuItem"; title = "Use Selection for Find"; ObjectID = "221"; */
-"221.title" = "Auswahl suchen";
+"221.title" = "Använd markerat för sökning";
 
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
-"239.title" = "Zoomen";
+"239.title" = "Zooma";
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "346"; */
-"346.title" = "Rechtschreib- und Grammatikprüfung";
+"346.title" = "Kontrollera grammatik med stavning";
 
 /* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "348"; */
-"348.title" = "Ersetzungen";
+"348.title" = "Ersättningar";
 
 /* Class = "NSMenu"; title = "Substitutions"; ObjectID = "349"; */
-"349.title" = "Ersetzungen";
+"349.title" = "Ersättningar";
 
 /* Class = "NSMenuItem"; title = "Smart Copy/Paste"; ObjectID = "350"; */
-"350.title" = "Intelligentes Kopieren/Einsetzen";
+"350.title" = "Smart kopiering/inklistring";
 
 /* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "351"; */
-"351.title" = "Intelligente Anführungszeichen";
+"351.title" = "Smarta citationstecken";
 
 /* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "354"; */
-"354.title" = "Intelligente Links";
+"354.title" = "Smarta länkar";
 
 /* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "371"; */
-"371.title" = "Geführte Softwareaktualisierung";
+"371.title" = "Managed Software Update";
 
 /* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
-"378.title" = "Für Ihren Computer sind Aktualisierungen verfügbar.";
+"378.title" = "Det finns programuppdateringar till din dator.";
 
 /* Class = "NSTextFieldCell"; title = "Updating your software may take some time. If you're not ready to update now, you can choose to update later."; ObjectID = "380"; */
-"380.title" = "Eine Softwareaktualisierung kann etwas dauern. Sie können diese aber auch später ausführen.";
+"380.title" = "Att uppdatera programvaran kan ta litet tid. Om du inte är redo att uppdatera nu så kan du välja ett senare tillfälle.";
 
 /* Class = "NSButtonCell"; title = "Update now"; ObjectID = "382"; */
-"382.title" = "Aktualisieren";
+"382.title" = "Uppdatera nu";
 
 /* Class = "NSButtonCell"; title = "Later"; ObjectID = "384"; */
-"384.title" = "Später";
+"384.title" = "Senare";
 
 /* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "397"; */
-"397.headerCell.title" = "Name";
+"397.headerCell.title" = "Namn";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "398"; */
 "398.title" = "Text Cell";
@@ -186,19 +186,19 @@
 "401.title" = "Text Cell";
 
 /* Class = "NSTabViewItem"; label = "Updates"; ObjectID = "512"; */
-"512.label" = "Aktualisierungen";
+"512.label" = "Uppdateringar";
 
 /* Class = "NSTabViewItem"; label = "Optional software"; ObjectID = "514"; */
-"514.label" = "Optionale Software";
+"514.label" = "Extra program";
 
 /* Class = "NSButtonCell"; title = "Update software list…"; ObjectID = "519"; */
-"519.title" = "Hinzufügen oder Entfernen";
+"519.title" = "Uppdatera listan…";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "520"; */
-"520.title" = "Abbrechen";
+"520.title" = "Avbryt";
 
 /* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "527"; */
-"527.headerCell.title" = "Name";
+"527.headerCell.title" = "Namn";
 
 /* Class = "NSTableColumn"; headerCell.title = "Version"; ObjectID = "528"; */
 "528.headerCell.title" = "Version";
@@ -210,22 +210,22 @@
 "532.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Check an item to have it added to the list of software to be installed and kept up-to-date. Uncheck an item to have it removed from the list and uninstalled."; ObjectID = "546"; */
-"546.title" = "Elemente markieren um sie zu installieren. Abgewählte werden vom Rechner entfernt.";
+"546.title" = "Bocka för en titel för att lägga till i installationslistan. Ta bort markeringen för att avinstallera.";
 
 /* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
-"547.title" = "Optionale Software hinzufügen oder entfernen";
+"547.title" = "Lägg till eller ta bort extra program";
 
 /* Class = "NSButtonCell"; title = "Optional software..."; ObjectID = "550"; */
-"550.title" = "Optionale Software…";
+"550.title" = "Extra program…";
 
 /* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "581"; */
-"581.headerCell.title" = "Größe";
+"581.headerCell.title" = "Storlek";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "582"; */
 "582.title" = "Text Cell";
 
 /* Class = "NSTableColumn"; headerCell.title = "Size"; ObjectID = "585"; */
-"585.headerCell.title" = "Größe";
+"585.headerCell.title" = "Storlek";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "586"; */
 "586.title" = "Text Cell";
@@ -237,10 +237,10 @@
 "629.title" = "Text Cell";
 
 /* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "633"; */
-"633.title" = "Softwareaktualisierung";
+"633.title" = "Managed Software Update";
 
 /* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "635"; */
 "635.title" = "BackdropWindow";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "645"; */
-"645.title" = "Stoppen";
+"645.title" = "Stopp";

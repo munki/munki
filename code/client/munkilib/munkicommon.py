@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2012 Greg Neagle.
+# Copyright 2009-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -55,6 +55,20 @@ from Foundation import kCFPreferencesCurrentHost
 import munkistatus
 import FoundationPlist
 import LaunchServices
+
+
+# NOTE: it's very important that defined exit codes are never changed!
+
+# Preflight exit codes.
+EXIT_STATUS_PREFLIGHT_FAILURE = 1  # Python crash yields 1.
+# Client config exit codes.
+EXIT_STATUS_OBJC_MISSING = 100
+EXIT_STATUS_MUNKI_DIRS_FAILURE = 101
+# Server connection exit codes.
+EXIT_STATUS_SERVER_UNAVAILABLE = 150
+# User related exit codes.
+EXIT_STATUS_INVALID_PARAMETERS = 200
+EXIT_STATUS_ROOT_REQUIRED = 201
 
 
 # our preferences "bundle_id"
@@ -123,8 +137,8 @@ def set_file_nonblock(f, non_blocking=True):
 
 
 class Popen(subprocess.Popen):
-    '''Subclass of subprocess.Popen to add support for
-    timeouts for some operations.'''
+    """Subclass of subprocess.Popen to add support for timeouts."""
+
     def timed_readline(self, f, timeout):
         """Perform readline-like operation with timeout.
 
@@ -184,8 +198,9 @@ class Popen(subprocess.Popen):
         if self.stderr is not None:
             set_file_nonblock(self.stderr)
             fds.append(self.stderr)
-        if input is not None and sys.stdin is not None:
-            sys.stdin.write(input)
+
+        if std_in is not None and sys.stdin is not None:
+            sys.stdin.write(std_in)
 
         returncode = None
         inactive = 0
@@ -844,18 +859,20 @@ def unmountdmg(mountpoint):
     """
     Unmounts the dmg at mountpoint
     """
-    proc = subprocess.Popen(['/usr/bin/hdiutil', 'detach', mountpoint],
-                                bufsize=1, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+    cmd = ['/usr/bin/hdiutil', 'detach', mountpoint]
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     (unused_output, err) = proc.communicate()
     if proc.returncode:
+        # ordinary unmount unsuccessful, try forcing
         display_warning('Polite unmount failed: %s' % err)
-        display_info('Attempting to force unmount %s' % mountpoint)
-        # try forcing the unmount
-        retcode = subprocess.call(['/usr/bin/hdiutil', 'detach', mountpoint,
-                                '-force'])
-        if retcode:
-            display_warning('Failed to unmount %s' % mountpoint)
+        display_warning('Attempting to force unmount %s' % mountpoint)
+        cmd.append('-force')
+        proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        (unused_output, err) = proc.communicate()
+        if proc.returncode:
+            display_warning('Failed to unmount %s: %s', mountpoint, err)
 
 
 def gethash(filename, hash_function):
@@ -1148,48 +1165,93 @@ def padVersionString(versString, tupleCount):
     return '.'.join(components)
 
 
-def getVersionString(plist):
+def getVersionString(plist, key=None):
     """Gets a version string from the plist.
-    If there's a valid CFBundleShortVersionString, returns that.
+    
+    If a key is explictly specified, the value of that key is
+    returned without modification, or an empty string if the
+    key does not exist.
+    
+    If key is not specified:
+    if there's a valid CFBundleShortVersionString, returns that.
     else if there's a CFBundleVersion, returns that
-    else returns an empty string."""
-    CFBundleShortVersionString = ''
-    if plist.get('CFBundleShortVersionString'):
-        CFBundleShortVersionString = \
-            plist['CFBundleShortVersionString'].split()[0]
-    if 'Bundle versions string, short' in plist:
-        CFBundleShortVersionString = \
-            plist['Bundle versions string, short'].split()[0]
-    if CFBundleShortVersionString:
-        if CFBundleShortVersionString[0] in '0123456789':
+    else returns an empty string.
+
+    """
+    VersionString = ''
+    if key:
+        # admin has specified a specific key
+        # return value verbatum or empty string
+        return plist.get(key, '')
+
+    # default to CFBundleShortVersionString plus magic
+    # and workarounds and edge case cleanupds
+    key = 'CFBundleShortVersionString'
+    if not 'CFBundleShortVersionString' in plist:
+        if 'Bundle versions string, short' in plist:
+            # workaround for broken Composer packages
+            # where the key is actually named
+            # 'Bundle versions string, short' instead of
+            # 'CFBundleShortVersionString'
+            key = 'Bundle versions string, short'
+    if plist.get(key):
+        # return key value up to first space
+        # lets us use crappy values like '1.0 (100)'
+        VersionString = plist[key].split()[0]
+    if VersionString:
+        if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
             # replace commas with periods
-            CFBundleShortVersionString = \
-                CFBundleShortVersionString.replace(',','.')
-            return CFBundleShortVersionString
+            VersionString = VersionString.replace(',','.')
+            return VersionString
     if plist.get('CFBundleVersion'):
         # no CFBundleShortVersionString, or bad one
-        CFBundleVersion = str(plist['CFBundleVersion']).split()[0]
-        if CFBundleVersion[0] in '0123456789':
+        # a future version of the Munki tools may drop this magic
+        # and require admins to explicitly choose the CFBundleVersion
+        # but for now Munki does some magic
+        VersionString = str(plist['CFBundleVersion']).split()[0]
+        if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
             # replace commas with periods
-            CFBundleVersion = CFBundleVersion.replace(',','.')
-            return CFBundleVersion
+            VersionString = VersionString.replace(',','.')
+            return VersionString
 
     return ''
 
 
-def getExtendedVersion(bundlepath):
-    """
-    Returns five-part version number like Apple uses in distribution
-    and flat packages
-    """
+def getAppBundleExecutable(bundlepath):
+    """Returns path to the actual executable in an app bundle or None"""
     infoPlist = os.path.join(bundlepath, 'Contents', 'Info.plist')
     if os.path.exists(infoPlist):
         plist = FoundationPlist.readPlist(infoPlist)
-        versionstring = getVersionString(plist)
+        if 'CFBundleExecutable' in plist:
+            executable = plist['CFBundleExecutable']
+        elif 'CFBundleName' in plist:
+            executable = plist['CFBundleName']
+        else:
+            executable = os.path.splitext(os.path.basename(bundlepath))[0]
+        executable_path = os.path.join(bundlepath, 'Contents/MacOS', executable)
+        if os.path.exists(executable_path):
+            return executable_path
+    return None
+
+
+def getBundleVersion(bundlepath, key=None):
+    """
+    Returns version number from a bundle.
+    Some extra code to deal with very old-style bundle packages
+    
+    Specify key to use a specific key in the Info.plist for
+    the version string.
+    """
+    infoPlist = os.path.join(bundlepath, 'Contents', 'Info.plist')
+    if not os.path.exists(infoPlist):
+        infoPlist = os.path.join(bundlepath, 'Resources', 'Info.plist')
+    if os.path.exists(infoPlist):
+        plist = FoundationPlist.readPlist(infoPlist)
+        versionstring = getVersionString(plist, key)
         if versionstring:
             return versionstring
 
@@ -1304,9 +1366,11 @@ def getFlatPackageInfo(pkgpath):
     cwd = os.getcwd()
     # change into our tmpdir so we can use xar to unarchive the flat package
     os.chdir(pkgtmp)
-    returncode = subprocess.call(['/usr/bin/xar', '-xf', abspkgpath,
-                                  '--exclude', 'Payload'])
-    if returncode == 0:
+    cmd = ['/usr/bin/xar', '-xf', abspkgpath, '--exclude', 'Payload']
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    (unused_output, err) = proc.communicate()
+    if proc.returncode == 0:
         currentdir = pkgtmp
         packageinfofile = os.path.join(currentdir, 'PackageInfo')
         if os.path.exists(packageinfofile):
@@ -1328,6 +1392,8 @@ def getFlatPackageInfo(pkgpath):
                     packageinfofile = os.path.join(itempath, 'PackageInfo')
                     if os.path.exists(packageinfofile):
                         infoarray.extend(parsePkgRefs(packageinfofile))
+    else:
+        display_warning(err)
 
     # change back to original working dir
     os.chdir(cwd)
@@ -1381,7 +1447,7 @@ def getOnePackageInfo(pkgpath):
             if 'IFPkgFlagInstalledSize' in plist:
                 pkginfo['installed_size'] = plist['IFPkgFlagInstalledSize']
 
-            pkginfo['version'] = getExtendedVersion(pkgpath)
+            pkginfo['version'] = getBundleVersion(pkgpath)
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
@@ -1661,7 +1727,7 @@ def getPackageMetaData(pkgitem):
 
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
-    metaversion = getExtendedVersion(pkgitem)
+    metaversion = getBundleVersion(pkgitem)
     if metaversion == '0.0.0.0.0':
         metaversion = nameAndVersion(shortname)[1]
 
@@ -1699,6 +1765,10 @@ def getPackageMetaData(pkgitem):
         cataloginfo['installed_size'] = installedsize
 
     cataloginfo['receipts'] = receiptinfo
+
+    if os.path.isfile(pkgitem) and not pkgitem.endswith('.dist'):
+        # flat packages require 10.5.0+
+        cataloginfo['minimum_os_version'] = "10.5.0"
 
     return cataloginfo
 
@@ -1952,16 +2022,23 @@ def getLSInstalledApplications():
 
 # we save SP_APPCACHE in a global to avoid querying system_profiler more than
 # once per session for application data, which can be slow
-SP_APPCACHE = {}
+SP_APPCACHE = None
 def getSPApplicationData():
     '''Uses system profiler to get application info for this machine'''
     global SP_APPCACHE
-    if not SP_APPCACHE:
+    if SP_APPCACHE is None:
         cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (output, unused_error) = proc.communicate()
+        proc = Popen(cmd, shell=False, bufsize=-1,
+                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE)
+        try:
+            output, unused_error = proc.communicate(timeout=60)
+        except TimeoutError:
+            display_error(
+                'system_profiler hung; skipping SPApplicationsDataType query')
+            # return empty dict
+            SP_APPCACHE = {}
+            return SP_APPCACHE
         try:
             plist = FoundationPlist.readPlistFromString(output)
             # system_profiler xml is an array
@@ -1975,12 +2052,13 @@ def getSPApplicationData():
 
 # we save APPDATA in a global to avoid querying LaunchServices more than
 # once per session
-APPDATA = []
+APPDATA = None
 def getAppData():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
     global APPDATA
-    if APPDATA == []:
+    if APPDATA is None:
+        APPDATA = []
         display_debug1('Getting info on currently installed applications...')
         applist = set(getLSInstalledApplications())
         applist.update(getSpotlightInstalledApplications())
@@ -1995,7 +2073,7 @@ def getAppData():
                     iteminfo['bundleid'] = plist.get('CFBundleIdentifier','')
                     if 'CFBundleName' in plist:
                         iteminfo['name'] = plist['CFBundleName']
-                    iteminfo['version'] = getExtendedVersion(pathname)
+                    iteminfo['version'] = getBundleVersion(pathname)
                     APPDATA.append(iteminfo)
                 except Exception:
                     pass
@@ -2165,7 +2243,11 @@ def isAppRunning(appname):
     display_detail('Checking if %s is running...' % appname)
     proc_list = getRunningProcesses()
     matching_items = []
-    if appname.endswith('.app'):
+    if appname.startswith('/'):
+        # search by exact path
+        matching_items = [item for item in proc_list
+                          if item == appname]
+    elif appname.endswith('.app'):
         # search by filename
         matching_items = [item for item in proc_list
                           if '/'+ appname + '/Contents/MacOS/' in item]
@@ -2347,8 +2429,12 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
 
 def runScript(itemname, path, scriptname, suppress_error=False):
     '''Runs a script, Returns return code.'''
-    display_status_minor(
-        'Running %s for %s ' % (scriptname, itemname))
+    if suppress_error:
+        display_detail(
+            'Running %s for %s ' % (scriptname, itemname))
+    else:
+        display_status_minor(
+            'Running %s for %s ' % (scriptname, itemname))
     if munkistatusoutput:
         # set indeterminate progress bar
         munkistatus.percent(-1)
@@ -2419,11 +2505,36 @@ def forceLogoutNow():
         display_error('Exception in forceLogoutNow(): %s' % str(e))
 
 
+def blockingApplicationsRunning(pkginfoitem):
+    """Returns true if any application in the blocking_applications list
+    is running or, if there is no blocking_applications list, if any
+    application in the installs list is running."""
+
+    if 'blocking_applications' in pkginfoitem:
+        appnames = pkginfoitem['blocking_applications']
+    else:
+        # if no blocking_applications specified, get appnames
+        # from 'installs' list if it exists
+        appnames = [os.path.basename(item.get('path'))
+                    for item in pkginfoitem.get('installs', [])
+                    if item['type'] == 'application']
+
+    display_debug1("Checking for %s" % appnames)
+    running_apps = [appname for appname in appnames
+                    if isAppRunning(appname)]
+    if running_apps:
+        display_detail(
+            "Blocking apps for %s are running:" % pkginfoitem['name'])
+        display_detail("    %s" % running_apps)
+        return True
+    return False
+
+
 # module globals
 #debug = False
 verbose = 1
 munkistatusoutput = False
-tmpdir = tempfile.mkdtemp()
+tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
 report = {}
 
 def main():

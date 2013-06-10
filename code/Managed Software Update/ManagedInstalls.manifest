@@ -24,7 +24,7 @@
             <key>pfm_default</key>
             <false/>
             <key>pfm_description</key>
-            <string>Set to true to only install updates from an Apple Software Update server. No munki repository is needed or used.</string>
+            <string>Set to true to only install updates from an Apple Software Update server. No Munki repository is needed or used.</string>
             <key>pfm_targets</key>
             <array>
                 <string>system-managed</string>
@@ -40,7 +40,7 @@
             <key>pfm_default</key>
             <false/>
             <key>pfm_description</key>
-            <string>Set to true to install updates from an Apple Software Update server, in addition to "regular" munki updates.</string>
+            <string>Set to true to install updates from an Apple Software Update server, in addition to "regular" Munki updates.</string>
             <key>pfm_targets</key>
             <array>
                 <string>system-managed</string>
@@ -72,7 +72,7 @@
             <key>pfm_default</key>
             <string>http://munki/repo</string>
             <key>pfm_description</key>
-            <string>Base URL for munki repository</string>
+            <string>Base URL for Munki repository</string>
             <key>pfm_targets</key>
             <array>
                 <string>system-managed</string>
@@ -88,7 +88,7 @@
             <key>pfm_default</key>
             <string>http://munki/repo/pkgs</string>
             <key>pfm_description</key>
-            <string>Base URL for munki pkgs.
+            <string>Base URL for Munki pkgs.
 Useful if your packages are served from a different server than your catalogs or manifests.</string>
             <key>pfm_targets</key>
             <array>
@@ -105,7 +105,7 @@ Useful if your packages are served from a different server than your catalogs or
             <key>pfm_default</key>
             <string>http://munki/repo/catalogs</string>
             <key>pfm_description</key>
-            <string>Base URL for munki catalogs.
+            <string>Base URL for Munki catalogs.
 Useful if your catalogs are served from a different server than your packages or manifests.</string>
             <key>pfm_targets</key>
             <array>
@@ -122,7 +122,7 @@ Useful if your catalogs are served from a different server than your packages or
             <key>pfm_default</key>
             <string>http://munki/repo/manifests</string>
             <key>pfm_description</key>
-            <string>Base URL for munki manifests. 
+            <string>Base URL for Munki manifests. 
 Useful if your manifests are served from a different server than your catalogs or packages.</string>
             <key>pfm_targets</key>
             <array>
@@ -139,7 +139,7 @@ Useful if your manifests are served from a different server than your catalogs o
             <key>pfm_default</key>
             <string></string>
             <key>pfm_description</key>
-            <string>Identifier for munki client. Usually is the same as a manifest name on the munki server.</string>
+            <string>Identifier for Munki client. Usually is the same as a manifest name on the Munki server.</string>
             <key>pfm_targets</key>
             <array>
                 <string>system-managed</string>
@@ -155,7 +155,7 @@ Useful if your manifests are served from a different server than your catalogs o
              <key>pfm_default</key>
              <string>/Library/Managed Installs</string>
              <key>pfm_description</key>
-             <string>Folder where munki keeps its data on the client.</string>
+             <string>Folder where Munki keeps its data on the client.</string>
              <key>pfm_targets</key>
              <array>
                  <string>system-managed</string>
@@ -220,8 +220,8 @@ Set to 0 to have Managed Software Update notify every time a background check ru
               <key>pfm_default</key>
               <false/>
               <key>pfm_description</key>
-              <string>Set to true to cause munki to use an SSL client certificate when communicating with the munki server. 
-Requires an https:// URL for the munki repo. 
+              <string>Set to true to cause Munki to use an SSL client certificate when communicating with the Munki server. 
+Requires an https:// URL for the Munki repo. 
 Client cert should be named "munki.pem" and stored in a "certs" directory in the Managed Installs folder (typically /Library/Managed Installs).</string>
               <key>pfm_targets</key>
               <array>
@@ -238,7 +238,7 @@ Client cert should be named "munki.pem" and stored in a "certs" directory in the
               <key>pfm_default</key>
               <false/>
               <key>pfm_description</key>
-              <string>Set to true to cause munki to use the CN of the client certificate as the Client Identifier.
+              <string>Set to true to cause Munki to use the CN of the client certificate as the Client Identifier.
 Used in combination with the UseClientCertificate key.</string>
               <key>pfm_targets</key>
               <array>
@@ -291,7 +291,7 @@ AdditionalHttpHeaders must be an array of strings with valid HTTP header format.
                    <string>hash-strict</string>
                </array>
                <key>pfm_description</key>
-               <string>Controls how munki verifies the integrity of downloaded packages.
+               <string>Controls how Munki verifies the integrity of downloaded packages.
 Possible values are:
 none: No integrity check is performed.
 hash: Integrity check is performed if package info contains checksum information.
@@ -322,13 +322,29 @@ Managed Software Update can still be manually invoked to discover and install up
                <key>pfm_name</key>
                <string>SuppressAutoInstall</string>
                <key>pfm_title</key>
-               <string>Suppress Auto Install at loginwindow</string>
+               <string>Suppress Auto Install</string>
                <key>pfm_type</key>
                <string>boolean</string>
                <key>pfm_default</key>
                <false/>
                <key>pfm_description</key>
-               <string>If true, munki will not automatically install when the machine has no users logged in.</string>
+               <string>If true, Munki will not automatically install any item.</string>
+               <key>pfm_targets</key>
+               <array>
+                   <string>system-managed</string>
+               </array>
+           </dict>
+           <dict>
+               <key>pfm_name</key>
+               <string>SuppressLoginwindowInstall</string>
+               <key>pfm_title</key>
+               <string>Suppress Automatic Install at loginwindow</string>
+               <key>pfm_type</key>
+               <string>boolean</string>
+               <key>pfm_default</key>
+               <false/>
+               <key>pfm_description</key>
+               <string>If true, Munki will not automatically install when the machine has no users logged in.</string>
                <key>pfm_targets</key>
                <array>
                    <string>system-managed</string>

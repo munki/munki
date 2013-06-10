@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # encoding: utf-8
+#
+# Copyright 2011-2013 Greg Neagle.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,14 +22,13 @@ Created by Greg Neagle on 2011-06-21.
 A helper tool for forced logouts to allow munki to force install items by
 a certain deadline.
 
-
 """
 
 import os
 import time
 from munkilib import munkicommon
 from munkilib import FoundationPlist
-from munkilib.updatecheck import discardTimeZoneFromDate
+from munkilib import updatecheck 
 from Foundation import NSDate
 from Foundation import NSDictionary
 from Foundation import NSDistributedNotificationCenter
@@ -37,6 +39,11 @@ from Foundation import NSNotificationPostToAllSessions
 NOTIFICATION_MINS = [240, 180, 120, 90, 60, 45, 30, 15, 10, 5]
 MINIMUM_NOTIFICATION_MINS = 60
 
+def log(msg):
+    '''Logs messages from this tool with an identifier'''
+    PROCESS_ID = 'com.googlecode.munki.logouthelper'
+    munkicommon.log('%s: %s' % (PROCESS_ID, msg))
+
 
 def earliestForceInstallDate():
     '''Check installable packages for force_install_after_dates
@@ -45,22 +52,34 @@ def earliestForceInstallDate():
     earliest_date = None
     
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    installinfo_types = {
+        'InstallInfo.plist' : 'managed_installs',
+        'AppleUpdates.plist': 'AppleUpdates'
+    }
     installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
 
     try:
         installinfo = FoundationPlist.readPlist(installinfopath)
     except FoundationPlist.NSPropertyListSerializationException:
         return None
-        
-    for install in installinfo.get('managed_installs', []):
-        this_force_install_date = install.get('force_install_after_date')
-        
-        if this_force_install_date:
-            this_force_install_date = discardTimeZoneFromDate(
-                this_force_install_date)
-            if not earliest_date or this_force_install_date < earliest_date:
-                earliest_date = this_force_install_date
-            
+
+    for plist_name in installinfo_types.keys():
+        key_to_check = installinfo_types[plist_name]
+        plist_path = os.path.join(ManagedInstallDir, plist_name)
+        try:
+            installinfo = FoundationPlist.readPlist(plist_path)
+        except FoundationPlist.NSPropertyListSerializationException:
+            continue
+
+        for install in installinfo.get(key_to_check, []):
+            force_install_date = install.get('force_install_after_date')
+
+            if force_install_date:
+                force_install_date = updatecheck.subtractTimeZoneOffsetFromDate(
+                    force_install_date)
+                if not earliest_date or force_install_date < earliest_date:
+                    earliest_date = force_install_date
+
     return earliest_date
 
 
@@ -91,7 +110,7 @@ def alertUserOfForcedLogout(info=None):
     
     # if set, convert Python dictionary to NSDictionary.
     if info is not None:
-      info = NSDictionary.dictionaryWithDictionary_(info)
+        info = NSDictionary.dictionaryWithDictionary_(info)
     # cause MSU.app to display the Forced Logout warning
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
@@ -107,8 +126,7 @@ def alertUserOfForcedLogout(info=None):
 def main():
     '''Check for logged-in users and upcoming forced installs;
     notify the user if needed; sleep a minute and do it again.'''
-    ID = 'com.googlecode.munki.logouthelper'
-    munkicommon.log('%s invoked' % ID)
+    log('launched')
     sent_notifications = []
     logout_time_override = None
     minimum_notifications_logout_time = NSDate.date().addTimeInterval_(
@@ -116,48 +134,53 @@ def main():
     while True:
         if not munkicommon.currentGUIusers():
             # no-one is logged in, so bail
-            munkicommon.log('%s: no-one logged in' % ID)
+            log('no-one logged in')
             time.sleep(10)  # makes launchd happy
-            munkicommon.log('%s exited' % ID)
+            log('exited')
             exit(0)
 
-        tmp_logout_time = earliestForceInstallDate()
+        # we check each time because items might have been added or removed
+        # from the list; or their install date may have been changed.
+        next_logout_time = earliestForceInstallDate()
+        if not next_logout_time:
+            # no forced logout needed, so bail
+            log('no forced installs found')
+            time.sleep(10)  # makes launchd happy
+            log('exited')
+            exit(0)
+
         if logout_time_override is None:
-            logout_time = tmp_logout_time
+            logout_time = next_logout_time
         else:
-            # allow the new (tmp_)logout_time from InstallInfo to be used
-            # if it has changed since when we decided to override it.
-            if logout_time_override != tmp_logout_time:
-                logout_time = tmp_logout_time
+            # allow the new next_logout_time from InstallInfo to be used
+            # if it has changed to a later time since when we decided to 
+            # override it.
+            if next_logout_time > logout_time_override:
+                logout_time = next_logout_time
+                log('reset logout_time to: %s' % logout_time)
                 logout_time_override = None
                 sent_notifications = []
 
-        if not logout_time:
-            # no forced logout needed, so bail
-            munkicommon.log('%s: no forced installs found' % ID)
-            time.sleep(10)  # makes launchd happy
-            munkicommon.log('%s exited' % ID)
-            exit(0)
-        elif logout_time < minimum_notifications_logout_time:
-          if MINIMUM_NOTIFICATION_MINS not in sent_notifications:
-              # logout time is in the past, and the minimum notification
-              # has not been sent, so reset the logout_time to the future.
-              munkicommon.log('%d minute notification not sent.' % (
-                  MINIMUM_NOTIFICATION_MINS))
-              logout_time = minimum_notifications_logout_time
-              munkicommon.log('Reset logout_time to: %s' % logout_time)
-              logout_time_override = logout_time
+        # always give at least a MINIMUM_NOTIFICATION_MINS warning
+        if logout_time < minimum_notifications_logout_time:
+            if MINIMUM_NOTIFICATION_MINS not in sent_notifications:
+                # logout time is in the past, and the minimum notification
+                # has not been sent, so reset the logout_time to the future.
+                log('%d minute notification not sent.' 
+                    % MINIMUM_NOTIFICATION_MINS)
+                logout_time = minimum_notifications_logout_time
+                log('reset logout_time to: %s' % logout_time)
+                logout_time_override = logout_time
 
         minutes_until_logout = int(logout_time.timeIntervalSinceNow() / 60)
         info = {'logout_time': logout_time}
         if minutes_until_logout in NOTIFICATION_MINS:
             sent_notifications.append(minutes_until_logout)
-            munkicommon.log(
-                '%s: Warning user of %s minutes until forced logout' % 
-                (ID, minutes_until_logout))
+            log('Warning user of %s minutes until forced logout' 
+                % minutes_until_logout)
             alertUserOfForcedLogout(info)
         elif minutes_until_logout < 1:
-            munkicommon.log('%s: Forced logout in 60 seconds' % ID)
+            log('Forced logout in 60 seconds')
             alertUserOfForcedLogout(info)
 
         time.sleep(60)
@@ -165,9 +188,9 @@ def main():
             break
 
     if munkicommon.currentGUIusers() and earliestForceInstallDate():
-        munkicommon.log('%s: Beginning forced logout' % ID)
+        log('Beginning forced logout')
         munkicommon.forceLogoutNow()
-    munkicommon.log('%s exited' % ID)
+    log('exited')
     exit(0)
     
 if __name__ == '__main__':

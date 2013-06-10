@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@
 managedsoftwareupdate
 """
 
-#import grp
 import optparse
 import os
 import re
-#import stat
+import signal
 import subprocess
 import sys
 import time
@@ -34,7 +33,7 @@ try:
     from Foundation import NSDistributedNotificationCenter
     from Foundation import NSNotificationDeliverImmediately
     from Foundation import NSNotificationPostToAllSessions
-except:
+except ImportError:
     # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
     print >> sys.stderr, 'Python is missing ObjC bindings.'
@@ -45,17 +44,26 @@ except:
         print >> sys.stderr, result, stdout, stderr
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, e:
-        print >> sys.stderr, str(e)
-    sys.exit(1)
+    except utils.RunExternalScriptError, err:
+        print >> sys.stderr, str(err)
+    sys.exit(200)
+else:
+    from munkilib import munkicommon
+    from munkilib import updatecheck
+    from munkilib import installer
+    from munkilib import munkistatus
+    from munkilib import appleupdates
+    from munkilib import FoundationPlist
+    from munkilib import utils
 
-from munkilib import munkicommon
-from munkilib import updatecheck
-from munkilib import installer
-from munkilib import munkistatus
-from munkilib import appleupdates
-from munkilib import FoundationPlist
-from munkilib import utils
+
+def signal_handler(signum, unused_frame):
+    """Handle any signals we've been told to.
+    Right now just handle SIGTERM so clean up can happen, like
+    garbage collection, which will trigger object destructors and
+    kill any launchd processes we've started."""
+    if signum == signal.SIGTERM:
+        sys.exit()
 
 
 def getIdleSeconds():
@@ -67,7 +75,7 @@ def getIdleSeconds():
     (output, unused_err) = proc.communicate()
     ioreglines = str(output).splitlines()
     idle_time = 0
-    regex = re.compile('"?HIDIdleTime"?\s+=\s+(\d+)')
+    regex = re.compile(r'"?HIDIdleTime"?\s+=\s+(\d+)')
     for line in ioreglines:
         idle_re = regex.search(line)
         if idle_re:
@@ -155,20 +163,20 @@ def runScript(script, display_name, runtype):
 
     try:
         utils.verifyFileOnlyWritableByMunkiAndRoot(script)
-    except utils.VerifyFilePermissionsError, e:
+    except utils.VerifyFilePermissionsError, err:
         # preflight/postflight is insecure, but if the currently executing
         # file is insecure too we are no worse off.
         try:
             utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
-        except utils.VerifyFilePermissionsError, e:
+        except utils.VerifyFilePermissionsError, err:
             # OK, managedsoftwareupdate is insecure anyway - warn & execute.
             munkicommon.display_warning('Multiple munki executable scripts '
                 'have insecure file permissions. Executing '
-                '%s anyway. Error: %s' % (display_name, e))
+                '%s anyway. Error: %s' % (display_name, err))
         else:
             # Just the preflight/postflight is insecure. Do not execute.
             munkicommon.display_warning('Skipping execution of %s due to '
-                'insecure file permissions. Error: %s' % (display_name, e))
+                'insecure file permissions. Error: %s' % (display_name, err))
             return result
 
     try:
@@ -183,16 +191,17 @@ def runScript(script, display_name, runtype):
             munkicommon.display_info('%s stderr: %s' % (display_name, stderr))
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, e:
-        munkicommon.display_warning(str(e))
+    except utils.RunExternalScriptError, err:
+        munkicommon.display_warning(str(err))
     return result
 
 
-def doInstallTasks(only_unattended=False):
+def doInstallTasks(do_apple_updates, only_unattended=False):
     """Perform our installation/removal tasks.
 
     Args:
-      only_unattended: Boolean. If True, only do unattended_(un)install items.
+      do_apple_updates: Boolean. If True, install Apple updates
+      only_unattended:  Boolean. If True, only do unattended_(un)install items.
 
     Returns:
       Boolean. True if a restart is required, False otherwise.
@@ -204,40 +213,28 @@ def doInstallTasks(only_unattended=False):
         clearLastNotifiedDate()
 
     need_to_restart = False
-    # munki updates take priority over Apple Updates, because
-    # a munki install or (especially) removal could make a
-    # pending Apple update no longer necessary or even complicate
-    # or prevent the removal of another item.
-    # Therefore we only install Apple updates if there are no
-    # pending munki updates.
 
     if munkiUpdatesAvailable():
         # install munki updates
         try:
             need_to_restart = installer.run(only_unattended=only_unattended)
         except:
-            munkicommon.display_error(
-                'Unexpected error in munkilib.installer:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.display_error('Unexpected error in munkilib.installer:')
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
 
-        # clear any Apple update info since it may no longer
-        # be relevant
-        if not only_unattended:
-            appleupdates.clearAppleUpdateInfo()
-    elif ((munkicommon.pref('InstallAppleSoftwareUpdates') or
-           munkicommon.pref('AppleSoftwareUpdatesOnly'))
-           and not only_unattended):
-        # are we supposed to handle Apple Software Updates?
+    if do_apple_updates:
+        # install Apple updates
         try:
-            need_to_restart = appleupdates.installAppleUpdates()
+            need_to_restart = appleupdates.installAppleUpdates(
+                                            only_unattended=only_unattended)
         except:
             munkicommon.display_error(
                 'Unexpected error in appleupdates.installAppleUpdates:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
 
     munkicommon.savereport()
     return need_to_restart
@@ -265,11 +262,7 @@ def doRestart():
     else:
         munkicommon.display_info(restartMessage)
 
-    # TODO: temporary fix for forced logout problem where we've killed
-    # loginwindow sessions, but munkicommon.currentGUIusers() still returns
-    # users. Need to find a better solution, though.
-    #if not munkicommon.currentGUIusers():
-    #    # no-one is logged in and we're at the loginwindow
+    # check current console user
     consoleuser = munkicommon.getconsoleuser()
     if not consoleuser or consoleuser == u'loginwindow':
         # no-one is logged in or we're at the loginwindow
@@ -303,6 +296,28 @@ def munkiUpdatesAvailable():
             munkicommon.display_error('Install info at %s is invalid.' %
                                        installinfo)
     return updatesavailable
+    
+
+def munkiUpdatesContainAppleItems():
+    """Return True if there are any Apple items in the list of updates"""
+    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                               'InstallInfo.plist')
+    if os.path.exists(installinfo):
+        try:
+            plist = FoundationPlist.readPlist(installinfo)
+        except FoundationPlist.NSPropertyListSerializationException:
+            munkicommon.display_error('Install info at %s is invalid.' %
+                                           installinfo)
+        else:
+            # check managed_installs
+            for item in plist.get('managed_installs', []):
+                if item.get('apple_item'):
+                    return True
+            # check removals
+            for item in plist.get('removals', []):
+                if item.get('apple_item'):
+                    return True
+    return False
 
 
 def recordUpdateCheckResult(result):
@@ -377,10 +392,13 @@ def notifyUserOfUpdates(force=False):
 
 def main():
     """Main"""
+    # install handler for SIGTERM
+    signal.signal(signal.SIGTERM, signal_handler)
+
     # check to see if we're root
     if os.geteuid() != 0:
         print >> sys.stderr, 'You must run this as root!'
-        exit(-1)
+        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
 
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -425,7 +443,7 @@ def main():
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
 
-    options, arguments = p.parse_args()
+    options, unused_arguments = p.parse_args()
     runtype = 'custom'
 
     checkandinstallatstartupflag = \
@@ -474,7 +492,7 @@ def main():
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for i in range(5):
+                    for unused_i in range(5):
                         if networkUp():
                             break
                         time.sleep(2)
@@ -505,6 +523,12 @@ def main():
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.updatecheck.launchd'
         if os.path.exists(launchdtriggerfile):
+            try:
+                launch_options = FoundationPlist.readPlist(launchdtriggerfile)
+                options.munkipkgsonly =  launch_options.get(
+                    'SuppressAppleUpdateCheck')
+            except FoundationPlist.FoundationPlistException:
+                pass
             # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
         runtype = 'manualcheck'
@@ -519,7 +543,7 @@ def main():
     if options.checkonly and options.installonly:
         print >> sys.stderr, \
               '--checkonly and --installonly options are mutually exclusive!'
-        exit(-1)
+        exit(munkicommon.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
@@ -540,7 +564,7 @@ def main():
     munkicommon.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print 'Managed Software Update Tool'
-        print 'Copyright 2010-2012 The Munki Project'
+        print 'Copyright 2010-2013 The Munki Project'
         print 'http://code.google.com/p/munki\n'
 
     munkicommon.display_status_major('Starting...')
@@ -563,13 +587,13 @@ def main():
             munkistatus.activate()
             munkistatus.quit()
         munkicommon.cleanUpTmpDir()
-        exit(-1)
+        exit(result)
     # Force a prefs refresh, in case preflight modified the prefs file.
     munkicommon.reload_prefs()
 
     # create needed directories if necessary
     if not initMunkiDirs():
-        exit(-1)
+        exit(munkicommon.EXIT_STATUS_MUNKI_DIRS_FAILURE)
 
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])
@@ -617,7 +641,7 @@ def main():
                 munkistatus.activate()
                 munkistatus.quit()
             munkicommon.cleanUpTmpDir()
-            exit(-1)
+            exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -637,49 +661,84 @@ def main():
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
             munkicommon.display_error('Unexpected error in updatecheck:')
-            munkicommon.display_error(traceback.format_exc())
+            munkicommon.log(traceback.format_exc())
             munkicommon.savereport()
-            exit(-1)
+            raise
 
     if updatecheckresult is not None:
         recordUpdateCheckResult(updatecheckresult)
-       
+
     updatesavailable = munkiUpdatesAvailable()
     appleupdatesavailable = False
-    if (not updatesavailable and not options.installonly and
-        not munkicommon.stopRequested()):
-        # if there are no munki updates,
-        # are we supposed to check for and install Apple Software Updates?
-        if ((munkicommon.pref('InstallAppleSoftwareUpdates') or
-            applesoftwareupdatesonly) and not options.munkipkgsonly):
+
+    # should we do Apple Software updates this run?
+    if applesoftwareupdatesonly:
+        # admin told us to only do Apple updates this run
+        should_do_apple_updates = True
+    elif options.munkipkgsonly:
+        # admin told us to skip Apple updates for this run
+        should_do_apple_updates = False
+    elif munkiUpdatesContainAppleItems():
+        # shouldn't run Software Update if we're doing Apple items
+        # with Munki items
+        should_do_apple_updates = False
+        # if there are force_install_after_date items in a pre-existing
+        # AppleUpdates.plist this means we are blocking those updates.
+        # we need to delete AppleUpdates.plist so that other code doesn't
+        # mistakenly alert for forced installs it isn't actually going to
+        # install.
+        appleupdates_plist = os.path.join(
+            munkicommon.pref('ManagedInstallDir'), 'AppleUpdates.plist')
+        try:
+            os.unlink(appleupdates_plist)
+        except OSError:
+            pass
+        
+    else:
+        # check the normal preferences
+        should_do_apple_updates = munkicommon.pref(
+                                        'InstallAppleSoftwareUpdates') 
+
+    if should_do_apple_updates:
+        if (not options.installonly and not munkicommon.stopRequested()):
+            force_update_check = False
+            force_catalog_refresh = False
+            if (options.manualcheck or runtype == 'checkandinstallatstartup'):
+                force_update_check = True
+            if (runtype == 'custom' and applesoftwareupdatesonly):
+                force_update_check = True
+                force_catalog_refresh = True
             try:
                 appleupdatesavailable = \
                     appleupdates.appleSoftwareUpdatesAvailable(
-                    forcecheck=(options.manualcheck or
-                                runtype == 'checkandinstallatstartup' or
-                                (runtype == 'custom' and
-                                     applesoftwareupdatesonly)))
+                        forcecheck=force_update_check, client_id=options.id,
+                        forcecatalogrefresh=force_catalog_refresh)
             except:
                 munkicommon.display_error('Unexpected error in appleupdates:')
-                munkicommon.display_error(traceback.format_exc())
+                munkicommon.log(traceback.format_exc())
                 munkicommon.savereport()
-                exit(-1)
+                raise
 
-    if (not updatesavailable and options.installonly and
-        not options.munkipkgsonly and
-        (munkicommon.pref('InstallAppleSoftwareUpdates') or
-         applesoftwareupdatesonly)):
-        # just look and see if there are already downloaded Apple updates
-        # to install; don't run softwareupdate to check with Apple
-        try:
-            appleupdatesavailable = \
-                appleupdates.appleSoftwareUpdatesAvailable(suppresscheck=True)
-        except:
-            munkicommon.display_error('Unexpected error in appleupdates:')
-            munkicommon.display_error(traceback.format_exc())
-            munkicommon.savereport()
-            exit(-1)
-           
+        if options.installonly:
+            # just look and see if there are already downloaded Apple updates
+            # to install; don't run softwareupdate to check with Apple
+            try:
+                appleupdatesavailable = \
+                    appleupdates.appleSoftwareUpdatesAvailable(
+                        suppresscheck=True, client_id=options.id)
+            except:
+                munkicommon.display_error('Unexpected error in appleupdates:')
+                munkicommon.log(traceback.format_exc())
+                munkicommon.savereport()
+                raise
+
+    if not options.installonly:
+        # display any available update information
+        if updatecheckresult:
+            updatecheck.displayUpdateInfo()
+        if appleupdatesavailable:
+            appleupdates.displayAppleUpdateInfo()
+
     # send a notification event so MSU can update its display
     # if needed
     sendUpdateNotification()
@@ -691,28 +750,55 @@ def main():
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
-            mustrestart = doInstallTasks()
+            mustrestart = doInstallTasks(appleupdatesavailable)
         elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
-                if getIdleSeconds() > 10:
-                    if not munkicommon.pref('SuppressAutoInstall'):
-                        # no GUI users, system is idle, so install
-                        # enable status output over login window
-                        munkicommon.munkistatusoutput = True
-                        mustrestart = doInstallTasks()
-                    else:
-                        munkicommon.log('Skipping auto install because '
-                                        'SuppressAutoInstall is true.')
+                if munkicommon.pref('SuppressAutoInstall'):
+                    # admin says we can never install packages
+                    # without user approval/initiation
+                    munkicommon.log('Skipping auto install because '
+                                    'SuppressAutoInstall is true.')
+                elif munkicommon.pref('SuppressLoginwindowInstall'):
+                    # admin says we can't install pkgs at loginwindow
+                    # unless they don't require a logout or restart
+                    # (and are marked with unattended_install = True)
+                    #
+                    # check for packages that need to be force installed
+                    # soon and convert them to unattended_installs if they
+                    # don't require a logout
+                    unused_action = updatecheck.checkForceInstallPackages()
+                    # now install anything that can be done unattended
+                    munkicommon.log('Installing only items marked unattended '
+                                    'because SuppressLoginwindowInstall is '
+                                    'true.')
+                    doInstallTasks(appleupdatesavailable, only_unattended=True)
+                elif getIdleSeconds() < 10:
+                    munkicommon.log('Skipping auto install at loginwindow '
+                                    'because system is not idle '
+                                    '(keyboard or mouse activity).')
+                elif munkicommon.isAppRunning(
+                    '/System/Library/CoreServices/FileSyncAgent.app'):
+                    munkicommon.log('Skipping auto install at loginwindow '
+                                    'because FileSyncAgent.app is running '
+                                    '(HomeSyncing a mobile account on login?).')
                 else:
-                    munkicommon.log('Skipping auto install because system is '
-                                    'not idle (keyboard or mouse activity).')
+                    # no GUI users, system is idle, so we can install
+                    # but first, enable status output over login window
+                    munkicommon.munkistatusoutput = True
+                    mustrestart = doInstallTasks(appleupdatesavailable)
+                    
             else:  # there are GUI users
-                unused_force_action = updatecheck.checkForceInstallPackages()
-                if not munkicommon.pref('SuppressAutoInstall'):
-                    doInstallTasks(only_unattended=True)
-                else:
+                if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
                                      'SuppressAutoInstall is true.')
+                else:
+                    # check for packages that need to be force installed
+                    # soon and convert them to unattended_installs if they
+                    # don't require a logout
+                    unused_action = updatecheck.checkForceInstallPackages()
+                    # install anything that can be done unattended
+                    doInstallTasks(appleupdatesavailable, only_unattended=True)
+
                 # send a notification event so MSU can update its display
                 # if needed
                 sendUpdateNotification()
@@ -726,9 +812,18 @@ def main():
                     mustlogout = True
 
                 # it's possible that we no longer have any available updates
-                # so we need to check InstallInfo.plist again
-                # however Apple Updates have not been affected by the
-                # unattended install tasks (so that check is still valid).
+                # so we need to check InstallInfo.plist and
+                # AppleUpdates.plist again
+                try:
+                    appleupdatesavailable = \
+                        appleupdates.appleSoftwareUpdatesAvailable(
+                            suppresscheck=True, client_id=options.id)
+                except:
+                    munkicommon.display_error(
+                        'Unexpected error in appleupdates:')
+                    munkicommon.log(traceback.format_exc())
+                    munkicommon.savereport()
+                    raise
                 if appleupdatesavailable or munkiUpdatesAvailable():
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
@@ -777,16 +872,15 @@ def main():
         # original updatecheck so tickle the updatecheck time
         # so MSU.app knows to display results immediately
         recordUpdateCheckResult(1)
-        consoleuser = munkicommon.getconsoleuser()
-        if consoleuser == u'loginwindow':
+        if force_action:
+            notifyUserOfUpdates(force=True)
+            time.sleep(2)
+            startLogoutHelper()
+        elif munkicommon.getconsoleuser() == u'loginwindow':
             # someone is logged in, but we're sitting at
             # the loginwindow due to fast user switching
             # so do nothing
             pass
-        elif force_action:
-            notifyUserOfUpdates(force=True)
-            time.sleep(2)
-            startLogoutHelper()
         elif not munkicommon.pref('SuppressUserNotification'):
             notifyUserOfUpdates()
         else:
@@ -794,6 +888,9 @@ def main():
                             'SuppressUserNotification is true.')
 
     munkicommon.cleanUpTmpDir()
+    if mustlogout:
+        # not handling this currently
+        pass
     if mustrestart:
         doRestart()
     elif munkicommon.munkistatusoutput:

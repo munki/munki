@@ -3,7 +3,7 @@
 #  Managed Software Update
 #
 #  Created by Greg Neagle on 7/8/10.
-#  Copyright 2010-2011 Greg Neagle.
+#  Copyright 2010-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,11 +39,12 @@ class MSUupdatesViewController(NSViewController):
     window_controller = IBOutlet()
     updateNowBtn = IBOutlet()
     
-    _EMPTYUPDATELIST = NSArray.arrayWithArray_([{"image": NSImage.imageNamed_("Empty.png"), 
-                                                 "name": "", 
-                                                 "version": "", 
-                                                 "size": "",
-                                                 "description": ""}])
+    _EMPTYUPDATELIST = NSArray.arrayWithArray_([{
+                "image": NSImage.imageNamed_("Empty.png"), 
+                "name": "", 
+                "version": "", 
+                "size": "",
+                "description": ""}])
     _updatelist = []
     
     def updatelist(self):
@@ -75,11 +76,13 @@ class MSUupdatesViewController(NSViewController):
         
     def updateWebKitView_(self, description):
         if "</html>" in description or "</HTML>" in description:
-            self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
+            self.descriptionView.mainFrame().loadHTMLString_baseURL_(
+                description, None)
         else:
-            self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
-                                                  buffer(description.encode('UTF-8')),
-                                                  u"text/plain", u"utf-8", None)
+            self.descriptionView.mainFrame(
+                ).loadData_MIMEType_textEncodingName_baseURL_(
+                    buffer(description.encode('UTF-8')),
+                    u"text/plain", u"utf-8", None)
         
     def updateDescriptionView(self):
         #NSLog(u"MSUupdatesViewController.updateDescriptionView")
@@ -88,10 +91,12 @@ class MSUupdatesViewController(NSViewController):
             description = row.get("description", u"")
         else:
             description = u""
-        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateWebKitView_, description, YES)
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            self.updateWebKitView_, description, YES)
         
     def tableViewSelectionDidChange_(self, sender):
         #NSLog(u"MSUupdatesViewController.tableViewSelectionDidChange_")
-        #self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateDescriptionView, None, NO)
+        #self.performSelectorOnMainThread_withObject_waitUntilDone_(
+        #    self.updateDescriptionView, None, NO)
         self.updateDescriptionView()
 

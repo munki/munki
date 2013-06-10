@@ -21,9 +21,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="639"/>
 			<integer value="29"/>
-			<integer value="371"/>
+			<integer value="515"/>
+			<integer value="639"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1068,19 +1068,39 @@
 																		<bool key="EncodedWithXMLCoder">YES</bool>
 																		<object class="NSArray" key="dict.sortedKeys">
 																			<bool key="EncodedWithXMLCoder">YES</bool>
+																			<string>WebKitAllowAnimatedImageLoopingPreferenceKey</string>
+																			<string>WebKitAllowAnimatedImagesPreferenceKey</string>
+																			<string>WebKitCursiveFont</string>
 																			<string>WebKitDefaultFixedFontSize</string>
 																			<string>WebKitDefaultFontSize</string>
+																			<string>WebKitDisplayImagesKey</string>
+																			<string>WebKitFantasyFont</string>
 																			<string>WebKitFixedFont</string>
+																			<string>WebKitJavaEnabled</string>
+																			<string>WebKitJavaScriptCanOpenWindowsAutomatically</string>
+																			<string>WebKitJavaScriptEnabled</string>
 																			<string>WebKitMinimumFontSize</string>
+																			<string>WebKitPluginsEnabled</string>
+																			<string>WebKitSansSerifFont</string>
 																			<string>WebKitSerifFont</string>
 																			<string>WebKitStandardFont</string>
 																		</object>
 																		<object class="NSMutableArray" key="dict.values">
 																			<bool key="EncodedWithXMLCoder">YES</bool>
-																			<integer value="12"/>
-																			<integer value="12"/>
+																			<boolean value="NO"/>
+																			<boolean value="NO"/>
 																			<string>Lucida Grande</string>
+																			<integer value="12"/>
+																			<integer value="12"/>
+																			<boolean value="NO"/>
+																			<string>Lucida Grande</string>
+																			<string>Lucida Grande</string>
+																			<boolean value="NO"/>
+																			<boolean value="NO"/>
+																			<boolean value="NO"/>
 																			<integer value="1"/>
+																			<boolean value="NO"/>
+																			<string>Lucida Grande</string>
 																			<string>Lucida Grande</string>
 																			<string>Lucida Grande</string>
 																		</object>
@@ -1188,7 +1208,7 @@
 																	<object class="NSTableView" id="380111453">
 																		<reference key="NSNextResponder" ref="720875694"/>
 																		<int key="NSvFlags">256</int>
-																		<string key="NSFrameSize">{461, 140}</string>
+																		<string key="NSFrameSize">{461, 135}</string>
 																		<reference key="NSSuperview" ref="720875694"/>
 																		<bool key="NSEnabled">YES</bool>
 																		<object class="NSTableHeaderView" key="NSHeaderView" id="361702734">
@@ -1369,7 +1389,7 @@
 																		<int key="NSTableViewDraggingDestinationStyle">0</int>
 																	</object>
 																</object>
-																<string key="NSFrame">{{1, 17}, {461, 140}}</string>
+																<string key="NSFrame">{{1, 17}, {461, 135}}</string>
 																<reference key="NSSuperview" ref="569079919"/>
 																<reference key="NSNextKeyView" ref="380111453"/>
 																<reference key="NSDocView" ref="380111453"/>
@@ -1379,7 +1399,7 @@
 															<object class="NSScroller" id="506528088">
 																<reference key="NSNextResponder" ref="569079919"/>
 																<int key="NSvFlags">256</int>
-																<string key="NSFrame">{{462, 17}, {15, 140}}</string>
+																<string key="NSFrame">{{462, 17}, {15, 135}}</string>
 																<reference key="NSSuperview" ref="569079919"/>
 																<reference key="NSTarget" ref="569079919"/>
 																<string key="NSAction">_doScroller:</string>
@@ -1412,7 +1432,7 @@
 															</object>
 															<reference ref="97640332"/>
 														</object>
-														<string key="NSFrameSize">{478, 158}</string>
+														<string key="NSFrameSize">{478, 153}</string>
 														<reference key="NSSuperview" ref="601497213"/>
 														<reference key="NSNextKeyView" ref="720875694"/>
 														<int key="NSsFlags">18</int>
@@ -1447,7 +1467,7 @@
 																<string>public.url-name</string>
 															</object>
 														</object>
-														<string key="NSFrame">{{0, 167}, {478, 170}}</string>
+														<string key="NSFrame">{{0, 162}, {478, 155}}</string>
 														<reference key="NSSuperview" ref="601497213"/>
 														<reference key="NSNextKeyView"/>
 														<string key="FrameName"/>
@@ -1457,7 +1477,7 @@
 														<bool key="AllowsUndo">YES</bool>
 													</object>
 												</object>
-												<string key="NSFrame">{{17, 69}, {478, 337}}</string>
+												<string key="NSFrame">{{17, 69}, {478, 317}}</string>
 												<reference key="NSSuperview" ref="574199769"/>
 											</object>
 											<object class="NSButton" id="1038081598">
@@ -1489,7 +1509,7 @@
 												<object class="NSButtonCell" key="NSCell" id="912961390">
 													<int key="NSCellFlags">67239424</int>
 													<int key="NSCellFlags2">134217728</int>
-													<string key="NSContents">Add or Remove</string>
+													<string key="NSContents">Update software list…</string>
 													<reference key="NSSupport" ref="901400326"/>
 													<reference key="NSControlView" ref="194268296"/>
 													<int key="NSButtonFlags">-2038284033</int>
@@ -1550,14 +1570,14 @@
 											<object class="NSTextField" id="404778079">
 												<reference key="NSNextResponder" ref="574199769"/>
 												<int key="NSvFlags">266</int>
-												<string key="NSFrame">{{97, 428}, {397, 35}}</string>
+												<string key="NSFrame">{{97, 416}, {397, 47}}</string>
 												<reference key="NSSuperview" ref="574199769"/>
 												<int key="NSViewLayerContentsRedrawPolicy">2</int>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="677865987">
 													<int key="NSCellFlags">67239424</int>
 													<int key="NSCellFlags2">272760832</int>
-													<string key="NSContents">Check an item to have it installed. Uncheck an item to have it removed.</string>
+													<string key="NSContents">Check an item to have it added to the list of software to be installed and kept up-to-date. Uncheck an item to have it removed from the list and uninstalled.</string>
 													<reference key="NSSupport" ref="26"/>
 													<reference key="NSControlView" ref="404778079"/>
 													<reference key="NSBackgroundColor" ref="204534777"/>
@@ -1567,7 +1587,7 @@
 											<object class="NSSearchField" id="573024794">
 												<reference key="NSNextResponder" ref="574199769"/>
 												<int key="NSvFlags">265</int>
-												<string key="NSFrame">{{269, 414}, {226, 22}}</string>
+												<string key="NSFrame">{{266, 394}, {226, 22}}</string>
 												<reference key="NSSuperview" ref="574199769"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSSearchFieldCell" key="NSCell" id="487857812">
@@ -4288,9 +4308,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{329, 203}, {512, 518}}</string>
+					<string>{{329, 108}, {512, 518}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{329, 203}, {512, 518}}</string>
+					<string>{{329, 108}, {512, 518}}</string>
 					<boolean value="NO"/>
 					<string>{{238, 285}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -4427,7 +4447,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABDhQAAw9kAAA</bytes>
+						<bytes key="NSTransformStruct">P4AAAL+AAABDhQAAw9GAAA</bytes>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{433, 793}, {137, 23}}</string>

@@ -3,7 +3,7 @@
 #  Managed Software Update
 #
 #  Created by Greg Neagle on 7/8/10.
-#  Copyright 2010-2011 Greg Neagle.
+#  Copyright 2010-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,18 +88,28 @@ class MSUOptionalInstallsViewController(NSViewController):
                 self.AddRemoveBtn.setEnabled_(YES)
                 if row['managed']:
                     # user checked this one
-                    if row['original_status'] == NSLocalizedString(u"Not installed", None):
-                        row['status'] = NSLocalizedString(u"Will be installed", None)
-                    elif row['original_status'] == NSLocalizedString(u"Update available", None):
-                        row['status'] = NSLocalizedString(u"Will be updated", None)
-                    elif row['original_status'] == NSLocalizedString(u"Will be removed", None):
-                        row['status'] = NSLocalizedString(u"Will not be removed", None)
+                    if row['original_status'] == NSLocalizedString(
+                            u"Not installed", None):
+                        row['status'] = NSLocalizedString(
+                            u"Will be installed", None)
+                    elif row['original_status'] == NSLocalizedString(
+                            u"Update available", None):
+                        row['status'] = NSLocalizedString(
+                            u"Will be updated", None)
+                    elif row['original_status'] == NSLocalizedString(
+                            u"Will be removed", None):
+                        row['status'] = NSLocalizedString(
+                            u"Will not be removed", None)
                 else:
                     # not row['managed']
-                    if row['original_status'] == NSLocalizedString(u"Installed", None):
-                        row['status'] = NSLocalizedString(u"Will be removed", None)
-                    elif row['original_status'] == NSLocalizedString(u"Will be installed", None):
-                        row['status'] = NSLocalizedString(u"Will not be installed", None)
+                    if row['original_status'] == NSLocalizedString(
+                            u"Installed", None):
+                        row['status'] = NSLocalizedString(
+                            u"Will be removed", None)
+                    elif row['original_status'] == NSLocalizedString(
+                            u"Will be installed", None):
+                        row['status'] = NSLocalizedString(
+                            u"Will not be installed", None)
 
                         
     def updateAddRemoveBtnState(self):
@@ -126,11 +136,13 @@ class MSUOptionalInstallsViewController(NSViewController):
         
     def updateWebKitView_(self, description):
         if "</html>" in description or "</HTML>" in description:
-            self.descriptionView.mainFrame().loadHTMLString_baseURL_(description, None)
+            self.descriptionView.mainFrame().loadHTMLString_baseURL_(
+                description, None)
         else:
-            self.descriptionView.mainFrame().loadData_MIMEType_textEncodingName_baseURL_(
-                                                  buffer(description.encode('UTF-8')),
-                                                  u"text/plain", u"utf-8", None)
+            self.descriptionView.mainFrame(
+                ).loadData_MIMEType_textEncodingName_baseURL_(
+                    buffer(description.encode('UTF-8')),
+                    u"text/plain", u"utf-8", None)
     def updateDescriptionView(self):
         #NSLog(u"MSUOptionalInstallsViewController.updateDescriptionView")
         if len(self.array_controller.selectedObjects()):
@@ -139,7 +151,8 @@ class MSUOptionalInstallsViewController(NSViewController):
             self.updateRowStatus()
         else:
             description = u""
-        self.performSelectorOnMainThread_withObject_waitUntilDone_(self.updateWebKitView_, description, NO)
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            self.updateWebKitView_, description, NO)
             
     def tableViewSelectionDidChange_(self, sender):
         #NSLog(u"MSUOptionalInstallsViewController.tableViewSelectionDidChange_")

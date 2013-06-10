@@ -5,7 +5,7 @@
 #
 #  Created by Greg Neagle on 9/21/09.
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,7 +101,8 @@ class MSUStatusWindowController(NSObject):
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
                 self.window.setLevel_(NSScreenSaverWindowLevel - 1)
             self.window.center()
-            self.messageFld.setStringValue_(NSLocalizedString(u"Starting…", None))
+            self.messageFld.setStringValue_(
+                NSLocalizedString(u"Starting…", None))
             self.detailFld.setStringValue_(u"")
             self.stopBtn.setHidden_(False)
             self.stopBtn.setEnabled_(True)
@@ -137,15 +138,16 @@ class MSUStatusWindowController(NSObject):
             screenRect = NSScreen.mainScreen().frame()
             self.backdropWindow.setFrame_display_(screenRect, True)
             
-            darwin_vers = os.uname()[2].split('.')[0]
-            if darwin_vers < '11':
+            darwin_vers = int(os.uname()[2].split('.')[0])
+            if darwin_vers < 11:
                 if self.backdropImageFld:
                     bgImage = getLoginwindowPicture()
                     self.backdropImageFld.setImage_(bgImage)
                     self.backdropWindow.orderFrontRegardless()
             else:
                 self.backdropImageFld.setHidden_(True)
-                translucentColor = NSColor.blackColor().colorWithAlphaComponent_(0.35)
+                translucentColor = \
+                    NSColor.blackColor().colorWithAlphaComponent_(0.35)
                 self.backdropWindow.setBackgroundColor_(translucentColor)
                 self.backdropWindow.setOpaque_(False)
                 self.backdropWindow.setIgnoresMouseEvents_(False)
@@ -179,7 +181,7 @@ class MSUStatusWindowController(NSObject):
             self.session_connected = True
             if debug:
                 NSLog(u"Socket connection established.")
-            buffer = ''
+            a_buffer = ''
             keepLooping = True
             while keepLooping:
                 data = conn.recv(1024)
@@ -190,11 +192,11 @@ class MSUStatusWindowController(NSObject):
                     break
                 if debug:
                     NSLog(repr(data))
-                buffer = buffer + data
+                a_buffer = a_buffer + data
                 # do we have at least one return character?
-                if buffer.count('\n'):
-                    lines = buffer.splitlines(True)
-                    buffer = ''
+                if a_buffer.count('\n'):
+                    lines = a_buffer.splitlines(True)
+                    a_buffer = ''
                     for line in lines:
                         if line.endswith('\n'):
                             command = line.decode('UTF-8').rstrip('\n')
@@ -208,7 +210,7 @@ class MSUStatusWindowController(NSObject):
                             if response:
                                 conn.send(response)
                         else:
-                            buffer = line
+                            a_buffer = line
                             break
 
             conn.close()
@@ -249,7 +251,8 @@ class MSUStatusWindowController(NSObject):
             self.window.setTitle_(NSLocalizedString(message[7:], None))
             return ""
         if message.startswith(u"MESSAGE: "):
-            self.messageFld.setStringValue_(NSLocalizedString(message[9:], None))
+            self.messageFld.setStringValue_(
+                NSLocalizedString(message[9:], None))
             return ""
         if message.startswith(u"DETAIL: "):
             self.detailFld.setStringValue_(NSLocalizedString(message[8:], None))
@@ -293,7 +296,8 @@ class MSUStatusWindowController(NSObject):
             self.progressIndicator.setDoubleValue_(float(percent))
 
     @PyObjCTools.AppHelper.endSheetMethod
-    def alertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+    def alertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
         self.restartAlertDismissed = 1
 
     def doRestartAlert(self):
@@ -303,7 +307,10 @@ class MSUStatusWindowController(NSObject):
             NSLocalizedString(u"Restart", None),
             objc.nil,
             objc.nil,
-            NSLocalizedString(u"Software installed or removed requires a restart. You will have a chance to save open documents.", None))
+            NSLocalizedString(
+                u"Software installed or removed requires a restart. You will "
+                "have a chance to save open documents.", None))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-            self.window, self, self.alertDidEnd_returnCode_contextInfo_, objc.nil)
+            self.window, self, self.alertDidEnd_returnCode_contextInfo_,
+            objc.nil)
 

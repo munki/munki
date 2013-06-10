@@ -65,6 +65,12 @@ class TestAppleUpdates(mox.MoxTestBase):
             'readPlist', 'readPlistFromString', 'writePlist',
             'writePlistToString']:
             self.mox.StubOutWithMock(appleupdates.FoundationPlist, func_name)
+            
+    def _MockUpdateCheck(self):
+        """Mock out all updatecheck functions."""
+        for func_name in [
+            'getPrimaryManifestCatalogs', 'getItemDetail']:
+            self.mox.StubOutWithMock(appleupdates.updatecheck, func_name)
 
     def testResetMunkiStatusAndDisplayMessageMunkiStatusOutputTrue(self):
         """Tests _ResetMunkiStatusAndDisplayMessage(), GUI is present."""
@@ -636,7 +642,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.assertEqual(output, [])
         self.mox.VerifyAll()
 
-    def testGetAvailableUpdateProductIDsFailureReadingApplicalbeUpdates(self):
+    def testGetAvailableUpdateProductIDsFailureReadingApplicableUpdates(self):
         """Tests GetAvailableUpdateProductIDs() failed applicable updates."""
         self._MockFoundationPlist()
         self.mox.StubOutWithMock(self.au, '_RunSoftwareUpdate')
@@ -949,7 +955,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.hashlib, 'sha256')
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'pref')
 
-        cmd = ['/usr/sbin/pkgutil', '--regexp', '-pkg-info-plist',
+        cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
                'com\.apple\.*']
         output = 'output!'
 
@@ -1095,8 +1101,8 @@ class TestAppleUpdates(mox.MoxTestBase):
 
     def testCheckForSoftwareUpdatesWhenForceCheckNotNeeded(self):
         """Tests CheckForSoftwareUpdates() when a force check is not needed."""
+        self._MockMunkiDisplay()
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'getsha256hash')
-        self.mox.StubOutWithMock(appleupdates.munkicommon, 'log')
         self.mox.StubOutWithMock(self.au, 'CacheAppleCatalog')
         self.mox.StubOutWithMock(self.au, '_IsForceCheckNeccessary')
 
@@ -1104,10 +1110,11 @@ class TestAppleUpdates(mox.MoxTestBase):
             self.au.apple_download_catalog_path).AndReturn('hash')
         self.au.CacheAppleCatalog().AndReturn(None)
         self.au._IsForceCheckNeccessary('hash').AndReturn(False)
-        appleupdates.munkicommon.log(
-            '    Skipping Apple Software Update check because sucatalog is '
+        appleupdates.munkicommon.display_info(
+            'Skipping Apple Software Update check because sucatalog is '
             'unchanged, installed Apple packages are unchanged and we '
             'recently did a full check.')
+
         self.mox.ReplayAll()
         self.assertFalse(self.au.CheckForSoftwareUpdates(force_check=False))
         self.mox.VerifyAll()
@@ -1349,13 +1356,21 @@ class TestAppleUpdates(mox.MoxTestBase):
             ]
         }
         expected_output = [
-            {'blocking_applications': blocking_apps,
-             'description': 'desc1', 'name': 'name1',
-             'version_to_install': 'ver1', 'display_name': 'display_name1',
-             'installed_size': 1000, 'productKey': 'prodid1'},
-            {'description': 'desc2', 'name': 'name2',
-             'version_to_install': 'ver2', 'display_name': 'display_name2',
-             'installed_size': 2000, 'productKey': 'prodid2',
+            {'apple_product_name': 'display_name1',
+             'blocking_applications': blocking_apps,
+             'description': 'desc1', 
+             'name': 'name1',
+             'version_to_install': 'ver1', 
+             'display_name': 'display_name1',
+             'installed_size': 1000, 
+             'productKey': 'prodid1'},
+            {'apple_product_name': 'display_name2',
+             'description': 'desc2', 
+             'name': 'name2',
+             'version_to_install': 'ver2', 
+             'display_name': 'display_name2',
+             'installed_size': 2000, 
+             'productKey': 'prodid2',
              'RestartAction': 'RequireRestart'},
         ]
 
@@ -1387,8 +1402,11 @@ class TestAppleUpdates(mox.MoxTestBase):
     def testWriteAppleUpdatesFile(self):
         """Tests WriteAppleUpdatesFile()."""
         self._MockFoundationPlist()
+        self._MockUpdateCheck()
         self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateInfo')
         self.au.GetSoftwareUpdateInfo().AndReturn('appleupdates')
+        appleupdates.updatecheck.getPrimaryManifestCatalogs(
+            '', force_refresh=False).AndReturn(None)
         appleupdates.FoundationPlist.writePlist(
             {'AppleUpdates': 'appleupdates'},
             self.au.apple_updates_plist).AndReturn(None)
@@ -1399,6 +1417,7 @@ class TestAppleUpdates(mox.MoxTestBase):
     def testWriteAppleUpdatesFileFailure(self):
         """Tests WriteAppleUpdatesFile() with failure."""
         self._MockFoundationPlist()
+        self._MockUpdateCheck()
         self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateInfo')
         self.mox.StubOutWithMock(appleupdates.os, 'unlink')
         self.au.GetSoftwareUpdateInfo().AndReturn(None)
@@ -1508,7 +1527,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'pref')
         self.mox.StubOutWithMock(self.au, 'CheckForSoftwareUpdates')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
-        self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
+        #self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
         # Cannot stub out the builtin NSDate methods, so stub the entire module.
         mock_nsdate_module = self.mox.CreateMockAnything()
         self.mox.StubOutWithMock(appleupdates, 'NSDate', mock_nsdate_module)
@@ -1531,7 +1550,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.au.CheckForSoftwareUpdates(force_check=True).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
-        self.au.DisplayAppleUpdateInfo().AndReturn(None)
+        #self.au.DisplayAppleUpdateInfo().AndReturn(None)
 
         self.mox.ReplayAll()
         out = self.au.AppleSoftwareUpdatesAvailable(
@@ -1545,7 +1564,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'pref')
         self.mox.StubOutWithMock(self.au, 'CheckForSoftwareUpdates')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
-        self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
+        #self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
         # Cannot stub out the builtin NSDate methods, so stub the entire module.
         mock_nsdate_module = self.mox.CreateMockAnything()
         self.mox.StubOutWithMock(appleupdates, 'NSDate', mock_nsdate_module)
@@ -1568,7 +1587,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.au.CheckForSoftwareUpdates(force_check=False).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
-        self.au.DisplayAppleUpdateInfo().AndReturn(None)
+        #self.au.DisplayAppleUpdateInfo().AndReturn(None)
 
         self.mox.ReplayAll()
         out = self.au.AppleSoftwareUpdatesAvailable(
@@ -1582,7 +1601,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'pref')
         self.mox.StubOutWithMock(self.au, 'CheckForSoftwareUpdates')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
-        self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
+        #self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
 
         # use a date string that will not parse correctly.
         appleupdates.munkicommon.pref('LastAppleSoftwareUpdateCheck').AndReturn(
@@ -1591,7 +1610,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.au.CheckForSoftwareUpdates(force_check=True).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
-        self.au.DisplayAppleUpdateInfo().AndReturn(None)
+        #self.au.DisplayAppleUpdateInfo().AndReturn(None)
 
         self.mox.ReplayAll()
         out = self.au.AppleSoftwareUpdatesAvailable(
@@ -1604,12 +1623,12 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'stopRequested')
         self.mox.StubOutWithMock(self.au, 'CheckForSoftwareUpdates')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
-        self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
+        #self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
 
         self.au.CheckForSoftwareUpdates(force_check=True).AndReturn(True)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
-        self.au.DisplayAppleUpdateInfo().AndReturn(None)
+        #self.au.DisplayAppleUpdateInfo().AndReturn(None)
 
         self.mox.ReplayAll()
         out = self.au.AppleSoftwareUpdatesAvailable(
@@ -1617,15 +1636,15 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.assertTrue(out)
         self.mox.VerifyAll()
 
-    def testAppleSoftwareUpdatesAvailableSupressCheck(self):
+    def testAppleSoftwareUpdatesAvailableSuppressCheck(self):
         """Tests AppleSoftwareUpdatesAvailable() with suppress_check=True."""
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'stopRequested')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
-        self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
+        #self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(True)
-        self.au.DisplayAppleUpdateInfo().AndReturn(None)
+        #self.au.DisplayAppleUpdateInfo().AndReturn(None)
 
         self.mox.ReplayAll()
         out = self.au.AppleSoftwareUpdatesAvailable(
@@ -1633,11 +1652,11 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.assertTrue(out)
         self.mox.VerifyAll()
 
-    def testAppleSoftwareUpdatesAvailableSupressCheckNoneAvailable(self):
+    def testAppleSoftwareUpdatesAvailableSuppressCheckNoneAvailable(self):
         """Tests AppleSoftwareUpdatesAvailable() when no updates available."""
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'stopRequested')
         self.mox.StubOutWithMock(self.au, 'WriteAppleUpdatesFile')
-        self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
+        #self.mox.StubOutWithMock(self.au, 'DisplayAppleUpdateInfo')
 
         appleupdates.munkicommon.stopRequested().AndReturn(False)
         self.au.WriteAppleUpdatesFile().AndReturn(False)

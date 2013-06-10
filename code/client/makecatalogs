@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# Copyright 2009-2011 Greg Neagle.
+# Copyright 2009-2013 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ except ImportError:
     except ImportError:
         # maybe we're not on an OS X machine...
         print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
-                              "using plistlib instead.")
+                             "using plistlib instead.")
         import plistlib
         LOCAL_PREFS_SUPPORT = False
 
@@ -79,32 +79,57 @@ except ImportError:
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
 
-def makecatalogs(repopath):
+
+def print_utf8(text):
+    '''Print Unicode text as UTF-8'''
+    print text.encode('UTF-8')
+
+def print_err_utf8(text):
+    '''Print Unicode text to stderr as UTF-8'''
+    print >> sys.stderr, text.encode('UTF-8')
+
+
+def makecatalogs(repopath, options):
     '''Assembles all pkginfo files into catalogs.
     Assumes a pkgsinfo directory under repopath.
     User calling this needs to be able to write to the repo/catalogs
     directory.'''
+    
+    # Make sure the pkgsinfo directory exists
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
-    if not os.path.exists(pkgsinfopath):
-        print >> sys.stderr, "pkgsinfo path %s doesn't exist!" % pkgsinfopath
-        exit(-1)
+    # make sure pkgsinfopath is Unicode so that os.walk later gives us 
+    # Unicode names back.
+    if type(pkgsinfopath) is str:
+        pkgsinfopath = unicode(pkgsinfopath, 'utf-8')
+    elif type(pkgsinfopath) is not unicode:
+        pkgsinfopath = unicode(pkgsinfopath)
         
+    if not os.path.exists(pkgsinfopath):
+        print_err_utf8("pkgsinfo path %s doesn't exist!" % pkgsinfopath)
+        exit(-1)
+    
+    # Set a default exit code
+    exitCode = 0
+    
     errors = []
     catalogs = {}
     catalogs['all'] = []
+    
+    # Walk through the pkginfo files
     for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
         for dirname in dirnames:
             # don't recurse into directories that start
             # with a period.
             if dirname.startswith('.'):
                 dirnames.remove(dirname)
-        for name in filenames:
-            if name.startswith('.'):
+        for filename in filenames:
+            if filename.startswith('.'):
                 # skip files that start with a period as well
                 continue
             
-            filepath = os.path.join(dirpath, name)
+            filepath = os.path.join(dirpath, filename)
             
+            # Try to read the pkginfo file
             try:
                 pkginfo = plistlib.readPlist(filepath)
                 # don't copy admin notes to catalogs.
@@ -112,50 +137,65 @@ def makecatalogs(repopath):
                     del(pkginfo['notes'])
             except IOError, inst:
                 errors.append("IO error for %s: %s" % (filepath, inst))
+                exitCode = -1
                 continue
             except Exception, inst:
                 errors.append("Unexpected error for %s: %s" % (filepath, inst))
+                exitCode = -1
                 continue
             
             #simple sanity checking
-            if not (pkginfo.get('installer_type') == 'nopkg'):
+            installer_type = pkginfo.get('installer_type')
+            if not installer_type in ['nopkg', 'apple_update_metadata']:
                 if not 'installer_item_location' in pkginfo:
                     errors.append(
-                        "WARNING: file %s is missing installer_item_location" %
-                                                    filepath[len(pkgsinfopath)+1:])
-                    continue
+                        "WARNING: file %s is missing installer_item_location" 
+                        % filepath[len(pkgsinfopath)+1:])
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        exitCode = -1
+                        continue
+                
+                # Try to form a path and fail if the 
+                # installer_item_location is not a valid type
                 try:
                     installeritempath = os.path.join(repopath, "pkgs",
                                 pkginfo['installer_item_location'])
                 except TypeError:
                     errors.append("WARNING: invalid installer_item_location"
                         " in info file %s" % filepath[len(pkgsinfopath)+1:])
+                    exitCode = -1
                     continue
+                
+                # Check if the installer item actually exists
                 if not os.path.exists(installeritempath):
                     errors.append("WARNING: Info file %s refers to "
                                   "missing installer item: %s" %
                                   (filepath[len(pkgsinfopath)+1:],
                                    pkginfo['installer_item_location']))
-                    continue
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        exitCode = -1
+                        continue
             
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
+                infofilename = filepath[len(pkgsinfopath)+1:]
                 if not catalogname:
                     errors.append("WARNING: Info file %s has an empty "
-                                  "catalog name!" %
-                                  filepath[len(pkgsinfopath)+1:])
+                                  "catalog name!" % infofilename)
+                    exitCode = -1
                     continue
                 if not catalogname in catalogs:
                     catalogs[catalogname] = []
                 catalogs[catalogname].append(pkginfo)
-                print "Adding %s to %s..." % \
-                    (filepath[len(pkgsinfopath)+1:], catalogname)
+                print_utf8("Adding %s to %s..." % (infofilename, catalogname))
     
     if errors:
         # group all errors at the end for better visibility
         print
         for error in errors:
-            print >> sys.stderr, error
+            print_err_utf8(error)
             
     # clear out old catalogs
     catalogpath = os.path.join(repopath, "catalogs")
@@ -168,15 +208,29 @@ def makecatalogs(repopath):
                 os.remove(itempath)
     
     # write the new catalogs
+    print
     for key in catalogs.keys():
         catalogpath = os.path.join(repopath, "catalogs", key)
         if os.path.exists(catalogpath):
-            print >> sys.stderr, ("WARNING: catalog %s already exists at "
+            print_err_utf8("WARNING: catalog %s already exists at "
                 "%s. Perhaps this is a non-case sensitive filesystem and you "
                 "have catalogs with names differing only in case?"
                 % (key, catalogpath))
-        else:
+            exitCode = -1
+        elif len(catalogs[key]) != 0:
             plistlib.writePlist(catalogs[key], catalogpath)
+            print "Created catalog %s..." % (catalogpath)
+        else:
+            print_err_utf8(
+                "WARNING: Did not create catalog %s "
+                "because it is empty "
+                % (key))
+            exitCode = -1
+    
+    # Exit with "exitCode" if we got this far.
+    # This will be -1 if there were any errors
+    # that prevented the catalogs to be written.
+    exit(exitCode)
 
 
 def pref(prefname):
@@ -202,28 +256,34 @@ def main():
     p = optparse.OptionParser(usage=usage)
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
+    p.add_option('--force', '-f', action='store_true', dest='force',
+                      help='Disable sanity checks.')
+    p.set_defaults(force=False)
     options, arguments = p.parse_args()
     
     if options.version:
         print get_version()
         exit(0)
     
+    # Make sure we have a path to work with
     repopath = None
     if len(arguments) == 0:
         repopath = pref('repo_path')
         if not repopath:
-            print >> sys.stderr, "Need to specify a path to the repo root!"
+            print_err_utf8("Need to specify a path to the repo root!")
             exit(-1)
         else:
-            print "Using repo path: %s" % repopath
+            print_utf8("Using repo path: %s" % repopath)
     else:
         repopath = arguments[0].rstrip("/")
         
+    # Make sure the repo path exists
     if not os.path.exists(repopath):
-        print >> sys.stderr, "Repo root path %s doesn't exist!" % repopath
+        print_err_utf8("Repo root path %s doesn't exist!" % repopath)
         exit(-1)
     
-    makecatalogs(repopath)
+    # Make the catalogs
+    makecatalogs(repopath, options)
 
 if __name__ == '__main__':
     main()
