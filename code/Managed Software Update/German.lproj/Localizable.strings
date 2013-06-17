@@ -12,7 +12,7 @@
 "A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Ambelden empfohlen. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* No comment provided by engineer. */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Für die Aktualisierung ist ein Ambelden erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Ambelden erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* No comment provided by engineer. */
 "A logout will be forced at approximately %s." = "Eine Abmeldung wird in ca. %s erzwungen.";
