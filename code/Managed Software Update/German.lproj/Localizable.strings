@@ -24,7 +24,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Eine Abmeldung wird in weniger als einer Minute erzwungen.\nAlle anstehenden Alkualisierungen werdern installiert. Alle ungespeicherte Arbeiten gehen verloren.";
 
 /* No comment provided by engineer. */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Logout and update now?" = "Für die Aktualisierung ist ein Neustart erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Neustart erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* No comment provided by engineer. */
 "Cancel" = "Abbrechen";

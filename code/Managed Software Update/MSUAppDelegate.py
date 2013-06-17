@@ -690,8 +690,8 @@ class MSUAppDelegate(NSObject):
                 objc.nil,
                 NSLocalizedString(
                     (u"A logout is required before updating. Please be patient "
-                    "as there may be a short delay at the login window. Logout "
-                    "and update now?"), None))
+                    "as there may be a short delay at the login window. Log "
+                    "out and update now?"), None))
             self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.mainWindowController.theWindow, self, 
