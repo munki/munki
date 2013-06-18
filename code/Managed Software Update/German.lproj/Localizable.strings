@@ -129,7 +129,7 @@
 "Starting…" = "Starten…";
 
 /* No comment provided by engineer. */
-"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "s sind andere Benutzer angemeldet\nEine Aktualisierung könnte zu Datenverlust führen.\n\nBitte probieren Sie es, wenn die anderen abgemeldet sind, noch einmal.";
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Es sind andere Benutzer angemeldet\nEine Aktualisierung könnte zu Datenverlust führen.\n\nBitte probieren Sie es, wenn die anderen abgemeldet sind, noch einmal.";
 
 /* No comment provided by engineer. */
 "There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator." = "Managed Software Installer hat ein Konfigurationsproblem (Could not start the install session). Informieren Sie Ihren Administrator.";
