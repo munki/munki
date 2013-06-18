@@ -158,7 +158,7 @@
 "354.title" = "Guiones inteligentes";
 
 /* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "371"; */
-"371.title" = "Actualización controlada de softwares";
+"371.title" = "Actualización controlada de software";
 
 /* Class = "NSTextFieldCell"; title = "Software updates are available for your computer."; ObjectID = "378"; */
 "378.title" = "Hay actualizaciones disponibles para su ordenador.";

@@ -1765,6 +1765,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'installs',
                              'requires',
                              'update_for',
+                             'payloads',
                              'preinstall_script',
                              'postinstall_script',
                              'items_to_copy',  # used w/ copy_from_dmg
@@ -2211,6 +2212,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'installs',
                     'requires',
                     'update_for',
+                    'payloads',
                     'preuninstall_script',
                     'postuninstall_script',
                     'apple_item']

@@ -9,7 +9,7 @@
 "A logout will be forced at approximately %s." = "Работа будет принудительно завершена в %s.";
 "A logout will be forced in less than %s minutes." = "Работа будет принудительно завершена менее чем через %s минут.";
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Работа будет принудительно завершена менее чем через минуту.\nБудут установлены все отложенные обновления. Все несохраненные данные будут потеряны.";
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log Lout and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
 "Cancel" = "Отменить";
 "Cannot check for updates" = "Не удалось проверить обновления";
 "Cannot start installation session" = "Не удалось начать сессию установки";

@@ -425,7 +425,7 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
                 return -1
             except:
                 munkicommon.display_error(
-                    "There was an unknown error in creating the path %s!" 
+                    "There was an unknown error in creating the path %s!"
                     % destpath)
                 return -1
 
@@ -576,12 +576,12 @@ def removeCopiedItems(itemlist):
 def itemPrereqsInSkippedItems(item, skipped_items):
     '''Looks for item prerequisites (requires and update_for) in the list
     of skipped items. Returns a list of matches.'''
-    
+
     # shortcut -- if we have no skipped items, just return an empty list
     # also reduces log noise in the common case
     if not skipped_items:
         return []
-    
+
     munkicommon.display_debug1(
         'Checking for skipped prerequisites for %s-%s'
         % (item['name'], item.get('version_to_install')))
@@ -851,6 +851,7 @@ def installWithInfo(
             'time': NSDate.new(),
             'duration_seconds': duration_seconds,
             'download_kbytes_per_sec': download_speed,
+            'unattended': only_unattended,
         }
         munkicommon.report['InstallResults'].append(install_result)
 

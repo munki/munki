@@ -2125,11 +2125,11 @@ def getLSInstalledApplications():
 
 # we save SP_APPCACHE in a global to avoid querying system_profiler more than
 # once per session for application data, which can be slow
-SP_APPCACHE = {}
+SP_APPCACHE = None
 def getSPApplicationData():
     '''Uses system profiler to get application info for this machine'''
     global SP_APPCACHE
-    if not SP_APPCACHE:
+    if SP_APPCACHE is None:
         cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
         proc = Popen(cmd, shell=False, bufsize=-1,
                      stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -2139,6 +2139,8 @@ def getSPApplicationData():
         except TimeoutError:
             display_error(
                 'system_profiler hung; skipping SPApplicationsDataType query')
+            # return empty dict
+            SP_APPCACHE = {}
             return SP_APPCACHE
         try:
             plist = FoundationPlist.readPlistFromString(output)
@@ -2153,12 +2155,13 @@ def getSPApplicationData():
 
 # we save APPDATA in a global to avoid querying LaunchServices more than
 # once per session
-APPDATA = []
+APPDATA = None
 def getAppData():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
     global APPDATA
-    if APPDATA == []:
+    if APPDATA is None:
+        APPDATA = []
         display_debug1('Getting info on currently installed applications...')
         applist = set(getLSInstalledApplications())
         applist.update(getSpotlightInstalledApplications())
@@ -2529,8 +2532,12 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
 
 def runScript(itemname, path, scriptname, suppress_error=False):
     '''Runs a script, Returns return code.'''
-    display_status_minor(
-        'Running %s for %s ' % (scriptname, itemname))
+    if suppress_error:
+        display_detail(
+            'Running %s for %s ' % (scriptname, itemname))
+    else:
+        display_status_minor(
+            'Running %s for %s ' % (scriptname, itemname))
     if munkistatusoutput:
         # set indeterminate progress bar
         munkistatus.percent(-1)
