@@ -1,18 +1,18 @@
-"Checking for available updates..." = "Suche nach neuer Software...";
+"Checking for available updates..." = "Suche nach verfügbaren Updates...";
 "Checking for additional changes..." = "Suche nach weiteren Änderungen...";
-"Checking for available Apple Software Updates..." = "Suche nach neuer Apple Software...";
+"Checking for available Apple Software Updates..." = "Suche nach neuen Apple Software Updates...";
 
 /* No comment provided by engineer. */
 " (will be removed)" = " (wird entfernt)";
 
 /* No comment provided by engineer. */
-"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle anstehenden Alkualisierungen werdern installiert. Alle ungespeicherte Arbeiten gehen verloren.\nDurch jetziges Abmelden können sie eine erzwungene Abmeldung verhindern";
+"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle anstehenden Aktualisierungen werden installiert. Alle ungespeicherte Arbeit geht verloren.\nDurch jetziges Abmelden können sie eine erzwungene Abmeldung verhindern";
 
 /* No comment provided by engineer. */
-"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Ambelden empfohlen. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
+"A logout is recommended before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Abmelden empfohlen. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* No comment provided by engineer. */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Ambelden erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Abmelden erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* No comment provided by engineer. */
 "A logout will be forced at approximately %s." = "Eine Abmeldung wird in ca. %s erzwungen.";
@@ -21,7 +21,7 @@
 "A logout will be forced in less than %s minutes." = "Eine Abmeldung wird in weniger als %s Minuten erzwungen.";
 
 /* No comment provided by engineer. */
-"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Eine Abmeldung wird in weniger als einer Minute erzwungen.\nAlle anstehenden Alkualisierungen werdern installiert. Alle ungespeicherte Arbeiten gehen verloren.";
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Eine Abmeldung wird in weniger als einer Minute erzwungen.\nAlle anstehenden Aktualisierungen werden installiert. Alle ungespeicherte Arbeit geht verloren.";
 
 /* No comment provided by engineer. */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Neustart erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
@@ -39,7 +39,7 @@
 "Check again" = "Erneut prüfen";
 
 /* No comment provided by engineer. */
-"Conflicting applications running" = "Betroffene Programme laufen";
+"Conflicting applications running" = "Es gibt einen Konflikt mit laufenden Programmen";
 
 /* No comment provided by engineer. */
 "Continue" = "Fortsetzen";
@@ -48,7 +48,7 @@
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Sie sollten den Computer an eine Stromquelle anschliessen bevor Sie die Aktualisierung durchführen. Sind Sie sicher, dass Sie die Aktualisierung fortsetzen möchten?";
 
 /* No comment provided by engineer. */
-"Forced Logout for Mandatory Install" = "Erzwungene Abmeldung für obligatorische Installationen";
+"Forced Logout for Mandatory Install" = "Erzwungene Abmeldung für eine zwingend notwendige Installation";
 
 /* No comment provided by engineer. */
 "Install session failed" = "Installation fehlgeschlagen";
@@ -72,28 +72,28 @@
 "Logout will be required." = "Abmelden ist erforderlich.";
 
 /* No comment provided by engineer. */
-"Manadatory Updates Pending" = "Obligatorische Aktualisierungen anstehend";
+"Manadatory Updates Pending" = "Zwingend notwendige Aktualisierungen anstehend";
 
 /* No comment provided by engineer. */
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Geführte Softwareaktualisierung erreicht den Server nicht.\nWenn dieses Problem weiter besteht, informieren Sie bitte Ihren Administrator.";
 
 /* No comment provided by engineer. */
-"Managed Software Update failed its preflight check.\nTry again later." = "Geführte Softwareaktualisierung Fehler beim Preflight.\nProbieren Sie es später noch einmal.";
+"Managed Software Update failed its preflight check.\nTry again later." = "Geführte Softwareaktualisierung meldet einen Fehler beim Preflight.\nProbieren Sie es später noch einmal.";
 
 /* No comment provided by engineer. */
 "Not installed" = "Nicht installiert";
 
 /* No comment provided by engineer. */
-"Not removable" = "Nicht entfernt";
+"Not removable" = "Nicht entfernbar";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Ein oder mehrere obligatorische Aktualisierungen sind überfällig. Eine Abmeldung wird in Kürze erzwungen.";
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Ein oder mehrere zwingend notwendige Aktualisierungen sind überfällig. Eine Abmeldung wird in Kürze erzwungen.";
 
 /* No comment provided by engineer. */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Ein oder mehrere Aktualisierungen müssen %s installiert werden. Eine Abmeldung wird möglicherweise erzwungen, wenn Sie zulange mit der Aktualisierung warten.";
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Ein oder mehrere Aktualisierungen müssen unbedingt bis %s installiert werden. Eine Abmeldung wird möglicherweise erzwungen, wenn Sie zu lange mit der Aktualisierung warten.";
 
 /* No comment provided by engineer. */
 "Optional software..." = "Optionale software...";
@@ -120,7 +120,7 @@
 "Show updates" = "Zeige Aktualisierungen";
 
 /* No comment provided by engineer. */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "Softwareaktualiserung oder -entfernung benötigt einen Neustart. Sie können offene Dokumente noch sichern.";
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Softwareaktualisierung oder -entfernung benötigt einen Neustart. Sie können offene Dokumente noch sichern.";
 
 /* No comment provided by engineer. */
 "Software removals" = "Software entfernen";
@@ -129,7 +129,7 @@
 "Starting…" = "Starten…";
 
 /* No comment provided by engineer. */
-"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Es sind andere Benutzer angemeldet\nEine Aktualisierung könnte zu Datenverlust führen.\n\nBitte probieren Sie es wenn die anderen abgemeldet sind noch einmal.";
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "s sind andere Benutzer angemeldet\nEine Aktualisierung könnte zu Datenverlust führen.\n\nBitte probieren Sie es, wenn die anderen abgemeldet sind, noch einmal.";
 
 /* No comment provided by engineer. */
 "There is a configuration problem with the managed software installer. Could not start the install session. Contact your systems administrator." = "Managed Software Installer hat ein Konfigurationsproblem (Could not start the install session). Informieren Sie Ihren Administrator.";
@@ -156,7 +156,7 @@
 "Update available" = "Aktualisierungen verfügbar";
 
 /* No comment provided by engineer. */
-"Update check failed" = "Aktualisierungs Test fehlgeschlagen";
+"Update check failed" = "Prüfung auf Aktualisierungen fehlgeschlagen";
 
 /* No comment provided by engineer. */
 "Update later" = "Später Aktualisieren";
@@ -180,7 +180,7 @@
 "Will not be removed" = "wird nicht entfernt";
 
 /* No comment provided by engineer. */
-"You must quit the following applications before proceeding with installation:\n\n%s" = "Die folgenden Programme müssen geschlossen werden um mit der Aktualisierung fortfahren zu können:\n\n%s";
+"You must quit the following applications before proceeding with installation:\n\n%s" = "Die folgenden Programme müssen geschlossen werden, um mit der Aktualisierung fortfahren zu können:\n\n%s";
 
 /* No comment provided by engineer. */
 "Your computer is not connected to a power source." = "Ihr Computer ist nicht an eine Stromquelle angeschlossen.";
