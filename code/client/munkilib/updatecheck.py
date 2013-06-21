@@ -458,7 +458,7 @@ def compareApplicationVersion(app):
         if apppath and version_comparison_key != 'CFBundleShortVersionString':
             # if a specific plist version key has been supplied,
             # if we're suppose to compare against a key other than
-            # 'CFBundleShortVersionString' we can't use item['version'] 
+            # 'CFBundleShortVersionString' we can't use item['version']
             installed_version = munkicommon.getBundleVersion(
                 apppath, version_comparison_key)
         else:
@@ -571,7 +571,7 @@ def comparePlistVersion(item):
                 return 0
         compare_result = compareVersions(installedvers, versionstring)
         results = ['older', 'not installed?!', 'the same', 'newer']
-        munkicommon.display_debug1('\tInstalled item is %s.' 
+        munkicommon.display_debug1('\tInstalled item is %s.'
                                    % results[compare_result + 1])
         return compare_result
     else:
@@ -2219,7 +2219,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
-            
+
     if not 'apple_item' in iteminfo:
         # admin did not explictly mark this item; let's determine if
         # it's from Apple
@@ -2332,7 +2332,14 @@ def getManifestData(manifestpath):
 def getManifestValueForKey(manifestpath, keyname):
     """Returns a value for keyname in manifestpath"""
     plist = getManifestData(manifestpath)
-    return plist.get(keyname, None)
+    try:
+        return plist.get(keyname, None)
+    except AttributeError as e:
+        munki.display_error(
+            'Failed to get manifest value for key: %s (%s)',
+            manifestpath, keyname)
+        munki.display_error('Manifest is likely corrupt: %s', str(e))
+        return None
 
 
 # global to hold our catalog DBs
@@ -2535,7 +2542,7 @@ def checkServer(url):
     available before we kick off a full run. This can be fooled by
     ISPs that return results for non-existent web servers..."""
     # rewritten 24 Jan 2013 to attempt to support IPv6
-    
+
     # deconstruct URL so we can check availability
     url_parts = urlparse.urlsplit(url)
     if url_parts.scheme == 'http':
@@ -2557,7 +2564,7 @@ def checkServer(url):
     if not host:
         return (-1, 'Bad URL')
     port = url_parts.port or default_port
-    
+
     # following code based on the IPv6-ready example code here
     # http://docs.python.org/2/library/socket.html#example
     s = None
@@ -3024,16 +3031,16 @@ def checkForceInstallPackages():
     result = None
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    
+
     installinfo_types = {
         'InstallInfo.plist' : 'managed_installs',
         'AppleUpdates.plist': 'AppleUpdates'
     }
-    
+
     now = NSDate.date()
     now_xhours = NSDate.dateWithTimeIntervalSinceNow_(
             FORCE_INSTALL_WARNING_HOURS * 3600)
-    
+
     for installinfo_plist in installinfo_types.keys():
         pl_dict = installinfo_types[installinfo_plist]
         installinfopath = os.path.join(ManagedInstallDir, installinfo_plist)
@@ -3041,13 +3048,13 @@ def checkForceInstallPackages():
             installinfo = FoundationPlist.readPlist(installinfopath)
         except FoundationPlist.NSPropertyListSerializationException:
             continue
-        
+
         writeback = False
 
         for i in xrange(len(installinfo.get(pl_dict, []))):
             install = installinfo[pl_dict][i]
             force_install_after_date = install.get('force_install_after_date')
-            
+
             if force_install_after_date:
                 force_install_after_date = subtractTimeZoneOffsetFromDate(
                     force_install_after_date)
@@ -3068,14 +3075,14 @@ def checkForceInstallPackages():
                         install['unattended_install'] = True
                         installinfo[pl_dict][i] = install
                         writeback = True
-                
+
                 if now_xhours >= force_install_after_date:
                     if not result:
                         result = 'soon'
-        
+
         if writeback:
             FoundationPlist.writePlist(installinfo, installinfopath)
-    
+
     return result
 
 
@@ -3147,7 +3154,7 @@ def getResourceIfChangedAtomically(url,
 
 def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
     """Return list of catalogs from primary client manifest
-    
+
     Args:
       force_refresh: Boolean. If True, downloads primary manifest
       and listed catalogs; False, uses locally cached information.
