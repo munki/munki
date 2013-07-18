@@ -1599,19 +1599,19 @@ def updateAvailableLicenseSeats(installinfo):
     if not installinfo.get('optional_installs'):
         # nothing to do!
         return
-        
+
     license_info = {}
-    items_to_check = [item['name'] 
+    items_to_check = [item['name']
                       for item in installinfo['optional_installs']
                       if not item['installed']]
-    
+
     # complicated logic here to 'batch' process our GET requests but
     # keep them under 256 characters each
     start_index = 0
     while start_index < len(items_to_check):
         end_index = len(items_to_check)
         while True:
-            query_items = ['name=' + quote_plus(item) 
+            query_items = ['name=' + quote_plus(item)
                            for item in items_to_check[start_index:end_index]]
             querystring = '?' + '&'.join(query_items)
             url = license_info_url + querystring
@@ -1619,7 +1619,7 @@ def updateAvailableLicenseSeats(installinfo):
                 break
             # drop an item and see if we're under 256 characters
             end_index = end_index - 1
-    
+
         munkicommon.display_debug1('Fetching licensed seat data from %s' % url)
         license_data = getDataFromURL(url)
         munkicommon.display_debug1('Got: %s' % license_data)
@@ -1628,7 +1628,7 @@ def updateAvailableLicenseSeats(installinfo):
                 license_data)
         except FoundationPlist.FoundationPlistException:
             munkicommon.display_warning(
-                    'Bad license data from %s: %s' 
+                    'Bad license data from %s: %s'
                     % (url, license_data))
             # should we act as all are zero?
             continue
@@ -1636,7 +1636,7 @@ def updateAvailableLicenseSeats(installinfo):
             # merge data from license_dict into license_info
             license_info.update(license_dict)
         start_index = end_index
-    
+
     # use license_info to update our remaining seats
     for item in installinfo['optional_installs']:
         munkicommon.display_debug2(
@@ -1644,7 +1644,7 @@ def updateAvailableLicenseSeats(installinfo):
         if item['name'] in license_info.keys():
             # record available seats for this item
             munkicommon.display_debug1(
-                'Recording available seats for %s: %s' 
+                'Recording available seats for %s: %s'
                 % (item['name'], license_info[item['name']]))
             try:
                 seats_available = int(license_info[item['name']]) > 0
@@ -1653,7 +1653,7 @@ def updateAvailableLicenseSeats(installinfo):
                 item['licensed_seats_available'] = seats_available
             except ValueError:
                 munkicommon.display_warning(
-                        'Bad license data for %s: %s' 
+                        'Bad license data for %s: %s'
                         % (item['name'], license_info[item['name']]))
                 item['licensed_seats_available'] = False
 
@@ -2404,10 +2404,10 @@ def getManifestValueForKey(manifestpath, keyname):
     try:
         return plist.get(keyname, None)
     except AttributeError as e:
-        munki.display_error(
+        munkicommon.display_error(
             'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
-        munki.display_error('Manifest is likely corrupt: %s', str(e))
+        munkicommon.display_error('Manifest is likely corrupt: %s', str(e))
         return None
 
 
@@ -2782,7 +2782,7 @@ def check(client_id='', localmanifestpath=None):
                               installinfo)
         if munkicommon.stopRequested():
             return 0
-            
+
         # verify available license seats for optional installs
         if installinfo.get('optional_installs'):
             updateAvailableLicenseSeats(installinfo)
@@ -2820,7 +2820,7 @@ def check(client_id='', localmanifestpath=None):
                 '**Processing self-serve choices**')
             selfserveinstalls = getManifestValueForKey(selfservemanifest,
                                                        'managed_installs')
-                                                       
+
             # build list of items in the optional_installs list
             # that have not exceeded available seats
             available_optional_installs = [item['name']
@@ -3165,7 +3165,7 @@ def checkForceInstallPackages():
 
 
 def getDataFromURL(url):
-    '''Returns data from url as string. We use the existing 
+    '''Returns data from url as string. We use the existing
     getResourceIfChangedAtomically function so any custom
     authentication/authorization headers are reused'''
     urldata = os.path.join(munkicommon.tmpdir, 'urldata')
