@@ -2403,7 +2403,7 @@ def getManifestValueForKey(manifestpath, keyname):
     plist = getManifestData(manifestpath)
     try:
         return plist.get(keyname, None)
-    except AttributeError as e:
+    except AttributeError, e:
         munkicommon.display_error(
             'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
