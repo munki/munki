@@ -484,6 +484,11 @@ class MSUAppDelegate(NSObject):
                 status = "Not installed"
                 if item.get("will_be_installed"):
                     status = NSLocalizedString(u"Will be installed", None)
+                elif 'licensed_seats_available' in item:
+                    if not item['licensed_seats_available']:
+                        status = NSLocalizedString(
+                            u"No available license seats", None)
+                        row['enabled'] = objc.NO
                 elif item.get("note"):
                     # some reason we can't install
                     status = item.get("note")

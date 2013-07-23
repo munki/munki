@@ -366,11 +366,11 @@ def curl(url, destinationpath,
     else:
         temp_download_exists = os.path.isfile(tempdownloadpath)
         http_result = header.get('http_result_code')
-        if http_result.startswith('2') and \
-            temp_download_exists:
+        if http_result.startswith('2') and temp_download_exists:
             downloadedsize = os.path.getsize(tempdownloadpath)
             if downloadedsize >= targetsize:
-                if not downloadedpercent == 100:
+                if targetsize and not downloadedpercent == 100:
+                    # need to display a percent done of 100%
                     munkicommon.display_percent_done(100, 100)
                 os.rename(tempdownloadpath, destinationpath)
                 if (resume and not header.get('etag')
@@ -439,8 +439,8 @@ def getResourceIfChangedAtomically(url,
         if xattr_hash == expected_hash:
             #File is already current, no change.
             return False
-        elif munkicommon.pref('PackageVerificationMode').lower() in \
-                                                    ['hash_strict', 'hash']:
+        elif munkicommon.pref(
+             'PackageVerificationMode').lower() in ['hash_strict', 'hash']:
             try:
                 os.unlink(destinationpath)
             except OSError:
