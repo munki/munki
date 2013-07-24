@@ -1003,6 +1003,8 @@ def main():
         else:
             catinfo['version'] = "1.0"
         catinfo['name'] = options.apple_update
+        if options.displayname:
+            catinfo['display_name'] = options.displayname
         catinfo['installer_type'] = 'apple_update_metadata'
 
     # and now, what we've all been waiting for...
