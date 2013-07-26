@@ -26,8 +26,10 @@ import os
 import re
 import subprocess
 import time
-from xml.dom import minidom
 import tempfile
+import sqlite3
+from xml.dom import minidom
+from glob import glob
 
 import FoundationPlist
 import munkicommon
@@ -196,49 +198,70 @@ def getCS5mediaSignature(dirpath):
 
 
 def getPayloadInfo(dirpath):
-    '''Parses Adobe payloads, pulling out info useful to munki'''
+    '''Parses Adobe payloads, pulling out info useful to munki.
+    .proxy.xml files are used if available, or for CC-era updates
+    which do not contain one, the Media_db.db file, which contains
+    identical XML, is instead used.
+
+    CS3/CS4:        contain only .proxy.xml
+    CS5/CS5.5/CS6:  contain both
+    CC:             contain only Media_db.db'''
+
     payloadinfo = {}
     # look for .proxy.xml file dir
     if os.path.isdir(dirpath):
-        for item in munkicommon.listdir(dirpath):
-            if item.endswith('.proxy.xml'):
-                xmlpath = os.path.join(dirpath, item)
-                dom = minidom.parse(xmlpath)
-                payload_info = dom.getElementsByTagName('PayloadInfo')
-                if payload_info:
-                    installer_properties = \
-                      payload_info[0].getElementsByTagName(
-                        "InstallerProperties")
-                    if installer_properties:
-                        properties = \
-                          installer_properties[0].getElementsByTagName(
-                                                                   'Property')
-                        for prop in properties:
-                            if 'name' in prop.attributes.keys():
-                                propname = \
-                                 prop.attributes['name'].value.encode('UTF-8')
-                                propvalue = ''
-                                for node in prop.childNodes:
-                                    propvalue += node.nodeValue
-                                if propname == 'AdobeCode':
-                                    payloadinfo['AdobeCode'] = propvalue
-                                if propname == 'ProductName':
-                                    payloadinfo['display_name'] = propvalue
-                                if propname == 'ProductVersion':
-                                    payloadinfo['version'] = propvalue
+        proxy_paths = glob(os.path.join(dirpath, '*.proxy.xml'))
+        if proxy_paths:
+            xmlpath = proxy_paths[0]
+            dom = minidom.parse(xmlpath)
+        # if there's no .proxy.xml we should hope there's a Media_db.db
+        else:
+            db_path = os.path.join(dirpath, 'Media_db.db')
+            if os.path.exists(db_path):
+                conn = sqlite3.connect(db_path)
+                c = conn.cursor()
+                c.execute("""SELECT value FROM PayloadData WHERE PayloadData.key = 'PayloadInfo'""")
+                result = c.fetchone()
+                c.close()
+                if result:
+                    info_xml = result[0].encode('UTF-8')
+                    dom = minidom.parseString(info_xml)
 
-                    installmetadata = \
-                        payload_info[0].getElementsByTagName(
-                                                 'InstallDestinationMetadata')
-                    if installmetadata:
-                        totalsizes = \
-                          installmetadata[0].getElementsByTagName('TotalSize')
-                        if totalsizes:
-                            installsize = ''
-                            for node in totalsizes[0].childNodes:
-                                installsize += node.nodeValue
-                            payloadinfo['installed_size'] = \
-                                                         int(installsize)/1024
+        payload_info = dom.getElementsByTagName('PayloadInfo')
+        if payload_info:
+            installer_properties = \
+              payload_info[0].getElementsByTagName(
+                "InstallerProperties")
+            if installer_properties:
+                properties = \
+                  installer_properties[0].getElementsByTagName(
+                                                           'Property')
+                for prop in properties:
+                    if 'name' in prop.attributes.keys():
+                        propname = \
+                         prop.attributes['name'].value.encode('UTF-8')
+                        propvalue = ''
+                        for node in prop.childNodes:
+                            propvalue += node.nodeValue
+                        if propname == 'AdobeCode':
+                            payloadinfo['AdobeCode'] = propvalue
+                        if propname == 'ProductName':
+                            payloadinfo['display_name'] = propvalue
+                        if propname == 'ProductVersion':
+                            payloadinfo['version'] = propvalue
+
+            installmetadata = \
+                payload_info[0].getElementsByTagName(
+                                         'InstallDestinationMetadata')
+            if installmetadata:
+                totalsizes = \
+                  installmetadata[0].getElementsByTagName('TotalSize')
+                if totalsizes:
+                    installsize = ''
+                    for node in totalsizes[0].childNodes:
+                        installsize += node.nodeValue
+                    payloadinfo['installed_size'] = \
+                                                 int(installsize)/1024
 
     return payloadinfo
 
