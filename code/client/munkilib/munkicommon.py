@@ -2046,7 +2046,7 @@ def getSPApplicationData():
             for item in plist[0]['_items']:
                 SP_APPCACHE[item.get('path')] = item
         except Exception:
-            pass
+            SP_APPCACHE = {}
     return SP_APPCACHE
 
 
