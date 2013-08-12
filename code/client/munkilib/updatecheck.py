@@ -1895,7 +1895,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             munkicommon.display_warning(
                 'Download of %s failed: %s' % (manifestitem, errmsg))
             iteminfo['installed'] = False
-            iteminfo['note'] = 'Download failed'
+            iteminfo['note'] = 'Download failed (%s)' % errmsg
             installinfo['managed_installs'].append(iteminfo)
             return False
         except fetch.MunkiDownloadError, errmsg:
