@@ -1565,6 +1565,8 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['installed'] = someVersionInstalled(item_pl)
     if iteminfo['installed']:
         iteminfo['needs_update'] = (installedState(item_pl) == 0)
+    iteminfo['licensed_seat_info_available'] = item_pl.get(
+                                        'licensed_seat_info_available', False)
     iteminfo['uninstallable'] = item_pl.get('uninstallable', False)
     if (not iteminfo['installed']) or (iteminfo.get('needs_update')):
         iteminfo['installer_item_size'] = \
@@ -1595,7 +1597,8 @@ def updateAvailableLicenseSeats(installinfo):
     license_info = {}
     items_to_check = [item['name']
                       for item in installinfo['optional_installs']
-                      if not item['installed']]
+                      if item.get('licensed_seat_info_available')
+                         and not item['installed']]
 
     # complicated logic here to 'batch' process our GET requests but
     # keep them under 256 characters each
@@ -1613,16 +1616,18 @@ def updateAvailableLicenseSeats(installinfo):
             end_index = end_index - 1
     
         munkicommon.display_debug1('Fetching licensed seat data from %s', url)
-        license_data = getDataFromURL(url)
-        munkicommon.display_debug1('Got: %s', license_data)
         try:
+            license_data = getDataFromURL(url)
+            munkicommon.display_debug1('Got: %s', license_data)
             license_dict = FoundationPlist.readPlistFromString(
                 license_data)
+        except (fetch.MunkiDownloadError, fetch.CurlDownloadError), err:
+            # problem fetching from URL
+            munkicommon.display_error('Error from %s: %s', url, err)
         except FoundationPlist.FoundationPlistException:
-            munkicommon.display_warning(
+            # no data or bad data from URL
+            munkicommon.display_error(
                     'Bad license data from %s: %s', url, license_data)
-            # should we act as all are zero?
-            continue
         else:
             # merge data from license_dict into license_info
             license_info.update(license_dict)
@@ -1630,23 +1635,22 @@ def updateAvailableLicenseSeats(installinfo):
 
     # use license_info to update our remaining seats
     for item in installinfo['optional_installs']:
-        munkicommon.display_debug2(
-            'Looking for license info for %s', item['name'])
-        if item['name'] in license_info.keys():
+        if item['name'] in items_to_check:
+            munkicommon.display_debug2(
+                'Looking for license info for %s', item['name'])
             # record available seats for this item
-            munkicommon.display_debug1(
-                'Recording available seats for %s: %s',
-                item['name'], license_info[item['name']])
+            seats_available = False
+            seat_info = license_info.get(item['name'], 0)
             try:
-                seats_available = int(license_info[item['name']]) > 0
-                munkicommon.display_debug2(
-                    'Seats available: %s', seats_available)
-                item['licensed_seats_available'] = seats_available
+                seats_available = int(seat_info) > 0
+                munkicommon.display_debug1(
+                    'Recording available seats for %s: %s', 
+                    item['name'], seats_available)
             except ValueError:
                 munkicommon.display_warning(
-                        'Bad license data for %s: %s', 
-                        item['name'], license_info[item['name']])
-                item['licensed_seats_available'] = False
+                    'Bad license data for %s: %s', item['name'], seat_info)
+            
+            item['licensed_seats_available'] = seats_available
 
 
 def processInstall(manifestitem, cataloglist, installinfo):
