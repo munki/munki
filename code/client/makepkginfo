@@ -94,7 +94,7 @@ def getCatalogInfoFromPath(pkgpath, options):
                 #adobepkgname = cataloginfo['receipts'][0].get('filename')
                 cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath)
                                             #mountpoints[0], adobepkgname)
-
+    
     else:
         # maybe an Adobe installer/updater/patcher?
         cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath, 
@@ -134,7 +134,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
         # look for one of the many possible Adobe installer/updaters
         cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0], 
                                                     options.pkgname or '')
-        
+    
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
         # look for given item or an app at the top level of the dmg
@@ -158,7 +158,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
                     iteminfo = getiteminfo(itempath)
                     if iteminfo:
                         break
-                        
+        
         if iteminfo:
             item_to_copy = {}
             if options.destitemname:
@@ -193,7 +193,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo['items_to_copy'] = [item_to_copy]
             cataloginfo['uninstallable'] = True
             cataloginfo['uninstall_method'] = "remove_copied_items"
-            
+    
     #eject the dmg
     munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
@@ -214,7 +214,7 @@ def getBundleInfo(path):
             return plist
         except FoundationPlist.NSPropertyListSerializationException:
             pass
-
+    
     return None
     
 
@@ -266,7 +266,7 @@ def getiteminfo(itempath):
         elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
             infodict['minosversion'] = \
                 plist['SystemVersionCheck:MinimumSystemVersion']
-            
+    
     elif os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or \
          os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist')):
         infodict['type'] = 'bundle'
@@ -275,7 +275,7 @@ def getiteminfo(itempath):
         for key in ['CFBundleShortVersionString', 'CFBundleVersion']:
             if key in plist:
                 infodict[key] = plist[key]
-            
+    
     elif itempath.endswith("Info.plist") or \
          itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
@@ -287,7 +287,7 @@ def getiteminfo(itempath):
                     infodict[key] = plist[key]
         except FoundationPlist.NSPropertyListSerializationException:
             pass
-            
+    
     # let's help the admin -- if CFBundleShortVersionString is empty
     # or doesn't start with a digit, and CFBundleVersion is there
     # use CFBundleVersion as the version_comparison_key
@@ -298,7 +298,7 @@ def getiteminfo(itempath):
             infodict['version_comparison_key'] = 'CFBundleVersion'
     elif 'CFBundleShortVersionString' in infodict:
         infodict['version_comparison_key'] = 'CFBundleShortVersionString'
-        
+    
     if not 'CFBundleShortVersionString' in infodict and \
        not 'CFBundleVersion' in infodict:
         infodict['type'] = 'file'
@@ -337,7 +337,7 @@ def main():
         action='store_true',
         help='Print the version of the munki tools and exit.'
         )
-
+    
     # Default override options
     default_override_options = optparse.OptionGroup(
         p, 'Default Override Options',
@@ -647,6 +647,12 @@ def main():
         help=('Specifies administrator provided notes to be embedded into the '
         'pkginfo. Can be a PATH to a file.')
         )
+    additional_options.add_option(
+        '--nopkg',
+        action='store_true',
+        help=('Indicates this pkginfo should have an \'installer_type\' of '
+              '\'nopkg\'. Ignored if a package or dmg argument is supplied.')
+        )
     p.add_option_group(additional_options)
     
     options, arguments = p.parse_args()
@@ -671,6 +677,7 @@ def main():
     
     if (len(arguments) == 0 
         and not options.file
+        and not options.nopkg
         and not options.installer_environment
         and not options.installcheck_script
         and not options.uninstallcheck_script
@@ -682,7 +689,7 @@ def main():
         and not options.apple_update):
         p.print_usage()
         exit(-1)
-
+    
     if options.minimum_os_version and \
         not options.minimum_os_version[0].isdigit():
         print >> sys.stderr, \
@@ -762,15 +769,6 @@ def main():
                 print >> sys.stderr, "%s is not an installer package!" % item
                 exit(-1)
             
-            if options.description:
-                catinfo['description'] = readFileOrString(options.description)
-            if options.displayname:
-                catinfo['display_name'] = options.displayname
-            if options.name:
-                catinfo['name'] = options.name
-            if options.pkgvers:
-                catinfo['version'] = options.pkgvers
-            
             catinfo['installer_item_size'] = int(itemsize/1024)
             if itemhash != "N/A":
                 catinfo['installer_item_hash'] = itemhash
@@ -803,7 +801,7 @@ def main():
                             break
                         else:
                             temppath = os.path.dirname(temppath)
-
+                    
                     if not location:
                         #just the filename
                         location = os.path.split(uninstallerpath)[1]
@@ -815,7 +813,7 @@ def main():
                 else:
                     print >> sys.stderr, "No uninstaller at %s" % \
                                         uninstallerpath
-                    
+            
             # some metainfo
             if options.catalog:
                 catinfo['catalogs'] = options.catalog
@@ -824,7 +822,19 @@ def main():
             if catinfo.get('receipts', None):
                 catinfo['uninstallable'] = True
                 catinfo['uninstall_method'] = "removepackages"
-        
+    else:
+        if options.nopkg:
+            catinfo['installer_type'] = "nopkg"
+    
+    if options.description:
+        catinfo['description'] = readFileOrString(options.description)
+    if options.displayname:
+        catinfo['display_name'] = options.displayname
+    if options.name:
+        catinfo['name'] = options.name
+    if options.pkgvers:
+        catinfo['version'] = options.pkgvers
+    
     default_minosversion = "10.4.0"
     maxfileversion = "0.0.0.0.0"
     if catinfo:
@@ -856,10 +866,10 @@ def main():
             else:
                 print >> sys.stderr, (
                     "Item %s doesn't exist. Skipping." % fitem)
-
+    
     if installs:
         catinfo['installs'] = installs
-
+    
     # determine minimum_os_version from identified apps in the installs array
     if 'installs' in catinfo:
         # build a list of minosversions using a list comprehension
@@ -875,9 +885,9 @@ def main():
                 catinfo['minimum_os_version']))
         # get the maximum from the list and covert back to string 
         catinfo['minimum_os_version'] = str(max(item_minosversions))
-
+    
     if not 'minimum_os_version' in catinfo:
-	    # ensure a minimum_os_version is set unless using --file option only
+        # ensure a minimum_os_version is set unless using --file option only
         catinfo['minimum_os_version'] = default_minosversion
     
     if options.file and not arguments:
@@ -973,11 +983,10 @@ def main():
             catinfo['version'] = "1.0"
         catinfo['name'] = options.apple_update
         catinfo['installer_type'] = 'apple_update_metadata'
-
+    
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
 
 
 if __name__ == '__main__':
     main()
-
