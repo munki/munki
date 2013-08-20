@@ -226,6 +226,9 @@ def getPayloadInfo(dirpath):
                 if result:
                     info_xml = result[0].encode('UTF-8')
                     dom = minidom.parseString(info_xml)
+            else:
+                # no xml, no db, no payload info!
+                return payloadinfo
 
         payload_info = dom.getElementsByTagName('PayloadInfo')
         if payload_info:
