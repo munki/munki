@@ -817,7 +817,101 @@ def DMGhasSLA(dmgpath):
     return hasSLA
 
 
-def mountdmg(dmgpath, use_shadow=False):
+def hdiutilInfo():
+    """
+    Convenience method for running 'hdiutil info -plist'
+    
+    Returns the root object parsed with readPlistFromString()
+    """
+    proc = subprocess.Popen(
+                ['/usr/bin/hdiutil', 'info', '-plist'],
+                bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if err:
+        print >> sys.stderr, (
+            'hdiutil error %s with image %s.' % (err, dmgpath))
+    (pliststr, out) = getFirstPlist(out)
+    if pliststr:
+        try:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            return plist
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return None
+
+
+def diskImageIsMounted(dmgpath):
+    """
+    Returns true if the given disk image is currently mounted
+    """
+    isMounted = False
+    infoplist = hdiutilInfo()
+    for imageProperties in infoplist.get('images'):
+        if 'image-path' in imageProperties:
+            imagepath = imageProperties['image-path']
+            if imagepath == dmgpath:
+                isMounted = True
+                break
+    return isMounted
+
+
+def pathIsVolumeMountPoint(path):
+    """
+    Checks if the given path is a volume for an attached disk image
+    
+    Returns true if the given path is a mount point or false if it isn't
+    """
+    isMountPoint = False
+    infoplist = hdiutilInfo()
+    for imageProperties in infoplist.get('images'):
+        if 'image-path' in imageProperties:
+            imagepath = imageProperties['image-path']
+            for entity in imageProperties.get('system-entities', []):
+                if 'mount-point' in entity:
+                    mountpoint = entity['mount-point']
+                    if path == mountpoint:
+                        isMountPoint = True
+                        break                
+    return isMountPoint
+
+
+def diskImageForMountPoint(path):
+    """
+    Resolves the given mount point path to an attached disk image path
+    
+    Returns a path to a disk image file or None if the path is not
+    a valid mount point
+    """
+    dmgpath = None
+    infoplist = hdiutilInfo()
+    for imageProperties in infoplist.get('images'):
+        if 'image-path' in imageProperties:
+            imagepath = imageProperties['image-path']
+            for entity in imageProperties.get('system-entities', []):
+                if 'mount-point' in entity:
+                    mountpoint = entity['mount-point']
+                    if os.path.samefile(path, mountpoint):
+                        dmgpath = imagepath
+    return dmgpath
+
+def mountPointsForDiskImage(dmgpath):
+    """
+    Returns a list of mountpoints for the given disk image
+    """
+    mountpoints = []
+    infoplist = hdiutilInfo()
+    for imageProperties in infoplist.get('images'):
+        if 'image-path' in imageProperties:
+            imagepath = imageProperties['image-path']
+            if imagepath == dmgpath:
+                for entity in imageProperties.get('system-entities', []):
+                    if 'mount-point' in entity:
+                        mountpoints.append(entity['mount-point'])
+                break
+    return mountpoints
+
+
+def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
@@ -825,6 +919,15 @@ def mountdmg(dmgpath, use_shadow=False):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
+    
+    if (use_existing_mounts):
+        # Check if this dmg is already mounted
+        # and if so, bail out and return the mountpoints
+        if diskImageIsMounted(dmgpath):
+            mountpoints = mountPointsForDiskImage(dmgpath)
+            return mountpoints
+    
+    # Attempt to mount the dmg
     stdin = ''
     if DMGhasSLA(dmgpath):
         stdin = 'Y\n'

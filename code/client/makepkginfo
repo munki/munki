@@ -104,14 +104,15 @@ def getCatalogInfoFromPath(pkgpath, options):
 
 def getCatalogInfoFromDmg(dmgpath, options):
     """
-    * Mounts a disk image 
+    * Mounts a disk image if it's not already mounted
     * Gets catalog info for the first installer item found at the root level.
-    * Unmounts the disk image
+    * Unmounts the disk image if it wasn't already mounted
     
     To-do: handle multiple installer items on a disk image(?)
     """
     cataloginfo = None
-    mountpoints = munkicommon.mountdmg(dmgpath)
+    dmgWasAlreadyMounted = munkicommon.diskImageIsMounted(dmgpath)
+    mountpoints = munkicommon.mountdmg(dmgpath, use_existing_mounts=True)
     if not mountpoints:
         print >> sys.stderr, "Could not mount %s!" % dmgpath
         exit(-1)
@@ -141,8 +142,15 @@ def getCatalogInfoFromDmg(dmgpath, options):
         iteminfo = {}
         if options.item:
             item = options.item
+            
+            # Create a path by joining the mount point and the provided item path.
+            # The os.path.join method will intelligently take care of the following scenarios:
+            # ("/mountpoint", "relative/path")  -> "/mountpoint/relative/path"
+            # ("/mountpoint", "/absolute/path") -> "/absolute/path"
             itempath = os.path.join(mountpoints[0], item)
-            if os.path.exists(itempath):
+            
+            # Now check that the item actually exists and is located within the mount point
+            if os.path.exists(itempath) and itempath.startswith(mountpoints[0]):
                 iteminfo = getiteminfo(itempath)
             else:
                 print >> sys.stderr, \
@@ -161,17 +169,29 @@ def getCatalogInfoFromDmg(dmgpath, options):
         
         if iteminfo:
             item_to_copy = {}
+            if os.path.isabs(item):
+                    # Absolute path given
+                    # Remove the mountpoint from item path
+                    mountpointPattern = "^%s/" % mountpoints[0]
+                    item = re.sub(mountpointPattern, '', item)
+            
             if options.destitemname:
                 # An alternate 'destination_item' name has been specified
                 dest_item = options.destitemname
                 item_to_copy['destination_item'] = options.destitemname
             else:
                 dest_item = item
+            
+            # Use only the last path component when
+            # composing the path key of an installs item
+            dest_item_filename = os.path.split(dest_item)[1]
+            
             if options.destinationpath:
                 iteminfo['path'] = os.path.join(options.destinationpath,
-                                                                    dest_item)
+                                                                    dest_item_filename)
             else:
-                iteminfo['path'] = os.path.join("/Applications", dest_item)
+                
+                iteminfo['path'] = os.path.join("/Applications", dest_item_filename)
             cataloginfo = {}
             cataloginfo['name'] = iteminfo.get('CFBundleName',
                                             os.path.splitext(item)[0])
@@ -195,7 +215,8 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo['uninstall_method'] = "remove_copied_items"
     
     #eject the dmg
-    munkicommon.unmountdmg(mountpoints[0])
+    if not dmgWasAlreadyMounted:
+        munkicommon.unmountdmg(mountpoints[0])
     return cataloginfo   
 
 
@@ -444,7 +465,10 @@ def main():
         metavar='ITEM',
         dest='item',
         help=('Name or relative path of the item to be installed. '
-              'Useful if there is more than one item at the root of the dmg.')
+              'Useful if there is more than one item at the root of the dmg '
+              'or the item is located in a subdirectory. '
+              'Absolute paths can be provided as well but they '
+              'must point to an item located within the dmg.')
         )
     dragdrop_options.add_option(
         '--destinationpath', '-d',
@@ -712,6 +736,13 @@ def main():
     if arguments:
         item = arguments[0].rstrip("/")
         if item and os.path.exists(item):
+            
+            # Check if the item is a mount point for a disk image
+            if munkicommon.pathIsVolumeMountPoint(item):
+                # Get the disk image path for the mount point
+                # and use that instead of the original item
+                item = munkicommon.diskImageForMountPoint(item)
+            
             # get size of installer item
             itemsize = 0 
             itemhash = "N/A"
@@ -766,7 +797,7 @@ def main():
                     itemsize = int(itemsize/1024)
             
             else:
-                print >> sys.stderr, "%s is not an installer package!" % item
+                print >> sys.stderr, "%s is not a valid installer item!" % item
                 exit(-1)
             
             catinfo['installer_item_size'] = int(itemsize/1024)
@@ -982,6 +1013,8 @@ def main():
         else:
             catinfo['version'] = "1.0"
         catinfo['name'] = options.apple_update
+        if options.displayname:
+            catinfo['display_name'] = options.displayname
         catinfo['installer_type'] = 'apple_update_metadata'
     
     # and now, what we've all been waiting for...
