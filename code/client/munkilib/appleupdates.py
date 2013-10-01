@@ -566,7 +566,7 @@ class AppleUpdates(object):
 
         results_array = pl_dict.get('phaseResultsArray', [])
         return [item['productKey'] for item in results_array
-                if 'productKey' in item]
+                if 'productKey' in item and not item.get('ignored')]
 
     def ExtractAndCopyDownloadedCatalog(self, _open=open):
         """Copy the downloaded catalog to a new file, extracting if gzipped.
@@ -812,21 +812,22 @@ class AppleUpdates(object):
         plist = FoundationPlist.readPlist(self.applicable_updates_plist)
         update_list = plist.get('phaseResultsArray', [])
         for update in update_list:
-            iteminfo = {
-                'description': update.get('description', ''),
-                'name': update['ignoreKey'],
-                'version_to_install': update['version'],
-                'display_name': update['name'],
-                'apple_product_name': update['name'],
-                'installed_size': update['sizeInKB'],
-                'productKey': update['productKey']
-            }
-            blocking_apps = self.GetBlockingApps(update['productKey'])
-            if blocking_apps:
-                iteminfo['blocking_applications'] = blocking_apps
-            if update.get('restartRequired') == 'YES':
-                iteminfo['RestartAction'] = 'RequireRestart'
-            infoarray.append(iteminfo)
+            if not update.get('ignored'):
+                iteminfo = {
+                    'description': update.get('description', ''),
+                    'name': update['ignoreKey'],
+                    'version_to_install': update['version'],
+                    'display_name': update['name'],
+                    'apple_product_name': update['name'],
+                    'installed_size': update['sizeInKB'],
+                    'productKey': update['productKey']
+                }
+                blocking_apps = self.GetBlockingApps(update['productKey'])
+                if blocking_apps:
+                    iteminfo['blocking_applications'] = blocking_apps
+                if update.get('restartRequired') == 'YES':
+                    iteminfo['RestartAction'] = 'RequireRestart'
+                infoarray.append(iteminfo)
         return infoarray
 
     def WriteAppleUpdatesFile(self):
