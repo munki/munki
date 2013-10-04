@@ -538,7 +538,7 @@ def comparePlistVersion(item):
     else:
         raise munkicommon.Error('Missing plist path or version!')
 
-    munkicommon.display_debug1('\tChecking %s for %s %s...', 
+    munkicommon.display_debug1('\tChecking %s for %s %s...',
                                filepath, version_comparison_key, versionstring)
     if not os.path.exists(filepath):
         munkicommon.display_debug1('\tNo plist found at %s', filepath)
@@ -570,7 +570,7 @@ def comparePlistVersion(item):
                 return 0
         compare_result = compareVersions(installedvers, versionstring)
         results = ['older', 'not installed?!', 'the same', 'newer']
-        munkicommon.display_debug1('\tInstalled item is %s.', 
+        munkicommon.display_debug1('\tInstalled item is %s.',
                                    results[compare_result + 1])
         return compare_result
     else:
@@ -607,7 +607,7 @@ def filesystemItemExists(item):
                     return 1
                 else:
                     munkicommon.display_debug2(
-                        'Checksums differ: expected %s, got %s', 
+                        'Checksums differ: expected %s, got %s',
                          storedchecksum, ondiskchecksum)
                     return -1
             else:
@@ -681,7 +681,7 @@ def compareReceiptVersion(item):
     else:
         raise munkicommon.Error('Missing packageid or version info!')
 
-    munkicommon.display_debug1('Looking for package %s, version %s', 
+    munkicommon.display_debug1('Looking for package %s, version %s',
                                 pkgid, vers)
     installedvers = INSTALLEDPKGS.get(pkgid)
     if installedvers:
@@ -708,7 +708,7 @@ def getInstalledVersion(item_plist):
                            item_plist['version']) == 1:
             pkgid = receipt['packageid']
             munkicommon.display_debug2(
-                'Using receipt %s to determine installed version of %s', 
+                'Using receipt %s to determine installed version of %s',
                 pkgid, item_plist['name'])
             return munkicommon.getInstalledPackageVersion(pkgid)
 
@@ -723,7 +723,7 @@ def getInstalledVersion(item_plist):
                 name = install_item.get('CFBundleName')
                 bundleid = install_item.get('CFBundleIdentifier')
                 munkicommon.display_debug2(
-                    'Looking for application %s, bundleid %s', 
+                    'Looking for application %s, bundleid %s',
                     name, install_item.get('CFBundleIdentifier'))
                 try:
                     # check default location for app
@@ -752,7 +752,7 @@ def getInstalledVersion(item_plist):
                     return maxversion
             elif install_item['type'] == 'bundle':
                 munkicommon.display_debug2(
-                    'Using bundle %s to determine installed version of %s', 
+                    'Using bundle %s to determine installed version of %s',
                     install_item['path'], item_plist['name'])
                 filepath = os.path.join(install_item['path'],
                                         'Contents', 'Info.plist')
@@ -763,7 +763,7 @@ def getInstalledVersion(item_plist):
                     return "UNKNOWN"
             elif install_item['type'] == 'plist':
                 munkicommon.display_debug2(
-                    'Using plist %s to determine installed version of %s', 
+                    'Using plist %s to determine installed version of %s',
                     install_item['path'], item_plist['name'])
                 try:
                     plist = FoundationPlist.readPlist(install_item['path'])
@@ -1063,7 +1063,7 @@ def getItemDetail(name, cataloglist, vers=''):
                     munkicommon.display_debug1(
                         'Considering item %s, version %s '
                         'with supported architectures: %s',
-                        item['name'], item['version'], 
+                        item['name'], item['version'],
                         item['supported_architectures'])
                     munkicommon.display_debug1(
                         'Our architecture is %s', MACHINE['arch'])
@@ -1099,7 +1099,7 @@ def getItemDetail(name, cataloglist, vers=''):
                 # item name, version, minimum_os_version, and
                 # supported_architecture are all OK
                 munkicommon.display_debug1(
-                    'Found %s, version %s in catalog %s', 
+                    'Found %s, version %s in catalog %s',
                     item['name'], item['version'], catalogname)
                 return item
 
@@ -1156,14 +1156,14 @@ def enoughDiskSpace(manifestitem_pl, installlist=None,
     elif warn:
         if uninstalling:
             munkicommon.display_warning('There is insufficient disk space to '
-                                        'download the uninstaller for %s.', 
+                                        'download the uninstaller for %s.',
                                         manifestitem_pl.get('name'))
         else:
             munkicommon.display_warning('There is insufficient disk space to '
-                                        'download and install %s.', 
+                                        'download and install %s.',
                                         manifestitem_pl.get('name'))
         munkicommon.display_warning(
-            '    %sMB needed; %sMB available', 
+            '    %sMB needed; %sMB available',
             diskspaceneeded/1024, availablediskspace/1024)
     return False
 
@@ -1197,13 +1197,13 @@ def installedState(item_pl):
             'Available Apple updates:\n%s', availableAppleUpdates)
         if item_pl['softwareupdatename'] in availableAppleUpdates:
             munkicommon.display_debug1(
-                '%s is in available Apple Software Updates', 
+                '%s is in available Apple Software Updates',
                 item_pl['softwareupdatename'])
             # return 0 so we're marked as needing to be installed
             return 0
         else:
             munkicommon.display_debug1(
-                 '%s is not in available Apple Software Updates', 
+                 '%s is not in available Apple Software Updates',
                  item_pl['softwareupdatename'])
             # return 1 so we're marked as not needing to be installed
             return 1
@@ -1498,7 +1498,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     if not item_pl:
         munkicommon.display_warning(
             'Could not process item %s for update. '
-            'No pkginfo found in catalogs: %s ', 
+            'No pkginfo found in catalogs: %s ',
             manifestitem, ', '.join(cataloglist))
         return
 
@@ -1510,7 +1510,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
         unused_result = processInstall(manifestitem, cataloglist, installinfo)
     else:
         munkicommon.display_debug1(
-            '%s does not appear to be installed, so no managed updates...', 
+            '%s does not appear to be installed, so no managed updates...',
             manifestitemname)
 
 
@@ -1526,7 +1526,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     # have we already processed this?
     if manifestitemname in installinfo['optional_installs']:
         munkicommon.display_debug1(
-            '%s has already been processed for optional install.', 
+            '%s has already been processed for optional install.',
              manifestitemname)
         return
     elif manifestitemname in installinfo['processed_installs']:
@@ -1551,7 +1551,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     if not item_pl:
         munkicommon.display_warning(
             'Could not process item %s for optional install. '
-            'No pkginfo found in catalogs: %s ', 
+            'No pkginfo found in catalogs: %s ',
             manifestitem, ', '.join(cataloglist))
         return
 
@@ -1614,7 +1614,7 @@ def updateAvailableLicenseSeats(installinfo):
                 break
             # drop an item and see if we're under 256 characters
             end_index = end_index - 1
-    
+
         munkicommon.display_debug1('Fetching licensed seat data from %s', url)
         try:
             license_data = getDataFromURL(url)
@@ -1644,12 +1644,12 @@ def updateAvailableLicenseSeats(installinfo):
             try:
                 seats_available = int(seat_info) > 0
                 munkicommon.display_debug1(
-                    'Recording available seats for %s: %s', 
+                    'Recording available seats for %s: %s',
                     item['name'], seats_available)
             except ValueError:
                 munkicommon.display_warning(
                     'Bad license data for %s: %s', item['name'], seat_info)
-            
+
             item['licensed_seats_available'] = seats_available
 
 
@@ -1676,7 +1676,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     # have we processed this already?
     if manifestitemname in installinfo['processed_installs']:
         munkicommon.display_debug1(
-                '%s has already been processed for install.', 
+                '%s has already been processed for install.',
                 manifestitemname)
         return True
     elif (manifestitemname_withoutversion in
@@ -1690,7 +1690,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
     if not item_pl:
         munkicommon.display_warning(
             'Could not process item %s for install. '
-            'No pkginfo found in catalogs: %s ', 
+            'No pkginfo found in catalogs: %s ',
             manifestitem, ', '.join(cataloglist))
         return False
     elif manifestitemname in installinfo['managed_updates']:
@@ -1810,7 +1810,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 if item_pl.get('RestartAction', 'None') != 'None':
                     munkicommon.display_warning(
                         'Ignoring unattended_install key for %s '
-                        'because RestartAction is %s.', 
+                        'because RestartAction is %s.',
                         item_pl['name'], item_pl.get('RestartAction'))
                 else:
                     iteminfo['unattended_install'] = True
@@ -1879,7 +1879,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             return True
         except fetch.PackageVerificationError:
             munkicommon.display_warning(
-                'Can\'t install %s because the integrity check failed.', 
+                'Can\'t install %s because the integrity check failed.',
                 manifestitem)
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
@@ -2131,7 +2131,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     if not infoitems:
         munkicommon.display_warning(
             'Could not process item %s for removal. '
-            'No pkginfo found in catalogs: %s ',  
+            'No pkginfo found in catalogs: %s ',
             manifestitemname, ', '.join(cataloglist))
         return False
 
@@ -2428,7 +2428,7 @@ def getCatalogs(cataloglist):
                     catalogurl, catalogpath, message=message)
             except fetch.MunkiDownloadError, err:
                 munkicommon.display_error(
-                    'Could not retrieve catalog %s from server: %s', 
+                    'Could not retrieve catalog %s from server: %s',
                     catalogname, err)
             else:
                 try:
@@ -2498,7 +2498,7 @@ def getmanifest(partialurl, suppress_errors=False):
     except fetch.MunkiDownloadError, err:
         if not suppress_errors:
             munkicommon.display_error(
-                'Could not retrieve manifest %s from the server: %s', 
+                'Could not retrieve manifest %s from the server: %s',
                 partialurl, err)
         return None
 
