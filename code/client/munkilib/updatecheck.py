@@ -1954,11 +1954,12 @@ def makePredicateInfoObject():
         return
     for key in MACHINE.keys():
         INFO_OBJECT[key] = MACHINE[key]
-    # use our start time for "current" date.
+    # use our start time for "current" date (if we have it)
     # and add the timezone offset to it so we can compare
     # UTC dates as though they were local dates.
     INFO_OBJECT['date'] = addTimeZoneOffsetToDate(
-        NSDate.dateWithString_(munkicommon.report['StartTime']))
+        NSDate.dateWithString_(
+            munkicommon.report.get('StartTime', munkicommon.format_time())))
     os_vers = MACHINE['os_vers']
     os_vers = os_vers + '.0.0'
     INFO_OBJECT['os_vers_major'] = int(os_vers.split('.')[0])
