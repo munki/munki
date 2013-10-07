@@ -314,12 +314,24 @@ def str_to_ascii(s):
         return s.decode('ascii', 'ignore')
 
 
+def to_unicode(obj, encoding='UTF-8'):
+    """Coerces basestring obj to unicode"""
+    if isinstance(obj, basestring):
+        if not isinstance(obj, unicode):
+            obj = unicode(obj, encoding)
+    return obj
+
+
 def concat_log_message(msg, *args):
-    """Concatenates a string with any additional arguments; drops unicode."""
+    """Concatenates a string with any additional arguments,
+    making sure everything is unicode"""
+    # coerce msg to unicode if it's not already
+    msg = to_unicode(msg)
     if args:
-        args = [str_to_ascii(arg) for arg in args]
+        # coerce all args to unicode as well
+        args = [to_unicode(arg) for arg in args]
         try:
-            msg = str_to_ascii(msg) % tuple(args)
+            msg = msg % tuple(args)
         except TypeError, unused_err:
             warnings.warn(
                 'String format does not match concat args: %s' % (
