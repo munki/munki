@@ -562,7 +562,8 @@ class TestAppleUpdates(mox.MoxTestBase):
             self.au.local_download_catalog_path).AndReturn(True)
         appleupdates.munkicommon.getOsVersion().AndReturn('10.7')
         self.au._RunSoftwareUpdate(
-            ['--CatalogURL', catalog_url, '-d', '-a'],
+            ['-d', '-a'],
+            catalog_url=catalog_url,
             stop_allowed=True).AndReturn(0)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
 
@@ -629,8 +630,8 @@ class TestAppleUpdates(mox.MoxTestBase):
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
-            ['--CatalogURL', catalog_url, '-l', '-f',
-             self.au.applicable_updates_plist],
+            ['-l', '-f', self.au.applicable_updates_plist],
+            catalog_url=catalog_url, 
             stop_allowed=True).AndReturn(1)
 
         appleupdates.munkicommon.getOsVersion().AndReturn('10.6')
@@ -658,8 +659,8 @@ class TestAppleUpdates(mox.MoxTestBase):
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
-            ['--CatalogURL', catalog_url, '-l', '-f',
-             self.au.applicable_updates_plist],
+            ['-l', '-f', self.au.applicable_updates_plist],
+            catalog_url=catalog_url, 
             stop_allowed=True).AndReturn(0)
 
         exc = appleupdates.FoundationPlist.NSPropertyListSerializationException
@@ -687,8 +688,8 @@ class TestAppleUpdates(mox.MoxTestBase):
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
-            ['--CatalogURL', catalog_url, '-l', '-f',
-             self.au.applicable_updates_plist],
+            ['-l', '-f', self.au.applicable_updates_plist],
+            catalog_url=catalog_url, 
             stop_allowed=True).AndReturn(0)
 
         appleupdates.FoundationPlist.readPlist(
@@ -723,9 +724,9 @@ class TestAppleUpdates(mox.MoxTestBase):
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
-            ['--CatalogURL', catalog_url, '-l', '-f',
-             self.au.applicable_updates_plist],
-            stop_allowed=True).AndReturn(0)
+            ['-l', '-f', self.au.applicable_updates_plist],
+             catalog_url=catalog_url,
+             stop_allowed=True).AndReturn(0)
 
         appleupdates.FoundationPlist.readPlist(
             self.au.applicable_updates_plist).AndReturn(updates_plist_dict)
@@ -1511,7 +1512,7 @@ class TestAppleUpdates(mox.MoxTestBase):
             appleupdates.kCFPreferencesCurrentHost).AndReturn(None)
         appleupdates.CFPreferencesAppSynchronize(
             appleupdates.APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN).AndReturn(None)
-        appleupdates.munkicommon.display_warning(
+        appleupdates.munkicommon.display_error(
             'Error setting com.apple.SoftwareUpdate ByHost preferences.')
 
         self.mox.ReplayAll()

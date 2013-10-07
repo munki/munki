@@ -33,13 +33,16 @@ from xml.dom import minidom
 from xml.parsers import expat
 
 from Foundation import NSDate
-from Foundation import CFPreferencesCopyAppValue
-#from Foundation import CFPreferencesCopyValue
-from Foundation import CFPreferencesSetValue
-from Foundation import CFPreferencesAppSynchronize
-#from Foundation import kCFPreferencesAnyUser
-from Foundation import kCFPreferencesCurrentUser
-from Foundation import kCFPreferencesCurrentHost
+from CoreFoundation import CFPreferencesAppValueIsForced
+from CoreFoundation import CFPreferencesCopyAppValue
+from CoreFoundation import CFPreferencesCopyKeyList
+from CoreFoundation import CFPreferencesCopyValue
+from CoreFoundation import CFPreferencesSetValue
+from CoreFoundation import CFPreferencesAppSynchronize
+from CoreFoundation import CFPreferencesSynchronize
+from CoreFoundation import kCFPreferencesAnyUser
+from CoreFoundation import kCFPreferencesCurrentUser
+from CoreFoundation import kCFPreferencesCurrentHost
 from LaunchServices import LSFindApplicationForInfo
 
 import FoundationPlist
@@ -52,10 +55,16 @@ import updatecheck
 
 # Apple Software Update Catalog URLs.
 DEFAULT_CATALOG_URLS = {
-    '10.5': 'http://swscan.apple.com/content/catalogs/others/index-leopard.merged-1.sucatalog',
-    '10.6': 'http://swscan.apple.com/content/catalogs/others/index-leopard-snowleopard.merged-1.sucatalog',
-    '10.7': 'http://swscan.apple.com/content/catalogs/others/index-lion-snowleopard-leopard.merged-1.sucatalog',
-    '10.8': 'http://swscan.apple.com/content/catalogs/others/index-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+    '10.5': ('http://swscan.apple.com/content/catalogs/others/'
+             'index-leopard.merged-1.sucatalog'),
+    '10.6': ('http://swscan.apple.com/content/catalogs/others/'
+             'index-leopard-snowleopard.merged-1.sucatalog'),
+    '10.7': ('http://swscan.apple.com/content/catalogs/others/'
+             'index-lion-snowleopard-leopard.merged-1.sucatalog'),
+    '10.8': ('http://swscan.apple.com/content/catalogs/others/'
+             'index-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
+    '10.9': ('https://swscan.apple.com/content/catalogs/others/'
+          'index-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog')
 }
 
 # Preference domain for Apple Software Update.
@@ -118,9 +127,16 @@ class AppleUpdates(object):
     """
 
     RESTART_ACTIONS = ['RequireRestart', 'RecommendRestart']
+    ORIGINAL_CATALOG_URL_KEY = '_OriginalCatalogURL'
 
     def __init__(self):
         self._managed_install_dir = munkicommon.pref('ManagedInstallDir')
+
+        # fix things if somehow we died last time before resetting the
+        # original CatalogURL
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
+        if os_version_tuple >= (10, 9):
+            self._ResetOriginalCatalogURL()
 
         real_cache_dir = os.path.join(self._managed_install_dir, 'swupd')
         if os.path.exists(real_cache_dir):
@@ -514,8 +530,7 @@ class AppleUpdates(object):
             retcode = self._LeopardDownloadAvailableUpdates(catalog_url)
         else:
             retcode = self._RunSoftwareUpdate(
-                ['--CatalogURL', catalog_url, '-d', '-a'],
-                stop_allowed=True)
+                ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
 
         if munkicommon.stopRequested():
             return False
@@ -542,10 +557,10 @@ class AppleUpdates(object):
 
         # use our locally-cached Apple catalog
         catalog_url = 'file://localhost' + urllib2.quote(catalog_path)
-        su_options = ['--CatalogURL', catalog_url, '-l', '-f',
-                      self.applicable_updates_plist]
+        su_options = ['-l', '-f', self.applicable_updates_plist]
 
-        retcode = self._RunSoftwareUpdate(su_options, stop_allowed=True)
+        retcode = self._RunSoftwareUpdate(
+            su_options, catalog_url=catalog_url, stop_allowed=True)
         if munkicommon.stopRequested():
             return []
         if retcode:  # there was an error
@@ -660,7 +675,7 @@ class AppleUpdates(object):
         Returns:
           Boolean. False if the checksums match, True if they differ."""
         cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
-               'com\.apple\.*']
+               r'com\.apple\.*']
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -905,6 +920,72 @@ class AppleUpdates(object):
         return CFPreferencesCopyAppValue(
             pref_name, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
+    def _GetCatalogURL(self):
+        """Returns Software Update's CatalogURL"""
+        return CFPreferencesCopyValue('CatalogURL',
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+
+    def _SetCustomCatalogURL(self, catalog_url):
+        """Sets Software Update's CatalogURL to custom value, storing the
+        original"""
+        software_update_key_list = CFPreferencesCopyKeyList(
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost) or []
+        if not self.ORIGINAL_CATALOG_URL_KEY in software_update_key_list:
+            # store the original CatalogURL
+            original_catalog_url = self._GetCatalogURL()
+            if not original_catalog_url:
+                # can't store None as a CFPreference
+                original_catalog_url = ""
+            CFPreferencesSetValue(self.ORIGINAL_CATALOG_URL_KEY,
+                original_catalog_url,
+                APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        # now set our custom CatalogURL
+        CFPreferencesSetValue('CatalogURL', catalog_url,
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        # finally, sync things up
+        if not CFPreferencesSynchronize(APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost):
+            munkicommon.display_error(
+                'Error setting com.apple.SoftwareUpdate CatalogURL.')
+
+    def _ResetOriginalCatalogURL(self):
+        """Resets SoftwareUpdate's CatalogURL to the original value"""
+        software_update_key_list = CFPreferencesCopyKeyList(
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost) or []
+        if not self.ORIGINAL_CATALOG_URL_KEY in software_update_key_list:
+            # do nothing
+            return
+        original_catalog_url = CFPreferencesCopyValue(
+            self.ORIGINAL_CATALOG_URL_KEY,
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        if not original_catalog_url:
+            original_catalog_url = None
+        # reset CatalogURL to the one we stored
+        CFPreferencesSetValue('CatalogURL', original_catalog_url,
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        # remove ORIGINAL_CATALOG_URL_KEY
+        CFPreferencesSetValue(self.ORIGINAL_CATALOG_URL_KEY, None,
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        # sync
+        if not CFPreferencesSynchronize(APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost):
+            munkicommon.display_error(
+                'Error resetting com.apple.SoftwareUpdate CatalogURL.')
+
+    def CatalogURLisManaged(self):
+        """Returns True if Software Update's CatalogURL is managed
+        via MCX or Profiles"""
+        return CFPreferencesAppValueIsForced(
+            APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN, 'CatalogURL')
+
     def _LeopardSetupSoftwareUpdateCheck(self):
         """Set defaults for root user and current host; needed for Leopard."""
         defaults = {
@@ -917,7 +998,7 @@ class AppleUpdates(object):
                 key, value, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
                 kCFPreferencesCurrentUser, kCFPreferencesCurrentHost)
         if not CFPreferencesAppSynchronize(APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN):
-            munkicommon.display_warning(
+            munkicommon.display_error(
                 'Error setting com.apple.SoftwareUpdate ByHost preferences.')
 
     def _LeopardDownloadAvailableUpdates(self, catalog_url):
@@ -1008,7 +1089,8 @@ class AppleUpdates(object):
         return retcode
 
     def _RunSoftwareUpdate(
-        self, options_list, stop_allowed=False, mode=None, results=None):
+        self, options_list, catalog_url=None,
+        stop_allowed=False, mode=None, results=None):
         """Runs /usr/sbin/softwareupdate with options.
 
         Provides user feedback via command line or MunkiStatus.
@@ -1051,7 +1133,16 @@ class AppleUpdates(object):
         if os_version_tuple > (10, 5):
             cmd.append('-v')
 
+        if catalog_url:
+            # OS version-specific stuff to use a specific CatalogURL
+            if os_version_tuple < (10, 9):
+                cmd.extend(['--CatalogURL', catalog_url])
+            else:
+                self._SetCustomCatalogURL(catalog_url)
+
         cmd.extend(options_list)
+
+        munkicommon.display_debug1('softwareupdate cmd: %s', str(cmd))
 
         try:
             job = launchd.Job(cmd)
@@ -1107,8 +1198,11 @@ class AppleUpdates(object):
                 item = output[11:]
                 if item:
                     self._ResetMunkiStatusAndDisplayMessage(output)
+            elif output.startswith('Downloaded ') and mode == 'install':
+                # don't display this
+                pass
             elif output.startswith('Installed '):
-                # 10.6 / 10.7. Successful install of package name.
+                # 10.6 / 10.7 / 10.8. Successful install of package name.
                 if mode == 'install':
                     munkicommon.display_status_minor(output)
                     results['installed'].append(output[10:])
@@ -1117,6 +1211,10 @@ class AppleUpdates(object):
                     # don't display.
                     # softwareupdate logging "Installed" at the end of a
                     # successful download-only session is odd.
+            elif output.startswith('Done with ') and mode == 'install':
+                # 10.9 successful install
+                munkicommon.display_status_minor(output)
+                results['installed'].append(output[10:])
             elif output.startswith('Done '):
                 # 10.5. Successful install of package name.
                 munkicommon.display_status_minor(output)
@@ -1154,6 +1252,11 @@ class AppleUpdates(object):
                     pass
             else:
                 munkicommon.display_status_minor(output)
+
+        if catalog_url:
+            # reset CatalogURL if needed
+            if os_version_tuple >= (10, 9):
+                self._ResetOriginalCatalogURL()
 
         retcode = job.returncode()
         if retcode == 0:
@@ -1212,7 +1315,7 @@ class AppleUpdates(object):
 
         catalog_url = 'file://localhost' + urllib2.quote(
             self.local_catalog_path)
-        su_options = ['--CatalogURL', catalog_url, '-i']
+        su_options = ['-i']
 
         if only_unattended:
             # Append list of unattended_install items
@@ -1226,8 +1329,9 @@ class AppleUpdates(object):
             # We're installing all available updates
             su_options.extend(['-a'])
 
-        retcode = self._RunSoftwareUpdate(su_options, mode='install',
-                                          results=installresults)
+        retcode = self._RunSoftwareUpdate(
+            su_options, mode='install', catalog_url=catalog_url,
+            results=installresults)
         if not 'InstallResults' in munkicommon.report:
             munkicommon.report['InstallResults'] = []
 
@@ -1481,13 +1585,19 @@ def clearAppleUpdateInfo():
 
 def installAppleUpdates(only_unattended=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
-    return getAppleUpdatesInstance().InstallAppleUpdates(only_unattended=only_unattended)
+    return getAppleUpdatesInstance().InstallAppleUpdates(
+        only_unattended=only_unattended)
 
 
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
     client_id='', forcecatalogrefresh=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
     appleUpdatesObject = getAppleUpdatesInstance()
+    if appleUpdatesObject.CatalogURLisManaged():
+        munkicommon.display_warning(
+            "Cannot manage Apple Software updates because CatalogURL "
+            "is managed via MCX or profiles.")
+        return False
     appleUpdatesObject.client_id = client_id
     appleUpdatesObject.force_catalog_refresh = forcecatalogrefresh
 
