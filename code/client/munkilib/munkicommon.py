@@ -1835,10 +1835,10 @@ def getPackageMetaData(pkgitem):
 
     # first get the data /usr/sbin/installer will give us
     installerinfo = getInstallerPkgInfo(pkgitem)
-    if not installerinfo:
-        return None
     # now look for receipt/subpkg info
     receiptinfo = getReceiptInfo(pkgitem)
+    if not receiptinfo:
+        return None
 
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
@@ -1852,9 +1852,9 @@ def getPackageMetaData(pkgitem):
         if (MunkiLooseVersion(infoitem['version']) >
             MunkiLooseVersion(highestpkgversion)):
             highestpkgversion = infoitem['version']
-            if 'installed_size' in infoitem:
-                # note this is in KBytes
-                installedsize += infoitem['installed_size']
+        if 'installed_size' in infoitem:
+            # note this is in KBytes
+            installedsize += infoitem['installed_size']
 
     if metaversion == '0.0.0.0.0':
         metaversion = highestpkgversion
