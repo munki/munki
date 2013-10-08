@@ -472,14 +472,14 @@ class MSUAppDelegate(NSObject):
             if row['installed']:
                 if item.get("needs_update"):
                     status = NSLocalizedString(u"Update available", None)
-                else:
-                    row['size'] = "-"
-                    status = NSLocalizedString(u"Installed", None)
-                if item.get("will_be_removed"):
+                elif item.get("will_be_removed"):
                     status = NSLocalizedString(u"Will be removed", None)
                 elif not item.get('uninstallable'):
                     status = NSLocalizedString(u"Not removable", None)
                     row['enabled'] = objc.NO
+                else:
+                    row['size'] = "-"
+                    status = NSLocalizedString(u"Installed", None)
             else:
                 status = "Not installed"
                 if item.get("will_be_installed"):
