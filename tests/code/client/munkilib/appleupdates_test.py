@@ -1106,6 +1106,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.munkicommon, 'getsha256hash')
         self.mox.StubOutWithMock(self.au, 'CacheAppleCatalog')
         self.mox.StubOutWithMock(self.au, '_IsForceCheckNeccessary')
+        self.mox.StubOutWithMock(self.au, 'GetSoftwareUpdateInfo')
 
         appleupdates.munkicommon.getsha256hash(
             self.au.apple_download_catalog_path).AndReturn('hash')
@@ -1115,6 +1116,11 @@ class TestAppleUpdates(mox.MoxTestBase):
             'Skipping Apple Software Update check because sucatalog is '
             'unchanged, installed Apple packages are unchanged and we '
             'recently did a full check.')
+        # mock out GetSoftwareUpdateInfo() because its return value
+        # depends on whether or not we have cached updates
+        # this implies we might need some tests that deal with
+        # cached updates...
+        self.au.GetSoftwareUpdateInfo().AndReturn(False)
 
         self.mox.ReplayAll()
         self.assertFalse(self.au.CheckForSoftwareUpdates(force_check=False))
@@ -1344,6 +1350,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self._MockFoundationPlist()
         self.mox.StubOutWithMock(appleupdates.os.path, 'exists')
         self.mox.StubOutWithMock(self.au, 'GetBlockingApps')
+        self.mox.StubOutWithMock(self.au, 'GetFirmwareAlertText')
 
         blocking_apps = ['blocking1', 'blocking2']
         applicable_updates = {
@@ -1367,6 +1374,7 @@ class TestAppleUpdates(mox.MoxTestBase):
              'productKey': 'prodid1'},
             {'apple_product_name': 'display_name2',
              'description': 'desc2', 
+             'firmware_alert_text': 'This is a firmware update',
              'name': 'name2',
              'version_to_install': 'ver2', 
              'display_name': 'display_name2',
@@ -1382,9 +1390,15 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.au.GetBlockingApps(
             applicable_updates['phaseResultsArray'][0]['productKey']).AndReturn(
                 blocking_apps)
+        self.au.GetFirmwareAlertText(
+            applicable_updates['phaseResultsArray'][0]['productKey']).AndReturn(
+                '')
         self.au.GetBlockingApps(
             applicable_updates['phaseResultsArray'][1]['productKey']).AndReturn(
                 [])
+        self.au.GetFirmwareAlertText(
+            applicable_updates['phaseResultsArray'][1]['productKey']).AndReturn(
+                'This is a firmware update')
 
         self.mox.ReplayAll()
         self.assertEqual(expected_output, self.au.GetSoftwareUpdateInfo())

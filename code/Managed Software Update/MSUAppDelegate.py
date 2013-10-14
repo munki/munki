@@ -750,7 +750,64 @@ class MSUAppDelegate(NSObject):
             return False
 
 
+    def getFirmwareAlertInfo(self):
+        info = []
+        for update_item in self._listofupdates:
+            if 'firmware_alert_text' in update_item:
+                info_item = {}
+                info_item['name'] = update_item.get('display_name', 'name')
+                alert_text = update_item['firmware_alert_text']
+                if alert_text == '_DEFAULT_FIRMWARE_ALERT_TEXT_':
+                    # substitute localized default alert text
+                    alert_text = NSLocalizedString(
+                        (u"Firmware will be updated on your computer. "
+                         "Your computer's power cord must be connected "
+                         "and plugged into a working power source. "
+                         "It may take several minutes for the update to "
+                         "complete. Do not disturb or shut off the power "
+                         "on your computer during this update."),
+                        None)
+                info_item['alert_text'] = alert_text
+                info.append(info_item)
+        return info
+
+
+    def alertedToFirmwareUpdatesAndCancelled(self):
+        '''Returns True if we have one or more firmware updates and 
+        the user clicks the Cancel button'''
+        firmware_alert_info = self.getFirmwareAlertInfo()
+        if not firmware_alert_info:
+            return False
+        power_info = munki.getPowerInfo()
+        on_battery_power = (power_info.get('PowerSource') == 'Battery Power')
+        for item in firmware_alert_info:
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(item['name'],
+                  NSLocalizedString(u"Continue", None),
+                  NSLocalizedString(u"Cancel", None),
+                  objc.nil,
+                  u"")
+            if on_battery_power:
+                alert_text = NSLocalizedString(
+                    u"Your computer is not connected to a power source.", None)
+                alert_text += "\n\n" + item['alert_text']
+            else:
+                alert_text = item['alert_text']
+            alert.setInformativeText_(alert_text)
+            alert.setAlertStyle_(NSCriticalAlertStyle)
+            if on_battery_power:
+                # set Cancel button to be activated by return key
+                alert.buttons()[1].setKeyEquivalent_('\r')
+                # set Continue button to be activated by Escape key
+                alert.buttons()[0].setKeyEquivalent_(chr(27))
+            buttonPressed = alert.runModal()
+            if buttonPressed == NSAlertAlternateReturn:
+                return True
+        return False
+
+
     def alertIfRunnningOnBattery(self):
+        '''Returns True if we are running on battery and user clicks
+        the Cancel button'''
         power_info = munki.getPowerInfo()
         if (power_info.get('PowerSource') == 'Battery Power'
             and power_info.get('BatteryCharge', 0) < 50):
@@ -798,7 +855,10 @@ class MSUAppDelegate(NSObject):
                                         self, alert, returncode, contextinfo):
         self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
-            if self.alertIfRunnningOnBattery():
+            if self.alertedToFirmwareUpdatesAndCancelled():
+                munki.log("user", "alerted_to_firmware_updates_and_cancelled")
+                return
+            elif self.alertIfRunnningOnBattery():
                 munki.log("user", "alerted_on_battery_power_and_cancelled")
                 return
             NSLog("User chose to logout")

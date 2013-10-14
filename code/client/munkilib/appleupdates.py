@@ -32,6 +32,7 @@ import urlparse
 from xml.dom import minidom
 from xml.parsers import expat
 
+from AppKit import NSAttributedString
 from Foundation import NSDate
 from CoreFoundation import CFPreferencesAppValueIsForced
 from CoreFoundation import CFPreferencesCopyAppValue
@@ -428,6 +429,42 @@ class AppleUpdates(object):
                     fileurl = fileurl[len('file://localhost'):]
                     return urllib2.unquote(fileurl)
         return None
+
+    def GetFirmwareAlertText(self, product_key):
+        '''If the update is a firmware update, returns some alert
+        text to display to the user, otherwise returns an empty
+        string. If we cannot read a custom firmware readme to use as
+        the alert, return "_DEFAULT_FIRMWARE_ALERT_TEXT_" '''
+
+        distfile = self.GetDistributionForProductKey(product_key)
+        if not distfile:
+            return ''
+        try:
+            dom = minidom.parse(distfile)
+        except (expat.ExpatError, IOError):
+            return ''
+        type_is_firmware = False
+        options = dom.getElementsByTagName('options')
+        for option in options:
+            if 'type' in option.attributes.keys():
+                type_value = option.attributes['type'].value
+                if type_value == 'firmware':
+                    type_is_firmware = True
+                    break
+        if type_is_firmware:
+            readmes = dom.getElementsByTagName('readme')
+            if len(readmes):
+                html = readmes[0].firstChild.data
+                html_data = buffer(html.encode('utf-8'))
+                attributed_string, attributes = NSAttributedString.alloc(
+                    ).initWithHTML_documentAttributes_(html_data, None)
+                firmware_alert_text = attributed_string.string()
+            if firmware_alert_text:
+                return firmware_alert_text
+            else:
+                return '_DEFAULT_FIRMWARE_ALERT_TEXT_'
+        return ''
+
 
     def GetBlockingApps(self, product_key):
         '''Given a product key, finds the cached softwareupdate dist file,
@@ -842,6 +879,10 @@ class AppleUpdates(object):
                     iteminfo['blocking_applications'] = blocking_apps
                 if update.get('restartRequired') == 'YES':
                     iteminfo['RestartAction'] = 'RequireRestart'
+                firmware_alert_text = self.GetFirmwareAlertText(
+                                                update['productKey'])
+                if firmware_alert_text:
+                    iteminfo['firmware_alert_text'] = firmware_alert_text
                 infoarray.append(iteminfo)
         return infoarray
 
