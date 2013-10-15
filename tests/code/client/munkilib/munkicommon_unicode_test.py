@@ -32,9 +32,16 @@ MSG_STR = 'Günther\'s favorite thing is %s'
 ARG_UNI = u'Günther'
 ARG_STR = 'Günther'
 
+def log(msg, logname=''):
+    """Redefine munkicommon's logging function so our tests don't write
+    a bunch of garbage to Munki's logs"""
+    pass
+munkicommon.log = log
 
-class TestUnicodeOutput(unittest.TestCase):
-    """Test munkicommon display_* functions with text that may or may not be proper Unicode."""
+
+class TestDisplayInfoUnicodeOutput(unittest.TestCase):
+    """Test munkicommon display_info with text that may or may not be proper 
+    Unicode."""
 
     def test_display_info_with_unicode_msg(self):
         munkicommon.display_info(MSG_UNI)
@@ -54,6 +61,11 @@ class TestUnicodeOutput(unittest.TestCase):
     def test_display_info_with_str_msg_str_arg(self):
         munkicommon.display_info(MSG_STR, ARG_STR)
 
+
+class TestDisplayWarningUnicodeOutput(unittest.TestCase):
+    """Test munkicommon display_warning with text that may or may not be proper 
+    Unicode."""
+
     def test_display_warning_with_unicode_msg(self):
         munkicommon.display_warning(MSG_UNI)
 
@@ -72,6 +84,11 @@ class TestUnicodeOutput(unittest.TestCase):
     def test_display_warning_with_str_msg_str_arg(self):
         munkicommon.display_warning(MSG_STR, ARG_STR)
 
+
+class TestDisplayErrorUnicodeOutput(unittest.TestCase):
+    """Test munkicommon display_error with text that may or may not be proper 
+    Unicode."""
+
     def test_display_error_with_unicode_msg(self):
         munkicommon.display_error(MSG_UNI)
 
@@ -89,6 +106,7 @@ class TestUnicodeOutput(unittest.TestCase):
 
     def test_display_error_with_str_msg_str_arg(self):
         munkicommon.display_error(MSG_STR, ARG_STR)
+
 
 def main():
     unittest.main(buffer=True)
