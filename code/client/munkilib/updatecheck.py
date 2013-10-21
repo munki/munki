@@ -1603,12 +1603,14 @@ def updateAvailableLicenseSeats(installinfo):
     # complicated logic here to 'batch' process our GET requests but
     # keep them under 256 characters each
     start_index = 0
+    # Use ampersand when the license_info_url contains a ?
+    q_char = ('&', '?')[license_info_url.find('?') == -1] 
     while start_index < len(items_to_check):
         end_index = len(items_to_check)
         while True:
             query_items = ['name=' + quote_plus(item)
                            for item in items_to_check[start_index:end_index]]
-            querystring = '?' + '&'.join(query_items)
+            querystring = q_char + '&'.join(query_items)
             url = license_info_url + querystring
             if len(url) < 256:
                 break
