@@ -1604,7 +1604,9 @@ def updateAvailableLicenseSeats(installinfo):
     # keep them under 256 characters each
     start_index = 0
     # Use ampersand when the license_info_url contains a ?
-    q_char = ('&', '?')[license_info_url.find('?') == -1] 
+    q_char = "?"
+    if "?" in license_info_url:
+       q_char = "&"
     while start_index < len(items_to_check):
         end_index = len(items_to_check)
         while True:
