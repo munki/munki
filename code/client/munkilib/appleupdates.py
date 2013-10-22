@@ -452,6 +452,7 @@ class AppleUpdates(object):
                     type_is_firmware = True
                     break
         if type_is_firmware:
+            firmware_alert_text = '_DEFAULT_FIRMWARE_ALERT_TEXT_'
             readmes = dom.getElementsByTagName('readme')
             if len(readmes):
                 html = readmes[0].firstChild.data
@@ -459,10 +460,7 @@ class AppleUpdates(object):
                 attributed_string, attributes = NSAttributedString.alloc(
                     ).initWithHTML_documentAttributes_(html_data, None)
                 firmware_alert_text = attributed_string.string()
-            if firmware_alert_text:
-                return firmware_alert_text
-            else:
-                return '_DEFAULT_FIRMWARE_ALERT_TEXT_'
+            return firmware_alert_text
         return ''
 
 
