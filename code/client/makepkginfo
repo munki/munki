@@ -43,10 +43,21 @@ from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
 
-from Foundation import NSDate
+from Foundation import NSDate, NSUserName
 
 # circumvent cfprefsd plist scanning
 os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
+
+
+def make_pkginfo_metadata():
+    '''Records information about the environment in which the pkginfo was
+created so we have a bit of an audit trail. Returns a dictionary.'''
+    metadata = {}
+    metadata['created_by'] = NSUserName()
+    metadata['creation_date'] = NSDate.new()
+    metadata['munki_version'] = munkicommon.get_version()
+    metadata['os_version'] = munkicommon.getOsVersion(only_major_minor=False)
+    return metadata
 
 
 def convertDateStringToNSDate(datetime_string):
@@ -1019,6 +1030,9 @@ def main():
         if options.displayname:
             catinfo['display_name'] = options.displayname
         catinfo['installer_type'] = 'apple_update_metadata'
+
+# add user/environment metadata
+    catinfo['_metadata'] = make_pkginfo_metadata()
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
