@@ -859,11 +859,7 @@ def main():
                     print >> sys.stderr, "No uninstaller at %s" % \
                                         uninstallerpath
 
-            # some metainfo
-            if options.catalog:
-                catinfo['catalogs'] = options.catalog
-            else:
-                catinfo['catalogs'] = ['testing']
+            # if we have receipts, assume we can uninstall using them
             if catinfo.get('receipts', None):
                 catinfo['uninstallable'] = True
                 catinfo['uninstall_method'] = "removepackages"
@@ -871,6 +867,10 @@ def main():
         if options.nopkg:
             catinfo['installer_type'] = "nopkg"
 
+    if options.catalog:
+        catinfo['catalogs'] = options.catalog
+    else:
+        catinfo['catalogs'] = ['testing']
     if options.description:
         catinfo['description'] = readFileOrString(options.description)
     if options.displayname:
