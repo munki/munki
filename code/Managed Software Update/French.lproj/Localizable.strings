@@ -50,6 +50,9 @@
 "Continue" = "Continuer";
 
 /* No comment provided by engineer. */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Un microprogramme sera mis à jour sur votre ordinateur. Le cordon d'alimentation de votre ordinateur doit être branché à une prise de courant fonctionnelle. La mise à jour pourrait prendre plusieurs minutes pour se terminer. Veuillez ne pas éteindre ou mettre votre ordinateur en veille, et ne pas débrancher le cordon d'alimentation durant cette mise à jour.";
+
+/* No comment provided by engineer. */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Pour un meilleur résultat, vous devriez brancher votre ordinateur à une alimentation externe avant de mettre à jour. Êtes-vous sur de vouloir poursuivre la mise à jour ?";
 
 /* No comment provided by engineer. */
