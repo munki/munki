@@ -194,7 +194,11 @@ def curl(url, destinationpath,
     except Exception, e:
         raise CurlError(-5, 'Error writing curl directive: %s' % str(e))
 
-    cmd = ['/usr/bin/curl',
+    # Workaround for current issue in OS X 10.9's included curl
+    # Allows for alternate curl binary path as Apple's included curl currently
+    # broken for client-side certificate usage
+    curl_path = munkicommon.pref('CurlPath') or '/usr/bin/curl'
+    cmd = [curl_path,
             '-q',                    # don't read .curlrc file
             '--config',              # use config file
             curldirectivepath]
