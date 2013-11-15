@@ -194,14 +194,31 @@ def curl(url, destinationpath,
     except Exception, e:
         raise CurlError(-5, 'Error writing curl directive: %s' % str(e))
 
+    # In Mavericks we need to wrap our call to curl with a utility
+    # that makes curl think it is connected to a tty-like
+    # device so its output is unbuffered so we can get progress info
+    cmd = []
+    minor_os_version = munkicommon.getOsVersion(as_tuple=True)[1]
+    if minor_os_version > 8:
+        # Try to find our ptyexec tool
+        # first look in the parent directory of this file's directory
+        # (../)
+        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        ptyexec_path = os.path.join(parent_dir, 'ptyexec')
+        if not os.path.exists(ptyexec_path):
+            # try absolute path in munki's normal install dir
+            ptyexec_path = '/usr/local/munki/ptyexec'
+        if os.path.exists(ptyexec_path):
+            cmd = [ptyexec_path]
+
     # Workaround for current issue in OS X 10.9's included curl
     # Allows for alternate curl binary path as Apple's included curl currently
     # broken for client-side certificate usage
     curl_path = munkicommon.pref('CurlPath') or '/usr/bin/curl'
-    cmd = [curl_path,
-            '-q',                    # don't read .curlrc file
-            '--config',              # use config file
-            curldirectivepath]
+    cmd.extend([curl_path,
+                '-q',                    # don't read .curlrc file
+                '--config',              # use config file
+                curldirectivepath])
 
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
