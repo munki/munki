@@ -2294,7 +2294,7 @@ def getIntel64Support():
 
     if buf.value == 1:
         return True
-    else
+    else:
         return False
 
 MACHINE = {}
