@@ -61,7 +61,7 @@ class CurlDownloadError(MunkiDownloadError):
 class FileCopyError(MunkiDownloadError):
     """Download failed because of file copy errors."""
     pass
-    
+
 class PackageVerificationError(MunkiDownloadError):
     """Package failed verification"""
     pass
@@ -126,11 +126,11 @@ def curl(url, destinationpath,
         print >> fileobj, 'output = "%s"' % tempdownloadpath
         print >> fileobj, 'ciphers = HIGH,!ADH' #use only secure >=128 bit SSL
         print >> fileobj, 'url = "%s"' % url
-        
+
         munkicommon.display_debug2('follow_redirects is %s', follow_redirects)
         if follow_redirects:
             print >> fileobj, 'location'    # follow redirects
-        
+
         if cert_info:
             cacert = cert_info.get('cacert')
             capath = cert_info.get('capath')
@@ -253,11 +253,11 @@ def curl(url, destinationpath,
                 else:
                     donewithheaders = True
                     try:
-                        # Prefer Content-Length header to determine download 
-                        # size, otherwise fall back to a custom X-Download-Size 
+                        # Prefer Content-Length header to determine download
+                        # size, otherwise fall back to a custom X-Download-Size
                         # header.
                         # This is primary for servers that use chunked transfer
-                        # encoding, when Content-Length is forbidden by 
+                        # encoding, when Content-Length is forbidden by
                         # RFC2616 4.4. An example of such a server is
                         # Google App Engine Blobstore.
                         targetsize = (
@@ -343,7 +343,7 @@ def curl(url, destinationpath,
                 # The partial failed immediately as not supported.
                 # Try a full download again immediately.
                 if not donotrecurse:
-                    return curl(url, destinationpath, 
+                    return curl(url, destinationpath,
                                 cert_info=cert_info,
                                 custom_headers=custom_headers,
                                 donotrecurse=True,
@@ -383,6 +383,7 @@ def curl(url, destinationpath,
         # places.
         munkicommon.display_detail('Download error: %s. Failed (%s) with: %s'
                                     % (url,retcode,curlerr))
+        munkicommon.display_detail('Headers: %s', header)
         raise CurlError(retcode, curlerr)
     else:
         temp_download_exists = os.path.isfile(tempdownloadpath)
@@ -426,12 +427,12 @@ def curl(url, destinationpath,
                                 header.get('http_result_description',''))
 
 
-def getResourceIfChangedAtomically(url, 
+def getResourceIfChangedAtomically(url,
                                    destinationpath,
                                    cert_info=None,
                                    custom_headers=None,
                                    expected_hash=None,
-                                   message=None, 
+                                   message=None,
                                    resume=False,
                                    verify=False,
                                    follow_redirects=False):
@@ -612,8 +613,8 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
             # store etag in extended attribute for future use
             xattr.setxattr(destinationpath, XATTR_ETAG, header['etag'])
         return True
-        
-        
+
+
 def getURLitemBasename(url):
     """For a URL, absolute or relative, return the basename string.
 
