@@ -1768,7 +1768,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
         iteminfo['installed_size'] = item_pl.get('installed_size',
                                             iteminfo['installer_item_size'])
         try:
-            # Get a timestamp, then run download the installer item.
+            # Get a timestamp, then download the installer item.
             start = datetime.datetime.now()
             if item_pl.get('installer_type', 0) == 'nopkg':
                 # Packageless install
@@ -1800,6 +1800,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     item_pl['installer_item_location'])
 
             iteminfo['download_kbytes_per_sec'] = download_speed
+            if download_speed:
+                munkicommon.log('%s downloaded at %d KB/s' % download_speed)
 
             # required keys
             iteminfo['installer_item'] = filename
