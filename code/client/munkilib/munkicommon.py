@@ -832,7 +832,7 @@ def DMGhasSLA(dmgpath):
 def hdiutilInfo():
     """
     Convenience method for running 'hdiutil info -plist'
-    
+
     Returns the root object parsed with readPlistFromString()
     """
     proc = subprocess.Popen(
@@ -870,7 +870,7 @@ def diskImageIsMounted(dmgpath):
 def pathIsVolumeMountPoint(path):
     """
     Checks if the given path is a volume for an attached disk image
-    
+
     Returns true if the given path is a mount point or false if it isn't
     """
     isMountPoint = False
@@ -883,14 +883,14 @@ def pathIsVolumeMountPoint(path):
                     mountpoint = entity['mount-point']
                     if path == mountpoint:
                         isMountPoint = True
-                        break                
+                        break
     return isMountPoint
 
 
 def diskImageForMountPoint(path):
     """
     Resolves the given mount point path to an attached disk image path
-    
+
     Returns a path to a disk image file or None if the path is not
     a valid mount point
     """
@@ -931,14 +931,14 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
-    
+
     if (use_existing_mounts):
         # Check if this dmg is already mounted
         # and if so, bail out and return the mountpoints
         if diskImageIsMounted(dmgpath):
             mountpoints = mountPointsForDiskImage(dmgpath)
             return mountpoints
-    
+
     # Attempt to mount the dmg
     stdin = ''
     if DMGhasSLA(dmgpath):
@@ -1282,11 +1282,11 @@ def padVersionString(versString, tupleCount):
 
 def getVersionString(plist, key=None):
     """Gets a version string from the plist.
-    
+
     If a key is explictly specified, the value of that key is
     returned without modification, or an empty string if the
     key does not exist.
-    
+
     If key is not specified:
     if there's a valid CFBundleShortVersionString, returns that.
     else if there's a CFBundleVersion, returns that
@@ -1325,7 +1325,7 @@ def getVersionString(plist, key=None):
         # a future version of the Munki tools may drop this magic
         # and require admins to explicitly choose the CFBundleVersion
         # but for now Munki does some magic
-        VersionString = str(plist['CFBundleVersion']).split()[0]
+        VersionString = plist['CFBundleVersion'].encode('utf-8').split()[0]
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
@@ -1357,7 +1357,7 @@ def getBundleVersion(bundlepath, key=None):
     """
     Returns version number from a bundle.
     Some extra code to deal with very old-style bundle packages
-    
+
     Specify key to use a specific key in the Info.plist for
     the version string.
     """
