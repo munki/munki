@@ -1802,7 +1802,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             iteminfo['download_kbytes_per_sec'] = download_speed
             if download_speed:
                 munkicommon.display_detail(
-                    '%s downloaded at %d KB/s', download_speed)
+                    '%s downloaded at %d KB/s', filename, download_speed)
 
             # required keys
             iteminfo['installer_item'] = filename
