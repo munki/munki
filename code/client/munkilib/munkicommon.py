@@ -2283,6 +2283,19 @@ def get_ipv4_addresses():
             pass
     return ip_addresses
 
+def getIntel64Support():
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+
+    size = ctypes.c_size_t()
+    buf = ctypes.c_int()
+    size.value = ctypes.sizeof(buf)
+
+    libc.sysctlbyname("hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
+
+    if buf.value == 1:
+        return True
+    else:
+        return False
 
 MACHINE = {}
 def getMachineFacts():
@@ -2297,6 +2310,11 @@ def getMachineFacts():
         MACHINE['munki_version'] = get_version()
         MACHINE['ipv4_address'] = get_ipv4_addresses()
         MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
+
+        if MACHINE['arch'] == 'x86_64':
+            MACHINE['x86_64_capable'] = True
+        elif MACHINE['arch'] == 'i386':
+            MACHINE['x86_64_capable'] = getIntel64Support()
     return MACHINE
 
 
