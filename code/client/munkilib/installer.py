@@ -23,7 +23,6 @@ munki module to automatically install pkgs, mpkgs, and dmgs
 import datetime
 import os
 import pwd
-import random
 import subprocess
 import time
 import stat
@@ -632,7 +631,6 @@ def installWithInfo(
     restartflag = False
     itemindex = 0
     skipped_installs = []
-    random.shuffle(installlist)
     for item in installlist:
         # Keep track of when this particular install started.
         utc_now = datetime.datetime.utcnow()
@@ -937,7 +935,6 @@ def processRemovals(removallist, only_unattended=False):
     restartFlag = False
     index = 0
     skipped_removals = []
-    random.shuffle(removallist)
     for item in removallist:
         if only_unattended:
             if not item.get('unattended_uninstall'):
