@@ -1073,6 +1073,12 @@ def getItemDetail(name, cataloglist, vers=''):
                             # this machine, so we can use it
                             supported_arch_found = True
                             break
+                    if not supported_arch_found and \
+                            len(item['supported_architectures']) == 1 and \
+                            item['supported_architectures'][0] == 'x86_64' and \
+                            MACHINE['arch'] == 'i386' and \
+                            MACHINE['x86_64_capable'] == True:
+                        supported_arch_found = True
 
                     if not supported_arch_found:
                         # we didn't find a supported architecture that
