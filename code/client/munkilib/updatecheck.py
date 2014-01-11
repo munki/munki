@@ -2567,14 +2567,16 @@ def getPrimaryManifest(alternate_id):
         if not clientidentifier:
             # no client identifier specified, so use the hostname
             hostname = os.uname()[1]
-            clientidentifier = hostname
+            # there shouldn't be any characters in a hostname that need quoting, but
+            # see https://code.google.com/p/munki/issues/detail?id=276
+            clientidentifier = urllib2.quote(hostname)
             munkicommon.display_detail('No client id specified. '
                                        'Requesting %s...', clientidentifier)
             manifest = getmanifest(manifesturl + clientidentifier,
                                    suppress_errors=True)
             if not manifest:
                 # try the short hostname
-                clientidentifier = hostname.split('.')[0]
+                clientidentifier = urllib2.quote(hostname.split('.')[0])
                 munkicommon.display_detail('Request failed. Trying %s...' %
                                             clientidentifier)
                 manifest = getmanifest(manifesturl + clientidentifier,
