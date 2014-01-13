@@ -1574,11 +1574,11 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['licensed_seat_info_available'] = item_pl.get(
                                         'licensed_seat_info_available', False)
     iteminfo['uninstallable'] = item_pl.get('uninstallable', False)
+    iteminfo['installer_item_size'] = \
+        item_pl.get('installer_item_size', 0)
+    iteminfo['installed_size'] = item_pl.get('installer_item_size',
+                                    iteminfo['installer_item_size'])
     if (not iteminfo['installed']) or (iteminfo.get('needs_update')):
-        iteminfo['installer_item_size'] = \
-            item_pl.get('installer_item_size', 0)
-        iteminfo['installed_size'] = item_pl.get('installer_item_size',
-                                        iteminfo['installer_item_size'])
         if not enoughDiskSpace(item_pl,
                                installinfo.get('managed_installs', []),
                                warn=False):
