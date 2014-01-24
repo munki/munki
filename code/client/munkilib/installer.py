@@ -843,7 +843,8 @@ def installWithInfo(
 
         download_speed = item.get('download_kbytes_per_sec', 0)
         install_result = {
-            'name': display_name,
+            'display_name': display_name,
+            'name': item['name'],
             'version': version_to_install,
             'applesus': applesus,
             'status': retcode,
@@ -1061,17 +1062,22 @@ def processRemovals(removallist, only_unattended=False):
         if retcode == 0:
             success_msg = "Removal of %s: SUCCESSFUL" % name
             munkicommon.log(success_msg, "Install.log")
-            munkicommon.report[
-                             'RemovalResults'].append(success_msg)
             removeItemFromSelfServeUninstallList(item.get('name'))
         else:
             failure_msg = "Removal of %s: " % name + \
                           " FAILED with return code: %s" % retcode
             munkicommon.log(failure_msg, "Install.log")
-            munkicommon.report['RemovalResults'].append(failure_msg)
             # append failed removal to skipped_removals so dependencies
             # aren't removed yet.
             skipped_removals.append(item)
+        removal_result = {
+            'display_name': item.get('display_name', name),
+            'name': name,
+            'status': retcode,
+            'time': NSDate.new(),
+            'unattended': only_unattended,
+        }
+        munkicommon.report['RemovalResults'].append(removal_result)
 
     return (restartFlag, skipped_removals)
 
@@ -1169,11 +1175,11 @@ def run(only_unattended=False):
 
         # remove the install info file
         # it's no longer valid once we start running
-        try:
-            os.unlink(installinfopath)
-        except (OSError, IOError):
-            munkicommon.display_warning(
-                "Could not remove %s" % installinfopath)
+        #try:
+        #    os.unlink(installinfopath)
+        #except (OSError, IOError):
+        #    munkicommon.display_warning(
+        #        "Could not remove %s" % installinfopath)
 
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
@@ -1226,17 +1232,33 @@ def run(only_unattended=False):
                         only_unattended=only_unattended)
                     # if any installs were skipped record them for later
                     installinfo['managed_installs'] = skipped_installs
+                    
+        # update optional_installs with new installation/removal status
+        for removal in munkicommon.report['RemovalResults']:
+            matching_optional_installs = [
+                item for item in installinfo.get('optional_installs', [])
+                if item['name'] == removal['name'] and removal['status'] == 0]
+            if len(matching_optional_installs) == 1:
+                matching_optional_installs[0]['installed'] = False
+                matching_optional_installs[0]['will_be_removed'] = False
 
-        if (only_unattended and
-            installinfo['managed_installs'] or installinfo['removals']):
-            # need to write the installinfo back out minus the stuff we
-            # actually installed
-            try:
-                FoundationPlist.writePlist(installinfo, installinfopath)
-            except FoundationPlist.NSPropertyListWriteException:
-                # not fatal
-                munkicommon.display_warning(
-                    "Could not write to %s" % installinfopath)
+        for install in munkicommon.report['InstallResults']:
+            matching_optional_installs = [
+                item for item in installinfo.get('optional_installs', [])
+                if item['name'] == install['name']
+                and item['version_to_install'] == install['version']
+                and install['status'] == 0]
+            if len(matching_optional_installs) == 1:
+                matching_optional_installs[0]['installed'] = True
+                matching_optional_installs[0]['will_be_installed'] = False
+
+        # write updated installinfo back to disk to reflect current state
+        try:
+            FoundationPlist.writePlist(installinfo, installinfopath)
+        except FoundationPlist.NSPropertyListWriteException:
+            # not fatal
+            munkicommon.display_warning(
+                "Could not write to %s" % installinfopath)
 
     else:
         if not only_unattended:  # no need to log that no unattended pkgs found.
