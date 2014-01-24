@@ -969,9 +969,9 @@ def processRemovals(removallist, only_unattended=False):
             continue
 
         index += 1
-        name = item.get('display_name') or item.get('name')
+        display_name = item.get('display_name') or item.get('name')
         munkicommon.display_status_major(
-            "Removing %s (%s of %s)..." % (name, index, len(removallist)))
+            "Removing %s (%s of %s)..." % (display_name, index, len(removallist)))
 
         retcode = 0
         # run preuninstall_script if it exists
@@ -989,13 +989,13 @@ def processRemovals(removallist, only_unattended=False):
                     if retcode:
                         if retcode == -128:
                             message = ("Uninstall of %s was "
-                                       "cancelled." % name)
+                                       "cancelled." % display_name)
                         else:
-                            message = "Uninstall of %s failed." % name
+                            message = "Uninstall of %s failed." % display_name
                         munkicommon.display_error(message)
                     else:
                         munkicommon.log("Uninstall of %s was "
-                                        "successful." % name)
+                                        "successful." % display_name)
 
             elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
@@ -1018,7 +1018,7 @@ def processRemovals(removallist, only_unattended=False):
                 else:
                     munkicommon.display_error("Application removal "
                                               "info missing from %s" %
-                                              name)
+                                              display_name)
 
             elif uninstallmethod == 'uninstall_script':
                 retcode = munkicommon.runEmbeddedScript(
@@ -1031,7 +1031,7 @@ def processRemovals(removallist, only_unattended=False):
                  os.access(uninstallmethod, os.X_OK):
                 # it's a script or program to uninstall
                 retcode = munkicommon.runScript(
-                    name, uninstallmethod, 'uninstall script')
+                    display_name, uninstallmethod, 'uninstall script')
                 if (retcode == 0 and
                     item.get('RestartAction') == "RequireRestart"):
                     restartFlag = True
@@ -1039,7 +1039,7 @@ def processRemovals(removallist, only_unattended=False):
             else:
                 munkicommon.log("Uninstall of %s failed because "
                                 "there was no valid uninstall "
-                                "method." % name)
+                                "method." % display_name)
                 retcode = -99
 
             if retcode == 0 and item.get('postuninstall_script'):
@@ -1060,18 +1060,18 @@ def processRemovals(removallist, only_unattended=False):
         if not 'RemovalResults' in munkicommon.report:
             munkicommon.report['RemovalResults'] = []
         if retcode == 0:
-            success_msg = "Removal of %s: SUCCESSFUL" % name
+            success_msg = "Removal of %s: SUCCESSFUL" % display_name
             munkicommon.log(success_msg, "Install.log")
             removeItemFromSelfServeUninstallList(item.get('name'))
         else:
-            failure_msg = "Removal of %s: " % name + \
+            failure_msg = "Removal of %s: " % display_name + \
                           " FAILED with return code: %s" % retcode
             munkicommon.log(failure_msg, "Install.log")
             # append failed removal to skipped_removals so dependencies
             # aren't removed yet.
             skipped_removals.append(item)
         removal_result = {
-            'display_name': name,
+            'display_name': display_name,
             'name': item['name'],
             'status': retcode,
             'time': NSDate.new(),
