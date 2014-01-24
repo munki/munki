@@ -1071,8 +1071,8 @@ def processRemovals(removallist, only_unattended=False):
             # aren't removed yet.
             skipped_removals.append(item)
         removal_result = {
-            'display_name': item.get('display_name', name),
-            'name': name,
+            'display_name': name,
+            'name': item['name'],
             'status': retcode,
             'time': NSDate.new(),
             'unattended': only_unattended,
