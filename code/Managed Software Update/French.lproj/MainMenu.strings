@@ -209,7 +209,7 @@
 "532.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Check an item to have it added to the list of software to be installed and kept up-to-date. Uncheck an item to have it removed from the list and uninstalled."; ObjectID = "546"; */
-"546.title" = "Cochez un élément pour l'installer. Décochez un élément pour le supprimer.";
+"546.title" = "Cochez un élément pour l'ajouter à la liste des logiciels à installer et à mettre à jour. Décochez un élément pour le retirer de la liste et le désinstaller.";
 
 /* Class = "NSTextFieldCell"; title = "Add or remove optional software"; ObjectID = "547"; */
 "547.title" = "Ajouter ou supprimer un logiciel optionnel";

@@ -101,7 +101,7 @@
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Une ou plusieurs mises à jour obligatoires sont hors délai. Une fermeture de session va être forcée très bientôt.";
 
 /* No comment provided by engineer. */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Une ou plusieurs mises à jour doivent être installées par %s. Une fermeture de session peut être forcée si vous attendez trop longtemps avant de mettre à jour.";
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Une ou plusieurs mises à jour doivent être installées avant le %s. Une fermeture de session peut être forcée si vous attendez trop longtemps avant de mettre à jour.";
 
 /* No comment provided by engineer. */
 "Optional software..." = "Logiciel optionnel...";
@@ -155,7 +155,7 @@
 "There is no new software for your computer at this time." = "Il n'y a pas de nouveau logiciel pour votre ordinateur.";
 
 /* No comment provided by engineer. */
-"This item must be installed by " = "Cet élément doit être installé par ";
+"This item must be installed by " = "Cet élément doit être installé avant le ";
 
 /* No comment provided by engineer. */
 "Update available" = "Mise à jour disponible";
@@ -167,7 +167,7 @@
 "Update later" = "Ne pas mettre à jour maintenant";
 
 /* No comment provided by engineer. */
-"Update without logging out" = "Mise à jour sans fermeture de session";
+"Update without logging out" = "Mettre à jour sans fermeture de session";
 
 /* No comment provided by engineer. */
 "Will be installed" = "Sera installé";
@@ -187,12 +187,30 @@
 /* No comment provided by engineer. */
 "You must quit the following applications before proceeding with installation:\n\n%s" = "Avant de poursuivre l'installation, vous devez quitter les applications suivantes:\n\n%s";
 
-/* No comment provided by engineer. */
-"Your computer is not connected to a power source." = "Votre ordinateur n'est pas branché à une prise de courant.";
 
 /* No comment provided by engineer. */
-"Your software is up to date." = "Votre logiciel est à jour.";
+"Your computer is not connected to a power source." = "Votre ordinateur n'est pas branché à une prise de courant.";
 
 "Checking Apple Software Update catalog..." = "Recherche du répertoire de mise à jour d'Apple...";
 
 "Finishing..." = "Termine...";
+
+/* No comment provided by engineer. */
+"Your software is up to date." = "Votre logiciel est à jour.";
+
+"Caching " = "Mise en cache de ";
+
+"Done." = "Terminé.";
+
+"Downloading " = "Téléchargement de ";
+
+"Installing available Apple Software Updates..." = "Installation des mises à jours Apple disponibles";
+
+"Moving items into place..." = "Mise en place des éléments...";
+
+"Registering updated components..." = "Enregistrements des composants mis à jour";
+
+"Running package scripts..." = "Lancement des scripts...";
+
+"Writing files..." = "Écriture des fichiers...";
+
