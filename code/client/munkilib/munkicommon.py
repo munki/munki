@@ -27,6 +27,8 @@ import ctypes.util
 import fcntl
 import hashlib
 import os
+import logging
+import logging.handlers
 import platform
 import re
 import select
@@ -504,8 +506,11 @@ def validateDateFormat(datetime_string):
         pass
     return formatted_datetime_string
 
+
 def log(msg, logname=''):
-    """Generic logging function"""
+    """Generic logging function."""
+    logging.info(msg)  # noop unless configure_syslog() is called first.
+
     # date/time format string
     formatstr = '%b %d %Y %H:%M:%S %z'
     if not logname:
@@ -522,6 +527,20 @@ def log(msg, logname=''):
         fileobj.close()
     except (OSError, IOError):
         pass
+
+
+def configure_syslog():
+    """Configures logging to system.log, when pref('LogToSyslog') == True."""
+    logger = logging.getLogger()
+    # Remove existing handlers to avoid sending unexpected messages.
+    for handler in logger.handlers:
+      logger.removeHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+    syslog = logging.handlers.SysLogHandler('/var/run/syslog')
+    syslog.setFormatter(logging.Formatter('munki: %(message)s'))
+    syslog.setLevel(logging.INFO)
+    logger.addHandler(syslog)
 
 
 def rotatelog(logname=''):
@@ -1158,6 +1177,7 @@ def pref(pref_name):
         'ClientIdentifier': '',
         'LogFile': '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log',
         'LoggingLevel': 1,
+        'LogToSyslog': False,
         'InstallAppleSoftwareUpdates': False,
         'AppleSoftwareUpdatesOnly': False,
         'SoftwareUpdateServerURL': '',

@@ -561,6 +561,9 @@ def main():
     munkicommon.report['Errors'] = []
     munkicommon.report['Warnings'] = []
 
+    if munkicommon.pref('LogToSyslog'):
+        munkicommon.configure_syslog()
+
     munkicommon.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print 'Managed Software Update Tool'
