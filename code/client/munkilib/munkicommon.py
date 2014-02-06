@@ -2430,7 +2430,8 @@ def cleanUpTmpDir():
         try:
             shutil.rmtree(tmpdir)
         except (OSError, IOError):
-            pass
+            display_warning(
+                'Unable to clean up temporary dir %s: %s', tmpdir, str(e))
         tmpdir = None
 
 
