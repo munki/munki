@@ -657,6 +657,9 @@ def main():
     if applesoftwareupdatesonly and options.verbose:
         print ('NOTE: managedsoftwareupdate is configured to process Apple '
                'Software Updates only.')
+    
+    # TESTING, TESTING
+    munkicommon.initNotificationDelegate()
 
     updatecheckresult = None
     if not options.installonly and not applesoftwareupdatesonly:
@@ -891,6 +894,8 @@ def main():
                             'SuppressUserNotification is true.')
 
     munkicommon.cleanUpTmpDir()
+    # TESTING TESTING
+    munkicommon.removeNotificationDelegate()
     if mustlogout:
         # not handling this currently
         pass
@@ -933,6 +938,7 @@ def main():
                         os.unlink(checkandinstallatstartupflag)
                     except OSError:
                         pass
+
 
 if __name__ == '__main__':
     main()

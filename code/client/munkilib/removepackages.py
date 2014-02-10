@@ -340,7 +340,6 @@ def ImportBom(bompath, curs):
     # We still need to consult Apple's package database
     # because the bom files are missing metadata about the package.
 
-    #applepkgdb = "/Library/Receipts/db/a.receiptdb"
     pkgname = os.path.basename(bompath)
 
     timestamp = os.stat(bompath).st_mtime
@@ -349,7 +348,7 @@ def ImportBom(bompath, curs):
     vers = "1.0"
     ppath = ""
 
-    #try to get metadata from applepkgdb
+    # try to get metadata from applepkgdb
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
