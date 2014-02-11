@@ -168,17 +168,20 @@ class MSUStatusWindowController(NSObject):
             self.setDetail_(info['detail'])
         if 'percent' in info:
             self.setPercentageDone_(info['percent'])
+        if self.stopBtnState == 0 and 'stop_button_visible' in info:
+            if info['stop_button_visible']:
+                self.showStopButton()
+            else:
+                self.hideStopButton()
+        if self.stopBtnState == 0 and 'stop_button_enabled' in info:
+            if info['stop_button_enabled']:
+                self.enableStopButton()
+            else:
+                self.disableStopButton()
+    
         command = info.get('command')
         if command == 'activate':
             self.window.orderFrontRegardless()
-        elif command == 'hideStopButton':
-            self.hideStopButton()
-        elif command == 'showStopButton':
-            self.showStopButton()
-        elif command == 'disableStopButton':
-            self.disableStopButton()
-        elif command == 'enableStopButton':
-            self.enableStopButton()
         elif command == 'showRestartAlert':
             self.doRestartAlert()
         elif command == 'quit':
@@ -225,7 +228,7 @@ class MSUStatusWindowController(NSObject):
         return self.stopBtnState
 
     def hideStopButton(self):
-        self.stopBtn.setHidden_(True)
+       self.stopBtn.setHidden_(True)
 
     def showStopButton(self):
         self.stopBtn.setHidden_(False)

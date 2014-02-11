@@ -35,6 +35,19 @@ from Foundation import NSNotificationPostToAllSessions
 # our NSDistributedNotification identifier
 NOTIFICATION_ID = 'com.googlecode.munki.managedsoftwareupdate.statusUpdate'
 
+# keep our current status. We keep this so that notification clients
+# that come "online" late can get current state
+_currentStatus = {}
+
+def initStatusDict():
+    _currentStatus = {
+        'message': '',
+        'detail': '',
+        'percent': -1,
+        'stop_button_visible': True,
+        'stop_button_enabled': True,
+        'command': ''
+    }
 
 def launchMunkiStatus():
     '''Uses launchd KeepAlive path so it launches from a launchd agent
@@ -43,7 +56,7 @@ def launchMunkiStatus():
     happier.
     There needs to be a launch agent that is triggered when the launchfile
     is created; and that launch agent then runs MunkiStatus.app.'''
-    
+    initStatusDict()
     # TESTING, TESTING
     return
     
@@ -55,63 +68,82 @@ def launchMunkiStatus():
         os.unlink(launchfile)
 
 
-def postNotificationWithUserDict(userInfoDict):
+def postStatusNotification():
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
         NOTIFICATION_ID,
         None, 
-        userInfoDict,
+        _currentStatus,
         NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
-
-
-def activate():
-    '''Brings MunkiStatus window to the front.'''
-    postNotificationWithUserDict({'command': 'activate'})
 
 
 def message(messageText):
     '''Sets the status message.'''
-    postNotificationWithUserDict({'message': messageText})
+    _currentStatus['message'] = messageText
+    postStatusNotification()
 
 
 def detail(detailsText):
     '''Sets the detail text.'''
-    postNotificationWithUserDict({'detail': detailsText})
+    _currentStatus['detail'] = detailsText
+    postStatusNotification()
 
 
 def percent(percentage):
     '''Sets the progress indicator to 0-100 percent done.
     If you pass a negative number, the progress indicator
     is shown as an indeterminate indicator (barber pole).'''
-    postNotificationWithUserDict({'percent': percentage})
+    _currentStatus['percent'] = percentage
+    postStatusNotification()
 
 
 def hideStopButton():
     '''Hides the stop button.'''
-    postNotificationWithUserDict({'command': 'hideStopButton'})
+    _currentStatus['stop_button_visible'] = False
+    postStatusNotification()
 
 
 def showStopButton():
     '''Shows the stop button.'''
-    postNotificationWithUserDict({'command': 'showStopButton'})
+    _currentStatus['stop_button_visible'] = True
+    postStatusNotification()
 
 
 def disableStopButton():
     '''Disables (grays out) the stop button.'''
-    postNotificationWithUserDict({'command': 'disableStopButton'})
+    _currentStatus['stop_button_enabled'] = False
+    postStatusNotification()
 
 
 def enableStopButton():
     '''Enables the stop button.'''
-    postNotificationWithUserDict({'command': 'enableStopButton'})
+    _currentStatus['stop_button_enabled'] = True
+    postStatusNotification()
+
+
+def activate():
+    '''Brings MunkiStatus window to the front.'''
+    _currentStatus['command'] = 'activate'
+    postStatusNotification()
+    # now clear the command; unlike the other fields, this
+    # should not persist between notifications
+    _currentStatus['command'] = ''
 
 
 def quit():
     '''Tells the status app that we're done.'''
-    postNotificationWithUserDict({'command': 'quit'})
+    _currentStatus['command'] = 'quit'
+    postStatusNotification()
+    # now clear the command; unlike the other fields, this
+    # should not persist between notifications
+    _currentStatus['command'] = ''
 
 
 def restartAlert():
     '''Tells MunkiStatus to display a restart alert.'''
-    postNotificationWithUserDict({'command': 'showRestartAlert'})
+    _currentStatus['command'] = 'showRestartAlert'
+    postStatusNotification()
+    # now clear the command; unlike the other fields, this
+    # should not persist between notifications
+    _currentStatus['command'] = ''
 

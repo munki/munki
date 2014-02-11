@@ -79,18 +79,20 @@ class MSUStatusController(NSObject):
             self.statusWindowController.setDetail_(info['detail'])
         if 'percent' in info:
             self.statusWindowController.setPercentageDone_(info['percent'])
+        if 'stop_button_visible' in info:
+            if info['stop_button_visible']:
+                self.statusWindowController.showStopButton()
+            else:
+                self.statusWindowController.hideStopButton()
+        if 'stop_button_enabled' in info:
+            if info['stop_button_enabled']:
+                self.statusWindowController.enableStopButton()
+            else:
+                self.statusWindowController.disableStopButton()
         command = info.get('command')
         if command == 'activate':
             NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
             self.statusWindowController.window().orderFrontRegardless()
-        elif command == 'hideStopButton':
-            self.statusWindowController.hideStopButton()
-        elif command == 'showStopButton':
-            self.statusWindowController.showStopButton()
-        elif command == 'disableStopButton':
-            self.statusWindowController.disableStopButton()
-        elif command == 'enableStopButton':
-            self.statusWindowController.enableStopButton()
         elif command == 'showRestartAlert':
             self.statusWindowController.doRestartAlert()
         elif command == 'quit':

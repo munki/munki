@@ -1219,8 +1219,16 @@ class MSUMainWindowController(NSWindowController):
         # clicks the Install All button in the Updates view
         if self._update_in_progress:
             # this is now a stop/cancel button
-            self._status_stopBtnState =  1
             self.disableStopButton()
+            self._status_stopBtnState =  1
+            # send a notification that stop button was clicked
+            notification_center = NSDistributedNotificationCenter.defaultCenter()
+            notification_center.postNotificationName_object_userInfo_options_(
+                'com.googlecode.munki.MunkiStatus.stopButtonClicked',
+                None,
+                None,
+                NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+
         elif self.getUpdateCount() == 0:
             # no updates, this button must say "Check Again"
             self._update_in_progress = True
@@ -1589,52 +1597,56 @@ class MSUMainWindowController(NSWindowController):
         return self._status_stopBtnState
 
     def hideStopButton(self):
-        self._status_stopBtnHidden = True
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if not 'hidden' in btn_classes:
-                    btn_classes.append('hidden')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if not self._status_stopBtnState:
+            self._status_stopBtnHidden = True
+            document = self.webView.mainFrameDocument()
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if not 'hidden' in btn_classes:
+                        btn_classes.append('hidden')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def showStopButton(self):
-        self._status_stopBtnHidden = False
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if 'hidden' in btn_classes:
-                    btn_classes.remove('hidden')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if not self._status_stopBtnState:
+            self._status_stopBtnHidden = False
+            document = self.webView.mainFrameDocument()
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if 'hidden' in btn_classes:
+                        btn_classes.remove('hidden')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def enableStopButton(self):
-        self._status_stopBtnDisabled = False
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if 'installed-not-removable' in btn_classes:
-                    btn_classes.remove('installed-not-removable')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if not self._status_stopBtnState:
+            self._status_stopBtnDisabled = False
+            document = self.webView.mainFrameDocument()
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if 'installed-not-removable' in btn_classes:
+                        btn_classes.remove('installed-not-removable')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def disableStopButton(self):
-        self._status_stopBtnDisabled = True
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if not 'installed-not-removable' in btn_classes:
-                    btn_classes.append('installed-not-removable')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if not self._status_stopBtnState:
+            self._status_stopBtnDisabled = True
+            document = self.webView.mainFrameDocument()
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if not 'installed-not-removable' in btn_classes:
+                        btn_classes.append('installed-not-removable')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def getRestartAlertDismissed(self):
         return self._status_restartAlertDismissed

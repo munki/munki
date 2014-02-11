@@ -110,7 +110,8 @@ class MSUAppDelegate(NSObject):
     def checkForUpdates(self, suppress_apple_update_check=False):
         # kick off an update check
         # attempt to start the update check
-        result = munki.startUpdateCheck(suppress_apple_update_check)
+        #result = munki.startUpdateCheck(suppress_apple_update_check)
+        result = 0
         if result == 0:
             self.managedsoftwareupdate_task = "manualcheck"
             self.statusController.startMunkiStatusSession()
