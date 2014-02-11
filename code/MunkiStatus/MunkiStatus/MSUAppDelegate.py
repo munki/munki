@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 #  MSUAppDelegate.py
-#  Managed Software Update
+#  MunkiStatus
 #
 #  Copyright 2013-2014 Greg Neagle.
 #

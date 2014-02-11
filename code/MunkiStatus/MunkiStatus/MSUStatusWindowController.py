@@ -1,9 +1,7 @@
 # encoding: utf-8
 #
-#  MSUStatusWindowController.py
-#
-#
-#  Created by Greg Neagle on 9/21/09.
+# MSUStatusWindowController.py
+# MunkiStatus
 #
 # Copyright 2009-2014 Greg Neagle.
 #
