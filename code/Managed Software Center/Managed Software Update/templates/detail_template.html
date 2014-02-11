@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>${display_name}</title>
+
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/detail.css" />
+</head>
+
+<body class="product software">
+    <div id="page">
+        <div id="wrapper">
+            <div id="content">
+                <div class="background"></div>
+                <div class="columns">
+
+                    <div class="main">
+                        <div class="product-detail">
+                            <div class="lockup product">
+                                <div class="artwork">
+                                    <img width="175" height="175" alt="${display_name}" class="artwork" src="${icon}" />
+                                </div>
+                                <div class="msu-button large">
+                                    <button class="button-area uppercase" 
+                                     onClick="window.AppController.actionButtonClicked_('${name}');">
+                                        <div class="msu-button-inner large ${status}"
+                                             id="${name}_action_button_text">
+                                            ${long_action_text}
+                                        </div>
+                                    </button>
+                                </div>
+                                <div class="warning">
+                                    <br/>&nbsp;
+                                    <strong>${restart_action_text}</strong>
+                                </div>
+                            </div>
+
+                            <div class="product-info box-flex">
+                                <div class="product-review">
+                                    <div class="title">
+                                        <h1>${display_name}</h1>
+                                    </div>
+                                    <p class="more-text">
+                                        ${description}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar">
+                        <!-- Item information sidebar list-->
+                        <div class="titled-box app-info">
+                            <h2>${informationLabel}</h2>
+                            <div class="content">
+                                <ul class="list">
+                                    <li class="genre">
+                                        <span class="label">${categoryLabel} </span>
+                                        <a href="category-${category}.html">${category}</a>
+                                    </li>
+                                    <li><span class="label">${versionLabel} </span>${version_to_install}</li>
+                                    <li><span class="label">${sizeLabel} </span>${size}</li>
+                                    <li><span class="label">${developerLabel} </span>${developer}</li>
+                                </ul>
+                                <hr/>
+                                <ul class="list">
+                                    <li>
+                                        <span class="label">${statusLabel} </span>
+                                        <span class="${status}" id="${name}_status_text">
+                                            ${status_text}
+                                        </span>
+                                    </li>
+                                    <li class="warning">${restart_action_text}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- More by developer sidebar list-->
+                        <div class="titled-box more-by ${hide_more_by_developer}">
+                            <h2>
+                                <a href="${developer_link}">${moreByDeveloperLabel}</a>
+                            </h2>
+                            <div class="content">${more_by_developer}</div>
+                        </div>
+                        <!-- More in category sidebar list-->
+                        <div class="titled-box more-by ${hide_more_in_category}">
+                            <h2>
+                                <a href="${category_link}">${moreInCategoryLabel}</a>
+                            </h2>
+                            <div class="content">${more_in_category}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ${footer}
+    </footer>
+</body>
+</html>

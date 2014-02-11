@@ -1,0 +1,30 @@
+<tr class="installation" id="${name}_myitems_table_row">
+  <td>
+    <a href="${detail_link}" class="artwork-link">
+        <div class="artwork">
+            <img width="75" height="75" alt="${display_name}" class="artwork" src="${icon}" />
+        </div>
+    </a>
+    <ul class="list info">
+        <li><h2><a title="${display_name}" href="${detail_link}">${display_name}</a></h2></li>
+        <li>${developer}</li>
+    </ul>
+  </td>
+  <td>${version_to_install}</td>
+  <td>${size}</td>
+  <td class="status"><span class="${status}" id="${name}_status_text">${status_text}</span></td>
+  <td class="hide">
+      <!--<button class="hide" aria-label="Hide"></button>-->
+  </td>
+  <td>
+      <div class="msu-button install-updates">
+          <button class="button-area uppercase" 
+           onClick="window.AppController.myItemsActionButtonClicked_('${name}');">
+              <div class="msu-button-inner install-updates ${status}"
+                   id="${name}_action_button_text">
+                  ${myitem_action_text}
+              </div>
+          </button>
+      </div>
+  </td>
+</tr>
