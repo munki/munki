@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
 		C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
@@ -19,11 +20,11 @@
 		C094B6D61891826700E06897 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D31891826700E06897 /* BorderlessWindow.m */; };
 		C094B6D71891826700E06897 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D51891826700E06897 /* ScaledImageView.m */; };
 		C0AE8658186D2DF900C87AE7 /* MunkiStatus.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */; };
-		C0C6847118847F18008109AC /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0C6847018847F18008109AC /* libpython2.6.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
 		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = munki.py; path = MunkiStatus/munki.py; sourceTree = SOURCE_ROOT; };
 		C09004ED16CDD84E00BE34CE /* MunkiStatus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MunkiStatus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C09004F116CDD84E00BE34CE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -41,7 +42,6 @@
 		C094B6D41891826700E06897 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C094B6D51891826700E06897 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
 		C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
-		C0C6847018847F18008109AC /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,7 +50,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */,
-				C0C6847118847F18008109AC /* libpython2.6.dylib in Frameworks */,
+				C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,7 +63,7 @@
 				C09004F916CDD84E00BE34CE /* MunkiStatus */,
 				C09004F016CDD84E00BE34CE /* Frameworks */,
 				C09004EE16CDD84E00BE34CE /* Products */,
-				C0C6847018847F18008109AC /* libpython2.6.dylib */,
+				C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */,
 			);
 			sourceTree = "<group>";
 		};
