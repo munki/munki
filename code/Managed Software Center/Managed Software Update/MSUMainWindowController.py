@@ -315,7 +315,8 @@ class MSUMainWindowController(NSWindowController):
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
             suppress_apple_update_check = True
-            result = munki.startUpdateCheck(suppress_apple_update_check)
+            #result = munki.startUpdateCheck(suppress_apple_update_check)
+            result = 0
             if result:
                 NSLog("Error starting check-then-install session: %s" % result)
                 NSApp.delegate().munkiStatusSessionEnded_(2)

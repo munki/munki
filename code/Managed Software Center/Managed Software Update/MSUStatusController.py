@@ -65,11 +65,11 @@ class MSUStatusController(NSObject):
     def sessionStarted(self):
         return self.session_started
 
-    def socketEnded_(self, socketSessionResult):
+    def sessionEnded_(self, result):
         # clean up if needed
         self.cleanUpStatusSession()
         # tell the app the update session is done
-        NSApp.delegate().munkiStatusSessionEnded_(socketSessionResult)
+        NSApp.delegate().munkiStatusSessionEnded_(result)
         
     def updateStatus_(self, notification):
         info = notification.userInfo()
@@ -81,7 +81,8 @@ class MSUStatusController(NSObject):
             self.statusWindowController.setPercentageDone_(info['percent'])
         command = info.get('command')
         if command == 'activate':
-            self.statusWindowController.window.orderFrontRegardless()
+            NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
+            self.statusWindowController.window().orderFrontRegardless()
         elif command == 'hideStopButton':
             self.statusWindowController.hideStopButton()
         elif command == 'showStopButton':
@@ -93,4 +94,4 @@ class MSUStatusController(NSObject):
         elif command == 'showRestartAlert':
             self.statusWindowController.doRestartAlert()
         elif command == 'quit':
-            self.cleanUpStatusSession()
+            self.sessionEnded_(0)
