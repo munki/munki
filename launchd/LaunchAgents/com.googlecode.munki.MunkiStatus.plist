@@ -6,18 +6,11 @@
   <string>com.googlecode.munki.MunkiStatus</string>
   <key>LimitLoadToSessionType</key>
   <array>
-    <string>Aqua</string>
+    <string>LoginWindow</string>
   </array>
-  <key>EnvironmentVariables</key>
-  <dict>
-      <key>ManagedSoftwareUpdateMode</key>
-      <string>MunkiStatus</string>
-  </dict>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/munki/launchapp</string>
-    <string>-a</string>
-    <string>/Applications/Utilities/Managed Software Update.app</string>
+    <string>/Library/Managed Installs/Tools/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
   </array>
   <key>RunAtLoad</key>
   <false/>
@@ -26,6 +19,8 @@
      <key>PathState</key>
      <dict>
        <key>/var/run/com.googlecode.munki.MunkiStatus</key>
+       <true/>
+       <key>/private/tmp/com.googlecode.munki.installatlogout</key>
        <true/>
      </dict>
   </dict>
