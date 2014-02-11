@@ -27,5 +27,9 @@
 /code/Managed Software Update/Managed Software Update.xcodeproj/project.xcworkspace/
 /code/Managed Software Update/Managed Software Update.xcodeproj/xcuserdata/
 
+# Xcode 5 user data
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+
 # don't track .pyc files
 *.pyc

@@ -1,0 +1,382 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
+		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
+		C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
+		C090050016CDD84E00BE34CE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C09004FF16CDD84E00BE34CE /* main.m */; };
+		C090050616CDD84E00BE34CE /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = C090050516CDD84E00BE34CE /* main.py */; };
+		C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = C090050716CDD84E00BE34CE /* MSUAppDelegate.py */; };
+		C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C090050916CDD84E00BE34CE /* MainMenu.xib */; };
+		C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C094B6D0188F7CE100E06897 /* MSUStatusWindowController.py */; };
+		C094B6D61891826700E06897 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D31891826700E06897 /* BorderlessWindow.m */; };
+		C094B6D71891826700E06897 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D51891826700E06897 /* ScaledImageView.m */; };
+		C0AE8658186D2DF900C87AE7 /* MunkiStatus.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */; };
+		C0C6847118847F18008109AC /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0C6847018847F18008109AC /* libpython2.6.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = munki.py; path = MunkiStatus/munki.py; sourceTree = SOURCE_ROOT; };
+		C09004ED16CDD84E00BE34CE /* MunkiStatus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MunkiStatus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C09004F116CDD84E00BE34CE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		C09004F616CDD84E00BE34CE /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		C09004F816CDD84E00BE34CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MunkiStatus-Info.plist"; sourceTree = "<group>"; };
+		C09004FD16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C090050116CDD84E00BE34CE /* MunkiStatus-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MunkiStatus-Prefix.pch"; sourceTree = "<group>"; };
+		C090050516CDD84E00BE34CE /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
+		C090050716CDD84E00BE34CE /* MSUAppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = MSUAppDelegate.py; sourceTree = "<group>"; };
+		C090050A16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C094B6D0188F7CE100E06897 /* MSUStatusWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUStatusWindowController.py; sourceTree = "<group>"; };
+		C094B6D31891826700E06897 /* BorderlessWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BorderlessWindow.m; sourceTree = "<group>"; };
+		C094B6D41891826700E06897 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
+		C094B6D51891826700E06897 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
+		C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
+		C0C6847018847F18008109AC /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C09004EA16CDD84E00BE34CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */,
+				C0C6847118847F18008109AC /* libpython2.6.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C09004E216CDD84E00BE34CE = {
+			isa = PBXGroup;
+			children = (
+				C09004F916CDD84E00BE34CE /* MunkiStatus */,
+				C09004F016CDD84E00BE34CE /* Frameworks */,
+				C09004EE16CDD84E00BE34CE /* Products */,
+				C0C6847018847F18008109AC /* libpython2.6.dylib */,
+			);
+			sourceTree = "<group>";
+		};
+		C09004EE16CDD84E00BE34CE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C09004ED16CDD84E00BE34CE /* MunkiStatus.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C09004F016CDD84E00BE34CE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C09004F116CDD84E00BE34CE /* Cocoa.framework */,
+				C09004F516CDD84E00BE34CE /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C09004F516CDD84E00BE34CE /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C09004F616CDD84E00BE34CE /* AppKit.framework */,
+				C09004F816CDD84E00BE34CE /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		C09004F916CDD84E00BE34CE /* MunkiStatus */ = {
+			isa = PBXGroup;
+			children = (
+				C094B6D31891826700E06897 /* BorderlessWindow.m */,
+				C094B6D41891826700E06897 /* ScaledImageView.h */,
+				C094B6D51891826700E06897 /* ScaledImageView.m */,
+				C094B6D0188F7CE100E06897 /* MSUStatusWindowController.py */,
+				C05C3CEE188391F200095E65 /* munki.py */,
+				C0B37439187089B900B6204E /* Resources */,
+				C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */,
+				C090050516CDD84E00BE34CE /* main.py */,
+				C090050716CDD84E00BE34CE /* MSUAppDelegate.py */,
+				C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */,
+				C090050916CDD84E00BE34CE /* MainMenu.xib */,
+				C09004FA16CDD84E00BE34CE /* Supporting Files */,
+			);
+			path = MunkiStatus;
+			sourceTree = "<group>";
+		};
+		C09004FA16CDD84E00BE34CE /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */,
+				C09004FC16CDD84E00BE34CE /* InfoPlist.strings */,
+				C09004FF16CDD84E00BE34CE /* main.m */,
+				C090050116CDD84E00BE34CE /* MunkiStatus-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C0B37439187089B900B6204E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C09004EC16CDD84E00BE34CE /* MunkiStatus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "MunkiStatus" */;
+			buildPhases = (
+				C09004E916CDD84E00BE34CE /* Sources */,
+				C09004EA16CDD84E00BE34CE /* Frameworks */,
+				C09004EB16CDD84E00BE34CE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MunkiStatus;
+			productName = SomeDumbTest;
+			productReference = C09004ED16CDD84E00BE34CE /* MunkiStatus.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C09004E416CDD84E00BE34CE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = MT;
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = MacTech;
+			};
+			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "MunkiStatus" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				da,
+				Dutch,
+				English,
+				fi,
+				French,
+				German,
+				nb,
+				ru,
+				Spanish,
+				sv,
+				ar,
+				ca,
+				cs,
+				el,
+				he,
+				hr,
+				hu,
+				Italian,
+				Japanese,
+				ko,
+				no,
+				pl,
+				pt,
+				pt_PT,
+				ro,
+				sk,
+				th,
+				tr,
+				uk,
+				zh_CN,
+				zh_TW,
+			);
+			mainGroup = C09004E216CDD84E00BE34CE;
+			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C09004EC16CDD84E00BE34CE /* MunkiStatus */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C09004EB16CDD84E00BE34CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */,
+				C090050616CDD84E00BE34CE /* main.py in Resources */,
+				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
+				C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */,
+				C05C3CEF188391F200095E65 /* munki.py in Resources */,
+				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
+				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
+				C0AE8658186D2DF900C87AE7 /* MunkiStatus.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C09004E916CDD84E00BE34CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C094B6D61891826700E06897 /* BorderlessWindow.m in Sources */,
+				C090050016CDD84E00BE34CE /* main.m in Sources */,
+				C094B6D71891826700E06897 /* ScaledImageView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		C09004FC16CDD84E00BE34CE /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C09004FD16CDD84E00BE34CE /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		C090050916CDD84E00BE34CE /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C090050A16CDD84E00BE34CE /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C090050C16CDD84E00BE34CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx10.8;
+			};
+			name = Debug;
+		};
+		C090050D16CDD84E00BE34CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx10.8;
+			};
+			name = Release;
+		};
+		C090050F16CDD84E00BE34CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,
+				);
+				INFOPLIST_FILE = "MunkiStatus/MunkiStatus-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = MunkiStatus;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		C090051016CDD84E00BE34CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,
+				);
+				INFOPLIST_FILE = "MunkiStatus/MunkiStatus-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				PRODUCT_NAME = MunkiStatus;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "MunkiStatus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C090050C16CDD84E00BE34CE /* Debug */,
+				C090050D16CDD84E00BE34CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "MunkiStatus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C090050F16CDD84E00BE34CE /* Debug */,
+				C090051016CDD84E00BE34CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C09004E416CDD84E00BE34CE /* Project object */;
+}
