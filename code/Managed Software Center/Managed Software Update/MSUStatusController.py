@@ -74,23 +74,23 @@ class MSUStatusController(NSObject):
     def updateStatus_(self, notification):
         info = notification.userInfo()
         if 'message' in info:
-            statusWindowController.setMessage_(info['message'])
+            self.statusWindowController.setMessage_(info['message'])
         if 'detail' in info:
-            statusWindowController.setDetail_(info['detail'])
+            self.statusWindowController.setDetail_(info['detail'])
         if 'percent' in info:
-            statusWindowController.setPercentageDone_(info['percent'])
+            self.statusWindowController.setPercentageDone_(info['percent'])
         command = info.get('command')
         if command == 'activate':
-            statusWindowController.window.orderFrontRegardless()
+            self.statusWindowController.window.orderFrontRegardless()
         elif command == 'hideStopButton':
-            statusWindowController.hideStopButton()
+            self.statusWindowController.hideStopButton()
         elif command == 'showStopButton':
-            statusWindowController.showStopButton()
+            self.statusWindowController.showStopButton()
         elif command == 'disableStopButton':
-            statusWindowController.disableStopButton()
+            self.statusWindowController.disableStopButton()
         elif command == 'enableStopButton':
-            statusWindowController.enableStopButton()
+            self.statusWindowController.enableStopButton()
         elif command == 'showRestartAlert':
-            statusWindowController.doRestartAlert()
+            self.statusWindowController.doRestartAlert()
         elif command == 'quit':
             self.cleanUpStatusSession()
