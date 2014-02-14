@@ -116,7 +116,7 @@ def filtered_html(text):
 
 
 def convertIconToPNG(app_name, destination_path, desired_size):
-    '''Converts an application icns file to a png file, chosing the representation
+    '''Converts an application icns file to a png file, choosing the representation
         closest to (but >= than if possible) the desired_size. Returns True if
         successful, False otherwise'''
     app_path = os.path.join('/Applications', app_name + '.app')

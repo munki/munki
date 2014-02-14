@@ -1222,12 +1222,9 @@ class MSUMainWindowController(NSWindowController):
             self.disableStopButton()
             self._status_stopBtnState =  1
             # send a notification that stop button was clicked
-            notification_center = NSDistributedNotificationCenter.defaultCenter()
-            notification_center.postNotificationName_object_userInfo_options_(
-                'com.googlecode.munki.MunkiStatus.stopButtonClicked',
-                None,
-                None,
-                NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+            STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
+            if not os.path.exists(STOP_REQUEST_FLAG):
+                open(STOP_REQUEST_FLAG, 'w').close()
 
         elif self.getUpdateCount() == 0:
             # no updates, this button must say "Check Again"

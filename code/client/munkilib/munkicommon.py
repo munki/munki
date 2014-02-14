@@ -690,63 +690,6 @@ def archive_report():
 
 # misc functions
 
-class NotificationReceiver(NSObject):
-    '''An object that can receive NSDistributedNotifications and act upon them'''
-    stop_requested = False
-    
-    @classmethod
-    def create(cls):
-        '''Creates a NotificationReceiver and registers for notifications'''
-        notification_receiver_instance = cls.alloc().init()
-        if notification_receiver_instance:
-            notification_receiver_instance.register()
-        return notification_receiver_instance
-    
-    def destroy(self):
-        '''Unregisters for notifications and deallocates the object'''
-        self.unregister()
-        del(self)
-    
-    def unregister(self):
-        '''Tell the DistributedNotificationCenter to stop sending us notifications'''
-        NSDistributedNotificationCenter.defaultCenter().removeObserver_(self)
-    
-    def register(self):
-        '''Register for our notifications'''
-        notification_center = NSDistributedNotificationCenter.defaultCenter()
-        notification_center.addObserver_selector_name_object_suspensionBehavior_(
-            self,
-            self.shouldStop,
-            'com.googlecode.munki.MunkiStatus.stopButtonClicked',
-            None,
-            NSNotificationSuspensionBehaviorDeliverImmediately)
-    
-    def shouldStop(self):
-        '''Delegate method called when a notification arrives'''
-        self.stop_requested = True
-    
-    def stopRequested(self):
-        '''Process an NSRunLoop so that notifications can be delivered, then return
-        our property'''
-        NSRunLoop.currentRunLoop().runUntilDate_(NSDate.dateWithTimeIntervalSinceNow_(.1))
-        return self.stop_requested
-
-
-_notificationdelegate = None
-def initNotificationDelegate():
-    '''Create a NotificationReceiver if needed, or return the existing one'''
-    global _notificationdelegate
-    if not _notificationdelegate:
-        _notificationdelegate = NotificationReceiver.create()
-
-
-def removeNotificationDelegate():
-    '''Destroy the NotificationReceiver if it exists'''
-    global _notificationdelegate
-    if _notificationdelegate:
-        _notificationdelegate.destroy()
-        _notificationdelegate = None
-
 
 def validPlist(path):
     """Uses plutil to determine if path contains a valid plist.
@@ -761,9 +704,15 @@ def validPlist(path):
 def stopRequested():
     """Allows user to cancel operations when
     MunkiStatus is being used"""
-    if _notificationdelegate:
-        if _notificationdelegate.stopRequested():
+    STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
+    if munkistatusoutput:
+        if os.path.exists(STOP_REQUEST_FLAG):
             log('### User stopped session ###')
+            try:
+                os.unlink(STOP_REQUEST_FLAG)
+            except OSError, err:
+                display_error(
+                    'Could not remove %s: %s', STOP_REQUEST_FLAG, err)
             return True
     return False
 
