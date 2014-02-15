@@ -71,6 +71,7 @@ class MSUStatusWindowController(NSObject):
 
     stopBtnState = 0
     restartAlertDismissed = 0
+    timer = None
 
     @IBAction
     def stopBtnClicked_(self, sender):
@@ -80,12 +81,9 @@ class MSUStatusWindowController(NSObject):
         self.stopBtnState = 1
         sender.setEnabled_(False)
         # send a notification that stop button was clicked
-        notification_center = NSDistributedNotificationCenter.defaultCenter()
-        notification_center.postNotificationName_object_userInfo_options_(
-            'com.googlecode.munki.MunkiStatus.stopButtonClicked',
-            None,
-            None,
-            NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+        STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
+        if not os.path.exists(STOP_REQUEST_FLAG):
+            open(STOP_REQUEST_FLAG, 'w').close()
     
     def registerForNotifications(self):
         '''Register for notification messages'''
@@ -96,10 +94,31 @@ class MSUStatusWindowController(NSObject):
             'com.googlecode.munki.managedsoftwareupdate.statusUpdate',
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.managedsoftwareupdateStarted_,
+            'com.googlecode.munki.managedsoftwareupdate.started',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.managedsoftwareupdateEnded_,
+            'com.googlecode.munki.managedsoftwareupdate.ended',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
     
     def unregisterForNotifications(self):
         '''Tell the DistributedNotificationCenter to stop sending us notifications'''
         NSDistributedNotificationCenter.defaultCenter().removeObserver_(self)
+    
+    def managedsoftwareupdateStarted_(self, notification):
+        if 'pid' in notification.userInfo():
+            
+            self.managedsoftwareupdate_pid = notification.userInfo()['pid']
+            NSLog('managedsoftwareupdate pid %s started' % self.managedsoftwareupdate_pid)
+
+    def managedsoftwareupdateEnded_(self, notification):
+        NSLog('managedsoftwareupdate pid %s ended' % notification.userInfo().get('pid'))
 
     def initStatusSession(self):
         consoleuser = munki.getconsoleuser()
@@ -129,6 +148,14 @@ class MSUStatusWindowController(NSObject):
                 self.progressIndicator.startAnimation_(self)
             self.window.orderFrontRegardless()
             self.registerForNotifications()
+            self.startWatchdogTimer()
+                
+    def startWatchdogTimer(self):
+        self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+            5.0, self, self.timerFired_, None, YES)
+    
+    def timerFired_(self, timerObject):
+        NSLog('Timer fired')
             
     def cleanUpStatusSession(self):
         self.unregisterForNotifications()
@@ -162,6 +189,8 @@ class MSUStatusWindowController(NSObject):
 
     def updateStatus_(self, notification):
         info = notification.userInfo()
+        if 'pid' in info:
+            NSLog('status update from managedsoftwareupdate pid %s' % info['pid'])
         if 'message' in info:
             self.setMessage_(info['message'])
         if 'detail' in info:

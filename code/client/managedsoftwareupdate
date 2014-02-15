@@ -327,14 +327,39 @@ def recordUpdateCheckResult(result):
     munkicommon.set_pref('LastCheckResult', result)
 
 
+def sendDistrubutedNotification(notification_name, userInfo=None):
+    '''Sends a NSDistributedNotification'''
+    dnc = NSDistributedNotificationCenter.defaultCenter()
+    dnc.postNotificationName_object_userInfo_options_(
+        notification_name,
+        None, 
+        userInfo,
+        NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+
+
 def sendUpdateNotification():
     '''Sends an update notification via NSDistributedNotificationCenter
     MSU.app registers to receive these events.'''
-    dnc = NSDistributedNotificationCenter.defaultCenter()
-    dnc.postNotificationName_object_userInfo_options_(
-        'com.googlecode.munki.ManagedSoftwareUpdate.update',
-        None, None,
-        NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.updateschanged',
+        userInfo)
+
+
+def sendStartNotification():
+    '''Sends a start notification via NSDistributedNotificationCenter'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.started',
+        userInfo)
+
+
+def sendEndNotification():
+    '''Sends a start notification via NSDistributedNotificationCenter'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.ended',
+        userInfo)
 
 
 def notifyUserOfUpdates(force=False):
@@ -571,6 +596,7 @@ def main():
         print 'http://code.google.com/p/munki\n'
 
     munkicommon.display_status_major('Starting...')
+    sendStartNotification()
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
     result = runScript(preflightscript, 'preflight', runtype)
@@ -856,6 +882,7 @@ def main():
     munkicommon.savereport()
 
     munkicommon.display_status_major('Finishing...')
+    sendEndNotification()
     # save application inventory data
     munkicommon.saveappdata()
     # run the postflight script if it exists

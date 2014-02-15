@@ -54,7 +54,7 @@ class MSUAppDelegate(NSObject):
         notification_center.addObserver_selector_name_object_suspensionBehavior_(
             self,
             self.updateAvailableUpdates,
-            'com.googlecode.munki.ManagedSoftwareUpdate.update',
+            'com.googlecode.munki.managedsoftwareupdate.updateschanged',
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
                                                                                  

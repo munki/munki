@@ -46,7 +46,8 @@ def initStatusDict():
         'percent': -1,
         'stop_button_visible': True,
         'stop_button_enabled': True,
-        'command': ''
+        'command': '',
+        'pid': os.getpid()
     }
 
 def launchMunkiStatus():

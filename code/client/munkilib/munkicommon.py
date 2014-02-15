@@ -702,8 +702,7 @@ def validPlist(path):
 
 
 def stopRequested():
-    """Allows user to cancel operations when
-    MunkiStatus is being used"""
+    """Allows user to cancel operations when GUI status is being used"""
     STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
     if munkistatusoutput:
         if os.path.exists(STOP_REQUEST_FLAG):
