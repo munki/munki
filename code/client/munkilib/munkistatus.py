@@ -58,12 +58,12 @@ def launchMunkiStatus():
     There needs to be a launch agent that is triggered when the launchfile
     is created; and that launch agent then runs MunkiStatus.app.'''
     initStatusDict()
-    # TESTING, TESTING
-    return
     
     launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
-    cmd = ['/usr/bin/touch', launchfile]
-    unused_retcode = subprocess.call(cmd)
+    try:
+        open(launchfile, 'w').close()
+    except (OSError, IOError), err:
+        pass
     time.sleep(0.1)
     if os.path.exists(launchfile):
         os.unlink(launchfile)

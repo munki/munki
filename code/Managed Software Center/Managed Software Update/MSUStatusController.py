@@ -34,8 +34,8 @@ class MSUStatusController(NSObject):
     '''
 
     session_started = False
-    session_connected = False
-    
+    got_status_update = False
+
     statusWindowController = IBOutlet()
     
     def registerForNotifications(self):
@@ -47,20 +47,70 @@ class MSUStatusController(NSObject):
             'com.googlecode.munki.managedsoftwareupdate.statusUpdate',
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
+        self.receiving_notifications = True
+
     
     def unregisterForNotifications(self):
         '''Tell the DistributedNotificationCenter to stop sending us notifications'''
         NSDistributedNotificationCenter.defaultCenter().removeObserver_(self)
+        # set self.receiving_notifications to False so our process monitoring
+        # thread will exit
+        self.receiving_notifications = False
     
     def startMunkiStatusSession(self):
         self.statusWindowController.initStatusSession()
-        self.registerForNotifications()
+        #self.registerForNotifications()
         self.session_started = True
+        # start our process monitor thread so we can be notified about
+        # process failure
+        NSThread.detachNewThreadSelector_toTarget_withObject_(
+                                                self.monitorProcess, self, None)
             
     def cleanUpStatusSession(self):
         self.session_started = False
-        self.unregisterForNotifications()
+        #self.unregisterForNotifications()
         self.statusWindowController.cleanUpStatusSession()
+    
+    def monitorProcess(self):
+        '''Monitors managedsoftwareupdate process for failure to start
+        or unexpected exit, so we're not waiting around forever if
+        managedsoftwareupdate isn't running.'''
+        PYTHON_SCRIPT_NAME = 'managedsoftwareupdate'
+        NEVER_STARTED = -2
+        UNEXPECTEDLY_QUIT = -1
+        
+        timeout_counter = 6
+        saw_process = False
+        
+        # Autorelease pool for memory management
+        pool = NSAutoreleasePool.alloc().init()
+        while self.session_started:
+            if self.got_status_update:
+                # we got a status update since we last checked; no need to
+                # check the process table
+                timeout_counter = 6
+                saw_process = True
+                # clear the flag so we have to get another status update
+                self.got_status_update = False
+            elif munki.pythonScriptRunning(PYTHON_SCRIPT_NAME):
+                timeout_counter = 6
+                saw_process = True
+            else:
+                NSLog('No managedsoftwareupdate running...')
+                timeout_counter -= 1
+            if timeout_counter == 0:
+                NSLog('Timed out waiting for managedsoftwareupdate.')
+                if saw_process:
+                    sessionResult = UNEXPECTEDLY_QUIT
+                else:
+                    sessionResult = NEVER_STARTED
+                break
+            time.sleep(5)
+        if self.session_started:
+            self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                                    self.sessionEnded_, sessionResult, NO)
+        # Clean up autorelease pool
+        del pool
     
     def sessionStarted(self):
         return self.session_started
@@ -72,6 +122,10 @@ class MSUStatusController(NSObject):
         NSApp.delegate().munkiStatusSessionEnded_(result)
         
     def updateStatus_(self, notification):
+        if not self.session_started:
+            # we got a status message but we didn't start the session
+            # so switch to the right mode
+            self.startMunkiStatusSession()
         info = notification.userInfo()
         if 'message' in info:
             self.statusWindowController.setMessage_(info['message'])

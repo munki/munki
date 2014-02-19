@@ -23,6 +23,7 @@ from PyObjCTools import AppHelper
 
 import os
 import munki
+import time
 import FoundationPlist
 from Foundation import *
 from AppKit import *
@@ -71,7 +72,8 @@ class MSUStatusWindowController(NSObject):
 
     stopBtnState = 0
     restartAlertDismissed = 0
-    timer = None
+    got_status_update = False
+    receiving_notifications = False
 
     @IBAction
     def stopBtnClicked_(self, sender):
@@ -106,14 +108,21 @@ class MSUStatusWindowController(NSObject):
             'com.googlecode.munki.managedsoftwareupdate.ended',
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
+        self.receiving_notifications = True
+        # start our process monitor thread so we can be notified about
+        # process failure
+        NSThread.detachNewThreadSelector_toTarget_withObject_(
+                                                    self.monitorProcess, self, None)
     
     def unregisterForNotifications(self):
         '''Tell the DistributedNotificationCenter to stop sending us notifications'''
         NSDistributedNotificationCenter.defaultCenter().removeObserver_(self)
+        # set self.receiving_notifications to False so our process monitoring
+        # thread will exit
+        self.receiving_notifications = False
     
     def managedsoftwareupdateStarted_(self, notification):
         if 'pid' in notification.userInfo():
-            
             self.managedsoftwareupdate_pid = notification.userInfo()['pid']
             NSLog('managedsoftwareupdate pid %s started' % self.managedsoftwareupdate_pid)
 
@@ -148,15 +157,53 @@ class MSUStatusWindowController(NSObject):
                 self.progressIndicator.startAnimation_(self)
             self.window.orderFrontRegardless()
             self.registerForNotifications()
-            self.startWatchdogTimer()
-                
-    def startWatchdogTimer(self):
-        self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-            5.0, self, self.timerFired_, None, YES)
-    
-    def timerFired_(self, timerObject):
-        NSLog('Timer fired')
             
+    def monitorProcess(self):
+        '''Monitors managedsoftwareupdate process for failure to start
+        or unexpected exit, so we're not waiting around forever if
+        managedsoftwareupdate isn't running.'''
+        PYTHON_SCRIPT_NAME = 'managedsoftwareupdate'
+        NEVER_STARTED = -2
+        UNEXPECTEDLY_QUIT = -1
+        
+        timeout_counter = 6
+        saw_process = False
+        
+        # Autorelease pool for memory management
+        pool = NSAutoreleasePool.alloc().init()
+        while self.receiving_notifications:
+            if self.got_status_update:
+                # we got a status update since we last checked; no need to
+                # check the process table
+                timeout_counter = 6
+                saw_process = True
+                # clear the flag so we have to get another status update
+                self.got_status_update = False
+            elif munki.pythonScriptRunning(PYTHON_SCRIPT_NAME):
+                timeout_counter = 6
+                saw_process = True
+            else:
+                NSLog('No managedsoftwareupdate running...')
+                timeout_counter -= 1
+            if timeout_counter == 0:
+                NSLog('Timed out waiting for managedsoftwareupdate.')
+                if saw_process:
+                    sessionResult = UNEXPECTEDLY_QUIT
+                else:
+                    sessionResult = NEVER_STARTED
+                break
+            time.sleep(5)
+        if self.receiving_notifications:
+            self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                                    self.statusSessionFailed_, sessionResult, NO)
+        # Clean up autorelease pool
+        del pool
+
+    def statusSessionFailed_(self, sessionResult):
+        NSLog('statusSessionFailed: %s' % sessionResult)
+        self.cleanUpStatusSession()
+        NSApp.terminate_(self)
+
     def cleanUpStatusSession(self):
         self.unregisterForNotifications()
         if self.backdropWindow and self.backdropWindow.isVisible():
@@ -188,9 +235,8 @@ class MSUStatusWindowController(NSObject):
                 self.backdropWindow.animator().setAlphaValue_(1.0)
 
     def updateStatus_(self, notification):
+        self.got_status_update = True
         info = notification.userInfo()
-        if 'pid' in info:
-            NSLog('status update from managedsoftwareupdate pid %s' % info['pid'])
         if 'message' in info:
             self.setMessage_(info['message'])
         if 'detail' in info:

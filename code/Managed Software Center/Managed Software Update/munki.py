@@ -428,6 +428,41 @@ def justUpdate():
     except (OSError, IOError):
         return 1
 
+def pythonScriptRunning(scriptname):
+    """Returns Process ID for a running python script"""
+    cmd = ['/bin/ps', '-eo', 'pid=,command=']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, unused_err) = proc.communicate()
+    mypid = os.getpid()
+    lines = str(out).splitlines()
+    for line in lines:
+        try:
+            (pid, process) = line.split(None, 1)
+        except ValueError:
+            # funky process line, so we'll skip it
+            pass
+        else:
+            args = process.split()
+            try:
+                # first look for Python processes
+                if (args[0].find('MacOS/Python') != -1 or
+                    args[0].find('python') != -1):
+                    # look for first argument being scriptname
+                    if args[1].find(scriptname) != -1:
+                        try:
+                            if int(pid) != int(mypid):
+                                return pid
+                        except ValueError:
+                            # pid must have some funky characters
+                            pass
+            except IndexError:
+                pass
+    # if we get here we didn't find a Python script with scriptname
+    # (other than ourselves)
+    return 0
+
 
 def getRunningProcesses():
     """Returns a list of paths of running processes"""

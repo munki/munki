@@ -315,7 +315,7 @@ class MSUMainWindowController(NSWindowController):
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
             suppress_apple_update_check = True
-            #result = munki.startUpdateCheck(suppress_apple_update_check)
+            result = munki.startUpdateCheck(suppress_apple_update_check)
             result = 0
             if result:
                 NSLog("Error starting check-then-install session: %s" % result)
@@ -1514,16 +1514,25 @@ class MSUMainWindowController(NSWindowController):
         if filterString:
             self.load_page('filter-%s.html' % quote_plus(filterString))
 
+    def currentPageIsUpdatesPage(self):
+        '''return True if current tab selected is updates'''
+        selectedCell = self.tabControl.selectedCell()
+        return (selectedCell is not None and selectedCell.tag() == 4)
+
 ##### required status methods #####
 
     def initStatusSession(self):
         self._update_in_progress = True
-    
+        if self.currentPageIsUpdatesPage():
+            self.webView.reload_(self)
+            self.displayUpdateCount()
+
     def cleanUpStatusSession(self):
         # reset all our status variables
         self._update_in_progress = False
         self._status_stopBtnDisabled = False
         self._status_stopBtnHidden = False
+        self._status_stopBtnState = 0
         self._status_message = ''
         self._status_detail = ''
         self._status_percent = -1
