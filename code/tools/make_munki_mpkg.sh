@@ -459,7 +459,7 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='system.compareVersions(my.target.receiptForIdentifier("$PKGID.launchd").version, "$LAUNCHDVERSION") != 0'>
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $CONFCHOICE
@@ -511,7 +511,7 @@ for pkg in core admin app launchd; do
     esac
     echo "Packaging munkitools_$pkg-$ver.pkg"
     # Use pkgutil --analyze to build a component property list
-    # then turn off package relocation
+    # then turn off bundle relocation
     sudo /usr/bin/pkgbuild \
         --analyze \
         --root "$PKGTMP/munki_$pkg" \
@@ -532,7 +532,7 @@ for pkg in core admin app launchd; do
         --info "$PKGTMP/info_$pkg" \
         --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
         "$PKGDEST/munkitools_$pkg-$ver.pkg"
-    # TO-DO: turn off bundle relocation for the app pkg
+    
     if [ "$?" -ne 0 ]; then
         echo "Error packaging munkitools_$pkg-$ver.pkg before rebuilding it."
         echo "Attempting to clean up temporary files..."
