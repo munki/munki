@@ -356,7 +356,7 @@ ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed 
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
-MSUVERSION=`defaults read "$MUNKIROOT/code/Managed Software Center/build/Release/Managed Software Update.app/Contents/Info" CFBundleShortVersionString`
+MSUVERSION=`defaults read "$MUNKIROOT/code/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleShortVersionString`
 makeinfo app "$PKGTMP/info" "$PKGID" "$MSUVERSION" $APPSIZE $NFILES norestart
 
 
