@@ -18,7 +18,7 @@
 		C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C090050916CDD84E00BE34CE /* MainMenu.xib */; };
 		C094B6CF188F7C7700E06897 /* MSUStatusController.py in Resources */ = {isa = PBXBuildFile; fileRef = C094B6CE188F7C7700E06897 /* MSUStatusController.py */; };
 		C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0A71B75188A47C700A6EE82 /* MSUMainWindowController.py */; };
-		C0AE8658186D2DF900C87AE7 /* Managed Software Update.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* Managed Software Update.icns */; };
+		C0AE8658186D2DF900C87AE7 /* Managed Software Center.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */; };
 		C0AE865A186D32AF00C87AE7 /* MSUBadgedTemplateImage.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8659186D32AF00C87AE7 /* MSUBadgedTemplateImage.py */; };
 		C0B3743F187089F300B6204E /* AllItemsTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0B3743A187089F300B6204E /* AllItemsTemplate.png */; };
 		C0B37442187089F300B6204E /* toolbarCategoriesTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C0B3743D187089F300B6204E /* toolbarCategoriesTemplate.pdf */; };
@@ -31,23 +31,23 @@
 
 /* Begin PBXFileReference section */
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C02BF93618B45D6900115CCF /* Managed Software Center-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Managed Software Center-Info.plist"; sourceTree = "<group>"; };
 		C035274D18A9C582004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
 		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = munki.py; sourceTree = "<group>"; };
-		C09004ED16CDD84E00BE34CE /* Managed Software Update.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Update.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C09004ED16CDD84E00BE34CE /* Managed Software Center.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Center.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C09004F116CDD84E00BE34CE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C09004F616CDD84E00BE34CE /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		C09004F716CDD84E00BE34CE /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		C09004F816CDD84E00BE34CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		C09004FB16CDD84E00BE34CE /* Managed Software Update-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Managed Software Update-Info.plist"; sourceTree = "<group>"; };
 		C09004FD16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C090050116CDD84E00BE34CE /* Managed Software Update-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Managed Software Update-Prefix.pch"; sourceTree = "<group>"; };
+		C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Managed Software Center-Prefix.pch"; sourceTree = "<group>"; };
 		C090050516CDD84E00BE34CE /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		C090050716CDD84E00BE34CE /* MSUAppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = MSUAppDelegate.py; sourceTree = "<group>"; };
 		C090050A16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C094B6CE188F7C7700E06897 /* MSUStatusController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUStatusController.py; sourceTree = "<group>"; };
 		C0A71B75188A47C700A6EE82 /* MSUMainWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUMainWindowController.py; sourceTree = "<group>"; };
-		C0AE8657186D2DF900C87AE7 /* Managed Software Update.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Update.icns"; sourceTree = "<group>"; };
+		C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Center.icns"; sourceTree = "<group>"; };
 		C0AE8659186D32AF00C87AE7 /* MSUBadgedTemplateImage.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUBadgedTemplateImage.py; sourceTree = "<group>"; };
 		C0B3743A187089F300B6204E /* AllItemsTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AllItemsTemplate.png; sourceTree = "<group>"; };
 		C0B3743D187089F300B6204E /* toolbarCategoriesTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = toolbarCategoriesTemplate.pdf; sourceTree = "<group>"; };
@@ -74,7 +74,7 @@
 		C09004E216CDD84E00BE34CE = {
 			isa = PBXGroup;
 			children = (
-				C09004F916CDD84E00BE34CE /* Managed Software Update */,
+				C09004F916CDD84E00BE34CE /* Managed Software Center */,
 				C09004F016CDD84E00BE34CE /* Frameworks */,
 				C09004EE16CDD84E00BE34CE /* Products */,
 				C035274D18A9C582004A5AE4 /* libpython2.6.dylib */,
@@ -84,7 +84,7 @@
 		C09004EE16CDD84E00BE34CE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C09004ED16CDD84E00BE34CE /* Managed Software Update.app */,
+				C09004ED16CDD84E00BE34CE /* Managed Software Center.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,7 +108,7 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
-		C09004F916CDD84E00BE34CE /* Managed Software Update */ = {
+		C09004F916CDD84E00BE34CE /* Managed Software Center */ = {
 			isa = PBXGroup;
 			children = (
 				C094B6CE188F7C7700E06897 /* MSUStatusController.py */,
@@ -118,22 +118,22 @@
 				C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */,
 				C090050516CDD84E00BE34CE /* main.py */,
 				C090050716CDD84E00BE34CE /* MSUAppDelegate.py */,
-				C0AE8657186D2DF900C87AE7 /* Managed Software Update.icns */,
+				C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */,
 				C090050916CDD84E00BE34CE /* MainMenu.xib */,
 				C09004FA16CDD84E00BE34CE /* Supporting Files */,
 				C0E098BB1857A3C80045DEEB /* msulib.py */,
 				C0A71B75188A47C700A6EE82 /* MSUMainWindowController.py */,
 			);
-			path = "Managed Software Update";
+			path = "Managed Software Center";
 			sourceTree = "<group>";
 		};
 		C09004FA16CDD84E00BE34CE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				C09004FB16CDD84E00BE34CE /* Managed Software Update-Info.plist */,
+				C02BF93618B45D6900115CCF /* Managed Software Center-Info.plist */,
 				C09004FC16CDD84E00BE34CE /* InfoPlist.strings */,
 				C09004FF16CDD84E00BE34CE /* main.m */,
-				C090050116CDD84E00BE34CE /* Managed Software Update-Prefix.pch */,
+				C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -154,9 +154,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C09004EC16CDD84E00BE34CE /* Managed Software Update */ = {
+		C09004EC16CDD84E00BE34CE /* Managed Software Center */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Update" */;
+			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Center" */;
 			buildPhases = (
 				C09004E916CDD84E00BE34CE /* Sources */,
 				C09004EA16CDD84E00BE34CE /* Frameworks */,
@@ -166,9 +166,9 @@
 			);
 			dependencies = (
 			);
-			name = "Managed Software Update";
+			name = "Managed Software Center";
 			productName = SomeDumbTest;
-			productReference = C09004ED16CDD84E00BE34CE /* Managed Software Update.app */;
+			productReference = C09004ED16CDD84E00BE34CE /* Managed Software Center.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -181,7 +181,7 @@
 				LastUpgradeCheck = 0450;
 				ORGANIZATIONNAME = MacTech;
 			};
-			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Update" */;
+			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Center" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -224,7 +224,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C09004EC16CDD84E00BE34CE /* Managed Software Update */,
+				C09004EC16CDD84E00BE34CE /* Managed Software Center */,
 			);
 		};
 /* End PBXProject section */
@@ -247,7 +247,7 @@
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */,
 				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
-				C0AE8658186D2DF900C87AE7 /* Managed Software Update.icns in Resources */,
+				C0AE8658186D2DF900C87AE7 /* Managed Software Center.icns in Resources */,
 				C0B3743F187089F300B6204E /* AllItemsTemplate.png in Resources */,
 				C0AE865A186D32AF00C87AE7 /* MSUBadgedTemplateImage.py in Resources */,
 				C0B3744618708A0300B6204E /* templates in Resources */,
@@ -343,20 +343,20 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Managed Software Update/Managed Software Update-Prefix.pch";
+				GCC_PREFIX_HEADER = "Managed Software Center/Managed Software Center-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,
 				);
-				INFOPLIST_FILE = "Managed Software Update/Managed Software Update-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Managed Software Center-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "Managed Software Update";
+				PRODUCT_NAME = "Managed Software Center";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -366,19 +366,19 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Managed Software Update/Managed Software Update-Prefix.pch";
+				GCC_PREFIX_HEADER = "Managed Software Center/Managed Software Center-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,
 				);
-				INFOPLIST_FILE = "Managed Software Update/Managed Software Update-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Managed Software Center-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				PRODUCT_NAME = "Managed Software Update";
+				PRODUCT_NAME = "Managed Software Center";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -386,7 +386,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Update" */ = {
+		C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Center" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C090050C16CDD84E00BE34CE /* Debug */,
@@ -395,7 +395,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Update" */ = {
+		C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Center" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C090050F16CDD84E00BE34CE /* Debug */,

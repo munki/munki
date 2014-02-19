@@ -1,6 +1,6 @@
 #
 #  MSUMainWindowController.py
-#  Managed Software Update
+#  Managed Software Center
 #
 #  Copyright 2013-2014 Greg Neagle.
 #
@@ -195,7 +195,7 @@ class MSUMainWindowController(NSWindowController):
                 nil,
                 nil,
                 NSLocalizedString(
-                    (u"Managed Software Update cannot contact the update "
+                    (u"Managed Software Center cannot contact the update "
                     "server at this time.\n"
                      "Try again later. If this situation continues, "
                     "contact your systems administrator."), u'CannotContactServerDetail'))
@@ -211,7 +211,7 @@ class MSUMainWindowController(NSWindowController):
                 nil,
                 nil,
                 NSLocalizedString(
-                    (u"Managed Software Update failed its preflight check.\n"
+                    (u"Managed Software Center cannot check for updates now.\n"
                      "Try again later. If this situation continues, "
                      "contact your systems administrator."), u'FailedPreflightCheckDetail'))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(

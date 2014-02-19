@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.googlecode.munki.ManagedSoftwareUpdate</string>
+	<string>com.googlecode.munki.ManagedSoftwareCenter</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

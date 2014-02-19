@@ -1,6 +1,6 @@
 #
 # MSUBadgedTemplateImage.py
-# Managed Software Update
+# Managed Software Center
 #
 # Copyright 2014 Greg Neagle.
 #

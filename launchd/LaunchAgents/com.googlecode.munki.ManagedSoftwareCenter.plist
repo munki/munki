@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.googlecode.munki.ManagedSoftwareUpdate</string>
+  <string>com.googlecode.munki.ManagedSoftwareCenter</string>
   <key>LimitLoadToSessionType</key>
   <array>
     <string>Aqua</string>
@@ -12,7 +12,7 @@
   <array>
     <string>/usr/local/munki/launchapp</string>
     <string>-a</string>
-    <string>/Applications/Utilities/Managed Software Update.app</string>
+    <string>/Applications/Managed Software Center.app</string>
   </array>
   <key>RunAtLoad</key>
   <false/>

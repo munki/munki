@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 #  munki.py
-#  Managed Software Update
+#  Managed Software Center
 #
 #  Created by Greg Neagle on 2/11/10.
 #  Copyright 2010-2014 Greg Neagle.
@@ -18,7 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-'''munki-specific code for use with Managed Software Update'''
+'''munki-specific code for use with Managed Software Center'''
 
 import errno
 import logging

@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 #  MSUAppDelegate.py
-#  Managed Software Update
+#  Managed Software Center
 #
 #  Copyright 2013-2014 Greg Neagle.
 #
@@ -94,12 +94,12 @@ class MSUAppDelegate(NSObject):
         self.mainWindowController.loadInitialView()
 
     def updateAvailableUpdates(self):
-        NSLog(u"Managed Software Update got update notification")
+        NSLog(u"Managed Software Center got update notification")
         if not self.mainWindowController._update_in_progress:
             self.mainWindowController.resetAndReload()
 
     def forcedLogoutWarning(self, notification_obj):
-        NSLog(u"Managed Software Update got forced logout warning")
+        NSLog(u"Managed Software Center got forced logout warning")
     
     def munkiStatusSessionEnded_(self, socketSessionResult):
         NSLog(u"MunkiStatus session ended: %s" % socketSessionResult)

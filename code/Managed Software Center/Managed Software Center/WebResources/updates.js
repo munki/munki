@@ -1,5 +1,5 @@
 /* updates.js
-   Managed Software Update
+   Managed Software Center
    
    Created by Greg Neagle on 12/28/13.
 */
