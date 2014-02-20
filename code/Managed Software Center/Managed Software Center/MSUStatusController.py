@@ -49,7 +49,6 @@ class MSUStatusController(NSObject):
             NSNotificationSuspensionBehaviorDeliverImmediately)
         self.receiving_notifications = True
 
-    
     def unregisterForNotifications(self):
         '''Tell the DistributedNotificationCenter to stop sending us notifications'''
         NSDistributedNotificationCenter.defaultCenter().removeObserver_(self)
@@ -104,11 +103,11 @@ class MSUStatusController(NSObject):
                     sessionResult = UNEXPECTEDLY_QUIT
                 else:
                     sessionResult = NEVER_STARTED
+                self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                                            self.sessionEnded_, sessionResult, NO)
                 break
             time.sleep(5)
-        if self.session_started:
-            self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                                    self.sessionEnded_, sessionResult, NO)
+        
         # Clean up autorelease pool
         del pool
     

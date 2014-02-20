@@ -113,7 +113,7 @@ def reload_prefs():
     this needs to be run after returning from MunkiStatus"""
     CFPreferencesAppSynchronize(BUNDLE_ID)
 
-DEFAULT_GUI_CACHE_AGE_SECS = 60
+DEFAULT_GUI_CACHE_AGE_SECS = 600
 
 def pref(pref_name):
     """Return a preference. Since this uses CFPreferencesCopyAppValue,

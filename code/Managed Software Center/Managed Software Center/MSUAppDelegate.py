@@ -45,8 +45,8 @@ class MSUAppDelegate(NSObject):
             NSApp.disableRelaunchOnLogin()
         
         ver = NSBundle.mainBundle().infoDictionary().get('CFBundleShortVersionString')
-        NSLog("MSU GUI version: %s" % ver)
-        munki.log("MSU", "launched", "VER=%s" % ver)
+        NSLog("MSC GUI version: %s" % ver)
+        munki.log("MSC", "launched", "VER=%s" % ver)
 
         # register for notification messages so we can be told if available
         # updates change while we are open
@@ -100,6 +100,7 @@ class MSUAppDelegate(NSObject):
 
     def forcedLogoutWarning(self, notification_obj):
         NSLog(u"Managed Software Center got forced logout warning")
+        # TO-DO: display the logout warning!
     
     def munkiStatusSessionEnded_(self, socketSessionResult):
         NSLog(u"MunkiStatus session ended: %s" % socketSessionResult)
@@ -114,7 +115,6 @@ class MSUAppDelegate(NSObject):
         # kick off an update check
         # attempt to start the update check
         result = munki.startUpdateCheck(suppress_apple_update_check)
-        result = 0
         if result == 0:
             self.managedsoftwareupdate_task = "manualcheck"
             self.statusController.startMunkiStatusSession()

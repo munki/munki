@@ -895,10 +895,7 @@ def main():
     if options.verbose:
         print 'Done.'
 
-    if options.manualcheck:
-        # just quit munkistatus; Managed Software Update will notify
-        munkistatus.quit()
-    elif notify_user:
+    if notify_user:
         # it may have been more than a minute since we ran our
         # original updatecheck so tickle the updatecheck time
         # so MSU.app knows to display results immediately

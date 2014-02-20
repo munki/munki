@@ -23,6 +23,7 @@ import sys
 
 import shutil
 from string import Template
+from urllib import quote_plus
 
 from HTMLParser import HTMLParser
 
@@ -30,6 +31,7 @@ from Foundation import *
 from AppKit import *
 
 import FoundationPlist
+import munki
 
 class MSUHTMLFilter(HTMLParser):
     '''Filters HTML and HTML fragments for use inside description paragraphs'''
@@ -422,3 +424,100 @@ def get_template(template_name):
     except (IOError, OSError):
         return None
 
+
+def getFooter(vars=None):
+    '''Return html footer'''
+    if not vars:
+        vars = {}
+    footer_template = get_template('footer_template.html')
+    return footer_template.safe_substitute(vars)
+
+
+def processItems(items, html_dir, are_removals=False, are_optional=False):
+    for item in items:
+        # convert all unicode values to utf-8 strings
+        for key, value in item.items():
+            if isinstance(value, unicode):
+                item[key] = value.encode('utf-8')
+        if not 'developer' in item:
+            item['developer'] = guessDeveloper(item)
+        item['developer_sort'] = 1
+        if not are_removals and item['developer'] == 'Apple':
+            item['developer_sort'] = 0
+        item['icon'] = getIcon(item, html_dir)
+        if not item.get('detail_link'):
+            item['detail_link'] = ('updatedetail-%s.html'
+                                   % quote_plus(item['name']))
+        if are_removals:
+            item['will_be_removed'] = True
+            removal_text = NSLocalizedString(
+                    u'Will be removed',
+                    u'WillBeRemovedDisplayText').encode('utf-8')
+            item['version_label'] = ('<span class="warning">%s</span>'
+                                     % removal_text)
+            item['version_to_install'] = ''
+        else:
+            item['version_label'] = NSLocalizedString(
+                                        u'Version',
+                                        u'VersionLabel').encode('utf-8')
+        if 'description' in item:
+            item['description'] = filtered_html(item['description'])
+        else:
+            item['description'] = ''
+        item['due_date_sort'] = NSDate.distantFuture()
+        if not are_removals:
+            force_install_after_date = item.get('force_install_after_date')
+            if force_install_after_date:
+                item['category'] = NSLocalizedString(
+                                u'Critical Update', u'CriticalUpdateType')
+                item['due_date_sort'] = force_install_after_date
+                # insert installation deadline into description
+                local_date = munki.discardTimeZoneFromDate(
+                                                force_install_after_date)
+                date_str = munki.stringFromDate(local_date).encode('utf-8')
+                forced_date_text = NSLocalizedString(
+                                    u'This item must be installed by %s',
+                                    u'ForcedDateWarning').encode('utf-8')
+                description = item['description']
+                # prepend deadline info to description.
+                item['description'] = (
+                    '<span class="warning">' + forced_date_text % date_str
+                    + '</span><br><br>' + description)
+        if not 'category' in item and not are_optional:
+             item['category'] = NSLocalizedString(u'Managed Update',
+                                                  u'ManagedUpdateType').encode('utf-8')
+        if are_optional:
+            item['hide_cancel_button'] = ''
+            item['cancel_or_add'] = 'cancel'
+            if item['status'] not in [
+                    'will-be-removed', 'will-be-installed', 'update-will-be-installed']:
+                item['cancel_or_add'] = 'add'
+        else:
+            item['hide_cancel_button'] = 'hidden'
+            item['cancel_or_add'] = ''
+
+        # sort items that need restart highest, then logout, then other
+        if item.get('RestartAction') in [None, 'None']:
+            item['restart_action_text'] = ''
+            item['restart_sort'] = 2
+        elif item['RestartAction'] in ['RequireRestart', 'RecommendRestart']:
+            item['restart_sort'] = 0
+            item['restart_action_text'] = NSLocalizedString(
+                u'Restart Required', u'RequireRestartMessage').encode('utf-8')
+            item['restart_action_text'] += '<div class="restart-needed-icon"></div>'
+        elif item['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
+            item['restart_sort'] = 1
+            item['restart_action_text'] = NSLocalizedString(
+                u'Logout Required', u'RequireLogoutMessage').encode('utf-8')
+            item['restart_action_text'] += '<div class="logout-needed-icon"></div>'
+
+        # sort bigger installs to the top
+        if item.get('installed_size'):
+            item['size_sort'] = -int(item['installed_size'])
+            item['size'] = munki.humanReadable(item['installed_size'])
+        elif item.get('installer_item_size'):
+            item['size_sort'] = -int(item['installer_item_size'])
+            item['size'] = munki.humanReadable(item['installer_item_size'])
+        else:
+            item['size_sort'] = 0
+            item['size'] = ''
