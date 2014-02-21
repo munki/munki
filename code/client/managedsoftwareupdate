@@ -212,12 +212,13 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
         # of installs
         clearLastNotifiedDate()
 
-    need_to_restart = False
+    munki_need_to_restart = False
+    apple_need_to_restart = False
 
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            need_to_restart = installer.run(only_unattended=only_unattended)
+            munki_need_to_restart = installer.run(only_unattended=only_unattended)
         except:
             munkicommon.display_error('Unexpected error in munkilib.installer:')
             munkicommon.log(traceback.format_exc())
@@ -227,7 +228,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
     if do_apple_updates:
         # install Apple updates
         try:
-            need_to_restart = appleupdates.installAppleUpdates(
+            apple_need_to_restart = appleupdates.installAppleUpdates(
                                             only_unattended=only_unattended)
         except:
             munkicommon.display_error(
@@ -237,7 +238,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             raise
 
     munkicommon.savereport()
-    return need_to_restart
+    return munki_need_to_restart or apple_need_to_restart
 
 
 def startLogoutHelper():
@@ -774,7 +775,8 @@ def main():
                     munkicommon.log('Installing only items marked unattended '
                                     'because SuppressLoginwindowInstall is '
                                     'true.')
-                    doInstallTasks(appleupdatesavailable, only_unattended=True)
+                    ignore_restart = doInstallTasks(
+                        appleupdatesavailable, only_unattended=True)
                 elif getIdleSeconds() < 10:
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because system is not idle '
@@ -800,7 +802,8 @@ def main():
                     # don't require a logout
                     unused_action = updatecheck.checkForceInstallPackages()
                     # install anything that can be done unattended
-                    doInstallTasks(appleupdatesavailable, only_unattended=True)
+                    ignore_restart = doInstallTasks(
+                        appleupdatesavailable, only_unattended=True)
 
                 # send a notification event so MSU can update its display
                 # if needed
