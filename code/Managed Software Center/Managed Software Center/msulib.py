@@ -33,6 +33,8 @@ from AppKit import *
 import FoundationPlist
 import munki
 
+_html_dir = None
+
 class MSUHTMLFilter(HTMLParser):
     '''Filters HTML and HTML fragments for use inside description paragraphs'''
     # ignore everything inside one of these tags
@@ -164,143 +166,6 @@ def updateCountMessage(count):
                                   % count)
 
 
-def displayTextForStatus(status):
-    '''Return localized status display text'''
-    map = {'installed':
-                NSLocalizedString(u'Installed',
-                          u'InstalledDisplayText').encode('utf-8'),
-            'installing':
-                NSLocalizedString(u'Installing',
-                                  u'InstallingDisplayText').encode('utf-8'),
-            'installed-not-removable':
-                NSLocalizedString(u'Installed',
-                                  u'InstalledDisplayText').encode('utf-8'),
-            'not-installed':
-                NSLocalizedString(u'Not installed',
-                                  u'NotInstalledDisplayText').encode('utf-8'),
-            'will-be-installed':
-                NSLocalizedString(u'Will be installed',
-                                  u'WillBeInstalledDisplayText').encode('utf-8'),
-            'will-be-removed':
-                NSLocalizedString(u'Will be removed',
-                                  u'WillBeRemovedDisplayText').encode('utf-8'),
-            'removing':
-                NSLocalizedString(u'Removing',
-                                  u'RemovingDisplayText').encode('utf-8'),
-            'update-will-be-installed':
-                NSLocalizedString(u'Update will be installed',
-                                  u'UpdateWillBeInstalledDisplayText').encode('utf-8'),
-            'update-available':
-                NSLocalizedString(u'Update available',
-                                  u'UpdateAvailableDisplayText').encode('utf-8'),
-            'no-licenses-available':
-                NSLocalizedString(u'No licenses available',
-                                  u'NoLicensesAvailableDisplayText').encode('utf-8'),
-                          
-    }
-    return map.get(status, status)
-
-
-def shortActionTextForStatus(status):
-    '''Return localized 'short' action text for button'''
-    map = { 'installed':
-                NSLocalizedString(u'Remove',
-                          u'RemoveShortActionText').encode('utf-8'),
-            'installing':
-                NSLocalizedString(u'Installing',
-                                  u'InstallingShortActionText').encode('utf-8'),
-            'installed-not-removable':
-                NSLocalizedString(u'Installed',
-                                  u'InstalledShortActionText').encode('utf-8'),
-            'not-installed':
-                NSLocalizedString(u'Install',
-                                  u'InstallShortActionText').encode('utf-8'),
-            'will-be-installed':
-                NSLocalizedString(u'Cancel',
-                                  u'CancelInstallShortActionText').encode('utf-8'),
-            'will-be-removed':
-                NSLocalizedString(u'Cancel',
-                                  u'CancelRemovalShortActionText').encode('utf-8'),
-            'removing':
-                NSLocalizedString(u'Removing',
-                                  u'RemovingShortActionText').encode('utf-8'),
-            'update-will-be-installed':
-                NSLocalizedString(u'Cancel',
-                                  u'CancelUpdateShortActionText').encode('utf-8'),
-            'update-available':
-                NSLocalizedString(u'Update',
-                                  u'UpdateShortActionText').encode('utf-8'),
-            'no-licenses-available':
-                NSLocalizedString(u'Unavailable',
-                                  u'UnavailableShortActionText').encode('utf-8'),
-    }
-    return map.get(status, status)
-
-
-def longActionTextForStatus(status):
-    '''Return localized 'long' action text for button'''
-    map = {'installed':
-                NSLocalizedString(u'Remove',
-                          u'RemoveLongActionText').encode('utf-8'),
-            'installing':
-                NSLocalizedString(u'Installing',
-                                  u'InstallingLongActionText').encode('utf-8'),
-            'installed-not-removable':
-                NSLocalizedString(u'Installed',
-                                  u'InstalledLongActionText').encode('utf-8'),
-            'not-installed':
-                NSLocalizedString(u'Install',
-                                  u'InstallLongActionText').encode('utf-8'),
-            'will-be-installed':
-                NSLocalizedString(u'Cancel install',
-                                  u'CancelInstallLongActionText').encode('utf-8'),
-            'will-be-removed':
-                NSLocalizedString(u'Cancel removal',
-                                  u'CancelRemovalLongActionText').encode('utf-8'),
-            'removing':
-                NSLocalizedString(u'Removing',
-                                  u'RemovingLongActionText').encode('utf-8'),
-            'update-will-be-installed':
-                NSLocalizedString(u'Cancel update',
-                                  u'CancelUpdateLongActionText').encode('utf-8'),
-            'update-available':
-                NSLocalizedString(u'Update',
-                                  u'UpdateLongActionText').encode('utf-8'),
-            'no-licenses-available':
-                NSLocalizedString(u'Currently Unavailable',
-                                  u'UnavailableShortActionText').encode('utf-8'),
-    }
-    return map.get(status, status)
-
-
-def myItemActionTextForStatus(status):
-    '''Return localized 'My Item' action text for button'''
-    map = { 'installed':
-                NSLocalizedString(u'Remove',
-                                  u'RemoveLongActionText').encode('utf-8'),
-            'installing':
-                NSLocalizedString(u'Installing',
-                                  u'InstallingLongActionText').encode('utf-8'),
-            'installed-not-removable':
-                NSLocalizedString(u'Installed',
-                                  u'InstalledLongActionText').encode('utf-8'),
-            'will-be-removed':
-                NSLocalizedString(u'Cancel removal',
-                                  u'CancelRemovalLongActionText').encode('utf-8'),
-            'removing':
-                NSLocalizedString(u'Removing',
-                                  u'RemovingLongActionText').encode('utf-8'),
-            'update-will-be-installed':
-                NSLocalizedString(u'Remove',
-                                  u'RemoveLongActionText').encode('utf-8'),
-            'will-be-installed':
-                NSLocalizedString(u'Cancel install',
-                                  u'CancelInstallLongActionText').encode('utf-8'),
-
-    }
-    return map.get(status, status)
-
-
 def getInstallAllButtonTextForCount(count):
     if count == 0:
         return NSLocalizedString(u'Check Again',
@@ -358,8 +223,11 @@ def addSidebarLabels(page):
                                     u'Due:', u'DueLabel').encode('utf-8')
 
 
-def setupHtmlDir():
+def html_dir():
     '''sets up our local html cache directory'''
+    global _html_dir
+    if _html_dir:
+        return _html_dir
     bundle_id = NSBundle.mainBundle().bundleIdentifier()
     cache_dir_urls = NSFileManager.defaultManager().URLsForDirectory_inDomains_(
         NSCachesDirectory, NSUserDomainMask)
@@ -370,46 +238,17 @@ def setupHtmlDir():
     our_cache_dir = os.path.join(cache_dir, bundle_id)
     if not os.path.exists(our_cache_dir):
          os.mkdir(our_cache_dir)
-    html_dir = os.path.join(our_cache_dir, 'html')
-    if os.path.exists(html_dir):
+    _html_dir = os.path.join(our_cache_dir, 'html')
+    if os.path.exists(_html_dir):
         # empty it
-        shutil.rmtree(html_dir)
-    os.mkdir(html_dir)
+        shutil.rmtree(_html_dir)
+    os.mkdir(_html_dir)
     # symlink our static files dir
     resourcesPath = NSBundle.mainBundle().resourcePath()
     source_path = os.path.join(resourcesPath, 'WebResources')
-    link_path = os.path.join(html_dir, 'static')
+    link_path = os.path.join(_html_dir, 'static')
     os.symlink(source_path, link_path)
-    return html_dir
-
-
-def getIcon(item, html_dir):
-    '''Return name/relative path of image file to use for the icon'''
-    for key in ['icon_name', 'display_name', 'name']:
-        if key in item:
-            name = item[key]
-            icon_path = os.path.join(html_dir, name + '.png')
-            if os.path.exists(icon_path) or convertIconToPNG(name, icon_path, 350):
-                return name + '.png'
-    else:
-        # use the Generic package icon
-        return 'static/Generic.png'
-
-
-def guessDeveloper(item):
-    '''Figure out something to use for the developer name'''
-    if item.get('apple_item'):
-        return 'Apple'
-    if item.get('installer_type', '').startswith('Adobe'):
-        return 'Adobe'
-    # now we must dig
-    if item.get('installs'):
-        for install_item in item['installs']:
-            if install_item.get('CFBundleIdentifier'):
-                parts = install_item['CFBundleIdentifier'].split('.')
-                if len(parts) > 1 and parts[0] in ['com', 'org', 'net', 'edu']:
-                    return parts[1].title().encode('utf-8')
-    return ''
+    return _html_dir
 
 
 def get_template(template_name):
@@ -431,93 +270,3 @@ def getFooter(vars=None):
         vars = {}
     footer_template = get_template('footer_template.html')
     return footer_template.safe_substitute(vars)
-
-
-def processItems(items, html_dir, are_removals=False, are_optional=False):
-    for item in items:
-        # convert all unicode values to utf-8 strings
-        for key, value in item.items():
-            if isinstance(value, unicode):
-                item[key] = value.encode('utf-8')
-        if not 'developer' in item:
-            item['developer'] = guessDeveloper(item)
-        item['developer_sort'] = 1
-        if not are_removals and item['developer'] == 'Apple':
-            item['developer_sort'] = 0
-        item['icon'] = getIcon(item, html_dir)
-        if not item.get('detail_link'):
-            item['detail_link'] = ('updatedetail-%s.html'
-                                   % quote_plus(item['name']))
-        if are_removals:
-            item['will_be_removed'] = True
-            removal_text = NSLocalizedString(
-                    u'Will be removed',
-                    u'WillBeRemovedDisplayText').encode('utf-8')
-            item['version_label'] = ('<span class="warning">%s</span>'
-                                     % removal_text)
-            item['version_to_install'] = ''
-        else:
-            item['version_label'] = NSLocalizedString(
-                                        u'Version',
-                                        u'VersionLabel').encode('utf-8')
-        if 'description' in item:
-            item['description'] = filtered_html(item['description'])
-        else:
-            item['description'] = ''
-        item['due_date_sort'] = NSDate.distantFuture()
-        if not are_removals:
-            force_install_after_date = item.get('force_install_after_date')
-            if force_install_after_date:
-                item['category'] = NSLocalizedString(
-                                u'Critical Update', u'CriticalUpdateType')
-                item['due_date_sort'] = force_install_after_date
-                # insert installation deadline into description
-                local_date = munki.discardTimeZoneFromDate(
-                                                force_install_after_date)
-                date_str = munki.stringFromDate(local_date).encode('utf-8')
-                forced_date_text = NSLocalizedString(
-                                    u'This item must be installed by %s',
-                                    u'ForcedDateWarning').encode('utf-8')
-                description = item['description']
-                # prepend deadline info to description.
-                item['description'] = (
-                    '<span class="warning">' + forced_date_text % date_str
-                    + '</span><br><br>' + description)
-        if not 'category' in item and not are_optional:
-             item['category'] = NSLocalizedString(u'Managed Update',
-                                                  u'ManagedUpdateType').encode('utf-8')
-        if are_optional:
-            item['hide_cancel_button'] = ''
-            item['cancel_or_add'] = 'cancel'
-            if item['status'] not in [
-                    'will-be-removed', 'will-be-installed', 'update-will-be-installed']:
-                item['cancel_or_add'] = 'add'
-        else:
-            item['hide_cancel_button'] = 'hidden'
-            item['cancel_or_add'] = ''
-
-        # sort items that need restart highest, then logout, then other
-        if item.get('RestartAction') in [None, 'None']:
-            item['restart_action_text'] = ''
-            item['restart_sort'] = 2
-        elif item['RestartAction'] in ['RequireRestart', 'RecommendRestart']:
-            item['restart_sort'] = 0
-            item['restart_action_text'] = NSLocalizedString(
-                u'Restart Required', u'RequireRestartMessage').encode('utf-8')
-            item['restart_action_text'] += '<div class="restart-needed-icon"></div>'
-        elif item['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
-            item['restart_sort'] = 1
-            item['restart_action_text'] = NSLocalizedString(
-                u'Logout Required', u'RequireLogoutMessage').encode('utf-8')
-            item['restart_action_text'] += '<div class="logout-needed-icon"></div>'
-
-        # sort bigger installs to the top
-        if item.get('installed_size'):
-            item['size_sort'] = -int(item['installed_size'])
-            item['size'] = munki.humanReadable(item['installed_size'])
-        elif item.get('installer_item_size'):
-            item['size_sort'] = -int(item['installer_item_size'])
-            item['size'] = munki.humanReadable(item['installer_item_size'])
-        else:
-            item['size_sort'] = 0
-            item['size'] = ''

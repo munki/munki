@@ -24,7 +24,7 @@ import munki
 import FoundationPlist
 from Foundation import *
 from AppKit import *
-import PyObjCTools
+from PyObjCTools import AppHelper
 
 debug = False
 
@@ -35,6 +35,13 @@ class MSUStatusController(NSObject):
 
     session_started = False
     got_status_update = False
+    
+    _status_stopBtnDisabled = False
+    _status_stopBtnHidden = False
+    _status_message = ''
+    _status_detail = ''
+    _status_percent = -1
+    _status_stopBtnState = 0
 
     statusWindowController = IBOutlet()
     
@@ -57,7 +64,7 @@ class MSUStatusController(NSObject):
         self.receiving_notifications = False
     
     def startMunkiStatusSession(self):
-        self.statusWindowController.initStatusSession()
+        self.initStatusSession()
         #self.registerForNotifications()
         self.session_started = True
         # start our process monitor thread so we can be notified about
@@ -65,11 +72,6 @@ class MSUStatusController(NSObject):
         NSThread.detachNewThreadSelector_toTarget_withObject_(
                                                 self.monitorProcess, self, None)
             
-    def cleanUpStatusSession(self):
-        self.session_started = False
-        #self.unregisterForNotifications()
-        self.statusWindowController.cleanUpStatusSession()
-    
     def monitorProcess(self):
         '''Monitors managedsoftwareupdate process for failure to start
         or unexpected exit, so we're not waiting around forever if
@@ -80,6 +82,8 @@ class MSUStatusController(NSObject):
         
         timeout_counter = 6
         saw_process = False
+        
+        NSLog('monitorProcess thread started')
         
         # Autorelease pool for memory management
         pool = NSAutoreleasePool.alloc().init()
@@ -95,7 +99,7 @@ class MSUStatusController(NSObject):
                 timeout_counter = 6
                 saw_process = True
             else:
-                NSLog('No managedsoftwareupdate running...')
+                NSLog('managedsoftwareupdate not running...')
                 timeout_counter -= 1
             if timeout_counter == 0:
                 NSLog('Timed out waiting for managedsoftwareupdate.')
@@ -110,6 +114,7 @@ class MSUStatusController(NSObject):
         
         # Clean up autorelease pool
         del pool
+        NSLog('monitorProcess thread ended')
     
     def sessionStarted(self):
         return self.session_started
@@ -121,32 +126,181 @@ class MSUStatusController(NSObject):
         NSApp.delegate().munkiStatusSessionEnded_(result)
         
     def updateStatus_(self, notification):
-        if not self.session_started:
+        info = notification.userInfo()
+        if 'message' in info:
+            self.setMessage_(info['message'])
+        if 'detail' in info:
+            self.setDetail_(info['detail'])
+        if 'percent' in info:
+            self.setPercentageDone_(info['percent'])
+        if 'stop_button_visible' in info:
+            if info['stop_button_visible']:
+                self.showStopButton()
+            else:
+                self.hideStopButton()
+        if 'stop_button_enabled' in info:
+            if info['stop_button_enabled']:
+                self.enableStopButton()
+            else:
+                self.disableStopButton()
+
+        command = info.get('command')
+        if not self.session_started and command not in ['showRestartAlert', 'quit']:
             # we got a status message but we didn't start the session
             # so switch to the right mode
             self.startMunkiStatusSession()
-        info = notification.userInfo()
-        if 'message' in info:
-            self.statusWindowController.setMessage_(info['message'])
-        if 'detail' in info:
-            self.statusWindowController.setDetail_(info['detail'])
-        if 'percent' in info:
-            self.statusWindowController.setPercentageDone_(info['percent'])
-        if 'stop_button_visible' in info:
-            if info['stop_button_visible']:
-                self.statusWindowController.showStopButton()
-            else:
-                self.statusWindowController.hideStopButton()
-        if 'stop_button_enabled' in info:
-            if info['stop_button_enabled']:
-                self.statusWindowController.enableStopButton()
-            else:
-                self.statusWindowController.disableStopButton()
-        command = info.get('command')
+        if command:
+            NSLog('Received command: %s' % command)
         if command == 'activate':
-            NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
-            self.statusWindowController.window().orderFrontRegardless()
+            pass
+            #NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
+            #self.statusWindowController.window().orderFrontRegardless()
         elif command == 'showRestartAlert':
-            self.statusWindowController.doRestartAlert()
+            self.doRestartAlert()
         elif command == 'quit':
             self.sessionEnded_(0)
+
+##### required status methods #####
+
+    def initStatusSession(self):
+        self.statusWindowController._update_in_progress = True
+        if self.statusWindowController.currentPageIsUpdatesPage():
+            self.statusWindowController.webView.reload_(self)
+            self.statusWindowController.displayUpdateCount()
+
+    def cleanUpStatusSession(self):
+        self.session_started = False
+        # reset all our status variables
+        self.statusWindowController._update_in_progress = False
+        self._status_stopBtnDisabled = False
+        self._status_stopBtnHidden = False
+        self._status_stopBtnState = 0
+        self._status_message = ''
+        self._status_detail = ''
+        self._status_percent = -1
+
+    def setPercentageDone_(self, percent):
+        try:
+            if float(percent) > 100.0:
+                percent = 100
+        except ValueError:
+            percent = 0
+        self._status_percent = percent
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            progress = document.getElementById_('progress-bar')
+            if progress:
+                if float(percent) < 0:
+                    # indeterminate
+                    progress.setClassName_('indeterminate')
+                    progress.removeAttribute_('style')
+                else:
+                    progress.setClassName_('')
+                    progress.setAttribute__('style', 'width: %s%%' % percent)
+
+    @AppHelper.endSheetMethod
+    def restartAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
+        self._status_restartAlertDismissed = 1
+        # TO-DO: initiate actual restart
+
+    def doRestartAlert(self):
+        self._status_restartAlertDismissed = 0
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+            NSLocalizedString(u"Restart Required", None),
+            NSLocalizedString(u"Restart", None),
+            nil,
+            nil,
+            NSLocalizedString(
+                u"Software installed or removed requires a restart. You will "
+                "have a chance to save open documents.", None))
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+            self.statusWindowController.window(),
+            self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)
+
+    def setMessage_(self, messageText):
+        self._status_message = messageText
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            textElement = document.getElementById_('primary-status-text')
+            if textElement:
+                if messageText:
+                    textElement.setInnerText_(messageText.encode('utf-8'))
+                else:
+                    textElement.setInnerHTML_('&nbsp;')
+
+    def setDetail_(self, detailText):
+        self._status_detail = detailText
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            textElement = document.getElementById_('secondary-status-text')
+            if textElement:
+                if detailText:
+                    textElement.setInnerText_(detailText.encode('utf-8'))
+                else:
+                    textElement.setInnerHTML_('&nbsp;')
+
+    def getStopBtnState(self):
+        return self._status_stopBtnState
+
+    def hideStopButton(self):
+        if self._status_stopBtnState:
+            return
+        self._status_stopBtnHidden = True
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            install_btn = document.getElementById_('install-all-button-text')
+            if install_btn:
+                btn_classes = install_btn.className().split(' ')
+                if not 'hidden' in btn_classes:
+                    btn_classes.append('hidden')
+                    install_btn.setClassName_(' '.join(btn_classes))
+
+    def showStopButton(self):
+        if self._status_stopBtnState:
+           return
+        self._status_stopBtnHidden = False
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            install_btn = document.getElementById_('install-all-button-text')
+            if install_btn:
+                btn_classes = install_btn.className().split(' ')
+                if 'hidden' in btn_classes:
+                    btn_classes.remove('hidden')
+                    install_btn.setClassName_(' '.join(btn_classes))
+
+    def enableStopButton(self):
+        if self._status_stopBtnState:
+            return
+        self._status_stopBtnDisabled = False
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            install_btn = document.getElementById_('install-all-button-text')
+            if install_btn:
+                btn_classes = install_btn.className().split(' ')
+                if 'disabled' in btn_classes:
+                    btn_classes.remove('disabled')
+                    install_btn.setClassName_(' '.join(btn_classes))
+
+    def disableStopButton(self):
+        if self._status_stopBtnState:
+            return
+        self._status_stopBtnDisabled = True
+        document = self.statusWindowController.webView.mainFrameDocument()
+        spinner = document.getElementById_('updates-progress-spinner')
+        if spinner: # we are displaying the updates status page
+            install_btn = document.getElementById_('install-all-button-text')
+            if install_btn:
+                btn_classes = install_btn.className().split(' ')
+                if not 'disabled' in btn_classes:
+                    btn_classes.append('disabled')
+                    install_btn.setClassName_(' '.join(btn_classes))
+
+    def getRestartAlertDismissed(self):
+        return self._status_restartAlertDismissed

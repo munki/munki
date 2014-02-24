@@ -27,6 +27,7 @@ from AppKit import *
 from MSUStatusController import MSUStatusController
 
 import munki
+import msulog
 
 class MSUAppDelegate(NSObject):
     
@@ -46,7 +47,10 @@ class MSUAppDelegate(NSObject):
         
         ver = NSBundle.mainBundle().infoDictionary().get('CFBundleShortVersionString')
         NSLog("MSC GUI version: %s" % ver)
-        munki.log("MSC", "launched", "VER=%s" % ver)
+        msulog.log("MSC", "launched", "VER=%s" % ver)
+        
+        # setup client logging
+        msulog.setup_logging()
 
         # register for notification messages so we can be told if available
         # updates change while we are open
@@ -90,7 +94,7 @@ class MSUAppDelegate(NSObject):
         if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
             self.checkForUpdates()
                          
-        # just show the default initial view
+        # show the default initial view
         self.mainWindowController.loadInitialView()
 
     def updateAvailableUpdates(self):

@@ -541,41 +541,28 @@ display: none
 
 }
 
-div.updates .installation button.cancel {
+#os-updates .installation button.cancel-or-add {
 width: 19px;
 height: 19px;
 background: transparent url(delete-button-sprite.png) no-repeat;
 -webkit-background-size: 19px 38px;
 border: 0;
-opacity: 1;
-pointer-events: none
-}
-div.updates .installation button.cancel:hover {
-background-position: bottom
-}
-div.updates .installation:hover button.cancel {
-opacity: 1;
--webkit-transition: opacity .1s ease-out;
-pointer-events: auto
 }
 
-div.updates .installation button.add {
+#other-updates .installation button.cancel-or-add {
 width: 19px;
 height: 19px;
 background: transparent url(add-button-sprite.png) no-repeat;
 -webkit-background-size: 19px 38px;
 border: 0;
-opacity: 1;
-pointer-events: none
 }
-div.updates .installation button.add:hover {
+
+#os-updates .installation button.cancel-or-add:hover,
+#other-updates .installation button.cancel-or-add:hover {
 background-position: bottom
 }
-div.updates .installation:hover button.add {
-opacity: 1;
--webkit-transition: opacity .1s ease-out;
-pointer-events: auto
-}
+
+
 tr.installation.added {
   -webkit-animation: fade-in .5s;
 }

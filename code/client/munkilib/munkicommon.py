@@ -701,11 +701,17 @@ def validPlist(path):
         return False
 
 
+_stop_requested = False
 def stopRequested():
     """Allows user to cancel operations when GUI status is being used"""
+    global _stop_requested
+    if _stop_requested:
+        return True
     STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
     if munkistatusoutput:
         if os.path.exists(STOP_REQUEST_FLAG):
+            # store this so it's persistent until this session is over
+            _stop_requested = True
             log('### User stopped session ###')
             try:
                 os.unlink(STOP_REQUEST_FLAG)

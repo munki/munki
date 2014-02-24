@@ -24,8 +24,11 @@ import urlparse
 
 import munki
 import msulib
+import msulog
 import FoundationPlist
 import MSUBadgedTemplateImage
+
+import MunkiItems
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
@@ -41,6 +44,7 @@ class MSUMainWindowController(NSWindowController):
     _updateList = None
     _optionalItemList = None
     _self_service_info = None
+    _changed_choices = []
     _alertedUserToOutstandingUpdates = False
     
     _update_in_progress = False
@@ -48,14 +52,7 @@ class MSUMainWindowController(NSWindowController):
     
     # status vars
     _status_title = ''
-    _status_stopBtnState = 0
-    _status_stopBtnHidden = False
-    _status_stopBtnDisabled = False
-    _status_restartAlertDismissed = 0
-    _status_message = ''
-    _status_detail = ''
-    _status_percent = -1
-    
+        
     _current_page_filename = None
     
     html_dir = None
@@ -71,7 +68,6 @@ class MSUMainWindowController(NSWindowController):
     
     def appShouldTerminate(self):
         # save any changes to SelfServe choices
-        self.saveSelfServiceChoices()
         selectedCell = self.tabControl.selectedCell()
         if selectedCell and selectedCell.tag() == 4:
             # We're already at the updates view, so user is aware of the
@@ -102,13 +98,13 @@ class MSUMainWindowController(NSWindowController):
                                    self, alert, returncode, contextinfo):
         self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
-            munki.log("user", "quit")
+            msulog.log("user", "quit")
             NSApp.terminate_(self)
         elif returncode == NSAlertAlternateReturn:
-            munki.log("user", "view_updates_page")
+            msulog.log("user", "view_updates_page")
             self.loadUpdatesPage_(self)
         elif returncode == NSAlertOtherReturn:
-            munki.log("user", "install_now_clicked")
+            msulog.log("user", "install_now_clicked")
             # initiate the updates
             self.updateNow()
             self.loadUpdatesPage_(self)
@@ -121,8 +117,8 @@ class MSUMainWindowController(NSWindowController):
                           webViewRect.size.width, 0)
 
     def loadInitialView(self):
-        self.html_dir = msulib.setupHtmlDir()
-        if self.getEffectiveUpdateList():
+        self.html_dir = msulib.html_dir()
+        if MunkiItems.getEffectiveUpdateList():
             self.loadUpdatesPage_(self)
         else:
             self.loadAllSoftwarePage_(self)
@@ -149,28 +145,28 @@ class MSUMainWindowController(NSWindowController):
 
             if sessionResult == -1:
                 # connection was dropped unexpectedly
-                munki.log("MSC", "cant_update", "unexpected process end")
+                msulog.log("MSC", "cant_update", "unexpected process end")
                 detailText = NSLocalizedString(
                     (u"There is a configuration problem with the managed software installer. "
                       "The process ended unexpectedly. Contact your systems administrator."),
                      u'UnexpectedSessionEndMessage')
             elif sessionResult == -2:
                 # session never started
-                munki.log("MSC", "cant_update", "process did not start")
+                msulog.log("MSC", "cant_update", "process did not start")
                 detailText = NSLocalizedString(
                     (u"There is a configuration problem with the managed software installer. "
                       "Could not start the process. Contact your systems administrator."),
                      u'CouldNotStartSessionMessage')
             elif lastCheckResult == -1:
                 # server not reachable
-                munki.log("MSC", "cant_update", "cannot contact server")
+                msulog.log("MSC", "cant_update", "cannot contact server")
                 detailText = NSLocalizedString(
                     (u"Managed Software Center cannot contact the update server at this time.\n"
                       "Try again later. If this situation continues, "
                       "contact your systems administrator."), u'CannotContactServerDetail')
             elif lastCheckResult == -2:
                 # preflight failed
-                munki.log("MSU", "cant_update", "failed preflight")
+                msulog.log("MSU", "cant_update", "failed preflight")
                 detailText = NSLocalizedString(
                     (u"Managed Software Center cannot check for updates now.\n"
                       "Try again later. If this situation continues, "
@@ -183,13 +179,17 @@ class MSUMainWindowController(NSWindowController):
                 self.window(), self,
                 self.munkiSessionErrorAlertDidEnd_returnCode_contextInfo_, nil)
             return
+        
+        if tasktype == 'checktheninstall':
+            self.updateNow()
+            return
 
         if lastCheckResult == 1:
             # there are some updates to install; are we expected to install them now?
-            if tasktype == 'checktheninstall':
-                # done checking; now try to install...
-                self.kickOffUpdateSession()
-                return
+            # done checking; now try to install...
+            #self.kickOffUpdateSession()
+            #return
+            pass
 
         # all done checking and/or installing: display results
         self.resetAndReload()
@@ -200,12 +200,8 @@ class MSUMainWindowController(NSWindowController):
 
     def resetAndReload(self):
         NSLog('resetAndReload method called')
-        # save any changes to self-service choices
-        self.saveSelfServiceChoices()
         # need to clear out cached data
-        self._updateList = None
-        self._optionalItemList = None
-        self._self_service_info = None
+        MunkiItems.reset()
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?
         filename = self._current_page_filename
@@ -260,7 +256,7 @@ class MSUMainWindowController(NSWindowController):
         # TO-DO: check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
         NSApp.delegate().managedsoftwareupdate_task = None
-        munki.log("user", "install_without_logout")
+        msulog.log("user", "install_without_logout")
         self._update_in_progress = True
         self.setStatusViewTitle_(NSLocalizedString(
             u'Updating...', u'UpdatingMessage').encode('utf-8'))
@@ -280,7 +276,7 @@ class MSUMainWindowController(NSWindowController):
         items_to_be_removed_names = [item['name']
                                      for item in install_info.get('removals', [])]
         
-        for item in self.getOptionalInstallItems():
+        for item in MunkiItems.getOptionalInstallItems():
             new_status = None
             if item['name'] in items_to_be_installed_names:
                 NSLog('Setting status for %s to "installing"' % item['name'])
@@ -290,22 +286,13 @@ class MSUMainWindowController(NSWindowController):
                 new_status = 'removing'
             if new_status:
                 item['status'] = new_status
-                # get localized text labels
-                item['status_text'] = msulib.displayTextForStatus(new_status)
-                item['short_action_text'] = msulib.shortActionTextForStatus(new_status)
-                item['long_action_text'] = msulib.longActionTextForStatus(new_status)
-                item['myitem_action_text'] = msulib.myItemActionTextForStatus(new_status)
                 self.updateDOMforOptionalItem(item)
 
     def updateNow(self):
-        # save any changes to SelfServe choices before proceeding
-        self.saveSelfServiceChoices()
-        NSLog("SelfService choices changed: %s" % munki.userSelfServiceChoicesChanged())
         self._update_in_progress = True
-        #self.loadUpdatesPage_(self)
         self.displayUpdateCount()
-        if munki.userSelfServiceChoicesChanged():
-            munki.log("user", "check_then_install_without_logout")
+        if self.updateChoicesChanged():
+            msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
             suppress_apple_update_check = True
@@ -318,12 +305,13 @@ class MSUMainWindowController(NSWindowController):
                 NSApp.delegate().managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
         else:
+            NSLog('selfService choices unchanged')
             self.kickOffUpdateSession()
 
     def getUpdateCount(self):
         if self._update_in_progress:
             return 0
-        return len(self.getEffectiveUpdateList())
+        return len(MunkiItems.getEffectiveUpdateList())
 
     def displayUpdateCount(self):
         updateCount = self.getUpdateCount()
@@ -334,223 +322,20 @@ class MSUMainWindowController(NSWindowController):
             NSApp.dockTile().setBadgeLabel_(str(updateCount))
         else:
             NSApp.dockTile().setBadgeLabel_(None)
-
-    def getOptionalInstallItems(self):
-        if self._optionalItemList != None:
-            return self._optionalItemList
-        optional_install_items = []
-        install_info = munki.getInstallInfo()
-        subscribed_item_names = self.subscribedItemNames()
-        unsubscribed_item_names = self.unsubscribedItemNames()
-        managed_update_names = munki.getInstallInfo().get('managed_updates', [])
-
-        if install_info:
-            optional_install_items = install_info.get('optional_installs', [])
-        for item in optional_install_items:
-            for key, value in item.items():
-                if isinstance(value, unicode):
-                    item[key] = value.encode('utf-8')
-            item['display_name_lower'] = item['display_name'].lower()
-            if not item.get('developer'):
-                item['developer'] = msulib.guessDeveloper(item)
-            if item.get('description'):
-                item['description'] = msulib.filtered_html(item['description'])
-            else:
-                item['description'] = ''
-            if 'category' not in item:
-                item['category'] = NSLocalizedString(
-                                        u'Uncategorized', u'NoCategoryName').encode('utf-8')
-            if item['developer']:
-                item['category_and_developer'] = '%s - %s' % (item['category'], item['developer'])
-            else:
-                item['category_and_developer'] = item['category']
-            if item.get('installed'):
-                if item.get('needs_update'):
-                    if item['name'] in managed_update_names:
-                        # if item is listed in managed_updates
-                        # User cannot elect out of this install because updates are managed.
-                        # they _can_ possibly remove the item, though
-                        if not item.get('uninstallable'):
-                            item['status'] = 'installed-not-removable'
-                        else:
-                            item['status'] = 'installed'
-                    elif item['name'] in subscribed_item_names:
-                        item['status'] = 'update-will-be-installed'
-                    else:
-                        item['status'] = 'update-available'
-                elif not item.get('uninstallable'):
-                    item['status'] = 'installed-not-removable'
-                elif item['name'] in unsubscribed_item_names:
-                    item['status'] = 'will-be-removed'
-                else:
-                    item['status'] = 'installed'
-            else:
-                item['status'] = 'not-installed'
-                if 'licensed_seats_available' in item:
-                    if not item['licensed_seats_available']:
-                        item['status'] = 'no-licenses-available'
-                elif item.get('note'):
-                    # TO-DO: handle this case
-                    # some reason we can't install
-                    # usually not enough disk space
-                    #status = item.get("note")
-                    pass
-                elif item['name'] in subscribed_item_names:
-                    item['status'] = 'will-be-installed'
-
-            # track original status of item
-            item['original_status'] = item['status']
-            if item.get('installer_item_size'):
-                item['size'] = munki.humanReadable(item['installer_item_size'])
-            elif item.get('installed_size'):
-                item['size'] = munki.humanReadable(item['installed_size'])
-            else:
-                item['size'] = ''
-            item['icon'] = msulib.getIcon(item, self.html_dir)
-            item['detail_link'] = 'detail-%s.html' % quote_plus(item['name'])
-            item['status_text'] = msulib.displayTextForStatus(item['status'])
-            item['short_action_text'] = msulib.shortActionTextForStatus(item['status'])
-            item['long_action_text'] = msulib.longActionTextForStatus(item['status'])
-            item['myitem_action_text'] = msulib.myItemActionTextForStatus(item['status'])
-            if item.get('RestartAction') in [None, 'None']:
-                item['restart_action_text'] = ''
-                item['restart_sort'] = 2
-            elif item['RestartAction'] in ['RequireRestart', 'RecommendRestart']:
-                item['restart_sort'] = 0
-                item['restart_action_text'] = NSLocalizedString(
-                    u'Restart Required', u'RequireRestartMessage').encode('utf-8')
-                item['restart_action_text'] += '<div class="restart-needed-icon"></div>'
-            elif item['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
-                item['restart_sort'] = 1
-                item['restart_action_text'] = NSLocalizedString(
-                    u'Logout Required', u'RequireLogoutMessage').encode('utf-8')
-                item['restart_action_text'] += '<div class="logout-needed-icon"></div>'
-
-        self._optionalItemList = optional_install_items
-        return self._optionalItemList
-
-    def optionalItemForName_(self, item_name):
-        for item in self._optionalItemList:
-            if item['name'] == item_name:
-                return item
-        return None
-
-    def getUpdatesList(self):
-        if self._updateList is not None:
-            return self._updateList
-
-        update_items = []
-        if not munki.munkiUpdatesContainAppleItems():
-            apple_updates = munki.getAppleUpdates()
-            apple_update_items = apple_updates.get('AppleUpdates', [])
-            for item in apple_update_items:
-                item['developer'] = 'Apple'
-            update_items.extend(apple_update_items)
-
-        install_info = munki.getInstallInfo()
-        update_items.extend(install_info.get('managed_installs', []))
-        msulib.processItems(update_items, self.html_dir)
-
-        removal_items = install_info.get('removals', [])
-        # TO-DO: handle the case where removal detail is suppressed
-        msulib.processItems(removal_items, self.html_dir, are_removals=True)
-        update_items.extend(removal_items)
-
-        self._updateList = sorted(update_items, key=itemgetter(
-                'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
-        return self._updateList
-
-    def saveSelfServiceChoices(self):
-        current_install_choices = {}
-        current_install_choices['managed_installs'] = self.subscribedItemNames()
-        current_install_choices['managed_uninstalls'] = self.unsubscribedItemNames()
-        original_install_choices = munki.readSelfServiceManifest()
-        if current_install_choices != original_install_choices:
-            NSLog("Writing SelfServiceManifest")
-            munki.writeSelfServiceManifest(current_install_choices)
-        else:
-            NSLog("SelfServiceManifest is unchanged.")
-
-    def subscribedItemNames(self):
-        if self._self_service_info is None:
-            self._self_service_info = munki.readSelfServiceManifest()
-            if not 'managed_installs' in self._self_service_info:
-                self._self_service_info['managed_installs'] = []
-            if not 'managed_uninstalls' in self._self_service_info:
-                self._self_service_info['managed_uninstalls'] = []
-        return self._self_service_info['managed_installs']
-
-    def removeFromSubscribedItemNames(self, name):
-        if name in self.subscribedItemNames():
-            self._self_service_info['managed_installs'].remove(name)
-
-    def addToSubscribedItemNames(self, name):
-        if not name in self.subscribedItemNames():
-            self._self_service_info['managed_installs'].append(name)
-
-    def unsubscribedItemNames(self):
-        if self._self_service_info is None:
-            self._self_service_info = munki.readSelfServiceManifest()
-            if not 'managed_installs' in self._self_service_info:
-                self._self_service_info['managed_installs'] = []
-            if not 'managed_uninstalls' in self._self_service_info:
-                self._self_service_info['managed_uninstalls'] = []
-        return self._self_service_info['managed_uninstalls']
-
-    def removeFromUnsubscribedItemNames(self, name):
-        if name in self.unsubscribedItemNames():
-            self._self_service_info['managed_uninstalls'].remove(name)
-
-    def addToUnsubscribedItemNames(self, name):
-        if not name in self.unsubscribedItemNames():
-            self._self_service_info['managed_uninstalls'].append(name)
-
-    def subscribe(self, name):
-        self.removeFromUnsubscribedItemNames(name)
-        self.addToSubscribedItemNames(name)
-
-    def unsubscribe(self, name):
-        self.removeFromSubscribedItemNames(name)
-        self.addToUnsubscribedItemNames(name)
-
-    def unmanage(self, name):
-        self.removeFromSubscribedItemNames(name)
-        self.removeFromUnsubscribedItemNames(name)
-
-    def getOptionalWillBeInstalledItems(self):
-        optional_items = self.getOptionalInstallItems()
-        items = [dict(item) for item in optional_items
-                 if item['status'] in ['will-be-installed', 'update-will-be-installed']]
-        msulib.processItems(items, self.html_dir, are_optional=True)
-        return items
-
-    def getOptionalWillBeRemovedItems(self):
-        optional_items = self.getOptionalInstallItems()
-        items = [dict(item) for item in optional_items
-                 if item['status'] == 'will-be-removed']
-        msulib.processItems(items, self.html_dir,are_removals=True, are_optional=True)
-        return items
-
-    def getEffectiveUpdateList(self):
-        '''Combine the updates Munki has found with any optional choices to
-            make the effective list of updates'''
-        update_list = self.getUpdatesList()
-        optional_item_names = [item['name'] for item in self.getOptionalInstallItems()]
-        managed_update_names = munki.getInstallInfo().get('managed_updates', [])
-        # items in the update_list that are part of optional_items
-        # could have their installation state changed; so filter those out
-        filtered_updates = [item for item in update_list
-                            if (item['name'] in managed_update_names
-                                and not item['name'] in self.unsubscribedItemNames())
-                            or item['name'] not in optional_item_names]
-        optional_installs = self.getOptionalWillBeInstalledItems()
-        optional_removals = self.getOptionalWillBeRemovedItems()
-        return filtered_updates + optional_installs + optional_removals
+    
+    def updateChoicesChanged(self):
+        choices_changed = False
+        changed_choices = [item for item in MunkiItems.getOptionalInstallItems()
+                           if item['status'] != item['original_status']]
+        if sorted(changed_choices) != sorted(self._changed_choices):
+            choices_changed = True
+            self._changed_choices = changed_choices
+        return choices_changed
 
     def get_warning_text(self):
         '''Return localized text warning about forced installs and/or
             logouts and/or restarts'''
-        item_list = self.getEffectiveUpdateList()
+        item_list = MunkiItems.getEffectiveUpdateList()
         warning_text = ''
         forced_install_date = munki.earliestForceInstallDate(item_list)
         if forced_install_date:
@@ -566,22 +351,9 @@ class MSUMainWindowController(NSWindowController):
             else:
                 warning_text = restart_text
         return warning_text
-
-    def getMyItemsList(self):
-        '''Returns a list of optional_installs items the user has chosen
-        to install or to remove'''
-        subscribed_item_names = self.subscribedItemNames()
-        item_list = [item for item in self.getOptionalInstallItems()
-                     if item['name'] in subscribed_item_names]
-        unsubscribed_item_names = self.unsubscribedItemNames()
-        items_to_remove = [item for item in self.getOptionalInstallItems()
-                           if item['name'] in unsubscribed_item_names
-                           and item.get('installed')]
-        item_list.extend(items_to_remove)
-        return item_list
     
     def build_myitems_rows(self):
-        item_list = self.getMyItemsList()
+        item_list = MunkiItems.getMyItemsList()
         if item_list:
             item_template = msulib.get_template('myitems_row_template.html')
             myitems_rows = ''
@@ -611,8 +383,6 @@ class MSUMainWindowController(NSWindowController):
         page_name = 'myitems.html'
         page_template = msulib.get_template('myitems_template.html')
 
-        item_list = self.getMyItemsList()
-
         page = {}
         page['my_items_header_label'] = NSLocalizedString(
             u'My Items', u'MyItemsHeaderLabel').encode('utf-8')
@@ -641,26 +411,28 @@ class MSUMainWindowController(NSWindowController):
         page['hide_other_updates'] = 'hidden'
         page['other_updates_header_message'] = ''
         page['other_update_rows'] = ''
-    
+        
+        status_controller = NSApp.delegate().statusController
         status_results_template = msulib.get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = (
-            self._status_message
+            status_controller._status_message
             or NSLocalizedString(u'Update in progress.',
                                  u'UpdateInProgressPrimaryText')).encode('utf-8')
-        alert['secondary_status_text'] = self._status_detail or '&nbsp;'
+        alert['secondary_status_text'] = (status_controller._status_detail or '&nbsp;')
         alert['hide_progress_bar'] = ''
-        if self._status_percent < 0:
+        if status_controller._status_percent < 0:
             alert['progress_bar_attributes'] = 'class="indeterminate"'
         else:
-            alert['progress_bar_attributes'] = 'style="width: %s%%"' % self._status_percent
+            alert['progress_bar_attributes'] = ('style="width: %s%%"'
+                                                % status_controller._status_percent)
         page['update_rows'] = status_results_template.safe_substitute(alert)
         
         install_all_button_classes = []
-        if self._status_stopBtnHidden:
+        if status_controller._status_stopBtnHidden:
             install_all_button_classes.append('hidden')
-        if self._status_stopBtnDisabled:
-            install_all_button_classes.append('installed-not-removable')
+        if status_controller._status_stopBtnDisabled:
+            install_all_button_classes.append('disabled')
         page['install_all_button_classes'] = ' '.join(install_all_button_classes)
 
         page['update_count'] = self._status_title or status_title_default
@@ -677,41 +449,6 @@ class MSUMainWindowController(NSWindowController):
         f.close()
         return html_file
 
-    def build_update_items_html(self):
-        '''probably don't need this, because we'll never call it'''
-        html = {}
-        html['update_rows'] = ''
-        item_list = self.getEffectiveUpdateList()
-        other_updates = [item for item in self.getOptionalInstallItems()
-                         if item.get('needs_update')
-                         and item['status'] not in
-                         ['installed', 'update-will-be-installed', 'will-be-removed']]
-        more_link_text = NSLocalizedString(u'More', u'MoreLinkText').encode('utf-8')
-        item_template = msulib.get_template('update_row_template.html')
-        if item_list:
-            for item in item_list:
-                html['update_rows'] += item_template.safe_substitute(
-                                            item, more_link_text=more_link_text)
-        elif not other_updates:
-            status_results_template = msulib.get_template('status_results_template.html')
-            alert = {}
-            alert['primary_status_text'] = NSLocalizedString(
-                 u'Your software is up to date.', u'NoPendingUpdatesPrimaryText').encode('utf-8')
-            alert['secondary_status_text'] = NSLocalizedString(
-                 u'There is no new software for your computer at this time.',
-                 u'NoPendingUpdatesSecondaryText').encode('utf-8')
-            alert['hide_progress_bar'] = 'hidden'
-            alert['progress_bar_value'] = ''
-            html['update_rows'] = status_results_template.safe_substitute(alert)
-
-        html['other_update_rows'] = ''
-        if other_updates:
-            msulib.processItems(other_updates, self.html_dir, are_optional=True)
-            for item in other_updates:
-                html['other_update_rows'] += item_template.safe_substitute(
-                                            item, more_link_text=more_link_text)
-        return html
-
     def build_updates_page(self):
         '''available/pending updates'''
         page_name = 'updates.html'
@@ -719,10 +456,10 @@ class MSUMainWindowController(NSWindowController):
         if self._update_in_progress:
             return self.build_update_status_page()
 
-        item_list = self.getEffectiveUpdateList()
+        item_list = MunkiItems.getEffectiveUpdateList()
 
         other_updates = [
-            item for item in self.getOptionalInstallItems()
+            item for item in MunkiItems.getOptionalInstallItems()
             if item.get('needs_update')
                 and item['status'] not in
                     ['installed', 'update-will-be-installed', 'will-be-removed']]
@@ -733,14 +470,11 @@ class MSUMainWindowController(NSWindowController):
         page['hide_other_updates'] = 'hidden'
         page['install_all_button_classes'] = ''
         
-        more_link_text = NSLocalizedString(
-                            u'More', u'MoreLinkText').encode('utf-8')
         item_template = msulib.get_template('update_row_template.html')
 
         if item_list:
             for item in item_list:
-                page['update_rows'] += item_template.safe_substitute(
-                                            item, more_link_text=more_link_text)
+                page['update_rows'] += item_template.safe_substitute(item)
         elif not other_updates:
             status_results_template = msulib.get_template('status_results_template.html')
             alert = {}
@@ -765,10 +499,8 @@ class MSUMainWindowController(NSWindowController):
 
         if other_updates:
             page['hide_other_updates'] = ''
-            msulib.processItems(other_updates, self.html_dir, are_optional=True)
             for item in other_updates:
-                page['other_update_rows'] += item_template.safe_substitute(
-                                            item, more_link_text=more_link_text)
+                page['other_update_rows'] += item_template.safe_substitute(item)
         
         page['footer'] = msulib.getFooter()
 
@@ -781,7 +513,7 @@ class MSUMainWindowController(NSWindowController):
         return html_file
 
     def build_updatedetail_page(self, item_name):
-        items = self.getUpdatesList()
+        items = MunkiItems.getUpdateList()
         page_name = 'updatedetail-%s.html' % quote_plus(item_name)
         for item in items:
             if item['name'] == item_name:
@@ -811,11 +543,11 @@ class MSUMainWindowController(NSWindowController):
         return None # TO-DO: need an error html file!
 
     def build_detail_page(self, item_name):
-        items = self.getOptionalInstallItems()
+        items = MunkiItems.getOptionalInstallItems()
         page_name = 'detail-%s.html' % quote_plus(item_name)
         for item in items:
             if item['name'] == item_name:
-                page = dict(item)
+                page = MunkiItems.OptionalItem(item)
                 msulib.addSidebarLabels(page)
                 page['hide_more_by_developer'] = 'hidden'
                 more_by_developer_html = ''
@@ -877,7 +609,7 @@ class MSUMainWindowController(NSWindowController):
         items_div_element.setInnerHTML_(items_html)
 
     def build_category_items_html(self):
-        all_items = self.getOptionalInstallItems()
+        all_items = MunkiItems.getOptionalInstallItems()
         if all_items:
             category_list = []
             for item in all_items:
@@ -931,7 +663,7 @@ class MSUMainWindowController(NSWindowController):
         return item_html
 
     def build_categories_page(self):
-        all_items = self.getOptionalInstallItems()
+        all_items = MunkiItems.getOptionalInstallItems()
         header = 'Categories'
         page_name = 'categories.html'
         category_list = []
@@ -992,7 +724,7 @@ class MSUMainWindowController(NSWindowController):
         items_div_element.setInnerHTML_(items_html)
 
     def build_list_page_items_html(self, category=None, developer=None, filter=None):
-        items = self.getOptionalInstallItems()
+        items = MunkiItems.getOptionalInstallItems()
         item_html = ''
         if filter:
             filterStr = filter.encode('utf-8')
@@ -1054,7 +786,7 @@ class MSUMainWindowController(NSWindowController):
         return item_html
 
     def build_list_page(self, category=None, developer=None, filter=None):
-        items = self.getOptionalInstallItems()
+        items = MunkiItems.getOptionalInstallItems()
 
         header = 'All items'
         page_name = 'category-all.html'
@@ -1224,8 +956,8 @@ class MSUMainWindowController(NSWindowController):
         # clicks the Install All button in the Updates view
         if self._update_in_progress:
             # this is now a stop/cancel button
-            self.disableStopButton()
-            self._status_stopBtnState =  1
+            NSApp.delegate().statusController.disableStopButton()
+            NSApp.delegate().statusController._status_stopBtnState =  1
             # send a notification that stop button was clicked
             STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
             if not os.path.exists(STOP_REQUEST_FLAG):
@@ -1241,53 +973,7 @@ class MSUMainWindowController(NSWindowController):
             # must say "Update"
             self.updateNow()
             self.loadUpdatesPage_(self)
-
-    def updateItemStatus_(self, item):
-        # user clicked an item action button - update the item's state
-        if item['status'] == 'update-available':
-            # mark the update for install
-            item['status'] = 'update-will-be-installed'
-            # add the name to the subscribed items
-            self.subscribe(item['name'])
-        elif item['status'] == 'update-will-be-installed':
-            # cancel the update
-            item['status'] = 'update-available'
-            # remove the name from the subscribed items
-            self.unmanage(item['name'])
-        elif item['status'] == 'will-be-removed':
-            managed_update_names = munki.getInstallInfo().get('managed_updates', [])
-            if item['name'] in managed_update_names:
-                # update is managed, so user can't opt out
-                item['status'] = 'installed'
-            elif item.get('needs_update'):
-                # update being installed; can opt-out
-                item['status'] = 'update-will-be-installed'
-            else:
-                # item is simply installed
-                item['status'] = 'installed'
-            # remove item from unmanaged_installs
-            self.unmanage(item['name'])
-        elif item['status'] == 'will-be-installed':
-            # cancel install
-            item['status'] = 'not-installed'
-            # remove the name from the subscribed items
-            self.unmanage(item['name'])
-        elif item['status'] == 'not-installed':
-            # mark for install
-            item['status'] = 'will-be-installed'
-            # add the name to the subscribed items
-            self.subscribe(item['name'])
-        elif item['status'] == 'installed':
-            # mark for removal
-            item['status'] = 'will-be-removed'
-            # add the name to the unsubscribed items
-            self.unsubscribe(item['name'])
-        # get localized text labels
-        item['status_text'] = msulib.displayTextForStatus(item['status'])
-        item['short_action_text'] = msulib.shortActionTextForStatus(item['status'])
-        item['long_action_text'] = msulib.longActionTextForStatus(item['status'])
-        item['myitem_action_text'] = msulib.myItemActionTextForStatus(item['status'])
-
+    
     def showUpdateProgressSpinner(self):
         # update the status header on the updates page
         document = self.webView.mainFrameDocument()
@@ -1326,7 +1012,7 @@ class MSUMainWindowController(NSWindowController):
         # the cancel or add button in the updates list
         # TO-DO: better handling of all the "unexpected error"s
         document = self.webView.mainFrameDocument()
-        item = self.optionalItemForName_(item_name)
+        item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             NSLog('Unexpected error')
             return
@@ -1338,22 +1024,14 @@ class MSUMainWindowController(NSWindowController):
         node = update_table_row.parentNode().removeChild_(update_table_row)
 
         # update item status
-        self.updateItemStatus_(item)
+        item.update_status()
 
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
             # make some new HTML for the updated item
             managed_update_names = munki.getInstallInfo().get('managed_updates', [])
-            if item['name'] in managed_update_names:
-                msulib.processItems([item], self.html_dir)
-            else:
-                # possible to change the status
-                msulib.processItems([item], self.html_dir, are_optional=True)
-
             item_template = msulib.get_template('update_row_template.html')
-            more_link_text = NSLocalizedString(u'More', u'MoreLinkText').encode('utf-8')
-            item_html = item_template.safe_substitute(
-                            item, more_link_text=more_link_text, added_or_deleted='added')
+            item_html = item_template.safe_substitute(item)
 
             if item['status'] in ['update-will-be-installed', 'installed']:
                 # add the node to the updates-to-install table
@@ -1406,13 +1084,13 @@ class MSUMainWindowController(NSWindowController):
         # this method is called from JavaScript when the user clicks
         # the Install/Removel/Cancel button in the My Items view
         document = self.webView.mainFrameDocument()
-        item = self.optionalItemForName_(item_name)
+        item = MunkiItems.optionalItemForName_(item_name)
         status_line = document.getElementById_('%s_status_text' % item_name)
         btn = document.getElementById_('%s_action_button_text' % item_name)
         if not item or not btn or not status_line:
             NSLog('Unexpected error')
             return
-        self.updateItemStatus_(item)
+        item.update_status()
         self.displayUpdateCount()
         if item['status'] == 'not-installed':
             # we removed item from list of things to install
@@ -1453,11 +1131,11 @@ class MSUMainWindowController(NSWindowController):
     def actionButtonClicked_(self, item_name):
         # this method is called from JavaScript when the user clicks
         # the Install/Removel/Cancel button in the list or detail view
-        item = self.optionalItemForName_(item_name)
+        item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             NSLog('Can\'t find item: %s' % item_name)
             return
-        self.updateItemStatus_(item)
+        item.update_status()
         self.displayUpdateCount()
         self.updateDOMforOptionalItem(item)
         if not self._update_in_progress:
@@ -1475,6 +1153,13 @@ class MSUMainWindowController(NSWindowController):
         if category == 'All Categories':
             category = 'all'
         self.load_page('category-%s.html' % quote_plus(category))
+
+    def setStatusViewTitle_(self, title_text):
+        document = self.webView.mainFrameDocument()
+        # we re-purpose the update count message for this
+        update_count_element = document.getElementById_('update-count-string')
+        if update_count_element:
+            update_count_element.setInnerText_(title_text)
 
     @IBAction
     def navigationBtnClicked_(self, sender):
@@ -1534,154 +1219,3 @@ class MSUMainWindowController(NSWindowController):
         '''return True if current tab selected is updates'''
         selectedCell = self.tabControl.selectedCell()
         return (selectedCell is not None and selectedCell.tag() == 2)
-
-##### required status methods #####
-
-    def initStatusSession(self):
-        self._update_in_progress = True
-        if self.currentPageIsUpdatesPage():
-            self.webView.reload_(self)
-            self.displayUpdateCount()
-
-    def cleanUpStatusSession(self):
-        # reset all our status variables
-        self._update_in_progress = False
-        self._status_stopBtnDisabled = False
-        self._status_stopBtnHidden = False
-        self._status_stopBtnState = 0
-        self._status_message = ''
-        self._status_detail = ''
-        self._status_percent = -1
-
-    def setPercentageDone_(self, percent):
-        try:
-            if float(percent) > 100.0:
-                percent = 100
-        except ValueError:
-            percent = 0
-        self._status_percent = percent
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            progress = document.getElementById_('progress-bar')
-            if progress:
-                if float(percent) < 0:
-                    # indeterminate
-                    progress.setClassName_('indeterminate')
-                    progress.removeAttribute_('style')
-                else:
-                    progress.setClassName_('')
-                    progress.setAttribute__('style', 'width: %s%%' % percent)
-
-    @AppHelper.endSheetMethod
-    def restartAlertDidEnd_returnCode_contextInfo_(
-                                        self, alert, returncode, contextinfo):
-        self._status_restartAlertDismissed = 1
-        # TO-DO: initiate actual restart
-
-    def doRestartAlert(self):
-        self._status_restartAlertDismissed = 0
-        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-            NSLocalizedString(u"Restart Required", None),
-            NSLocalizedString(u"Restart", None),
-            nil,
-            nil,
-            NSLocalizedString(
-                u"Software installed or removed requires a restart. You will "
-                "have a chance to save open documents.", None))
-        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-            self.window(), self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)
-
-    def setMessage_(self, messageText):
-        self._status_message = messageText
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            textElement = document.getElementById_('primary-status-text')
-            if textElement:
-                if messageText:
-                    textElement.setInnerText_(messageText.encode('utf-8'))
-                else:
-                    textElement.setInnerHTML_('&nbsp;')
-
-    def setDetail_(self, detailText):
-        self._status_detail = detailText
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            textElement = document.getElementById_('secondary-status-text')
-            if textElement:
-                if detailText:
-                    textElement.setInnerText_(detailText.encode('utf-8'))
-                else:
-                    textElement.setInnerHTML_('&nbsp;')
-
-    def getStopBtnState(self):
-        return self._status_stopBtnState
-
-    def hideStopButton(self):
-        if self._status_stopBtnState:
-            return
-        self._status_stopBtnHidden = True
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if not 'hidden' in btn_classes:
-                    btn_classes.append('hidden')
-                    install_btn.setClassName_(' '.join(btn_classes))
-
-    def showStopButton(self):
-        if self._status_stopBtnState:
-           return
-        self._status_stopBtnHidden = False
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if 'hidden' in btn_classes:
-                    btn_classes.remove('hidden')
-                    install_btn.setClassName_(' '.join(btn_classes))
-
-    def enableStopButton(self):
-        if self._status_stopBtnState:
-            return
-        self._status_stopBtnDisabled = False
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if 'installed-not-removable' in btn_classes:
-                    btn_classes.remove('installed-not-removable')
-                    install_btn.setClassName_(' '.join(btn_classes))
-
-    def disableStopButton(self):
-        if self._status_stopBtnState:
-            return
-        self._status_stopBtnDisabled = True
-        document = self.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if not 'installed-not-removable' in btn_classes:
-                    btn_classes.append('installed-not-removable')
-                    install_btn.setClassName_(' '.join(btn_classes))
-
-    def getRestartAlertDismissed(self):
-        return self._status_restartAlertDismissed
-
-    # not part of the status methods
-    def setStatusViewTitle_(self, title_text):
-        document = self.webView.mainFrameDocument()
-        # we re-purpose the update count message for this
-        update_count_element = document.getElementById_('update-count-string')
-        if update_count_element:
-            update_count_element.setInnerText_(title_text)

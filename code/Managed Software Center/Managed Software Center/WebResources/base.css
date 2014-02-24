@@ -951,6 +951,7 @@ div.msu-button-inner.install-updates {
     -webkit-border-radius: 3px;
 }
 
+div.msu-button-inner.install-updates.disabled,
 div.msu-button-inner.install-updates.installed-not-removable,
 div.msu-button-inner.install-updates.installing,
 div.msu-button-inner.install-updates.removing {
