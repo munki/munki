@@ -209,9 +209,6 @@ class GenericItem(dict):
         else:
             self['description'] = ''
         self['icon'] = self.getIcon()
-        self['version_label'] = NSLocalizedString(
-                                        u'Version',
-                                        u'VersionLabel').encode('utf-8')
         self['due_date_sort'] = NSDate.distantFuture()
         # sort items that need restart highest, then logout, then other
         if self.get('RestartAction') in [None, 'None']:
@@ -415,7 +412,7 @@ class GenericItem(dict):
         return map.get(self['status'], self['status'])
 
     def version_label(self):
-        '''Text for the version info in the detail sidebar'''
+        '''Text for the version label'''
         if self['status'] == 'will-be-removed':
             removal_text = NSLocalizedString(
                 u'Will be removed', u'WillBeRemovedDisplayText').encode('utf-8')
@@ -423,6 +420,13 @@ class GenericItem(dict):
         else:
             return NSLocalizedString(u'Version', u'VersionLabel').encode('utf-8')
 
+    def display_version(self):
+        '''Version number for display'''
+        if self['status'] == 'will-be-removed':
+            return ''
+        else:
+            return self.get('version_to_install', '')
+    
     def developer_sort(self):
         '''returns sort priority based on developer and install/removal status'''
         if self['status'] != 'will-be-removed' and self['developer'] == 'Apple':

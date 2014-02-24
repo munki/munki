@@ -22,12 +22,14 @@ from random import shuffle
 from string import Template
 import urlparse
 
+from operator import itemgetter
+from urllib import quote_plus, unquote_plus
+
 import munki
 import msulib
 import msulog
 import FoundationPlist
 import MSUBadgedTemplateImage
-
 import MunkiItems
 
 from objc import YES, NO, IBAction, IBOutlet, nil
@@ -36,14 +38,8 @@ from Foundation import *
 from AppKit import *
 from WebKit import *
 
-from operator import itemgetter
-from urllib import quote_plus, unquote_plus
-
 class MSUMainWindowController(NSWindowController):
     
-    _updateList = None
-    _optionalItemList = None
-    _self_service_info = None
     _changed_choices = []
     _alertedUserToOutstandingUpdates = False
     
@@ -181,6 +177,7 @@ class MSUMainWindowController(NSWindowController):
             return
         
         if tasktype == 'checktheninstall':
+            # possibly check again if choices have changed
             self.updateNow()
             return
 
