@@ -102,9 +102,9 @@ class MSUStatusController(NSObject):
             if self.timeout_counter == 0:
                 NSLog('Timed out waiting for managedsoftwareupdate.')
                 if self.saw_process:
-                    self.sessionEnded(UNEXPECTEDLY_QUIT)
+                    self.sessionEnded_(UNEXPECTEDLY_QUIT)
                 else:
-                    self.sessionEnded(NEVER_STARTED)
+                    self.sessionEnded_(NEVER_STARTED)
     
     def sessionStarted(self):
         return self.session_started
