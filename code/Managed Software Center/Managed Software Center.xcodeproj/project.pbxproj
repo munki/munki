@@ -20,6 +20,7 @@
 		C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0A71B75188A47C700A6EE82 /* MSUMainWindowController.py */; };
 		C0AAA21C18B801400012663F /* MunkiItems.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AAA21B18B801400012663F /* MunkiItems.py */; };
 		C0AAA21E18BAD8710012663F /* msulog.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AAA21D18BAD8710012663F /* msulog.py */; };
+		C0AAA22018BC67F90012663F /* msuhtml.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AAA21F18BC67F90012663F /* msuhtml.py */; };
 		C0AE8658186D2DF900C87AE7 /* Managed Software Center.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */; };
 		C0AE865A186D32AF00C87AE7 /* MSUBadgedTemplateImage.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8659186D32AF00C87AE7 /* MSUBadgedTemplateImage.py */; };
 		C0B3743F187089F300B6204E /* AllItemsTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0B3743A187089F300B6204E /* AllItemsTemplate.png */; };
@@ -51,6 +52,7 @@
 		C0A71B75188A47C700A6EE82 /* MSUMainWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUMainWindowController.py; sourceTree = "<group>"; };
 		C0AAA21B18B801400012663F /* MunkiItems.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MunkiItems.py; sourceTree = "<group>"; };
 		C0AAA21D18BAD8710012663F /* msulog.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msulog.py; sourceTree = "<group>"; };
+		C0AAA21F18BC67F90012663F /* msuhtml.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msuhtml.py; sourceTree = "<group>"; };
 		C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Center.icns"; sourceTree = "<group>"; };
 		C0AE8659186D32AF00C87AE7 /* MSUBadgedTemplateImage.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSUBadgedTemplateImage.py; sourceTree = "<group>"; };
 		C0B3743A187089F300B6204E /* AllItemsTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AllItemsTemplate.png; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 				C0A71B75188A47C700A6EE82 /* MSUMainWindowController.py */,
 				C0AAA21B18B801400012663F /* MunkiItems.py */,
 				C0AAA21D18BAD8710012663F /* msulog.py */,
+				C0AAA21F18BC67F90012663F /* msuhtml.py */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -251,6 +254,7 @@
 				C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
+				C0AAA22018BC67F90012663F /* msuhtml.py in Resources */,
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */,
 				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,

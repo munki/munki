@@ -139,25 +139,23 @@ def allOptionalChoicesProcessed():
     processed_optional_items = install_info.get('optional_installs')
     processed_install_names = [item['name'] for item in processed_optional_items
                                if item.get('will_be_installed')]
-    NSLog('processed_install_names: %s' % processed_install_names)
+    #NSLog('processed_install_names: %s' % processed_install_names)
     processed_removal_names = [item['name'] for item in processed_optional_items
                                if item.get('will_be_removed')]
-    NSLog('processed_removal_names: %s' % processed_removal_names)
+    #NSLog('processed_removal_names: %s' % processed_removal_names)
     # get currently selected optional installs and removals
     current_install_names = [item['name']
                              for item in getOptionalWillBeInstalledItems()]
-    NSLog('current_install_names: %s' % current_install_names)
+    #NSLog('current_install_names: %s' % current_install_names)
     current_removal_names = [item['name']
                              for item in getOptionalWillBeRemovedItems()]
-    NSLog('current_removal_names: %s' % current_removal_names)
+    #NSLog('current_removal_names: %s' % current_removal_names)
     # are they the same?
     if (sorted(processed_install_names) != sorted(current_install_names)
         or
         sorted(processed_removal_names) != sorted(current_removal_names)):
-        NSLog('Differ')
         return False
     else:
-        NSLog('Same')
         return True
 
 def getMyItemsList():
@@ -481,8 +479,6 @@ class OptionalItem(GenericItem):
             self['category_and_developer'] = self['category']
         if not self.get('status'):
             self['status'] = self._get_status()
-        # track original status of item
-        self['original_status'] = self['status']
         if self.get('installer_item_size'):
             self['size'] = munki.humanReadable(self['installer_item_size'])
         elif self.get('installed_size'):
