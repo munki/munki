@@ -177,6 +177,7 @@ class MSUMainWindowController(NSWindowController):
             return
         
         if tasktype == 'checktheninstall':
+            MunkiItems.reset()
             # possibly check again if choices have changed
             self.updateNow()
             return
@@ -288,7 +289,8 @@ class MSUMainWindowController(NSWindowController):
     def updateNow(self):
         self._update_in_progress = True
         self.displayUpdateCount()
-        if self.updateChoicesChanged():
+        if not MunkiItems.allOptionalChoicesProcessed():
+            NSLog('selfService choices changed')
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
@@ -320,15 +322,6 @@ class MSUMainWindowController(NSWindowController):
         else:
             NSApp.dockTile().setBadgeLabel_(None)
     
-    def updateChoicesChanged(self):
-        choices_changed = False
-        changed_choices = [item for item in MunkiItems.getOptionalInstallItems()
-                           if item['status'] != item['original_status']]
-        if sorted(changed_choices) != sorted(self._changed_choices):
-            choices_changed = True
-            self._changed_choices = changed_choices
-        return choices_changed
-
     def get_warning_text(self):
         '''Return localized text warning about forced installs and/or
             logouts and/or restarts'''

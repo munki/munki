@@ -4,7 +4,7 @@
 #
 #  Created by Greg Neagle on 2/21/14.
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2014 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ from Foundation import NSLocalizedString
 from Foundation import NSDate
 from Foundation import NSLog
 
+
 _cache = {}
 # cache reads from AppleUpdates.plist, InstallInfo.plist
 _cache['apple_updates'] = None
 _cache['install_info'] = None
-
 # cache lists
 _cache['optional_install_items'] = None
 _cache['update_list'] = None
@@ -133,6 +133,32 @@ def getEffectiveUpdateList():
     optional_removals = getOptionalWillBeRemovedItems()
     return filtered_updates + optional_installs + optional_removals
 
+def allOptionalChoicesProcessed():
+    # get processed optional installs and removals
+    install_info = getInstallInfo()
+    processed_optional_items = install_info.get('optional_installs')
+    processed_install_names = [item['name'] for item in processed_optional_items
+                               if item.get('will_be_installed')]
+    NSLog('processed_install_names: %s' % processed_install_names)
+    processed_removal_names = [item['name'] for item in processed_optional_items
+                               if item.get('will_be_removed')]
+    NSLog('processed_removal_names: %s' % processed_removal_names)
+    # get currently selected optional installs and removals
+    current_install_names = [item['name']
+                             for item in getOptionalWillBeInstalledItems()]
+    NSLog('current_install_names: %s' % current_install_names)
+    current_removal_names = [item['name']
+                             for item in getOptionalWillBeRemovedItems()]
+    NSLog('current_removal_names: %s' % current_removal_names)
+    # are they the same?
+    if (sorted(processed_install_names) != sorted(current_install_names)
+        or
+        sorted(processed_removal_names) != sorted(current_removal_names)):
+        NSLog('Differ')
+        return False
+    else:
+        NSLog('Same')
+        return True
 
 def getMyItemsList():
     '''Returns a list of optional_installs items the user has chosen
