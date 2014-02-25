@@ -392,8 +392,7 @@ class MSUMainWindowController(NSWindowController):
         f = open(html_file, 'w')
         f.write(html)
         f.close()
-        return html_file
-
+    
     def build_update_status_page(self):
         '''returns our update status page'''
         page_name = 'updates.html'
@@ -444,8 +443,7 @@ class MSUMainWindowController(NSWindowController):
         f = open(html_file, 'w')
         f.write(html)
         f.close()
-        return html_file
-
+        
     def build_updates_page(self):
         '''available/pending updates'''
         page_name = 'updates.html'
@@ -507,7 +505,6 @@ class MSUMainWindowController(NSWindowController):
         f = open(html_file, 'w')
         f.write(html)
         f.close()
-        return html_file
 
     def build_updatedetail_page(self, item_name):
         items = MunkiItems.getUpdateList()
@@ -535,7 +532,7 @@ class MSUMainWindowController(NSWindowController):
                 f = open(html_file, 'w')
                 f.write(html)
                 f.close()
-                return html_file
+                return
         NSLog('No update detail found for %s' % item_name)
         return None # TO-DO: need an error html file!
 
@@ -594,7 +591,7 @@ class MSUMainWindowController(NSWindowController):
                 f = open(html_file, 'w')
                 f.write(html)
                 f.close()
-                return html_file
+                return
         NSLog('No detail found for %s' % item_name)
         return None # TO-DO: need an error html file!
 
@@ -687,7 +684,6 @@ class MSUMainWindowController(NSWindowController):
         f = open(html_file, 'w')
         f.write(html)
         f.close()
-        return html_file
 
     def updateListPage(self):
         '''Modifies DOM on currently displayed page to avoid nasty page refresh'''
@@ -834,7 +830,6 @@ class MSUMainWindowController(NSWindowController):
         f = open(html_file, 'w')
         f.write(html)
         f.close()
-        return html_file
 
     def load_page(self, url_fragment):
         html_file = os.path.join(self.html_dir, url_fragment)
