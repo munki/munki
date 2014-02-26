@@ -137,6 +137,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "MunkiStatus" */;
 			buildPhases = (
+				C09CE1DB18BEA77500B9724A /* Localize */,
+				C09CE1DC18BEA78300B9724A /* Embed version info */,
 				C09004E916CDD84E00BE34CE /* Sources */,
 				C09004EA16CDD84E00BE34CE /* Frameworks */,
 				C09004EB16CDD84E00BE34CE /* Resources */,
@@ -225,6 +227,37 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C09CE1DB18BEA77500B9724A /* Localize */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = Localize;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8\n./Localize.py --from English --to da --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to nb --utf8\n./Localize.py --from English --to ru --utf8\n./Localize.py --from English --to sv --utf8";
+		};
+		C09CE1DC18BEA78300B9724A /* Embed version info */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed version info";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\n# Git isn't installed on 10.6 or earlier by default, so find it\nGIT=`which git`\nif [ \"$GIT\" == \"\" ] ; then\n    # let's hope it's in /usr/local/bin\n    if [ -x \"/usr/local/bin/git\" ] ; then\n        GIT=/usr/local/bin/git\n    fi\nfi\n\nif [ \"$GIT\" != \"\" ] ; then\n    # generate a psuedo-svn revision number from the list of Git revisions\n    GITREV=`$GIT log -n1 --format=\"%H\" -- ./`\n    GITREVINDEX=`$GIT rev-list --reverse HEAD | grep -n $GITREV | cut -d: -f1`\n    REV=$(($GITREVINDEX + $MAGICNUMBER))\n\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n    /usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C09004E916CDD84E00BE34CE /* Sources */ = {
