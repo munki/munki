@@ -74,6 +74,7 @@ class MSUStatusWindowController(NSObject):
     restartAlertDismissed = 0
     got_status_update = False
     receiving_notifications = False
+    timer = None
 
     @IBAction
     def stopBtnClicked_(self, sender):
@@ -109,10 +110,6 @@ class MSUStatusWindowController(NSObject):
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
         self.receiving_notifications = True
-        # start our process monitor thread so we can be notified about
-        # process failure
-        NSThread.detachNewThreadSelector_toTarget_withObject_(
-                                                    self.monitorProcess, self, None)
     
     def unregisterForNotifications(self):
         '''Tell the DistributedNotificationCenter to stop sending us notifications'''
@@ -157,8 +154,14 @@ class MSUStatusWindowController(NSObject):
                 self.progressIndicator.startAnimation_(self)
             self.window.orderFrontRegardless()
             self.registerForNotifications()
+            # start our process monitor timer so we can be notified about
+            # process failure
+            self.timeout_counter = 6
+            self.saw_process = False
+            self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+                                                          5.0, self, self.checkProcess_, None, YES)
             
-    def monitorProcess(self):
+    def checkProcess_(self, timer):
         '''Monitors managedsoftwareupdate process for failure to start
         or unexpected exit, so we're not waiting around forever if
         managedsoftwareupdate isn't running.'''
@@ -166,38 +169,27 @@ class MSUStatusWindowController(NSObject):
         NEVER_STARTED = -2
         UNEXPECTEDLY_QUIT = -1
         
-        timeout_counter = 6
-        saw_process = False
+        NSLog('checkProcess timer fired')
         
-        # Autorelease pool for memory management
-        pool = NSAutoreleasePool.alloc().init()
-        while self.receiving_notifications:
-            if self.got_status_update:
-                # we got a status update since we last checked; no need to
-                # check the process table
-                timeout_counter = 6
-                saw_process = True
-                # clear the flag so we have to get another status update
-                self.got_status_update = False
-            elif munki.pythonScriptRunning(PYTHON_SCRIPT_NAME):
-                timeout_counter = 6
-                saw_process = True
+        if self.got_status_update:
+            # we got a status update since we last checked; no need to
+            # check the process table
+            self.timeout_counter = 6
+            self.saw_process = True
+            # clear the flag so we have to get another status update
+            self.got_status_update = False
+        elif munki.pythonScriptRunning(PYTHON_SCRIPT_NAME):
+            self.timeout_counter = 6
+            self.saw_process = True
+        else:
+            NSLog('managedsoftwareupdate not running...')
+            self.timeout_counter -= 1
+        if self.timeout_counter == 0:
+            NSLog('Timed out waiting for managedsoftwareupdate.')
+            if self.saw_process:
+                self.statusSessionFailed_(UNEXPECTEDLY_QUIT)
             else:
-                NSLog('No managedsoftwareupdate running...')
-                timeout_counter -= 1
-            if timeout_counter == 0:
-                NSLog('Timed out waiting for managedsoftwareupdate.')
-                if saw_process:
-                    sessionResult = UNEXPECTEDLY_QUIT
-                else:
-                    sessionResult = NEVER_STARTED
-                break
-            time.sleep(5)
-        if self.receiving_notifications:
-            self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                                    self.statusSessionFailed_, sessionResult, NO)
-        # Clean up autorelease pool
-        del pool
+                self.statusSessionFailed_(NEVER_STARTED)
 
     def statusSessionFailed_(self, sessionResult):
         NSLog('statusSessionFailed: %s' % sessionResult)
@@ -209,7 +201,11 @@ class MSUStatusWindowController(NSObject):
         if self.backdropWindow and self.backdropWindow.isVisible():
             self.backdropWindow.orderOut_(self)
         self.window.orderOut_(self)
-                
+        # clean up timer
+        if self.timer:
+            self.timer.invalidate()
+            self.timer = None
+
     def displayBackdropWindow(self):
         if self.backdropWindow:
             self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
