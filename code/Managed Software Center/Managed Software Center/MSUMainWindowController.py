@@ -588,7 +588,7 @@ class MSUMainWindowController(NSWindowController):
         if update_count_element:
             update_count_element.setInnerText_(update_count_message)
 
-        warning_text = self.get_warning_text()
+        warning_text = msuhtml.get_warning_text()
         warning_text_element = document.getElementById_('update-warning-text')
         if warning_text_element:
             warning_text_element.setInnerHTML_(warning_text)
