@@ -42,6 +42,14 @@ def build_page(filename):
         build_updatedetail_page(value)
 
 
+def write_page(page_name, html):
+    '''write html to page_name in our local html directory'''
+    html_file = os.path.join(msulib.html_dir(), page_name)
+    f = open(html_file, 'w')
+    f.write(html)
+    f.close()
+
+
 def build_detail_page(item_name):
     items = MunkiItems.getOptionalInstallItems()
     page_name = 'detail-%s.html' % quote_plus(item_name)
@@ -93,10 +101,7 @@ def build_detail_page(item_name):
 
             template = msulib.get_template('detail_template.html')
             html = template.safe_substitute(page)
-            html_file = os.path.join(msulib.html_dir(), page_name)
-            f = open(html_file, 'w')
-            f.write(html)
-            f.close()
+            write_page(page_name, html)
             return
     NSLog('No detail found for %s' % item_name)
     return None # TO-DO: need an error html file!
@@ -149,11 +154,7 @@ def build_list_page(category=None, developer=None, filter=None):
         page['hide_showcase'] = ''
     html_template = msulib.get_template('list_template.html')
     html = html_template.safe_substitute(page)
-
-    html_file = os.path.join(msulib.html_dir(), page_name)
-    f = open(html_file, 'w')
-    f.write(html)
-    f.close()
+    write_page(page_name, html)
 
 
 def build_list_page_items_html(category=None, developer=None, filter=None):
@@ -242,11 +243,7 @@ def build_categories_page():
     page['hide_showcase'] = 'hidden'
     html_template = msulib.get_template('list_template.html')
     html = html_template.safe_substitute(page)
-
-    html_file = os.path.join(msulib.html_dir(), page_name)
-    f = open(html_file, 'w')
-    f.write(html)
-    f.close()
+    write_page(page_name, html)
 
 
 def build_category_items_html():
@@ -315,11 +312,7 @@ def build_myitems_page():
     page['footer'] = msulib.getFooter()
 
     html = page_template.safe_substitute(page)
-
-    html_file = os.path.join(msulib.html_dir(), page_name)
-    f = open(html_file, 'w')
-    f.write(html)
-    f.close()
+    write_page(page_name, html)
 
 
 def build_myitems_rows():
@@ -347,6 +340,7 @@ def build_updates_page():
     '''available/pending updates'''
     page_name = 'updates.html'
     
+    # need to consolidate/centralize this flag. Accessing it this way is ugly.
     if NSApp.delegate().mainWindowController._update_in_progress:
         return build_update_status_page()
 
@@ -400,10 +394,7 @@ def build_updates_page():
 
     page_template = msulib.get_template('updates_template.html')
     html = page_template.safe_substitute(page)
-    html_file = os.path.join(msulib.html_dir(), page_name)
-    f = open(html_file, 'w')
-    f.write(html)
-    f.close()
+    write_page(page_name, html)
 
 
 def build_update_status_page():
@@ -445,6 +436,7 @@ def build_update_status_page():
         install_all_button_classes.append('disabled')
     page['install_all_button_classes'] = ' '.join(install_all_button_classes)
 
+    # don't like this bit as it ties us yet another object
     page['update_count'] = NSApp.delegate().mainWindowController._status_title or status_title_default
     page['install_btn_label'] = NSLocalizedString(
                                     u'Cancel', u'CancelButtonText').encode('utf-8')
@@ -453,10 +445,7 @@ def build_update_status_page():
 
     page_template = msulib.get_template('updates_template.html')
     html = page_template.safe_substitute(page)
-    html_file = os.path.join(msulib.html_dir(), page_name)
-    f = open(html_file, 'w')
-    f.write(html)
-    f.close()
+    write_page(page_name, html)
 
 
 def get_warning_text():
@@ -502,10 +491,7 @@ def build_updatedetail_page(item_name):
 
             template = msulib.get_template('updatedetail_template.html')
             html = template.safe_substitute(page)
-            html_file = os.path.join(msulib.html_dir(), page_name)
-            f = open(html_file, 'w')
-            f.write(html)
-            f.close()
+            write_page(page_name, html)
             return
     NSLog('No update detail found for %s' % item_name)
     return None # TO-DO: need an error html file!

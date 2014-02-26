@@ -116,6 +116,18 @@ def _build_update_list():
                     'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
 
 
+def updatesRequireLogout():
+    '''Return True if any item in the update list requires a logout'''
+    return len([item for item in getUpdateList()
+                if 'Logout' in item.get('RestartAction', '')]) > 0
+
+
+def updatesRequireRestart():
+    '''Return True if any item in the update list requires a restart'''
+    return len([item for item in getUpdateList()
+                if 'Restart' in item.get('RestartAction', '')]) > 0
+
+
 def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
         make the effective list of updates'''

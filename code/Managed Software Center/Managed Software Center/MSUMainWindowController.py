@@ -28,6 +28,8 @@ import FoundationPlist
 import MSUBadgedTemplateImage
 import MunkiItems
 
+from AlertController import AlertController
+
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
 from Foundation import *
@@ -108,7 +110,6 @@ class MSUMainWindowController(NSWindowController):
                           webViewRect.size.width, 0)
 
     def loadInitialView(self):
-        self.html_dir = msulib.html_dir()
         if MunkiItems.getEffectiveUpdateList():
             self.loadUpdatesPage_(self)
         else:
@@ -244,23 +245,42 @@ class MSUMainWindowController(NSWindowController):
         self.webView.setResourceLoadDelegate_(self)
         self.webView.setPolicyDelegate_(self)
         self.setNoPageCache()
+        self.alert_controller = AlertController.alloc().init()
+        self.alert_controller.setWindow_(self.window())
+        self.html_dir = msulib.html_dir()
+    
+    def forcedLogoutWarning(self, notification_obj):
+        # got a notification of an upcoming forced install
+        # switch to updates view, then display alert
+        self.loadUpdatesPage_(self)
+        self.alert_controller.forcedLogoutWarning(notification_obj)
     
     def kickOffUpdateSession(self):
         # TO-DO: check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
-        NSApp.delegate().managedsoftwareupdate_task = None
-        msulog.log("user", "install_without_logout")
-        self._update_in_progress = True
-        self.setStatusViewTitle_(NSLocalizedString(
-            u'Updating...', u'UpdatingMessage').encode('utf-8'))
-        result = munki.justUpdate()
-        if result:
-            NSLog("Error starting install session: %s" % result)
-            NSApp.delegate().munkiStatusSessionEnded_(2)
+        if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
+            self.alert_controller.confirmUpdatesAndInstall()
         else:
-            NSApp.delegate().managedsoftwareupdate_task = "installwithnologout"
-            NSApp.delegate().statusController.startMunkiStatusSession()
-            self.markPendingItemsAsInstalling()
+            if self.alert_controller.alertedToBlockingAppsRunning():
+                # do nothing
+                return
+            if self.alert_controller.alertedToRunningOnBatteryAndCancelled():
+                # do nothing
+                return
+            NSApp.delegate().managedsoftwareupdate_task = None
+            msulog.log("user", "install_without_logout")
+            self._update_in_progress = True
+            self.displayUpdateCount()
+            self.setStatusViewTitle_(NSLocalizedString(
+                u'Updating...', u'UpdatingMessage').encode('utf-8'))
+            result = munki.justUpdate()
+            if result:
+                NSLog("Error starting install session: %s" % result)
+                NSApp.delegate().munkiStatusSessionEnded_(2)
+            else:
+                NSApp.delegate().managedsoftwareupdate_task = "installwithnologout"
+                NSApp.delegate().statusController.startMunkiStatusSession()
+                self.markPendingItemsAsInstalling()
 
     def markPendingItemsAsInstalling(self):
         install_info = munki.getInstallInfo()
@@ -282,14 +302,14 @@ class MSUMainWindowController(NSWindowController):
                 self.updateDOMforOptionalItem(item)
 
     def updateNow(self):
-        self._update_in_progress = True
-        self.displayUpdateCount()
         if not MunkiItems.allOptionalChoicesProcessed():
             NSLog('selfService choices changed')
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
             suppress_apple_update_check = True
+            self._update_in_progress = True
+            self.displayUpdateCount()
             result = munki.startUpdateCheck(suppress_apple_update_check)
             result = 0
             if result:

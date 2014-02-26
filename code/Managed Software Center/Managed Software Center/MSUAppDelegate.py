@@ -104,7 +104,8 @@ class MSUAppDelegate(NSObject):
 
     def forcedLogoutWarning(self, notification_obj):
         NSLog(u"Managed Software Center got forced logout warning")
-        # TO-DO: display the logout warning!
+        # hand it off to the main window
+        self.mainWindowController.forcedLogoutWarning(notification_obj)
     
     def munkiStatusSessionEnded_(self, socketSessionResult):
         NSLog(u"MunkiStatus session ended: %s" % socketSessionResult)

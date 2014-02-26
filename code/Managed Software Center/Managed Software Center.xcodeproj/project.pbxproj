@@ -10,6 +10,7 @@
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
 		C035274E18A9C582004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274D18A9C582004A5AE4 /* libpython2.6.dylib */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
+		C079D9C118BD435200BAD62E /* AlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C079D9C018BD435200BAD62E /* AlertController.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
 		C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
 		C090050016CDD84E00BE34CE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C09004FF16CDD84E00BE34CE /* main.m */; };
@@ -37,6 +38,7 @@
 		C02BF93618B45D6900115CCF /* Managed Software Center-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Managed Software Center-Info.plist"; sourceTree = "<group>"; };
 		C035274D18A9C582004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
 		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = munki.py; sourceTree = "<group>"; };
+		C079D9C018BD435200BAD62E /* AlertController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = AlertController.py; sourceTree = "<group>"; };
 		C09004ED16CDD84E00BE34CE /* Managed Software Center.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Center.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C09004F116CDD84E00BE34CE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C09004F616CDD84E00BE34CE /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -132,6 +134,7 @@
 				C0AAA21B18B801400012663F /* MunkiItems.py */,
 				C0AAA21D18BAD8710012663F /* msulog.py */,
 				C0AAA21F18BC67F90012663F /* msuhtml.py */,
+				C079D9C018BD435200BAD62E /* AlertController.py */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -248,6 +251,7 @@
 				C0E098BC1857A3C80045DEEB /* msulib.py in Resources */,
 				C0AAA21E18BAD8710012663F /* msulog.py in Resources */,
 				C094B6CF188F7C7700E06897 /* MSUStatusController.py in Resources */,
+				C079D9C118BD435200BAD62E /* AlertController.py in Resources */,
 				C0B3744718708A0300B6204E /* WebResources in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C0B37442187089F300B6204E /* toolbarCategoriesTemplate.pdf in Resources */,

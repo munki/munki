@@ -337,12 +337,7 @@ ignoring application responses
     end tell
 end ignoring
 """
-    cmd = ["/usr/bin/osascript"]
-    for line in script.splitlines():
-        line = line.rstrip().lstrip()
-        if line:
-            cmd.append("-e")
-            cmd.append(line)
+    cmd = ['/usr/bin/osascript', '-e', script]
     result = call(cmd)
 
 
@@ -417,40 +412,54 @@ def pythonScriptRunning(scriptname):
     return 0
 
 
-def getRunningProcesses():
-    """Returns a list of paths of running processes"""
-    proc = subprocess.Popen(['/bin/ps', '-axo' 'comm='],
+def getRunningProcessesWithUsers():
+    """Returns a list of usernames and paths of running processes"""
+    proc_list = []
+    proc = subprocess.Popen(['/bin/ps', '-axo' 'user=,comm='],
                             shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (output, unused_err) = proc.communicate()
     if proc.returncode == 0:
-        proc_list = [item for item in output.splitlines()
-                     if item.startswith('/')]
+        proc_lines = [item for item in output.splitlines()]
         LaunchCFMApp = ('/System/Library/Frameworks/Carbon.framework'
                         '/Versions/A/Support/LaunchCFMApp')
-        if LaunchCFMApp in proc_list:
-            # we have a really old Carbon app
-            proc = subprocess.Popen(['/bin/ps', '-axwwwo' 'args='],
+        saw_launch_cfmapp = False
+        for line in proc_lines:
+            # split into max two parts on whitespace
+            parts = line.split(None, 1)
+            if len(parts) > 1 and parts[1] == LaunchCFMApp:
+                saw_launch_cfmapp = True
+            elif len(parts) > 1:
+                info = {'user': parts[0],
+                        'pathname': parts[1]}
+                proc_list.append(info)
+        if saw_launch_cfmapp:
+            # look at the process table again with different options
+            # and get the arguments for LaunchCFMApp instances
+            proc = subprocess.Popen(['/bin/ps', '-axo' 'user=,command='],
                                     shell=False, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             (output, unused_err) = proc.communicate()
             if proc.returncode == 0:
-                carbon_apps = [item[len(LaunchCFMApp)+1:]
-                               for item in output.splitlines()
-                               if item.startswith(LaunchCFMApp)]
-                if carbon_apps:
-                    proc_list.extend(carbon_apps)
+                proc_lines = [item for item in output.splitlines()]
+                for line in proc_lines:
+                    # split into max three parts on whitespace
+                    parts = line.split(None, 2)
+                    if len(parts) > 2 and parts[1] == LaunchCFMApp:
+                        info = {'user': parts[0],
+                                'pathname': parts[2]}
+                        proc_list.append(info)
         return proc_list
     else:
         return []
 
 
 def getRunningBlockingApps(appnames):
-    """Given a list of app names, return a list of friendly names
-    for apps in the list that are running"""
-    proc_list = getRunningProcesses()
+    """Given a list of app names, return a list of dicts for apps in the list
+    that are running. Each dict contains username, pathname, display_name"""
+    proc_list = getRunningProcessesWithUsers()
     running_apps = []
     filemanager = NSFileManager.alloc().init()
     for appname in appnames:
@@ -458,30 +467,32 @@ def getRunningBlockingApps(appnames):
         if appname.startswith('/'):
             # search by exact path
             matching_items = [item for item in proc_list
-                              if item == appname]
+                              if item['pathname'] == appname]
         elif appname.endswith('.app'):
             # search by filename
             matching_items = [item for item in proc_list
-                              if '/'+ appname + '/Contents/MacOS/' in item]
+                if '/'+ appname + '/Contents/MacOS/' in item['pathname']]
         else:
             # check executable name
             matching_items = [item for item in proc_list
-                              if item.endswith('/' + appname)]
+                              if item['pathname'].endswith('/' + appname)]
 
         if not matching_items:
             # try adding '.app' to the name and check again
             matching_items = [item for item in proc_list
-                              if '/' + appname + '.app/Contents/MacOS/' in item]
+                if '/' + appname + '.app/Contents/MacOS/' in item['pathname']]
 
-        matching_items = set(matching_items)
-        for path in matching_items:
+        #matching_items = set(matching_items)
+        for item in matching_items:
+            path = item['pathname']
             while '/Contents/' in path or path.endswith('/Contents'):
                 path = os.path.dirname(path)
             # ask NSFileManager for localized name since end-users
             # will see this name
-            running_apps.append(filemanager.displayNameAtPath_(path))
+            item['display_name'] = filemanager.displayNameAtPath_(path)
+            running_apps.append(item)
 
-    return list(set(running_apps))
+    return running_apps
 
 
 def getPowerInfo():
