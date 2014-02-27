@@ -21,7 +21,7 @@
 "Logout Recommended" = "Uitloggen Aanbevolen";
 "Logout Required" = "Uitloggen Benodigd";
 "Logout will be required." = "Uitloggen zal benodigd zijn.";
-"Manadatory Updates Pending" = "Verplichte Updates Aanhangig";
+"Mandatory Updates Pending" = "Verplichte Updates Aanhangig";
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Beheerde Softwarebijwerking kan geen kontakt maken met de server.\nNeem kontakt op met Uw systeembeheerder als deze fout zich nogmaals voordoet.";
 "Managed Software Update failed its preflight check.\nTry again later." = "Beheerde Softwarebijwerking had een fout tijdens de voorbereidingsfase.\nProbeer het later nogmaals.";
 "Not installed" = "Niet geïnstalleerd";

@@ -72,7 +72,7 @@
 "Logout will be required." = "Abmelden ist erforderlich.";
 
 /* No comment provided by engineer. */
-"Manadatory Updates Pending" = "Zwingend notwendige Aktualisierungen anstehend";
+"Mandatory Updates Pending" = "Zwingend notwendige Aktualisierungen anstehend";
 
 /* No comment provided by engineer. */
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Geführte Softwareaktualisierung erreicht den Server nicht.\nWenn dieses Problem weiter besteht, informieren Sie bitte Ihren Administrator.";

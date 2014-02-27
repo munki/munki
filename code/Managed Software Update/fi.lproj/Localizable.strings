@@ -74,7 +74,7 @@
 "Logout will be required." = "Uloskirjautumista tullaan vaatimaan.";
 
 /* No comment provided by engineer. */
-"Manadatory Updates Pending" = "Pakollisia päivityksiä odottamassa";
+"Mandatory Updates Pending" = "Pakollisia päivityksiä odottamassa";
 
 /* No comment provided by engineer. */
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Päivityspalvelimeen ei saada yhteyttä.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";

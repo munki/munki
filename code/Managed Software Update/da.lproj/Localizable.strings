@@ -43,7 +43,7 @@
 
 "Logout will be required." = "Kræver log ud.";
 
-"Manadatory Updates Pending" = "Obligatoriske opdateringer venter";
+"Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
 
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Managed Software Update kan ikke få forbindelse til opdateringsserveren.\nHvis problemet består, skal du kontakte systemadministratoren.";
 

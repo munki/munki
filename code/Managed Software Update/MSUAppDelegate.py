@@ -643,7 +643,7 @@ class MSUAppDelegate(NSObject):
                     (u"One or more mandatory updates are overdue for "
                     "installation. A logout will be forced soon."), None)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Manadatory Updates Pending", None),
+                    NSLocalizedString(u"Mandatory Updates Pending", None),
                     NSLocalizedString(u"Show updates", None),
                     NSLocalizedString(u"Update later", None),
                     objc.nil,

@@ -80,7 +80,7 @@
 "Logout will be required." = "La fermeture de session sera obligatoire";
 
 /* No comment provided by engineer. */
-"Manadatory Updates Pending" = "Mises à jour obligatoires en attente";
+"Mandatory Updates Pending" = "Mises à jour obligatoires en attente";
 
 /* No comment provided by engineer. */
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Mise à jour de logiciels ne peut atteindre le serveur de mise à jour pour l'instant.\nSi la situation persiste, contactez votre administrateur système.";

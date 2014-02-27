@@ -74,7 +74,7 @@
 "Logout will be required." = "Será necesario cerrar sesión";
 
 /* No comment provided by engineer. */
-"Manadatory Updates Pending" = "Actualizaciones obligatorias pendientes";
+"Mandatory Updates Pending" = "Actualizaciones obligatorias pendientes";
 
 /* No comment provided by engineer. */
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "Actualización controlada de software no ha podido contactar con el servidor.\nSi este problema continua, contacte con su administrador.";

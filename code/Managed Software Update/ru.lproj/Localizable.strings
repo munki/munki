@@ -24,7 +24,7 @@
 "Logout Recommended" = "Рекомендуется выйти из системы";
 "Logout Required" = "Необходимо выйти из системы";
 "Logout will be required." = "Потребуется выйти из системы.";
-"Manadatory Updates Pending" = "Отложенные обязательные обновления";
+"Mandatory Updates Pending" = "Отложенные обязательные обновления";
 "Managed Software Update cannot contact the update server at this time.\nIf this situation continues, contact your systems administrator." = "В данный момент сервер обновлений не доступен.\nОбратитесь к системному администратору.";
 "Managed Software Update failed its preflight check.\nTry again later." = "Сбой предварительной проверки.\nПовторите попытку позже.";
 "Not installed" = "Не установлены";
