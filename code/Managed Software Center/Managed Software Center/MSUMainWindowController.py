@@ -47,6 +47,7 @@ class MSUMainWindowController(NSWindowController):
     _status_title = ''
         
     _current_page_filename = None
+    stop_requested = False
     
     html_dir = None
     
@@ -249,8 +250,9 @@ class MSUMainWindowController(NSWindowController):
         self.alert_controller.forcedLogoutWarning(notification_obj)
     
     def kickOffUpdateSession(self):
-        # TO-DO: check for need to logout, restart, firmware warnings
+        # check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
+        # then start an update session
         if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
             # switch to updates view
             self.loadUpdatesPage_(self)
@@ -298,6 +300,11 @@ class MSUMainWindowController(NSWindowController):
                 self.updateDOMforOptionalItem(item)
 
     def updateNow(self):
+        if self.stop_requested:
+            # reset the flag
+            self.stop_requested = False
+            self.resetAndReload()
+            return
         if not MunkiItems.allOptionalChoicesProcessed():
             NSLog('selfService choices changed')
             msulog.log("user", "check_then_install_without_logout")
@@ -476,6 +483,7 @@ class MSUMainWindowController(NSWindowController):
             # this is now a stop/cancel button
             NSApp.delegate().statusController.disableStopButton()
             NSApp.delegate().statusController._status_stopBtnState =  1
+            self.stop_requested = True
             # send a notification that stop button was clicked
             STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
             if not os.path.exists(STOP_REQUEST_FLAG):
