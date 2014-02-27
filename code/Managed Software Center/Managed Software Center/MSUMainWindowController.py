@@ -178,13 +178,6 @@ class MSUMainWindowController(NSWindowController):
             self.updateNow()
             return
 
-        if lastCheckResult == 1:
-            # there are some updates to install; are we expected to install them now?
-            # done checking; now try to install...
-            #self.kickOffUpdateSession()
-            #return
-            pass
-
         # all done checking and/or installing: display results
         self.resetAndReload()
         if self._update_queue:
@@ -259,6 +252,9 @@ class MSUMainWindowController(NSWindowController):
         # TO-DO: check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
         if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
+            # switch to updates view
+            self.loadUpdatesPage_(self)
+            # warn about need to logout or restart
             self.alert_controller.confirmUpdatesAndInstall()
         else:
             if self.alert_controller.alertedToBlockingAppsRunning():
@@ -490,6 +486,7 @@ class MSUMainWindowController(NSWindowController):
             self._update_in_progress = True
             self.loadUpdatesPage_(self)
             self.displayUpdateCount()
+            # yuck, this is in a different object than updateNow. We should normalize this.
             NSApp.delegate().checkForUpdates()
         else:
             # must say "Update"
@@ -660,14 +657,14 @@ class MSUMainWindowController(NSWindowController):
         item.update_status()
         self.displayUpdateCount()
         self.updateDOMforOptionalItem(item)
-        if not self._update_in_progress:
-            if item['status'] in ['will-be-installed', 'update-will-be-installed', 'will-be-removed']:
+        
+        if item['status'] in ['will-be-installed', 'update-will-be-installed', 'will-be-removed']:
+            if not self._update_in_progress:
                 self.updateNow()
-        else:
-            if item['status'] in ['will-be-installed', 'update-will-be-installed', 'will-be-removed']:
-                self._update_queue.add(item['name'])
             else:
-                self._update_queue.discard(item['name'])
+                self._update_queue.add(item['name'])
+        else:
+            self._update_queue.discard(item['name'])
 
     def changeSelectedCategory_(self, category):
         # this method is called from JavaScript when the user

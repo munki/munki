@@ -145,6 +145,7 @@ def getEffectiveUpdateList():
     optional_removals = getOptionalWillBeRemovedItems()
     return filtered_updates + optional_installs + optional_removals
 
+
 def allOptionalChoicesProcessed():
     # get processed optional installs and removals
     install_info = getInstallInfo()
@@ -169,6 +170,7 @@ def allOptionalChoicesProcessed():
         return False
     else:
         return True
+
 
 def getMyItemsList():
     '''Returns a list of optional_installs items the user has chosen
