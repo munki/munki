@@ -39,6 +39,6 @@ function stageClicked() {
 window.onload=function(){
     showSlide(0);
     if (slides().length > 1) {
-        setInterval(showNextSlide, 5000);
+        setInterval(showNextSlide, 7500);
     }
 }
