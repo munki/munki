@@ -128,13 +128,35 @@ def updatesRequireRestart():
                 if 'Restart' in item.get('RestartAction', '')]) > 0
 
 
+def updatesContainNonOptionalItems():
+    '''Does the list of updates contain items not selected by the user?'''
+    if not munki.munkiUpdatesContainAppleItems() and getAppleUpdates():
+        # available Apple updates are not user selected
+        return True
+    install_info = getInstallInfo()
+    install_items = install_info.get('managed_installs', [])
+    #NSLog('install_items: %s' % install_items)
+    removal_items = install_info.get('removals', [])
+    #NSLog('removal_items: %s' % removal_items)
+    filtered_installs = [item for item in install_items
+                         if item['name'] not in SelfService().installs()]
+    #NSLog('filtered_installs: %s' % filtered_installs)
+    if filtered_installs:
+        return True
+    filtered_uninstalls = [item for item in removal_items
+                           if item['name'] not in SelfService().uninstalls()]
+    #NSLog('filtered_uninstalls: %s' % filtered_uninstalls)
+    if filtered_uninstalls:
+        return True
+    return False
+
+
 def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
         make the effective list of updates'''
-    update_list = getUpdateList()
     managed_update_names = getInstallInfo().get('managed_updates', [])
     optional_item_names = [item['name'] for item in getOptionalInstallItems()]
-    self_service_uninstalls = munki.readSelfServiceManifest().get('managed_uninstalls', [])
+    self_service_uninstalls = SelfService().uninstalls()
     # items in the update_list that are part of optional_items
     # could have their installation state changed; so filter those out
     filtered_updates = [item for item in getUpdateList()
@@ -175,8 +197,8 @@ def allOptionalChoicesProcessed():
 def getMyItemsList():
     '''Returns a list of optional_installs items the user has chosen
         to install or to remove'''
-    self_service_installs = munki.readSelfServiceManifest().get('managed_installs', [])
-    self_service_uninstalls = munki.readSelfServiceManifest().get('managed_uninstalls', [])
+    self_service_installs = SelfService().installs()
+    self_service_uninstalls = SelfService().uninstalls()
     item_list = [item for item in getOptionalInstallItems()
                  if item['name'] in self_service_installs]
     items_to_remove = [item for item in getOptionalInstallItems()
@@ -189,30 +211,36 @@ def getMyItemsList():
 class SelfService(object):
     '''An object to wrap interactions with the SelfServiceManifest'''
     def __init__(self):
-        self.self_service_installs = set(
+        self._installs = set(
             munki.readSelfServiceManifest().get('managed_installs', []))
-        self.self_service_uninstalls = set(
+        self._uninstalls = set(
             munki.readSelfServiceManifest().get('managed_uninstalls', []))
+    
+    def installs(self):
+        return list(self._installs)
+
+    def uninstalls(self):
+        return list(self._uninstalls)
 
     def subscribe(self, item):
-        self.self_service_installs.add(item['name'])
-        self.self_service_uninstalls.discard(item['name'])
+        self._installs.add(item['name'])
+        self._uninstalls.discard(item['name'])
         self._save_self_service_choices()
 
     def unsubscribe(self, item):
-        self.self_service_installs.discard(item['name'])
-        self.self_service_uninstalls.add(item['name'])
+        self._installs.discard(item['name'])
+        self._uninstalls.add(item['name'])
         self._save_self_service_choices()
     
     def unmanage(self, item):
-        self.self_service_installs.discard(item['name'])
-        self.self_service_uninstalls.discard(item['name'])
+        self._installs.discard(item['name'])
+        self._uninstalls.discard(item['name'])
         self._save_self_service_choices()
 
     def _save_self_service_choices(self):
         current_choices = {}
-        current_choices['managed_installs'] = list(self.self_service_installs)
-        current_choices['managed_uninstalls'] = list(self.self_service_uninstalls)
+        current_choices['managed_installs'] = list(self._installs)
+        current_choices['managed_uninstalls'] = list(self._uninstalls)
         munki.writeSelfServiceManifest(current_choices)
 
 
@@ -505,8 +533,8 @@ class OptionalItem(GenericItem):
     def _get_status(self):
         '''Calculates initial status for an item'''
         managed_update_names = getInstallInfo().get('managed_updates', [])
-        self_service_installs = SelfService().self_service_installs
-        self_service_uninstalls = SelfService().self_service_uninstalls
+        self_service_installs = SelfService().installs()
+        self_service_uninstalls = SelfService().uninstalls()
         if self.get('installed'):
             if self['name'] in self_service_uninstalls:
                 status = 'will-be-removed'

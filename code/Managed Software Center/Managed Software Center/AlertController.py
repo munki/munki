@@ -103,6 +103,24 @@ class AlertController(NSObject):
         elif btn_pressed == self._force_warning_ok_btn:
             msulog.log("user", "dismissed_forced_logout_warning")
 
+    def alertToExtraUpdates(self):
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                NSLocalizedString(u"Additional Pending Updates", u'AdditionalPendingUpdatesText'),
+                NSLocalizedString(u"OK", u'OKButtonText'),
+                nil,
+                nil,
+                NSLocalizedString(
+                    (u"There are additional pending updates to install or remove."),
+                    u'AdditionalPendingUpdatesDetail'))
+        self._currentAlert = alert
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                self.window, self, self.extraUpdatesAlertDidEnd_returnCode_contextInfo_, nil)
+
+    @AppHelper.endSheetMethod
+    def extraUpdatesAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
+        self._currentAlert = None
+
     def confirmUpdatesAndInstall(self):
         if self.alertedToMultipleUsers():
             return

@@ -48,6 +48,7 @@ class MSUMainWindowController(NSWindowController):
         
     _current_page_filename = None
     stop_requested = False
+    user_warned_about_extra_updates = False
     
     html_dir = None
     
@@ -112,6 +113,7 @@ class MSUMainWindowController(NSWindowController):
 
     def loadInitialView(self):
         if MunkiItems.getEffectiveUpdateList():
+            self._alertedUserToOutstandingUpdates = True
             self.loadUpdatesPage_(self)
         else:
             self.loadAllSoftwarePage_(self)
@@ -321,8 +323,15 @@ class MSUMainWindowController(NSWindowController):
             else:
                 NSApp.delegate().managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
+        elif not self._alertedUserToOutstandingUpdates and MunkiItems.updatesContainNonOptionalItems():
+            # current list of updates contains some not explicitly chosen by the user
+            self.loadUpdatesPage_(self)
+            self._alertedUserToOutstandingUpdates = True
+            self.alert_controller.alertToExtraUpdates()
+            return
         else:
             NSLog('selfService choices unchanged')
+            self._alertedUserToOutstandingUpdates = False
             self.kickOffUpdateSession()
 
     def getUpdateCount(self):
@@ -667,6 +676,7 @@ class MSUMainWindowController(NSWindowController):
         self.updateDOMforOptionalItem(item)
         
         if item['status'] in ['will-be-installed', 'update-will-be-installed', 'will-be-removed']:
+            self._alertedUserToOutstandingUpdates = False
             if not self._update_in_progress:
                 self.updateNow()
             else:
