@@ -62,28 +62,51 @@ class MSUMainWindowController(NSWindowController):
     fullScreenMenuItem = IBOutlet()
     
     def appShouldTerminate(self):
-        # save any changes to SelfServe choices
-        selectedCell = self.tabControl.selectedCell()
-        if selectedCell and selectedCell.tag() == 4:
-            # We're already at the updates view, so user is aware of the
-            # pending updates, so OK to just terminate.
+        if self.getUpdateCount() == 0:
+            # no pending updates
             return YES
-        if not self._alertedUserToOutstandingUpdates and self.getUpdateCount():
-            # we have pending updates and we have not yet warned the user
-            # about them
-            self.alertToPendingUpdates()
-            return NO
-        return YES
+        if self.currentPageIsUpdatesPage() and not munki.thereAreUpdatesToBeForcedSoon():
+            # We're already at the updates view, so user is aware of the
+            # pending updates, so OK to just terminate
+            # (unless there are some updates to be forced soon)
+            return YES
+        if self.currentPageIsUpdatesPage() and self._alertedUserToOutstandingUpdates:
+            return YES
+            
+        # we have pending updates and we have not yet warned the user
+        # about them
+        self.alertToPendingUpdates()
+        return NO
 
     def alertToPendingUpdates(self):
         self._alertedUserToOutstandingUpdates = True
+        if munki.thereAreUpdatesToBeForcedSoon():
+            alertTitle = NSLocalizedString(u"Mandatory Updates Pending",
+                                           u'MandatoryUpdatesPendingText')
+            deadline = munki.earliestForceInstallDate()
+            time_til_logout = deadline.timeIntervalSinceNow()
+            if time_til_logout > 0:
+                deadline_str = munki.stringFromDate(deadline)
+                formatString = NSLocalizedString(
+                    (u"One or more updates must be installed by %s. A logout "
+                    "may be forced if you wait too long to update."),
+                    u'MandatoryUpdatesPendingDetail')
+                alertDetail = formatString % deadline_str
+            else:
+                alertDetail = NSLocalizedString(
+                    (u"One or more mandatory updates are overdue for "
+                    "installation. A logout will be forced soon."),
+                    u'MandatoryUpdatesImminentDetail')
+        else:
+            alertTitle = NSLocalizedString(u"Pending updates", u'PendingUpdatesAlertTitle')
+            alertDetail = NSLocalizedString(u"There are pending updates for this computer.",
+                                            u'PendingUpdatesAlertDetailText')
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-            NSLocalizedString(u"Pending updates", u'PendingUpdatesAlertTitle'),
+            alertTitle,
             NSLocalizedString(u"Quit", u'QuitButtonTitle'),
             NSLocalizedString(u"Show updates", u'ShowUpdatesButtonTitle'),
             NSLocalizedString(u"Update now", u'UpdateNowButtonTitle'),
-            NSLocalizedString(u"There are pending updates for this computer.",
-                              u'PendingUpdatesAlertDetailText'))
+            alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window(), self,
             self.updateAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -113,8 +136,9 @@ class MSUMainWindowController(NSWindowController):
 
     def loadInitialView(self):
         if MunkiItems.getEffectiveUpdateList():
-            self._alertedUserToOutstandingUpdates = True
             self.loadUpdatesPage_(self)
+            if not munki.thereAreUpdatesToBeForcedSoon():
+                self._alertedUserToOutstandingUpdates = True
         else:
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
