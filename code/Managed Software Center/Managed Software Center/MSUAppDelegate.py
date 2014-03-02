@@ -35,10 +35,11 @@ class MSUAppDelegate(NSObject):
     statusController = IBOutlet()
 
     def applicationShouldTerminate_(self, sender):
-        # called if user selects 'Quit' from menu
+        '''Called if user selects 'Quit' from menu'''
         return self.mainWindowController.appShouldTerminate()
     
     def applicationDidFinishLaunching_(self, sender):
+        '''NSApplication delegate method called at launch'''
         # Prevent automatic relaunching at login on Lion+
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
