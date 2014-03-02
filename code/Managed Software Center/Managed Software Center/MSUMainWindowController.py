@@ -452,7 +452,7 @@ class MSUMainWindowController(NSWindowController):
     def updateCategoriesPage(self):
         '''Update the Catagories page with current data.
         Modifies the DOM to avoid ugly browser refresh'''
-        items_html = msulib.build_category_items_html()
+        items_html = msuhtml.build_category_items_html()
         document = self.webView.mainFrameDocument()
         items_div_element = document.getElementById_('optional_installs_items')
         items_div_element.setInnerHTML_(items_html)

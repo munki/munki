@@ -59,20 +59,22 @@ def build_detail_page(item_name):
         if item['name'] == item_name:
             page = MunkiItems.OptionalItem(item)
             msulib.addSidebarLabels(page)
+            # make "More by DeveloperFoo" list
             page['hide_more_by_developer'] = 'hidden'
             more_by_developer_html = ''
             more_by_developer = []
-            if page.get('developer'):
+            if item.get('developer'):
+                developer = item['developer']
                 page['developer_link'] = ('developer-%s.html'
-                                          % quote_plus(page['developer']))
+                                          % quote_plus(developer))
                 more_by_developer = [a for a in items
-                                     if (a.get('developer') == page['developer']
-                                     and a != item)
+                                     if a.get('developer') == developer
+                                     and a != item
                                      and a.get('status') != 'installed']
                 if more_by_developer:
                     page['hide_more_by_developer'] = ''
                     page['moreByDeveloperLabel'] = (
-                        page['moreByDeveloperLabel'] % page['developer'])
+                        page['moreByDeveloperLabel'] % developer)
                     shuffle(more_by_developer)
                     more_template = msulib.get_template(
                                         'detail_more_items_template.html')
@@ -80,13 +82,14 @@ def build_detail_page(item_name):
                         more_item['second_line'] = more_item.get('category', '')
                         more_by_developer_html += more_template.safe_substitute(more_item)
             page['more_by_developer'] = more_by_developer_html
-
+            # make "More by CategoryFoo" list
             page['hide_more_in_category'] = 'hidden'
             more_in_category_html = ''
-            if page.get('category'):
-                page['category_link'] = 'category-%s.html' % quote_plus(page['category'])
+            if item.get('category'):
+                category = item['category']
+                page['category_link'] = 'category-%s.html' % quote_plus(category)
                 more_in_category = [a for a in items
-                                    if a.get('category') == page['category']
+                                    if a.get('category') == category
                                     and a != item
                                     and a not in more_by_developer
                                     and a.get('status') != 'installed']
