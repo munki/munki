@@ -408,9 +408,9 @@ class MSUMainWindowController(NSWindowController):
             result = 0
             if result:
                 NSLog("Error starting check-then-install session: %s" % result)
-                NSApp.delegate().munkiStatusSessionEnded_(2)
+                self.munkiStatusSessionEnded_(2)
             else:
-                NSApp.delegate().managedsoftwareupdate_task = "checktheninstall"
+                self.managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
         elif not self._alertedUserToOutstandingUpdates and MunkiItems.updatesContainNonOptionalItems():
             # current list of updates contains some not explicitly chosen by the user
