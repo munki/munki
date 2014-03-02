@@ -135,17 +135,13 @@ def updatesContainNonOptionalItems():
         return True
     install_info = getInstallInfo()
     install_items = install_info.get('managed_installs', [])
-    #NSLog('install_items: %s' % install_items)
     removal_items = install_info.get('removals', [])
-    #NSLog('removal_items: %s' % removal_items)
     filtered_installs = [item for item in install_items
                          if item['name'] not in SelfService().installs()]
-    #NSLog('filtered_installs: %s' % filtered_installs)
     if filtered_installs:
         return True
     filtered_uninstalls = [item for item in removal_items
                            if item['name'] not in SelfService().uninstalls()]
-    #NSLog('filtered_uninstalls: %s' % filtered_uninstalls)
     if filtered_uninstalls:
         return True
     return False

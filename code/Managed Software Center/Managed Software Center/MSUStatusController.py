@@ -65,8 +65,8 @@ class MSUStatusController(NSObject):
         self.receiving_notifications = False
     
     def startMunkiStatusSession(self):
+        '''Initialize things for monitoring a managedsoftwareupdate session'''
         self.initStatusSession()
-        #self.registerForNotifications()
         self.session_started = True
         # start our process monitor timer so we can be notified about
         # process failure
@@ -107,18 +107,20 @@ class MSUStatusController(NSObject):
                     self.sessionEnded_(NEVER_STARTED)
     
     def sessionStarted(self):
+        '''Accessor method'''
         return self.session_started
 
     def sessionEnded_(self, result):
-        # clean up
+        '''clean up after a managesoftwareupdate session ends'''
         if self.timer:
             self.timer.invalidate()
             self.timer = None
         self.cleanUpStatusSession()
-        # tell the app the update session is done
-        NSApp.delegate().munkiStatusSessionEnded_(result)
+        # tell the window controller the update session is done
+        self.statusWindowController.munkiStatusSessionEnded_(result)
         
     def updateStatus_(self, notification):
+        '''Got update status notification from managedsoftwareupdate'''
         self.got_status_update = True
         info = notification.userInfo()
         if 'message' in info:
@@ -157,12 +159,14 @@ class MSUStatusController(NSObject):
 ##### required status methods #####
 
     def initStatusSession(self):
+        '''Initialize the main window for update status'''
         self.statusWindowController._update_in_progress = True
         if self.statusWindowController.currentPageIsUpdatesPage():
             self.statusWindowController.webView.reload_(self)
             self.statusWindowController.displayUpdateCount()
 
     def cleanUpStatusSession(self):
+        '''Clean up after status session ends'''
         self.session_started = False
         # reset all our status variables
         self.statusWindowController._update_in_progress = False
@@ -174,6 +178,7 @@ class MSUStatusController(NSObject):
         self._status_percent = -1
 
     def setPercentageDone_(self, percent):
+        '''Display precentage done'''
         try:
             if float(percent) > 100.0:
                 percent = 100
@@ -193,27 +198,30 @@ class MSUStatusController(NSObject):
                     progress.setClassName_('')
                     progress.setAttribute__('style', 'width: %s%%' % percent)
 
-    @AppHelper.endSheetMethod
-    def restartAlertDidEnd_returnCode_contextInfo_(
-                                        self, alert, returncode, contextinfo):
-        self._status_restartAlertDismissed = 1
-        # TO-DO: initiate actual restart
-
     def doRestartAlert(self):
+        '''Display a restart alert -- some item just installed or removed requires a restart'''
         self._status_restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-            NSLocalizedString(u"Restart Required", None),
-            NSLocalizedString(u"Restart", None),
+            NSLocalizedString(u"Restart Required", u'RestartRequiredAlertText'),
+            NSLocalizedString(u"Restart", u'RestartButtonText'),
             nil,
             nil,
             NSLocalizedString(
                 u"Software installed or removed requires a restart. You will "
-                "have a chance to save open documents.", None))
+                "have a chance to save open documents.", u'RestartRequiredAlertDetail'))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.statusWindowController.window(),
             self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)
 
+    @AppHelper.endSheetMethod
+    def restartAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
+        '''Called when restartAlert ends'''
+        self._status_restartAlertDismissed = 1
+        # TO-DO: initiate actual restart
+
     def setMessage_(self, messageText):
+        '''Display main status message'''
         self._status_message = messageText
         document = self.statusWindowController.webView.mainFrameDocument()
         spinner = document.getElementById_('updates-progress-spinner')
@@ -226,6 +234,7 @@ class MSUStatusController(NSObject):
                     textElement.setInnerHTML_('&nbsp;')
 
     def setDetail_(self, detailText):
+        '''Display status detail'''
         self._status_detail = detailText
         document = self.statusWindowController.webView.mainFrameDocument()
         spinner = document.getElementById_('updates-progress-spinner')
@@ -238,9 +247,11 @@ class MSUStatusController(NSObject):
                     textElement.setInnerHTML_('&nbsp;')
 
     def getStopBtnState(self):
+        '''Get the state (pressed or not) of the stop button'''
         return self._status_stopBtnState
 
     def hideStopButton(self):
+        '''Hide the stop button'''
         if self._status_stopBtnState:
             return
         self._status_stopBtnHidden = True
@@ -255,6 +266,7 @@ class MSUStatusController(NSObject):
                     install_btn.setClassName_(' '.join(btn_classes))
 
     def showStopButton(self):
+        '''Show the stop button'''
         if self._status_stopBtnState:
            return
         self._status_stopBtnHidden = False
@@ -269,6 +281,7 @@ class MSUStatusController(NSObject):
                     install_btn.setClassName_(' '.join(btn_classes))
 
     def enableStopButton(self):
+        '''Enable the stop button'''
         if self._status_stopBtnState:
             return
         self._status_stopBtnDisabled = False
@@ -283,6 +296,7 @@ class MSUStatusController(NSObject):
                     install_btn.setClassName_(' '.join(btn_classes))
 
     def disableStopButton(self):
+        '''Disable the stop button'''
         if self._status_stopBtnState:
             return
         self._status_stopBtnDisabled = True
@@ -297,4 +311,5 @@ class MSUStatusController(NSObject):
                     install_btn.setClassName_(' '.join(btn_classes))
 
     def getRestartAlertDismissed(self):
+        '''Was the restart alert dimissed?'''
         return self._status_restartAlertDismissed

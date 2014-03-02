@@ -21,6 +21,7 @@ from Foundation import NSLocalizedString
 
 
 def build_page(filename):
+    '''Dispatch request to build a page to the appropriate function'''
     name = os.path.splitext(filename)[0]
     key, p, quoted_value = name.partition('-')
     value = unquote_plus(quoted_value)
@@ -51,6 +52,7 @@ def write_page(page_name, html):
 
 
 def build_detail_page(item_name):
+    '''Build page showing detail for a single optional item'''
     items = MunkiItems.getOptionalInstallItems()
     page_name = 'detail-%s.html' % quote_plus(item_name)
     for item in items:
@@ -108,6 +110,7 @@ def build_detail_page(item_name):
 
 
 def build_list_page(category=None, developer=None, filter=None):
+    '''Build page listing available optional items'''
     items = MunkiItems.getOptionalInstallItems()
 
     header = 'All items'
@@ -158,6 +161,7 @@ def build_list_page(category=None, developer=None, filter=None):
 
 
 def build_list_page_items_html(category=None, developer=None, filter=None):
+    '''Returns HTML for the items on the list page'''
     items = MunkiItems.getOptionalInstallItems()
     item_html = ''
     if filter:
@@ -221,6 +225,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
 
 
 def build_categories_page():
+    '''Build page showing available categories and some items in each one'''
     all_items = MunkiItems.getOptionalInstallItems()
     header = 'Categories'
     page_name = 'categories.html'
@@ -247,6 +252,7 @@ def build_categories_page():
 
 
 def build_category_items_html():
+    '''Returns HTML for the items on the Categories page'''
     all_items = MunkiItems.getOptionalInstallItems()
     if all_items:
         category_list = []
@@ -302,6 +308,7 @@ def build_category_items_html():
 
 
 def build_myitems_page():
+    '''Builds "My Items" page, which shows all current optional choices'''
     page_name = 'myitems.html'
     page_template = msulib.get_template('myitems_template.html')
 
@@ -316,6 +323,7 @@ def build_myitems_page():
 
 
 def build_myitems_rows():
+    '''Returns HTML for the items on the 'My Items' page'''
     item_list = MunkiItems.getMyItemsList()
     if item_list:
         item_template = msulib.get_template('myitems_row_template.html')
@@ -470,6 +478,7 @@ def get_warning_text():
 
 
 def build_updatedetail_page(item_name):
+    '''Build detail page for a non-optional update'''
     items = MunkiItems.getUpdateList()
     page_name = 'updatedetail-%s.html' % quote_plus(item_name)
     for item in items:

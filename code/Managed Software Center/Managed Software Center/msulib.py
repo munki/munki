@@ -105,6 +105,7 @@ class MSUHTMLFilter(HTMLParser):
 
 
 def filtered_html(text):
+    '''Returns filtered HTML for use in description paragraphs'''
     parser = MSUHTMLFilter()
     parser.feed(text)
     if parser.tag_count:
@@ -167,6 +168,7 @@ def updateCountMessage(count):
 
 
 def getInstallAllButtonTextForCount(count):
+    '''Return localized display text for action button in Updates view'''
     if count == 0:
         return NSLocalizedString(u'Check Again',
                                  u'CheckAgainButtonLabel').encode('utf-8')

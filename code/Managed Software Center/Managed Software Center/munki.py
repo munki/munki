@@ -304,6 +304,7 @@ def trimVersionString(version_string):
 
 
 def getconsoleuser():
+    '''Get current GUI user'''
     from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
