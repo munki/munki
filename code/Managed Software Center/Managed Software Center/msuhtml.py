@@ -486,7 +486,10 @@ def build_updatedetail_page(item_name):
     page_name = 'updatedetail-%s.html' % quote_plus(item_name)
     for item in items:
         if item['name'] == item_name:
-            page = dict(item)
+            if isinstance(item, MunkiItems.OptionalItem):
+                page = MunkiItems.OptionalItem(item)
+            else:
+                page = MunkiItems.UpdateItem(item)
             page['footer'] = msulib.getFooter()
             msulib.addSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')
