@@ -1850,7 +1850,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'items_to_copy',  # used w/ copy_from_dmg
                              'copy_local',     # used w/ AdobeCS5 Updaters
                              'force_install_after_date',
-                             'apple_item']
+                             'apple_item',
+                             'category',
+                             'developer',
+                             'icon_name']
 
             for key in optional_keys:
                 if key in item_pl:
@@ -2291,7 +2294,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'payloads',
                     'preuninstall_script',
                     'postuninstall_script',
-                    'apple_item']
+                    'apple_item',
+                    'category',
+                    'developer',
+                    'icon_name']
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
