@@ -33,14 +33,13 @@ class MSUAppDelegate(NSObject):
     
     mainWindowController = IBOutlet()
     statusController = IBOutlet()
-    
-    managedsoftwareupdate_task = None
 
     def applicationShouldTerminate_(self, sender):
-        # called if user selects 'Quit' from menu
+        '''Called if user selects 'Quit' from menu'''
         return self.mainWindowController.appShouldTerminate()
     
     def applicationDidFinishLaunching_(self, sender):
+        '''NSApplication delegate method called at launch'''
         # Prevent automatic relaunching at login on Lion+
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
@@ -52,26 +51,6 @@ class MSUAppDelegate(NSObject):
         # setup client logging
         msulog.setup_logging()
 
-        # register for notification messages so we can be told if available
-        # updates change while we are open
-        notification_center = NSDistributedNotificationCenter.defaultCenter()
-        notification_center.addObserver_selector_name_object_suspensionBehavior_(
-            self,
-            self.updateAvailableUpdates,
-            'com.googlecode.munki.managedsoftwareupdate.updateschanged',
-            None,
-            NSNotificationSuspensionBehaviorDeliverImmediately)
-                                                                                 
-        # register for notification messages so we can be told to
-        # display a logout warning
-        notification_center = NSDistributedNotificationCenter.defaultCenter()
-        notification_center.addObserver_selector_name_object_suspensionBehavior_(
-            self,
-            self.forcedLogoutWarning,
-            'com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn',
-            None,
-            NSNotificationSuspensionBehaviorDeliverImmediately)
-            
         # have the statuscontroller register for its own notifications
         self.statusController.registerForNotifications()
             
@@ -86,43 +65,13 @@ class MSUAppDelegate(NSObject):
             lastcheck = munki.pref('LastCheckDate')
         # if there is no lastcheck timestamp, check for updates.
         if not lastcheck:
-            self.checkForUpdates()
+            self.mainWindowController.checkForUpdates()
         
         # otherwise, only check for updates if the last check is over the
         # configured manualcheck cache age max.
         max_cache_age = munki.pref('CheckResultsCacheSeconds')
         if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
-            self.checkForUpdates()
+            self.mainWindowController.checkForUpdates()
                          
         # show the default initial view
         self.mainWindowController.loadInitialView()
-
-    def updateAvailableUpdates(self):
-        NSLog(u"Managed Software Center got update notification")
-        if not self.mainWindowController._update_in_progress:
-            self.mainWindowController.resetAndReload()
-
-    def forcedLogoutWarning(self, notification_obj):
-        NSLog(u"Managed Software Center got forced logout warning")
-        # hand it off to the main window
-        self.mainWindowController.forcedLogoutWarning(notification_obj)
-    
-    def munkiStatusSessionEnded_(self, socketSessionResult):
-        NSLog(u"MunkiStatus session ended: %s" % socketSessionResult)
-        NSLog(u"MunkiStatus session type: %s" % self.managedsoftwareupdate_task)
-        # tell the main window
-        tasktype = self.managedsoftwareupdate_task
-        self.managedsoftwareupdate_task = None
-        self.mainWindowController.munkiTaskEnded_withResult_(
-                            tasktype, socketSessionResult)
-
-    def checkForUpdates(self, suppress_apple_update_check=False):
-        # kick off an update check
-        # attempt to start the update check
-        result = munki.startUpdateCheck(suppress_apple_update_check)
-        if result == 0:
-            self.managedsoftwareupdate_task = "manualcheck"
-            self.statusController.startMunkiStatusSession()
-        else:
-            self.mainWindowController.theWindow.makeKeyAndOrderFront_(self)
-            self.munkiStatusSessionEnded_(2)

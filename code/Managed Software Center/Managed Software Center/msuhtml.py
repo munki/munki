@@ -21,6 +21,7 @@ from Foundation import NSLocalizedString
 
 
 def build_page(filename):
+    '''Dispatch request to build a page to the appropriate function'''
     name = os.path.splitext(filename)[0]
     key, p, quoted_value = name.partition('-')
     value = unquote_plus(quoted_value)
@@ -51,26 +52,29 @@ def write_page(page_name, html):
 
 
 def build_detail_page(item_name):
+    '''Build page showing detail for a single optional item'''
     items = MunkiItems.getOptionalInstallItems()
     page_name = 'detail-%s.html' % quote_plus(item_name)
     for item in items:
         if item['name'] == item_name:
             page = MunkiItems.OptionalItem(item)
             msulib.addSidebarLabels(page)
+            # make "More by DeveloperFoo" list
             page['hide_more_by_developer'] = 'hidden'
             more_by_developer_html = ''
             more_by_developer = []
-            if page.get('developer'):
+            if item.get('developer'):
+                developer = item['developer']
                 page['developer_link'] = ('developer-%s.html'
-                                          % quote_plus(page['developer']))
+                                          % quote_plus(developer))
                 more_by_developer = [a for a in items
-                                     if (a.get('developer') == page['developer']
-                                     and a != item)
+                                     if a.get('developer') == developer
+                                     and a != item
                                      and a.get('status') != 'installed']
                 if more_by_developer:
                     page['hide_more_by_developer'] = ''
                     page['moreByDeveloperLabel'] = (
-                        page['moreByDeveloperLabel'] % page['developer'])
+                        page['moreByDeveloperLabel'] % developer)
                     shuffle(more_by_developer)
                     more_template = msulib.get_template(
                                         'detail_more_items_template.html')
@@ -78,13 +82,14 @@ def build_detail_page(item_name):
                         more_item['second_line'] = more_item.get('category', '')
                         more_by_developer_html += more_template.safe_substitute(more_item)
             page['more_by_developer'] = more_by_developer_html
-
+            # make "More by CategoryFoo" list
             page['hide_more_in_category'] = 'hidden'
             more_in_category_html = ''
-            if page.get('category'):
-                page['category_link'] = 'category-%s.html' % quote_plus(page['category'])
+            if item.get('category'):
+                category = item['category']
+                page['category_link'] = 'category-%s.html' % quote_plus(category)
                 more_in_category = [a for a in items
-                                    if a.get('category') == page['category']
+                                    if a.get('category') == category
                                     and a != item
                                     and a not in more_by_developer
                                     and a.get('status') != 'installed']
@@ -108,6 +113,7 @@ def build_detail_page(item_name):
 
 
 def build_list_page(category=None, developer=None, filter=None):
+    '''Build page listing available optional items'''
     items = MunkiItems.getOptionalInstallItems()
 
     header = 'All items'
@@ -158,6 +164,7 @@ def build_list_page(category=None, developer=None, filter=None):
 
 
 def build_list_page_items_html(category=None, developer=None, filter=None):
+    '''Returns HTML for the items on the list page'''
     items = MunkiItems.getOptionalInstallItems()
     item_html = ''
     if filter:
@@ -221,6 +228,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
 
 
 def build_categories_page():
+    '''Build page showing available categories and some items in each one'''
     all_items = MunkiItems.getOptionalInstallItems()
     header = 'Categories'
     page_name = 'categories.html'
@@ -247,6 +255,7 @@ def build_categories_page():
 
 
 def build_category_items_html():
+    '''Returns HTML for the items on the Categories page'''
     all_items = MunkiItems.getOptionalInstallItems()
     if all_items:
         category_list = []
@@ -302,6 +311,7 @@ def build_category_items_html():
 
 
 def build_myitems_page():
+    '''Builds "My Items" page, which shows all current optional choices'''
     page_name = 'myitems.html'
     page_template = msulib.get_template('myitems_template.html')
 
@@ -316,6 +326,7 @@ def build_myitems_page():
 
 
 def build_myitems_rows():
+    '''Returns HTML for the items on the 'My Items' page'''
     item_list = MunkiItems.getMyItemsList()
     if item_list:
         item_template = msulib.get_template('myitems_row_template.html')
@@ -470,11 +481,15 @@ def get_warning_text():
 
 
 def build_updatedetail_page(item_name):
+    '''Build detail page for a non-optional update'''
     items = MunkiItems.getUpdateList()
     page_name = 'updatedetail-%s.html' % quote_plus(item_name)
     for item in items:
         if item['name'] == item_name:
-            page = dict(item)
+            if isinstance(item, MunkiItems.OptionalItem):
+                page = MunkiItems.OptionalItem(item)
+            else:
+                page = MunkiItems.UpdateItem(item)
             page['footer'] = msulib.getFooter()
             msulib.addSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')

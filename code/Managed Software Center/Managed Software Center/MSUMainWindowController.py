@@ -41,6 +41,7 @@ class MSUMainWindowController(NSWindowController):
     _alertedUserToOutstandingUpdates = False
     
     _update_in_progress = False
+    managedsoftwareupdate_task = None
     _update_queue = set()
     
     # status vars
@@ -52,6 +53,7 @@ class MSUMainWindowController(NSWindowController):
     
     html_dir = None
     
+    # Cocoa UI binding properties
     tabControl = IBOutlet()
     webView = IBOutlet()
     navigationBtn = IBOutlet()
@@ -62,6 +64,7 @@ class MSUMainWindowController(NSWindowController):
     fullScreenMenuItem = IBOutlet()
     
     def appShouldTerminate(self):
+        '''called by app delegate when it receives applicationShouldTerminate:'''
         if self.getUpdateCount() == 0:
             # no pending updates
             return YES
@@ -72,13 +75,13 @@ class MSUMainWindowController(NSWindowController):
             return YES
         if self.currentPageIsUpdatesPage() and self._alertedUserToOutstandingUpdates:
             return YES
-            
         # we have pending updates and we have not yet warned the user
         # about them
         self.alertToPendingUpdates()
         return NO
 
     def alertToPendingUpdates(self):
+        '''Alert user to pending updates before quitting the application'''
         self._alertedUserToOutstandingUpdates = True
         if munki.thereAreUpdatesToBeForcedSoon():
             alertTitle = NSLocalizedString(u"Mandatory Updates Pending",
@@ -114,6 +117,7 @@ class MSUMainWindowController(NSWindowController):
     @AppHelper.endSheetMethod
     def updateAlertDidEnd_returnCode_contextInfo_(
                                    self, alert, returncode, contextinfo):
+        '''Called when alert invoked by alertToPendingUpdates ends'''
         self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
             msulog.log("user", "quit")
@@ -128,6 +132,8 @@ class MSUMainWindowController(NSWindowController):
             self.loadUpdatesPage_(self)
 
     def window_willPositionSheet_usingRect_(self, window, sheet, rect):
+        '''NSWindowDelegate method that allows us to modify the 
+        position sheets appear attached to a window'''
         # move the anchor point of our sheets to below our toolbar
         # (or really, to the top of the web view)
         webViewRect = self.webView.frame()
@@ -135,6 +141,7 @@ class MSUMainWindowController(NSWindowController):
                           webViewRect.size.width, 0)
 
     def loadInitialView(self):
+        '''Called by app delegate from applicationDidFinishLaunching:'''
         if MunkiItems.getEffectiveUpdateList():
             self.loadUpdatesPage_(self)
             if not munki.thereAreUpdatesToBeForcedSoon():
@@ -143,12 +150,12 @@ class MSUMainWindowController(NSWindowController):
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
 
-    @AppHelper.endSheetMethod
-    def munkiSessionErrorAlertDidEnd_returnCode_contextInfo_(
-                                        self, alert, returncode, contextinfo):
-        self.resetAndReload()
-    
-    def munkiTaskEnded_withResult_(self, tasktype, sessionResult):
+    def munkiStatusSessionEnded_(self, sessionResult):
+        '''Called by StatusController when a Munki session ends'''
+        NSLog(u"MunkiStatus session ended: %s" % sessionResult)
+        NSLog(u"MunkiStatus session type: %s" % self.managedsoftwareupdate_task)
+        tasktype = self.managedsoftwareupdate_task
+        self.managedsoftwareupdate_task = None
         self._update_in_progress = False
         
         # The managedsoftwareupdate run will have changed state preferences
@@ -212,10 +219,19 @@ class MSUMainWindowController(NSWindowController):
             self._update_queue.clear()
             self.updateNow()
 
+    @AppHelper.endSheetMethod
+    def munkiSessionErrorAlertDidEnd_returnCode_contextInfo_(
+                                        self, alert, returncode, contextinfo):
+        '''Called when alert raised by munkiStatusSessionEnded ends'''
+        self.resetAndReload()
+
     def resetAndReload(self):
+        '''Clear cached values, reload from disk. Display any changes.
+        Typically called soon after a Munki session completes'''
         NSLog('resetAndReload method called')
         # need to clear out cached data
         MunkiItems.reset()
+        # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?
         filename = self._current_page_filename
@@ -245,19 +261,21 @@ class MSUMainWindowController(NSWindowController):
         self.displayUpdateCount()
     
     def windowShouldClose_(self, sender):
+        '''NSWindowDelegate method called when user closes a window'''
         # closing the main window should be the same as quitting
         NSApp.terminate_(self)
         return NO
 
     def configureFullScreenMenuItem(self):
-        # check to see if NSWindow's toggleFullScreen: selector is implemented.
-        # if so, unhide the menu items for going full screen
+        '''check to see if NSWindow's toggleFullScreen: selector is implemented.
+        if so, unhide the menu items for going full screen'''
         if self.window().respondsToSelector_('toggleFullScreen:'):
             self.windowMenuSeperatorItem.setHidden_(False)
             self.fullScreenMenuItem.setHidden_(False)
             self.fullScreenMenuItem.setEnabled_(True)
 
     def awakeFromNib(self):
+        '''Stuff we need to intialize when we start'''
         self.configureFullScreenMenuItem()
         self.webView.setDrawsBackground_(NO)
         self.webView.setUIDelegate_(self)
@@ -268,14 +286,56 @@ class MSUMainWindowController(NSWindowController):
         self.alert_controller = AlertController.alloc().init()
         self.alert_controller.setWindow_(self.window())
         self.html_dir = msulib.html_dir()
-    
+        self.registerForNotifications()
+
+    def registerForNotifications(self):
+        '''register for notification messages'''
+        # register for notification if available updates change
+        notification_center = NSDistributedNotificationCenter.defaultCenter()
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.updateAvailableUpdates,
+            'com.googlecode.munki.managedsoftwareupdate.updateschanged',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
+                                                                                 
+        # register for notification to display a logout warning from the logouthelper
+        notification_center = NSDistributedNotificationCenter.defaultCenter()
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.forcedLogoutWarning,
+            'com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
+
+    def updateAvailableUpdates(self):
+        '''If a Munki session is not in progress (that we know of) and
+        we get a updateschanged notification, resetAndReload'''
+        NSLog(u"Managed Software Center got update notification")
+        if not self._update_in_progress:
+            self.resetAndReload()
+
     def forcedLogoutWarning(self, notification_obj):
+        '''Received a logout warning from the logouthelper for an
+        upcoming forced install'''
+        NSLog(u"Managed Software Center got forced logout warning")
         # got a notification of an upcoming forced install
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
         self.alert_controller.forcedLogoutWarning(notification_obj)
-    
+
+    def checkForUpdates(self, suppress_apple_update_check=False):
+        '''start an update check session'''
+        # attempt to start the update check
+        result = munki.startUpdateCheck(suppress_apple_update_check)
+        if result == 0:
+            self.managedsoftwareupdate_task = "manualcheck"
+            NSApp.delegate().statusController.startMunkiStatusSession()
+        else:
+            self.munkiStatusSessionEnded_(2)
+
     def kickOffUpdateSession(self):
+        '''start an update install/removal session'''
         # check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
         # then start an update session
@@ -291,7 +351,7 @@ class MSUMainWindowController(NSWindowController):
             if self.alert_controller.alertedToRunningOnBatteryAndCancelled():
                 # do nothing
                 return
-            NSApp.delegate().managedsoftwareupdate_task = None
+            self.managedsoftwareupdate_task = None
             msulog.log("user", "install_without_logout")
             self._update_in_progress = True
             self.displayUpdateCount()
@@ -300,13 +360,15 @@ class MSUMainWindowController(NSWindowController):
             result = munki.justUpdate()
             if result:
                 NSLog("Error starting install session: %s" % result)
-                NSApp.delegate().munkiStatusSessionEnded_(2)
+                self.munkiStatusSessionEnded_(2)
             else:
-                NSApp.delegate().managedsoftwareupdate_task = "installwithnologout"
+                self.managedsoftwareupdate_task = "installwithnologout"
                 NSApp.delegate().statusController.startMunkiStatusSession()
                 self.markPendingItemsAsInstalling()
 
     def markPendingItemsAsInstalling(self):
+        '''While an install/removal session is happening, mark optional items
+        that are being installed/removed with the appropriate status'''
         install_info = munki.getInstallInfo()
         items_to_be_installed_names = [item['name']
                                        for item in install_info.get('managed_installs', [])]
@@ -326,6 +388,9 @@ class MSUMainWindowController(NSWindowController):
                 self.updateDOMforOptionalItem(item)
 
     def updateNow(self):
+        '''If user has added to/removed from the list of things to be updated,
+        run a check session. If there are no more changes, proceed to an update
+        installation session'''
         if self.stop_requested:
             # reset the flag
             self.stop_requested = False
@@ -343,9 +408,9 @@ class MSUMainWindowController(NSWindowController):
             result = 0
             if result:
                 NSLog("Error starting check-then-install session: %s" % result)
-                NSApp.delegate().munkiStatusSessionEnded_(2)
+                self.munkiStatusSessionEnded_(2)
             else:
-                NSApp.delegate().managedsoftwareupdate_task = "checktheninstall"
+                self.managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
         elif not self._alertedUserToOutstandingUpdates and MunkiItems.updatesContainNonOptionalItems():
             # current list of updates contains some not explicitly chosen by the user
@@ -359,11 +424,14 @@ class MSUMainWindowController(NSWindowController):
             self.kickOffUpdateSession()
 
     def getUpdateCount(self):
+        '''Get the count of effective updates'''
         if self._update_in_progress:
             return 0
         return len(MunkiItems.getEffectiveUpdateList())
 
     def displayUpdateCount(self):
+        '''Display the update count as a badge in the window toolbar
+        and as an icon badge in the Dock'''
         updateCount = self.getUpdateCount()
         btn_image = MSUBadgedTemplateImage.imageNamed_withCount_(
                         'toolbarUpdatesTemplate.png', updateCount)
@@ -374,21 +442,24 @@ class MSUMainWindowController(NSWindowController):
             NSApp.dockTile().setBadgeLabel_(None)
     
     def updateMyItemsPage(self):
-        '''Modifies the DOM to avoid ugly browser refresh'''
+        '''Update the "My Items" page with current data.
+        Modifies the DOM to avoid ugly browser refresh'''
         myitems_rows = msuhtml.build_myitems_rows()
         document = self.webView.mainFrameDocument()
         table_body_element = document.getElementById_('my_items_rows')
         table_body_element.setInnerHTML_(myitems_rows)
 
     def updateCategoriesPage(self):
-        '''Modifies DOM on currently displayed page to avoid nasty page refresh'''
-        items_html = msulib.build_category_items_html()
+        '''Update the Catagories page with current data.
+        Modifies the DOM to avoid ugly browser refresh'''
+        items_html = msuhtml.build_category_items_html()
         document = self.webView.mainFrameDocument()
         items_div_element = document.getElementById_('optional_installs_items')
         items_div_element.setInnerHTML_(items_html)
 
     def updateListPage(self):
-        '''Modifies DOM on currently displayed page to avoid nasty page refresh'''
+        '''Update the optional items list page with current data.
+        Modifies the DOM to avoid ugly browser refresh'''
         filename = self._current_page_filename
         if not filename:
             NSLog('updateListPage unexpected error: no _current_page_filename')
@@ -419,16 +490,17 @@ class MSUMainWindowController(NSWindowController):
         items_div_element.setInnerHTML_(items_html)
 
     def load_page(self, url_fragment):
+        '''Tells the WebView to load the appropriate page'''
         html_file = os.path.join(self.html_dir, url_fragment)
         request = NSURLRequest.requestWithURL_cachePolicy_timeoutInterval_(
             NSURL.fileURLWithPath_(html_file), NSURLRequestReloadIgnoringLocalCacheData, 10)
         self.webView.mainFrame().loadRequest_(request)
 
     def setNoPageCache(self):
-        # We disable the back/forward page cache because
-        # we generate each page dynamically; we want things
-        # that are changed in one page view to be reflected
-        # immediately in all page views
+        '''We disable the back/forward page cache because
+        we generate each page dynamically; we want things
+        that are changed in one page view to be reflected
+        immediately in all page views'''
         identifier = 'com.googlecode.munki.ManagedSoftwareCenter'
         prefs = WebPreferences.alloc().initWithIdentifier_(identifier)
         prefs.setUsesPageCache_(False)
@@ -438,15 +510,16 @@ class MSUMainWindowController(NSWindowController):
 
     def webView_decidePolicyForNewWindowAction_request_newFrameName_decisionListener_(
             self, webView, actionInformation, request, frameName, listener):
-        # open link in default browser
+        '''open link in default browser instead of in our app's WebView'''
         listener.ignore()
         NSWorkspace.sharedWorkspace().openURL_(request.URL())
 
     def webView_resource_willSendRequest_redirectResponse_fromDataSource_(
             self, sender, identifier, request, redirectResponse, dataSource):
+        '''By reacting to this delegate notification, we can build the page
+        the WebView wants to load'''
         url = request.URL()
         if url.scheme() == 'file' and os.path.join(self.html_dir) in url.path():
-            #NSLog(u'Got request for local file: %@', url.path())
             filename = url.lastPathComponent()
             if (filename.endswith('.html')
                 and (filename.startswith('detail-')
@@ -477,27 +550,35 @@ class MSUMainWindowController(NSWindowController):
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
-        # Configure webView to let JavaScript talk to this object.
+        '''Configure webView to let JavaScript talk to this object.'''
         self.windowScriptObject = windowScriptObject
         windowScriptObject.setValue_forKey_(self, 'AppController')
 
     def webView_didStartProvisionalLoadForFrame_(self, view, frame):
+        '''Animate progress spinner while we load a page'''
         self.progressSpinner.startAnimation_(self)
 
     def webView_didFinishLoadForFrame_(self, view, frame):
+        '''Stop progress spinner and update state of back/forward buttons'''
         self.progressSpinner.stopAnimation_(self)
         self.navigationBtn.setEnabled_forSegment_(self.webView.canGoBack(), 0)
         self.navigationBtn.setEnabled_forSegment_(self.webView.canGoForward(), 1)
 
     def webView_didFailProvisionalLoadWithError_forFrame_(self, view, error, frame):
+        '''Stop progress spinner and log'''
         self.progressSpinner.stopAnimation_(self)
         NSLog(u'Provisional load error: %@', error)
+        files = os.listdir(self.html_dir)
+        NSLog('Files in html_dir: %s' % files)
 
     def webView_didFailLoadWithError_forFrame_(self, view, error, frame):
+        '''Stop progress spinner and log error'''
+        #TO-DO: display an error page?
         self.progressSpinner.stopAnimation_(self)
         NSLog('Committed load error: %@', error)
 
     def isSelectorExcludedFromWebScript_(self, aSelector):
+        '''Declare which methods can be called from JavaScript'''
         # For security, you must explicitly allow a selector to be called from JavaScript.
         if aSelector in ['actionButtonClicked:',
                          'myItemsActionButtonClicked:',
@@ -510,8 +591,8 @@ class MSUMainWindowController(NSWindowController):
 #### handling DOM UI elements ####
 
     def installButtonClicked(self):
-        # this method is called from JavaScript when the user
-        # clicks the Install All button in the Updates view
+        '''this method is called from JavaScript when the user
+        clicks the Install button in the Updates view'''
         if self._update_in_progress:
             # this is now a stop/cancel button
             NSApp.delegate().statusController.disableStopButton()
@@ -527,14 +608,14 @@ class MSUMainWindowController(NSWindowController):
             self._update_in_progress = True
             self.loadUpdatesPage_(self)
             self.displayUpdateCount()
-            # yuck, this is in a different object than updateNow. We should normalize this.
-            NSApp.delegate().checkForUpdates()
+            self.checkForUpdates()
         else:
             # must say "Update"
             self.updateNow()
             self.loadUpdatesPage_(self)
     
     def showUpdateProgressSpinner(self):
+        '''This method is currently unused'''
         # update the status header on the updates page
         document = self.webView.mainFrameDocument()
         spinner = document.getElementById_('updates-progress-spinner')
@@ -568,9 +649,9 @@ class MSUMainWindowController(NSWindowController):
                 container_div.setClassName_(' '.join(container_div_classes))
 
     def updateOptionalInstallButtonClicked_(self, item_name):
-        # this method is called from JavaScript when a user clicks
-        # the cancel or add button in the updates list
-        # TO-DO: better handling of all the "unexpected error"s
+        '''this method is called from JavaScript when a user clicks
+        the cancel or add button in the updates list'''
+        # TO-DO: better handling of all the possible "unexpected error"s
         document = self.webView.mainFrameDocument()
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
@@ -641,8 +722,8 @@ class MSUMainWindowController(NSWindowController):
         self.displayUpdateCount()
 
     def myItemsActionButtonClicked_(self, item_name):
-        # this method is called from JavaScript when the user clicks
-        # the Install/Removel/Cancel button in the My Items view
+        '''this method is called from JavaScript when the user clicks
+        the Install/Removel/Cancel button in the My Items view'''
         document = self.webView.mainFrameDocument()
         item = MunkiItems.optionalItemForName_(item_name)
         status_line = document.getElementById_('%s_status_text' % item_name)
@@ -668,6 +749,7 @@ class MSUMainWindowController(NSWindowController):
                     self.updateNow()
 
     def updateDOMforOptionalItem(self, item):
+        '''Update displayed status of an item'''
         document = self.webView.mainFrameDocument()
         status_line = document.getElementById_('%s_status_text' % item['name'])
         btn = document.getElementById_('%s_action_button_text' % item['name'])
@@ -689,8 +771,8 @@ class MSUMainWindowController(NSWindowController):
         status_line.setClassName_(item['status'])
 
     def actionButtonClicked_(self, item_name):
-        # this method is called from JavaScript when the user clicks
-        # the Install/Removel/Cancel button in the list or detail view
+        '''this method is called from JavaScript when the user clicks
+        the Install/Removel/Cancel button in the list or detail view'''
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             NSLog('Can\'t find item: %s' % item_name)
@@ -709,21 +791,26 @@ class MSUMainWindowController(NSWindowController):
             self._update_queue.discard(item['name'])
 
     def changeSelectedCategory_(self, category):
-        # this method is called from JavaScript when the user
-        # changes the category selected in the sidebar popup
+        '''this method is called from JavaScript when the user
+        changes the category selected in the sidebar popup'''
         if category == 'All Categories':
             category = 'all'
         self.load_page('category-%s.html' % quote_plus(category))
 
     def setStatusViewTitle_(self, title_text):
+        '''When displaying status during a managedsoftwareupdate run, this method
+        is used to disply info where the update count message usually is'''
         document = self.webView.mainFrameDocument()
         # we re-purpose the update count message for this
         update_count_element = document.getElementById_('update-count-string')
         if update_count_element:
             update_count_element.setInnerText_(title_text)
 
+#### some Cocoa UI bindings #####
+
     @IBAction
     def navigationBtnClicked_(self, sender):
+        '''Handle WebView forward/back buttons'''
         segment = sender.selectedSegment()
         if segment == 0:
             self.webView.goBack_(self)
@@ -732,22 +819,27 @@ class MSUMainWindowController(NSWindowController):
 
     @IBAction
     def loadAllSoftwarePage_(self, sender):
+        '''Called by Navigate menu item'''
         self.load_page('category-all.html')
 
     @IBAction
     def loadCategoriesPage_(self, sender):
+        '''Called by Navigate menu item'''
         self.load_page('categories.html')
 
     @IBAction
     def loadMyItemsPage_(self, sender):
+        '''Called by Navigate menu item'''
         self.load_page('myitems.html')
 
     @IBAction
     def loadUpdatesPage_(self, sender):
+        '''Called by Navigate menu item'''
         self.load_page('updates.html')
 
     @IBAction
     def tabControlClicked_(self, sender):
+        '''Handle a click on our toolbar buttons'''
         selectedCell = sender.selectedCell()
         if selectedCell:
             tag = selectedCell.tag()
@@ -762,6 +854,7 @@ class MSUMainWindowController(NSWindowController):
 
     @IBAction
     def searchFilterChanged_(self, sender):
+        '''User changed the search field'''
         filterString = self.searchField.stringValue().lower()
         if filterString:
             self.load_page('filter-%s.html' % quote_plus(filterString))

@@ -28,6 +28,7 @@ class AlertController(NSObject):
         self.window = the_window
 
     def forcedLogoutWarning(self, notification_obj):
+        '''Display a forced logout warning'''
         NSApp.activateIgnoringOtherApps_(True)
         info = notification_obj.userInfo()
         moreText = NSLocalizedString(
@@ -95,6 +96,7 @@ class AlertController(NSObject):
     @AppHelper.endSheetMethod
     def forceLogoutWarningDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
+        '''Called when the forced logout warning alert ends'''
         self._currentAlert = None
         btn_pressed = self._force_warning_btns.get(returncode)
         if btn_pressed == self._force_warning_logout_btn:
@@ -104,6 +106,7 @@ class AlertController(NSObject):
             msulog.log("user", "dismissed_forced_logout_warning")
 
     def alertToExtraUpdates(self):
+        '''Notify user of additional pending updates'''
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Additional Pending Updates", u'AdditionalPendingUpdatesText'),
                 NSLocalizedString(u"OK", u'OKButtonText'),
@@ -119,9 +122,11 @@ class AlertController(NSObject):
     @AppHelper.endSheetMethod
     def extraUpdatesAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
+        '''Called when the extra updates alert ends'''
         self._currentAlert = None
 
     def confirmUpdatesAndInstall(self):
+        '''Make sure it's OK to proceed with installing if logout or restart is required'''
         if self.alertedToMultipleUsers():
             return
         elif MunkiItems.updatesRequireRestart():
@@ -159,6 +164,7 @@ class AlertController(NSObject):
     @AppHelper.endSheetMethod
     def logoutAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
+        '''Called when logout alert ends'''
         self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
             if self.alertedToFirmwareUpdatesAndCancelled():
@@ -201,6 +207,7 @@ class AlertController(NSObject):
     @AppHelper.endSheetMethod
     def multipleUserAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
+        '''Called when multiple users alert ends'''
         self._currentAlert = None
 
     def alertedToBlockingAppsRunning(self):
@@ -257,9 +264,11 @@ class AlertController(NSObject):
     @AppHelper.endSheetMethod
     def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
+        '''Called when blocking apps alert ends'''
         self._currentAlert = None
 
     def getFirmwareAlertInfo(self):
+        '''Get detail about a firmware update'''
         info = []
         for update_item in MunkiItems.getUpdateList():
             if 'firmware_alert_text' in update_item:
@@ -339,16 +348,4 @@ class AlertController(NSObject):
             if buttonPressed == NSAlertAlternateReturn:
                 return True
         return False
-
-    @AppHelper.endSheetMethod
-    def confirmLaterAlertDidEnd_returnCode_contextInfo_(
-                                        self, alert, returncode, contextinfo):
-        self._currentAlert = None
-        if returncode == NSAlertAlternateReturn:
-            msulog.log("user", "exit_later_clicked")
-            NSApp.terminate_(self)
-
-
-    def confirm(self):
-        pass
 
