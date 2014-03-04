@@ -83,6 +83,8 @@ class MSUMainWindowController(NSWindowController):
     def alertToPendingUpdates(self):
         '''Alert user to pending updates before quitting the application'''
         self._alertedUserToOutstandingUpdates = True
+        # show the updates
+        self.loadUpdatesPage_(self)
         if munki.thereAreUpdatesToBeForcedSoon():
             alertTitle = NSLocalizedString(u"Mandatory Updates Pending",
                                            u'MandatoryUpdatesPendingText')
@@ -107,7 +109,7 @@ class MSUMainWindowController(NSWindowController):
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             alertTitle,
             NSLocalizedString(u"Quit", u'QuitButtonTitle'),
-            NSLocalizedString(u"Show updates", u'ShowUpdatesButtonTitle'),
+            nil,
             NSLocalizedString(u"Update now", u'UpdateNowButtonTitle'),
             alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
@@ -122,9 +124,6 @@ class MSUMainWindowController(NSWindowController):
         if returncode == NSAlertDefaultReturn:
             msulog.log("user", "quit")
             NSApp.terminate_(self)
-        elif returncode == NSAlertAlternateReturn:
-            msulog.log("user", "view_updates_page")
-            self.loadUpdatesPage_(self)
         elif returncode == NSAlertOtherReturn:
             msulog.log("user", "install_now_clicked")
             # initiate the updates
