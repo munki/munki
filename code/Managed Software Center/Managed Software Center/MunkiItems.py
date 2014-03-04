@@ -167,9 +167,12 @@ def getEffectiveUpdateList():
 def allOptionalChoicesProcessed():
     # get processed optional installs and removals
     install_info = getInstallInfo()
+    managed_installs_names = [item['name']
+                              for item in install_info.get('managed_installs', [])]
     processed_optional_items = install_info.get('optional_installs')
     processed_install_names = [item['name'] for item in processed_optional_items
-                               if item.get('will_be_installed')]
+                               if item.get('will_be_installed')
+                               or item['name'] in managed_installs_names]
     #NSLog('processed_install_names: %s' % processed_install_names)
     processed_removal_names = [item['name'] for item in processed_optional_items
                                if item.get('will_be_removed')]
@@ -464,6 +467,9 @@ class GenericItem(dict):
                 'removing':
                     NSLocalizedString(u'Removing',
                         u'RemovingLongActionText').encode('utf-8'),
+                'update-available':
+                    NSLocalizedString(u'Update',
+                        u'UpdateLongActionText').encode('utf-8'),
                 'update-will-be-installed':
                     NSLocalizedString(u'Remove',
                         u'RemoveLongActionText').encode('utf-8'),

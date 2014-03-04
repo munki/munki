@@ -670,7 +670,7 @@ class MSUMainWindowController(NSWindowController):
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
             # make some new HTML for the updated item
-            managed_update_names = munki.getInstallInfo().get('managed_updates', [])
+            managed_update_names = MunkiItems.getInstallInfo().get('managed_updates', [])
             item_template = msulib.get_template('update_row_template.html')
             item_html = item_template.safe_substitute(item)
 

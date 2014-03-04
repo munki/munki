@@ -125,7 +125,7 @@ def convertIconToPNG(app_name, destination_path, desired_size):
         closest to (but >= than if possible) the desired_size. Returns True if
         successful, False otherwise'''
     app_path = os.path.join('/Applications', app_name + '.app')
-    if not os .path.exists(app_path):
+    if not os.path.exists(app_path):
         return False
     try:
         info = FoundationPlist.readPlist(os.path.join(app_path, 'Contents/Info.plist'))
