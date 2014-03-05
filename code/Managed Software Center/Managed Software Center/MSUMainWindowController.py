@@ -120,12 +120,13 @@ class MSUMainWindowController(NSWindowController):
     def updateAlertDidEnd_returnCode_contextInfo_(
                                    self, alert, returncode, contextinfo):
         '''Called when alert invoked by alertToPendingUpdates ends'''
-        self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
             msulog.log("user", "quit")
             NSApp.terminate_(self)
         elif returncode == NSAlertOtherReturn:
             msulog.log("user", "install_now_clicked")
+            # make sure this alert panel is gone before we proceed
+            alert.window().orderOut_(self)
             # initiate the updates
             self.updateNow()
             self.loadUpdatesPage_(self)
@@ -321,6 +322,7 @@ class MSUMainWindowController(NSWindowController):
         # got a notification of an upcoming forced install
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
+        self._alertedUserToOutstandingUpdates = True
         self.alert_controller.forcedLogoutWarning(notification_obj)
 
     def checkForUpdates(self, suppress_apple_update_check=False):
@@ -341,14 +343,17 @@ class MSUMainWindowController(NSWindowController):
         if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
             # switch to updates view
             self.loadUpdatesPage_(self)
+            self._alertedUserToOutstandingUpdates = True
             # warn about need to logout or restart
             self.alert_controller.confirmUpdatesAndInstall()
         else:
             if self.alert_controller.alertedToBlockingAppsRunning():
-                # do nothing
+                self.loadUpdatesPage_(self)
+                self._alertedUserToOutstandingUpdates = True
                 return
             if self.alert_controller.alertedToRunningOnBatteryAndCancelled():
-                # do nothing
+                self.loadUpdatesPage_(self)
+                self._alertedUserToOutstandingUpdates = True
                 return
             self.managedsoftwareupdate_task = None
             msulog.log("user", "install_without_logout")
@@ -416,7 +421,6 @@ class MSUMainWindowController(NSWindowController):
             self.loadUpdatesPage_(self)
             self._alertedUserToOutstandingUpdates = True
             self.alert_controller.alertToExtraUpdates()
-            return
         else:
             NSLog('selfService choices unchanged')
             self._alertedUserToOutstandingUpdates = False

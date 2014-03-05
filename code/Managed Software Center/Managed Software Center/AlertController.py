@@ -21,9 +21,7 @@ from PyObjCTools import AppHelper
 class AlertController(NSObject):
     '''An object that handles some of our alerts, if for no other reason
     than to move a giant bunch of ugly code out of the WindowController'''
-    
-    _currentAlert = None
-    
+
     def setWindow_(self, the_window):
         self.window = the_window
 
@@ -123,7 +121,7 @@ class AlertController(NSObject):
     def extraUpdatesAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
         '''Called when the extra updates alert ends'''
-        self._currentAlert = None
+        pass
 
     def confirmUpdatesAndInstall(self):
         '''Make sure it's OK to proceed with installing if logout or restart is required'''
@@ -165,8 +163,9 @@ class AlertController(NSObject):
     def logoutAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
         '''Called when logout alert ends'''
-        self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
+            # make sure this alert panel is gone before we proceed
+            alert.window().orderOut_(self)
             if self.alertedToFirmwareUpdatesAndCancelled():
                 msulog.log("user", "alerted_to_firmware_updates_and_cancelled")
                 return
@@ -208,7 +207,7 @@ class AlertController(NSObject):
     def multipleUserAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
         '''Called when multiple users alert ends'''
-        self._currentAlert = None
+        pass
 
     def alertedToBlockingAppsRunning(self):
         '''Returns True if blocking_apps are running; alerts as a side-effect'''
@@ -265,8 +264,8 @@ class AlertController(NSObject):
     def blockingAppsRunningAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
         '''Called when blocking apps alert ends'''
-        self._currentAlert = None
-
+        pass
+    
     def getFirmwareAlertInfo(self):
         '''Get detail about a firmware update'''
         info = []
