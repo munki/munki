@@ -83,6 +83,8 @@ class MSUMainWindowController(NSWindowController):
     def alertToPendingUpdates(self):
         '''Alert user to pending updates before quitting the application'''
         self._alertedUserToOutstandingUpdates = True
+        # show the updates
+        self.loadUpdatesPage_(self)
         if munki.thereAreUpdatesToBeForcedSoon():
             alertTitle = NSLocalizedString(u"Mandatory Updates Pending",
                                            u'MandatoryUpdatesPendingText')
@@ -107,7 +109,7 @@ class MSUMainWindowController(NSWindowController):
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             alertTitle,
             NSLocalizedString(u"Quit", u'QuitButtonTitle'),
-            NSLocalizedString(u"Show updates", u'ShowUpdatesButtonTitle'),
+            nil,
             NSLocalizedString(u"Update now", u'UpdateNowButtonTitle'),
             alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
@@ -118,15 +120,14 @@ class MSUMainWindowController(NSWindowController):
     def updateAlertDidEnd_returnCode_contextInfo_(
                                    self, alert, returncode, contextinfo):
         '''Called when alert invoked by alertToPendingUpdates ends'''
-        self._currentAlert = None
         if returncode == NSAlertDefaultReturn:
             msulog.log("user", "quit")
             NSApp.terminate_(self)
-        elif returncode == NSAlertAlternateReturn:
-            msulog.log("user", "view_updates_page")
-            self.loadUpdatesPage_(self)
         elif returncode == NSAlertOtherReturn:
             msulog.log("user", "install_now_clicked")
+            # make sure this alert panel is gone before we proceed
+            # which might involve opening another aleet sheet
+            alert.window().orderOut_(self)
             # initiate the updates
             self.updateNow()
             self.loadUpdatesPage_(self)
@@ -149,6 +150,7 @@ class MSUMainWindowController(NSWindowController):
         else:
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
+        self.cached_self_service = MunkiItems.SelfService()
 
     def munkiStatusSessionEnded_(self, sessionResult):
         '''Called by StatusController when a Munki session ends'''
@@ -231,6 +233,8 @@ class MSUMainWindowController(NSWindowController):
         NSLog('resetAndReload method called')
         # need to clear out cached data
         MunkiItems.reset()
+        # recache SelfService choices
+        self.cached_self_service = MunkiItems.SelfService()
         # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?
@@ -322,6 +326,7 @@ class MSUMainWindowController(NSWindowController):
         # got a notification of an upcoming forced install
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
+        self._alertedUserToOutstandingUpdates = True
         self.alert_controller.forcedLogoutWarning(notification_obj)
 
     def checkForUpdates(self, suppress_apple_update_check=False):
@@ -342,14 +347,17 @@ class MSUMainWindowController(NSWindowController):
         if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
             # switch to updates view
             self.loadUpdatesPage_(self)
+            self._alertedUserToOutstandingUpdates = True
             # warn about need to logout or restart
             self.alert_controller.confirmUpdatesAndInstall()
         else:
             if self.alert_controller.alertedToBlockingAppsRunning():
-                # do nothing
+                self.loadUpdatesPage_(self)
+                self._alertedUserToOutstandingUpdates = True
                 return
             if self.alert_controller.alertedToRunningOnBatteryAndCancelled():
-                # do nothing
+                self.loadUpdatesPage_(self)
+                self._alertedUserToOutstandingUpdates = True
                 return
             self.managedsoftwareupdate_task = None
             msulog.log("user", "install_without_logout")
@@ -396,8 +404,11 @@ class MSUMainWindowController(NSWindowController):
             self.stop_requested = False
             self.resetAndReload()
             return
-        if not MunkiItems.allOptionalChoicesProcessed():
+        current_self_service = MunkiItems.SelfService()
+        if current_self_service != self.cached_self_service:
             NSLog('selfService choices changed')
+            # recache SelfService
+            self.cached_self_service = current_self_service
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
@@ -417,7 +428,6 @@ class MSUMainWindowController(NSWindowController):
             self.loadUpdatesPage_(self)
             self._alertedUserToOutstandingUpdates = True
             self.alert_controller.alertToExtraUpdates()
-            return
         else:
             NSLog('selfService choices unchanged')
             self._alertedUserToOutstandingUpdates = False
@@ -670,7 +680,7 @@ class MSUMainWindowController(NSWindowController):
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
             # make some new HTML for the updated item
-            managed_update_names = munki.getInstallInfo().get('managed_updates', [])
+            managed_update_names = MunkiItems.getInstallInfo().get('managed_updates', [])
             item_template = msulib.get_template('update_row_template.html')
             item_html = item_template.safe_substitute(item)
 
