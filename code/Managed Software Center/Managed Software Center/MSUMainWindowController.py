@@ -126,6 +126,7 @@ class MSUMainWindowController(NSWindowController):
         elif returncode == NSAlertOtherReturn:
             msulog.log("user", "install_now_clicked")
             # make sure this alert panel is gone before we proceed
+            # which might involve opening another aleet sheet
             alert.window().orderOut_(self)
             # initiate the updates
             self.updateNow()
@@ -149,6 +150,7 @@ class MSUMainWindowController(NSWindowController):
         else:
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
+        self.cached_self_service = MunkiItems.SelfService()
 
     def munkiStatusSessionEnded_(self, sessionResult):
         '''Called by StatusController when a Munki session ends'''
@@ -231,6 +233,8 @@ class MSUMainWindowController(NSWindowController):
         NSLog('resetAndReload method called')
         # need to clear out cached data
         MunkiItems.reset()
+        # recache SelfService choices
+        self.cached_self_service = MunkiItems.SelfService()
         # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?
@@ -400,8 +404,11 @@ class MSUMainWindowController(NSWindowController):
             self.stop_requested = False
             self.resetAndReload()
             return
-        if not MunkiItems.allOptionalChoicesProcessed():
+        current_self_service = MunkiItems.SelfService()
+        if current_self_service != self.cached_self_service:
             NSLog('selfService choices changed')
+            # recache SelfService
+            self.cached_self_service = current_self_service
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check

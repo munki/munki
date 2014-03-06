@@ -77,9 +77,10 @@ class AlertController(NSObject):
                 NSAlertAlternateReturn: nil,
             }
 
-        if self._currentAlert:
-            NSApp.endSheet_(self._currentAlert.window())
-            self._currentAlert = None
+        if self.window.attachedSheet():
+            # there's an existing sheet open
+            NSApp.endSheet_(self.window.attachedSheet())
+
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                     NSLocalizedString(
                         u"Forced Logout for Mandatory Install", u'ForcedLogoutText'),
@@ -87,7 +88,6 @@ class AlertController(NSObject):
                     self._force_warning_btns[NSAlertAlternateReturn],
                     nil,
                     infoText)
-        self._currentAlert = alert
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window, self, self.forceLogoutWarningDidEnd_returnCode_contextInfo_, nil)
 
@@ -95,7 +95,6 @@ class AlertController(NSObject):
     def forceLogoutWarningDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
         '''Called when the forced logout warning alert ends'''
-        self._currentAlert = None
         btn_pressed = self._force_warning_btns.get(returncode)
         if btn_pressed == self._force_warning_logout_btn:
             msulog.log("user", "install_with_logout")
@@ -113,7 +112,6 @@ class AlertController(NSObject):
                 NSLocalizedString(
                     (u"There are additional pending updates to install or remove."),
                     u'AdditionalPendingUpdatesDetail'))
-        self._currentAlert = alert
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self, self.extraUpdatesAlertDidEnd_returnCode_contextInfo_, nil)
 
@@ -137,7 +135,6 @@ class AlertController(NSObject):
                     (u"A restart is required after updating. Please be patient "
                     "as there may be a short delay at the login window. Log "
                     "out and update now?"), u'RestartRequiredDetail'))
-            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self,
                 self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
@@ -151,7 +148,6 @@ class AlertController(NSObject):
                     (u"A logout is required before updating. Please be patient "
                     "as there may be a short delay at the login window. Log "
                     "out and update now?"), u'LogoutRequiredDetail'))
-            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self,
                     self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
@@ -164,7 +160,8 @@ class AlertController(NSObject):
                                         self, alert, returncode, contextinfo):
         '''Called when logout alert ends'''
         if returncode == NSAlertDefaultReturn:
-            # make sure this alert panel is gone before we proceed
+            # make sure this alert panel is gone before we proceed, which
+            # might involve opening another alert sheet
             alert.window().orderOut_(self)
             if self.alertedToFirmwareUpdatesAndCancelled():
                 msulog.log("user", "alerted_to_firmware_updates_and_cancelled")
@@ -196,7 +193,6 @@ class AlertController(NSObject):
                      "Updating now could cause other users to lose their "
                      "work.\n\nPlease try again later after the other users "
                      "have logged out."), u'OtherUsersLoggedInDetail'))
-            self._currentAlert = alert
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self, self.multipleUserAlertDidEnd_returnCode_contextInfo_, nil)
             return True

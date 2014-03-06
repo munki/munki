@@ -152,45 +152,18 @@ def getEffectiveUpdateList():
         make the effective list of updates'''
     managed_update_names = getInstallInfo().get('managed_updates', [])
     optional_item_names = [item['name'] for item in getOptionalInstallItems()]
+    self_service_installs = SelfService().installs()
     self_service_uninstalls = SelfService().uninstalls()
     # items in the update_list that are part of optional_items
     # could have their installation state changed; so filter those out
-    filtered_updates = [item for item in getUpdateList()
-                        if (item['name'] in managed_update_names
-                        and not item['name'] in self_service_uninstalls)
-                        or item['name'] not in optional_item_names]
     optional_installs = getOptionalWillBeInstalledItems()
+    optional_installs_names = [item['name'] for item in optional_installs]
     optional_removals = getOptionalWillBeRemovedItems()
+    optional_removals_names = [item['name'] for item in optional_removals]
+    filtered_updates = [item for item in getUpdateList()
+                        if not item['name'] in optional_installs_names
+                        and not item['name'] in optional_removals_names]
     return filtered_updates + optional_installs + optional_removals
-
-
-def allOptionalChoicesProcessed():
-    # get processed optional installs and removals
-    install_info = getInstallInfo()
-    managed_installs_names = [item['name']
-                              for item in install_info.get('managed_installs', [])]
-    processed_optional_items = install_info.get('optional_installs')
-    processed_install_names = [item['name'] for item in processed_optional_items
-                               if item.get('will_be_installed')
-                               or item['name'] in managed_installs_names]
-    #NSLog('processed_install_names: %s' % processed_install_names)
-    processed_removal_names = [item['name'] for item in processed_optional_items
-                               if item.get('will_be_removed')]
-    #NSLog('processed_removal_names: %s' % processed_removal_names)
-    # get currently selected optional installs and removals
-    current_install_names = [item['name']
-                             for item in getOptionalWillBeInstalledItems()]
-    #NSLog('current_install_names: %s' % current_install_names)
-    current_removal_names = [item['name']
-                             for item in getOptionalWillBeRemovedItems()]
-    #NSLog('current_removal_names: %s' % current_removal_names)
-    # are they the same?
-    if (sorted(processed_install_names) != sorted(current_install_names)
-        or
-        sorted(processed_removal_names) != sorted(current_removal_names)):
-        return False
-    else:
-        return True
 
 
 def getMyItemsList():
@@ -215,6 +188,14 @@ class SelfService(object):
         self._uninstalls = set(
             munki.readSelfServiceManifest().get('managed_uninstalls', []))
     
+    def __eq__(self, other):
+        return (sorted(self._installs) == sorted(other._installs)
+                and sorted(self._uninstalls) == sorted(other._uninstalls))
+    
+    def __ne__(self, other):
+        return (sorted(self._installs) != sorted(other._installs)
+                or sorted(self._uninstalls) != sorted(other._uninstalls))
+
     def installs(self):
         return list(self._installs)
 
