@@ -222,7 +222,7 @@
                     <webView id="S5Y-lq-2nB">
                         <rect key="frame" x="0.0" y="0.0" width="1143" height="676"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
+                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO" javaScriptEnabled="NO" javaScriptCanOpenWindowsAutomatically="NO" loadsImagesAutomatically="NO" allowsAnimatedImages="NO" allowsAnimatedImageLooping="NO">
                             <nil key="identifier"/>
                         </webPreferences>
                     </webView>
@@ -243,7 +243,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <button focusRingType="none" id="782">
-                                <rect key="frame" x="172" y="7" width="64" height="14"/>
+                                <rect key="frame" x="171" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="My Items" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="783">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -251,7 +251,7 @@
                                 </buttonCell>
                             </button>
                             <button focusRingType="none" id="TMK-lk-F15">
-                                <rect key="frame" x="247" y="7" width="64" height="14"/>
+                                <rect key="frame" x="246" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="Updates" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="Lha-uh-PEV">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -267,7 +267,7 @@
                                 </buttonCell>
                             </button>
                             <button focusRingType="none" id="780">
-                                <rect key="frame" x="20" y="7" width="64" height="14"/>
+                                <rect key="frame" x="19" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="Software" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="785">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
