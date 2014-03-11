@@ -1234,7 +1234,7 @@ def run(only_unattended=False):
                     installinfo['managed_installs'] = skipped_installs
                     
         # update optional_installs with new installation/removal status
-        for removal in munkicommon.report['RemovalResults']:
+        for removal in munkicommon.report.get('RemovalResults', []):
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
                 if item['name'] == removal['name'] and removal['status'] == 0]
@@ -1242,7 +1242,7 @@ def run(only_unattended=False):
                 matching_optional_installs[0]['installed'] = False
                 matching_optional_installs[0]['will_be_removed'] = False
 
-        for install in munkicommon.report['InstallResults']:
+        for install in munkicommon.report.get('InstallResults', []):
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
                 if item['name'] == install['name']
