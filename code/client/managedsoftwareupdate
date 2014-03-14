@@ -781,6 +781,9 @@ def main():
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks(appleupdatesavailable)
+            # send a notification event so MSU can update its display
+            # if needed
+            sendUpdateNotification()
         elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
@@ -835,7 +838,7 @@ def main():
                 # send a notification event so MSU can update its display
                 # if needed
                 sendUpdateNotification()
-               
+
                 force_action = updatecheck.checkForceInstallPackages()
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
