@@ -191,9 +191,9 @@
 		C09004E416CDD84E00BE34CE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				CLASSPREFIX = MT;
-				LastUpgradeCheck = 0500;
-				ORGANIZATIONNAME = MacTech;
+				CLASSPREFIX = MSU;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "The Munki Project";
 			};
 			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Center" */;
 			compatibilityVersion = "Xcode 3.2";
