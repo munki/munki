@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4514" systemVersion="13B42" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4514" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" defaultVersion="1060" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="4514"/>
@@ -205,23 +205,29 @@
         <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" unifiedTitleAndToolbar="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="335" y="390" width="977" height="666"/>
+            <rect key="contentRect" x="132" y="116" width="1143" height="730"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="1000" height="475"/>
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="0.0" width="977" height="666"/>
+                <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
+                    <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="har-U9-FkJ">
+                        <rect key="frame" x="0.0" y="674" width="1143" height="5"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <font key="titleFont" metaFont="system"/>
+                    </box>
                     <webView id="S5Y-lq-2nB">
-                        <rect key="frame" x="0.0" y="0.0" width="977" height="612"/>
+                        <rect key="frame" x="0.0" y="0.0" width="1143" height="676"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
                             <nil key="identifier"/>
                         </webPreferences>
                     </webView>
                     <searchField verticalHuggingPriority="750" id="557">
-                        <rect key="frame" x="813" y="630" width="149" height="22"/>
+                        <rect key="frame" x="979" y="694" width="149" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="558">
                             <font key="font" metaFont="system"/>
@@ -233,11 +239,11 @@
                         </connections>
                     </searchField>
                     <customView autoresizesSubviews="NO" id="802">
-                        <rect key="frame" x="325" y="599" width="327" height="89"/>
+                        <rect key="frame" x="406" y="676" width="330" height="52"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <button focusRingType="none" id="782">
-                                <rect key="frame" x="171" y="20" width="64" height="14"/>
+                                <rect key="frame" x="171" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="My Items" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="783">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -245,7 +251,7 @@
                                 </buttonCell>
                             </button>
                             <button focusRingType="none" id="TMK-lk-F15">
-                                <rect key="frame" x="247" y="20" width="64" height="14"/>
+                                <rect key="frame" x="246" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="Updates" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="Lha-uh-PEV">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -253,7 +259,7 @@
                                 </buttonCell>
                             </button>
                             <button focusRingType="none" id="781">
-                                <rect key="frame" x="97" y="20" width="64" height="14"/>
+                                <rect key="frame" x="94" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="Categories" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="784">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -261,7 +267,7 @@
                                 </buttonCell>
                             </button>
                             <button focusRingType="none" id="780">
-                                <rect key="frame" x="21" y="20" width="64" height="14"/>
+                                <rect key="frame" x="19" y="7" width="64" height="14"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="squareTextured" title="Software" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="785">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -269,10 +275,10 @@
                                 </buttonCell>
                             </button>
                             <matrix verticalHuggingPriority="750" selectionByRect="NO" autosizesCells="NO" id="796">
-                                <rect key="frame" x="20" y="24" width="294" height="48"/>
+                                <rect key="frame" x="16" y="13" width="295" height="48"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                <size key="cellSize" width="66" height="48"/>
+                                <size key="cellSize" width="67" height="48"/>
                                 <size key="intercellSpacing" width="9" height="0.0"/>
                                 <buttonCell key="prototype" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="797">
                                     <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -292,13 +298,13 @@
                                         </buttonCell>
                                     </column>
                                     <column>
-                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" tag="3" imageScaling="proportionallyDown" inset="2" id="773">
+                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="overlaps" alignment="center" tag="3" imageScaling="proportionallyDown" inset="2" id="773">
                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
                                     </column>
                                     <column>
-                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="only" alignment="center" tag="4" imageScaling="proportionallyDown" inset="2" id="fG2-SY-8g2">
+                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="overlaps" alignment="center" tag="4" imageScaling="proportionallyDown" inset="2" id="fG2-SY-8g2">
                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
@@ -311,11 +317,11 @@
                         </subviews>
                     </customView>
                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="X8X-xa-e0T">
-                        <rect key="frame" x="72" y="633" width="16" height="16"/>
+                        <rect key="frame" x="72" y="697" width="16" height="16"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     </progressIndicator>
                     <segmentedControl verticalHuggingPriority="750" id="Ist-mg-GMr">
-                        <rect key="frame" x="11" y="628" width="53" height="25"/>
+                        <rect key="frame" x="11" y="692" width="53" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <segmentedCell key="cell" alignment="left" style="texturedRounded" trackingMode="momentary" id="ogG-0o-C7e">
                             <font key="font" metaFont="system"/>
@@ -334,6 +340,7 @@
                     </segmentedControl>
                 </subviews>
             </view>
+            <contentBorderThickness maxY="52"/>
             <connections>
                 <outlet property="delegate" destination="KMl-S0-0FF" id="TkM-Lg-q7E"/>
             </connections>
