@@ -595,8 +595,9 @@ class UpdateItem(GenericItem):
     
     def __init__(self, *arg, **kw):
         super(UpdateItem, self).__init__(*arg, **kw)
+        identifier = self.get('name', '') + '--' + self.get('version_to_install', '')
         self['detail_link'] = ('updatedetail-%s.html'
-                                   % quote_plus(self['name']))
+                                   % quote_plus(identifier))
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
