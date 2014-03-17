@@ -872,7 +872,7 @@ div.msu-button-inner {
 }
 
 div.msu-button-inner.installed-not-removable, 
-div.msu-button-inner.no-licenses-available,
+div.msu-button-inner.unavailable,
 div.msu-button-inner.installing, 
 div.msu-button-inner.must-be-installed,
 div.msu-button-inner.removing {
@@ -918,7 +918,7 @@ div.msu-button-inner.large {
 
 div.msu-button-inner.large.installed-not-removable,
 div.msu-button-inner.large.must-be-installed,
-div.msu-button-inner.large.no-licenses-available,
+div.msu-button-inner.large.unavailable,
 div.msu-button-inner.large.installing, 
 div.msu-button-inner.large.removing {
     background: none;

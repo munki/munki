@@ -346,8 +346,24 @@ class GenericItem(dict):
             # use the Generic package icon
             return 'static/Generic.png'
 
+    def unavailable_reason_text(self):
+        '''There are several reasons an item might be unavailable for install.
+            Return the relevent reason'''
+        if ('licensed_seats_available' in self
+            and not self['licensed_seats_available']):
+            return NSLocalizedString(u'No licenses available',
+                                     u'NoLicensesAvailableDisplayText').encode('utf-8')
+        if self.get('note') == 'Insufficient disk space to download and install.':
+            return NSLocalizedString(u'Not enough disk space',
+                                     u'NotEnoughDiskSpaceDisplayText').encode('utf-8')
+        # return generic reason
+        return NSLocalizedString(u'Not currently available',
+                                 u'NotCurrentlyDisplayText').encode('utf-8')
+
     def status_text(self):
         '''Return localized status display text'''
+        if self['status'] == 'unavailable':
+            return self.unavailable_reason_text()
         map = { 'installed':
                     NSLocalizedString(u'Installed',
                         u'InstalledDisplayText').encode('utf-8'),
@@ -378,9 +394,9 @@ class GenericItem(dict):
                 'update-available':
                     NSLocalizedString(u'Update available',
                         u'UpdateAvailableDisplayText').encode('utf-8'),
-                'no-licenses-available':
-                    NSLocalizedString(u'No licenses available',
-                        u'NoLicensesAvailableDisplayText').encode('utf-8'),
+                'unavailable':
+                    NSLocalizedString(u'Unavailable',
+                        u'UnavailableDisplayText').encode('utf-8'),
                 }
         return map.get(self['status'], self['status'])
 
@@ -416,7 +432,7 @@ class GenericItem(dict):
                 'update-available':
                     NSLocalizedString(u'Update',
                         u'UpdateShortActionText').encode('utf-8'),
-                'no-licenses-available':
+                'unavailable':
                     NSLocalizedString(u'Unavailable',
                         u'UnavailableShortActionText').encode('utf-8'),
         }
@@ -454,7 +470,7 @@ class GenericItem(dict):
                 'update-available':
                     NSLocalizedString(u'Update',
                         u'UpdateLongActionText').encode('utf-8'),
-                'no-licenses-available':
+                'unavailable':
                     NSLocalizedString(u'Currently Unavailable',
                         u'UnavailableShortActionText').encode('utf-8'),
         }
@@ -574,25 +590,32 @@ class OptionalItem(GenericItem):
                     else: # not in managed_installs
                         status = 'update-available'
         else: # not installed
-            if self['dependent_items']:
+            if self.get('note'):
+                # TO-DO: handle this case better
+                # some reason we can't install
+                # usually not enough disk space
+                # but can also be:
+                #   'Integrity check failed'
+                #   'Download failed (%s)' % errmsg
+                #   'Can\'t install %s because: %s', manifestitemname, errmsg
+                #   'Insufficient disk space to download and install.'
+                #
+                # for now we prevent install this way
+                status = 'unavailable'
+            elif ('licensed_seats_available' in self
+                    and not self['licensed_seats_available']):
+                status = 'unavailable'
+            elif self['dependent_items']:
                 status = 'must-be-installed'
             elif self['name'] in self_service_installs:
                 status = 'will-be-installed'
             else: # not in managed_installs
-                if ('licensed_seats_available' in self
-                    and not self['licensed_seats_available']):
-                    status = 'no-licenses-available'
-                elif self.get('note'):
-                    # TO-DO: handle this case
-                    # some reason we can't install
-                    # usually not enough disk space
-                    # for now we prevent install
-                    status = 'no-licenses-available'
-                else: # licensed seats are available
-                    status = 'not-installed'
+                status = 'not-installed'
         return status
 
     def description(self):
+        '''return a full description for the item, inserting dynamic data
+           if needed'''
         _description = self['raw_description']
         if self.get('dependent_items'):
             # append dependency info to description:
