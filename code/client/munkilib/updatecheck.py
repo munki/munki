@@ -1568,7 +1568,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['description'] = item_pl.get('description', '')
     iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
     iteminfo['display_name'] = item_pl.get('display_name', '')
-    for key in ['category', 'developer', 'icon_name']:
+    for key in ['category', 'developer', 'icon_name', 'requires']:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
     iteminfo['installed'] = someVersionInstalled(item_pl)

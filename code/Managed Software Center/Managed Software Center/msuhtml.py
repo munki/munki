@@ -479,17 +479,14 @@ def get_warning_text():
             warning_text = restart_text
     return warning_text
 
-
-def build_updatedetail_page(item_name):
+def build_updatedetail_page(identifier):
     '''Build detail page for a non-optional update'''
     items = MunkiItems.getUpdateList()
-    page_name = 'updatedetail-%s.html' % quote_plus(item_name)
+    page_name = 'updatedetail-%s.html' % quote_plus(identifier)
+    name, sep, version = identifier.partition('--version-')
     for item in items:
-        if item['name'] == item_name:
-            if isinstance(item, MunkiItems.OptionalItem):
-                page = MunkiItems.OptionalItem(item)
-            else:
-                page = MunkiItems.UpdateItem(item)
+        if item['name'] == name and item['version_to_install'] == version:
+            page = MunkiItems.UpdateItem(item)
             page['footer'] = msulib.getFooter()
             msulib.addSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')

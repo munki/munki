@@ -871,8 +871,11 @@ div.msu-button-inner {
     padding-right: 10px;
 }
 
-div.msu-button-inner.installed-not-removable, div.msu-button-inner.no-licenses-available,
-div.msu-button-inner.installing, div.msu-button-inner.removing {
+div.msu-button-inner.installed-not-removable, 
+div.msu-button-inner.no-licenses-available,
+div.msu-button-inner.installing, 
+div.msu-button-inner.must-be-installed,
+div.msu-button-inner.removing {
     background: none;
     cursor: default;
     pointer-events: none;
@@ -913,7 +916,8 @@ div.msu-button-inner.large {
     -webkit-border-radius: 5px;
 }
 
-div.msu-button-inner.large.installed-not-removable, 
+div.msu-button-inner.large.installed-not-removable,
+div.msu-button-inner.large.must-be-installed,
 div.msu-button-inner.large.no-licenses-available,
 div.msu-button-inner.large.installing, 
 div.msu-button-inner.large.removing {
@@ -953,6 +957,7 @@ div.msu-button-inner.install-updates {
 
 div.msu-button-inner.install-updates.disabled,
 div.msu-button-inner.install-updates.installed-not-removable,
+div.msu-button-inner.install.must-be-installed,
 div.msu-button-inner.install-updates.installing,
 div.msu-button-inner.install-updates.removing {
     background: none;
