@@ -88,6 +88,14 @@ def getUpdateList():
     return _cache['update_list']
 
 
+def display_name(item_name):
+    '''Returns a display_name for item_name, or item_name if not found'''
+    for item in getOptionalInstallItems():
+        if item['name'] == item_name:
+            return item['display_name']
+    return item_name
+
+
 def _build_update_list():
     update_items = []
     if not munki.munkiUpdatesContainAppleItems():
@@ -317,6 +325,18 @@ class GenericItem(dict):
 
     def description(self):
         return self['raw_description']
+
+    def dependency_description(self):
+        '''Return an html description of items this item depends on'''
+        _description = ''
+        prologue = NSLocalizedString(
+            u'This item is required by:', u'DependencyListPrologueText')
+        if self.get('dependent_items'):
+            _description = '<br/><br/><strong>' + prologue
+            for item in self['dependent_items']:
+                _description += '<br/>&nbsp;&nbsp;&bull; ' + display_name(item)
+            _description += '</strong>'
+        return _description
 
     def guess_developer(self):
         '''Figure out something to use for the developer name'''
@@ -619,9 +639,7 @@ class OptionalItem(GenericItem):
         _description = self['raw_description']
         if self.get('dependent_items'):
             # append dependency info to description:
-            _description += ('<br/><br/><strong>'
-                'This item is required by some other item that is installed '
-                'or is to be installed.</strong>')
+            _description += self.dependency_description()
         return _description
 
     def update_status(self):
@@ -698,9 +716,7 @@ class UpdateItem(GenericItem):
                     + '</span><br><br>' + _description)
             if self.get('dependent_items'):
                 # append dependency info to description:
-                _description += ('<br/><br/><strong>'
-                    'This item is required by some other item that is installed '
-                    'or is to be installed.</strong>')
+                _description += self.dependency_description()
 
         return _description
 
