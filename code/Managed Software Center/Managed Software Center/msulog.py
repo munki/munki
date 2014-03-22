@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 #  msulog.py
 #  Managed Software Center

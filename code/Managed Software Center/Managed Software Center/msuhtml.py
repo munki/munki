@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 #  msuhtml.py
 #  Managed Software Center

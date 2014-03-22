@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 # MSUBadgedTemplateImage.py
 # Managed Software Center

@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 #  AlertController.py
 #  Managed Software Center
