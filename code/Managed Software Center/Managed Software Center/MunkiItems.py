@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 #  MunkiItems.py
 #  Managed Software Center
@@ -358,7 +359,7 @@ class GenericItem(dict):
         '''Return name/relative path of image file to use for the icon'''
         for key in ['icon_name', 'display_name', 'name']:
             if key in self:
-                name = self[key]
+                name = self[key].decode('utf-8')
                 icon_path = os.path.join(msulib.html_dir(), name + '.png')
                 if os.path.exists(icon_path) or msulib.convertIconToPNG(name, icon_path, 350):
                     return name + '.png'
