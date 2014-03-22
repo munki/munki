@@ -2230,9 +2230,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         '%s--%s' % (uninstall_item.get('name'), uninstall_item.get('version')))
     processednames = []
     for catalogname in cataloglist:
-        localcatalog = os.path.join(catalogsdir, catalogname)
-        catalog_pl = FoundationPlist.readPlist(localcatalog)
-        for item_pl in catalog_pl:
+        if not catalogname in CATALOG.keys():
+            # in case the list refers to a non-existent catalog
+            continue
+        for item_pl in CATALOG[catalogname]['items']:
             name = item_pl.get('name')
             if name not in processednames:
                 if 'requires' in item_pl:
