@@ -875,6 +875,7 @@ div.msu-button-inner.installed-not-removable,
 div.msu-button-inner.unavailable,
 div.msu-button-inner.installing, 
 div.msu-button-inner.must-be-installed,
+div.msu-button-inner.update-must-be-installed,
 div.msu-button-inner.removing {
     background: none;
     cursor: default;
@@ -918,6 +919,7 @@ div.msu-button-inner.large {
 
 div.msu-button-inner.large.installed-not-removable,
 div.msu-button-inner.large.must-be-installed,
+div.msu-button-inner.large.update-must-be-installed,
 div.msu-button-inner.large.unavailable,
 div.msu-button-inner.large.installing, 
 div.msu-button-inner.large.removing {
@@ -958,6 +960,7 @@ div.msu-button-inner.install-updates {
 div.msu-button-inner.install-updates.disabled,
 div.msu-button-inner.install-updates.installed-not-removable,
 div.msu-button-inner.install.must-be-installed,
+div.msu-button-inner.install.update-must-be-installed,
 div.msu-button-inner.install-updates.installing,
 div.msu-button-inner.install-updates.removing {
     background: none;

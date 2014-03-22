@@ -412,6 +412,9 @@ class GenericItem(dict):
                 'update-will-be-installed':
                     NSLocalizedString(u'Update will be installed',
                         u'UpdateWillBeInstalledDisplayText').encode('utf-8'),
+                'update-must-be-installed':
+                    NSLocalizedString(u'Update will be installed',
+                                  u'UpdateRequiredDisplayText').encode('utf-8'),
                 'update-available':
                     NSLocalizedString(u'Update available',
                         u'UpdateAvailableDisplayText').encode('utf-8'),
@@ -450,6 +453,9 @@ class GenericItem(dict):
                 'update-will-be-installed':
                     NSLocalizedString(u'Cancel',
                         u'CancelUpdateShortActionText').encode('utf-8'),
+                'update-must-be-installed':
+                    NSLocalizedString(u'Required',
+                        u'UpdateRequiredShortActionText').encode('utf-8'),
                 'update-available':
                     NSLocalizedString(u'Update',
                         u'UpdateShortActionText').encode('utf-8'),
@@ -488,6 +494,9 @@ class GenericItem(dict):
                 'update-will-be-installed':
                     NSLocalizedString(u'Cancel update',
                         u'CancelUpdateLongActionText').encode('utf-8'),
+                'update-must-be-installed':
+                    NSLocalizedString(u'Update Required',
+                        u'UpdateRequiresLongActionText').encode('utf-8'),
                 'update-available':
                     NSLocalizedString(u'Update',
                         u'UpdateLongActionText').encode('utf-8'),
@@ -520,6 +529,9 @@ class GenericItem(dict):
                 'update-will-be-installed':
                     NSLocalizedString(u'Remove',
                         u'RemoveLongActionText').encode('utf-8'),
+                'update-must-be-installed':
+                    NSLocalizedString(u'Update Required',
+                        u'UpdateRequiredLongActionText').encode('utf-8'),
                 'will-be-installed':
                     NSLocalizedString(u'Cancel install',
                         u'CancelInstallLongActionText').encode('utf-8'),
@@ -601,13 +613,12 @@ class OptionalItem(GenericItem):
                     else: # not uninstallable
                         status = 'installed-not-removable'
                 else: # there is an update available
-                    if self['name'] in self_service_installs:
-                        if self['name'] in managed_update_names:
-                            status = 'update-must-be-installed'
-                        elif self['dependent_items']:
-                            status = 'update-must-be-installed'
-                        else: # not in managed_updates
-                            status = 'update-will-be-installed'
+                    if self['name'] in managed_update_names:
+                        status = 'update-must-be-installed'
+                    elif self['dependent_items']:
+                        status = 'update-must-be-installed'
+                    elif self['name'] in self_service_installs:
+                        status = 'update-will-be-installed'
                     else: # not in managed_installs
                         status = 'update-available'
         else: # not installed

@@ -360,9 +360,7 @@ def build_updates_page():
 
     other_updates = [
         item for item in MunkiItems.getOptionalInstallItems()
-        if item.get('needs_update')
-            and item['status'] not in
-                ['installed', 'update-will-be-installed', 'will-be-removed']]
+        if item['status'] == 'update-available']
 
     page = {}
     page['update_rows'] = ''
