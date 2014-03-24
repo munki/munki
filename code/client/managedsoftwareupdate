@@ -139,11 +139,12 @@ def initMunkiDirs():
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     manifestsdir = os.path.join(ManagedInstallDir, 'manifests')
     catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
+    iconsdir = os.path.join(ManagedInstallDir, 'icons')
     cachedir = os.path.join(ManagedInstallDir, 'Cache')
     logdir = os.path.join(ManagedInstallDir, 'Logs')
 
     if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir,
-                               cachedir, logdir]):
+                               iconsdir, cachedir, logdir]):
         munkicommon.display_error('Could not create needed directories '
                                   'in %s' % ManagedInstallDir)
         return False
@@ -421,11 +422,6 @@ def main():
     # install handler for SIGTERM
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # check to see if we're root
-    if os.geteuid() != 0:
-        print >> sys.stderr, 'You must run this as root!'
-        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
-
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 
@@ -470,6 +466,16 @@ def main():
                       help='Print the version of the munki tools and exit.')
 
     options, unused_arguments = p.parse_args()
+
+    if options.version:
+        print munkicommon.get_version()
+        exit(0)
+
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print >> sys.stderr, 'You must run this as root!'
+        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
+
     runtype = 'custom'
 
     checkandinstallatstartupflag = \
@@ -477,10 +483,6 @@ def main():
     installatstartupflag = \
                '/Users/Shared/.com.googlecode.munki.installatstartup'
     installatlogoutflag = '/private/tmp/com.googlecode.munki.installatlogout'
-
-    if options.version:
-        print munkicommon.get_version()
-        exit(0)
 
     if options.auto:
         # typically invoked by a launch daemon periodically.

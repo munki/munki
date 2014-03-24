@@ -39,8 +39,8 @@ class MSUStatusController(NSObject):
     
     _status_stopBtnDisabled = False
     _status_stopBtnHidden = False
-    _status_message = ''
-    _status_detail = ''
+    _status_message = u''
+    _status_detail = u''
     _status_percent = -1
     _status_stopBtnState = 0
 
@@ -79,7 +79,7 @@ class MSUStatusController(NSObject):
         '''Monitors managedsoftwareupdate process for failure to start
         or unexpected exit, so we're not waiting around forever if
         managedsoftwareupdate isn't running.'''
-        PYTHON_SCRIPT_NAME = 'managedsoftwareupdate'
+        PYTHON_SCRIPT_NAME = u'managedsoftwareupdate'
         NEVER_STARTED = -2
         UNEXPECTEDLY_QUIT = -1
         
@@ -173,8 +173,8 @@ class MSUStatusController(NSObject):
         self._status_stopBtnDisabled = False
         self._status_stopBtnHidden = False
         self._status_stopBtnState = 0
-        self._status_message = ''
-        self._status_detail = ''
+        self._status_message = u''
+        self._status_detail = u''
         self._status_percent = -1
 
     def setPercentageDone_(self, percent):
@@ -229,7 +229,7 @@ class MSUStatusController(NSObject):
             textElement = document.getElementById_('primary-status-text')
             if textElement:
                 if messageText:
-                    textElement.setInnerText_(messageText.encode('utf-8'))
+                    textElement.setInnerText_(messageText)
                 else:
                     textElement.setInnerHTML_('&nbsp;')
 
@@ -242,7 +242,7 @@ class MSUStatusController(NSObject):
             textElement = document.getElementById_('secondary-status-text')
             if textElement:
                 if detailText:
-                    textElement.setInnerText_(detailText.encode('utf-8'))
+                    textElement.setInnerText_(detailText)
                 else:
                     textElement.setInnerHTML_('&nbsp;')
 

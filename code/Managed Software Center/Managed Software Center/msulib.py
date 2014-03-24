@@ -41,7 +41,7 @@ class MSUHTMLFilter(HTMLParser):
     ignore_elements = ['script', 'style', 'head', 'table', 'form']
     # preserve these tags
     preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub', 'sup', 'ins',
-                     'del', 'mark', 'span']
+                     'del', 'mark', 'span', 'br']
     # transform these tags
     transform_starttags = { 'ul': '<br>',
         'ol': '<br>',
@@ -68,7 +68,7 @@ class MSUHTMLFilter(HTMLParser):
     # track the number of tags we found
     tag_count = 0
     # store our filtered/transformed html fragment
-    filtered_html = ''
+    filtered_html = u''
     
     def handle_starttag(self, tag, attrs):
         self.tag_count += 1
@@ -87,7 +87,7 @@ class MSUHTMLFilter(HTMLParser):
             if tag in self.transform_endtags:
                 self.filtered_html += self.transform_endtags[tag]
             elif tag in self.preserve_tags:
-                self.filtered_html += '</%s>' % tag
+                self.filtered_html += u'</%s>' % tag
     
     def handle_data(self, data):
         if not self.current_ignore_element:
@@ -96,7 +96,7 @@ class MSUHTMLFilter(HTMLParser):
     def handle_entityref(self, name):
         if not self.current_ignore_element:
             # add the entity reference as-is
-            self.filtered_html += '&%s;' % name
+            self.filtered_html += u'&%s;' % name
     
     def handle_charref(self, name):
         if not self.current_ignore_element:
@@ -135,7 +135,7 @@ def convertIconToPNG(app_name, destination_path, desired_size):
     icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
     if not os.path.splitext(icon_path)[1]:
         # no file extension, so add '.icns'
-        icon_path += '.icns'
+        icon_path += u'.icns'
     if os.path.exists(icon_path):
         image_data = NSData.dataWithContentsOfFile_(icon_path)
         bitmap_reps = NSBitmapImageRep.imageRepsWithData_(image_data)
@@ -156,28 +156,25 @@ def convertIconToPNG(app_name, destination_path, desired_size):
 def updateCountMessage(count):
     '''Return a localized message describing the count of updates to install'''
     if count == 0:
-        return NSLocalizedString(u'No pending updates',
-                                 u'NoUpdatesMessage').encode('utf-8')
+        return NSLocalizedString(u'No pending updates', u'NoUpdatesMessage')
     if count == 1:
-        return NSLocalizedString(u'1 pending update',
-                                 u'OneUpdateMessage').encode('utf-8')
+        return NSLocalizedString(u'1 pending update', u'OneUpdateMessage')
     else:
         return (NSLocalizedString(u'%s pending updates',
-                                  u'MultipleUpdatesMessage').encode('utf-8')
-                                  % count)
+                                  u'MultipleUpdatesMessage') % count)
 
 
 def getInstallAllButtonTextForCount(count):
     '''Return localized display text for action button in Updates view'''
     if count == 0:
         return NSLocalizedString(u'Check Again',
-                                 u'CheckAgainButtonLabel').encode('utf-8')
+                                 u'CheckAgainButtonLabel')
     elif count == 1:
         return NSLocalizedString(u'Update',
-                                 u'UpdateButtonLabel').encode('utf-8')
+                                 u'UpdateButtonLabel')
     else:
         return NSLocalizedString(u'Update All',
-                                 u'UpdateAllButtonLabel').encode('utf-8')
+                                 u'UpdateAllButtonLabel')
 
 
 def getRestartActionForUpdateList(update_list):
@@ -185,11 +182,11 @@ def getRestartActionForUpdateList(update_list):
     if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
         # found at least one item containing 'Restart' in its RestartAction
         return NSLocalizedString(u'Restart Required',
-                                 u'RequireRestartMessage').encode('utf-8')
+                                 u'RequireRestartMessage')
     if [item for item in update_list if 'Logout' in item.get('RestartAction', '')]:
         # found at least one item containing 'Logout' in its RestartAction
         return NSLocalizedString(u'Logout Required',
-                                 u'RequireLogoutMessage').encode('utf-8')
+                                 u'RequireLogoutMessage')
     else:
         return ''
 
@@ -198,31 +195,31 @@ def addSidebarLabels(page):
     '''adds localized labels for the detail view sidebars'''
     page['informationLabel'] = NSLocalizedString(
                                    u'Information',
-                                   u'InformationLabel').encode('utf-8')
+                                   u'InformationLabel')
     page['categoryLabel'] = NSLocalizedString(
                                    u'Category:',
-                                   u'CategoryLabel').encode('utf-8')
+                                   u'CategoryLabel')
     page['versionLabel'] = NSLocalizedString(
                                     u'Version:',
-                                    u'VersionLabel').encode('utf-8')
+                                    u'VersionLabel')
     page['sizeLabel'] = NSLocalizedString(
                                     u'Size:',
-                                    u'SizeLabel').encode('utf-8')
+                                    u'SizeLabel')
     page['developerLabel'] = NSLocalizedString(
                                     u'Developer:',
-                                    u'DeveloperLabel').encode('utf-8')
+                                    u'DeveloperLabel')
     page['statusLabel'] = NSLocalizedString(
-                                    u'Status:', u'StatusLabel').encode('utf-8')
+                                    u'Status:', u'StatusLabel')
     page['moreByDeveloperLabel'] = NSLocalizedString(
                                     u'More by %s',
-                                    u'MoreByDeveloperLabel').encode('utf-8')
+                                    u'MoreByDeveloperLabel')
     page['moreInCategoryLabel'] = NSLocalizedString(
                                     u'More in %s',
-                                    u'MoreInCategoryLabel').encode('utf-8')
+                                    u'MoreInCategoryLabel')
     page['typeLabel'] = NSLocalizedString(
-                                    u'Type:', u'TypeLabel').encode('utf-8')
+                                    u'Type:', u'TypeLabel')
     page['dueLabel'] = NSLocalizedString(
-                                    u'Due:', u'DueLabel').encode('utf-8')
+                                    u'Due:', u'DueLabel')
 
 
 def html_dir():
@@ -236,7 +233,7 @@ def html_dir():
     if cache_dir_urls:
         cache_dir = cache_dir_urls[0].path()
     else:
-        cache_dir = '/private/tmp'
+        cache_dir = u'/private/tmp'
     our_cache_dir = os.path.join(cache_dir, bundle_id)
     if not os.path.exists(our_cache_dir):
          os.mkdir(our_cache_dir)
@@ -250,6 +247,11 @@ def html_dir():
     source_path = os.path.join(resourcesPath, 'WebResources')
     link_path = os.path.join(_html_dir, 'static')
     os.symlink(source_path, link_path)
+    # symlink the Managed Installs icons dir
+    managed_install_dir = munki.pref('ManagedInstallDir')
+    source_path = os.path.join(managed_install_dir, 'icons')
+    link_path = os.path.join(_html_dir, 'icons')
+    os.symlink(source_path, link_path)
     return _html_dir
 
 
@@ -261,7 +263,7 @@ def get_template(template_name):
         file_ref = open(templatePath)
         template_html = file_ref.read()
         file_ref.close()
-        return Template(template_html)
+        return Template(template_html.decode('utf-8'))
     except (IOError, OSError):
         return None
 

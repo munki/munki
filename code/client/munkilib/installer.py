@@ -1173,14 +1173,6 @@ def run(only_unattended=False):
             munkicommon.display_error("Invalid %s" % installinfopath)
             return -1
 
-        # remove the install info file
-        # it's no longer valid once we start running
-        #try:
-        #    os.unlink(installinfopath)
-        #except (OSError, IOError):
-        #    munkicommon.display_warning(
-        #        "Could not remove %s" % installinfopath)
-
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
             munkistatus.hideStopButton()
@@ -1236,6 +1228,8 @@ def run(only_unattended=False):
         # update optional_installs with new installation/removal status
         for removal in munkicommon.report.get('RemovalResults', []):
             if removal['status'] != 0:
+                # TO-DO: communicate back removal error
+                # so that MSC.app can display it
                 continue
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
@@ -1246,6 +1240,8 @@ def run(only_unattended=False):
 
         for install in munkicommon.report.get('InstallResults', []):
             if install['status'] != 0:
+                # TO-DO: communicate back install error
+                # so that MSC.app can display it
                 continue
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])

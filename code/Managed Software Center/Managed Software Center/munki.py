@@ -46,7 +46,7 @@ def call(cmd):
     (output, err) = proc.communicate()
     return proc.returncode
 
-BUNDLE_ID = 'ManagedInstalls'
+BUNDLE_ID = u'ManagedInstalls'
 
 def reload_prefs():
     """Uses CFPreferencesAppSynchronize(BUNDLE_ID)

@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 #  AlertController.py
 #  Managed Software Center
@@ -270,7 +271,7 @@ class AlertController(NSObject):
                 info_item = {}
                 info_item['name'] = update_item.get('display_name', 'name')
                 alert_text = update_item['firmware_alert_text']
-                if alert_text == '_DEFAULT_FIRMWARE_ALERT_TEXT_':
+                if alert_text == u'_DEFAULT_FIRMWARE_ALERT_TEXT_':
                     # substitute localized default alert text
                     alert_text = NSLocalizedString(
                         (u"Firmware will be updated on your computer. "
