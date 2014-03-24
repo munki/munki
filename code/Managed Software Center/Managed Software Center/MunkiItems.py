@@ -39,6 +39,7 @@ _cache['install_info'] = None
 # cache lists
 _cache['optional_install_items'] = None
 _cache['update_list'] = None
+_cache['dependent_items'] = None
 
 
 def reset():
@@ -191,17 +192,14 @@ def getMyItemsList():
 
 
 def dependentItems(this_name):
-    '''Returns the names of any (installed/to-be-installed) items that require this item'''
+    '''Returns the names of any optional items that require this optional item'''
     dependent_items = []
-    processed_installs = getInstallInfo().get('processed_installs', [])
     optional_installs = getInstallInfo().get('optional_installs', [])
-    for name in processed_installs:
-        item_list = [item for item in optional_installs
-                     if item['name'] == name]
-        for item in item_list:
-            if this_name in item.get('requires', []):
-                NSLog('%s requires %s' % (name, this_name))
-                dependent_items.append(name)
+    optional_installs_with_dependencies = [item for item in optional_installs
+                                           if 'requires' in item]
+    for item in optional_installs_with_dependencies:
+        if this_name in item['requires']:
+            dependent_items.append(item['name'])
     return dependent_items
 
 
