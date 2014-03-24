@@ -194,9 +194,11 @@ def getMyItemsList():
 def dependentItems(this_name):
     '''Returns the names of any optional items that require this optional item'''
     dependent_items = []
+    self_service_installs = SelfService().installs()
     optional_installs = getInstallInfo().get('optional_installs', [])
     optional_installs_with_dependencies = [item for item in optional_installs
-                                           if 'requires' in item]
+                                           if item['name'] in self_service_installs
+                                           and 'requires' in item]
     for item in optional_installs_with_dependencies:
         if this_name in item['requires']:
             dependent_items.append(item['name'])
