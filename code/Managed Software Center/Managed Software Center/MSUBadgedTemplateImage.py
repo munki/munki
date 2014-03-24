@@ -33,7 +33,7 @@ class MSUBadgedTemplateImage(NSImage):
         # some magic values
         NSBoldFontMask = 2
         badgeFontSize = 11
-        badgeFontFamilyName = 'Helvetica'
+        badgeFontFamilyName = u'Helvetica'
         rrRadius = 7.0
         
         if count == 0:

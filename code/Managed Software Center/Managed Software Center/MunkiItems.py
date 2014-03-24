@@ -103,19 +103,19 @@ def _build_update_list():
         apple_updates = getAppleUpdates()
         apple_update_items = apple_updates.get('AppleUpdates', [])
         for item in apple_update_items:
-            item['developer'] = 'Apple'
-            item['status'] = 'will-be-installed'
+            item['developer'] = u'Apple'
+            item['status'] = u'will-be-installed'
         update_items.extend(apple_update_items)
     
     install_info = getInstallInfo()
     managed_installs = install_info.get('managed_installs', [])
     for item in managed_installs:
-        item['status'] = 'will-be-installed'
+        item['status'] = u'will-be-installed'
     update_items.extend(managed_installs)
     
     removal_items = install_info.get('removals', [])
     for item in removal_items:
-        item['status'] = 'will-be-removed'
+        item['status'] = u'will-be-removed'
     # TO-DO: handle the case where removal detail is suppressed
     update_items.extend(removal_items)
     # use our list to make UpdateItems
@@ -267,9 +267,6 @@ class GenericItem(dict):
     def __init__(self, *arg, **kw):
         super(GenericItem, self).__init__(*arg, **kw)
         # now normalize values
-        for key, value in self.items():
-            if isinstance(value, unicode):
-                self[key] = value.encode('utf-8')
         if not self.get('display_name'):
             self['display_name'] = self['name']
         self['display_name_lower'] = self['display_name'].lower()
@@ -279,23 +276,23 @@ class GenericItem(dict):
             self['raw_description'] = msulib.filtered_html(self['description'])
             del(self['description'])
         if not 'raw_description' in self:
-            self['raw_description'] = ''
+            self['raw_description'] = u''
         self['icon'] = self.getIcon()
         self['due_date_sort'] = NSDate.distantFuture()
         # sort items that need restart highest, then logout, then other
         if self.get('RestartAction') in [None, 'None']:
-            self['restart_action_text'] = ''
+            self['restart_action_text'] = u''
             self['restart_sort'] = 2
         elif self['RestartAction'] in ['RequireRestart', 'RecommendRestart']:
             self['restart_sort'] = 0
             self['restart_action_text'] = NSLocalizedString(
-                u'Restart Required', u'RequireRestartMessage').encode('utf-8')
-            self['restart_action_text'] += '<div class="restart-needed-icon"></div>'
+                u'Restart Required', u'RequireRestartMessage')
+            self['restart_action_text'] += u'<div class="restart-needed-icon"></div>'
         elif self['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
             self['restart_sort'] = 1
             self['restart_action_text'] = NSLocalizedString(
-                u'Logout Required', u'RequireLogoutMessage').encode('utf-8')
-            self['restart_action_text'] += '<div class="logout-needed-icon"></div>'
+                u'Logout Required', u'RequireLogoutMessage')
+            self['restart_action_text'] += u'<div class="logout-needed-icon"></div>'
 
         # sort bigger installs to the top
         if self.get('installed_size'):
@@ -306,7 +303,7 @@ class GenericItem(dict):
             self['size'] = munki.humanReadable(self['installer_item_size'])
         else:
             self['size_sort'] = 0
-            self['size'] = ''
+            self['size'] = u''
 
     def __getitem__(self, name):
         '''Allow access to instance variables and methods via dictionary syntax.
@@ -329,14 +326,14 @@ class GenericItem(dict):
 
     def dependency_description(self):
         '''Return an html description of items this item depends on'''
-        _description = ''
+        _description = u''
         prologue = NSLocalizedString(
             u'This item is required by:', u'DependencyListPrologueText')
         if self.get('dependent_items'):
-            _description = '<br/><br/><strong>' + prologue
+            _description = u'<br/><br/><strong>' + prologue
             for item in self['dependent_items']:
-                _description += '<br/>&nbsp;&nbsp;&bull; ' + display_name(item)
-            _description += '</strong>'
+                _description += u'<br/>&nbsp;&nbsp;&bull; ' + display_name(item)
+            _description += u'</strong>'
         return _description
 
     def guess_developer(self):
@@ -352,14 +349,14 @@ class GenericItem(dict):
                     parts = install_item['CFBundleIdentifier'].split('.')
                     if (len(parts) > 1
                         and parts[0] in ['com', 'org', 'net', 'edu']):
-                        return parts[1].title().encode('utf-8')
+                        return parts[1].title()
         return ''
 
     def getIcon(self):
         '''Return name/relative path of image file to use for the icon'''
         for key in ['icon_name', 'display_name', 'name']:
             if key in self:
-                name = self[key].decode('utf-8')
+                name = self[key]
                 icon_path = os.path.join(msulib.html_dir(), name + '.png')
                 if os.path.exists(icon_path) or msulib.convertIconToPNG(name, icon_path, 350):
                     return name + '.png'
@@ -373,13 +370,13 @@ class GenericItem(dict):
         if ('licensed_seats_available' in self
             and not self['licensed_seats_available']):
             return NSLocalizedString(u'No licenses available',
-                                     u'NoLicensesAvailableDisplayText').encode('utf-8')
+                                     u'NoLicensesAvailableDisplayText')
         if self.get('note') == 'Insufficient disk space to download and install.':
             return NSLocalizedString(u'Not enough disk space',
-                                     u'NotEnoughDiskSpaceDisplayText').encode('utf-8')
+                                     u'NotEnoughDiskSpaceDisplayText')
         # return generic reason
         return NSLocalizedString(u'Not currently available',
-                                 u'NotCurrentlyDisplayText').encode('utf-8')
+                                 u'NotCurrentlyDisplayText')
 
     def status_text(self):
         '''Return localized status display text'''
@@ -387,40 +384,40 @@ class GenericItem(dict):
             return self.unavailable_reason_text()
         map = { 'installed':
                     NSLocalizedString(u'Installed',
-                        u'InstalledDisplayText').encode('utf-8'),
+                        u'InstalledDisplayText'),
                 'installing':
                     NSLocalizedString(u'Installing',
-                        u'InstallingDisplayText').encode('utf-8'),
+                        u'InstallingDisplayText'),
                 'installed-not-removable':
                     NSLocalizedString(u'Installed',
-                        u'InstalledDisplayText').encode('utf-8'),
+                        u'InstalledDisplayText'),
                 'not-installed':
                     NSLocalizedString(u'Not installed',
-                        u'NotInstalledDisplayText').encode('utf-8'),
+                        u'NotInstalledDisplayText'),
                 'will-be-installed':
                     NSLocalizedString(u'Will be installed',
-                        u'WillBeInstalledDisplayText').encode('utf-8'),
+                        u'WillBeInstalledDisplayText'),
                 'must-be-installed':
                     NSLocalizedString(u'Will be installed',
-                        u'InstallRequiredDisplayText').encode('utf-8'),
+                        u'InstallRequiredDisplayText'),
                 'will-be-removed':
                     NSLocalizedString(u'Will be removed',
-                        u'WillBeRemovedDisplayText').encode('utf-8'),
+                        u'WillBeRemovedDisplayText'),
                 'removing':
                     NSLocalizedString(u'Removing',
-                        u'RemovingDisplayText').encode('utf-8'),
+                        u'RemovingDisplayText'),
                 'update-will-be-installed':
                     NSLocalizedString(u'Update will be installed',
-                        u'UpdateWillBeInstalledDisplayText').encode('utf-8'),
+                        u'UpdateWillBeInstalledDisplayText'),
                 'update-must-be-installed':
                     NSLocalizedString(u'Update will be installed',
-                                  u'UpdateRequiredDisplayText').encode('utf-8'),
+                                  u'UpdateRequiredDisplayText'),
                 'update-available':
                     NSLocalizedString(u'Update available',
-                        u'UpdateAvailableDisplayText').encode('utf-8'),
+                        u'UpdateAvailableDisplayText'),
                 'unavailable':
                     NSLocalizedString(u'Unavailable',
-                        u'UnavailableDisplayText').encode('utf-8'),
+                        u'UnavailableDisplayText'),
                 }
         return map.get(self['status'], self['status'])
 
@@ -428,40 +425,40 @@ class GenericItem(dict):
         '''Return localized 'short' action text for button'''
         map = { 'installed':
                     NSLocalizedString(u'Remove',
-                        u'RemoveShortActionText').encode('utf-8'),
+                        u'RemoveShortActionText'),
                 'installing':
                     NSLocalizedString(u'Installing',
-                        u'InstallingShortActionText').encode('utf-8'),
+                        u'InstallingShortActionText'),
                 'installed-not-removable':
                     NSLocalizedString(u'Installed',
-                        u'InstalledShortActionText').encode('utf-8'),
+                        u'InstalledShortActionText'),
                 'not-installed':
                     NSLocalizedString(u'Install',
-                        u'InstallShortActionText').encode('utf-8'),
+                        u'InstallShortActionText'),
                 'will-be-installed':
                     NSLocalizedString(u'Cancel',
-                        u'CancelInstallShortActionText').encode('utf-8'),
+                        u'CancelInstallShortActionText'),
                 'must-be-installed':
                     NSLocalizedString(u'Required',
-                        u'InstallRequiredShortActionText').encode('utf-8'),
+                        u'InstallRequiredShortActionText'),
                 'will-be-removed':
                     NSLocalizedString(u'Cancel',
-                        u'CancelRemovalShortActionText').encode('utf-8'),
+                        u'CancelRemovalShortActionText'),
                 'removing':
                     NSLocalizedString(u'Removing',
-                        u'RemovingShortActionText').encode('utf-8'),
+                        u'RemovingShortActionText'),
                 'update-will-be-installed':
                     NSLocalizedString(u'Cancel',
-                        u'CancelUpdateShortActionText').encode('utf-8'),
+                        u'CancelUpdateShortActionText'),
                 'update-must-be-installed':
                     NSLocalizedString(u'Required',
-                        u'UpdateRequiredShortActionText').encode('utf-8'),
+                        u'UpdateRequiredShortActionText'),
                 'update-available':
                     NSLocalizedString(u'Update',
-                        u'UpdateShortActionText').encode('utf-8'),
+                        u'UpdateShortActionText'),
                 'unavailable':
                     NSLocalizedString(u'Unavailable',
-                        u'UnavailableShortActionText').encode('utf-8'),
+                        u'UnavailableShortActionText'),
         }
         return map.get(self['status'], self['status'])
 
@@ -469,40 +466,40 @@ class GenericItem(dict):
         '''Return localized 'long' action text for button'''
         map = {'installed':
                     NSLocalizedString(u'Remove',
-                        u'RemoveLongActionText').encode('utf-8'),
+                        u'RemoveLongActionText'),
                 'installing':
                     NSLocalizedString(u'Installing',
-                        u'InstallingLongActionText').encode('utf-8'),
+                        u'InstallingLongActionText'),
                 'installed-not-removable':
                     NSLocalizedString(u'Installed',
-                        u'InstalledLongActionText').encode('utf-8'),
+                        u'InstalledLongActionText'),
                 'not-installed':
                     NSLocalizedString(u'Install',
-                        u'InstallLongActionText').encode('utf-8'),
+                        u'InstallLongActionText'),
                 'will-be-installed':
                     NSLocalizedString(u'Cancel install',
-                        u'CancelInstallLongActionText').encode('utf-8'),
+                        u'CancelInstallLongActionText'),
                 'must-be-installed':
                     NSLocalizedString(u'Install Required',
-                        u'InstallRequiredLongActionText').encode('utf-8'),
+                        u'InstallRequiredLongActionText'),
                 'will-be-removed':
                     NSLocalizedString(u'Cancel removal',
-                        u'CancelRemovalLongActionText').encode('utf-8'),
+                        u'CancelRemovalLongActionText'),
                 'removing':
                     NSLocalizedString(u'Removing',
-                        u'RemovingLongActionText').encode('utf-8'),
+                        u'RemovingLongActionText'),
                 'update-will-be-installed':
                     NSLocalizedString(u'Cancel update',
-                        u'CancelUpdateLongActionText').encode('utf-8'),
+                        u'CancelUpdateLongActionText'),
                 'update-must-be-installed':
                     NSLocalizedString(u'Update Required',
-                        u'UpdateRequiresLongActionText').encode('utf-8'),
+                        u'UpdateRequiresLongActionText'),
                 'update-available':
                     NSLocalizedString(u'Update',
-                        u'UpdateLongActionText').encode('utf-8'),
+                        u'UpdateLongActionText'),
                 'unavailable':
                     NSLocalizedString(u'Currently Unavailable',
-                        u'UnavailableShortActionText').encode('utf-8'),
+                        u'UnavailableShortActionText'),
         }
         return map.get(self['status'], self['status'])
 
@@ -510,34 +507,34 @@ class GenericItem(dict):
         '''Return localized 'My Items' action text for button'''
         map = { 'installed':
                     NSLocalizedString(u'Remove',
-                        u'RemoveLongActionText').encode('utf-8'),
+                        u'RemoveLongActionText'),
                 'installing':
                     NSLocalizedString(u'Installing',
-                        u'InstallingLongActionText').encode('utf-8'),
+                        u'InstallingLongActionText'),
                 'installed-not-removable':
                     NSLocalizedString(u'Installed',
-                        u'InstalledLongActionText').encode('utf-8'),
+                        u'InstalledLongActionText'),
                 'will-be-removed':
                     NSLocalizedString(u'Cancel removal',
-                        u'CancelRemovalLongActionText').encode('utf-8'),
+                        u'CancelRemovalLongActionText'),
                 'removing':
                     NSLocalizedString(u'Removing',
-                        u'RemovingLongActionText').encode('utf-8'),
+                        u'RemovingLongActionText'),
                 'update-available':
                     NSLocalizedString(u'Update',
-                        u'UpdateLongActionText').encode('utf-8'),
+                        u'UpdateLongActionText'),
                 'update-will-be-installed':
                     NSLocalizedString(u'Remove',
-                        u'RemoveLongActionText').encode('utf-8'),
+                        u'RemoveLongActionText'),
                 'update-must-be-installed':
                     NSLocalizedString(u'Update Required',
-                        u'UpdateRequiredLongActionText').encode('utf-8'),
+                        u'UpdateRequiredLongActionText'),
                 'will-be-installed':
                     NSLocalizedString(u'Cancel install',
-                        u'CancelInstallLongActionText').encode('utf-8'),
+                        u'CancelInstallLongActionText'),
                 'must-be-installed':
                     NSLocalizedString(u'Required',
-                        u'InstallRequiredLongActionText').encode('utf-8'),
+                        u'InstallRequiredLongActionText'),
 
         }
         return map.get(self['status'], self['status'])
@@ -546,10 +543,10 @@ class GenericItem(dict):
         '''Text for the version label'''
         if self['status'] == 'will-be-removed':
             removal_text = NSLocalizedString(
-                u'Will be removed', u'WillBeRemovedDisplayText').encode('utf-8')
+                u'Will be removed', u'WillBeRemovedDisplayText')
             return '<span class="warning">%s</span>' % removal_text
         else:
-            return NSLocalizedString(u'Version', u'VersionLabel').encode('utf-8')
+            return NSLocalizedString(u'Version', u'VersionLabel')
 
     def display_version(self):
         '''Version number for display'''
@@ -565,7 +562,7 @@ class GenericItem(dict):
         return 1
 
     def more_link_text(self):
-        return NSLocalizedString(u'More', u'MoreLinkText').encode('utf-8')
+        return NSLocalizedString(u'More', u'MoreLinkText')
 
 
 class OptionalItem(GenericItem):
@@ -578,9 +575,9 @@ class OptionalItem(GenericItem):
         if 'category' not in self:
             self['category'] = NSLocalizedString(
                                         u'Uncategorized',
-                                        u'NoCategoryName').encode('utf-8')
+                                        u'NoCategoryName')
         if self['developer']:
-            self['category_and_developer'] = '%s - %s' % (
+            self['category_and_developer'] = u'%s - %s' % (
                 self['category'], self['developer'])
         else:
             self['category_and_developer'] = self['category']
@@ -592,9 +589,9 @@ class OptionalItem(GenericItem):
         elif self.get('installed_size'):
             self['size'] = munki.humanReadable(self['installed_size'])
         else:
-            self['size'] = ''
-        self['detail_link'] = 'detail-%s.html' % quote_plus(self['name'])
-        self['hide_cancel_button'] = ''
+            self['size'] = u''
+        self['detail_link'] = u'detail-%s.html' % quote_plus(self['name'])
+        self['hide_cancel_button'] = u''
             
     def _get_status(self):
         '''Calculates initial status for an item'''
@@ -603,24 +600,24 @@ class OptionalItem(GenericItem):
         self_service_uninstalls = SelfService().uninstalls()
         if self.get('installed'):
             if self['name'] in self_service_uninstalls:
-                status = 'will-be-removed'
+                status = u'will-be-removed'
             else: # not in managed_uninstalls
                 if not self.get('needs_update'):
                     if self['dependent_items']:
-                        status = 'installed-not-removable'
+                        status = u'installed-not-removable'
                     elif self.get('uninstallable'):
-                        status = 'installed'
+                        status = u'installed'
                     else: # not uninstallable
-                        status = 'installed-not-removable'
+                        status = u'installed-not-removable'
                 else: # there is an update available
                     if self['name'] in managed_update_names:
-                        status = 'update-must-be-installed'
+                        status = u'update-must-be-installed'
                     elif self['dependent_items']:
-                        status = 'update-must-be-installed'
+                        status = u'update-must-be-installed'
                     elif self['name'] in self_service_installs:
-                        status = 'update-will-be-installed'
+                        status = u'update-will-be-installed'
                     else: # not in managed_installs
-                        status = 'update-available'
+                        status = u'update-available'
         else: # not installed
             if self.get('note'):
                 # TO-DO: handle this case better
@@ -633,16 +630,16 @@ class OptionalItem(GenericItem):
                 #   'Insufficient disk space to download and install.'
                 #
                 # for now we prevent install this way
-                status = 'unavailable'
+                status = u'unavailable'
             elif ('licensed_seats_available' in self
                     and not self['licensed_seats_available']):
-                status = 'unavailable'
+                status = u'unavailable'
             elif self['dependent_items']:
-                status = 'must-be-installed'
+                status = u'must-be-installed'
             elif self['name'] in self_service_installs:
-                status = 'will-be-installed'
+                status = u'will-be-installed'
             else: # not in managed_installs
-                status = 'not-installed'
+                status = u'not-installed'
         return status
 
     def description(self):
@@ -659,34 +656,34 @@ class OptionalItem(GenericItem):
         managed_update_names = getInstallInfo().get('managed_updates', [])
         if self['status'] == 'update-available':
             # mark the update for install
-            self['status'] = 'update-will-be-installed'
+            self['status'] = u'update-will-be-installed'
             subscribe(self)
         elif self['status'] == 'update-will-be-installed':
             # cancel the update
-            self['status'] = 'update-available'
+            self['status'] = u'update-available'
             unmanage(self)
         elif self['status'] == 'will-be-removed':
             if self['name'] in managed_update_names:
                 # update is managed, so user can't opt out
-                self['status'] = 'installed'
+                self['status'] = u'installed'
             elif self.get('needs_update'):
                 # update being installed; can opt-out
-                self['status'] = 'update-will-be-installed'
+                self['status'] = u'update-will-be-installed'
             else:
                 # item is simply installed
-                self['status'] = 'installed'
+                self['status'] = u'installed'
             unmanage(self)
         elif self['status'] == 'will-be-installed':
             # cancel install
-            self['status'] = 'not-installed'
+            self['status'] = u'not-installed'
             unmanage(self)
         elif self['status'] == 'not-installed':
             # mark for install
-            self['status'] = 'will-be-installed'
+            self['status'] = u'will-be-installed'
             subscribe(self)
         elif self['status'] == 'installed':
             # mark for removal
-            self['status'] = 'will-be-removed'
+            self['status'] = u'will-be-removed'
             unsubscribe(self)
 
 
@@ -707,8 +704,8 @@ class UpdateItem(GenericItem):
     
         if not 'type' in self:
              self['type'] = NSLocalizedString(u'Managed Update',
-                                              u'ManagedUpdateType').encode('utf-8')
-        self['hide_cancel_button'] = 'hidden'
+                                              u'ManagedUpdateType')
+        self['hide_cancel_button'] = u'hidden'
         self['dependent_items'] = dependentItems(self['name'])
 
     def description(self):
@@ -719,10 +716,10 @@ class UpdateItem(GenericItem):
                 # insert installation deadline into description
                 local_date = munki.discardTimeZoneFromDate(
                                                 force_install_after_date)
-                date_str = munki.stringFromDate(local_date).encode('utf-8')
+                date_str = munki.stringFromDate(local_date)
                 forced_date_text = NSLocalizedString(
                                     u'This item must be installed by %s',
-                                    u'ForcedDateWarning').encode('utf-8')
+                                    u'ForcedDateWarning')
                 # prepend deadline info to description.
                 _description = ('<span class="warning">' + forced_date_text % date_str
                     + '</span><br><br>' + _description)

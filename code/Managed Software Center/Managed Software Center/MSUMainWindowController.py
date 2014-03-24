@@ -46,7 +46,7 @@ class MSUMainWindowController(NSWindowController):
     _update_queue = set()
     
     # status vars
-    _status_title = ''
+    _status_title = u''
         
     _current_page_filename = None
     stop_requested = False
@@ -365,7 +365,7 @@ class MSUMainWindowController(NSWindowController):
             self._update_in_progress = True
             self.displayUpdateCount()
             self.setStatusViewTitle_(NSLocalizedString(
-                u'Updating...', u'UpdatingMessage').encode('utf-8'))
+                u'Updating...', u'UpdatingMessage'))
             result = munki.justUpdate()
             if result:
                 NSLog("Error starting install session: %s" % result)
@@ -391,7 +391,7 @@ class MSUMainWindowController(NSWindowController):
                 new_status =  'installing'
             elif item['name'] in items_to_be_removed_names:
                 NSLog('Setting status for %s to "removing"' % item['name'])
-                new_status = 'removing'
+                new_status = u'removing'
             if new_status:
                 item['status'] = new_status
                 self.updateDOMforOptionalItem(item)
@@ -512,7 +512,7 @@ class MSUMainWindowController(NSWindowController):
         we generate each page dynamically; we want things
         that are changed in one page view to be reflected
         immediately in all page views'''
-        identifier = 'com.googlecode.munki.ManagedSoftwareCenter'
+        identifier = u'com.googlecode.munki.ManagedSoftwareCenter'
         prefs = WebPreferences.alloc().initWithIdentifier_(identifier)
         prefs.setUsesPageCache_(False)
         self.webView.setPreferencesIdentifier_(identifier)
@@ -557,7 +557,7 @@ class MSUMainWindowController(NSWindowController):
                     self.tabControl.deselectAllCells()
                 # store the filename
                 self._current_page_filename = filename
-
+        
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
@@ -610,7 +610,7 @@ class MSUMainWindowController(NSWindowController):
             NSApp.delegate().statusController._status_stopBtnState =  1
             self.stop_requested = True
             # send a notification that stop button was clicked
-            STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
+            STOP_REQUEST_FLAG = u'/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
             if not os.path.exists(STOP_REQUEST_FLAG):
                 open(STOP_REQUEST_FLAG, 'w').close()
 
@@ -639,14 +639,14 @@ class MSUMainWindowController(NSWindowController):
         if update_count_element:
             update_count_element.setInnerText_(
                 NSLocalizedString(u'Checking for updates...',
-                                  u'CheckingForUpdatesMessage')).encode('utf-8')
+                                  u'CheckingForUpdatesMessage'))
         warning_text_element = document.getElementById_('update-warning-text')
         if warning_text_element:
             warning_text_element.setInnerHTML_('')
         install_all_button = document.getElementById_('install-all-button-text')
         if install_all_button:
             install_all_button.setInnerText_(
-                NSLocalizedString(u'Cancel', u'CancelButtonText')).encode('utf-8')
+                NSLocalizedString(u'Cancel', u'CancelButtonText'))
             #btn_classes = install_all_button.className().split(' ')
             #if not 'checking' in btn_classes:
             #    btn_classes.append('checking')
@@ -805,7 +805,7 @@ class MSUMainWindowController(NSWindowController):
         '''this method is called from JavaScript when the user
         changes the category selected in the sidebar popup'''
         if category == 'All Categories':
-            category = 'all'
+            category = u'all'
         self.load_page('category-%s.html' % quote_plus(category))
 
     def setStatusViewTitle_(self, title_text):
