@@ -380,7 +380,7 @@ def print_err_utf8(text):
 def pref(prefname):
     """Returns a preference for prefname"""
     try:
-        _prefs = plistlib.readPlist(PREFSPATH)
+        _prefs = FoundationPlist.readPlist(PREFSPATH)
     except Exception:
         return None
     if prefname in _prefs:
