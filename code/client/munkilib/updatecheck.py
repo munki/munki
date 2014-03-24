@@ -2481,6 +2481,7 @@ class ManifestException(Exception):
     manifest."""
     pass
 
+
 MANIFESTS = {}
 def getmanifest(partialurl, suppress_errors=False):
     """Gets a manifest from the server.
@@ -2489,10 +2490,10 @@ def getmanifest(partialurl, suppress_errors=False):
       string local path to the downloaded manifest.
     """
     #global MANIFESTS
-    manifestbaseurl = munkicommon.pref('ManifestURL') or \
-                      munkicommon.pref('SoftwareRepoURL') + '/manifests/'
-    if not manifestbaseurl.endswith('?') and \
-       not manifestbaseurl.endswith('/'):
+    manifestbaseurl = (munkicommon.pref('ManifestURL') or
+                       munkicommon.pref('SoftwareRepoURL') + '/manifests/')
+    if (not manifestbaseurl.endswith('?') and
+        not manifestbaseurl.endswith('/')):
         manifestbaseurl = manifestbaseurl + '/'
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
@@ -2708,6 +2709,59 @@ def getDownloadCachePath(destinationpathprefix, url):
         destinationpathprefix, getInstallerItemBasename(url))
 
 
+def download_icons(item_list):
+    '''Attempts to download icons (actually png files) for items in
+       item_list'''
+    icon_list = []
+    icon_base_url = (munkicommon.pref('IconURL') or
+                     munkicommon.pref('SoftwareRepoURL') + '/icons/')
+    icon_base_url = icon_base_url.rstrip('/') + '/'
+    icon_dir =  os.path.join(munkicommon.pref('ManagedInstallDir'), 'icons')
+    munkicommon.display_debug2('Icon base URL is: %s', icon_base_url)
+    for item in item_list:
+        icon_name = item.get('icon_name') or item['name']
+        if not os.path.splitext(icon_name)[1]:
+            icon_name += '.png'
+        icon_list.append(icon_name)
+        icon_url = icon_base_url + urllib2.quote(icon_name)
+        icon_path = os.path.join(icon_dir, icon_name)
+        icon_subdir = os.path.dirname(icon_path)
+        if not os.path.exists(icon_subdir):
+            try:
+                os.makedirs(icon_subdir, 0755)
+            except OSError, err:
+                munkicommon.display_error(
+                    'Could not create %s' % icon_subdir)
+                continue
+        munkicommon.display_detail('Getting icon %s...',  icon_name)
+        item_name = item.get('display_name') or item['name']
+        message = 'Getting icon for %s...' % item_name
+        try:
+            unused_value = getResourceIfChangedAtomically(
+                icon_url, icon_path, message=message)
+        except fetch.MunkiDownloadError, err:
+            munkicommon.display_warning(
+                    'Could not retrieve icon %s from the server: %s',
+                    icon_name, err)
+    # remove no-longer needed icons from the local directory
+    for (dirpath, dirnames, filenames) in os.walk(icon_dir, topdown=False):
+        for filename in filenames:
+            icon_path = os.path.join(dirpath, filename)
+            rel_path = icon_path[len(icon_dir):].lstrip('/')
+            if rel_path not in icon_list:
+                try:
+                    os.unlink(icon_path)
+                except (IOError, OSError), err:
+                    pass
+        if len(munkicommon.listdir(dirpath)) == 0:
+            # did we empty out this directory (or is it already empty)?
+            # if so, remove it
+            try:
+                os.rmdir(dirpath)
+            except (IOError, OSError), err:
+                pass
+
+
 MACHINE = {}
 CONDITIONS = {}
 def check(client_id='', localmanifestpath=None):
@@ -2920,6 +2974,13 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = \
             [item for item in installinfo['removals']
                 if item.get('installed')]
+
+        # download display icons for optional installs
+        # and active installs/removals
+        item_list = list(installinfo.get('optional_installs', []))
+        item_list.extend(installinfo['managed_installs'])
+        item_list.extend(installinfo['removals'])
+        download_icons(item_list)
 
         # record the filtered lists
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']

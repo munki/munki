@@ -354,19 +354,31 @@ class GenericItem(dict):
 
     def getIcon(self):
         '''Return name/relative path of image file to use for the icon'''
+        # first look for downloaded icons
+        icon_name = self.get('icon_name') or self['name']
+        if not os.path.splitext(icon_name)[1]:
+            icon_name += '.png'
+        icon_path = os.path.join(msulib.html_dir(), 'icons', icon_name)
+        if os.path.exists(icon_path):
+            return 'icons/' + icon_name
+        # didn't find one in the downloaded icons
+        # so create one if needed from a locally installed app
         for key in ['icon_name', 'display_name', 'name']:
             if key in self:
                 name = self[key]
-                icon_path = os.path.join(msulib.html_dir(), name + '.png')
+                icon_name = name
+                if not os.path.splitext(icon_name)[1]:
+                    icon_name += '.png'
+                icon_path = os.path.join(msulib.html_dir(), icon_name)
                 if os.path.exists(icon_path) or msulib.convertIconToPNG(name, icon_path, 350):
-                    return name + '.png'
+                    return icon_name
         else:
             # use the Generic package icon
             return 'static/Generic.png'
 
     def unavailable_reason_text(self):
         '''There are several reasons an item might be unavailable for install.
-            Return the relevent reason'''
+           Return the relevent reason'''
         if ('licensed_seats_available' in self
             and not self['licensed_seats_available']):
             return NSLocalizedString(u'No licenses available',

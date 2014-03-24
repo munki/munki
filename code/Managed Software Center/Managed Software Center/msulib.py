@@ -247,6 +247,11 @@ def html_dir():
     source_path = os.path.join(resourcesPath, 'WebResources')
     link_path = os.path.join(_html_dir, 'static')
     os.symlink(source_path, link_path)
+    # symlink the Managed Installs icons dir
+    managed_install_dir = munki.pref('ManagedInstallDir')
+    source_path = os.path.join(managed_install_dir, 'icons')
+    link_path = os.path.join(_html_dir, 'icons')
+    os.symlink(source_path, link_path)
     return _html_dir
 
 
