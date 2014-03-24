@@ -2740,7 +2740,7 @@ def download_icons(item_list):
             unused_value = getResourceIfChangedAtomically(
                 icon_url, icon_path, message=message)
         except fetch.MunkiDownloadError, err:
-            munkicommon.display_warning(
+            munkicommon.display_debug1(
                     'Could not retrieve icon %s from the server: %s',
                     icon_name, err)
     # remove no-longer needed icons from the local directory
