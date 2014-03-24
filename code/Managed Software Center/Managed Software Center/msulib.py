@@ -253,7 +253,6 @@ def html_dir():
 def get_template(template_name):
     '''return an html template'''
     resourcesPath = NSBundle.mainBundle().resourcePath()
-    resourcesPath = u'/Users/Shared/munki-git/munki/code/Managed Software Center/Managed Software Center'
     templatePath = os.path.join(resourcesPath, 'templates', template_name)
     try:
         file_ref = open(templatePath)
