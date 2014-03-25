@@ -327,7 +327,7 @@ def generate_pngs_from_munki_items(repo_path, force=False, itemlist=None):
     itemlist = findItemsToCheck(repo_path, itemlist=None)
     icons_dir = os.path.join(repo_path, 'icons')
     if not os.path.exists(icons_dir):
-        os.makedir(icons_dir)
+        os.mkdir(icons_dir)
     for item in itemlist:
         print_utf8(u'Processing %s...' % item['name'])
         icon_name = item.get('icon_name') or item['name']
