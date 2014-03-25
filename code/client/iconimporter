@@ -163,7 +163,9 @@ def extractAppIconsFromFlatPkg(pkg_path):
     return icon_paths
 
 
-def extractAppIconsFromBundlePkg(pkg_path):
+def findInfoPlistPathsInBundlePkg(pkg_path):
+    '''Returns a dict with pkg paths as keys and filename lists
+    as values'''
     pkg_dict = {}
     bomfile = os.path.join(pkg_path, 'Contents', 'Archive.bom')
     if os.path.exists(bomfile):
@@ -175,17 +177,24 @@ def extractAppIconsFromBundlePkg(pkg_path):
         pkg_dict = {}
         original_dir = os.getcwd()
         pkg_contents_dir = os.path.join(pkg_path, 'Contents')
-        os.chdir(pkg_contents_dir)
-        pkgs = (glob.glob('*.pkg') + glob.glob('*/*.pkg')
-                + glob.glob('*/*/*.pkg') + glob.glob('*.mpkg') +
-                glob.glob('*/*.mpkg') + glob.glob('*/*/*.mpkg'))
-        os.chdir(original_dir)
+        if os.path.isdir(pkg_contents_dir):
+            os.chdir(pkg_contents_dir)
+            pkgs = (glob.glob('*.pkg') + glob.glob('*/*.pkg')
+                    + glob.glob('*/*/*.pkg') + glob.glob('*.mpkg') +
+                    glob.glob('*/*.mpkg') + glob.glob('*/*/*.mpkg'))
+            os.chdir(original_dir)
+        else:
+            pkgs = []
         for pkg in pkgs:
             full_path = os.path.join(pkg_contents_dir, pkg)
-            info_paths = getAppInfoPathsFromBundleComponentPkg(full_path)
-            if info_paths:
-                pkg_dict[full_path] = info_paths
+            pkg_dict.update(findInfoPlistPathsInBundlePkg(full_path))
+    return pkg_dict
 
+
+def extractAppIconsFromBundlePkg(pkg_path):
+    '''Returns a list of paths for application icons found
+    inside the bundle pkg at pkg_path'''
+    pkg_dict = findInfoPlistPathsInBundlePkg(pkg_path)
     icon_paths = []
     exporttmp = tempfile.mkdtemp(dir='/tmp')
     for pkg in pkg_dict:
@@ -193,7 +202,7 @@ def extractAppIconsFromBundlePkg(pkg_path):
         err = extractAppBitsFromPkgArchive(archive_path, exporttmp)
         if err == 0:
             for info_path in pkg_dict[pkg]:
-                full_path = os.path.join(exporttmp, info_path)
+                full_path = os.path.normpath(os.path.join(exporttmp, info_path))
                 app_path = os.path.dirname(os.path.dirname(full_path))
                 icon_path = findIconForApp(app_path)
                 if icon_path:
