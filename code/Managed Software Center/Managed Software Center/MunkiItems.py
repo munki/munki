@@ -38,6 +38,7 @@ _cache = {}
 
 def reset():
     '''clear all our cached values'''
+    global _cache
     _cache = {}
 
 
