@@ -32,36 +32,29 @@ from Foundation import NSDate
 from Foundation import NSLog
 
 
+# place to cache our expensive-to-calculate data
 _cache = {}
-# cache reads from AppleUpdates.plist, InstallInfo.plist
-_cache['apple_updates'] = None
-_cache['install_info'] = None
-# cache lists
-_cache['optional_install_items'] = None
-_cache['update_list'] = None
-_cache['dependent_items'] = None
 
 
 def reset():
     '''clear all our cached values'''
-    for key in _cache.keys():
-        _cache[key] = None
+    _cache = {}
 
 
 def getAppleUpdates():
-    if _cache['apple_updates'] is None:
+    if not 'apple_updates' in _cache:
         _cache['apple_updates'] = munki.getAppleUpdates()
     return _cache['apple_updates']
 
 
 def getInstallInfo():
-    if _cache['install_info'] is None:
+    if not 'install_info' in _cache:
         _cache['install_info'] = munki.getInstallInfo()
     return _cache['install_info']
 
 
 def getOptionalInstallItems():
-    if _cache['optional_install_items'] is None:
+    if not 'optional_install_items' in _cache:
         _cache['optional_install_items'] = [OptionalItem(item)
                                    for item in getInstallInfo().get('optional_installs', [])]
     return _cache['optional_install_items']
@@ -85,7 +78,7 @@ def getOptionalWillBeRemovedItems():
 
 
 def getUpdateList():
-    if _cache['update_list'] is None:
+    if not 'update_list'in _cache:
         _cache['update_list'] = _build_update_list()
     return _cache['update_list']
 
@@ -192,14 +185,15 @@ def getMyItemsList():
 
 
 def dependentItems(this_name):
-    '''Returns the names of any optional items that require this optional item'''
+    '''Returns the names of any selected optional items that require this optional item'''
+    if not 'optional_installs_with_dependencies' in _cache:
+        self_service_installs = SelfService().installs()
+        optional_installs = getInstallInfo().get('optional_installs', [])
+        _cache['optional_installs_with_dependencies'] = [item for item in optional_installs
+                                                         if item['name'] in self_service_installs
+                                                         and 'requires' in item]
     dependent_items = []
-    self_service_installs = SelfService().installs()
-    optional_installs = getInstallInfo().get('optional_installs', [])
-    optional_installs_with_dependencies = [item for item in optional_installs
-                                           if item['name'] in self_service_installs
-                                           and 'requires' in item]
-    for item in optional_installs_with_dependencies:
+    for item in _cache['optional_installs_with_dependencies']:
         if this_name in item['requires']:
             dependent_items.append(item['name'])
     return dependent_items
