@@ -134,7 +134,7 @@
 "Software removals" = "Suppression de logiciels";
 
 /* No comment provided by engineer. */
-"Starting…" = "Démarrage…";
+"Starting..." = "Démarrage...";
 
 /* No comment provided by engineer. */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Il y a d'autres utilisateurs connectés sur l'ordinateur.\nMettre à jour peut entrainer la perte du travail des autres utilisateurs.\n\nMerci d'essayer plus tard après que les autres utilisateurs aient quitté leur session.";
@@ -213,4 +213,9 @@
 "Running package scripts..." = "Lancement des scripts...";
 
 "Writing files..." = "Écriture des fichiers...";
+
+"About a" = "Environ d'";
+
+"Less than" = "Moins d'";
+
 
