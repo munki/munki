@@ -764,7 +764,10 @@ def main():
                             'unattended_install',
                             'unattended_uninstall',
                             'requires',
-                            'update_for']:
+                            'update_for',
+                            'category',
+                            'developer',
+                            'icon_name']:
                     if key in matchingpkginfo:
                         print 'Copying %s: %s' % (key,
                             matchingpkginfo[key])
@@ -774,7 +777,10 @@ def main():
         editfields = (('Item name', 'name'),
                       ('Display name', 'display_name'),
                       ('Description', 'description'),
-                      ('Version', 'version'))
+                      ('Version', 'version'),
+                      ('Category', 'category'),
+                      ('Developer', 'developer'),
+                     )
         for (name, key) in editfields:
             prompt = '%15s' % name
             default = pkginfo.get(key,'').encode('UTF-8')
