@@ -155,7 +155,7 @@ def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
         make the effective list of updates'''
     managed_update_names = getInstallInfo().get('managed_updates', [])
-    optional_item_names = [item['name'] for item in getInstallInfo().get('optional_installs')]
+    optional_item_names = [item['name'] for item in getInstallInfo().get('optional_installs', [])]
     self_service_installs = SelfService().installs()
     self_service_uninstalls = SelfService().uninstalls()
     # items in the update_list that are part of optional_items
