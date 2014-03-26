@@ -680,6 +680,21 @@ def main():
               'to multiple catalogs.')
         )
     additional_options.add_option(
+        '--category',
+        metavar='CATEGORY',
+        help='Category for display in Managed Software Center.'
+        )
+    additional_options.add_option(
+        '--developer',
+        metavar='DEVELOPER',
+        help='Developer name for display in Managed Software Center.'
+        )
+    additional_options.add_option(
+        '--icon', '--iconname', '--icon-name', '--icon_name',
+        metavar='ICONNAME',
+        help='Name of icon file for display in Managed Software Center.'
+        )
+    additional_options.add_option(
         '--notes',
         metavar='STRING|PATH',
         help=('Specifies administrator provided notes to be embedded into the '
@@ -879,6 +894,12 @@ def main():
         catinfo['name'] = options.name
     if options.pkgvers:
         catinfo['version'] = options.pkgvers
+    if options.category:
+        catinfo['category'] = options.category
+    if options.developer:
+        catinfo['developer'] = options.developer
+    if options.icon:
+        catinfo['icon_name'] = options.icon
 
     default_minosversion = "10.4.0"
     maxfileversion = "0.0.0.0.0"
