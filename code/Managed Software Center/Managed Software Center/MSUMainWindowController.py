@@ -19,7 +19,7 @@
 
 import os
 
-from urllib import quote_plus, unquote_plus
+from urllib import quote, unquote
 
 import munki
 import msuhtml
@@ -242,7 +242,7 @@ class MSUMainWindowController(NSWindowController):
         filename = self._current_page_filename
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
-        value = unquote_plus(quoted_value)
+        #value = unquote(quoted_value)
         if key == 'detail':
             # optional item detail page
             self.webView.reload_(self)
@@ -480,7 +480,7 @@ class MSUMainWindowController(NSWindowController):
         category = None
         filter = None
         developer = None
-        value = unquote_plus(quoted_value)
+        value = unquote(quoted_value)
         if key == 'category':
             if value != 'all':
                 category = value
@@ -806,7 +806,7 @@ class MSUMainWindowController(NSWindowController):
         changes the category selected in the sidebar popup'''
         if category == 'All Categories':
             category = u'all'
-        self.load_page('category-%s.html' % quote_plus(category))
+        self.load_page('category-%s.html' % category)
 
     def setStatusViewTitle_(self, title_text):
         '''When displaying status during a managedsoftwareupdate run, this method
@@ -868,7 +868,7 @@ class MSUMainWindowController(NSWindowController):
         '''User changed the search field'''
         filterString = self.searchField.stringValue().lower()
         if filterString:
-            self.load_page('filter-%s.html' % quote_plus(filterString))
+            self.load_page('filter-%s.html' % filterString)
 
     def currentPageIsUpdatesPage(self):
         '''return True if current tab selected is updates'''
