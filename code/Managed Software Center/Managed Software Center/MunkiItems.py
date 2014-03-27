@@ -25,7 +25,7 @@ import msulib
 import munki
 
 from operator import itemgetter
-from urllib import quote_plus, unquote_plus
+from urllib import quote, unquote
 
 from Foundation import NSLocalizedString
 from Foundation import NSDate
@@ -597,7 +597,7 @@ class OptionalItem(GenericItem):
             self['size'] = munki.humanReadable(self['installed_size'])
         else:
             self['size'] = u''
-        self['detail_link'] = u'detail-%s.html' % quote_plus(self['name'])
+        self['detail_link'] = u'detail-%s.html' % quote(self['name'])
         self['hide_cancel_button'] = u''
             
     def _get_status(self):
@@ -701,7 +701,7 @@ class UpdateItem(GenericItem):
         super(UpdateItem, self).__init__(*arg, **kw)
         identifier = self.get('name', '') + '--version-' + self.get('version_to_install', '')
         self['detail_link'] = ('updatedetail-%s.html'
-                                   % quote_plus(identifier))
+                                   % quote(identifier))
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:

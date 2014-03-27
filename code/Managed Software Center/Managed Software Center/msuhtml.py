@@ -55,7 +55,7 @@ def write_page(page_name, html):
 def build_detail_page(item_name):
     '''Build page showing detail for a single optional item'''
     items = MunkiItems.getOptionalInstallItems()
-    page_name = u'detail-%s.html' % quote(item_name)
+    page_name = u'detail-%s.html' % item_name
     for item in items:
         if item['name'] == item_name:
             page = MunkiItems.OptionalItem(item)
@@ -479,7 +479,7 @@ def get_warning_text():
 def build_updatedetail_page(identifier):
     '''Build detail page for a non-optional update'''
     items = MunkiItems.getUpdateList()
-    page_name = u'updatedetail-%s.html' % quote(identifier)
+    page_name = u'updatedetail-%s.html' % identifier
     name, sep, version = identifier.partition('--version-')
     for item in items:
         if item['name'] == name and item['version_to_install'] == version:
