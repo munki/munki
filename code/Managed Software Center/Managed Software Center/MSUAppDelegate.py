@@ -17,9 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# struct and re for the url handler
+# struct for the url handler
 import struct
-import re
 import os
 
 from objc import YES, NO, IBAction, IBOutlet, nil
@@ -95,9 +94,7 @@ class MSUAppDelegate(NSObject):
         msulog.log("MSU", "Called by external URL: %@", url)
 
         #strip the url scheme part
-        urlPattern = re.compile(r"^(.*?)://(.*)$")
-        match = urlPattern.match(url)
-        url = match.group(2)
+        url = url[8:]
 
         #filter calls to only .html files
         if url.endswith(u".html"):
