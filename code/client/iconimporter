@@ -65,12 +65,12 @@ def findIconForApp(app_path):
         return None
     try:
         info = FoundationPlist.readPlist(
-            os.path.join(app_path, 'Contents/Info.plist'))
+            os.path.join(app_path, u'Contents/Info.plist'))
     except (FoundationPlist.FoundationPlistException):
         return None
     app_name = os.path.basename(app_path)
     icon_filename = info.get('CFBundleIconFile', app_name)
-    icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
+    icon_path = os.path.join(app_path, u'Contents/Resources', icon_filename)
     if not os.path.splitext(icon_path)[1]:
         # no file extension, so add '.icns'
         icon_path += '.icns'
@@ -116,7 +116,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
         # bomfile path is of the form:
         # /tmp/FlashPlayer.pkg.boms.2Rxa1z/AdobeFlashPlayerComponent.pkg/Bom
         pkgname = os.path.basename(os.path.dirname(bomfile))
-        if not pkgname.endswith('.pkg'):
+        if not pkgname.endswith(u'.pkg'):
             # no subpackages; this is a component pkg
             pkgname = ''
         cmd = ['/usr/bin/lsbom', '-s', bomfile]
@@ -129,20 +129,20 @@ def extractAppIconsFromFlatPkg(pkg_path):
         # record paths to all app Info.plist files
         pkg_dict[pkgname]= [
             os.path.normpath(line) for line in output.splitlines()
-            if line.endswith('.app/Contents/Info.plist')]
+            if line.endswith(u'.app/Contents/Info.plist')]
         if not pkg_dict[pkgname]:
             # remove empty lists
             del(pkg_dict[pkgname])
     if not pkg_dict:
         return []
     icon_paths = []
-    pkgtmp = os.path.join(tempfile.mkdtemp(dir='/tmp'), 'pkg')
+    pkgtmp = os.path.join(tempfile.mkdtemp(dir=u'/tmp'), u'pkg')
     exporttmp = tempfile.mkdtemp(dir='/tmp')
     cmd = ['/usr/sbin/pkgutil', '--expand', pkg_path, pkgtmp]
     result = subprocess.call(cmd)
     if result == 0:
         for pkg in pkg_dict:
-            archive_path = os.path.join(pkgtmp, pkg, 'Payload')
+            archive_path = os.path.join(pkgtmp, pkg, u'Payload')
             err = extractAppBitsFromPkgArchive(archive_path, exporttmp)
             if err == 0:
                 for info_path in pkg_dict[pkg]:
@@ -163,9 +163,11 @@ def extractAppIconsFromFlatPkg(pkg_path):
     return icon_paths
 
 
-def extractAppIconsFromBundlePkg(pkg_path):
+def findInfoPlistPathsInBundlePkg(pkg_path):
+    '''Returns a dict with pkg paths as keys and filename lists
+    as values'''
     pkg_dict = {}
-    bomfile = os.path.join(pkg_path, 'Contents', 'Archive.bom')
+    bomfile = os.path.join(pkg_path, u'Contents/Archive.bom')
     if os.path.exists(bomfile):
         info_paths = getAppInfoPathsFromBundleComponentPkg(pkg_path)
         if info_paths:
@@ -174,26 +176,33 @@ def extractAppIconsFromBundlePkg(pkg_path):
         # mpkg or dist pkg; look for component pkgs within
         pkg_dict = {}
         original_dir = os.getcwd()
-        pkg_contents_dir = os.path.join(pkg_path, 'Contents')
-        os.chdir(pkg_contents_dir)
-        pkgs = (glob.glob('*.pkg') + glob.glob('*/*.pkg')
-                + glob.glob('*/*/*.pkg') + glob.glob('*.mpkg') +
-                glob.glob('*/*.mpkg') + glob.glob('*/*/*.mpkg'))
-        os.chdir(original_dir)
+        pkg_contents_dir = os.path.join(pkg_path, u'Contents')
+        if os.path.isdir(pkg_contents_dir):
+            os.chdir(pkg_contents_dir)
+            pkgs = (glob.glob('*.pkg') + glob.glob('*/*.pkg')
+                    + glob.glob('*/*/*.pkg') + glob.glob('*.mpkg') +
+                    glob.glob('*/*.mpkg') + glob.glob('*/*/*.mpkg'))
+            os.chdir(original_dir)
+        else:
+            pkgs = []
         for pkg in pkgs:
             full_path = os.path.join(pkg_contents_dir, pkg)
-            info_paths = getAppInfoPathsFromBundleComponentPkg(full_path)
-            if info_paths:
-                pkg_dict[full_path] = info_paths
+            pkg_dict.update(findInfoPlistPathsInBundlePkg(full_path))
+    return pkg_dict
 
+
+def extractAppIconsFromBundlePkg(pkg_path):
+    '''Returns a list of paths for application icons found
+    inside the bundle pkg at pkg_path'''
+    pkg_dict = findInfoPlistPathsInBundlePkg(pkg_path)
     icon_paths = []
     exporttmp = tempfile.mkdtemp(dir='/tmp')
     for pkg in pkg_dict:
-        archive_path = os.path.join(pkg, 'Contents/Archive.pax.gz')
+        archive_path = os.path.join(pkg, u'Contents/Archive.pax.gz')
         err = extractAppBitsFromPkgArchive(archive_path, exporttmp)
         if err == 0:
             for info_path in pkg_dict[pkg]:
-                full_path = os.path.join(exporttmp, info_path)
+                full_path = os.path.normpath(os.path.join(exporttmp, info_path))
                 app_path = os.path.dirname(os.path.dirname(full_path))
                 icon_path = findIconForApp(app_path)
                 if icon_path:
@@ -203,7 +212,7 @@ def extractAppIconsFromBundlePkg(pkg_path):
 
 def getAppInfoPathsFromBundleComponentPkg(pkg_path):
     '''Returns a list of paths to application Info.plists'''
-    bomfile = os.path.join(pkg_path, 'Contents', 'Archive.bom')
+    bomfile = os.path.join(pkg_path, u'Contents/Archive.bom')
     if os.path.exists(bomfile):
         cmd = ['/usr/bin/lsbom', '-s', bomfile]
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
@@ -228,7 +237,7 @@ def generate_png_from_copy_from_dmg_item(install_item, repo_path):
             icon_path = findIconForApp(app_path)
             if icon_path:
                 png_path = os.path.join(
-                    repo_path, 'icons', install_item['name'] + '.png')
+                    repo_path, u'icons', install_item['name'] + u'.png')
                 result = convertIconToPNG(icon_path, png_path)
                 if result:
                     print_utf8(u'\tWrote: %s' % png_path)
@@ -246,7 +255,7 @@ def generate_pngs_from_installer_pkg(install_item, repo_path):
     mountpoint = None
     pkg_path = None
     item_path = os.path.join(
-        repo_path, 'pkgs', install_item['installer_item_location'])
+        repo_path, u'pkgs', install_item['installer_item_location'])
     if munkicommon.hasValidDiskImageExt(item_path):
         dmg_path = item_path
         mountpoints = munkicommon.mountdmg(dmg_path)
@@ -274,7 +283,7 @@ def generate_pngs_from_installer_pkg(install_item, repo_path):
         
     if len(icon_paths) == 1:
         png_path = os.path.join(
-            repo_path, 'icons', install_item['name'] + '.png')
+            repo_path, u'icons', install_item['name'] + u'.png')
         result = convertIconToPNG(icon_paths[0], png_path)
         if result:
             print_utf8(u'\tWrote: %s' % png_path)
@@ -282,8 +291,8 @@ def generate_pngs_from_installer_pkg(install_item, repo_path):
         index = 1
         for icon_path in icon_paths:
             png_path = os.path.join(
-                repo_path, 'icons',
-                install_item['name'] + '_' + str(index) + '.png')
+                repo_path, u'icons',
+                install_item['name'] + '_' + str(index) + u'.png')
             result = convertIconToPNG(icon_path, png_path)
             if result:
                 print_utf8(u'\tWrote: %s' % png_path)
@@ -316,16 +325,16 @@ def findItemsToCheck(repo_path, itemlist=None):
 
 def generate_pngs_from_munki_items(repo_path, force=False, itemlist=None):
     itemlist = findItemsToCheck(repo_path, itemlist=None)
-    icons_dir = os.path.join(repo_path, 'icons')
+    icons_dir = os.path.join(repo_path, u'icons')
     if not os.path.exists(icons_dir):
-        os.makedir(icons_dir)
+        os.mkdir(icons_dir)
     for item in itemlist:
         print_utf8(u'Processing %s...' % item['name'])
         icon_name = item.get('icon_name') or item['name']
         if not os.path.splitext(icon_name)[1]:
-            icon_name += '.png'
+            icon_name += u'.png'
         icon_path = os.path.join(
-            repo_path, 'icons', icon_name)
+            repo_path, u'icons', icon_name)
         if os.path.exists(icon_path) and not force:
             print_utf8(u'Found existing icon at %s' % icon_name)
             continue
@@ -353,7 +362,7 @@ def getConditionalOptionalItems(plist):
 def findAllOptionalInstalls(repo_path):
     optional_items = set()
     errors = []
-    manifests_path = os.path.join(repo_path, 'manifests')
+    manifests_path = os.path.join(repo_path, u'manifests')
     # Walk through the manifest files
     for dirpath, dirnames, filenames in os.walk(manifests_path):
         for dirname in dirnames:
@@ -405,7 +414,7 @@ def pref(prefname):
 
 
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
+PREFSPATH = os.path.expanduser(os.path.join(u'~/Library/Preferences',
                                             PREFSNAME))
 def main():
     '''Main'''

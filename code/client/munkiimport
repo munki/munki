@@ -780,7 +780,6 @@ def main():
                       ('Version', 'version'),
                       ('Category', 'category'),
                       ('Developer', 'developer'),
-                      ('Icon name', 'icon_name'),
                      )
         for (name, key) in editfields:
             prompt = '%15s' % name

@@ -10,7 +10,7 @@ import os
 
 from operator import itemgetter
 from random import shuffle
-from urllib import quote_plus, unquote_plus
+from urllib import quote, unquote
 
 import MunkiItems
 import msulib
@@ -25,7 +25,7 @@ def build_page(filename):
     '''Dispatch request to build a page to the appropriate function'''
     name = os.path.splitext(filename)[0]
     key, p, quoted_value = name.partition('-')
-    value = unquote_plus(quoted_value)
+    value = unquote(quoted_value)
     if key == 'detail':
         build_detail_page(value)
     if key == 'category':
@@ -55,22 +55,42 @@ def write_page(page_name, html):
 def build_detail_page(item_name):
     '''Build page showing detail for a single optional item'''
     items = MunkiItems.getOptionalInstallItems()
-    page_name = u'detail-%s.html' % quote_plus(item_name)
+    page_name = u'detail-%s.html' % item_name
     for item in items:
         if item['name'] == item_name:
             page = MunkiItems.OptionalItem(item)
             msulib.addSidebarLabels(page)
+            # make "More in CategoryFoo" list
+            page['hide_more_in_category'] = u'hidden'
+            more_in_category_html = u''
+            more_in_category = []
+            if item.get('category'):
+                category = item['category']
+                page['category_link'] = u'category-%s.html' % quote(category)
+                more_in_category = [a for a in items
+                                    if a.get('category') == category
+                                    and a != item
+                                    and a.get('status') != 'installed']
+                if more_in_category:
+                    page['hide_more_in_category'] = u''
+                    page['moreInCategoryLabel'] = page['moreInCategoryLabel'] % page['category']
+                    shuffle(more_in_category)
+                    more_template = msulib.get_template('detail_more_items_template.html')
+                    for more_item in more_in_category[:4]:
+                        more_item['second_line'] = more_item.get('developer', '')
+                        more_in_category_html += more_template.safe_substitute(more_item)
+            page['more_in_category'] = more_in_category_html
             # make "More by DeveloperFoo" list
             page['hide_more_by_developer'] = u'hidden'
             more_by_developer_html = u''
             more_by_developer = []
             if item.get('developer'):
                 developer = item['developer']
-                page['developer_link'] = (u'developer-%s.html'
-                                          % quote_plus(developer))
+                page['developer_link'] = (u'developer-%s.html' % quote(developer))
                 more_by_developer = [a for a in items
                                      if a.get('developer') == developer
                                      and a != item
+                                     and a not in more_in_category
                                      and a.get('status') != 'installed']
                 if more_by_developer:
                     page['hide_more_by_developer'] = u''
@@ -83,26 +103,6 @@ def build_detail_page(item_name):
                         more_item['second_line'] = more_item.get('category', '')
                         more_by_developer_html += more_template.safe_substitute(more_item)
             page['more_by_developer'] = more_by_developer_html
-            # make "More by CategoryFoo" list
-            page['hide_more_in_category'] = u'hidden'
-            more_in_category_html = u''
-            if item.get('category'):
-                category = item['category']
-                page['category_link'] = u'category-%s.html' % quote_plus(category)
-                more_in_category = [a for a in items
-                                    if a.get('category') == category
-                                    and a != item
-                                    and a not in more_by_developer
-                                    and a.get('status') != 'installed']
-                if more_in_category:
-                    page['hide_more_in_category'] = u''
-                    page['moreInCategoryLabel'] = page['moreInCategoryLabel'] % page['category']
-                    shuffle(more_in_category)
-                    more_template = msulib.get_template('detail_more_items_template.html')
-                    for more_item in more_in_category[:4]:
-                        more_item['second_line'] = more_item.get('developer', '')
-                        more_in_category_html += more_template.safe_substitute(more_item)
-            page['more_in_category'] = more_in_category_html
             page['footer'] = msulib.getFooter()
 
             template = msulib.get_template('detail_template.html')
@@ -123,13 +123,13 @@ def build_list_page(category=None, developer=None, filter=None):
         category = None
     if category:
         header = category
-        page_name = u'category-%s.html' % quote_plus(category)
+        page_name = u'category-%s.html' % category
     if developer:
         header = developer
-        page_name = u'developer-%s.html' % quote_plus(developer)
+        page_name = u'developer-%s.html' % developer
     if filter:
         header = u'Search results for %s' % filter
-        page_name = u'filter-%s.html' % quote_plus(filter)
+        page_name = u'filter-%s.html' % filter
 
     category_list = []
     for item in items:
@@ -267,7 +267,7 @@ def build_category_items_html():
         for category in sorted(category_list):
             category_data = {}
             category_data['category_name'] = category
-            category_data['category_link'] = u'category-%s.html' % quote_plus(category)
+            category_data['category_link'] = u'category-%s.html' % quote(category)
             category_items = [item for item in all_items if item.get('category') == category]
             shuffle(category_items)
             category_data['item1_icon'] = category_items[0]['icon']
@@ -479,7 +479,7 @@ def get_warning_text():
 def build_updatedetail_page(identifier):
     '''Build detail page for a non-optional update'''
     items = MunkiItems.getUpdateList()
-    page_name = u'updatedetail-%s.html' % quote_plus(identifier)
+    page_name = u'updatedetail-%s.html' % identifier
     name, sep, version = identifier.partition('--version-')
     for item in items:
         if item['name'] == name and item['version_to_install'] == version:
