@@ -90,6 +90,8 @@ class MSUAppDelegate(NSObject):
     def openURL_withReplyEvent_(self, event, replyEvent):
         keyDirectObject = struct.unpack(">i", "----")[0]
         url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
+        #work around for html-provided white spaces
+        url = url.replace('%20',' ')
         NSLog("Called by external URL: %@", url)
         msulog.log("MSU", "Called by external URL: %@", url)
 
