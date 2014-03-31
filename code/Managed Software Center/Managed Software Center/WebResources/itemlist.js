@@ -33,7 +33,12 @@ function showNextSlide(){
 
 function stageClicked() {
     slide = slides()[currentSlide];
-    window.location.href = slide.getAttribute('href');
+    target = slide.getAttribute('target');
+    if (target == '_blank') {
+        window.AppController.openExternalLink_(slide.getAttribute('href'));
+    } else {
+        window.location.href = slide.getAttribute('href');
+    }
 }
 
 window.onload=function(){

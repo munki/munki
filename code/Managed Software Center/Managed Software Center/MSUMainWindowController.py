@@ -602,7 +602,8 @@ class MSUMainWindowController(NSWindowController):
     def isSelectorExcludedFromWebScript_(self, aSelector):
         '''Declare which methods can be called from JavaScript'''
         # For security, you must explicitly allow a selector to be called from JavaScript.
-        if aSelector in ['actionButtonClicked:',
+        if aSelector in ['openExternalLink:',
+                         'actionButtonClicked:',
                          'myItemsActionButtonClicked:',
                          'changeSelectedCategory:',
                          'installButtonClicked',
@@ -611,6 +612,10 @@ class MSUMainWindowController(NSWindowController):
         return YES # disallow everything else
 
 #### handling DOM UI elements ####
+
+    def openExternalLink_(self, url):
+        '''open a link in the default browser'''
+        NSWorkspace.sharedWorkspace().openURL_(NSURL.URLWithString_(url))
 
     def installButtonClicked(self):
         '''this method is called from JavaScript when the user
