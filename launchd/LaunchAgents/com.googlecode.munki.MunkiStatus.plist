@@ -22,6 +22,10 @@
        <true/>
        <key>/private/tmp/com.googlecode.munki.installatlogout</key>
        <true/>
+       <key>/Users/Shared/.com.googlecode.munki.checkandinstallatstartup</key>
+       <true/>
+       <key>/Users/Shared/.com.googlecode.munki.installatstartup</key>
+       <true/>
      </dict>
   </dict>
 </dict>
