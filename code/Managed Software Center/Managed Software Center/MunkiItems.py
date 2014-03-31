@@ -26,10 +26,12 @@ import munki
 
 from operator import itemgetter
 from urllib import quote, unquote
+from HTMLParser import HTMLParseError
 
-from Foundation import NSLocalizedString
-from Foundation import NSDate
-from Foundation import NSLog
+from Foundation import *
+from AppKit import *
+
+import FoundationPlist
 
 
 # place to cache our expensive-to-calculate data
@@ -301,7 +303,10 @@ class GenericItem(dict):
         if not self.get('developer'):
             self['developer'] = self.guess_developer()
         if self.get('description'):
-            self['raw_description'] = msulib.filtered_html(self['description'])
+            try:
+                self['raw_description'] = msulib.filtered_html(self['description'])
+            except HTMLParseError, err:
+                self['raw_description'] = 'Invalid HTML in description for %s' % self['display_name']
             del(self['description'])
         if not 'raw_description' in self:
             self['raw_description'] = u''
