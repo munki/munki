@@ -520,10 +520,21 @@ class MSUMainWindowController(NSWindowController):
 ##### WebView delegate methods #####
 
     def webView_decidePolicyForNewWindowAction_request_newFrameName_decisionListener_(
-            self, webView, actionInformation, request, frameName, listener):
+            self, sender, actionInformation, request, frameName, listener):
         '''open link in default browser instead of in our app's WebView'''
         listener.ignore()
         NSWorkspace.sharedWorkspace().openURL_(request.URL())
+    
+    def webView_decidePolicyForMIMEType_request_frame_decisionListener_(
+            self, sender, type, request, frame, listener):
+        '''Decide whether to show or download content'''
+        if WebView.canShowMIMEType_(type):
+            listener.use()
+        else:
+            # send the request to the user's default browser instead, where it can
+            # display or download it
+            listener.ignore()
+            NSWorkspace.sharedWorkspace().openURL_(request.URL())
 
     def webView_resource_willSendRequest_redirectResponse_fromDataSource_(
             self, sender, identifier, request, redirectResponse, dataSource):
