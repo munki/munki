@@ -24,98 +24,12 @@ import sys
 
 import shutil
 
-from HTMLParser import HTMLParser
-
 from Foundation import *
 from AppKit import *
 
 import munki
 
 _html_dir = None
-
-class MSUHTMLFilter(HTMLParser):
-    '''Filters HTML and HTML fragments for use inside description paragraphs'''
-    # ignore everything inside one of these tags
-    ignore_elements = ['script', 'style', 'head', 'table', 'form']
-    # preserve these tags
-    preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub', 'sup', 'ins',
-                     'del', 'mark', 'span', 'br']
-    # transform these tags
-    transform_starttags = { 'ul': '<br>',
-        'ol': '<br>',
-        'li': '&nbsp;&nbsp;&bull; ',
-        'h1': '<strong>',
-        'h2': '<strong>',
-        'h3': '<strong>',
-        'h4': '<strong>',
-        'h5': '<strong>',
-        'h6': '<strong>',
-        'p': ''}
-    transform_endtags =   { 'ul': '<br>',
-        'ol': '<br>',
-        'li': '<br>',
-        'h1': '</strong><br>',
-        'h2': '</strong><br>',
-        'h3': '</strong><br>',
-        'h4': '</strong><br>',
-        'h5': '</strong><br>',
-        'h6': '</strong><br>',
-        'p': '<br>'}
-    # track the currently-ignored element if any
-    current_ignore_element = None
-    # track the number of tags we found
-    tag_count = 0
-    # store our filtered/transformed html fragment
-    filtered_html = u''
-    
-    def handle_starttag(self, tag, attrs):
-        self.tag_count += 1
-        if not self.current_ignore_element:
-            if tag in self.ignore_elements:
-                self.current_ignore_element = tag
-            elif tag in self.transform_starttags:
-                self.filtered_html += self.transform_starttags[tag]
-            elif tag in self.preserve_tags:
-                self.filtered_html += self.get_starttag_text()
-    
-    def handle_endtag(self, tag):
-        if tag == self.current_ignore_element:
-            self.current_ignore_element = None
-        elif not self.current_ignore_element:
-            if tag in self.transform_endtags:
-                self.filtered_html += self.transform_endtags[tag]
-            elif tag in self.preserve_tags:
-                self.filtered_html += u'</%s>' % tag
-    
-    def handle_data(self, data):
-        if not self.current_ignore_element:
-            self.filtered_html += data
-    
-    def handle_entityref(self, name):
-        if not self.current_ignore_element:
-            # add the entity reference as-is
-            self.filtered_html += u'&%s;' % name
-    
-    def handle_charref(self, name):
-        if not self.current_ignore_element:
-            # just pass on unmodified
-            self.filtered_html += name
-
-
-def filtered_html(text):
-    '''Returns filtered HTML for use in description paragraphs'''
-    parser = MSUHTMLFilter()
-    parser.feed(text)
-    if parser.tag_count:
-        # found at least one html tag, so this is probably HTML
-        return parser.filtered_html
-    else:
-        # might be plain text, so we should escape a few entities and
-        # add <br> for line breaks
-        text = text.replace('&', '&amp;')
-        text = text.replace('<', '&lt;')
-        text = text.replace('>', '&gt;')
-        return text.replace('\n', '<br>\n')
 
 
 def updateCountMessage(count):
