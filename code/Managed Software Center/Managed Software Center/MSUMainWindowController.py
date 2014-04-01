@@ -240,9 +240,9 @@ class MSUMainWindowController(NSWindowController):
         # what page are we currently viewing?
         page_url = self.webView.mainFrameURL()
         filename = NSURL.URLWithString_(page_url).lastPathComponent()
+        NSLog('Filename: %s' % filename)
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
-        #value = unquote(quoted_value)
         if key == 'detail':
             # optional item detail page
             self.webView.reload_(self)
@@ -490,7 +490,7 @@ class MSUMainWindowController(NSWindowController):
             NSLog('updateListPage unexpected error: _current_page_filename is %s' %
                   filename)
             return
-        NSLog('updating with category: %s, developer; %s, filter: %s' %
+        NSLog('updating software list page with category: %s, developer; %s, filter: %s' %
               (category, developer, filter))
         items_html = msuhtml.build_list_page_items_html(
                             category=category, developer=developer, filter=filter)
@@ -689,6 +689,16 @@ class MSUMainWindowController(NSWindowController):
 
         # update item status
         item.update_status()
+        
+        if item.get('will_be_installed') or item.get('will_be_removed'):
+            # item was processed and cached for install or removal. Need to run
+            # an updatecheck session to possibly remove other items (dependencies
+            # or updates) from the pending list
+            self._update_in_progress = True
+            self.loadUpdatesPage_(self)
+            self.displayUpdateCount()
+            self.checkForUpdates(suppress_apple_update_check=True)
+            return
 
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
