@@ -48,7 +48,6 @@ class MSUMainWindowController(NSWindowController):
     # status vars
     _status_title = u''
         
-    _current_page_filename = None
     stop_requested = False
     user_warned_about_extra_updates = False
     
@@ -239,7 +238,8 @@ class MSUMainWindowController(NSWindowController):
         # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?
-        filename = self._current_page_filename
+        page_url = self.webView.mainFrameURL()
+        filename = NSURL.URLWithString_(page_url).lastPathComponent()
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
         #value = unquote(quoted_value)
@@ -471,10 +471,8 @@ class MSUMainWindowController(NSWindowController):
     def updateListPage(self):
         '''Update the optional items list page with current data.
         Modifies the DOM to avoid ugly browser refresh'''
-        filename = self._current_page_filename
-        if not filename:
-            NSLog('updateListPage unexpected error: no _current_page_filename')
-            return
+        page_url = self.webView.mainFrameURL()
+        filename = NSURL.URLWithString_(page_url).lastPathComponent()
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
         category = None
@@ -556,19 +554,6 @@ class MSUMainWindowController(NSWindowController):
                     msuhtml.build_page(filename)
                 except Exception, e:
                     NSLog('%@', e)
-                if filename == 'category-all.html':
-                    self.tabControl.selectCellWithTag_(1)
-                elif filename == 'categories.html':
-                    self.tabControl.selectCellWithTag_(2)
-                elif filename == 'myitems.html':
-                    self.tabControl.selectCellWithTag_(3)
-                elif filename == 'updates.html':
-                    self.tabControl.selectCellWithTag_(4)
-                else:
-                    self.tabControl.deselectAllCells()
-                # store the filename
-                self._current_page_filename = filename
-        
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
@@ -579,6 +564,17 @@ class MSUMainWindowController(NSWindowController):
     def webView_didStartProvisionalLoadForFrame_(self, view, frame):
         '''Animate progress spinner while we load a page'''
         self.progressSpinner.startAnimation_(self)
+        main_url = self.webView.mainFrameURL()
+        if main_url.endswith('category-all.html'):
+            self.tabControl.selectCellWithTag_(1)
+        elif main_url.endswith('categories.html'):
+            self.tabControl.selectCellWithTag_(2)
+        elif main_url.endswith('myitems.html'):
+            self.tabControl.selectCellWithTag_(3)
+        elif main_url.endswith('updates.html'):
+            self.tabControl.selectCellWithTag_(4)
+        else:
+            self.tabControl.deselectAllCells()
 
     def webView_didFinishLoadForFrame_(self, view, frame):
         '''Stop progress spinner and update state of back/forward buttons'''
