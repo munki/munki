@@ -313,7 +313,7 @@ def build_categories_page():
     page['header_text'] = header
     
     footer = get_template('footer_template.html', raw=True)
-    generate_page(page_name, 'list_template.html', page, showcase='', footer=footer)
+    generate_page(page_name, 'list_template.html', page, showcase=u'', sidebar=u'', footer=footer)
 
 
 def build_category_items_html():
