@@ -62,6 +62,7 @@ class MSUMainWindowController(NSWindowController):
     updateButtonCell = IBOutlet()
     windowMenuSeperatorItem = IBOutlet()
     fullScreenMenuItem = IBOutlet()
+    updateProgressSpinner = IBOutlet()
     
     def appShouldTerminate(self):
         '''called by app delegate when it receives applicationShouldTerminate:'''
@@ -444,9 +445,17 @@ class MSUMainWindowController(NSWindowController):
         '''Display the update count as a badge in the window toolbar
         and as an icon badge in the Dock'''
         updateCount = self.getUpdateCount()
-        btn_image = MSUBadgedTemplateImage.imageNamed_withCount_(
-                        'toolbarUpdatesTemplate.png', updateCount)
-        self.updateButtonCell.setImage_(btn_image)
+        
+        if self._update_in_progress:
+            btn_image = MSUBadgedTemplateImage.imageNamed_withCount_(
+                            'toolbarUpdatesTemplate.pdf', -1)
+            self.updateButtonCell.setImage_(btn_image)
+            self.updateProgressSpinner.startAnimation_(self)
+        else:
+            self.updateProgressSpinner.stopAnimation_(self)
+            btn_image = MSUBadgedTemplateImage.imageNamed_withCount_(
+                            'toolbarUpdatesTemplate.pdf', updateCount)
+            self.updateButtonCell.setImage_(btn_image)
         if updateCount:
             NSApp.dockTile().setBadgeLabel_(str(updateCount))
         else:
@@ -765,6 +774,21 @@ class MSUMainWindowController(NSWindowController):
             NSLog('Unexpected error')
             return
         item.update_status()
+        
+        if item.get('will_be_installed') or item.get('will_be_removed'):
+            # item was processed and cached for install or removal. Need to run
+            # an updatecheck session to possibly remove other items (dependencies
+            # or updates) from the pending list
+            if not self._update_in_progress:
+                self._update_in_progress = True
+                self.displayUpdateCount()
+                self.checkForUpdates(suppress_apple_update_check=True)
+            else:
+                # add to queue to check later
+                # TO-DO: fix this as this can trigger an install as well
+                #self._update_queue.add(item['name'])
+                pass
+
         self.displayUpdateCount()
         if item['status'] == 'not-installed':
             # we removed item from list of things to install
@@ -832,8 +856,9 @@ class MSUMainWindowController(NSWindowController):
 
     def setStatusViewTitle_(self, title_text):
         '''When displaying status during a managedsoftwareupdate run, this method
-        is used to disply info where the update count message usually is'''
+        is used to display info where the update count message usually is'''
         document = self.webView.mainFrameDocument()
+        self._status_title = title_text
         # we re-purpose the update count message for this
         update_count_element = document.getElementById_('update-count-string')
         if update_count_element:
