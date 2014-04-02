@@ -959,6 +959,7 @@ div.msu-button-inner.install-updates {
 
 div.msu-button-inner.install-updates.disabled,
 div.msu-button-inner.install-updates.installed-not-removable,
+div.msu-button-inner.install-updates.unavailable,
 div.msu-button-inner.install.must-be-installed,
 div.msu-button-inner.install.update-must-be-installed,
 div.msu-button-inner.install-updates.installing,
