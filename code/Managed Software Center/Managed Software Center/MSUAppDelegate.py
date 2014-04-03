@@ -75,8 +75,10 @@ class MSUAppDelegate(NSObject):
         if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
             self.mainWindowController.checkForUpdates()
 
-        # show the default initial view
-        self.mainWindowController.loadInitialView()
+        # load the initial only if we are not already loading something else.
+        # enables launching the app to a specific panel, eg. from URL handler
+        if not self.mainWindowController.webView.isLoading():
+          self.mainWindowController.loadInitialView()
 
     # below is the URL handler for calls outside the app eg. web clicks
     def applicationWillFinishLaunching_(self, notification):
