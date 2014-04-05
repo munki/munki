@@ -20,6 +20,8 @@
 # struct for the url handler
 import struct
 import os
+from urllib import unquote
+from urlparse import urlparse
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 import PyObjCTools
@@ -92,17 +94,18 @@ class MSUAppDelegate(NSObject):
     def openURL_withReplyEvent_(self, event, replyEvent):
         keyDirectObject = struct.unpack(">i", "----")[0]
         url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
-        #work around for html-provided white spaces
-        url = url.replace('%20',' ')
         NSLog("Called by external URL: %@", url)
-        msulog.log("MSU", "Called by external URL: %@", url)
-
-        #strip the url scheme part
-        url = url[8:]
-
-        #filter calls to only .html files
-        if url.endswith(u".html"):
-          self.mainWindowController.load_page(url)
+        msulog.log("MSU", "Called by external URL: %s", url)
+        parsed_url = urlparse(url)
+        if parsed_url.scheme != 'munki':
+            NSLog("URL %@ has unsupported scheme")
+            return
+        filename = unquote(parsed_url.netloc)
+        # add .html if no extension
+        if not os.path.splitext(filename)[1]:
+            filename += '.html'
+        if filename.endswith('.html'):
+            self.mainWindowController.load_page(filename)
         else:
-          NSLog("%@ doesn't have a valid extension. Prevented from opening", url)
-          msulog.log("MSU", "%@ doesn't have a valid extension. Prevented from opening", url)
+            NSLog("%@ doesn't have a valid extension. Prevented from opening", url)
+            msulog.log("MSU", "%s doesn't have a valid extension. Prevented from opening", url)
