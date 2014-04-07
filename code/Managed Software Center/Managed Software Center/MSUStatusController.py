@@ -83,7 +83,7 @@ class MSUStatusController(NSObject):
         NEVER_STARTED = -2
         UNEXPECTEDLY_QUIT = -1
         
-        NSLog('checkProcess timer fired')
+        #NSLog('checkProcess timer fired')
         
         if self.session_started:
             if self.got_status_update:

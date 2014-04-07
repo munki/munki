@@ -511,160 +511,235 @@ class GenericItem(dict):
         '''Return localized status display text'''
         if self['status'] == 'unavailable':
             return self.unavailable_reason_text()
-        map = { 'installed':
-                    NSLocalizedString(u'Installed',
-                        u'InstalledDisplayText'),
-                'installing':
-                    NSLocalizedString(u'Installing',
-                        u'InstallingDisplayText'),
-                'installed-not-removable':
-                    NSLocalizedString(u'Installed',
-                        u'InstalledDisplayText'),
-                'not-installed':
-                    NSLocalizedString(u'Not installed',
-                        u'NotInstalledDisplayText'),
-                'will-be-installed':
-                    NSLocalizedString(u'Will be installed',
-                        u'WillBeInstalledDisplayText'),
-                'must-be-installed':
-                    NSLocalizedString(u'Will be installed',
-                        u'InstallRequiredDisplayText'),
-                'will-be-removed':
-                    NSLocalizedString(u'Will be removed',
-                        u'WillBeRemovedDisplayText'),
-                'removing':
-                    NSLocalizedString(u'Removing',
-                        u'RemovingDisplayText'),
-                'update-will-be-installed':
-                    NSLocalizedString(u'Update will be installed',
-                        u'UpdateWillBeInstalledDisplayText'),
-                'update-must-be-installed':
-                    NSLocalizedString(u'Update will be installed',
+        map = {
+            'install-error':
+                NSLocalizedString(u'Installation Error',
+                                  u'InstallErrorDisplayText'),
+            'removal-error':
+                NSLocalizedString(u'Removal Error',
+                                  u'RemovalErrorDisplayText'),
+            'installed':
+                NSLocalizedString(u'Installed',
+                                  u'InstalledDisplayText'),
+            'installing':
+                NSLocalizedString(u'Installing',
+                                  u'InstallingDisplayText'),
+            'installed-not-removable':
+                NSLocalizedString(u'Installed',
+                                  u'InstalledDisplayText'),
+            'not-installed':
+                NSLocalizedString(u'Not installed',
+                                  u'NotInstalledDisplayText'),
+            'install-requested':
+                NSLocalizedString(u'Install requested',
+                                  u'InstallRequestedDisplayText'),
+            'downloading':
+                NSLocalizedString(u'Downloading',
+                                  u'DownloadingDisplayText'),
+            'will-be-installed':
+                NSLocalizedString(u'Will be installed',
+                                  u'WillBeInstalledDisplayText'),
+            'must-be-installed':
+                NSLocalizedString(u'Will be installed',
+                                  u'InstallRequiredDisplayText'),
+            'removal-requested':
+                NSLocalizedString(u'Removal requested',
+                                  u'WillBeRemovedDisplayText'),
+            'preparing-removal':
+                NSLocalizedString(u'Preparing removal',
+                                  u'PreparingRemovalDisplayText'),
+            'will-be-removed':
+                NSLocalizedString(u'Will be removed',
+                                  u'WillBeRemovedDisplayText'),
+            'removing':
+                NSLocalizedString(u'Removing',
+                                  u'RemovingDisplayText'),
+            'update-will-be-installed':
+                NSLocalizedString(u'Update will be installed',
+                                  u'UpdateWillBeInstalledDisplayText'),
+            'update-must-be-installed':
+                NSLocalizedString(u'Update will be installed',
                                   u'UpdateRequiredDisplayText'),
-                'update-available':
-                    NSLocalizedString(u'Update available',
-                        u'UpdateAvailableDisplayText'),
-                'unavailable':
-                    NSLocalizedString(u'Unavailable',
-                        u'UnavailableDisplayText'),
-                }
+            'update-available':
+                NSLocalizedString(u'Update available',
+                                  u'UpdateAvailableDisplayText'),
+            'unavailable':
+                NSLocalizedString(u'Unavailable',
+                                  u'UnavailableDisplayText'),
+        }
         return map.get(self['status'], self['status'])
 
     def short_action_text(self):
         '''Return localized 'short' action text for button'''
-        map = { 'installed':
-                    NSLocalizedString(u'Remove',
-                        u'RemoveShortActionText'),
-                'installing':
-                    NSLocalizedString(u'Installing',
-                        u'InstallingShortActionText'),
-                'installed-not-removable':
-                    NSLocalizedString(u'Installed',
-                        u'InstalledShortActionText'),
-                'not-installed':
-                    NSLocalizedString(u'Install',
-                        u'InstallShortActionText'),
-                'will-be-installed':
-                    NSLocalizedString(u'Cancel',
-                        u'CancelInstallShortActionText'),
-                'must-be-installed':
-                    NSLocalizedString(u'Required',
-                        u'InstallRequiredShortActionText'),
-                'will-be-removed':
-                    NSLocalizedString(u'Cancel',
-                        u'CancelRemovalShortActionText'),
-                'removing':
-                    NSLocalizedString(u'Removing',
-                        u'RemovingShortActionText'),
-                'update-will-be-installed':
-                    NSLocalizedString(u'Cancel',
-                        u'CancelUpdateShortActionText'),
-                'update-must-be-installed':
-                    NSLocalizedString(u'Required',
-                        u'UpdateRequiredShortActionText'),
-                'update-available':
-                    NSLocalizedString(u'Update',
-                        u'UpdateShortActionText'),
-                'unavailable':
-                    NSLocalizedString(u'Unavailable',
-                        u'UnavailableShortActionText'),
+        map = {
+            'install-error':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelInstallShortActionText'),
+            'removal-error':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelRemovalShortActionText'),
+            'installed':
+                NSLocalizedString(u'Remove',
+                                  u'RemoveShortActionText'),
+            'installing':
+                NSLocalizedString(u'Installing',
+                                  u'InstallingShortActionText'),
+            'installed-not-removable':
+                NSLocalizedString(u'Installed',
+                                  u'InstalledShortActionText'),
+            'not-installed':
+                NSLocalizedString(u'Install',
+                                  u'InstallShortActionText'),
+            'install-requested':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelInstallShortActionText'),
+            'downloading':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelInstallShortActionText'),
+            'will-be-installed':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelInstallShortActionText'),
+            'must-be-installed':
+                NSLocalizedString(u'Required',
+                                  u'InstallRequiredShortActionText'),
+            'removal-requested':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelRemovalShortActionText'),
+            'preparing-removal':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelInstallShortActionText'),
+            'will-be-removed':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelRemovalShortActionText'),
+            'removing':
+                NSLocalizedString(u'Removing',
+                                  u'RemovingShortActionText'),
+            'update-will-be-installed':
+                NSLocalizedString(u'Cancel',
+                                  u'CancelUpdateShortActionText'),
+            'update-must-be-installed':
+                NSLocalizedString(u'Required',
+                                  u'UpdateRequiredShortActionText'),
+            'update-available':
+                NSLocalizedString(u'Update',
+                                  u'UpdateShortActionText'),
+            'unavailable':
+                NSLocalizedString(u'Unavailable',
+                                  u'UnavailableShortActionText'),
         }
         return map.get(self['status'], self['status'])
 
     def long_action_text(self):
         '''Return localized 'long' action text for button'''
-        map = {'installed':
-                    NSLocalizedString(u'Remove',
-                        u'RemoveLongActionText'),
-                'installing':
-                    NSLocalizedString(u'Installing',
-                        u'InstallingLongActionText'),
-                'installed-not-removable':
-                    NSLocalizedString(u'Installed',
-                        u'InstalledLongActionText'),
-                'not-installed':
-                    NSLocalizedString(u'Install',
-                        u'InstallLongActionText'),
-                'will-be-installed':
-                    NSLocalizedString(u'Cancel install',
-                        u'CancelInstallLongActionText'),
-                'must-be-installed':
-                    NSLocalizedString(u'Install Required',
-                        u'InstallRequiredLongActionText'),
-                'will-be-removed':
-                    NSLocalizedString(u'Cancel removal',
-                        u'CancelRemovalLongActionText'),
-                'removing':
-                    NSLocalizedString(u'Removing',
-                        u'RemovingLongActionText'),
-                'update-will-be-installed':
-                    NSLocalizedString(u'Cancel update',
-                        u'CancelUpdateLongActionText'),
-                'update-must-be-installed':
-                    NSLocalizedString(u'Update Required',
-                        u'UpdateRequiresLongActionText'),
-                'update-available':
-                    NSLocalizedString(u'Update',
-                        u'UpdateLongActionText'),
-                'unavailable':
-                    NSLocalizedString(u'Currently Unavailable',
-                        u'UnavailableShortActionText'),
+        map = {
+            'install-error':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'removal-error':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'installed':
+                NSLocalizedString(u'Remove',
+                                  u'RemoveLongActionText'),
+            'installing':
+                NSLocalizedString(u'Installing',
+                                  u'InstallingLongActionText'),
+            'installed-not-removable':
+                NSLocalizedString(u'Installed',
+                                  u'InstalledLongActionText'),
+            'not-installed':
+                NSLocalizedString(u'Install',
+                                  u'InstallLongActionText'),
+            'install-requested':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'downloading':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'will-be-installed':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'must-be-installed':
+                NSLocalizedString(u'Install Required',
+                                  u'InstallRequiredLongActionText'),
+            'removal-requested':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'preparing-removal':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'will-be-removed':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'removing':
+                NSLocalizedString(u'Removing',
+                                  u'RemovingLongActionText'),
+            'update-will-be-installed':
+                NSLocalizedString(u'Cancel update',
+                                  u'CancelUpdateLongActionText'),
+            'update-must-be-installed':
+                NSLocalizedString(u'Update Required',
+                                  u'UpdateRequiresLongActionText'),
+            'update-available':
+                NSLocalizedString(u'Update',
+                                  u'UpdateLongActionText'),
+            'unavailable':
+                NSLocalizedString(u'Currently Unavailable',
+                                  u'UnavailableShortActionText'),
         }
         return map.get(self['status'], self['status'])
 
     def myitem_action_text(self):
         '''Return localized 'My Items' action text for button'''
-        map = { 'installed':
-                    NSLocalizedString(u'Remove',
-                        u'RemoveLongActionText'),
-                'installing':
-                    NSLocalizedString(u'Installing',
-                        u'InstallingLongActionText'),
-                'installed-not-removable':
-                    NSLocalizedString(u'Installed',
-                        u'InstalledLongActionText'),
-                'will-be-removed':
-                    NSLocalizedString(u'Cancel removal',
-                        u'CancelRemovalLongActionText'),
-                'removing':
-                    NSLocalizedString(u'Removing',
-                        u'RemovingLongActionText'),
-                'update-available':
-                    NSLocalizedString(u'Update',
-                        u'UpdateLongActionText'),
-                'update-will-be-installed':
-                    NSLocalizedString(u'Remove',
-                        u'RemoveLongActionText'),
-                'update-must-be-installed':
-                    NSLocalizedString(u'Update Required',
-                        u'UpdateRequiredLongActionText'),
-                'will-be-installed':
-                    NSLocalizedString(u'Cancel install',
-                        u'CancelInstallLongActionText'),
-                'must-be-installed':
-                    NSLocalizedString(u'Required',
-                        u'InstallRequiredLongActionText'),
-
+        map = {
+            'install-error':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'removal-error':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'installed':
+                NSLocalizedString(u'Remove',
+                                  u'RemoveLongActionText'),
+            'installing':
+                NSLocalizedString(u'Installing',
+                                  u'InstallingLongActionText'),
+            'installed-not-removable':
+                NSLocalizedString(u'Installed',
+                                  u'InstalledLongActionText'),
+            'removal-requested':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'preparing-removal':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'will-be-removed':
+                NSLocalizedString(u'Cancel removal',
+                                  u'CancelRemovalLongActionText'),
+            'removing':
+                NSLocalizedString(u'Removing',
+                                  u'RemovingLongActionText'),
+            'update-available':
+                NSLocalizedString(u'Update',
+                                  u'UpdateLongActionText'),
+            'update-will-be-installed':
+                NSLocalizedString(u'Remove',
+                                  u'RemoveLongActionText'),
+            'update-must-be-installed':
+                NSLocalizedString(u'Update Required',
+                                  u'UpdateRequiredLongActionText'),
+            'install-requested':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'downloading':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'will-be-installed':
+                NSLocalizedString(u'Cancel install',
+                                  u'CancelInstallLongActionText'),
+            'must-be-installed':
+                NSLocalizedString(u'Required',
+                                  u'InstallRequiredLongActionText'),
         }
         return map.get(self['status'], self['status'])
 
@@ -728,13 +803,17 @@ class OptionalItem(GenericItem):
         self_service_installs = SelfService().installs()
         self_service_uninstalls = SelfService().uninstalls()
         if self.get('installed'):
-            if self['name'] in self_service_uninstalls:
+            if self.get('removal_error'):
+                status = u'removal-error'
+            elif self.get('will_be_removed'):
                 status = u'will-be-removed'
+            elif self['dependent_items']:
+                status = u'installed-not-removable'
+            elif self['name'] in self_service_uninstalls:
+                status = u'removal-requested'
             else: # not in managed_uninstalls
                 if not self.get('needs_update'):
-                    if self['dependent_items']:
-                        status = u'installed-not-removable'
-                    elif self.get('uninstallable'):
+                    if self.get('uninstallable'):
                         status = u'installed'
                     else: # not uninstallable
                         status = u'installed-not-removable'
@@ -748,7 +827,9 @@ class OptionalItem(GenericItem):
                     else: # not in managed_installs
                         status = u'update-available'
         else: # not installed
-            if self.get('note'):
+            if self.get('install_error'):
+                status = u'install-error'
+            elif self.get('note'):
                 # TO-DO: handle this case better
                 # some reason we can't install
                 # usually not enough disk space
@@ -765,8 +846,10 @@ class OptionalItem(GenericItem):
                 status = u'unavailable'
             elif self['dependent_items']:
                 status = u'must-be-installed'
-            elif self['name'] in self_service_installs:
+            elif self.get('will_be_installed'):
                 status = u'will-be-installed'
+            elif self['name'] in self_service_installs:
+                status = u'install-requested'
             else: # not in managed_installs
                 status = u'not-installed'
         return status
@@ -775,6 +858,20 @@ class OptionalItem(GenericItem):
         '''return a full description for the item, inserting dynamic data
            if needed'''
         _description = self['raw_description']
+        if self.get('install_error'):
+            _description = NSLocalizedString(
+                u'<span class="warning">An installation attempt failed. '
+                 'Installation will be attempted again.<br/>'
+                 'If this situation continues, contact your systems administrator.'
+                 '</span><br/><br/>',
+                u'InstallErrorMessage') + _description
+        elif self.get('removal_error'):
+            _description = NSLocalizedString(
+                u'<span class="warning">A removal attempt failed. '
+                 'Removal will be attempted again.<br/>'
+                 'If this situation continues, contact your systems administrator.'
+                 '</span><br/><br/>',
+                u'RemovalErrorMessage') + _description
         if self.get('dependent_items'):
             # append dependency info to description:
             _description += self.dependency_description()
@@ -785,13 +882,14 @@ class OptionalItem(GenericItem):
         managed_update_names = getInstallInfo().get('managed_updates', [])
         if self['status'] == 'update-available':
             # mark the update for install
-            self['status'] = u'update-will-be-installed'
+            self['status'] = u'install-requested'
             subscribe(self)
         elif self['status'] == 'update-will-be-installed':
             # cancel the update
             self['status'] = u'update-available'
             unmanage(self)
-        elif self['status'] == 'will-be-removed':
+        elif self['status'] in ['will-be-removed', 'removal-requested',
+                                'preparing-removal', 'removal-error']:
             if self['name'] in managed_update_names:
                 # update is managed, so user can't opt out
                 self['status'] = u'installed'
@@ -802,17 +900,21 @@ class OptionalItem(GenericItem):
                 # item is simply installed
                 self['status'] = u'installed'
             unmanage(self)
-        elif self['status'] == 'will-be-installed':
+        elif self['status'] in ['will-be-installed', 'install-requested',
+                                'downloading', 'install-error']:
             # cancel install
-            self['status'] = u'not-installed'
+            if self.get('needs_update'):
+                self['status'] = u'update-available'
+            else:
+                self['status'] = u'not-installed'
             unmanage(self)
         elif self['status'] == 'not-installed':
             # mark for install
-            self['status'] = u'will-be-installed'
+            self['status'] = u'install-requested'
             subscribe(self)
         elif self['status'] == 'installed':
             # mark for removal
-            self['status'] = u'will-be-removed'
+            self['status'] = u'removal-requested'
             unsubscribe(self)
 
 

@@ -285,6 +285,13 @@
                                         <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="only" alignment="center" state="on" tag="1" imageScaling="proportionallyDown" inset="2" id="769">
                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
+                                            <connections>
+                                                <binding destination="KMl-S0-0FF" name="enabled" keyPath="disableSoftwareViewButtons" id="Izr-47-IE3">
+                                                    <dictionary key="options">
+                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
                                         </buttonCell>
                                     </column>
                                     <column>
@@ -310,10 +317,6 @@
                                     <action selector="tabControlClicked:" target="KMl-S0-0FF" id="pKT-yQ-fzz"/>
                                 </connections>
                             </matrix>
-                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" alphaValue="0.80000000000000004" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="oix-r8-qeB">
-                                <rect key="frame" x="279" y="35" width="16" height="16"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            </progressIndicator>
                         </subviews>
                     </customView>
                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="X8X-xa-e0T">
@@ -365,7 +368,6 @@
                 <outlet property="searchField" destination="557" id="HM7-VX-9cg"/>
                 <outlet property="tabControl" destination="796" id="AEs-wG-NLb"/>
                 <outlet property="updateButtonCell" destination="fG2-SY-8g2" id="92m-84-OS5"/>
-                <outlet property="updateProgressSpinner" destination="oix-r8-qeB" id="jaC-eu-JnL"/>
                 <outlet property="webView" destination="S5Y-lq-2nB" id="TPJ-jP-F85"/>
                 <outlet property="window" destination="371" id="JK3-nH-LOl"/>
                 <outlet property="windowMenuSeperatorItem" destination="92" id="eCt-83-MtH"/>

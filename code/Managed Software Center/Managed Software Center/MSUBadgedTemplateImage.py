@@ -39,12 +39,8 @@ class MSUBadgedTemplateImage(NSImage):
         if count == 0:
             # no badge if there are no updates
             return super(MSUBadgedTemplateImage, self).imageNamed_(name)
-        if count > 0:
-            count_str = str(count)
-        else:
-            count_str = str(0)
         # build badge string and get its size
-        badgeString = NSString.stringWithString_(count_str)
+        badgeString = NSString.stringWithString_(unicode(count))
         badgeFont = NSFontManager.sharedFontManager().fontWithFamily_traits_weight_size_(
                         badgeFontFamilyName, NSBoldFontMask, 0, badgeFontSize)
         stringAttributes = { NSFontAttributeName: badgeFont }
@@ -100,12 +96,11 @@ class MSUBadgedTemplateImage(NSImage):
         badgeEraseMask.fill()
         NSGraphicsContext.restoreGraphicsState()
         
-        if count > 0:
-            # draw badge outline
-            badgeOutline.stroke()
-            
-            # draw count string
-            badgeString.drawWithRect_options_attributes_(badgeStringRect, 0, stringAttributes)
+        # draw badge outline
+        badgeOutline.stroke()
+        
+        # draw count string
+        badgeString.drawWithRect_options_attributes_(badgeStringRect, 0, stringAttributes)
         
         # all done drawing!
         compositeImage.unlockFocus()

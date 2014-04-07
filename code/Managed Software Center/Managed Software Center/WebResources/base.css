@@ -804,6 +804,7 @@ div.lockup-container[data-columns-current="5"] div.lockup:nth-last-of-type(5) {
 }
 
 div.lockup {
+    position: relative;
     padding: 10px
 }
 
@@ -1281,11 +1282,56 @@ div.title div.select {
     color: #CC0000 !important;
 }
 
-div.lockup li.will-be-installed, div.lockup li.will-be-removed, 
-div.lockup li.update-will-be-installed, div.lockup li.update-available,
-span.will-be-installed, span.will-be-removed,
-span.update-will-be-installed, span.update-available {
+div.lockup li.will-be-installed, 
+div.lockup li.will-be-removed,
+div.lockup li.install-requested,
+div.lockup li.removal-requested,
+div.lockup li.downloading, 
+div.lockup li.preparing-removal,
+div.lockup li.update-will-be-installed, 
+div.lockup li.update-available,
+div.lockup li.install-error,
+div.lockup li.removal-error,
+span.install-requested,
+span.removal-requested,
+span.downloading, 
+span.preparing-removal,
+span.install-error,
+span.removal-error,
+span.will-be-installed, 
+span.will-be-removed,
+span.update-will-be-installed, 
+span.update-available {
     color: #CC0000 !important;
+}
+
+span.downloading:after, 
+span.preparing-removal:after,
+span.installing:after, 
+span.removing:after,
+div.lockup li.downloading:after, 
+div.lockup li.preparing-removal:after,
+div.lockup li.installing:after, 
+div.lockup li.removing:after {
+    visibility: visible;
+    float: right;
+    content: ' ';
+    background: url(progress-spinner.png) 0 0 no-repeat;
+    -webkit-background-size: 21px 20px;
+    opacity: 1;
+    width: 21px;
+    height: 20px;
+    -webkit-animation-name: 'generic-loading-spinner-animation';
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-duration: 1s;
+}
+
+div.lockup li.downloading:after, div.lockup li.preparing-removal:after,
+div.lockup li.installing:after, div.lockup li.removing:after {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
 }
 
 div.lockup li {
