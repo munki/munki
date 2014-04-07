@@ -794,10 +794,9 @@ class MSUMainWindowController(NSWindowController):
             # item was processed and cached for install or removal. Need to run
             # an updatecheck session to possibly remove other items (dependencies
             # or updates) from the pending list
+            # check for updates after a short delay so UI changes visually complete first
+            self.performSelector_withObject_afterDelay_(self.checkForUpdates, True, 1.0)
             self._update_in_progress = True
-            #self.loadUpdatesPage_(self)
-            #self.displayUpdateCount()
-            self.checkForUpdates(suppress_apple_update_check=True)
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
