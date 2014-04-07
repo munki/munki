@@ -731,10 +731,12 @@ class MSUMainWindowController(NSWindowController):
         # remove this row from its current table
         node = update_table_row.parentNode().removeChild_(update_table_row)
 
+        previous_status = item['status']
         # update item status
         item.update_status()
         
-        if item.get('will_be_installed') or item.get('will_be_removed'):
+        if (previous_status in ['update-will-be-installed', 'will-be-installed', 'will-be-removed']
+            or item['status'] in ['install-requested', 'removal-requested']):
             # item was processed and cached for install or removal. Need to run
             # an updatecheck session to possibly remove other items (dependencies
             # or updates) from the pending list
@@ -751,7 +753,7 @@ class MSUMainWindowController(NSWindowController):
             item_template = msuhtml.get_template('update_row_template.html')
             item_html = item_template.safe_substitute(item)
 
-            if item['status'] in ['update-will-be-installed', 'installed']:
+            if item['status'] in ['install-requested', 'update-will-be-installed', 'installed']:
                 # add the node to the updates-to-install table
                 table = document.getElementById_('updates-to-install-table')
             if item['status'] == 'update-available':
