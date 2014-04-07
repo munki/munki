@@ -1227,30 +1227,30 @@ def run(only_unattended=False):
 
         # update optional_installs with new installation/removal status
         for removal in munkicommon.report.get('RemovalResults', []):
-            if removal['status'] != 0:
-                # TO-DO: communicate back removal error
-                # so that MSC.app can display it
-                continue
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
                 if item['name'] == removal['name']]
             if len(matching_optional_installs) == 1:
-                matching_optional_installs[0]['installed'] = False
-                matching_optional_installs[0]['will_be_removed'] = False
+                if removal['status'] != 0:
+                    matching_optional_installs[0]['removal_error'] = True
+                    matching_optional_installs[0]['will_be_removed'] = False
+                else:
+                    matching_optional_installs[0]['installed'] = False
+                    matching_optional_installs[0]['will_be_removed'] = False
 
         for install in munkicommon.report.get('InstallResults', []):
-            if install['status'] != 0:
-                # TO-DO: communicate back install error
-                # so that MSC.app can display it
-                continue
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
                 if item['name'] == install['name']
                 and item['version_to_install'] == install['version']]
             if len(matching_optional_installs) == 1:
-                matching_optional_installs[0]['installed'] = True
-                matching_optional_installs[0]['needs_update'] = False
-                matching_optional_installs[0]['will_be_installed'] = False
+                if install['status'] != 0:
+                    matching_optional_installs[0]['install_error'] = True
+                    matching_optional_installs[0]['will_be_installed'] = False
+                else:
+                    matching_optional_installs[0]['installed'] = True
+                    matching_optional_installs[0]['needs_update'] = False
+                    matching_optional_installs[0]['will_be_installed'] = False
 
         # write updated installinfo back to disk to reflect current state
         try:
