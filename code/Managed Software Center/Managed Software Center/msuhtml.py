@@ -46,20 +46,22 @@ def build_page(filename):
     value = unquote(quoted_value)
     if key == 'detail':
         build_detail_page(value)
-    if key == 'category':
+    elif key == 'category':
         build_list_page(category=value)
-    if key == 'categories':
+    elif key == 'categories':
         build_categories_page()
-    if key == 'filter':
+    elif key == 'filter':
         build_list_page(filter=value)
-    if key == 'developer':
+    elif key == 'developer':
         build_list_page(developer=value)
-    if key == 'myitems':
+    elif key == 'myitems':
         build_myitems_page()
-    if key == 'updates':
+    elif key == 'updates':
         build_updates_page()
-    if key == 'updatedetail':
+    elif key == 'updatedetail':
         build_updatedetail_page(value)
+    else:
+        build_item_not_found_page(filename)
 
 
 def write_page(page_name, html):
@@ -119,6 +121,14 @@ def addSidebarLabels(page):
                                     u'Due:', u'DueLabel')
 
 
+def build_item_not_found_page(page_name):
+    '''Build item not found page'''
+    page = {}
+    page['item_not_found_message'] = NSLocalizedString(
+        u'Cannot display the requested item.', u'ItemNotFoundMessage')
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'page_not_found_template.html', page, footer=footer)
+
 
 def build_detail_page(item_name):
     '''Build page showing detail for a single optional item'''
@@ -175,7 +185,7 @@ def build_detail_page(item_name):
             generate_page(page_name, 'detail_template.html', page, footer=footer)
             return
     NSLog('No detail found for %s' % item_name)
-    return None # TO-DO: need an error html file!
+    build_item_not_found_page(page_name)
 
 
 def build_list_page(category=None, developer=None, filter=None):
@@ -573,5 +583,5 @@ def build_updatedetail_page(identifier):
             return
     # if we get here we didn't find any item matching identifier
     NSLog('No update detail found for %s' % item_name)
-    return None # TO-DO: need an error html file!
+    build_item_not_found_page(page_name)
 

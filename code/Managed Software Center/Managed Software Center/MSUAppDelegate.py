@@ -31,6 +31,7 @@ from AppKit import *
 from MSUStatusController import MSUStatusController
 
 import munki
+import msuhtml
 import msulog
 
 class MSUAppDelegate(NSObject):
@@ -105,6 +106,7 @@ class MSUAppDelegate(NSObject):
         if not os.path.splitext(filename)[1]:
             filename += '.html'
         if filename.endswith('.html'):
+            msuhtml.build_page(filename)
             self.mainWindowController.load_page(filename)
         else:
             NSLog("%@ doesn't have a valid extension. Prevented from opening", url)
