@@ -735,17 +735,6 @@ class MSUMainWindowController(NSWindowController):
         # update item status
         item.update_status()
         
-        if (previous_status in ['update-will-be-installed', 'will-be-installed', 'will-be-removed']
-            or item['status'] in ['install-requested', 'removal-requested']):
-            # item was processed and cached for install or removal. Need to run
-            # an updatecheck session to possibly remove other items (dependencies
-            # or updates) from the pending list
-            self._update_in_progress = True
-            self.loadUpdatesPage_(self)
-            self.displayUpdateCount()
-            self.checkForUpdates(suppress_apple_update_check=True)
-            return
-
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
             # make some new HTML for the updated item
@@ -799,6 +788,16 @@ class MSUMainWindowController(NSWindowController):
 
         # update count badges
         self.displayUpdateCount()
+        
+        if (previous_status in ['update-will-be-installed', 'will-be-installed', 'will-be-removed']
+            or item['status'] in ['install-requested', 'removal-requested']):
+            # item was processed and cached for install or removal. Need to run
+            # an updatecheck session to possibly remove other items (dependencies
+            # or updates) from the pending list
+            self._update_in_progress = True
+            #self.loadUpdatesPage_(self)
+            #self.displayUpdateCount()
+            self.checkForUpdates(suppress_apple_update_check=True)
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
