@@ -186,17 +186,18 @@ class MSUStatusController(NSObject):
             percent = 0
         self._status_percent = percent
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            progress = document.getElementById_('progress-bar')
-            if progress:
-                if float(percent) < 0:
-                    # indeterminate
-                    progress.setClassName_('indeterminate')
-                    progress.removeAttribute_('style')
-                else:
-                    progress.setClassName_('')
-                    progress.setAttribute__('style', 'width: %s%%' % percent)
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                progress = document.getElementById_('progress-bar')
+                if progress:
+                    if float(percent) < 0:
+                        # indeterminate
+                        progress.setClassName_('indeterminate')
+                        progress.removeAttribute_('style')
+                    else:
+                        progress.setClassName_('')
+                        progress.setAttribute__('style', 'width: %s%%' % percent)
 
     def doRestartAlert(self):
         '''Display a restart alert -- some item just installed or removed requires a restart'''
@@ -224,27 +225,29 @@ class MSUStatusController(NSObject):
         '''Display main status message'''
         self._status_message = messageText
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            textElement = document.getElementById_('primary-status-text')
-            if textElement:
-                if messageText:
-                    textElement.setInnerText_(messageText)
-                else:
-                    textElement.setInnerHTML_('&nbsp;')
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                textElement = document.getElementById_('primary-status-text')
+                if textElement:
+                    if messageText:
+                        textElement.setInnerText_(messageText)
+                    else:
+                        textElement.setInnerHTML_('&nbsp;')
 
     def setDetail_(self, detailText):
         '''Display status detail'''
         self._status_detail = detailText
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            textElement = document.getElementById_('secondary-status-text')
-            if textElement:
-                if detailText:
-                    textElement.setInnerText_(detailText)
-                else:
-                    textElement.setInnerHTML_('&nbsp;')
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                textElement = document.getElementById_('secondary-status-text')
+                if textElement:
+                    if detailText:
+                        textElement.setInnerText_(detailText)
+                    else:
+                        textElement.setInnerHTML_('&nbsp;')
 
     def getStopBtnState(self):
         '''Get the state (pressed or not) of the stop button'''
@@ -256,14 +259,15 @@ class MSUStatusController(NSObject):
             return
         self._status_stopBtnHidden = True
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if not 'hidden' in btn_classes:
-                    btn_classes.append('hidden')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if not 'hidden' in btn_classes:
+                        btn_classes.append('hidden')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def showStopButton(self):
         '''Show the stop button'''
@@ -271,14 +275,15 @@ class MSUStatusController(NSObject):
            return
         self._status_stopBtnHidden = False
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if 'hidden' in btn_classes:
-                    btn_classes.remove('hidden')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if 'hidden' in btn_classes:
+                        btn_classes.remove('hidden')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def enableStopButton(self):
         '''Enable the stop button'''
@@ -286,14 +291,15 @@ class MSUStatusController(NSObject):
             return
         self._status_stopBtnDisabled = False
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if 'disabled' in btn_classes:
-                    btn_classes.remove('disabled')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if 'disabled' in btn_classes:
+                        btn_classes.remove('disabled')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def disableStopButton(self):
         '''Disable the stop button'''
@@ -301,14 +307,15 @@ class MSUStatusController(NSObject):
             return
         self._status_stopBtnDisabled = True
         document = self.statusWindowController.webView.mainFrameDocument()
-        spinner = document.getElementById_('updates-progress-spinner')
-        if spinner: # we are displaying the updates status page
-            install_btn = document.getElementById_('install-all-button-text')
-            if install_btn:
-                btn_classes = install_btn.className().split(' ')
-                if not 'disabled' in btn_classes:
-                    btn_classes.append('disabled')
-                    install_btn.setClassName_(' '.join(btn_classes))
+        if document:
+            spinner = document.getElementById_('updates-progress-spinner')
+            if spinner: # we are displaying the updates status page
+                install_btn = document.getElementById_('install-all-button-text')
+                if install_btn:
+                    btn_classes = install_btn.className().split(' ')
+                    if not 'disabled' in btn_classes:
+                        btn_classes.append('disabled')
+                        install_btn.setClassName_(' '.join(btn_classes))
 
     def getRestartAlertDismissed(self):
         '''Was the restart alert dimissed?'''
