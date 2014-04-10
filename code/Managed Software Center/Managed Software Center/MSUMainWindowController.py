@@ -232,9 +232,9 @@ class MSUMainWindowController(NSWindowController):
 
         # all done checking and/or installing: display results
         self.resetAndReload()
-        if self._update_queue:
-            # more stuff pending? Let's do it
-            self._update_queue.clear()
+        
+        if MunkiItems.updateCheckNeeded():
+            # more stuff pending? Let's do it...
             self.updateNow()
 
     @AppHelper.endSheetMethod
@@ -355,15 +355,19 @@ class MSUMainWindowController(NSWindowController):
     def checkForUpdates(self, suppress_apple_update_check=False):
         '''start an update check session'''
         # attempt to start the update check
+        if self._update_in_progress:
+            return
         result = munki.startUpdateCheck(suppress_apple_update_check)
         if result == 0:
+            self._update_in_progress = True
+            self.displayUpdateCount()
             self.managedsoftwareupdate_task = "manualcheck"
             NSApp.delegate().statusController.startMunkiStatusSession()
             self.markRequestedItemsAsProcessing()
         else:
             self.munkiStatusSessionEnded_(2)
 
-    def kickOffUpdateSession(self):
+    def kickOffInstallSession(self):
         '''start an update install/removal session'''
         # check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
@@ -407,6 +411,14 @@ class MSUMainWindowController(NSWindowController):
                                        for item in install_info.get('managed_installs', [])]
         items_to_be_removed_names = [item['name']
                                      for item in install_info.get('removals', [])]
+                                     
+        for name in items_to_be_installed_names:
+            # remove names for user selections since we are installing
+            MunkiItems.user_install_selections.discard(name)
+        
+        for name in items_to_be_removed_names:
+            # remove names for user selections since we are removing
+            MunkiItems.user_removal_selections.discard(name)
         
         for item in MunkiItems.getOptionalInstallItems():
             new_status = None
@@ -426,7 +438,7 @@ class MSUMainWindowController(NSWindowController):
         NSLog('markRequestedItemsAsProcessing')
         for item in MunkiItems.getOptionalInstallItems():
             new_status = None
-            NSLog('Status for %s is %s' % (item['name'], item['status']))
+            #NSLog('Status for %s is %s' % (item['name'], item['status']))
             if item['status'] == 'install-requested':
                 NSLog('Setting status for %s to "downloading"' % item['name'])
                 new_status = u'downloading'
@@ -440,17 +452,16 @@ class MSUMainWindowController(NSWindowController):
     def updateNow(self):
         '''If user has added to/removed from the list of things to be updated,
         run a check session. If there are no more changes, proceed to an update
-        installation session'''
+        installation session if items to be installed/removed are exclusively
+        those selected by the user in this session'''
         if self.stop_requested:
             # reset the flag
             self.stop_requested = False
             self.resetAndReload()
             return
-        current_self_service = MunkiItems.SelfService()
-        if current_self_service != self.cached_self_service:
-            NSLog('selfService choices changed')
-            # recache SelfService
-            self.cached_self_service = current_self_service
+        if MunkiItems.updateCheckNeeded():
+            # any item status changes that require an update check?
+            NSLog('updateCheck needed')
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
@@ -458,7 +469,6 @@ class MSUMainWindowController(NSWindowController):
             self._update_in_progress = True
             self.displayUpdateCount()
             result = munki.startUpdateCheck(suppress_apple_update_check)
-            result = 0
             if result:
                 NSLog("Error starting check-then-install session: %s" % result)
                 self.munkiStatusSessionEnded_(2)
@@ -466,17 +476,19 @@ class MSUMainWindowController(NSWindowController):
                 self.managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
                 self.markRequestedItemsAsProcessing()
-        elif not self._alertedUserToOutstandingUpdates and MunkiItems.updatesContainNonOptionalItems():
+        elif (not self._alertedUserToOutstandingUpdates
+              and MunkiItems.updatesContainNonUserSelectedItems()):
             # current list of updates contains some not explicitly chosen by the user
+            NSLog('updateCheck not needed, items require user approval')
             self._update_in_progress = False
             self.displayUpdateCount()
             self.loadUpdatesPage_(self)
             self._alertedUserToOutstandingUpdates = True
             self.alert_controller.alertToExtraUpdates()
         else:
-            NSLog('selfService choices unchanged')
+            NSLog('updateCheck not needed')
             self._alertedUserToOutstandingUpdates = False
-            self.kickOffUpdateSession()
+            self.kickOffInstallSession()
 
     def getUpdateCount(self):
         '''Get the count of effective updates'''
@@ -672,10 +684,8 @@ class MSUMainWindowController(NSWindowController):
 
         elif self.getUpdateCount() == 0:
             # no updates, this button must say "Check Again"
-            self._update_in_progress = True
-            self.loadUpdatesPage_(self)
-            self.displayUpdateCount()
             self.checkForUpdates()
+            self.loadUpdatesPage_(self)
         else:
             # must say "Update"
             self.updateNow()
@@ -789,14 +799,9 @@ class MSUMainWindowController(NSWindowController):
         # update count badges
         self.displayUpdateCount()
         
-        if (previous_status in ['update-will-be-installed', 'will-be-installed', 'will-be-removed']
-            or item['status'] in ['install-requested', 'removal-requested']):
-            # item was processed and cached for install or removal. Need to run
-            # an updatecheck session to possibly remove other items (dependencies
-            # or updates) from the pending list
+        if MunkiItems.updateCheckNeeded():
             # check for updates after a short delay so UI changes visually complete first
             self.performSelector_withObject_afterDelay_(self.checkForUpdates, True, 1.0)
-            self._update_in_progress = True
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
@@ -810,18 +815,11 @@ class MSUMainWindowController(NSWindowController):
             return
         item.update_status()
         
-        if item.get('will_be_installed') or item.get('will_be_removed'):
-            # item was processed and cached for install or removal. Need to run
-            # an updatecheck session to possibly remove other items (dependencies
-            # or updates) from the pending list
+        if MunkiItems.updateCheckNeeded():
             if not self._update_in_progress:
-                self._update_in_progress = True
-                self.displayUpdateCount()
-                self.checkForUpdates(suppress_apple_update_check=True)
+                self.performSelector_withObject_afterDelay_(self.checkForUpdates, True, 0.1)
             else:
-                # add to queue to check later
-                # TO-DO: fix this as this can trigger an install as well
-                #self._update_queue.add(item['name'])
+                # will happen later...
                 pass
 
         self.displayUpdateCount()
@@ -835,10 +833,6 @@ class MSUMainWindowController(NSWindowController):
             btn.setInnerText_(item['myitem_action_text'])
             status_line.setInnerText_(item['status_text'])
             status_line.setClassName_('status %s' % item['status'])
-            if not self._update_in_progress:
-                if item['status'] in ['will-be-installed', 'update-will-be-installed',
-                                      'will-be-removed']:
-                    self.updateNow()
 
     def updateDOMforOptionalItem(self, item):
         '''Update displayed status of an item'''

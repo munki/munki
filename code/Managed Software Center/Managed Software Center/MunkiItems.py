@@ -33,6 +33,8 @@ from AppKit import *
 
 import FoundationPlist
 
+user_install_selections = set()
+user_removal_selections = set()
 
 # place to cache our expensive-to-calculate data
 _cache = {}
@@ -63,6 +65,12 @@ def getOptionalInstallItems():
     return _cache['optional_install_items']
 
 
+def updateCheckNeeded():
+    '''Returns True if any item in optional installs list has 'updatecheck_needed' == True'''
+    return len([item for item in getOptionalInstallItems()
+            if item.get('updatecheck_needed')]) != 0
+
+
 def optionalItemForName_(item_name):
     for item in getOptionalInstallItems():
         if item['name'] == item_name:
@@ -72,12 +80,13 @@ def optionalItemForName_(item_name):
 
 def getOptionalWillBeInstalledItems():
     return [item for item in getOptionalInstallItems()
-            if item['status'] in ['will-be-installed', 'update-will-be-installed']]
+            if item['status'] in ['install-requested', 'will-be-installed',
+                                  'update-will-be-installed', 'install-error']]
 
 
 def getOptionalWillBeRemovedItems():
     return [item for item in getOptionalInstallItems()
-            if item['status'] == 'will-be-removed']
+            if item['status'] in ['removal-requested', 'will-be-removed', 'removal-error']]
 
 
 def getUpdateList():
@@ -134,7 +143,7 @@ def updatesRequireRestart():
                 if 'Restart' in item.get('RestartAction', '')]) > 0
 
 
-def updatesContainNonOptionalItems():
+def updatesContainNonUserSelectedItems():
     '''Does the list of updates contain items not selected by the user?'''
     if not munki.munkiUpdatesContainAppleItems() and getAppleUpdates():
         # available Apple updates are not user selected
@@ -143,11 +152,11 @@ def updatesContainNonOptionalItems():
     install_items = install_info.get('managed_installs', [])
     removal_items = install_info.get('removals', [])
     filtered_installs = [item for item in install_items
-                         if item['name'] not in SelfService().installs()]
+                         if item['name'] not in user_install_selections]
     if filtered_installs:
         return True
     filtered_uninstalls = [item for item in removal_items
-                           if item['name'] not in SelfService().uninstalls()]
+                           if item['name'] not in user_removal_selections]
     if filtered_uninstalls:
         return True
     return False
@@ -303,7 +312,8 @@ class MSUHTMLFilter(HTMLParser):
 
 
 def filtered_html(text):
-    '''Returns filtered HTML for use in description paragraphs'''
+    '''Returns filtered HTML for use in description paragraphs
+       or converts plain text into basic HTML for the same use'''
     parser = MSUHTMLFilter()
     parser.feed(text)
     if parser.tag_count:
@@ -363,15 +373,25 @@ class SelfService(object):
 
 
 def subscribe(item):
+    '''Add item to SelfServeManifest's managed_installs.
+       Also track user selections.'''
     SelfService().subscribe(item)
+    user_install_selections.add(item['name'])
 
 
 def unsubscribe(item):
+    '''Add item to SelfServeManifest's managed_uninstalls.
+       Also track user selections.'''
     SelfService().unsubscribe(item)
+    user_removal_selections.add(item['name'])
 
 
 def unmanage(item):
+    '''Remove item from SelfServeManifest.
+       Also track user selections.'''
     SelfService().unmanage(item)
+    user_install_selections.discard(item['name'])
+    user_removal_selections.discard(item['name'])
 
 
 class GenericItem(dict):
@@ -443,15 +463,15 @@ class GenericItem(dict):
 
     def dependency_description(self):
         '''Return an html description of items this item depends on'''
-        _description = u''
+        description = u''
         prologue = NSLocalizedString(
             u'This item is required by:', u'DependencyListPrologueText')
         if self.get('dependent_items'):
-            _description = u'<br/><br/><strong>' + prologue
+            description = u'<strong>' + prologue
             for item in self['dependent_items']:
-                _description += u'<br/>&nbsp;&nbsp;&bull; ' + display_name(item)
-            _description += u'</strong>'
-        return _description
+                description += u'<br/>&nbsp;&nbsp;&bull; ' + display_name(item)
+            description += u'</strong><br/><br/>'
+        return description
 
     def guess_developer(self):
         '''Figure out something to use for the developer name'''
@@ -749,6 +769,10 @@ class GenericItem(dict):
             removal_text = NSLocalizedString(
                 u'Will be removed', u'WillBeRemovedDisplayText')
             return '<span class="warning">%s</span>' % removal_text
+        if self['status'] == 'removal-requested':
+            removal_text = NSLocalizedString(
+                u'Removal requested', u'RemovalRequestedDisplayText')
+            return '<span class="warning">%s</span>' % removal_text
         else:
             return NSLocalizedString(u'Version', u'VersionLabel')
 
@@ -798,10 +822,13 @@ class OptionalItem(GenericItem):
         self['hide_cancel_button'] = u''
             
     def _get_status(self):
-        '''Calculates initial status for an item'''
+        '''Calculates initial status for an item and also sets a boolean
+        if a updatecheck is needed'''
         managed_update_names = getInstallInfo().get('managed_updates', [])
         self_service_installs = SelfService().installs()
         self_service_uninstalls = SelfService().uninstalls()
+        self['updatecheck_needed'] = False
+        self['user_directed_action'] = False
         if self.get('installed'):
             if self.get('removal_error'):
                 status = u'removal-error'
@@ -811,6 +838,7 @@ class OptionalItem(GenericItem):
                 status = u'installed-not-removable'
             elif self['name'] in self_service_uninstalls:
                 status = u'removal-requested'
+                self['updatecheck_needed'] = True
             else: # not in managed_uninstalls
                 if not self.get('needs_update'):
                     if self.get('uninstallable'):
@@ -850,6 +878,7 @@ class OptionalItem(GenericItem):
                 status = u'will-be-installed'
             elif self['name'] in self_service_installs:
                 status = u'install-requested'
+                self['updatecheck_needed'] = True
             else: # not in managed_installs
                 status = u'not-installed'
         return status
@@ -857,28 +886,31 @@ class OptionalItem(GenericItem):
     def description(self):
         '''return a full description for the item, inserting dynamic data
            if needed'''
-        _description = self['raw_description']
+        start_text = ''
         if self.get('install_error'):
-            _description = NSLocalizedString(
-                u'<span class="warning">An installation attempt failed. '
-                 'Installation will be attempted again.<br/>'
-                 'If this situation continues, contact your systems administrator.'
-                 '</span><br/><br/>',
-                u'InstallErrorMessage') + _description
-        elif self.get('removal_error'):
-            _description = NSLocalizedString(
-                u'<span class="warning">A removal attempt failed. '
-                 'Removal will be attempted again.<br/>'
-                 'If this situation continues, contact your systems administrator.'
-                 '</span><br/><br/>',
-                u'RemovalErrorMessage') + _description
+            warning_text = NSLocalizedString(
+                u'An installation attempt failed. '
+                 'Installation will be attempted again.\n'
+                 'If this situation continues, contact your systems administrator.',
+                u'InstallErrorMessage')
+            start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
+        if self.get('removal_error'):
+            warning_text = NSLocalizedString(
+                u'A removal attempt failed. '
+                 'Removal will be attempted again.\n'
+                 'If this situation continues, contact your systems administrator.',
+                u'RemovalErrorMessage')
+            start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('dependent_items'):
-            # append dependency info to description:
-            _description += self.dependency_description()
-        return _description
+            start_text += self.dependency_description()
+                
+        return start_text + self['raw_description']
 
     def update_status(self):
         # user clicked an item action button - update the item's state
+        # also sets a boolean indicating if we should run an updatecheck
+        self['updatecheck_needed'] = True
+        original_status = self['status']
         managed_update_names = getInstallInfo().get('managed_updates', [])
         if self['status'] == 'update-available':
             # mark the update for install
@@ -900,6 +932,8 @@ class OptionalItem(GenericItem):
                 # item is simply installed
                 self['status'] = u'installed'
             unmanage(self)
+            if original_status == 'removal-requested':
+                self['updatecheck_needed'] = False
         elif self['status'] in ['will-be-installed', 'install-requested',
                                 'downloading', 'install-error']:
             # cancel install
@@ -908,6 +942,8 @@ class OptionalItem(GenericItem):
             else:
                 self['status'] = u'not-installed'
             unmanage(self)
+            if original_status == 'install-requested':
+                self['updatecheck_needed'] = False
         elif self['status'] == 'not-installed':
             # mark for install
             self['status'] = u'install-requested'
@@ -940,7 +976,8 @@ class UpdateItem(GenericItem):
         self['dependent_items'] = dependentItems(self['name'])
 
     def description(self):
-        _description = self['raw_description']
+        warning = ''
+        dependent_items = ''
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
@@ -951,12 +988,11 @@ class UpdateItem(GenericItem):
                 forced_date_text = NSLocalizedString(
                                     u'This item must be installed by %s',
                                     u'ForcedDateWarning')
-                # prepend deadline info to description.
-                _description = ('<span class="warning">' + forced_date_text % date_str
-                    + '</span><br><br>' + _description)
+                warning = ('<span class="warning">'
+                           + forced_date_text % date_str
+                           + '</span><br><br>')
             if self.get('dependent_items'):
-                # append dependency info to description:
-                _description += self.dependency_description()
+                dependent_items = self.dependency_description()
 
-        return _description
+        return warning + dependent_items + self['raw_description']
 

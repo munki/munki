@@ -1282,6 +1282,39 @@ div.title div.select {
     color: #CC0000 !important;
 }
 
+div.lockup li a.follow,
+span a.follow {
+    visibility: hidden;
+}
+
+div.lockup li.install-requested a.follow,
+div.lockup li.will-be-installed a.follow,
+div.lockup li.update-will-be-installed a.follow,
+div.lockup li.removal-requested a.follow,
+div.lockup li.will-be-removed a.follow,
+span.install-requested a.follow,
+span.will-be-installed a.follow,
+span.update-will-be-installed a.follow,
+span.removal-requested a.follow,
+span.will-be-removed a.follow {
+    visibility: visible;
+    opacity: 0.8;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background: url('FollowLink.png') 0 0 no-repeat;
+    -webkit-background-size: 12px 12px;
+    position: relative;
+    left: 2px;
+    top: 3px;
+}
+
+div.lockup li a.follow:hover,
+span a.follow:hover {
+    opacity: 1;
+}
+
+
 div.lockup li.will-be-installed, 
 div.lockup li.will-be-removed,
 div.lockup li.install-requested,
@@ -1326,6 +1359,8 @@ div.lockup li.removing:after {
     -webkit-animation-timing-function: linear;
     -webkit-animation-duration: 1s;
 }
+
+
 
 div.lockup li.downloading:after, div.lockup li.preparing-removal:after,
 div.lockup li.installing:after, div.lockup li.removing:after {

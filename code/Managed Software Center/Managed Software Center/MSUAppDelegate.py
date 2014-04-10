@@ -33,6 +33,7 @@ from MSUStatusController import MSUStatusController
 import munki
 import msuhtml
 import msulog
+import MunkiItems
 
 class MSUAppDelegate(NSObject):
 
@@ -68,23 +69,26 @@ class MSUAppDelegate(NSObject):
             lastcheck = NSDate.date()
         else:
             lastcheck = munki.pref('LastCheckDate')
+        max_cache_age = munki.pref('CheckResultsCacheSeconds')
         # if there is no lastcheck timestamp, check for updates.
         if not lastcheck:
             self.mainWindowController.checkForUpdates()
-
-        # otherwise, only check for updates if the last check is over the
-        # configured manualcheck cache age max.
-        max_cache_age = munki.pref('CheckResultsCacheSeconds')
-        if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
+        elif lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
+            # check for updates if the last check is over the
+            # configured manualcheck cache age max.
             self.mainWindowController.checkForUpdates()
-
-        # load the initial only if we are not already loading something else.
+        elif MunkiItems.updateCheckNeeded():
+            # check for updates if we have optional items selected for install
+            # or removal that have not yet been processed
+            self.mainWindowController.checkForUpdates()
+        
+        # load the initial view only if we are not already loading something else.
         # enables launching the app to a specific panel, eg. from URL handler
         if not self.mainWindowController.webView.isLoading():
-          self.mainWindowController.loadInitialView()
+            self.mainWindowController.loadInitialView()
 
-    # below is the URL handler for calls outside the app eg. web clicks
     def applicationWillFinishLaunching_(self, notification):
+        '''Installs URL handler for calls outside the app eg. web clicks'''
         man = NSAppleEventManager.sharedAppleEventManager()
         man.setEventHandler_andSelector_forEventClass_andEventID_(
             self,
@@ -93,6 +97,7 @@ class MSUAppDelegate(NSObject):
             struct.unpack(">i", "GURL")[0])
 
     def openURL_withReplyEvent_(self, event, replyEvent):
+        '''Handle openURL messages'''
         keyDirectObject = struct.unpack(">i", "----")[0]
         url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
         NSLog("Called by external URL: %@", url)
