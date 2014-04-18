@@ -685,11 +685,9 @@ class MSUMainWindowController(NSWindowController):
         elif self.getUpdateCount() == 0:
             # no updates, this button must say "Check Again"
             self.checkForUpdates()
-            self.loadUpdatesPage_(self)
         else:
             # must say "Update"
             self.updateNow()
-            self.loadUpdatesPage_(self)
     
     def showUpdateProgressSpinner(self):
         '''This method is currently unused'''
@@ -805,7 +803,7 @@ class MSUMainWindowController(NSWindowController):
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
-        the Install/Removel/Cancel button in the My Items view'''
+        the Install/Remove/Cancel button in the My Items view'''
         document = self.webView.mainFrameDocument()
         item = MunkiItems.optionalItemForName_(item_name)
         status_line = document.getElementById_('%s_status_text' % item_name)
@@ -813,15 +811,9 @@ class MSUMainWindowController(NSWindowController):
         if not item or not btn or not status_line:
             NSLog('Unexpected error')
             return
+        prior_status = item['status']
         item.update_status()
         
-        if MunkiItems.updateCheckNeeded():
-            if not self._update_in_progress:
-                self.performSelector_withObject_afterDelay_(self.checkForUpdates, True, 0.1)
-            else:
-                # will happen later...
-                pass
-
         self.displayUpdateCount()
         if item['status'] == 'not-installed':
             # we removed item from list of things to install
@@ -833,6 +825,15 @@ class MSUMainWindowController(NSWindowController):
             btn.setInnerText_(item['myitem_action_text'])
             status_line.setInnerText_(item['status_text'])
             status_line.setClassName_('status %s' % item['status'])
+
+        if item['status'] in ['install-requested', 'removal-requested']:
+            self._alertedUserToOutstandingUpdates = False
+            if not self._update_in_progress:
+                self.updateNow()
+        elif prior_status in ['will-be-installed', 'update-will-be-installed',
+                              'will-be-removed']:
+            # cancelled a pending install or removal; should run an updatecheck
+            self.checkForUpdates(suppress_apple_update_check=True)
 
     def updateDOMforOptionalItem(self, item):
         '''Update displayed status of an item'''
@@ -871,16 +872,14 @@ class MSUMainWindowController(NSWindowController):
         self.displayUpdateCount()
         self.updateDOMforOptionalItem(item)
         
-        if (item['status'] in ['install-requested', 'removal-requested']
-            or prior_status in ['will-be-installed', 'update-will-be-installed',
-                               'will-be-removed']):
+        if item['status'] in ['install-requested', 'removal-requested']:
             self._alertedUserToOutstandingUpdates = False
             if not self._update_in_progress:
                 self.updateNow()
-            else:
-                self._update_queue.add(item['name'])
-        else:
-            self._update_queue.discard(item['name'])
+        elif prior_status in ['will-be-installed', 'update-will-be-installed',
+                                'will-be-removed']:
+            # cancelled a pending install or removal; should run an updatecheck
+            self.checkForUpdates(suppress_apple_update_check=True)
 
     def changeSelectedCategory_(self, category):
         '''this method is called from JavaScript when the user

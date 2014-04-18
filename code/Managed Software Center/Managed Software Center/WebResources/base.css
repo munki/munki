@@ -1335,6 +1335,7 @@ span.will-be-installed,
 span.will-be-removed,
 span.update-will-be-installed, 
 span.update-available {
+    visibility: visible !important;
     color: #CC0000 !important;
 }
 
