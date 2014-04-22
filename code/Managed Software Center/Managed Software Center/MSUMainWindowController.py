@@ -161,8 +161,6 @@ class MSUMainWindowController(NSWindowController):
             self.setDisableSoftwareViewButtons_(True)
         if not optional_items or self.getUpdateCount():
             self.loadUpdatesPage_(self)
-            if not munki.thereAreUpdatesToBeForcedSoon():
-                self._alertedUserToOutstandingUpdates = True
         else:
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
@@ -349,7 +347,6 @@ class MSUMainWindowController(NSWindowController):
         # got a notification of an upcoming forced install
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
-        self._alertedUserToOutstandingUpdates = True
         self.alert_controller.forcedLogoutWarning(notification_obj)
 
     def checkForUpdates(self, suppress_apple_update_check=False):
@@ -375,17 +372,14 @@ class MSUMainWindowController(NSWindowController):
         if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
             # switch to updates view
             self.loadUpdatesPage_(self)
-            self._alertedUserToOutstandingUpdates = True
             # warn about need to logout or restart
             self.alert_controller.confirmUpdatesAndInstall()
         else:
             if self.alert_controller.alertedToBlockingAppsRunning():
                 self.loadUpdatesPage_(self)
-                self._alertedUserToOutstandingUpdates = True
                 return
             if self.alert_controller.alertedToRunningOnBatteryAndCancelled():
                 self.loadUpdatesPage_(self)
-                self._alertedUserToOutstandingUpdates = True
                 return
             self.managedsoftwareupdate_task = None
             msulog.log("user", "install_without_logout")
@@ -483,7 +477,6 @@ class MSUMainWindowController(NSWindowController):
             self._update_in_progress = False
             self.displayUpdateCount()
             self.loadUpdatesPage_(self)
-            self._alertedUserToOutstandingUpdates = True
             self.alert_controller.alertToExtraUpdates()
         else:
             NSLog('updateCheck not needed')
@@ -928,6 +921,7 @@ class MSUMainWindowController(NSWindowController):
     def loadUpdatesPage_(self, sender):
         '''Called by Navigate menu item'''
         self.load_page('updates.html')
+        self._alertedUserToOutstandingUpdates = True
 
     @IBAction
     def tabControlClicked_(self, sender):
