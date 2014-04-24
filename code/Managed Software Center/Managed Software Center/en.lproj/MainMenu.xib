@@ -234,7 +234,7 @@
                             <action selector="searchFilterChanged:" target="KMl-S0-0FF" id="bfv-In-bkh"/>
                         </connections>
                     </searchField>
-                    <customView autoresizesSubviews="NO" id="802">
+                    <customView autoresizesSubviews="NO" wantsLayer="YES" id="802">
                         <rect key="frame" x="406" y="676" width="330" height="52"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
@@ -285,6 +285,13 @@
                                         <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="only" alignment="center" state="on" tag="1" imageScaling="proportionallyDown" inset="2" id="769">
                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
+                                            <connections>
+                                                <binding destination="KMl-S0-0FF" name="enabled" keyPath="disableSoftwareViewButtons" id="Izr-47-IE3">
+                                                    <dictionary key="options">
+                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
                                         </buttonCell>
                                     </column>
                                     <column>

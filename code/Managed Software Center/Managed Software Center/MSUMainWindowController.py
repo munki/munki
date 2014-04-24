@@ -48,11 +48,11 @@ class MSUMainWindowController(NSWindowController):
     # status vars
     _status_title = u''
         
-    _current_page_filename = None
     stop_requested = False
     user_warned_about_extra_updates = False
     
     html_dir = None
+    
     
     # Cocoa UI binding properties
     tabControl = IBOutlet()
@@ -64,6 +64,17 @@ class MSUMainWindowController(NSWindowController):
     windowMenuSeperatorItem = IBOutlet()
     fullScreenMenuItem = IBOutlet()
     
+    _disableSoftwareViewButtons = False
+    
+    @objc.accessor # PyObjC KVO hack
+    def disableSoftwareViewButtons(self):
+        return True
+        return self._disableSoftwareViewButtons
+    
+    @objc.accessor # PyObjC KVO hack
+    def setDisableSoftwareViewButtons_(self, bool):
+        self._disableSoftwareViewButtons = bool
+
     def appShouldTerminate(self):
         '''called by app delegate when it receives applicationShouldTerminate:'''
         if self.getUpdateCount() == 0:
@@ -127,7 +138,7 @@ class MSUMainWindowController(NSWindowController):
         elif returncode == NSAlertOtherReturn:
             msulog.log("user", "install_now_clicked")
             # make sure this alert panel is gone before we proceed
-            # which might involve opening another aleet sheet
+            # which might involve opening another alert sheet
             alert.window().orderOut_(self)
             # initiate the updates
             self.updateNow()
@@ -144,10 +155,12 @@ class MSUMainWindowController(NSWindowController):
 
     def loadInitialView(self):
         '''Called by app delegate from applicationDidFinishLaunching:'''
-        if MunkiItems.getEffectiveUpdateList():
+        optional_items = MunkiItems.getOptionalInstallItems()
+        if not optional_items:
+            # disable software buttons and menu items
+            self.setDisableSoftwareViewButtons_(True)
+        if not optional_items or self.getUpdateCount():
             self.loadUpdatesPage_(self)
-            if not munki.thereAreUpdatesToBeForcedSoon():
-                self._alertedUserToOutstandingUpdates = True
         else:
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
@@ -217,9 +230,9 @@ class MSUMainWindowController(NSWindowController):
 
         # all done checking and/or installing: display results
         self.resetAndReload()
-        if self._update_queue:
-            # more stuff pending? Let's do it
-            self._update_queue.clear()
+        
+        if MunkiItems.updateCheckNeeded():
+            # more stuff pending? Let's do it...
             self.updateNow()
 
     @AppHelper.endSheetMethod
@@ -239,10 +252,11 @@ class MSUMainWindowController(NSWindowController):
         # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?
-        filename = self._current_page_filename
+        page_url = self.webView.mainFrameURL()
+        filename = NSURL.URLWithString_(page_url).lastPathComponent()
+        #NSLog('Filename: %s' % filename)
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
-        #value = unquote(quoted_value)
         if key == 'detail':
             # optional item detail page
             self.webView.reload_(self)
@@ -270,6 +284,12 @@ class MSUMainWindowController(NSWindowController):
         # closing the main window should be the same as quitting
         NSApp.terminate_(self)
         return NO
+    
+    def windowDidBecomeMain_(self, notification):
+        self.tabControl.setEnabled_(YES)
+    
+    def windowDidResignMain_(self, notification):
+        self.tabControl.setEnabled_(NO)
 
     def configureFullScreenMenuItem(self):
         '''check to see if NSWindow's toggleFullScreen: selector is implemented.
@@ -327,20 +347,24 @@ class MSUMainWindowController(NSWindowController):
         # got a notification of an upcoming forced install
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
-        self._alertedUserToOutstandingUpdates = True
         self.alert_controller.forcedLogoutWarning(notification_obj)
 
     def checkForUpdates(self, suppress_apple_update_check=False):
         '''start an update check session'''
         # attempt to start the update check
+        if self._update_in_progress:
+            return
         result = munki.startUpdateCheck(suppress_apple_update_check)
         if result == 0:
+            self._update_in_progress = True
+            self.displayUpdateCount()
             self.managedsoftwareupdate_task = "manualcheck"
             NSApp.delegate().statusController.startMunkiStatusSession()
+            self.markRequestedItemsAsProcessing()
         else:
             self.munkiStatusSessionEnded_(2)
 
-    def kickOffUpdateSession(self):
+    def kickOffInstallSession(self):
         '''start an update install/removal session'''
         # check for need to logout, restart, firmware warnings
         # warn about blocking applications, etc...
@@ -348,17 +372,14 @@ class MSUMainWindowController(NSWindowController):
         if MunkiItems.updatesRequireRestart() or MunkiItems.updatesRequireLogout():
             # switch to updates view
             self.loadUpdatesPage_(self)
-            self._alertedUserToOutstandingUpdates = True
             # warn about need to logout or restart
             self.alert_controller.confirmUpdatesAndInstall()
         else:
             if self.alert_controller.alertedToBlockingAppsRunning():
                 self.loadUpdatesPage_(self)
-                self._alertedUserToOutstandingUpdates = True
                 return
             if self.alert_controller.alertedToRunningOnBatteryAndCancelled():
                 self.loadUpdatesPage_(self)
-                self._alertedUserToOutstandingUpdates = True
                 return
             self.managedsoftwareupdate_task = None
             msulog.log("user", "install_without_logout")
@@ -378,38 +399,63 @@ class MSUMainWindowController(NSWindowController):
     def markPendingItemsAsInstalling(self):
         '''While an install/removal session is happening, mark optional items
         that are being installed/removed with the appropriate status'''
+        NSLog('markPendingItemsAsInstalling')
         install_info = munki.getInstallInfo()
         items_to_be_installed_names = [item['name']
                                        for item in install_info.get('managed_installs', [])]
         items_to_be_removed_names = [item['name']
                                      for item in install_info.get('removals', [])]
+                                     
+        for name in items_to_be_installed_names:
+            # remove names for user selections since we are installing
+            MunkiItems.user_install_selections.discard(name)
+        
+        for name in items_to_be_removed_names:
+            # remove names for user selections since we are removing
+            MunkiItems.user_removal_selections.discard(name)
         
         for item in MunkiItems.getOptionalInstallItems():
             new_status = None
             if item['name'] in items_to_be_installed_names:
                 NSLog('Setting status for %s to "installing"' % item['name'])
-                new_status =  'installing'
+                new_status = u'installing'
             elif item['name'] in items_to_be_removed_names:
                 NSLog('Setting status for %s to "removing"' % item['name'])
                 new_status = u'removing'
             if new_status:
                 item['status'] = new_status
                 self.updateDOMforOptionalItem(item)
-
+    
+    def markRequestedItemsAsProcessing(self):
+        '''When an update check session is happening, mark optional items
+           that have been requested as processing'''
+        NSLog('markRequestedItemsAsProcessing')
+        for item in MunkiItems.getOptionalInstallItems():
+            new_status = None
+            #NSLog('Status for %s is %s' % (item['name'], item['status']))
+            if item['status'] == 'install-requested':
+                NSLog('Setting status for %s to "downloading"' % item['name'])
+                new_status = u'downloading'
+            elif item['status'] == 'removal-requested':
+                NSLog('Setting status for %s to "preparing-removal"' % item['name'])
+                new_status = u'preparing-removal'
+            if new_status:
+                item['status'] = new_status
+                self.updateDOMforOptionalItem(item)
+    
     def updateNow(self):
         '''If user has added to/removed from the list of things to be updated,
         run a check session. If there are no more changes, proceed to an update
-        installation session'''
+        installation session if items to be installed/removed are exclusively
+        those selected by the user in this session'''
         if self.stop_requested:
             # reset the flag
             self.stop_requested = False
             self.resetAndReload()
             return
-        current_self_service = MunkiItems.SelfService()
-        if current_self_service != self.cached_self_service:
-            NSLog('selfService choices changed')
-            # recache SelfService
-            self.cached_self_service = current_self_service
+        if MunkiItems.updateCheckNeeded():
+            # any item status changes that require an update check?
+            NSLog('updateCheck needed')
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
@@ -417,22 +463,25 @@ class MSUMainWindowController(NSWindowController):
             self._update_in_progress = True
             self.displayUpdateCount()
             result = munki.startUpdateCheck(suppress_apple_update_check)
-            result = 0
             if result:
                 NSLog("Error starting check-then-install session: %s" % result)
                 self.munkiStatusSessionEnded_(2)
             else:
                 self.managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
-        elif not self._alertedUserToOutstandingUpdates and MunkiItems.updatesContainNonOptionalItems():
+                self.markRequestedItemsAsProcessing()
+        elif (not self._alertedUserToOutstandingUpdates
+              and MunkiItems.updatesContainNonUserSelectedItems()):
             # current list of updates contains some not explicitly chosen by the user
+            NSLog('updateCheck not needed, items require user approval')
+            self._update_in_progress = False
+            self.displayUpdateCount()
             self.loadUpdatesPage_(self)
-            self._alertedUserToOutstandingUpdates = True
             self.alert_controller.alertToExtraUpdates()
         else:
-            NSLog('selfService choices unchanged')
+            NSLog('updateCheck not needed')
             self._alertedUserToOutstandingUpdates = False
-            self.kickOffUpdateSession()
+            self.kickOffInstallSession()
 
     def getUpdateCount(self):
         '''Get the count of effective updates'''
@@ -445,9 +494,9 @@ class MSUMainWindowController(NSWindowController):
         and as an icon badge in the Dock'''
         updateCount = self.getUpdateCount()
         btn_image = MSUBadgedTemplateImage.imageNamed_withCount_(
-                        'toolbarUpdatesTemplate.png', updateCount)
+                            'toolbarUpdatesTemplate.pdf', updateCount)
         self.updateButtonCell.setImage_(btn_image)
-        if updateCount:
+        if updateCount not in [u'★', 0]:
             NSApp.dockTile().setBadgeLabel_(str(updateCount))
         else:
             NSApp.dockTile().setBadgeLabel_(None)
@@ -471,10 +520,8 @@ class MSUMainWindowController(NSWindowController):
     def updateListPage(self):
         '''Update the optional items list page with current data.
         Modifies the DOM to avoid ugly browser refresh'''
-        filename = self._current_page_filename
-        if not filename:
-            NSLog('updateListPage unexpected error: no _current_page_filename')
-            return
+        page_url = self.webView.mainFrameURL()
+        filename = NSURL.URLWithString_(page_url).lastPathComponent()
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
         category = None
@@ -492,7 +539,7 @@ class MSUMainWindowController(NSWindowController):
             NSLog('updateListPage unexpected error: _current_page_filename is %s' %
                   filename)
             return
-        NSLog('updating with category: %s, developer; %s, filter: %s' %
+        NSLog('updating software list page with category: %s, developer; %s, filter: %s' %
               (category, developer, filter))
         items_html = msuhtml.build_list_page_items_html(
                             category=category, developer=developer, filter=filter)
@@ -520,10 +567,21 @@ class MSUMainWindowController(NSWindowController):
 ##### WebView delegate methods #####
 
     def webView_decidePolicyForNewWindowAction_request_newFrameName_decisionListener_(
-            self, webView, actionInformation, request, frameName, listener):
+            self, sender, actionInformation, request, frameName, listener):
         '''open link in default browser instead of in our app's WebView'''
         listener.ignore()
         NSWorkspace.sharedWorkspace().openURL_(request.URL())
+    
+    def webView_decidePolicyForMIMEType_request_frame_decisionListener_(
+            self, sender, type, request, frame, listener):
+        '''Decide whether to show or download content'''
+        if WebView.canShowMIMEType_(type):
+            listener.use()
+        else:
+            # send the request to the user's default browser instead, where it can
+            # display or download it
+            listener.ignore()
+            NSWorkspace.sharedWorkspace().openURL_(request.URL())
 
     def webView_resource_willSendRequest_redirectResponse_fromDataSource_(
             self, sender, identifier, request, redirectResponse, dataSource):
@@ -545,19 +603,6 @@ class MSUMainWindowController(NSWindowController):
                     msuhtml.build_page(filename)
                 except Exception, e:
                     NSLog('%@', e)
-                if filename == 'category-all.html':
-                    self.tabControl.selectCellWithTag_(1)
-                elif filename == 'categories.html':
-                    self.tabControl.selectCellWithTag_(2)
-                elif filename == 'myitems.html':
-                    self.tabControl.selectCellWithTag_(3)
-                elif filename == 'updates.html':
-                    self.tabControl.selectCellWithTag_(4)
-                else:
-                    self.tabControl.deselectAllCells()
-                # store the filename
-                self._current_page_filename = filename
-        
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
@@ -568,6 +613,17 @@ class MSUMainWindowController(NSWindowController):
     def webView_didStartProvisionalLoadForFrame_(self, view, frame):
         '''Animate progress spinner while we load a page'''
         self.progressSpinner.startAnimation_(self)
+        main_url = self.webView.mainFrameURL()
+        if main_url.endswith('category-all.html'):
+            self.tabControl.selectCellWithTag_(1)
+        elif main_url.endswith('categories.html'):
+            self.tabControl.selectCellWithTag_(2)
+        elif main_url.endswith('myitems.html'):
+            self.tabControl.selectCellWithTag_(3)
+        elif main_url.endswith('updates.html'):
+            self.tabControl.selectCellWithTag_(4)
+        else:
+            self.tabControl.deselectAllCells()
 
     def webView_didFinishLoadForFrame_(self, view, frame):
         '''Stop progress spinner and update state of back/forward buttons'''
@@ -591,7 +647,8 @@ class MSUMainWindowController(NSWindowController):
     def isSelectorExcludedFromWebScript_(self, aSelector):
         '''Declare which methods can be called from JavaScript'''
         # For security, you must explicitly allow a selector to be called from JavaScript.
-        if aSelector in ['actionButtonClicked:',
+        if aSelector in ['openExternalLink:',
+                         'actionButtonClicked:',
                          'myItemsActionButtonClicked:',
                          'changeSelectedCategory:',
                          'installButtonClicked',
@@ -600,6 +657,10 @@ class MSUMainWindowController(NSWindowController):
         return YES # disallow everything else
 
 #### handling DOM UI elements ####
+
+    def openExternalLink_(self, url):
+        '''open a link in the default browser'''
+        NSWorkspace.sharedWorkspace().openURL_(NSURL.URLWithString_(url))
 
     def installButtonClicked(self):
         '''this method is called from JavaScript when the user
@@ -616,14 +677,10 @@ class MSUMainWindowController(NSWindowController):
 
         elif self.getUpdateCount() == 0:
             # no updates, this button must say "Check Again"
-            self._update_in_progress = True
-            self.loadUpdatesPage_(self)
-            self.displayUpdateCount()
             self.checkForUpdates()
         else:
             # must say "Update"
             self.updateNow()
-            self.loadUpdatesPage_(self)
     
     def showUpdateProgressSpinner(self):
         '''This method is currently unused'''
@@ -675,17 +732,18 @@ class MSUMainWindowController(NSWindowController):
         # remove this row from its current table
         node = update_table_row.parentNode().removeChild_(update_table_row)
 
+        previous_status = item['status']
         # update item status
         item.update_status()
-
+        
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
             # make some new HTML for the updated item
             managed_update_names = MunkiItems.getInstallInfo().get('managed_updates', [])
-            item_template = msulib.get_template('update_row_template.html')
+            item_template = msuhtml.get_template('update_row_template.html')
             item_html = item_template.safe_substitute(item)
 
-            if item['status'] in ['update-will-be-installed', 'installed']:
+            if item['status'] in ['install-requested', 'update-will-be-installed', 'installed']:
                 # add the node to the updates-to-install table
                 table = document.getElementById_('updates-to-install-table')
             if item['status'] == 'update-available':
@@ -731,10 +789,14 @@ class MSUMainWindowController(NSWindowController):
 
         # update count badges
         self.displayUpdateCount()
+        
+        if MunkiItems.updateCheckNeeded():
+            # check for updates after a short delay so UI changes visually complete first
+            self.performSelector_withObject_afterDelay_(self.checkForUpdates, True, 1.0)
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
-        the Install/Removel/Cancel button in the My Items view'''
+        the Install/Remove/Cancel button in the My Items view'''
         document = self.webView.mainFrameDocument()
         item = MunkiItems.optionalItemForName_(item_name)
         status_line = document.getElementById_('%s_status_text' % item_name)
@@ -742,7 +804,9 @@ class MSUMainWindowController(NSWindowController):
         if not item or not btn or not status_line:
             NSLog('Unexpected error')
             return
+        prior_status = item['status']
         item.update_status()
+        
         self.displayUpdateCount()
         if item['status'] == 'not-installed':
             # we removed item from list of things to install
@@ -754,14 +818,21 @@ class MSUMainWindowController(NSWindowController):
             btn.setInnerText_(item['myitem_action_text'])
             status_line.setInnerText_(item['status_text'])
             status_line.setClassName_('status %s' % item['status'])
+
+        if item['status'] in ['install-requested', 'removal-requested']:
+            self._alertedUserToOutstandingUpdates = False
             if not self._update_in_progress:
-                if item['status'] in ['will-be-installed', 'update-will-be-installed',
-                                      'will-be-removed']:
-                    self.updateNow()
+                self.updateNow()
+        elif prior_status in ['will-be-installed', 'update-will-be-installed',
+                              'will-be-removed']:
+            # cancelled a pending install or removal; should run an updatecheck
+            self.checkForUpdates(suppress_apple_update_check=True)
 
     def updateDOMforOptionalItem(self, item):
         '''Update displayed status of an item'''
         document = self.webView.mainFrameDocument()
+        if not document:
+            return
         status_line = document.getElementById_('%s_status_text' % item['name'])
         btn = document.getElementById_('%s_action_button_text' % item['name'])
         if not btn or not status_line:
@@ -788,18 +859,20 @@ class MSUMainWindowController(NSWindowController):
         if not item:
             NSLog('Can\'t find item: %s' % item_name)
             return
+        
+        prior_status = item['status']
         item.update_status()
         self.displayUpdateCount()
         self.updateDOMforOptionalItem(item)
         
-        if item['status'] in ['will-be-installed', 'update-will-be-installed', 'will-be-removed']:
+        if item['status'] in ['install-requested', 'removal-requested']:
             self._alertedUserToOutstandingUpdates = False
             if not self._update_in_progress:
                 self.updateNow()
-            else:
-                self._update_queue.add(item['name'])
-        else:
-            self._update_queue.discard(item['name'])
+        elif prior_status in ['will-be-installed', 'update-will-be-installed',
+                                'will-be-removed']:
+            # cancelled a pending install or removal; should run an updatecheck
+            self.checkForUpdates(suppress_apple_update_check=True)
 
     def changeSelectedCategory_(self, category):
         '''this method is called from JavaScript when the user
@@ -810,8 +883,9 @@ class MSUMainWindowController(NSWindowController):
 
     def setStatusViewTitle_(self, title_text):
         '''When displaying status during a managedsoftwareupdate run, this method
-        is used to disply info where the update count message usually is'''
+        is used to display info where the update count message usually is'''
         document = self.webView.mainFrameDocument()
+        self._status_title = title_text
         # we re-purpose the update count message for this
         update_count_element = document.getElementById_('update-count-string')
         if update_count_element:
@@ -847,6 +921,7 @@ class MSUMainWindowController(NSWindowController):
     def loadUpdatesPage_(self, sender):
         '''Called by Navigate menu item'''
         self.load_page('updates.html')
+        self._alertedUserToOutstandingUpdates = True
 
     @IBAction
     def tabControlClicked_(self, sender):

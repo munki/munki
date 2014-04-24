@@ -377,6 +377,7 @@ def justUpdate():
     except (OSError, IOError):
         return 1
 
+
 def pythonScriptRunning(scriptname):
     """Returns Process ID for a running python script"""
     cmd = ['/bin/ps', '-eo', 'pid=,command=']

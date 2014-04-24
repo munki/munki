@@ -17,7 +17,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# struct for the url handler
+import struct
 import os
+from urllib import unquote
+from urlparse import urlparse
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 import PyObjCTools
@@ -27,33 +31,35 @@ from AppKit import *
 from MSUStatusController import MSUStatusController
 
 import munki
+import msuhtml
 import msulog
+import MunkiItems
 
 class MSUAppDelegate(NSObject):
-    
+
     mainWindowController = IBOutlet()
     statusController = IBOutlet()
 
     def applicationShouldTerminate_(self, sender):
         '''Called if user selects 'Quit' from menu'''
         return self.mainWindowController.appShouldTerminate()
-    
+
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
         # Prevent automatic relaunching at login on Lion+
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
-        
+
         ver = NSBundle.mainBundle().infoDictionary().get('CFBundleShortVersionString')
         NSLog("MSC GUI version: %s" % ver)
         msulog.log("MSC", "launched", "VER=%s" % ver)
-        
+
         # setup client logging
         msulog.setup_logging()
 
         # have the statuscontroller register for its own notifications
         self.statusController.registerForNotifications()
-            
+
         # user may have launched the app manually, or it may have
         # been launched by /usr/local/munki/managedsoftwareupdate
         # to display available updates
@@ -63,15 +69,50 @@ class MSUAppDelegate(NSObject):
             lastcheck = NSDate.date()
         else:
             lastcheck = munki.pref('LastCheckDate')
+        max_cache_age = munki.pref('CheckResultsCacheSeconds')
         # if there is no lastcheck timestamp, check for updates.
         if not lastcheck:
             self.mainWindowController.checkForUpdates()
-        
-        # otherwise, only check for updates if the last check is over the
-        # configured manualcheck cache age max.
-        max_cache_age = munki.pref('CheckResultsCacheSeconds')
-        if lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
+        elif lastcheck.timeIntervalSinceNow() * -1 > int(max_cache_age):
+            # check for updates if the last check is over the
+            # configured manualcheck cache age max.
             self.mainWindowController.checkForUpdates()
-                         
-        # show the default initial view
-        self.mainWindowController.loadInitialView()
+        elif MunkiItems.updateCheckNeeded():
+            # check for updates if we have optional items selected for install
+            # or removal that have not yet been processed
+            self.mainWindowController.checkForUpdates()
+        
+        # load the initial view only if we are not already loading something else.
+        # enables launching the app to a specific panel, eg. from URL handler
+        if not self.mainWindowController.webView.isLoading():
+            self.mainWindowController.loadInitialView()
+
+    def applicationWillFinishLaunching_(self, notification):
+        '''Installs URL handler for calls outside the app eg. web clicks'''
+        man = NSAppleEventManager.sharedAppleEventManager()
+        man.setEventHandler_andSelector_forEventClass_andEventID_(
+            self,
+            "openURL:withReplyEvent:",
+            struct.unpack(">i", "GURL")[0],
+            struct.unpack(">i", "GURL")[0])
+
+    def openURL_withReplyEvent_(self, event, replyEvent):
+        '''Handle openURL messages'''
+        keyDirectObject = struct.unpack(">i", "----")[0]
+        url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
+        NSLog("Called by external URL: %@", url)
+        msulog.log("MSU", "Called by external URL: %s", url)
+        parsed_url = urlparse(url)
+        if parsed_url.scheme != 'munki':
+            NSLog("URL %@ has unsupported scheme")
+            return
+        filename = unquote(parsed_url.netloc)
+        # add .html if no extension
+        if not os.path.splitext(filename)[1]:
+            filename += '.html'
+        if filename.endswith('.html'):
+            msuhtml.build_page(filename)
+            self.mainWindowController.load_page(filename)
+        else:
+            NSLog("%@ doesn't have a valid extension. Prevented from opening", url)
+            msulog.log("MSU", "%s doesn't have a valid extension. Prevented from opening", url)

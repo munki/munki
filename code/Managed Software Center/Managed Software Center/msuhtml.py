@@ -11,14 +11,32 @@ import os
 from operator import itemgetter
 from random import shuffle
 from urllib import quote, unquote
+from string import Template
 
 import MunkiItems
 import msulib
 import munki
 
 from AppKit import NSApp
-from Foundation import NSLog
+from Foundation import NSBundle, NSLog
 from Foundation import NSLocalizedString
+
+
+def get_template(template_name, raw=False):
+    '''return an html template. If raw is True, just return the string; otherwise
+    return a string Template object'''
+    resourcesPath = NSBundle.mainBundle().resourcePath()
+    templatePath = os.path.join(resourcesPath, 'templates', template_name)
+    try:
+        file_ref = open(templatePath)
+        template_html = file_ref.read()
+        file_ref.close()
+        if raw:
+            return template_html.decode('utf-8')
+        else:
+            return Template(template_html.decode('utf-8'))
+    except (IOError, OSError):
+        return None
 
 
 def build_page(filename):
@@ -28,20 +46,22 @@ def build_page(filename):
     value = unquote(quoted_value)
     if key == 'detail':
         build_detail_page(value)
-    if key == 'category':
+    elif key == 'category':
         build_list_page(category=value)
-    if key == 'categories':
+    elif key == 'categories':
         build_categories_page()
-    if key == 'filter':
+    elif key == 'filter':
         build_list_page(filter=value)
-    if key == 'developer':
+    elif key == 'developer':
         build_list_page(developer=value)
-    if key == 'myitems':
+    elif key == 'myitems':
         build_myitems_page()
-    if key == 'updates':
+    elif key == 'updates':
         build_updates_page()
-    if key == 'updatedetail':
+    elif key == 'updatedetail':
         build_updatedetail_page(value)
+    else:
+        build_item_not_found_page(filename)
 
 
 def write_page(page_name, html):
@@ -52,6 +72,64 @@ def write_page(page_name, html):
     f.close()
 
 
+def assemble_page(main_page_template_name, page_dict, **kwargs):
+    '''Returns HTML for our page from one or more templates
+       and a dictionary of keys and values'''
+    # get our main template
+    main_page = get_template(main_page_template_name)
+    # incorporate any sub-templates
+    html_template = Template(main_page.safe_substitute(**kwargs))
+    # substitute page variables
+    html = html_template.safe_substitute(page_dict)
+    return html
+
+
+def generate_page(page_name, main_page_template_name, page_dict, **kwargs):
+    '''Assembles HTML and writes the page to page_name in our local html directory'''
+    html = assemble_page(main_page_template_name, page_dict, **kwargs)
+    write_page(page_name, html)
+
+
+def addSidebarLabels(page):
+    '''adds localized labels for the detail view sidebars'''
+    page['informationLabel'] = NSLocalizedString(
+                                   u'Information',
+                                   u'InformationLabel')
+    page['categoryLabel'] = NSLocalizedString(
+                                   u'Category:',
+                                   u'CategoryLabel')
+    page['versionLabel'] = NSLocalizedString(
+                                    u'Version:',
+                                    u'VersionLabel')
+    page['sizeLabel'] = NSLocalizedString(
+                                    u'Size:',
+                                    u'SizeLabel')
+    page['developerLabel'] = NSLocalizedString(
+                                    u'Developer:',
+                                    u'DeveloperLabel')
+    page['statusLabel'] = NSLocalizedString(
+                                    u'Status:', u'StatusLabel')
+    page['moreByDeveloperLabel'] = NSLocalizedString(
+                                    u'More by %s',
+                                    u'MoreByDeveloperLabel')
+    page['moreInCategoryLabel'] = NSLocalizedString(
+                                    u'More in %s',
+                                    u'MoreInCategoryLabel')
+    page['typeLabel'] = NSLocalizedString(
+                                    u'Type:', u'TypeLabel')
+    page['dueLabel'] = NSLocalizedString(
+                                    u'Due:', u'DueLabel')
+
+
+def build_item_not_found_page(page_name):
+    '''Build item not found page'''
+    page = {}
+    page['item_not_found_message'] = NSLocalizedString(
+        u'Cannot display the requested item.', u'ItemNotFoundMessage')
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'page_not_found_template.html', page, footer=footer)
+
+
 def build_detail_page(item_name):
     '''Build page showing detail for a single optional item'''
     items = MunkiItems.getOptionalInstallItems()
@@ -59,7 +137,7 @@ def build_detail_page(item_name):
     for item in items:
         if item['name'] == item_name:
             page = MunkiItems.OptionalItem(item)
-            msulib.addSidebarLabels(page)
+            addSidebarLabels(page)
             # make "More in CategoryFoo" list
             page['hide_more_in_category'] = u'hidden'
             more_in_category_html = u''
@@ -75,7 +153,7 @@ def build_detail_page(item_name):
                     page['hide_more_in_category'] = u''
                     page['moreInCategoryLabel'] = page['moreInCategoryLabel'] % page['category']
                     shuffle(more_in_category)
-                    more_template = msulib.get_template('detail_more_items_template.html')
+                    more_template = get_template('detail_more_items_template.html')
                     for more_item in more_in_category[:4]:
                         more_item['second_line'] = more_item.get('developer', '')
                         more_in_category_html += more_template.safe_substitute(more_item)
@@ -97,20 +175,17 @@ def build_detail_page(item_name):
                     page['moreByDeveloperLabel'] = (
                         page['moreByDeveloperLabel'] % developer)
                     shuffle(more_by_developer)
-                    more_template = msulib.get_template(
+                    more_template = get_template(
                                         'detail_more_items_template.html')
                     for more_item in more_by_developer[:4]:
                         more_item['second_line'] = more_item.get('category', '')
                         more_by_developer_html += more_template.safe_substitute(more_item)
             page['more_by_developer'] = more_by_developer_html
-            page['footer'] = msulib.getFooter()
-
-            template = msulib.get_template('detail_template.html')
-            html = template.safe_substitute(page)
-            write_page(page_name, html)
+            footer = get_template('footer_template.html', raw=True)
+            generate_page(page_name, 'detail_template.html', page, footer=footer)
             return
     NSLog('No detail found for %s' % item_name)
-    return None # TO-DO: need an error html file!
+    build_item_not_found_page(page_name)
 
 
 def build_list_page(category=None, developer=None, filter=None):
@@ -154,14 +229,14 @@ def build_list_page(category=None, developer=None, filter=None):
     page['list_items'] = item_html
     page['category_items'] = categories_html
     page['header_text'] = header
-    page['footer'] = msulib.getFooter()
     if category or filter or developer:
-        page['hide_showcase'] = u'hidden'
+        showcase = ''
     else:
-        page['hide_showcase'] = u''
-    html_template = msulib.get_template('list_template.html')
-    html = html_template.safe_substitute(page)
-    write_page(page_name, html)
+        showcase = get_template('showcase_template.html', raw=True)
+    sidebar = get_template('sidebar_template.html', raw=True)
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'list_template.html', page,
+                  showcase=showcase, sidebar=sidebar, footer=footer)
 
 
 def build_list_page_items_html(category=None, developer=None, filter=None):
@@ -182,7 +257,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
                  if developer.lower() in item.get('developer', '').lower()]
 
     if items:
-        item_template = msulib.get_template('list_item_template.html')
+        item_template = get_template('list_item_template.html')
         for item in sorted(items, key=itemgetter('display_name_lower')):
             item_html += item_template.safe_substitute(item)
         # pad with extra empty items so we have a multiple of 3
@@ -191,7 +266,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
                 item_html += u'<div class="lockup"></div>\n'
     else:
         # no items; build appropriate alert messages
-        status_results_template = msulib.get_template('status_results_template.html')
+        status_results_template = get_template('status_results_template.html')
         alert = {}
         if filter:
             alert['primary_status_text'] = NSLocalizedString(
@@ -246,11 +321,9 @@ def build_categories_page():
     page['list_items'] = item_html
     page['category_items'] = categories_html
     page['header_text'] = header
-    page['footer'] = msulib.getFooter()
-    page['hide_showcase'] = u'hidden'
-    html_template = msulib.get_template('list_template.html')
-    html = html_template.safe_substitute(page)
-    write_page(page_name, html)
+    
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'list_template.html', page, showcase=u'', sidebar=u'', footer=footer)
 
 
 def build_category_items_html():
@@ -262,7 +335,7 @@ def build_category_items_html():
             if 'category' in item and item['category'] not in category_list:
                 category_list.append(item['category'])
 
-        item_template = msulib.get_template('category_item_template.html')
+        item_template = get_template('category_item_template.html')
         item_html = u''
         for category in sorted(category_list):
             category_data = {}
@@ -295,7 +368,7 @@ def build_category_items_html():
 
     else:
         # no items
-        status_results_template = msulib.get_template('status_results_template.html')
+        status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
             u'There are no available software items.',
@@ -312,28 +385,26 @@ def build_category_items_html():
 def build_myitems_page():
     '''Builds "My Items" page, which shows all current optional choices'''
     page_name = u'myitems.html'
-    page_template = msulib.get_template('myitems_template.html')
 
     page = {}
     page['my_items_header_label'] = NSLocalizedString(
         u'My Items', u'MyItemsHeaderLabel')
     page['myitems_rows'] = build_myitems_rows()
-    page['footer'] = msulib.getFooter()
-
-    html = page_template.safe_substitute(page)
-    write_page(page_name, html)
+    
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'myitems_template.html', page, footer=footer)
 
 
 def build_myitems_rows():
     '''Returns HTML for the items on the 'My Items' page'''
     item_list = MunkiItems.getMyItemsList()
     if item_list:
-        item_template = msulib.get_template('myitems_row_template.html')
+        item_template = get_template('myitems_row_template.html')
         myitems_rows = u''
         for item in sorted(item_list, key=itemgetter('display_name_lower')):
             myitems_rows += item_template.safe_substitute(item)
     else:
-        status_results_template = msulib.get_template('status_results_template.html')
+        status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
             u'You have no selected software.',
@@ -366,13 +437,13 @@ def build_updates_page():
     page['hide_other_updates'] = u'hidden'
     page['install_all_button_classes'] = u''
     
-    item_template = msulib.get_template('update_row_template.html')
+    item_template = get_template('update_row_template.html')
 
     if item_list:
         for item in item_list:
             page['update_rows'] += item_template.safe_substitute(item)
     elif not other_updates:
-        status_results_template = msulib.get_template('status_results_template.html')
+        status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
              u'Your software is up to date.', u'NoPendingUpdatesPrimaryText')
@@ -398,11 +469,8 @@ def build_updates_page():
         for item in other_updates:
             page['other_update_rows'] += item_template.safe_substitute(item)
     
-    page['footer'] = msulib.getFooter()
-
-    page_template = msulib.get_template('updates_template.html')
-    html = page_template.safe_substitute(page)
-    write_page(page_name, html)
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'updates_template.html', page, footer=footer)
 
 
 def build_update_status_page():
@@ -422,7 +490,7 @@ def build_update_status_page():
     
     # don't like this bit as it ties us to a different object
     status_controller = NSApp.delegate().statusController
-    status_results_template = msulib.get_template('status_results_template.html')
+    status_results_template = get_template('status_results_template.html')
     alert = {}
     alert['primary_status_text'] = (
         status_controller._status_message
@@ -449,11 +517,23 @@ def build_update_status_page():
     page['install_btn_label'] = NSLocalizedString(
                                     u'Cancel', u'CancelButtonText')
     page['warning_text'] = u''
-    page['footer'] = msulib.getFooter()
 
-    page_template = msulib.get_template('updates_template.html')
-    html = page_template.safe_substitute(page)
-    write_page(page_name, html)
+    footer = get_template('footer_template.html', raw=True)
+    generate_page(page_name, 'updates_template.html', page, footer=footer)
+
+
+def getRestartActionForUpdateList(update_list):
+    '''Returns a localized overall restart action message for the list of updates'''
+    if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
+        # found at least one item containing 'Restart' in its RestartAction
+        return NSLocalizedString(u'Restart Required',
+                                 u'RequireRestartMessage')
+    if [item for item in update_list if 'Logout' in item.get('RestartAction', '')]:
+        # found at least one item containing 'Logout' in its RestartAction
+        return NSLocalizedString(u'Logout Required',
+                                 u'RequireLogoutMessage')
+    else:
+        return ''
 
 
 def get_warning_text():
@@ -468,13 +548,14 @@ def get_warning_text():
                             u'One or more items must be installed by %s',
                             u'ForcedInstallDateSummary')
         warning_text = forced_date_text % date_str
-    restart_text = msulib.getRestartActionForUpdateList(item_list)
+    restart_text = getRestartActionForUpdateList(item_list)
     if restart_text:
         if warning_text:
             warning_text += u' &bull; ' + restart_text
         else:
             warning_text = restart_text
     return warning_text
+
 
 def build_updatedetail_page(identifier):
     '''Build detail page for a non-optional update'''
@@ -484,8 +565,7 @@ def build_updatedetail_page(identifier):
     for item in items:
         if item['name'] == name and item['version_to_install'] == version:
             page = MunkiItems.UpdateItem(item)
-            page['footer'] = msulib.getFooter()
-            msulib.addSidebarLabels(page)
+            addSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
                 local_date = munki.discardTimeZoneFromDate(
@@ -498,10 +578,10 @@ def build_updatedetail_page(identifier):
                 page['dueLabel'] = u''
                 page['short_due_date'] = u''
 
-            template = msulib.get_template('updatedetail_template.html')
-            html = template.safe_substitute(page)
-            write_page(page_name, html)
+            footer = get_template('footer_template.html', raw=True)
+            generate_page(page_name, 'updatedetail_template.html', page, footer=footer)
             return
+    # if we get here we didn't find any item matching identifier
     NSLog('No update detail found for %s' % item_name)
-    return None # TO-DO: need an error html file!
+    build_item_not_found_page(page_name)
 

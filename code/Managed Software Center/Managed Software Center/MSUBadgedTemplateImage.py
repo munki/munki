@@ -39,9 +39,8 @@ class MSUBadgedTemplateImage(NSImage):
         if count == 0:
             # no badge if there are no updates
             return super(MSUBadgedTemplateImage, self).imageNamed_(name)
-        
         # build badge string and get its size
-        badgeString = NSString.stringWithString_(str(count))
+        badgeString = NSString.stringWithString_(unicode(count))
         badgeFont = NSFontManager.sharedFontManager().fontWithFamily_traits_weight_size_(
                         badgeFontFamilyName, NSBoldFontMask, 0, badgeFontSize)
         stringAttributes = { NSFontAttributeName: badgeFont }
