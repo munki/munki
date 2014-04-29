@@ -549,6 +549,10 @@ def comparePlistVersion(item):
     except FoundationPlist.NSPropertyListSerializationException:
         munkicommon.display_debug1('\t%s may not be a plist!', filepath)
         return 0
+    if not hasattr(plist, 'get'):
+        munkicommon.display_debug1(
+            'plist not parsed as NSCFDictionary: %s', filepath)
+        return 0
 
     if 'version_comparison_key' in item:
         # specific key has been supplied,
