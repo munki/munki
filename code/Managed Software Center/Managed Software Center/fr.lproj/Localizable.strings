@@ -1,123 +1,357 @@
-﻿/* No comment provided by engineer. */
-"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now.";
+﻿/* Multiple Updates message */
+"%s pending updates" = "%s pending updates";
 
-/* No comment provided by engineer. */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
+/* One Update message */
+"1 pending update" = "1 pending update";
 
-/* No comment provided by engineer. */
-"A logout will be forced at approximately %s." = "A logout will be forced at approximately %s.";
+/* Forced Logout warning detail */
+"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nToutes les mises à jour en attente vont être installées. Les travaux non sauvegardés seront perdus.\nPour éviter cela fermer maintenant votre session.";
 
-/* No comment provided by engineer. */
-"A logout will be forced in less than %s minutes." = "A logout will be forced in less than %s minutes.";
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Il est nécessaire de fermer la session avant de mettre à jour. Soyez patient car il peut y avoir un délai à la reconnexion ? Fermer et mettre à jour maintenant ?";
 
-/* No comment provided by engineer. */
-"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost.";
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "Une fermeture de session sera forcée à environ %s.";
 
-/* No comment provided by engineer. */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "Une fermeture de session sera forcée dans moins de %s minutes.";
 
-/* No comment provided by engineer. */
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "La fermeture de session sera forcée dans moins d'une minute.\nToutes les mises à jour en attente seront installées. Le travail non sauvegardé sera perdu.";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Un redémarrage est nécessaire après la mise à jour. Soyez patient car il peut avoir un petit délai lors de la reconnexion. Déconnecter et mettre à jour maintenant ?";
+
+/* Additional Pending Updates title */
 "Additional Pending Updates" = "Additional Pending Updates";
 
-/* No comment provided by engineer. */
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator.";
+
+/* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applications in use by others";
 
-/* No comment provided by engineer. */
-"Cancel" = "Cancel";
+/* Cancel button title
+   Cancel Install short action text
+   Cancel Removal short action text
+   Cancel Update short action text */
+"Cancel" = "Annuler";
 
-/* No comment provided by engineer. */
-"category-all.html" = "category-all.html";
+/* Cancel Install long action text */
+"Cancel install" = "Cancel install";
 
-/* No comment provided by engineer. */
-"Conflicting applications running" = "Conflicting applications running";
+/* Cancel Removal long action text */
+"Cancel removal" = "Cancel removal";
 
-/* No comment provided by engineer. */
-"Continue" = "Continue";
+/* Cancel Update long action text */
+"Cancel update" = "Cancel update";
 
-/* No comment provided by engineer. */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update.";
+/* Item Not Found message */
+"Cannot display the requested item." = "Cannot display the requested item.";
 
-/* No comment provided by engineer. */
-"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?";
+/* Sidebar Category label */
+"Category:" = "Category:";
 
-/* No comment provided by engineer. */
-"Forced Logout for Mandatory Install" = "Forced Logout for Mandatory Install";
+/* Check Again button title */
+"Check Again" = "Check Again";
 
-/* No comment provided by engineer. */
-"Install session failed" = "Install session failed";
+/* Checking For Updates message */
+"Checking for updates..." = "Checking for updates...";
 
-/* No comment provided by engineer. */
-"Log out and update" = "Log out and update";
+/* Blocking Apps Running title */
+"Conflicting applications running" = "Conflit avec des applications actives";
 
-/* No comment provided by engineer. */
-"Log out and update now" = "Log out and update now";
+/* Continue button text */
+"Continue" = "Continuer";
 
-/* No comment provided by engineer. */
-"Logout Required" = "Logout Required";
+/* Critical Update type */
+"Critical Update" = "Critical Update";
 
-/* No comment provided by engineer. */
+/* Unavailable long action text */
+"Currently Unavailable" = "Currently Unavailable";
+
+/* Sidebar Developer label */
+"Developer:" = "Developer:";
+
+/* Downloading status text */
+"Downloading" = "Downloading";
+
+/* Sidebar Due label */
+"Due:" = "Due:";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Un microprogramme sera mis à jour sur votre ordinateur. Le cordon d'alimentation de votre ordinateur doit être branché à une prise de courant fonctionnelle. La mise à jour pourrait prendre plusieurs minutes pour se terminer. Veuillez ne pas éteindre ou mettre votre ordinateur en veille, et ne pas débrancher le cordon d'alimentation durant cette mise à jour.";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Pour un meilleur résultat, vous devriez brancher votre ordinateur à une alimentation externe avant de mettre à jour. Êtes-vous sur de vouloir poursuivre la mise à jour ?";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "Fermeture de session requise pour mise à jour obligatoire";
+
+/* Sidebar Information label */
+"Information" = "Information";
+
+/* Install long action text
+   Install short action text */
+"Install" = "Install";
+
+/* Install Requested status text */
+"Install requested" = "Install requested";
+
+/* Install Required long action text */
+"Install Required" = "Install Required";
+
+/* Install Session Failed title */
+"Install session failed" = "Échec de l'installation";
+
+/* Install Error status text */
+"Installation Error" = "Installation Error";
+
+/* Installed long action text
+   Installed short action text
+   Installed status text */
+"Installed" = "Installé";
+
+/* Installing long action text
+   Installing short action text
+   Installing status text */
+"Installing" = "Installing";
+
+/* Log out and Update button text */
+"Log out and update" = "Déconnecter et mettre à jour";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "Déconnecter et mettre à jour maintenant";
+
+/* Logout Required title
+   Require Logout message */
+"Logout Required" = "Fermeture de session obligatoire";
+
+/* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator.";
 
-/* No comment provided by engineer. */
+/* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator.";
 
-/* No comment provided by engineer. */
-"Mandatory Updates Pending" = "Mandatory Updates Pending";
+/* Managed Update type */
+"Managed Update" = "Managed Update";
 
-/* No comment provided by engineer. */
-"OK" = "OK";
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "Mises à jour obligatoires en attente";
 
-/* No comment provided by engineer. */
-"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "One or more mandatory updates are overdue for installation. A logout will be forced soon.";
+/* More link text */
+"More" = "More";
 
-/* No comment provided by engineer. */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "One or more updates must be installed by %s. A logout may be forced if you wait too long to update.";
+/* Sidebar More By Developer label */
+"More by %s" = "More by %s";
 
-/* No comment provided by engineer. */
+/* Sidebar More In Category label */
+"More in %s" = "More in %s";
+
+/* My Items Header label */
+"My Items" = "My Items";
+
+/* No Licenses Available display text */
+"No licenses available" = "No licenses available";
+
+/* No Updates message */
+"No pending updates" = "No pending updates";
+
+/* Not Currently Available display text */
+"Not currently available" = "Not currently available";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "Not enough disk space";
+
+/* Not Installed status text */
+"Not installed" = "Non installé";
+
+/* OK button title */
+"OK" = "Oui";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "One or more items must be installed by %s";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Une ou plusieurs mises à jour obligatoires sont hors délai. Une fermeture de session va être forcée très bientôt.";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Une ou plusieurs mises à jour doivent être installées avant le %s. Une fermeture de session peut être forcée si vous attendez trop longtemps avant de mettre à jour.";
+
+/* Other Available Updates label */
+"Other available updates" = "Other available updates";
+
+/* Other Users Blocking Apps Running detail */
 "Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s";
 
-/* No comment provided by engineer. */
-"Other users logged in" = "Other users logged in";
+/* Other Users Logged In title */
+"Other users logged in" = "D'autres utilisateurs sont connectés";
 
-/* No comment provided by engineer. */
+/* Pending Updates alert title */
 "Pending updates" = "Pending updates";
 
-/* No comment provided by engineer. */
-"Quit" = "Quit";
+/* Preparing Removal status text */
+"Preparing removal" = "Preparing removal";
 
-/* No comment provided by engineer. */
-"Restart" = "Restart";
+/* Quit button title */
+"Quit" = "Quitter";
 
-/* No comment provided by engineer. */
-"Restart Required" = "Restart Required";
+/* Removal Error status text */
+"Removal Error" = "Removal Error";
 
-/* No comment provided by engineer. */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "Software installed or removed requires a restart. You will have a chance to save open documents.";
+/* Removal Requested display text
+   Removal Requested status text */
+"Removal requested" = "Removal requested";
 
-/* No comment provided by engineer. */
+/* Remove long action text
+   Remove short action text */
+"Remove" = "Remove";
+
+/* Removing long action text
+   Removing short action text
+   Removing status text */
+"Removing" = "Removing";
+
+/* Install Required long action text
+   Install Required short action text
+   Update Required short action text */
+"Required" = "Required";
+
+/* Restart button title */
+"Restart" = "Redémarrer";
+
+/* Require Restart message
+   Restart Required alert title
+   Restart Required title */
+"Restart Required" = "Redémarrage requis";
+
+/* No Installed Software secondary text */
+"Select software to install." = "Select software to install.";
+
+/* Sidebar Size label */
+"Size:" = "Size:";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Les logiciels installés ou supprimés nécessitent un redémarrage. Vous aurez la possibilité de sauvegarder les documents ouverts.";
+
+/* Sidebar Status label */
+"Status:" = "Status:";
+
+/* Additional Pending Updates detail */
 "There are additional pending updates to install or remove." = "There are additional pending updates to install or remove.";
 
-/* No comment provided by engineer. */
-"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out.";
+/* No Items primary text */
+"There are no available software items." = "There are no available software items.";
 
-/* No comment provided by engineer. */
+/* No Developer Results primary text */
+"There are no items from this developer." = "There are no items from this developer.";
+
+/* No Category Results primary text */
+"There are no items in this category." = "There are no items in this category.";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Il y a d'autres utilisateurs connectés sur l'ordinateur.\nMettre à jour peut entrainer la perte du travail des autres utilisateurs.\n\nMerci d'essayer plus tard après que les autres utilisateurs aient quitté leur session.";
+
+/* Pending Updates alert detail text */
 "There are pending updates for this computer." = "There are pending updates for this computer.";
 
-/* No comment provided by engineer. */
-"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.";
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "L'utilitaire de mise à jour a rencontré un problème de configuration. Impossible de démarrer le processus. Contactez votre administrateur système.";
 
-/* No comment provided by engineer. */
-"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator.";
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "L'utilitaire de mise à jour a rencontré un problème de configuration. Le processus s'est arrêté de manière inattendue. Contactez votre administrateur système.";
 
-/* No comment provided by engineer. */
-"Update check failed" = "Update check failed";
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "Il n'y a pas de nouveau logiciel pour votre ordinateur.";
 
-/* No comment provided by engineer. */
+/* Dependency List prologue text */
+"This item is required by:" = "This item is required by:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "This item must be installed by %s";
+
+/* No Items secondary text */
+"Try again later." = "Try again later.";
+
+/* No Search Results secondary text */
+"Try searching again." = "Try searching again.";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "Try selecting another category.";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "Try selecting another developer.";
+
+/* Sidebar Type label */
+"Type:" = "Type:";
+
+/* Unavailable short action text
+   Unavailable status text */
+"Unavailable" = "Unavailable";
+
+/* No Category name */
+"Uncategorized" = "Uncategorized";
+
+/* Update button title
+   Update long action text
+   Update short action text */
+"Update" = "Update";
+
+/* Update All button title */
+"Update All" = "Update All";
+
+/* Update Available status text */
+"Update available" = "Mise à jour disponible";
+
+/* Update Check Failed title */
+"Update check failed" = "Échec de la recherche de mises à jour";
+
+/* Update In Progress primary text */
+"Update in progress." = "Update in progress.";
+
+/* Update Now button title */
 "Update now" = "Update now";
 
-/* No comment provided by engineer. */
+/* Update Required long action text
+   Update Requires long action text */
+"Update Required" = "Update Required";
+
+/* Update Required status text
+   Update Will Be Installed status text */
+"Update will be installed" = "Update will be installed";
+
+/* Updating message */
+"Updating..." = "Updating...";
+
+/* Sidebar Version label */
+"Version" = "Version";
+
+/* Sidebar Version label */
+"Version:" = "Version:";
+
+/* Install Required status text
+   Will Be Installed status text */
+"Will be installed" = "Sera installé";
+
+/* Will Be Removed display text
+   Will Be Removed status text */
+"Will be removed" = "Sera supprimé";
+
+/* No Installed Software primary text */
+"You have no selected software." = "You have no selected software.";
+
+/* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "You must quit the following applications before proceeding with installation or removal:\n\n%s";
 
-/* No comment provided by engineer. */
-"Your computer is not connected to a power source." = "Your computer is not connected to a power source.";
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "Votre ordinateur n'est pas branché à une prise de courant.";
+
+/* No Search Results primary text */
+"Your search had no results." = "Your search had no results.";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "Votre logiciel est à jour.";
 

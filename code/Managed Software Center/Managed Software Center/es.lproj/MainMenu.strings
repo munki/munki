@@ -1,84 +1,84 @@
 ﻿
 /* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "Vindue";
+"19.title" = "Ventana";
 
 /* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Minimer";
+"23.title" = "Minimizar";
 
 /* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "Vindue";
+"24.title" = "Ventana";
 
 /* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
 "29.title" = "AMainMenu";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
-"56.title" = "Managed Software Update";
+"56.title" = "Actualización controlada de software";
 
 /* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
-"57.title" = "Managed Software Update";
+"57.title" = "Actualización controlada de software";
 
 /* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
-"58.title" = "Om Managed Software Update";
+"58.title" = "Acerca de Actualización controlada de software";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
-"103.title" = "Hjælp";
+"103.title" = "Ayuda";
 
 /* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
-"106.title" = "Hjælp";
+"106.title" = "Ayuda";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
-"111.title" = "Hjælp til Managed Software Update";
+"111.title" = "Ayuda de Actualización controlada de software";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
-"130.title" = "Tjenester";
+"130.title" = "Servicios";
 
 /* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
-"131.title" = "Tjenester";
+"131.title" = "Servicios";
 
 /* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
-"134.title" = "Skjul Managed Software Update";
+"134.title" = "Ocultar Actualización controlada de software";
 
 /* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
-"136.title" = "Slut Managed Software Update";
+"136.title" = "Salir de Actualización controlada de software";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
-"145.title" = "Skjul andre";
+"145.title" = "Ocultar otros";
 
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
-"150.title" = "Vis alle";
+"150.title" = "Mostrar todos";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
-"197.title" = "Kopier";
+"197.title" = "Copiar";
 
 /* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
-"198.title" = "Vælg alt";
+"198.title" = "Seleccionar todo";
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
-"199.title" = "Klip";
+"199.title" = "Cortar";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
-"202.title" = "Slet";
+"202.title" = "Eliminar";
 
 /* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
-"203.title" = "Sæt ind";
+"203.title" = "Pegar";
 
 /* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
-"205.title" = "Rediger";
+"205.title" = "Edición";
 
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
-"207.title" = "Fortryd";
+"207.title" = "Deshacer";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
-"215.title" = "Gentag";
+"215.title" = "Rehacer";
 
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
-"217.title" = "Rediger";
+"217.title" = "Editar";
 
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoom";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
-"371.title" = "Managed Software Update";
+"371.title" = "Actualización controlada de software";
 
 /* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
 "375.title" = "Navigate";
