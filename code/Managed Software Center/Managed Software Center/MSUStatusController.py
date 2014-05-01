@@ -203,13 +203,13 @@ class MSUStatusController(NSObject):
         '''Display a restart alert -- some item just installed or removed requires a restart'''
         self._status_restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-            NSLocalizedString(u"Restart Required", u'RestartRequiredAlertText'),
-            NSLocalizedString(u"Restart", u'RestartButtonText'),
+            NSLocalizedString(u"Restart Required", u"Restart Required alert title"),
+            NSLocalizedString(u"Restart", u"Restart button title"),
             nil,
             nil,
             NSLocalizedString(
                 u"Software installed or removed requires a restart. You will "
-                "have a chance to save open documents.", u'RestartRequiredAlertDetail'))
+                "have a chance to save open documents.", u"Restart Required alert detail"))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.statusWindowController.window(),
             self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)

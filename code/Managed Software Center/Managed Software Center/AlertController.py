@@ -33,7 +33,7 @@ class AlertController(NSObject):
         moreText = NSLocalizedString(
             (u"\nAll pending updates will be installed. Unsaved work will be lost."
             "\nYou may avoid the forced logout by logging out now."),
-            u'forcedLogoutWarningDetail')
+            u"Forced Logout warning detail")
         logout_time = None
         if info:
             logout_time = info.get('logout_time')
@@ -47,26 +47,26 @@ class AlertController(NSObject):
             msulog.log("user", "forced_logout_warning_initial")
             formatString = NSLocalizedString(
                     u"A logout will be forced at approximately %s.",
-                    u'LogoutWarningStringLogoutNotSoon')
+                    u"Logout warning string when logout is an hour or more away")
             infoText = formatString % deadline_str + moreText
         elif time_til_logout > 0:
             msulog.log("user", "forced_logout_warning_%s" % time_til_logout)
             formatString = NSLocalizedString(
                     u"A logout will be forced in less than %s minutes.",
-                    u'LogoutWarningStringLogoutSoon')
+                    u"Logout warning string when logout is in < 60 minutes")
             infoText = formatString % time_til_logout + moreText
         else:
             msulog.log("user", "forced_logout_warning_final")
             infoText = NSLocalizedString(
                 (u"A logout will be forced in less than a minute.\nAll pending "
-                "updates will be installed. Unsaved work will be lost."),
-                u'LogoutWarningStringLogoutImminent')
+                  "updates will be installed. Unsaved work will be lost."),
+                u"Logout warning string when logout is in less than a minute")
 
         # Set the OK button to default, unless less than 5 minutes to logout
         # in which case only the Logout button should be displayed.
         self._force_warning_logout_btn = NSLocalizedString(
-            u"Log out and update now", u'LogoutAndUpdateNowButtonText')
-        self._force_warning_ok_btn = NSLocalizedString(u"OK", u'OKButtonText')
+            u"Log out and update now", u"Logout and Update Now button text")
+        self._force_warning_ok_btn = NSLocalizedString(u"OK", u"OK button title")
         if time_til_logout > 5:
             self._force_warning_btns = {
                 NSAlertDefaultReturn: self._force_warning_ok_btn,
@@ -84,7 +84,7 @@ class AlertController(NSObject):
 
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                     NSLocalizedString(
-                        u"Forced Logout for Mandatory Install", u'ForcedLogoutText'),
+                        u"Forced Logout for Mandatory Install", u"Forced Logout title text"),
                     self._force_warning_btns[NSAlertDefaultReturn],
                     self._force_warning_btns[NSAlertAlternateReturn],
                     nil,
@@ -106,13 +106,14 @@ class AlertController(NSObject):
     def alertToExtraUpdates(self):
         '''Notify user of additional pending updates'''
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Additional Pending Updates", u'AdditionalPendingUpdatesText'),
-                NSLocalizedString(u"OK", u'OKButtonText'),
+                NSLocalizedString(
+                    u"Additional Pending Updates", u"Additional Pending Updates title"),
+                NSLocalizedString(u"OK", u"OK button title"),
                 nil,
                 nil,
                 NSLocalizedString(
                     (u"There are additional pending updates to install or remove."),
-                    u'AdditionalPendingUpdatesDetail'))
+                     u"Additional Pending Updates detail"))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self, self.extraUpdatesAlertDidEnd_returnCode_contextInfo_, nil)
 
@@ -128,27 +129,27 @@ class AlertController(NSObject):
             return
         elif MunkiItems.updatesRequireRestart():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Restart Required", u'RestartRequiredText'),
-                NSLocalizedString(u"Log out and update", u'LogOutAndUpdateButtonText'),
-                NSLocalizedString(u"Cancel", u'CancelButtonText'),
+                NSLocalizedString(u"Restart Required", u"Restart Required title"),
+                NSLocalizedString(u"Log out and update", u"Log out and Update button text"),
+                NSLocalizedString(u"Cancel", u"Cancel button title"),
                 nil,
                 NSLocalizedString(
                     (u"A restart is required after updating. Please be patient "
                     "as there may be a short delay at the login window. Log "
-                    "out and update now?"), u'RestartRequiredDetail'))
+                    "out and update now?"), u"Restart Required detail"))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self,
                 self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
         elif MunkiItems.updatesRequireLogout() or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Logout Required", u'LogoutRequiredText'),
-                NSLocalizedString(u"Log out and update", u'LogOutAndUpdateButtonText'),
-                NSLocalizedString(u"Cancel", u'CancelButtonText'),
+                NSLocalizedString(u"Logout Required", u"Logout Required title"),
+                NSLocalizedString(u"Log out and update", u"Log out and Update button text"),
+                NSLocalizedString(u"Cancel", u"Cancel button title"),
                 nil,
                 NSLocalizedString(
                     (u"A logout is required before updating. Please be patient "
                     "as there may be a short delay at the login window. Log "
-                    "out and update now?"), u'LogoutRequiredDetail'))
+                    "out and update now?"), u"Logout Required detail"))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self,
                     self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
@@ -185,15 +186,15 @@ class AlertController(NSObject):
             NSLog("Alert: Multiple GUI users cancelling updateti")
             msulog.log("MSC", "multiple_gui_users_update_cancelled")
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Other users logged in", u'OtherUsersLoggedInText'),
-                NSLocalizedString(u"Cancel", u'CancelButtonText'),
+                NSLocalizedString(u"Other users logged in", u"Other Users Logged In title"),
+                NSLocalizedString(u"Cancel", u"Cancel button title"),
                 nil,
                 nil,
                 NSLocalizedString(
                     (u"There are other users logged into this computer.\n"
                      "Updating now could cause other users to lose their "
                      "work.\n\nPlease try again later after the other users "
-                     "have logged out."), u'OtherUsersLoggedInDetail'))
+                     "have logged out."), u"Other Users Logged In detail"))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window, self, self.multipleUserAlertDidEnd_returnCode_contextInfo_, nil)
             return True
@@ -227,26 +228,26 @@ class AlertController(NSObject):
             if other_users_apps:
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                         NSLocalizedString(
-                            u"Applications in use by others", u'OtherUsersBlockingAppsRunningText'),
+                            u"Applications in use by others", u"Other Users Blocking Apps Running title"),
                         NSLocalizedString(u"OK", u'OKButtonText'),
                         nil,
                         nil,
                         NSLocalizedString(
                             (u"Other logged in users are using the following applications. "
                             "Try updating later when they are no longer in use:\n\n%s"),
-                            u'OtherUsersBlockingAppsRunningDetail')
+                            u"Other Users Blocking Apps Running detail")
                             % '\n'.join(set(other_users_apps)))
             else:
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                         NSLocalizedString(
-                            u"Conflicting applications running", u'BlockingAppsRunningText'),
-                        NSLocalizedString(u"OK", u'OKButtonText'),
+                            u"Conflicting applications running", u"Blocking Apps Running title"),
+                        NSLocalizedString(u"OK", u"OK button title"),
                         nil,
                         nil,
                         NSLocalizedString(
                             (u"You must quit the following applications before "
                             "proceeding with installation or removal:\n\n%s"),
-                            u'BlockingAppsRunningDetail')
+                            u"Blocking Apps Running detail")
                             % '\n'.join(set(my_apps)))
             msulog.log("MSC", "conflicting_apps", ','.join(other_users_apps + my_apps))
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
@@ -280,7 +281,7 @@ class AlertController(NSObject):
                          "It may take several minutes for the update to "
                          "complete. Do not disturb or shut off the power "
                          "on your computer during this update."),
-                        u'FirmwareAlertDefaultDetail')
+                        u"Firmware Alert Default detail")
                 info_item['alert_text'] = alert_text
                 info.append(info_item)
         return info
@@ -295,14 +296,14 @@ class AlertController(NSObject):
         on_battery_power = (power_info.get('PowerSource') == 'Battery Power')
         for item in firmware_alert_info:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(item['name'],
-                  NSLocalizedString(u"Continue", u'ContinueButtonText'),
-                  NSLocalizedString(u"Cancel", u'CancelButtonText'),
+                  NSLocalizedString(u"Continue", u"Continue button text"),
+                  NSLocalizedString(u"Cancel", u"Cancel button title"),
                   nil,
                   u"")
             if on_battery_power:
                 alert_text = NSLocalizedString(
                     u"Your computer is not connected to a power source.",
-                    u'NoPowerSourceWarningText')
+                    u"No Power Source Warning text")
                 alert_text += "\n\n" + item['alert_text']
             else:
                 alert_text = item['alert_text']
@@ -326,14 +327,14 @@ class AlertController(NSObject):
             and power_info.get('BatteryCharge', 0) < 50):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(
-                    u"Your computer is not connected to a power source.", u'NoPowerSourceWarningText'),
-                NSLocalizedString(u"Continue", u'ContinueButtonText'),
-                NSLocalizedString(u"Cancel", u'CancelButtonText'),
+                    u"Your computer is not connected to a power source.", u"No Power Source Warning text"),
+                NSLocalizedString(u"Continue", u"Continue button text"),
+                NSLocalizedString(u"Cancel", u"Cancel button title"),
                 nil,
                 NSLocalizedString(
                     (u"For best results, you should connect your computer to a "
                     "power source before updating. Are you sure you want to "
-                    "continue the update?"), u'NoPowerSourceWarningDetail'))
+                    "continue the update?"), u"No Power Source Warning detail"))
             msulog.log("MSU", "alert_on_battery_power")
             # making UI consistent with Apple Software Update...
             # set Cancel button to be activated by return key

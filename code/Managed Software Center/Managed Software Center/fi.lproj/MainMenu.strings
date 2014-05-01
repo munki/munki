@@ -1,0 +1,132 @@
+﻿
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Window";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Minimize";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Window";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
+"56.title" = "Managed Software Center";
+
+/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
+"57.title" = "Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
+"58.title" = "About Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "Help";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "Help";
+
+/* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
+"111.title" = "Managed Software Center Help";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
+"134.title" = "Hide Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
+"136.title" = "Quit Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "Hide Others";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "Show All";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "Copy";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "Select All";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "Cut";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "Delete";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "Paste";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "Edit";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Undo";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Redo";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Edit";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "Zoom";
+
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
+"371.title" = "Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
+"375.title" = "Navigate";
+
+/* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
+"376.title" = "Navigate";
+
+/* Class = "NSButtonCell"; title = "My Items"; ObjectID = "783"; */
+"783.title" = "My Items";
+
+/* Class = "NSButtonCell"; title = "Categories"; ObjectID = "784"; */
+"784.title" = "Categories";
+
+/* Class = "NSButtonCell"; title = "Software"; ObjectID = "785"; */
+"785.title" = "Software";
+
+/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
+"1XY-pX-Pwv.title" = "Search";
+
+/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
+"1uK-HI-wGR.title" = "My Items";
+
+/* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
+"9S1-fB-bKZ.title" = "Categories";
+
+/* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "Afg-mB-WlJ"; */
+"Afg-mB-WlJ.title" = "Reload Page";
+
+/* Class = "NSButtonCell"; title = "Updates"; ObjectID = "Lha-uh-PEV"; */
+"Lha-uh-PEV.title" = "Updates";
+
+/* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
+"VYO-og-DRc.title" = "Software";
+
+/* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
+"bd5-IY-BXv.title" = "Close";
+
+/* Class = "NSMenuItem"; title = "Back"; ObjectID = "fEq-6D-Ce0"; */
+"fEq-6D-Ce0.title" = "Back";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "har-U9-FkJ"; */
+"har-U9-FkJ.title" = "Box";
+
+/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
+"jQt-Mr-wFT.title" = "Enter Full Screen";
+
+/* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
+"tv9-wZ-XWN.title" = "Updates";
+
+/* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
+"z4Z-vu-XGX.title" = "Forward";

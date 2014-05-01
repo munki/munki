@@ -1,0 +1,123 @@
+﻿/* No comment provided by engineer. */
+"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now.";
+
+/* No comment provided by engineer. */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
+
+/* No comment provided by engineer. */
+"A logout will be forced at approximately %s." = "A logout will be forced at approximately %s.";
+
+/* No comment provided by engineer. */
+"A logout will be forced in less than %s minutes." = "A logout will be forced in less than %s minutes.";
+
+/* No comment provided by engineer. */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost.";
+
+/* No comment provided by engineer. */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
+
+/* No comment provided by engineer. */
+"Additional Pending Updates" = "Additional Pending Updates";
+
+/* No comment provided by engineer. */
+"Applications in use by others" = "Applications in use by others";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancel";
+
+/* No comment provided by engineer. */
+"category-all.html" = "category-all.html";
+
+/* No comment provided by engineer. */
+"Conflicting applications running" = "Conflicting applications running";
+
+/* No comment provided by engineer. */
+"Continue" = "Continue";
+
+/* No comment provided by engineer. */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update.";
+
+/* No comment provided by engineer. */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?";
+
+/* No comment provided by engineer. */
+"Forced Logout for Mandatory Install" = "Forced Logout for Mandatory Install";
+
+/* No comment provided by engineer. */
+"Install session failed" = "Install session failed";
+
+/* No comment provided by engineer. */
+"Log out and update" = "Log out and update";
+
+/* No comment provided by engineer. */
+"Log out and update now" = "Log out and update now";
+
+/* No comment provided by engineer. */
+"Logout Required" = "Logout Required";
+
+/* No comment provided by engineer. */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator.";
+
+/* No comment provided by engineer. */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator.";
+
+/* No comment provided by engineer. */
+"Mandatory Updates Pending" = "Mandatory Updates Pending";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "One or more mandatory updates are overdue for installation. A logout will be forced soon.";
+
+/* No comment provided by engineer. */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "One or more updates must be installed by %s. A logout may be forced if you wait too long to update.";
+
+/* No comment provided by engineer. */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s";
+
+/* No comment provided by engineer. */
+"Other users logged in" = "Other users logged in";
+
+/* No comment provided by engineer. */
+"Pending updates" = "Pending updates";
+
+/* No comment provided by engineer. */
+"Quit" = "Quit";
+
+/* No comment provided by engineer. */
+"Restart" = "Restart";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Restart Required";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Software installed or removed requires a restart. You will have a chance to save open documents.";
+
+/* No comment provided by engineer. */
+"There are additional pending updates to install or remove." = "There are additional pending updates to install or remove.";
+
+/* No comment provided by engineer. */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out.";
+
+/* No comment provided by engineer. */
+"There are pending updates for this computer." = "There are pending updates for this computer.";
+
+/* No comment provided by engineer. */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.";
+
+/* No comment provided by engineer. */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator.";
+
+/* No comment provided by engineer. */
+"Update check failed" = "Update check failed";
+
+/* No comment provided by engineer. */
+"Update now" = "Update now";
+
+/* No comment provided by engineer. */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "You must quit the following applications before proceeding with installation or removal:\n\n%s";
+
+/* No comment provided by engineer. */
+"Your computer is not connected to a power source." = "Your computer is not connected to a power source.";
+

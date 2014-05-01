@@ -93,39 +93,39 @@ def generate_page(page_name, main_page_template_name, page_dict, **kwargs):
 def addSidebarLabels(page):
     '''adds localized labels for the detail view sidebars'''
     page['informationLabel'] = NSLocalizedString(
-                                   u'Information',
-                                   u'InformationLabel')
+                                    u"Information",
+                                    u"Sidebar Information label")
     page['categoryLabel'] = NSLocalizedString(
-                                   u'Category:',
-                                   u'CategoryLabel')
+                                    u"Category:",
+                                    u"Sidebar Category label")
     page['versionLabel'] = NSLocalizedString(
-                                    u'Version:',
-                                    u'VersionLabel')
+                                    u"Version:",
+                                    u"Sidebar Version label")
     page['sizeLabel'] = NSLocalizedString(
-                                    u'Size:',
-                                    u'SizeLabel')
+                                    u"Size:",
+                                    u"Sidebar Size label")
     page['developerLabel'] = NSLocalizedString(
-                                    u'Developer:',
-                                    u'DeveloperLabel')
+                                    u"Developer:",
+                                    u"Sidebar Developer label")
     page['statusLabel'] = NSLocalizedString(
-                                    u'Status:', u'StatusLabel')
+                                    u"Status:", u"Sidebar Status label")
     page['moreByDeveloperLabel'] = NSLocalizedString(
-                                    u'More by %s',
-                                    u'MoreByDeveloperLabel')
+                                    u"More by %s",
+                                    u"Sidebar More By Developer label")
     page['moreInCategoryLabel'] = NSLocalizedString(
-                                    u'More in %s',
-                                    u'MoreInCategoryLabel')
+                                    u"More in %s",
+                                    u"Sidebar More In Category label")
     page['typeLabel'] = NSLocalizedString(
-                                    u'Type:', u'TypeLabel')
+                                    u"Type:", u"Sidebar Type label")
     page['dueLabel'] = NSLocalizedString(
-                                    u'Due:', u'DueLabel')
+                                    u"Due:", u"Sidebar Due label")
 
 
 def build_item_not_found_page(page_name):
     '''Build item not found page'''
     page = {}
     page['item_not_found_message'] = NSLocalizedString(
-        u'Cannot display the requested item.', u'ItemNotFoundMessage')
+        u"Cannot display the requested item.", u"Item Not Found message")
     footer = get_template('footer_template.html', raw=True)
     generate_page(page_name, 'page_not_found_template.html', page, footer=footer)
 
@@ -270,31 +270,31 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
         alert = {}
         if filter:
             alert['primary_status_text'] = NSLocalizedString(
-                u'Your search had no results.',
-                u'NoSearchResultsPrimaryText')
+                u"Your search had no results.",
+                u"No Search Results primary text")
             alert['secondary_status_text'] = NSLocalizedString(
-                u'Try searching again.', u'NoSearchResultsSecondaryText')
+                u"Try searching again.", u"No Search Results secondary text")
         elif category:
             alert['primary_status_text'] = NSLocalizedString(
-                u'There are no items in this category.',
-                u'NoCategoryResultsPrimaryText')
+                u"There are no items in this category.",
+                u"No Category Results primary text")
             alert['secondary_status_text'] = NSLocalizedString(
-                u'Try selecting another category.',
-                u'NoCategoryResultsSecondaryText')
+                u"Try selecting another category.",
+                u"No Category Results secondary text")
         elif developer:
             alert['primary_status_text'] = NSLocalizedString(
-               u'There are no items from this developer.',
-               u'NoDeveloperResultsPrimaryText')
+                u"There are no items from this developer.",
+                u"No Developer Results primary text")
             alert['secondary_status_text'] = NSLocalizedString(
-               u'Try selecting another developer.',
-               u'NoDeveloperResultsSecondaryText')
+                u"Try selecting another developer.",
+                u"No Developer Results secondary text")
         else:
             alert['primary_status_text'] = NSLocalizedString(
-               u'There are no available software items.',
-               u'NoItemsPrimaryText')
+               u"There are no available software items.",
+               u"No Items primary text")
             alert['secondary_status_text'] = NSLocalizedString(
-               u'Try again later.',
-               u'NoItemsSecondaryText')
+               u"Try again later.",
+               u"No Items secondary text")
         alert['hide_progress_bar'] = u'hidden'
         alert['progress_bar_value'] = u''
         item_html = status_results_template.safe_substitute(alert)
@@ -371,11 +371,11 @@ def build_category_items_html():
         status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
-            u'There are no available software items.',
-            u'NoItemsPrimaryText')
+            u"There are no available software items.",
+            u"No Items primary text")
         alert['secondary_status_text'] = NSLocalizedString(
-            u'Try again later.',
-            u'NoItemsSecondaryText')
+            u"Try again later.",
+            u"No Items secondary text")
         alert['hide_progress_bar'] = u'hidden'
         alert['progress_bar_value'] = u''
         item_html = status_results_template.safe_substitute(alert)
@@ -388,7 +388,7 @@ def build_myitems_page():
 
     page = {}
     page['my_items_header_label'] = NSLocalizedString(
-        u'My Items', u'MyItemsHeaderLabel')
+        u"My Items", u"My Items Header label")
     page['myitems_rows'] = build_myitems_rows()
     
     footer = get_template('footer_template.html', raw=True)
@@ -407,11 +407,12 @@ def build_myitems_rows():
         status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
-            u'You have no selected software.',
-            u'NoInstalledSoftwarePrimaryText')
-        alert['secondary_status_text'] = NSLocalizedString(
-            u'<a href="category-all.html">Select software to install.</a>',
-            u'NoInstalledSoftwareSecondaryText')
+            u"You have no selected software.",
+            u"No Installed Software primary text")
+        alert['secondary_status_text'] = (
+            u'<a href="category-all.html">%s</a>' % NSLocalizedString(
+                                                        u"Select software to install.",
+                                                        u"No Installed Software secondary text"))
         alert['hide_progress_bar'] = u'hidden'
         myitems_rows = status_results_template.safe_substitute(alert)
     return myitems_rows
@@ -446,10 +447,10 @@ def build_updates_page():
         status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
-             u'Your software is up to date.', u'NoPendingUpdatesPrimaryText')
+             u"Your software is up to date.", u"No Pending Updates primary text")
         alert['secondary_status_text'] = NSLocalizedString(
-             u'There is no new software for your computer at this time.',
-             u'NoPendingUpdatesSecondaryText')
+             u"There is no new software for your computer at this time.",
+             u"No Pending Updates secondary text")
         alert['hide_progress_bar'] = u'hidden'
         alert['progress_bar_value'] = u''
         page['update_rows'] = status_results_template.safe_substitute(alert)
@@ -460,8 +461,8 @@ def build_updates_page():
     page['warning_text'] = get_warning_text()
 
     page['other_updates_header_message'] = NSLocalizedString(
-        u'Other available updates',
-        u'OtherAvailableUpdatesLabel')
+        u"Other available updates",
+        u"Other Available Updates label")
     page['other_update_rows'] = u''
 
     if other_updates:
@@ -479,8 +480,8 @@ def build_update_status_page():
     item_list = []
     other_updates = []
     
-    status_title_default = NSLocalizedString(u'Checking for updates...',
-                                             u'CheckingForUpdatesMessage')
+    status_title_default = NSLocalizedString(u"Checking for updates...",
+                                             u"Checking For Updates message")
     page = {}
     page['update_rows'] = u''
     page['hide_progress_spinner'] = u''
@@ -494,8 +495,7 @@ def build_update_status_page():
     alert = {}
     alert['primary_status_text'] = (
         status_controller._status_message
-        or NSLocalizedString(u'Update in progress.',
-                             u'UpdateInProgressPrimaryText'))
+        or NSLocalizedString(u"Update in progress.", u"Update In Progress primary text"))
     alert['secondary_status_text'] = (status_controller._status_detail or '&nbsp;')
     alert['hide_progress_bar'] = u''
     if status_controller._status_percent < 0:
@@ -514,8 +514,7 @@ def build_update_status_page():
 
     # don't like this bit as it ties us yet another object
     page['update_count'] = NSApp.delegate().mainWindowController._status_title or status_title_default
-    page['install_btn_label'] = NSLocalizedString(
-                                    u'Cancel', u'CancelButtonText')
+    page['install_btn_label'] = NSLocalizedString(u"Cancel", u"Cancel button title")
     page['warning_text'] = u''
 
     footer = get_template('footer_template.html', raw=True)
@@ -526,12 +525,10 @@ def getRestartActionForUpdateList(update_list):
     '''Returns a localized overall restart action message for the list of updates'''
     if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
         # found at least one item containing 'Restart' in its RestartAction
-        return NSLocalizedString(u'Restart Required',
-                                 u'RequireRestartMessage')
+        return NSLocalizedString(u"Restart Required", u"Require Restart message")
     if [item for item in update_list if 'Logout' in item.get('RestartAction', '')]:
         # found at least one item containing 'Logout' in its RestartAction
-        return NSLocalizedString(u'Logout Required',
-                                 u'RequireLogoutMessage')
+        return NSLocalizedString(u"Logout Required", u"Require Logout message")
     else:
         return ''
 
@@ -545,8 +542,8 @@ def get_warning_text():
     if forced_install_date:
         date_str = munki.stringFromDate(forced_install_date)
         forced_date_text = NSLocalizedString(
-                            u'One or more items must be installed by %s',
-                            u'ForcedInstallDateSummary')
+                            u"One or more items must be installed by %s",
+                            u"Forced Install Date summary")
         warning_text = forced_date_text % date_str
     restart_text = getRestartActionForUpdateList(item_list)
     if restart_text:

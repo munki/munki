@@ -35,25 +35,21 @@ _html_dir = None
 def updateCountMessage(count):
     '''Return a localized message describing the count of updates to install'''
     if count == 0:
-        return NSLocalizedString(u'No pending updates', u'NoUpdatesMessage')
+        return NSLocalizedString(u"No pending updates", u"No Updates message")
     if count == 1:
-        return NSLocalizedString(u'1 pending update', u'OneUpdateMessage')
+        return NSLocalizedString(u"1 pending update", u"One Update message")
     else:
-        return (NSLocalizedString(u'%s pending updates',
-                                  u'MultipleUpdatesMessage') % count)
+        return (NSLocalizedString(u"%s pending updates", u"Multiple Updates message") % count)
 
 
 def getInstallAllButtonTextForCount(count):
     '''Return localized display text for action button in Updates view'''
     if count == 0:
-        return NSLocalizedString(u'Check Again',
-                                 u'CheckAgainButtonLabel')
+        return NSLocalizedString(u"Check Again", u"Check Again button title")
     elif count == 1:
-        return NSLocalizedString(u'Update',
-                                 u'UpdateButtonLabel')
+        return NSLocalizedString(u"Update", u"Update button title")
     else:
-        return NSLocalizedString(u'Update All',
-                                 u'UpdateAllButtonLabel')
+        return NSLocalizedString(u"Update All", u"Update All button title")
 
 
 def html_dir():
