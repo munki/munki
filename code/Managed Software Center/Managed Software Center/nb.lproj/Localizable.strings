@@ -1,0 +1,357 @@
+﻿/* Multiple Updates message */
+"%s pending updates" = "%s pending updates";
+
+/* One Update message */
+"1 pending update" = "1 pending update";
+
+/* Forced Logout warning detail */
+"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle ventende oppdateringer vil bli installert. Data som ikke er lagret vil gå tapt.\nDu kan unngå tvungen avlogging, ved selv å logge ut nå.";
+
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du må logge ut før oppdatering. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "En tvungen utlogging vil skje ca. %s.";
+
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "En tvungen utlogging vil skje om mindre enn %s minutter.";
+
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen utlogging vil skje om mindre enn et minutt.\nAlle ventende oppdateringer vil bli installeret. Alle data som ikke er lagret vil gå tapt.";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdateringen. Vennligst vent et øyeblikk - det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+
+/* Additional Pending Updates title */
+"Additional Pending Updates" = "Additional Pending Updates";
+
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator.";
+
+/* Other Users Blocking Apps Running title */
+"Applications in use by others" = "Applications in use by others";
+
+/* Cancel button title
+   Cancel Install short action text
+   Cancel Removal short action text
+   Cancel Update short action text */
+"Cancel" = "Avbryt";
+
+/* Cancel Install long action text */
+"Cancel install" = "Cancel install";
+
+/* Cancel Removal long action text */
+"Cancel removal" = "Cancel removal";
+
+/* Cancel Update long action text */
+"Cancel update" = "Cancel update";
+
+/* Item Not Found message */
+"Cannot display the requested item." = "Cannot display the requested item.";
+
+/* Sidebar Category label */
+"Category:" = "Category:";
+
+/* Check Again button title */
+"Check Again" = "Check Again";
+
+/* Checking For Updates message */
+"Checking for updates..." = "Checking for updates...";
+
+/* Blocking Apps Running title */
+"Conflicting applications running" = "Det er åpne programmer som hindrer installasjonen";
+
+/* Continue button text */
+"Continue" = "Fortsett";
+
+/* Critical Update type */
+"Critical Update" = "Critical Update";
+
+/* Unavailable long action text */
+"Currently Unavailable" = "Currently Unavailable";
+
+/* Sidebar Developer label */
+"Developer:" = "Developer:";
+
+/* Downloading status text */
+"Downloading" = "Downloading";
+
+/* Sidebar Due label */
+"Due:" = "Due:";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update.";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør koble datamaskinen til en strømkilde før installasjon. Er du sikker på at du vil forsette oppdateringen?";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "Tvungen utlogging for obligatorisk installasjon";
+
+/* Sidebar Information label */
+"Information" = "Information";
+
+/* Install long action text
+   Install short action text */
+"Install" = "Install";
+
+/* Install Requested status text */
+"Install requested" = "Install requested";
+
+/* Install Required long action text */
+"Install Required" = "Install Required";
+
+/* Install Session Failed title */
+"Install session failed" = "Installasjonen mislyktes";
+
+/* Install Error status text */
+"Installation Error" = "Installation Error";
+
+/* Installed long action text
+   Installed short action text
+   Installed status text */
+"Installed" = "Installert";
+
+/* Installing long action text
+   Installing short action text
+   Installing status text */
+"Installing" = "Installing";
+
+/* Log out and Update button text */
+"Log out and update" = "Logg ut og oppdater";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "Logg ut og oppdater nå";
+
+/* Logout Required title
+   Require Logout message */
+"Logout Required" = "Utlogging er påkrevd";
+
+/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator.";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator.";
+
+/* Managed Update type */
+"Managed Update" = "Managed Update";
+
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "Obligatoriske oppdateringer venter";
+
+/* More link text */
+"More" = "More";
+
+/* Sidebar More By Developer label */
+"More by %s" = "More by %s";
+
+/* Sidebar More In Category label */
+"More in %s" = "More in %s";
+
+/* My Items Header label */
+"My Items" = "My Items";
+
+/* No Licenses Available display text */
+"No licenses available" = "No licenses available";
+
+/* No Updates message */
+"No pending updates" = "No pending updates";
+
+/* Not Currently Available display text */
+"Not currently available" = "Not currently available";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "Not enough disk space";
+
+/* Not Installed status text */
+"Not installed" = "Ikke installert";
+
+/* OK button title */
+"OK" = "OK";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "One or more items must be installed by %s";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "En eller flere obligatoriske oppdateringer burde vært installert. Det vil snart gjøres en påtvungen utlogging.";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "En eller flere oppdateringer skal installeres av %s. Hvis du venter for lenge, vil det gjøres en påtvungen utlogging.";
+
+/* Other Available Updates label */
+"Other available updates" = "Other available updates";
+
+/* Other Users Blocking Apps Running detail */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s";
+
+/* Other Users Logged In title */
+"Other users logged in" = "Andre brukere er pålogget";
+
+/* Pending Updates alert title */
+"Pending updates" = "Pending updates";
+
+/* Preparing Removal status text */
+"Preparing removal" = "Preparing removal";
+
+/* Quit button title */
+"Quit" = "Avslutt";
+
+/* Removal Error status text */
+"Removal Error" = "Removal Error";
+
+/* Removal Requested display text
+   Removal Requested status text */
+"Removal requested" = "Removal requested";
+
+/* Remove long action text
+   Remove short action text */
+"Remove" = "Remove";
+
+/* Removing long action text
+   Removing short action text
+   Removing status text */
+"Removing" = "Removing";
+
+/* Install Required long action text
+   Install Required short action text
+   Update Required short action text */
+"Required" = "Required";
+
+/* Restart button title */
+"Restart" = "Omstart";
+
+/* Require Restart message
+   Restart Required alert title
+   Restart Required title */
+"Restart Required" = "Krever omstart";
+
+/* No Installed Software secondary text */
+"Select software to install." = "Select software to install.";
+
+/* Sidebar Size label */
+"Size:" = "Size:";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Programvare som er installert eller fjernet krever en omstart. Du vil få anledning til å lagre alle åpne dokumenter.";
+
+/* Sidebar Status label */
+"Status:" = "Status:";
+
+/* Additional Pending Updates detail */
+"There are additional pending updates to install or remove." = "There are additional pending updates to install or remove.";
+
+/* No Items primary text */
+"There are no available software items." = "There are no available software items.";
+
+/* No Developer Results primary text */
+"There are no items from this developer." = "There are no items from this developer.";
+
+/* No Category Results primary text */
+"There are no items in this category." = "There are no items in this category.";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det er andre brukere innlogget på denne datamaskinen.\nHvis du opdaterer nå, risikerer du at de mister deres åpne dokumenter.\n\nPrøv igjen senere når de andre brukerne er avlogget.";
+
+/* Pending Updates alert detail text */
+"There are pending updates for this computer." = "There are pending updates for this computer.";
+
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.";
+
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Det er et konfigurasjonsproblem med Managed Software Update. Prosessen avsluttet uventet. Kontakt systemadministratoren.";
+
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "Der er ingen nye oppdateringer tilgjengelig.";
+
+/* Dependency List prologue text */
+"This item is required by:" = "This item is required by:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "This item must be installed by %s";
+
+/* No Items secondary text */
+"Try again later." = "Try again later.";
+
+/* No Search Results secondary text */
+"Try searching again." = "Try searching again.";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "Try selecting another category.";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "Try selecting another developer.";
+
+/* Sidebar Type label */
+"Type:" = "Type:";
+
+/* Unavailable short action text
+   Unavailable status text */
+"Unavailable" = "Unavailable";
+
+/* No Category name */
+"Uncategorized" = "Uncategorized";
+
+/* Update button title
+   Update long action text
+   Update short action text */
+"Update" = "Update";
+
+/* Update All button title */
+"Update All" = "Update All";
+
+/* Update Available status text */
+"Update available" = "Nye oppdateringer er tilgjengelig";
+
+/* Update Check Failed title */
+"Update check failed" = "Søk etter nye oppdateringer mislyktes";
+
+/* Update In Progress primary text */
+"Update in progress." = "Update in progress.";
+
+/* Update Now button title */
+"Update now" = "Update now";
+
+/* Update Required long action text
+   Update Requires long action text */
+"Update Required" = "Update Required";
+
+/* Update Required status text
+   Update Will Be Installed status text */
+"Update will be installed" = "Update will be installed";
+
+/* Updating message */
+"Updating..." = "Updating...";
+
+/* Sidebar Version label */
+"Version" = "Version";
+
+/* Sidebar Version label */
+"Version:" = "Version:";
+
+/* Install Required status text
+   Will Be Installed status text */
+"Will be installed" = "Vil bli installert";
+
+/* Will Be Removed display text
+   Will Be Removed status text */
+"Will be removed" = "Vil bli fjernet";
+
+/* No Installed Software primary text */
+"You have no selected software." = "You have no selected software.";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "You must quit the following applications before proceeding with installation or removal:\n\n%s";
+
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "Din datamaskinen er ikke koblet til en strømkilde.";
+
+/* No Search Results primary text */
+"Your search had no results." = "Your search had no results.";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "Din programvare er oppdateret.";
+

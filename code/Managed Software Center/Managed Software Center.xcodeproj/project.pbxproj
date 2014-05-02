@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C02C98891911B81D00425167 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C02C98871911B81D00425167 /* Localizable.strings */; };
 		C035274E18A9C582004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274D18A9C582004A5AE4 /* libpython2.6.dylib */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C079D9C118BD435200BAD62E /* AlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C079D9C018BD435200BAD62E /* AlertController.py */; };
@@ -35,8 +36,36 @@
 
 /* Begin PBXFileReference section */
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
-		C02BF93618B45D6900115CCF /* Managed Software Center-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Managed Software Center-Info.plist"; sourceTree = "<group>"; };
-		C035274D18A9C582004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
+		C02C98731911B55600425167 /* Managed Software Center-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Managed Software Center-Info.plist"; sourceTree = "<group>"; };
+		C02C98751911B63E00425167 /* fr */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fr; path = fr.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98761911B63E00425167 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98771911B64A00425167 /* de */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = de; path = de.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98781911B64A00425167 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98791911B65600425167 /* es */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = es; path = es.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C987A1911B65600425167 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C987B1911B66400425167 /* da */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = da; path = da.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C987C1911B66400425167 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C987D1911B67600425167 /* fi */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fi; path = fi.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C987E1911B67600425167 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C987F1911B67F00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = nb; path = nb.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98801911B67F00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98811911B68800425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ru; path = ru.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98821911B68800425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98831911B69000425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = sv; path = sv.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98841911B69000425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98851911B6DD00425167 /* nl-NL */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "nl-NL"; path = "nl-NL.lproj/MainMenu.xib"; sourceTree = "<group>"; };
+		C02C98861911B6DD00425167 /* nl-NL */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "nl-NL"; path = "nl-NL.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C02C98881911B81D00425167 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988A1911B82900425167 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988B1911B82A00425167 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988C1911B82C00425167 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988D1911B82D00425167 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988E1911B82E00425167 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988F1911B82E00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C98901911B83000425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C98911911B83100425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C98921911B83100425167 /* nl-NL */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "nl-NL"; path = "nl-NL.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		C035274D18A9C582004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = SOURCE_ROOT; };
 		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = munki.py; sourceTree = "<group>"; };
 		C079D9C018BD435200BAD62E /* AlertController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = AlertController.py; sourceTree = "<group>"; };
 		C09004ED16CDD84E00BE34CE /* Managed Software Center.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Center.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,7 +171,8 @@
 		C09004FA16CDD84E00BE34CE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				C02BF93618B45D6900115CCF /* Managed Software Center-Info.plist */,
+				C02C98871911B81D00425167 /* Localizable.strings */,
+				C02C98731911B55600425167 /* Managed Software Center-Info.plist */,
 				C09004FC16CDD84E00BE34CE /* InfoPlist.strings */,
 				C09004FF16CDD84E00BE34CE /* main.m */,
 				C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */,
@@ -232,6 +262,10 @@
 				uk,
 				zh_CN,
 				zh_TW,
+				fr,
+				de,
+				es,
+				"nl-NL",
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -261,6 +295,7 @@
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
 				C0AAA22018BC67F90012663F /* msuhtml.py in Resources */,
+				C02C98891911B81D00425167 /* Localizable.strings in Resources */,
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */,
 				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
@@ -287,7 +322,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generate localizable strings\n./Localize.py --to English --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from English --to Dutch --utf8\n./Localize.py --from English --to French --utf8\n./Localize.py --from English --to German --utf8\n./Localize.py --from English --to Spanish --utf8\n./Localize.py --from English --to da --utf8\n./Localize.py --from English --to fi --utf8\n./Localize.py --from English --to nb --utf8\n./Localize.py --from English --to ru --utf8\n./Localize.py --from English --to sv --utf8";
+			shellScript = "cd Managed\\ Software\\ Center\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl-NL --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8";
 		};
 		C09CE1DA18BEA59E00B9724A /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -317,10 +352,36 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		C02C98871911B81D00425167 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C02C98881911B81D00425167 /* en */,
+				C02C988A1911B82900425167 /* fr */,
+				C02C988B1911B82A00425167 /* de */,
+				C02C988C1911B82C00425167 /* es */,
+				C02C988D1911B82D00425167 /* da */,
+				C02C988E1911B82E00425167 /* fi */,
+				C02C988F1911B82E00425167 /* nb */,
+				C02C98901911B83000425167 /* ru */,
+				C02C98911911B83100425167 /* sv */,
+				C02C98921911B83100425167 /* nl-NL */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		C09004FC16CDD84E00BE34CE /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				C09004FD16CDD84E00BE34CE /* en */,
+				C02C98761911B63E00425167 /* fr */,
+				C02C98781911B64A00425167 /* de */,
+				C02C987A1911B65600425167 /* es */,
+				C02C987C1911B66400425167 /* da */,
+				C02C987E1911B67600425167 /* fi */,
+				C02C98801911B67F00425167 /* nb */,
+				C02C98821911B68800425167 /* ru */,
+				C02C98841911B69000425167 /* sv */,
+				C02C98861911B6DD00425167 /* nl-NL */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -329,6 +390,15 @@
 			isa = PBXVariantGroup;
 			children = (
 				C090050A16CDD84E00BE34CE /* en */,
+				C02C98751911B63E00425167 /* fr */,
+				C02C98771911B64A00425167 /* de */,
+				C02C98791911B65600425167 /* es */,
+				C02C987B1911B66400425167 /* da */,
+				C02C987D1911B67600425167 /* fi */,
+				C02C987F1911B67F00425167 /* nb */,
+				C02C98811911B68800425167 /* ru */,
+				C02C98831911B69000425167 /* sv */,
+				C02C98851911B6DD00425167 /* nl-NL */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

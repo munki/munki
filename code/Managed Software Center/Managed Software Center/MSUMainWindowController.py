@@ -99,7 +99,7 @@ class MSUMainWindowController(NSWindowController):
         self.loadUpdatesPage_(self)
         if munki.thereAreUpdatesToBeForcedSoon():
             alertTitle = NSLocalizedString(u"Mandatory Updates Pending",
-                                           u'MandatoryUpdatesPendingText')
+                                           u"Mandatory Updates Pending text")
             deadline = munki.earliestForceInstallDate()
             time_til_logout = deadline.timeIntervalSinceNow()
             if time_til_logout > 0:
@@ -107,22 +107,22 @@ class MSUMainWindowController(NSWindowController):
                 formatString = NSLocalizedString(
                     (u"One or more updates must be installed by %s. A logout "
                     "may be forced if you wait too long to update."),
-                    u'MandatoryUpdatesPendingDetail')
+                    u"Mandatory Updates Pending detail")
                 alertDetail = formatString % deadline_str
             else:
                 alertDetail = NSLocalizedString(
                     (u"One or more mandatory updates are overdue for "
                     "installation. A logout will be forced soon."),
-                    u'MandatoryUpdatesImminentDetail')
+                    u"Mandatory Updates Imminent detail")
         else:
-            alertTitle = NSLocalizedString(u"Pending updates", u'PendingUpdatesAlertTitle')
+            alertTitle = NSLocalizedString(u"Pending updates", u"Pending Updates alert title")
             alertDetail = NSLocalizedString(u"There are pending updates for this computer.",
-                                            u'PendingUpdatesAlertDetailText')
+                                            u"Pending Updates alert detail text")
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             alertTitle,
-            NSLocalizedString(u"Quit", u'QuitButtonTitle'),
+            NSLocalizedString(u"Quit", u"Quit button title"),
             nil,
-            NSLocalizedString(u"Update now", u'UpdateNowButtonTitle'),
+            NSLocalizedString(u"Update now", u"Update Now button title"),
             alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window(), self,
@@ -179,11 +179,12 @@ class MSUMainWindowController(NSWindowController):
         munki.reload_prefs()
         lastCheckResult = munki.pref("LastCheckResult")
         if sessionResult != 0 or lastCheckResult < 0:
-            OKButtonTitle = NSLocalizedString(u"OK", u'OKButtonTitle')
-            alertMessageText = NSLocalizedString(u"Update check failed", u'UpdateCheckFailedTitle')
+            OKButtonTitle = NSLocalizedString(u"OK", u"OK button title")
+            alertMessageText = NSLocalizedString(
+                                    u"Update check failed", u"Update Check Failed title")
             if tasktype == "installwithnologout":
                 alertMessageText = NSLocalizedString(
-                                        u"Install session failed", u'InstallSessionFailedTitle')
+                                        u"Install session failed", u"Install Session Failed title")
 
             if sessionResult == -1:
                 # connection was dropped unexpectedly
@@ -191,28 +192,28 @@ class MSUMainWindowController(NSWindowController):
                 detailText = NSLocalizedString(
                     (u"There is a configuration problem with the managed software installer. "
                       "The process ended unexpectedly. Contact your systems administrator."),
-                     u'UnexpectedSessionEndMessage')
+                     u"Unexpected Session End message")
             elif sessionResult == -2:
                 # session never started
                 msulog.log("MSC", "cant_update", "process did not start")
                 detailText = NSLocalizedString(
                     (u"There is a configuration problem with the managed software installer. "
                       "Could not start the process. Contact your systems administrator."),
-                     u'CouldNotStartSessionMessage')
+                     u"Could Not Start Session message")
             elif lastCheckResult == -1:
                 # server not reachable
                 msulog.log("MSC", "cant_update", "cannot contact server")
                 detailText = NSLocalizedString(
                     (u"Managed Software Center cannot contact the update server at this time.\n"
                       "Try again later. If this situation continues, "
-                      "contact your systems administrator."), u'CannotContactServerDetail')
+                      "contact your systems administrator."), u"Cannot Contact Server detail")
             elif lastCheckResult == -2:
                 # preflight failed
                 msulog.log("MSU", "cant_update", "failed preflight")
                 detailText = NSLocalizedString(
                     (u"Managed Software Center cannot check for updates now.\n"
                       "Try again later. If this situation continues, "
-                      "contact your systems administrator."), u'FailedPreflightCheckDetail')
+                      "contact your systems administrator."), u"Failed Preflight Check detail")
             # show the alert sheet
             self.window().makeKeyAndOrderFront_(self)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
@@ -385,8 +386,7 @@ class MSUMainWindowController(NSWindowController):
             msulog.log("user", "install_without_logout")
             self._update_in_progress = True
             self.displayUpdateCount()
-            self.setStatusViewTitle_(NSLocalizedString(
-                u'Updating...', u'UpdatingMessage'))
+            self.setStatusViewTitle_(NSLocalizedString(u"Updating...", u"Updating message"))
             result = munki.justUpdate()
             if result:
                 NSLog("Error starting install session: %s" % result)
@@ -695,15 +695,14 @@ class MSUMainWindowController(NSWindowController):
         update_count_element = document.getElementById_('update-count-string')
         if update_count_element:
             update_count_element.setInnerText_(
-                NSLocalizedString(u'Checking for updates...',
-                                  u'CheckingForUpdatesMessage'))
+                NSLocalizedString(u"Checking for updates...", u"Checking For Updates message"))
         warning_text_element = document.getElementById_('update-warning-text')
         if warning_text_element:
             warning_text_element.setInnerHTML_('')
         install_all_button = document.getElementById_('install-all-button-text')
         if install_all_button:
             install_all_button.setInnerText_(
-                NSLocalizedString(u'Cancel', u'CancelButtonText'))
+                NSLocalizedString(u"Cancel", u"Cancel button title"))
             #btn_classes = install_all_button.className().split(' ')
             #if not 'checking' in btn_classes:
             #    btn_classes.append('checking')
