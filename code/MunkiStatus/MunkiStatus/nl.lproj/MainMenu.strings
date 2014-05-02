@@ -1,0 +1,90 @@
+﻿
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Venster";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Minimaliseren";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Venster";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
+"56.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
+"57.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
+"58.title" = "Over Beheerde Softwarebijwerking";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "Help";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "Help";
+
+/* Class = "NSMenuItem"; title = "MunkiStatus Help"; ObjectID = "111"; */
+"111.title" = "Beheerde Softwarebijwerking Help";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Hide MunkiStatus"; ObjectID = "134"; */
+"134.title" = "Verberg Beheerde Softwarebijwerking";
+
+/* Class = "NSMenuItem"; title = "Quit MunkiStatus"; ObjectID = "136"; */
+"136.title" = "Sluit Beheerde Softwarebijwerking af";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "Verberg Anderen";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "Toon Alles";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "Kopiër";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "Alles Selecteren";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "Knippen";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "Verwijder";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "Plakken";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "Bewerken";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Ontdoe";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Opnieuw";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Bewerken";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "Zoom";
+
+/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "1Nd-E7-vfR"; */
+"1Nd-E7-vfR.title" = "Beheerde Softwarebijwerking";
+
+/* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
+"M20-JG-Pmr.title" = "Stop";
+
+/* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
+"VCy-58-vwp.title" = "BackdropWindow";
+
+/* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
+"bd5-IY-BXv.title" = "Close";
