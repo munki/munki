@@ -25,19 +25,23 @@ from Foundation import NSLocalizedString
 def get_template(template_name, raw=False):
     '''return an html template. If raw is True, just return the string; otherwise
     return a string Template object'''
+    customTemplatesPath = os.path.join(msulib.html_dir(), 'custom/templates')
     resourcesPath = NSBundle.mainBundle().resourcePath()
-    templatePath = os.path.join(resourcesPath, 'templates', template_name)
-    try:
-        file_ref = open(templatePath)
-        template_html = file_ref.read()
-        file_ref.close()
-        if raw:
-            return template_html.decode('utf-8')
-        else:
-            return Template(template_html.decode('utf-8'))
-    except (IOError, OSError):
-        return None
-
+    defaultTemplatesPath = os.path.join(resourcesPath, 'templates')
+    for directory in [customTemplatesPath, defaultTemplatesPath]:
+        templatePath = os.path.join(directory, template_name)
+        if os.path.exists(templatePath):
+            try:
+                file_ref = open(templatePath)
+                template_html = file_ref.read()
+                file_ref.close()
+                if raw:
+                    return template_html.decode('utf-8')
+                else:
+                    return Template(template_html.decode('utf-8'))
+            except (IOError, OSError):
+                return None
+    return None
 
 def build_page(filename):
     '''Dispatch request to build a page to the appropriate function'''
@@ -214,6 +218,7 @@ def build_list_page(category=None, developer=None, filter=None):
     item_html = build_list_page_items_html(
                             category=category, developer=developer, filter=filter)
 
+    # make HTML for Categories pop-up menu
     if category:
         categories_html = u'<option>All Categories</option>\n'
     else:
@@ -225,9 +230,16 @@ def build_list_page(category=None, developer=None, filter=None):
         else:
             categories_html += u'<option>%s</option>\n' % item
 
+    categories_html_list = ''
+    # make HTML for list of categories
+    for item in sorted(category_list):
+        categories_html_list += u'<li class="link"><a href="category-%s.html">%s</a></li>\n' % (
+                                                                                 quote(item), item)
+
     page = {}
     page['list_items'] = item_html
     page['category_items'] = categories_html
+    page['category_list'] = categories_html_list
     page['header_text'] = header
     if category or filter or developer:
         showcase = ''

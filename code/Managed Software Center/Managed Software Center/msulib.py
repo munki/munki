@@ -24,6 +24,8 @@ import sys
 
 import shutil
 
+from zipfile import ZipFile
+
 from Foundation import *
 from AppKit import *
 
@@ -72,14 +74,32 @@ def html_dir():
         # empty it
         shutil.rmtree(_html_dir)
     os.mkdir(_html_dir)
+    
     # symlink our static files dir
     resourcesPath = NSBundle.mainBundle().resourcePath()
     source_path = os.path.join(resourcesPath, 'WebResources')
     link_path = os.path.join(_html_dir, 'static')
     os.symlink(source_path, link_path)
+    
     # symlink the Managed Installs icons dir
     managed_install_dir = munki.pref('ManagedInstallDir')
     source_path = os.path.join(managed_install_dir, 'icons')
     link_path = os.path.join(_html_dir, 'icons')
     os.symlink(source_path, link_path)
+    
+    # unzip any custom client resources
+    source_path = os.path.join(managed_install_dir, 'client_resources/custom.zip')
+    if os.path.exists(source_path):
+        dest_path = os.path.join(_html_dir, 'custom')
+        os.mkdir(dest_path)
+        archive = ZipFile(source_path)
+        archive_files = archive.namelist()
+        # sanity checking in case the archive is not built correctly
+        files_to_extract = [filename for filename in archive_files
+                            if filename.startswith('resources/')
+                            or filename.startswith('templates/')]
+        if not files_to_extract:
+            NSLog('Invalid client resources archive.')
+        for filename in files_to_extract:
+            archive.extract(filename, dest_path)
     return _html_dir
