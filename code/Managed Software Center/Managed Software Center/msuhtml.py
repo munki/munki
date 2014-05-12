@@ -25,19 +25,23 @@ from Foundation import NSLocalizedString
 def get_template(template_name, raw=False):
     '''return an html template. If raw is True, just return the string; otherwise
     return a string Template object'''
+    customTemplatesPath = os.path.join(msulib.html_dir(), 'custom/templates')
     resourcesPath = NSBundle.mainBundle().resourcePath()
-    templatePath = os.path.join(resourcesPath, 'templates', template_name)
-    try:
-        file_ref = open(templatePath)
-        template_html = file_ref.read()
-        file_ref.close()
-        if raw:
-            return template_html.decode('utf-8')
-        else:
-            return Template(template_html.decode('utf-8'))
-    except (IOError, OSError):
-        return None
-
+    defaultTemplatesPath = os.path.join(resourcesPath, 'templates')
+    for directory in [customTemplatesPath, defaultTemplatesPath]:
+        templatePath = os.path.join(directory, template_name)
+        if os.path.exists(templatePath):
+            try:
+                file_ref = open(templatePath)
+                template_html = file_ref.read()
+                file_ref.close()
+                if raw:
+                    return template_html.decode('utf-8')
+                else:
+                    return Template(template_html.decode('utf-8'))
+            except (IOError, OSError):
+                return None
+    return None
 
 def build_page(filename):
     '''Dispatch request to build a page to the appropriate function'''
