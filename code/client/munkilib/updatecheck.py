@@ -2716,7 +2716,7 @@ def download_icons(item_list):
     icon_base_url = (munkicommon.pref('IconURL') or
                      munkicommon.pref('SoftwareRepoURL') + '/icons/')
     icon_base_url = icon_base_url.rstrip('/') + '/'
-    icon_dir =  os.path.join(munkicommon.pref('ManagedInstallDir'), 'icons')
+    icon_dir = os.path.join(munkicommon.pref('ManagedInstallDir'), 'icons')
     munkicommon.display_debug2('Icon base URL is: %s', icon_base_url)
     for item in item_list:
         icon_name = item.get('icon_name') or item['name']
@@ -2760,6 +2760,59 @@ def download_icons(item_list):
                 os.rmdir(dirpath)
             except (IOError, OSError), err:
                 pass
+
+
+def download_client_resources():
+    # download client customization resources (if any).
+    # manifest can specify an explict name under ClientResourcesFilename
+    # if that doesn't exist, use the primary manifest name as the
+    # filename. If that fails, try site_default.zip
+    filenames = []
+    resources_name = munkicommon.pref('ClientResourcesFilename')
+    if resources_name:
+        if os.path.splitext(resources_name)[1] != '.zip':
+            resources_name += '.zip'
+    else:
+        filenames.append(munkicommon.report['ManifestName'] + '.zip')
+    filenames.append('site_default.zip')
+
+    resource_base_url = (munkicommon.pref('ClientResourcesURL') or
+                     munkicommon.pref('SoftwareRepoURL') + '/client_resources/')
+    resource_base_url = resource_base_url.rstrip('/') + '/'
+    resource_dir = os.path.join(
+        munkicommon.pref('ManagedInstallDir'), 'client_resources')
+    munkicommon.display_debug2(
+        'Client resources base URL is: %s', resource_base_url)
+    # make sure local resource directory exists
+    if not os.path.exists(resource_dir):
+        try:
+            os.makedirs(resource_dir, 0755)
+        except OSError, err:
+            munkicommon.display_error(
+                'Could not create %s' % resource_dir)
+            return
+    resource_archive_path = os.path.join(resource_dir, 'custom.zip')
+    message = 'Getting client resources...'
+    downloaded_resource_path = None
+    for filename in filenames:
+        resource_url = resource_base_url + filename
+        try:
+            unused_value = getResourceIfChangedAtomically(
+                resource_url, resource_archive_path, message=message)
+            downloaded_resource_path = resource_archive_path
+            break
+        except fetch.MunkiDownloadError, err:
+            munkicommon.display_debug1(
+                'Could not retrieve client resources with name %s: %s',
+                filename, err)
+    if downloaded_resource_path is None:
+        # make sure we don't have an old custom.zip hanging around
+        if os.path.exists(resource_archive_path):
+            try:
+                os.unlink(resource_archive_path)
+            except (OSError, IOError), err:
+                munkicommon.display_error(
+                    'Could not remove stale %s: %s', resource_archive_path, err)
 
 
 MACHINE = {}
@@ -2981,6 +3034,9 @@ def check(client_id='', localmanifestpath=None):
         item_list.extend(installinfo['managed_installs'])
         item_list.extend(installinfo['removals'])
         download_icons(item_list)
+        
+        # get any custom client resources
+        download_client_resources()
 
         # record the filtered lists
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
