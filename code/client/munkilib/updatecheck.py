@@ -2764,7 +2764,8 @@ def download_icons(item_list):
 
 def download_client_resources():
     # download client customization resources (if any).
-    # manifest can specify an explict name under ClientResourcesFilename
+    # Munki's preferences can specify an explict name
+    # under ClientResourcesFilename
     # if that doesn't exist, use the primary manifest name as the
     # filename. If that fails, try site_default.zip
     filenames = []
