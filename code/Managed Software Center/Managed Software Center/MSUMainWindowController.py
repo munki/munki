@@ -250,6 +250,8 @@ class MSUMainWindowController(NSWindowController):
         MunkiItems.reset()
         # recache SelfService choices
         self.cached_self_service = MunkiItems.SelfService()
+        # copy any new custom client resources
+        msulib.get_custom_resources()
         # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
         # what page are we currently viewing?

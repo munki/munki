@@ -54,6 +54,32 @@ def getInstallAllButtonTextForCount(count):
         return NSLocalizedString(u"Update All", u"Update All button title")
 
 
+def get_custom_resources():
+    '''copies custom resources into our html dir'''
+    if not _html_dir:
+        return
+    managed_install_dir = munki.pref('ManagedInstallDir')
+    source_path = os.path.join(managed_install_dir, 'client_resources/custom.zip')
+    if os.path.exists(source_path):
+        dest_path = os.path.join(_html_dir, 'custom')
+        if os.path.exists(dest_path):
+            try:
+                shutil.rmtree(dest_path)
+            except (OSError, IOError), err:
+                NSLog('Error clearing %s: %s' % (dest_path, err))
+        os.mkdir(dest_path)
+        archive = ZipFile(source_path)
+        archive_files = archive.namelist()
+        # sanity checking in case the archive is not built correctly
+        files_to_extract = [filename for filename in archive_files
+                            if filename.startswith('resources/')
+                            or filename.startswith('templates/')]
+        if not files_to_extract:
+            NSLog('Invalid client resources archive.')
+        for filename in files_to_extract:
+            archive.extract(filename, dest_path)
+
+
 def html_dir():
     '''sets up our local html cache directory'''
     global _html_dir
@@ -88,18 +114,6 @@ def html_dir():
     os.symlink(source_path, link_path)
     
     # unzip any custom client resources
-    source_path = os.path.join(managed_install_dir, 'client_resources/custom.zip')
-    if os.path.exists(source_path):
-        dest_path = os.path.join(_html_dir, 'custom')
-        os.mkdir(dest_path)
-        archive = ZipFile(source_path)
-        archive_files = archive.namelist()
-        # sanity checking in case the archive is not built correctly
-        files_to_extract = [filename for filename in archive_files
-                            if filename.startswith('resources/')
-                            or filename.startswith('templates/')]
-        if not files_to_extract:
-            NSLog('Invalid client resources archive.')
-        for filename in files_to_extract:
-            archive.extract(filename, dest_path)
+    get_custom_resources()
+    
     return _html_dir
