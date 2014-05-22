@@ -53,7 +53,6 @@ class MSUMainWindowController(NSWindowController):
     
     html_dir = None
     
-    
     # Cocoa UI binding properties
     tabControl = IBOutlet()
     webView = IBOutlet()
@@ -63,18 +62,11 @@ class MSUMainWindowController(NSWindowController):
     updateButtonCell = IBOutlet()
     windowMenuSeperatorItem = IBOutlet()
     fullScreenMenuItem = IBOutlet()
+    findMenuItem = IBOutlet()
+    softwareMenuItem = IBOutlet()
+    categoriesMenuItem = IBOutlet()
+    myItemsMenuItem = IBOutlet()
     
-    _disableSoftwareViewButtons = False
-    
-    @objc.accessor # PyObjC KVO hack
-    def disableSoftwareViewButtons(self):
-        return True
-        return self._disableSoftwareViewButtons
-    
-    @objc.accessor # PyObjC KVO hack
-    def setDisableSoftwareViewButtons_(self, bool):
-        self._disableSoftwareViewButtons = bool
-
     def appShouldTerminate(self):
         '''called by app delegate when it receives applicationShouldTerminate:'''
         if self.getUpdateCount() == 0:
@@ -155,17 +147,27 @@ class MSUMainWindowController(NSWindowController):
 
     def loadInitialView(self):
         '''Called by app delegate from applicationDidFinishLaunching:'''
+        self.enableOrDisableSoftwareViewControls()
         optional_items = MunkiItems.getOptionalInstallItems()
-        if not optional_items:
-            # disable software buttons and menu items
-            self.setDisableSoftwareViewButtons_(True)
         if not optional_items or self.getUpdateCount():
             self.loadUpdatesPage_(self)
         else:
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
         self.cached_self_service = MunkiItems.SelfService()
-
+        
+    def enableOrDisableSoftwareViewControls(self):
+        '''Disable or enable the controls that let us view optional items'''
+        optional_items = MunkiItems.getOptionalInstallItems()
+        enabled_state = (len(optional_items) > 0)
+        self.tabControl.setEnabled_(enabled_state)
+        self.searchField.setEnabled_(enabled_state)
+        self.findMenuItem.setEnabled_(enabled_state)
+        self.softwareMenuItem.setEnabled_(enabled_state)
+        self.softwareMenuItem.setEnabled_(enabled_state)
+        self.categoriesMenuItem.setEnabled_(enabled_state)
+        self.myItemsMenuItem.setEnabled_(enabled_state)
+    
     def munkiStatusSessionEnded_(self, sessionResult):
         '''Called by StatusController when a Munki session ends'''
         NSLog(u"MunkiStatus session ended: %s" % sessionResult)
@@ -254,6 +256,8 @@ class MSUMainWindowController(NSWindowController):
         msulib.get_custom_resources()
         # pending updates may have changed
         self._alertedUserToOutstandingUpdates = False
+        # enable/disable controls as needed
+        self.enableOrDisableSoftwareViewControls()
         # what page are we currently viewing?
         page_url = self.webView.mainFrameURL()
         filename = NSURL.URLWithString_(page_url).lastPathComponent()
@@ -289,7 +293,9 @@ class MSUMainWindowController(NSWindowController):
         return NO
     
     def windowDidBecomeMain_(self, notification):
-        self.tabControl.setEnabled_(YES)
+        optional_items = MunkiItems.getOptionalInstallItems()
+        enabled_state = (len(optional_items) != 0)
+        self.tabControl.setEnabled_(enabled_state)
     
     def windowDidResignMain_(self, notification):
         self.tabControl.setEnabled_(NO)

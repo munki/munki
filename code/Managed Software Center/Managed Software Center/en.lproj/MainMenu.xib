@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13D65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" defaultVersion="1060" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
@@ -107,7 +107,7 @@
                 </menuItem>
                 <menuItem title="Navigate" id="375">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Navigate" id="376">
+                    <menu key="submenu" title="Navigate" autoenablesItems="NO" id="376">
                         <items>
                             <menuItem title="Back" keyEquivalent="[" id="fEq-6D-Ce0">
                                 <connections>
@@ -132,17 +132,17 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Jey-TI-2ca"/>
-                            <menuItem title="Software" keyEquivalent="1" id="VYO-og-DRc">
+                            <menuItem title="Software" enabled="NO" keyEquivalent="1" id="VYO-og-DRc">
                                 <connections>
                                     <action selector="loadAllSoftwarePage:" target="KMl-S0-0FF" id="F3m-2h-riT"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Categories" keyEquivalent="2" id="9S1-fB-bKZ">
+                            <menuItem title="Categories" enabled="NO" keyEquivalent="2" id="9S1-fB-bKZ">
                                 <connections>
                                     <action selector="loadCategoriesPage:" target="KMl-S0-0FF" id="npC-5v-bMY"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="My Items" keyEquivalent="3" id="1uK-HI-wGR">
+                            <menuItem title="My Items" enabled="NO" keyEquivalent="3" id="1uK-HI-wGR">
                                 <connections>
                                     <action selector="loadMyItemsPage:" target="KMl-S0-0FF" id="qsB-5W-uX4"/>
                                 </connections>
@@ -285,13 +285,6 @@
                                         <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="only" alignment="center" state="on" tag="1" imageScaling="proportionallyDown" inset="2" id="769">
                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
-                                            <connections>
-                                                <binding destination="KMl-S0-0FF" name="enabled" keyPath="disableSoftwareViewButtons" id="Izr-47-IE3">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
                                         </buttonCell>
                                     </column>
                                     <column>
@@ -362,10 +355,14 @@
         </customObject>
         <customObject id="KMl-S0-0FF" userLabel="MSUMainWindowController" customClass="MSUMainWindowController">
             <connections>
+                <outlet property="categoriesMenuItem" destination="9S1-fB-bKZ" id="cfs-BV-4tQ"/>
+                <outlet property="findMenuItem" destination="1XY-pX-Pwv" id="nT2-rv-DIX"/>
                 <outlet property="fullScreenMenuItem" destination="jQt-Mr-wFT" id="9tf-Lb-Mec"/>
+                <outlet property="myItemsMenuItem" destination="1uK-HI-wGR" id="Jkb-QR-M6x"/>
                 <outlet property="navigationBtn" destination="Ist-mg-GMr" id="uqa-wT-V3E"/>
                 <outlet property="progressSpinner" destination="X8X-xa-e0T" id="DtO-PP-ORa"/>
                 <outlet property="searchField" destination="557" id="HM7-VX-9cg"/>
+                <outlet property="softwareMenuItem" destination="VYO-og-DRc" id="K69-dp-kBp"/>
                 <outlet property="tabControl" destination="796" id="AEs-wG-NLb"/>
                 <outlet property="updateButtonCell" destination="fG2-SY-8g2" id="92m-84-OS5"/>
                 <outlet property="webView" destination="S5Y-lq-2nB" id="TPJ-jP-F85"/>
