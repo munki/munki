@@ -170,8 +170,8 @@ class MSUMainWindowController(NSWindowController):
     
     def munkiStatusSessionEnded_(self, sessionResult):
         '''Called by StatusController when a Munki session ends'''
-        NSLog(u"MunkiStatus session ended: %s" % sessionResult)
-        NSLog(u"MunkiStatus session type: %s" % self.managedsoftwareupdate_task)
+        msulog.debug_log(u"MunkiStatus session ended: %s" % sessionResult)
+        msulog.debug_log(u"MunkiStatus session type: %s" % self.managedsoftwareupdate_task)
         tasktype = self.managedsoftwareupdate_task
         self.managedsoftwareupdate_task = None
         self._update_in_progress = False
@@ -247,7 +247,7 @@ class MSUMainWindowController(NSWindowController):
     def resetAndReload(self):
         '''Clear cached values, reload from disk. Display any changes.
         Typically called soon after a Munki session completes'''
-        NSLog('resetAndReload method called')
+        msulog.debug_log('resetAndReload method called')
         # need to clear out cached data
         MunkiItems.reset()
         # recache SelfService choices
@@ -261,7 +261,6 @@ class MSUMainWindowController(NSWindowController):
         # what page are we currently viewing?
         page_url = self.webView.mainFrameURL()
         filename = NSURL.URLWithString_(page_url).lastPathComponent()
-        #NSLog('Filename: %s' % filename)
         name = os.path.splitext(filename)[0]
         key, p, quoted_value = name.partition('-')
         if key == 'detail':
@@ -345,14 +344,14 @@ class MSUMainWindowController(NSWindowController):
     def updateAvailableUpdates(self):
         '''If a Munki session is not in progress (that we know of) and
         we get a updateschanged notification, resetAndReload'''
-        NSLog(u"Managed Software Center got update notification")
+        msulog.debug_log(u"Managed Software Center got update notification")
         if not self._update_in_progress:
             self.resetAndReload()
 
     def forcedLogoutWarning(self, notification_obj):
         '''Received a logout warning from the logouthelper for an
         upcoming forced install'''
-        NSLog(u"Managed Software Center got forced logout warning")
+        msulog.debug_log(u"Managed Software Center got forced logout warning")
         # got a notification of an upcoming forced install
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
@@ -397,7 +396,7 @@ class MSUMainWindowController(NSWindowController):
             self.setStatusViewTitle_(NSLocalizedString(u"Updating...", u"Updating message"))
             result = munki.justUpdate()
             if result:
-                NSLog("Error starting install session: %s" % result)
+                msulog.debug_log("Error starting install session: %s" % result)
                 self.munkiStatusSessionEnded_(2)
             else:
                 self.managedsoftwareupdate_task = "installwithnologout"
@@ -407,7 +406,7 @@ class MSUMainWindowController(NSWindowController):
     def markPendingItemsAsInstalling(self):
         '''While an install/removal session is happening, mark optional items
         that are being installed/removed with the appropriate status'''
-        NSLog('markPendingItemsAsInstalling')
+        msulog.debug_log('marking pendingItems as installing')
         install_info = munki.getInstallInfo()
         items_to_be_installed_names = [item['name']
                                        for item in install_info.get('managed_installs', [])]
@@ -425,10 +424,10 @@ class MSUMainWindowController(NSWindowController):
         for item in MunkiItems.getOptionalInstallItems():
             new_status = None
             if item['name'] in items_to_be_installed_names:
-                NSLog('Setting status for %s to "installing"' % item['name'])
+                msulog.debug_log('Setting status for %s to "installing"' % item['name'])
                 new_status = u'installing'
             elif item['name'] in items_to_be_removed_names:
-                NSLog('Setting status for %s to "removing"' % item['name'])
+                msulog.debug_log('Setting status for %s to "removing"' % item['name'])
                 new_status = u'removing'
             if new_status:
                 item['status'] = new_status
@@ -437,15 +436,14 @@ class MSUMainWindowController(NSWindowController):
     def markRequestedItemsAsProcessing(self):
         '''When an update check session is happening, mark optional items
            that have been requested as processing'''
-        NSLog('markRequestedItemsAsProcessing')
+        msulog.debug_log('marking requested items as processing')
         for item in MunkiItems.getOptionalInstallItems():
             new_status = None
-            #NSLog('Status for %s is %s' % (item['name'], item['status']))
             if item['status'] == 'install-requested':
-                NSLog('Setting status for %s to "downloading"' % item['name'])
+                msulog.debug_log('Setting status for %s to "downloading"' % item['name'])
                 new_status = u'downloading'
             elif item['status'] == 'removal-requested':
-                NSLog('Setting status for %s to "preparing-removal"' % item['name'])
+                msulog.debug_log('Setting status for %s to "preparing-removal"' % item['name'])
                 new_status = u'preparing-removal'
             if new_status:
                 item['status'] = new_status
@@ -463,7 +461,7 @@ class MSUMainWindowController(NSWindowController):
             return
         if MunkiItems.updateCheckNeeded():
             # any item status changes that require an update check?
-            NSLog('updateCheck needed')
+            msulog.debug_log('updateCheck needed')
             msulog.log("user", "check_then_install_without_logout")
             # since we are just checking for changed self-service items
             # we can suppress the Apple update check
@@ -472,7 +470,7 @@ class MSUMainWindowController(NSWindowController):
             self.displayUpdateCount()
             result = munki.startUpdateCheck(suppress_apple_update_check)
             if result:
-                NSLog("Error starting check-then-install session: %s" % result)
+                msulog.debug_log("Error starting check-then-install session: %s" % result)
                 self.munkiStatusSessionEnded_(2)
             else:
                 self.managedsoftwareupdate_task = "checktheninstall"
@@ -481,13 +479,13 @@ class MSUMainWindowController(NSWindowController):
         elif (not self._alertedUserToOutstandingUpdates
               and MunkiItems.updatesContainNonUserSelectedItems()):
             # current list of updates contains some not explicitly chosen by the user
-            NSLog('updateCheck not needed, items require user approval')
+            msulog.debug_log('updateCheck not needed, items require user approval')
             self._update_in_progress = False
             self.displayUpdateCount()
             self.loadUpdatesPage_(self)
             self.alert_controller.alertToExtraUpdates()
         else:
-            NSLog('updateCheck not needed')
+            msulog.debug_log('updateCheck not needed')
             self._alertedUserToOutstandingUpdates = False
             self.kickOffInstallSession()
 
@@ -544,10 +542,11 @@ class MSUMainWindowController(NSWindowController):
         elif key == 'developer':
             developer = value
         else:
-            NSLog('updateListPage unexpected error: _current_page_filename is %s' %
+            msulog.debug_log('updateListPage unexpected error: _current_page_filename is %s' %
                   filename)
             return
-        NSLog('updating software list page with category: %s, developer; %s, filter: %s' %
+        msulog.debug_log(
+              'updating software list page with category: %s, developer; %s, filter: %s' %
               (category, developer, filter))
         items_html = msuhtml.build_list_page_items_html(
                             category=category, developer=developer, filter=filter)
@@ -610,7 +609,7 @@ class MSUMainWindowController(NSWindowController):
                 try:
                     msuhtml.build_page(filename)
                 except Exception, e:
-                    NSLog('%@', e)
+                    msulog.debug_log('%@', e)
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
@@ -642,15 +641,15 @@ class MSUMainWindowController(NSWindowController):
     def webView_didFailProvisionalLoadWithError_forFrame_(self, view, error, frame):
         '''Stop progress spinner and log'''
         self.progressSpinner.stopAnimation_(self)
-        NSLog(u'Provisional load error: %@', error)
+        msulog.debug_log(u'Provisional load error: %@', error)
         files = os.listdir(self.html_dir)
-        NSLog('Files in html_dir: %s' % files)
+        msulog.debug_log('Files in html_dir: %s' % files)
 
     def webView_didFailLoadWithError_forFrame_(self, view, error, frame):
         '''Stop progress spinner and log error'''
         #TO-DO: display an error page?
         self.progressSpinner.stopAnimation_(self)
-        NSLog('Committed load error: %@', error)
+        msulog.debug_log('Committed load error: %@', error)
 
     def isSelectorExcludedFromWebScript_(self, aSelector):
         '''Declare which methods can be called from JavaScript'''
@@ -730,11 +729,11 @@ class MSUMainWindowController(NSWindowController):
         document = self.webView.mainFrameDocument()
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
-            NSLog('Unexpected error')
+            msulog.debug_log('Unexpected error: Can\'t find item for %s' % item_name)
             return
         update_table_row = document.getElementById_('%s_update_table_row' % item_name)
         if not update_table_row:
-            NSLog('Unexpected error')
+            msulog.debug_log('Unexpected error: Can\'t find table row for %s' % item_name)
             return
         # remove this row from its current table
         node = update_table_row.parentNode().removeChild_(update_table_row)
@@ -757,7 +756,7 @@ class MSUMainWindowController(NSWindowController):
                 # add the node to the other-updates table
                 table = document.getElementById_('other-updates-table')
             if not table:
-                NSLog('Unexpected error')
+                msulog.debug_log('Unexpected error: could not find other-updates-table')
                 return
             # this isn't the greatest way to add something to the DOM
             # but it works...
@@ -809,7 +808,8 @@ class MSUMainWindowController(NSWindowController):
         status_line = document.getElementById_('%s_status_text' % item_name)
         btn = document.getElementById_('%s_action_button_text' % item_name)
         if not item or not btn or not status_line:
-            NSLog('Unexpected error')
+            msulog.debug_log('User clicked MyItems action button for %s' % item_name)
+            msulog.debug_log('Unexpected error finding HTML elements')
             return
         prior_status = item['status']
         item.update_status()
@@ -864,7 +864,9 @@ class MSUMainWindowController(NSWindowController):
         the Install/Removel/Cancel button in the list or detail view'''
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
-            NSLog('Can\'t find item: %s' % item_name)
+            msulog.debug_log(
+                'User clicked Install/Removel/Cancel button in the list or detail view')
+            msulog.debug_log('Can\'t find item: %s' % item_name)
             return
         
         prior_status = item['status']

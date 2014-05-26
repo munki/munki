@@ -83,8 +83,6 @@ class MSUStatusController(NSObject):
         NEVER_STARTED = -2
         UNEXPECTEDLY_QUIT = -1
         
-        #NSLog('checkProcess timer fired')
-        
         if self.session_started:
             if self.got_status_update:
                 # we got a status update since we last checked; no need to
@@ -97,10 +95,10 @@ class MSUStatusController(NSObject):
                 self.timeout_counter = 6
                 self.saw_process = True
             else:
-                NSLog('managedsoftwareupdate not running...')
+                msulog.debug_log('managedsoftwareupdate not running...')
                 self.timeout_counter -= 1
             if self.timeout_counter == 0:
-                NSLog('Timed out waiting for managedsoftwareupdate.')
+                msulog.debug_log('Timed out waiting for managedsoftwareupdate.')
                 if self.saw_process:
                     self.sessionEnded_(UNEXPECTEDLY_QUIT)
                 else:
@@ -146,7 +144,7 @@ class MSUStatusController(NSObject):
             # so switch to the right mode
             self.startMunkiStatusSession()
         if command:
-            NSLog('Received command: %s' % command)
+            msulog.debug_log('Received command: %s' % command)
         if command == 'activate':
             pass
             #NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
