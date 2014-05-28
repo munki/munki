@@ -501,12 +501,15 @@ for pkg in core admin app launchd; do
     case $pkg in
         "app")
             ver="$MSUVERSION"
+            scripts="--scripts \"${MUNKIROOT}/code/pkgtemplate/Scripts_app\""
             ;;
         "launchd")
             ver="$LAUNCHDVERSION"
+            scripts=""
             ;;
         *)
             ver="$VERSION"
+            scripts=""
             ;;
     esac
     echo "Packaging munkitools_$pkg-$ver.pkg"
@@ -531,6 +534,7 @@ for pkg in core admin app launchd; do
         --ownership preserve \
         --info "$PKGTMP/info_$pkg" \
         --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
+        ${scripts} \
         "$PKGDEST/munkitools_$pkg-$ver.pkg"
     
     if [ "$?" -ne 0 ]; then
