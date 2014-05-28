@@ -21,6 +21,7 @@ from objc import YES, NO, IBAction, IBOutlet, nil
 import os
 import time
 import munki
+import msulog
 import FoundationPlist
 from Foundation import *
 from AppKit import *
