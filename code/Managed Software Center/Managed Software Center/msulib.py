@@ -78,7 +78,15 @@ def get_custom_resources():
         if not files_to_extract:
             msulog.debug_log('Invalid client resources archive.')
         for filename in files_to_extract:
-            archive.extract(filename, dest_path)
+            try:
+                if filename.endswith('/'):
+                    # it's a directory. The extract method in Python 2.6 handles this wrong
+                    # do we'll do it ourselves
+                    os.makedirs(os.path.join(dest_path, filename))
+                else:
+                    archive.extract(filename, dest_path)
+            except (OSError, IOError), err:
+                msulog.debug_log('Error expanding %s from archive: %s' % (filename, err))
 
 
 def html_dir():
