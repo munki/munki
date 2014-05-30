@@ -29,6 +29,8 @@ import stat
 
 import munki
 
+from Foundation import NSLog
+
 MSULOGDIR = \
     "/Users/Shared/.com.googlecode.munki.ManagedSoftwareUpdate.logs"
 MSULOGFILE = "%s.log"
@@ -190,3 +192,10 @@ def log(source, event, msg=None, *args):
             logging.info('@@%s:%s@@ %s', source, event, msg)
     else:
         logging.info('@@%s:%s@@', source, event)
+
+
+def debug_log(msg):
+    """Log to Apple System Log facility and also to MSU log if configured"""
+    NSLog(msg)
+    log('MSC', 'debug', msg)
+

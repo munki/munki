@@ -29,6 +29,7 @@ from zipfile import ZipFile
 from Foundation import *
 from AppKit import *
 
+import msulog
 import munki
 
 _html_dir = None
@@ -66,7 +67,7 @@ def get_custom_resources():
             try:
                 shutil.rmtree(dest_path)
             except (OSError, IOError), err:
-                NSLog('Error clearing %s: %s' % (dest_path, err))
+                msulog.debug_log('Error clearing %s: %s' % (dest_path, err))
         os.mkdir(dest_path)
         archive = ZipFile(source_path)
         archive_files = archive.namelist()
@@ -75,9 +76,17 @@ def get_custom_resources():
                             if filename.startswith('resources/')
                             or filename.startswith('templates/')]
         if not files_to_extract:
-            NSLog('Invalid client resources archive.')
+            msulog.debug_log('Invalid client resources archive.')
         for filename in files_to_extract:
-            archive.extract(filename, dest_path)
+            try:
+                if filename.endswith('/'):
+                    # it's a directory. The extract method in Python 2.6 handles this wrong
+                    # do we'll do it ourselves
+                    os.makedirs(os.path.join(dest_path, filename))
+                else:
+                    archive.extract(filename, dest_path)
+            except (OSError, IOError), err:
+                msulog.debug_log('Error expanding %s from archive: %s' % (filename, err))
 
 
 def html_dir():

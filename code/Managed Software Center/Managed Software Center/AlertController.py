@@ -155,7 +155,8 @@ class AlertController(NSObject):
                     self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
         else:
             # we shouldn't have been invoked if neither a restart or logout was required
-            NSLog('confirmUpdatesAndInstall was called but no restart or logout was needed')
+            msulog.debug_log(
+                        'confirmUpdatesAndInstall was called but no restart or logout was needed')
 
     @AppHelper.endSheetMethod
     def logoutAlertDidEnd_returnCode_contextInfo_(
@@ -171,19 +172,16 @@ class AlertController(NSObject):
             elif self.alertedToRunningOnBatteryAndCancelled():
                 msulog.log("user", "alerted_on_battery_power_and_cancelled")
                 return
-            NSLog("User chose to logout")
             msulog.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
             if result:
                 self.installSessionErrorAlert()
         elif returncode == NSAlertAlternateReturn:
-            NSLog("User cancelled")
             msulog.log("user", "cancelled")
 
     def alertedToMultipleUsers(self):
         '''Returns True if there are multiple GUI logins; alerts as a side effect'''
         if len(munki.currentGUIusers()) > 1:
-            NSLog("Alert: Multiple GUI users cancelling updateti")
             msulog.log("MSC", "multiple_gui_users_update_cancelled")
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Other users logged in", u"Other Users Logged In title"),

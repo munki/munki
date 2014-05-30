@@ -51,7 +51,6 @@ class MSUAppDelegate(NSObject):
             NSApp.disableRelaunchOnLogin()
 
         ver = NSBundle.mainBundle().infoDictionary().get('CFBundleShortVersionString')
-        NSLog("MSC GUI version: %s" % ver)
         msulog.log("MSC", "launched", "VER=%s" % ver)
 
         # setup client logging
@@ -100,11 +99,10 @@ class MSUAppDelegate(NSObject):
         '''Handle openURL messages'''
         keyDirectObject = struct.unpack(">i", "----")[0]
         url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
-        NSLog("Called by external URL: %@", url)
         msulog.log("MSU", "Called by external URL: %s", url)
         parsed_url = urlparse(url)
         if parsed_url.scheme != 'munki':
-            NSLog("URL %@ has unsupported scheme")
+            msulog.debug_log("URL %@ has unsupported scheme")
             return
         filename = unquote(parsed_url.netloc)
         # add .html if no extension
@@ -114,5 +112,4 @@ class MSUAppDelegate(NSObject):
             msuhtml.build_page(filename)
             self.mainWindowController.load_page(filename)
         else:
-            NSLog("%@ doesn't have a valid extension. Prevented from opening", url)
-            msulog.log("MSU", "%s doesn't have a valid extension. Prevented from opening", url)
+            msulog.debug_log("%s doesn't have a valid extension. Prevented from opening", url)

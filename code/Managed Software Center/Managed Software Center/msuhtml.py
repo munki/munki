@@ -15,10 +15,11 @@ from string import Template
 
 import MunkiItems
 import msulib
+import msulog
 import munki
 
 from AppKit import NSApp
-from Foundation import NSBundle, NSLog
+from Foundation import NSBundle
 from Foundation import NSLocalizedString
 
 
@@ -188,7 +189,7 @@ def build_detail_page(item_name):
             footer = get_template('footer_template.html', raw=True)
             generate_page(page_name, 'detail_template.html', page, footer=footer)
             return
-    NSLog('No detail found for %s' % item_name)
+    msulog.debug_log('No detail found for %s' % item_name)
     build_item_not_found_page(page_name)
 
 
@@ -591,6 +592,6 @@ def build_updatedetail_page(identifier):
             generate_page(page_name, 'updatedetail_template.html', page, footer=footer)
             return
     # if we get here we didn't find any item matching identifier
-    NSLog('No update detail found for %s' % item_name)
+    msulog.debug_log('No update detail found for %s' % item_name)
     build_item_not_found_page(page_name)
 

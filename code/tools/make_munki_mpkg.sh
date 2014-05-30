@@ -501,15 +501,19 @@ for pkg in core admin app launchd; do
     case $pkg in
         "app")
             ver="$MSUVERSION"
+            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_app"
             ;;
         "launchd")
             ver="$LAUNCHDVERSION"
+            SCRIPTS=""
             ;;
         *)
             ver="$VERSION"
+            SCRIPTS=""
             ;;
     esac
     echo "Packaging munkitools_$pkg-$ver.pkg"
+    echo "$SCRIPTS"
     # Use pkgutil --analyze to build a component property list
     # then turn off bundle relocation
     sudo /usr/bin/pkgbuild \
@@ -524,14 +528,26 @@ for pkg in core admin app launchd; do
     fi
     # use sudo here so pkgutil doesn't complain when it tries to
     # descend into root/Library/Managed Installs/*
-    sudo /usr/bin/pkgbuild \
-        --root "$PKGTMP/munki_$pkg" \
-        --identifier "$PKGID.$pkg" \
-        --version "$ver" \
-        --ownership preserve \
-        --info "$PKGTMP/info_$pkg" \
-        --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
-        "$PKGDEST/munkitools_$pkg-$ver.pkg"
+    if [ "$SCRIPTS" != "" ]; then
+        sudo /usr/bin/pkgbuild \
+            --root "$PKGTMP/munki_$pkg" \
+            --identifier "$PKGID.$pkg" \
+            --version "$ver" \
+            --ownership preserve \
+            --info "$PKGTMP/info_$pkg" \
+            --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
+            --scripts "$SCRIPTS" \
+            "$PKGDEST/munkitools_$pkg-$ver.pkg"
+    else
+        sudo /usr/bin/pkgbuild \
+            --root "$PKGTMP/munki_$pkg" \
+            --identifier "$PKGID.$pkg" \
+            --version "$ver" \
+            --ownership preserve \
+            --info "$PKGTMP/info_$pkg" \
+            --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
+            "$PKGDEST/munkitools_$pkg-$ver.pkg"
+    fi
     
     if [ "$?" -ne 0 ]; then
         echo "Error packaging munkitools_$pkg-$ver.pkg before rebuilding it."

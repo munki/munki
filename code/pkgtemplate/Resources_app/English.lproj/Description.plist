@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>IFPkgDescriptionTitle</key>
-	<string>Managed Software Update</string>
+	<string>Managed Software Center</string>
 	<key>IFPkgDescriptionDescription</key>
-	<string>Managed Software Update application.</string>
+	<string>Managed Software Center application.</string>
 </dict>
 </plist>
