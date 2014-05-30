@@ -1265,6 +1265,10 @@ class MunkiLooseVersion (version.LooseVersion):
             # treat None like an empty string
             self.parse('')
         if vstring is not None:
+            if isinstance(vstring, unicode):
+                # unicode string! Why? Oh well...
+                # convert to string so version.LooseVersion doesn't choke
+                vstring = vstring.encode('UTF-8')
             self.parse(str(vstring))
 
     def _pad(self, version_list, max_length):
