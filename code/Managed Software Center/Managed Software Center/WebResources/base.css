@@ -894,7 +894,7 @@ div.msu-button button {
     -webkit-border-radius: 0;
     -webkit-font-smoothing: antialiased;
     padding: 0;
-    margin: 4px 0 0 0;
+    margin: 0 0 0 0;
     background: 0;
     border: 0;
     text-align: center;
@@ -939,6 +939,10 @@ div.msu-button-inner.large:not(.installed-not-removable):hover {
 div.msu-button.install-updates {
     display: inline;
     float: right;
+}
+
+div.msu-button.install-updates.in-header {
+    margin-top: -2px;
 }
 
 div.msu-button-inner.install-updates {
@@ -1087,7 +1091,7 @@ div.progress-spinner {
     float: left;
     position: relative;
     top: 6px;
-    left: -10px;
+    left: -14px;
 }
 
 p[data-text-truncate-lines] {

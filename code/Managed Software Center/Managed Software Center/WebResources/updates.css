@@ -61,6 +61,11 @@ div.installations th {
     display: block;
     line-height: 32px
 }
+
+#update-count-string {
+    margin-left: -10px
+}
+
 div.installations th:first-child {
     -webkit-border-top-left-radius: 5px
 }
@@ -83,7 +88,7 @@ div.installations tbody tr:nth-of-type(even) {
 }
 .installation div.artwork {
     position: absolute;
-    margin-top: 2px
+    margin-top: 3px
 }
 .installation img.artwork {
     height: auto;
@@ -123,7 +128,8 @@ div.installations tbody tr:nth-of-type(even) {
 #other-updates #os-updates,#os-and-app-updates #os-updates,
 #os-and-app-updates #app-updates, div.subscribed-items {
     margin: 0;
-    -webkit-border-radius: 0;
+    -webkit-border-top-left-radius: 0px;
+    -webkit-border-top-right-radius: 0px;
     -webkit-box-shadow: none
 }
 #other-updates #os-updates,#os-and-app-updates #os-updates {
@@ -407,6 +413,7 @@ div.os-updates.expanded tbody tr.sosumi:before {
 body.scanning .non-scan-progress,body.page-not-ready .non-scan-progress,body:not(.scanning):not(.page-not-ready) .scan-progress {
     display: none
 }
+
 .activity-indicator {
     -webkit-animation-name: rotatingLoader;
     -webkit-animation-duration: .75s;
@@ -551,8 +558,7 @@ div.progress > span {
     height: 100%;
     padding: 0 2px;
     margin: 0 -2px;
-    -webkit-border-top-left-radius: 4px;
-    -webkit-border-bottom-left-radius: 4px;
+    -webkit-border-radius: 4px;
     -webkit-box-sizing: content-box;
     background: -webkit-gradient(linear,left top,left bottom,from( #4C95DF),to( #3B64C8));
     border-width: 0;
@@ -583,7 +589,7 @@ div.progress > span.indeterminate > span {
     color-stop(.25, transparent), color-stop(.5, transparent), 
     color-stop(.5, rgba(255, 255, 255, .9)), 
     color-stop(.75, rgba(255, 255, 255, .9)), 
-    color-stop(.75, transparent), to(transparent)
+    color-stop(.76, transparent), to(transparent)
     );
     z-index: 1;
     -webkit-background-size: 20px 20px;

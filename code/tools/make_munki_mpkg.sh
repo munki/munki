@@ -25,7 +25,7 @@ PARENTDIRNAME=`basename $PARENTDIR`
 if [ "$PARENTDIRNAME" == "code" ]; then
     GRANDPARENTDIR=`dirname $PARENTDIR`
     GRANDPARENTDIRNAME=`basename $GRANDPARENTDIR`
-    if [ "$GRANDPARENTDIRNAME" == "munki" ]; then
+    if [ "$GRANDPARENTDIRNAME" == "Munki2" ]; then
         MUNKIROOT="$GRANDPARENTDIR"
     fi
 fi
