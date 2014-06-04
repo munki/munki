@@ -65,10 +65,14 @@ def get_custom_resources():
         dest_path = os.path.join(_html_dir, 'custom')
         if os.path.exists(dest_path):
             try:
-                shutil.rmtree(dest_path)
+                shutil.rmtree(dest_path, ignore_errors=True)
             except (OSError, IOError), err:
                 msulog.debug_log('Error clearing %s: %s' % (dest_path, err))
-        os.mkdir(dest_path)
+        if not os.path.exists(dest_path):
+            try:
+                os.mkdir(dest_path)
+            except (OSError, IOError), err:
+                msulog.debug_log('Error creating %s: %s' % (dest_path, err))
         archive = ZipFile(source_path)
         archive_files = archive.namelist()
         # sanity checking in case the archive is not built correctly
