@@ -670,7 +670,7 @@ div.lockup-container[data-columns-current] div.lockup.backfill:last-of-type {
 }
 
 div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(3n+2) {
-    width: 33.5%
+    width: 33.4%
 }
 
 div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+1),
