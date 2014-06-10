@@ -121,9 +121,9 @@ def setup():
     # Correct the filename to include '.keychain' if not already present
     if not keychain_name.lower().endswith('.keychain'):
         keychain_name += '.keychain'
-    # Check to see if a file already exists at ~/Library/Keychains/keychain_name
+    # Check to see if the keychain already exists
     abs_keychain_path = os.path.realpath(
-        os.path.join(os.path.expanduser('~/Library/Keychains'), keychain_name))
+        os.path.join(os.path.expanduser('/Library/Keychains'), keychain_name))
     if os.path.exists(abs_keychain_path):
         ensure_keychain_is_in_search_list(abs_keychain_path)
         try:
@@ -217,7 +217,7 @@ def make_keychain(abs_keychain_path):
     if ca_cert_path:
         try:
             output = security(
-                    'add-trusted-cert', '-k', abs_keychain_path, ca_cert_path)
+                'add-trusted-cert', '-d', '-k', abs_keychain_path, ca_cert_path)
         except SecurityError, err:
             munkicommon.display_error(
                 'Error importing %s: %s' % (ca_cert_path, err))
@@ -228,7 +228,8 @@ def make_keychain(abs_keychain_path):
                 cert_path = os.path.join(ca_dir_path, item)
                 try:
                     output = security(
-                        'add-trusted-cert', '-k', abs_keychain_path, cert_path)
+                        'add-trusted-cert', '-d', '-k', abs_keychain_path, 
+                        cert_path)
                 except SecurityError, err:
                     munkicommon.display_error(
                                 'Error importing %s: %s' % (cert_path, err))
