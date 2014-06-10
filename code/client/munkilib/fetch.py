@@ -227,7 +227,6 @@ def get_url(url, destinationpath,
 
 def getResourceIfChangedAtomically(url,
                                    destinationpath,
-                                   cert_info=None,
                                    custom_headers=None,
                                    expected_hash=None,
                                    message=None,
@@ -273,7 +272,7 @@ def getResourceIfChangedAtomically(url,
     if url_parse.scheme in ['http', 'https']:
         changed = getHTTPfileIfChangedAtomically(
             url, destinationpath,
-            cert_info=cert_info, custom_headers=custom_headers,
+            custom_headers=custom_headers,
             message=message, resume=resume, follow_redirects=follow_redirects)
     elif url_parse.scheme == 'file':
         changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
@@ -352,7 +351,7 @@ def getFileIfChangedAtomically(path, destinationpath):
 
 
 def getHTTPfileIfChangedAtomically(url, destinationpath,
-                                   cert_info=None, custom_headers=None,
+                                   custom_headers=None,
                                    message=None, resume=False,
                                    follow_redirects=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the

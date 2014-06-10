@@ -33,6 +33,7 @@ from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 # our libs
 import fetch
+import keychain
 import munkicommon
 import munkistatus
 import appleupdates
@@ -3330,40 +3331,8 @@ def getResourceIfChangedAtomically(url,
     '''Gets a given URL from the Munki server. Sets up cert/CA info if it
     exists, and adds any additional headers'''
 
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    # get server CA cert if it exists so we can verify the munki server
-    ca_cert_path = None
-    ca_dir_path = None
-    if munkicommon.pref('SoftwareRepoCAPath'):
-        CA_path = munkicommon.pref('SoftwareRepoCAPath')
-        if os.path.isfile(CA_path):
-            ca_cert_path = CA_path
-        elif os.path.isdir(CA_path):
-            ca_dir_path = CA_path
-    if munkicommon.pref('SoftwareRepoCACertificate'):
-        ca_cert_path = munkicommon.pref('SoftwareRepoCACertificate')
-    if ca_cert_path == None:
-        ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
-        if not os.path.exists(ca_cert_path):
-            ca_cert_path = None
-
-    client_cert_path = None
-    client_key_path = None
-    # get client cert if it exists
-    if munkicommon.pref('UseClientCertificate'):
-        client_cert_path = munkicommon.pref('ClientCertificatePath') or None
-        client_key_path = munkicommon.pref('ClientKeyPath') or None
-        if not client_cert_path:
-            for name in ['cert.pem', 'client.pem', 'munki.pem']:
-                client_cert_path = os.path.join(ManagedInstallDir, 'certs',
-                                                                    name)
-                if os.path.exists(client_cert_path):
-                    break
-    cert_info = {}
-    cert_info['cacert'] = ca_cert_path
-    cert_info['capath'] = ca_dir_path
-    cert_info['cert'] = client_cert_path
-    cert_info['key'] = client_key_path
+    # make sure our keychain is available
+    keychain.setup()
 
     # Add any additional headers specified in ManagedInstalls.plist.
     # AdditionalHttpHeaders must be an array of strings with valid HTTP
@@ -3378,7 +3347,6 @@ def getResourceIfChangedAtomically(url,
 
     return fetch.getResourceIfChangedAtomically(url,
                                                 destinationpath,
-                                                cert_info=cert_info,
                                                 custom_headers=custom_headers,
                                                 expected_hash=expected_hash,
                                                 message=message,
