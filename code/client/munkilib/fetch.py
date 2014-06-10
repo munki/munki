@@ -189,6 +189,7 @@ def get_url(url, destinationpath,
         if connection.SSLerror:
             munkicommon.display_detail(
                 'SSL error detail: %s' % str(connection.SSLerror))
+            keychain.debug_output()
         munkicommon.display_detail('Headers: %s', connection.headers)
         if os.path.exists(tempdownloadpath) and not resume:
             os.remove(tempdownloadpath)
