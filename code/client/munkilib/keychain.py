@@ -113,9 +113,10 @@ def keychain_path():
     # Correct the filename to include '.keychain' if not already present
     if not keychain_name.lower().endswith('.keychain'):
         keychain_name += '.keychain'
-    # make full path
+    # make full path for keychain in root's home dir
     abs_keychain_path = os.path.realpath(
-        os.path.join(os.path.expanduser('/Library/Keychains'), keychain_name))
+        os.path.join(
+            os.path.expanduser('~root/Library/Keychains'), keychain_name))
     return abs_keychain_path
 
 
