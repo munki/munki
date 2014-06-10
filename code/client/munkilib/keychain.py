@@ -75,7 +75,7 @@ def security(verb_name, *args):
     (output, err) = proc.communicate()
     if proc.returncode:
         raise SecurityError('%s: %s' % (proc.returncode, err))
-    return output
+    return output or err
 
 
 def debug_output():
@@ -89,6 +89,10 @@ def debug_output():
         munkicommon.display_info('***Info for %s***' % keychainfile)
         munkicommon.display_info(
                         security('show-keychain-info', keychainfile))
+        munkicommon.display_info('***Info for System.keychain***')
+        munkicommon.display_info(
+                        security('show-keychain-info', 
+                                 '/Library/Keychains/System.keychain'))
     except SecurityError, err:
         munkicommon.display_info(str(err))
 
