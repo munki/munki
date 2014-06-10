@@ -128,12 +128,12 @@ def setup():
         ensure_keychain_is_in_search_list(abs_keychain_path)
         try:
             output = security(
-                        'unlock-keychain', '-p', keychain_pass, keychain_name)
+                    'unlock-keychain', '-p', keychain_pass, abs_keychain_path)
         except SecurityError, err:
             # some problem unlocking the keychain. We should move this
             # keychain aside and try to build a new one
             munkicommon.display_error(
-                'Could not unlock %s: %s' % (keychain_name, err))
+                'Could not unlock %s: %s' % (abs_keychain_path, err))
             try:
                 os.rename(abs_keychain_path, abs_keychain_path + '.previous')
             except OSError, err:
@@ -147,16 +147,16 @@ def setup():
                     # we've failed completely
                     return
         try:
-            output = security('set-keychain-settings', keychain_name)
+            output = security('set-keychain-settings', abs_keychain_path)
         except SecurityError, err:
             munkicommon.display_error(
                 'Could not set keychain settings for %s: %s' 
-                % (keychain_name, err))
+                % (abs_keychain_path, err))
     if not os.path.exists(abs_keychain_path):
-        make_keychain(keychain_name)
+        make_keychain(abs_keychain_path)
 
 
-def make_keychain(keychain_name):
+def make_keychain(abs_keychain_path):
     '''Builds a keychain for use by managedsoftwareupdate'''
 
     # find existing cert/CA info
@@ -198,27 +198,26 @@ def make_keychain(keychain_name):
 
     keychain_pass = (
         munkicommon.pref('KeychainPassword') or DEFAULT_KEYCHAIN_PASSWORD)
-    abs_keychain_path = os.path.realpath(
-        os.path.join(os.path.expanduser('~/Library/Keychains'), keychain_name))
     try:
         # create a new keychain
-        output = security('create-keychain', '-p', keychain_pass, keychain_name)
+        output = security(
+                    'create-keychain', '-p', keychain_pass, abs_keychain_path)
         # make sure it's in the keychain search list
         ensure_keychain_is_in_search_list(abs_keychain_path)
         # Configure the keychain as unlocked and non-locking
         output = security(
-                        'unlock-keychain', '-p', keychain_pass, keychain_name)
-        output = security('set-keychain-settings', keychain_name)
+                    'unlock-keychain', '-p', keychain_pass, abs_keychain_path)
+        output = security('set-keychain-settings', abs_keychain_path)
     except SecurityError, err:
         munkicommon.display_error(
-            'Error setting up keychain %s: %s' % (keychain_name, err))
+            'Error setting up keychain %s: %s' % (abs_keychain_path, err))
         return
 
     # CA certs
     if ca_cert_path:
         try:
             output = security(
-                        'add-trusted-cert', '-k', keychain_name, ca_cert_path)
+                    'add-trusted-cert', '-k', abs_keychain_path, ca_cert_path)
         except SecurityError, err:
             munkicommon.display_error(
                 'Error importing %s: %s' % (ca_cert_path, err))
@@ -229,7 +228,7 @@ def make_keychain(keychain_name):
                 cert_path = os.path.join(ca_dir_path, item)
                 try:
                     output = security(
-                            'add-trusted-cert', '-k', keychain_name, cert_path)
+                        'add-trusted-cert', '-k', abs_keychain_path, cert_path)
                 except SecurityError, err:
                     munkicommon.display_error(
                                 'Error importing %s: %s' % (cert_path, err))
@@ -247,7 +246,7 @@ def make_keychain(keychain_name):
         else:
             pem_file = client_cert_path
         try:
-            output = security('import', pem_file, '-k', keychain_name)
+            output = security('import', pem_file, '-k', abs_keychain_path)
         except SecurityError, err:
             munkicommon.display_error(
                         'Error importing %s: %s' % (pem_file, err))
@@ -255,7 +254,7 @@ def make_keychain(keychain_name):
     munki_repo = munkicommon.pref('SoftwareRepoURL').rstrip('/') + '/'
     # Set up an identity if it doesn't exist already for our site
     # First we need to find the existing identity in our keychain
-    output = security('find-identity', keychain_name)
+    output = security('find-identity', abs_keychain_path)
     if ' 1 identities found' in output:
         # We have a solitary match and can configure / verify 
         # the identity preference
@@ -304,7 +303,7 @@ def make_keychain(keychain_name):
             # Create the identity preference
             output = security(
                     'set-identity-preference', '-s', munki_repo, '-Z',
-                    id_hash, keychain_name)
+                    id_hash, abs_keychain_path)
             if default_keychain:
                 # We originally had a different one, set it back
                 output = security(
