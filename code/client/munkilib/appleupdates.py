@@ -772,9 +772,8 @@ class AppleUpdates(object):
             munkicommon.display_warning('Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', str(err))
             return False
-        except fetch.MunkiDownloadError, err:
+        except fetch.MunkiDownloadError:
             munkicommon.display_warning('Could not download Apple SUS catalog.')
-            munkicommon.display_warning('\t%s', str(err))
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):

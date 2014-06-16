@@ -35,10 +35,7 @@ import xattr
 
 #our libs
 import munkicommon
-from gurl import Gurl
 #import munkistatus
-
-from Foundation import NSHTTPURLResponse
 
 
 # XATTR name storing the ETAG of the file when downloaded via http(s).
@@ -47,7 +44,7 @@ XATTR_ETAG = 'com.googlecode.munki.etag'
 XATTR_SHA = 'com.googlecode.munki.sha256'
 
 
-class GurlError(Exception):
+class CurlError(Exception):
     pass
 
 class HTTPError(Exception):
@@ -57,8 +54,8 @@ class MunkiDownloadError(Exception):
     """Base exception for download errors"""
     pass
 
-class GurlDownloadError(MunkiDownloadError):
-    """Gurl failed to download the item"""
+class CurlDownloadError(MunkiDownloadError):
+    """Curl failed to download the item"""
     pass
 
 class FileCopyError(MunkiDownloadError):
@@ -90,139 +87,344 @@ def writeCachedChecksum(file_path, fhash=None):
     return None
 
 
-def header_dict_from_list(array):
-    """Given a list of strings in http header format, return a dict.
-    If array is None, return None"""
-    if array is None:
-        return array
-    header_dict = {}
-    for item in array:
-        (key, sep, value) = item.partition(':')
-        if sep and value:
-            header_dict[key.strip()] = value.strip()
-    return header_dict
-
-
-def get_url(url, destinationpath,
-            custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=False):
+WARNINGSLOGGED = {}
+def curl(url, destinationpath,
+         cert_info=None, custom_headers=None, donotrecurse=False, etag=None,
+         message=None, onlyifnewer=False, resume=False, follow_redirects=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
-    Will raise CurlError if Gurl returns an error.
+    Will raise CurlError if curl returns an error.
     Will raise HTTPError if HTTP Result code is not 2xx or 304.
     If destinationpath already exists, you can set 'onlyifnewer' to true to
     indicate you only want to download the file only if it's newer on the
     server.
-    If you set resume to True, Gurl will attempt to resume an
-    interrupted download."""
+    If you have an ETag from the current destination path, you can pass that
+    to download the file only if it is different.
+    Finally, if you set resume to True, curl will attempt to resume an
+    interrupted download. You'll get an error if the existing file is
+    complete; if the file has changed since the first download attempt, you'll
+    get a mess."""
 
+    header = {}
+    header['http_result_code'] = '000'
+    header['http_result_description'] = ''
+
+    curldirectivepath = os.path.join(munkicommon.tmpdir, 'curl_temp')
     tempdownloadpath = destinationpath + '.download'
-    if os.path.exists(tempdownloadpath) and not resume:
-        if resume and not os.path.exists(destinationpath):
-            os.remove(tempdownloadpath)
 
-    cache_data = None
-    if onlyifnewer and os.path.exists(destinationpath):
-        # create a temporary Gurl object so we can extract the
-        # stored caching data so we can download only if the
-        # file has changed on the server
-        gurl_obj = Gurl.alloc().initWithOptions_({'file': destinationpath})
-        cache_data = gurl_obj.get_stored_headers()
-        del gurl_obj
-
-    options = {'url': url,
-               'file': tempdownloadpath,
-               'follow_redirects': follow_redirects,
-               'can_resume': resume,
-               'additional_headers': header_dict_from_list(custom_headers),
-               'download_only_if_changed': onlyifnewer,
-               'cache_data': cache_data,
-               'logging_function': munkicommon.display_debug2}
-    munkicommon.display_debug2('Options: %s' % options)
-
-    connection = Gurl.alloc().initWithOptions_(options)
-    stored_percent_complete = -1
-    stored_bytes_received = 0
-    connection.start()
+    # we're writing all the curl options to a file and passing that to
+    # curl so we avoid the problem of URLs showing up in a process listing
     try:
-        while True:
-            # if we did `while not connection.isDone()` we'd miss printing
-            # messages and displaying percentages if we exit the loop first
-            connection_done = connection.isDone()
-            if message and connection.status and connection.status != 304:
-                # log always, display if verbose is 1 or more
-                # also display in MunkiStatus detail field
-                munkicommon.display_status_minor(message)
-                # now clear message so we don't display it again
-                message = None
-            if (str(connection.status).startswith('2')
-                and connection.percentComplete != -1):
-                if connection.percentComplete != stored_percent_complete:
-                    # display percent done if it has changed
-                    stored_percent_complete = connection.percentComplete
-                    munkicommon.display_percent_done(
-                                                stored_percent_complete, 100)
-            elif connection.bytesReceived != stored_bytes_received:
-                # if we don't have percent done info, log bytes received
-                stored_bytes_received = connection.bytesReceived
-                munkicommon.display_detail(
-                    'Bytes received: %s', stored_bytes_received)
-            if connection_done:
+        fileobj = open(curldirectivepath, mode='w')
+        print >> fileobj, 'silent'          # no progress meter
+        print >> fileobj, 'show-error'      # print error msg to stderr
+        print >> fileobj, 'no-buffer'       # don't buffer output
+        print >> fileobj, 'fail'            # throw error if download fails
+        print >> fileobj, 'dump-header -'   # dump headers to stdout
+        print >> fileobj, 'speed-time = 30' # give up if too slow d/l
+        print >> fileobj, 'output = "%s"' % tempdownloadpath
+        print >> fileobj, 'ciphers = HIGH,!ADH' #use only secure >=128 bit SSL
+        print >> fileobj, 'url = "%s"' % url
+
+        munkicommon.display_debug2('follow_redirects is %s', follow_redirects)
+        if follow_redirects:
+            print >> fileobj, 'location'    # follow redirects
+
+        if cert_info:
+            cacert = cert_info.get('cacert')
+            capath = cert_info.get('capath')
+            cert = cert_info.get('cert')
+            key = cert_info.get('key')
+            if cacert:
+                if not os.path.isfile(cacert):
+                    raise CurlError(-1, 'No CA cert at %s' % cacert)
+                print >> fileobj, 'cacert = "%s"' % cacert
+            if capath:
+                if not os.path.isdir(capath):
+                    raise CurlError(-2, 'No CA directory at %s' % capath)
+                print >> fileobj, 'capath = "%s"' % capath
+            if cert:
+                if not os.path.isfile(cert):
+                    raise CurlError(-3, 'No client cert at %s' % cert)
+                print >> fileobj, 'cert = "%s"' % cert
+            if key:
+                if not os.path.isfile(key):
+                    raise CurlError(-4, 'No client key at %s' % key)
+                print >> fileobj, 'key = "%s"' % key
+
+        if os.path.exists(destinationpath):
+            if etag:
+                escaped_etag = etag.replace('"','\\"')
+                print >> fileobj, ('header = "If-None-Match: %s"'
+                                                        % escaped_etag)
+            elif onlyifnewer:
+                print >> fileobj, 'time-cond = "%s"' % destinationpath
+            else:
+                os.remove(destinationpath)
+
+        if os.path.exists(tempdownloadpath):
+            if resume and not os.path.exists(destinationpath):
+                # let's try to resume this download
+                print >> fileobj, 'continue-at -'
+                # if an existing etag, only resume if etags still match.
+                tempetag = getxattr(tempdownloadpath, XATTR_ETAG)
+                if tempetag:
+                    # Note: If-Range is more efficient, but the response
+                    # confuses curl (Error: 33 if etag not match).
+                    escaped_etag = tempetag.replace('"','\\"')
+                    print >> fileobj, ('header = "If-Match: %s"'
+                                        % escaped_etag)
+            else:
+                os.remove(tempdownloadpath)
+
+        # Add any additional headers specified in custom_headers
+        # custom_headers must be an array of strings with valid HTTP
+        # header format.
+        if custom_headers:
+            for custom_header in custom_headers:
+                custom_header = custom_header.strip().encode('utf-8')
+                if re.search(r'^[\w-]+:.+', custom_header):
+                    print >> fileobj, ('header = "%s"' % custom_header)
+                else:
+                    munkicommon.display_warning(
+                        'Skipping invalid HTTP header: %s' % custom_header)
+
+        fileobj.close()
+    except Exception, e:
+        raise CurlError(-5, 'Error writing curl directive: %s' % str(e))
+
+    # In Mavericks we need to wrap our call to curl with a utility
+    # that makes curl think it is connected to a tty-like
+    # device so its output is unbuffered so we can get progress info
+    cmd = []
+    minor_os_version = munkicommon.getOsVersion(as_tuple=True)[1]
+    if minor_os_version > 8:
+        # Try to find our ptyexec tool
+        # first look in the parent directory of this file's directory
+        # (../)
+        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        ptyexec_path = os.path.join(parent_dir, 'ptyexec')
+        if not os.path.exists(ptyexec_path):
+            # try absolute path in munki's normal install dir
+            ptyexec_path = '/usr/local/munki/ptyexec'
+        if os.path.exists(ptyexec_path):
+            cmd = [ptyexec_path]
+
+    # Workaround for current issue in OS X 10.9's included curl
+    # Allows for alternate curl binary path as Apple's included curl currently
+    # broken for client-side certificate usage
+    curl_path = munkicommon.pref('CurlPath') or '/usr/bin/curl'
+    cmd.extend([curl_path,
+                '-q',                    # don't read .curlrc file
+                '--config',              # use config file
+                curldirectivepath])
+
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    targetsize = 0
+    downloadedpercent = -1
+    donewithheaders = False
+    maxheaders = 15
+
+    while True:
+        if not donewithheaders:
+            info = proc.stdout.readline().strip('\r\n')
+            if info:
+                munkicommon.display_debug2(info)
+                if info.startswith('HTTP/'):
+                    header['http_result_code'] = info.split(None, 2)[1]
+                    header['http_result_description'] = info.split(None, 2)[2]
+                elif ': ' in info:
+                    part = info.split(None, 1)
+                    fieldname = part[0].rstrip(':').lower()
+                    header[fieldname] = part[1]
+            else:
+                # we got an empty line; end of headers (or curl exited)
+                if follow_redirects:
+                    if header.get('http_result_code') in ['301', '302', '303']:
+                        # redirect, so more headers are coming.
+                        # Throw away the headers we've received so far
+                        header = {}
+                        header['http_result_code'] = '000'
+                        header['http_result_description'] = ''
+                else:
+                    donewithheaders = True
+                    try:
+                        # Prefer Content-Length header to determine download
+                        # size, otherwise fall back to a custom X-Download-Size
+                        # header.
+                        # This is primary for servers that use chunked transfer
+                        # encoding, when Content-Length is forbidden by
+                        # RFC2616 4.4. An example of such a server is
+                        # Google App Engine Blobstore.
+                        targetsize = (
+                            header.get('content-length') or
+                            header.get('x-download-size'))
+                        targetsize = int(targetsize)
+                    except (ValueError, TypeError):
+                        targetsize = 0
+                    if header.get('http_result_code') == '206':
+                        # partial content because we're resuming
+                        munkicommon.display_detail(
+                            'Resuming partial download for %s' %
+                                            os.path.basename(destinationpath))
+                        contentrange = header.get('content-range')
+                        if contentrange.startswith('bytes'):
+                            try:
+                                targetsize = int(contentrange.split('/')[1])
+                            except (ValueError, TypeError):
+                                targetsize = 0
+
+                    if message and header.get('http_result_code') != '304':
+                        if message:
+                            # log always, display if verbose is 1 or more
+                            # also display in MunkiStatus detail field
+                            munkicommon.display_status_minor(message)
+
+        elif targetsize and header.get('http_result_code').startswith('2'):
+            # display progress if we get a 2xx result code
+            if os.path.exists(tempdownloadpath):
+                downloadedsize = os.path.getsize(tempdownloadpath)
+                percent = int(float(downloadedsize)
+                                    /float(targetsize)*100)
+                if percent != downloadedpercent:
+                    # percent changed; update display
+                    downloadedpercent = percent
+                    munkicommon.display_percent_done(downloadedpercent, 100)
+            time.sleep(0.1)
+        else:
+            # Headers have finished, but not targetsize or HTTP2xx.
+            # It's possible that Content-Length was not in the headers.
+            # so just sleep and loop again. We can't show progress.
+            time.sleep(0.1)
+
+        if (proc.poll() != None):
+            # For small download files curl may exit before all headers
+            # have been parsed, don't immediately exit.
+            maxheaders -= 1
+            if donewithheaders or maxheaders <= 0:
                 break
 
-    except (KeyboardInterrupt, SystemExit):
-        # safely kill the connection then re-raise
-        connection.cancel()
-        raise
-    except Exception, err: # too general, I know
-        # Let us out! ... Safely! Unexpectedly quit dialogs are annoying...
-        connection.cancel()
-        # Re-raise the error as a GurlError
-        raise GurlError(-1, str(err))
+    retcode = proc.poll()
+    if retcode:
+        curlerr = ''
+        try:
+            curlerr = proc.stderr.read().rstrip('\n')
+            curlerr = curlerr.split(None, 2)[2]
+        except IndexError:
+            pass
+        if retcode == 22:
+            # 22 means any 400 series return code. Note: header seems not to
+            # be dumped to STDOUT for immediate failures. Hence
+            # http_result_code is likely blank/000. Read it from stderr.
+            if re.search(r'URL returned error: [0-9]+$', curlerr):
+                header['http_result_code'] = curlerr[curlerr.rfind(' ')+1:]
 
-    if connection.error != None:
-        # Gurl returned an error
-        munkicommon.display_detail(
-            'Download error %s: %s', connection.error.code(), 
-            connection.error.localizedDescription())
-        if connection.SSLerror:
-            munkicommon.display_detail(
-                'SSL error detail: %s' % connection.SSLerror)
-        munkicommon.display_detail('Headers: %s', connection.headers)
-        if os.path.exists(tempdownloadpath) and not resume:
-            os.remove(tempdownloadpath)
-        raise GurlError(connection.error.code(), 
-                        connection.error.localizedDescription())
-
-    if connection.response != None:
-        munkicommon.display_debug1('Status: %s', connection.status)
-        munkicommon.display_debug1('Headers: %s', connection.headers)
-    if connection.redirection != []:
-        munkicommon.display_debug1('Redirection: %s', connection.redirection)
-
-    temp_download_exists = os.path.isfile(tempdownloadpath)
-    connection.headers['http_result_code'] = str(connection.status)
-    description = NSHTTPURLResponse.localizedStringForStatusCode_(
-                                                            connection.status)
-    connection.headers['http_result_description'] = description
-
-    if str(connection.status).startswith('2') and temp_download_exists:
-        os.rename(tempdownloadpath, destinationpath)
-        return connection.headers
-    elif connection.status == 304:
-        # unchanged on server
-        munkicommon.display_debug1('Item is unchanged on the server.')
-        return connection.headers
-    else:
-        # there was an HTTP error of some sort; remove our temp download.
         if os.path.exists(tempdownloadpath):
-            try:
-                os.unlink(tempdownloadpath)
-            except OSError:
-                pass
-        raise HTTPError(connection.status,
-                        connection.headers.get('http_result_description',''))
+            if not resume:
+                os.remove(tempdownloadpath)
+            elif retcode == 33 or header.get('http_result_code') == '412':
+                # 33: server doesn't support range requests
+                # 412: Etag didn't match (precondition failed), could not
+                #   resume partial download as file on server has changed.
+                if retcode == 33 and not 'HTTPRange' in WARNINGSLOGGED:
+                    # use display_info instead of display_warning so these
+                    # don't get reported but are available in the log
+                    # and in command-line output
+                    munkicommon.display_info('WARNING: Web server refused '
+                            'partial/range request. Munki cannot run '
+                            'efficiently when this support is absent for '
+                            'pkg urls. URL: %s' % url)
+                    WARNINGSLOGGED['HTTPRange'] = 1
+                os.remove(tempdownloadpath)
+                # The partial failed immediately as not supported.
+                # Try a full download again immediately.
+                if not donotrecurse:
+                    return curl(url, destinationpath,
+                                cert_info=cert_info,
+                                custom_headers=custom_headers,
+                                donotrecurse=True,
+                                etag=etag,
+                                message=message,
+                                onlyifnewer=onlyifnewer,
+                                resume=resume,
+                                follow_redirects=follow_redirects)
+            elif retcode == 22:
+                # TODO: Made http(s) connection but 400 series error.
+                # What should we do?
+                # 403 could be ok, just that someone is currently offsite and
+                # the server is refusing the service them while there.
+                # 404 could be an interception proxy at a public wifi point.
+                # The partial may still be ok later.
+                # 416 could be dangerous - the targeted resource may now be
+                # different / smaller. We need to delete the temp or retrying
+                # will never work.
+                if header.get('http_result_code') == 416:
+                    # Bad range request.
+                    os.remove(tempdownloadpath)
+                elif header.get('http_result_code') == 503:
+                    # Web server temporarily unavailable.
+                    pass
+                elif not header.get('http_result_code').startswith('4'):
+                    # 500 series, or no error code parsed.
+                    # Perhaps the webserver gets really confused by partial
+                    # requests. It is likely majorly misconfigured so we won't
+                    # try asking it anything challenging.
+                    os.remove(tempdownloadpath)
+            elif header.get('etag'):
+                xattr.setxattr(tempdownloadpath, XATTR_ETAG, header['etag'])
+        # TODO: should we log this diagnostic here (we didn't previously)?
+        # Currently for a pkg all that is logged on failure is:
+        # "WARNING: Download of Firefox failed." with no detail. Logging at
+        # the place where this exception is caught has to be done in many
+        # places.
+        munkicommon.display_detail('Download error: %s. Failed (%s) with: %s'
+                                    % (url,retcode,curlerr))
+        munkicommon.display_detail('Headers: %s', header)
+        raise CurlError(retcode, curlerr)
+    else:
+        temp_download_exists = os.path.isfile(tempdownloadpath)
+        http_result = header.get('http_result_code')
+        if http_result.startswith('2') and temp_download_exists:
+            downloadedsize = os.path.getsize(tempdownloadpath)
+            if downloadedsize >= targetsize:
+                if targetsize and not downloadedpercent == 100:
+                    # need to display a percent done of 100%
+                    munkicommon.display_percent_done(100, 100)
+                os.rename(tempdownloadpath, destinationpath)
+                if (resume and not header.get('etag')
+                    and not 'HTTPetag' in WARNINGSLOGGED):
+                    # use display_info instead of display_warning so these
+                    # don't get reported but are available in the log
+                    # and in command-line output
+                    munkicommon.display_info(
+                        'WARNING: '
+                        'Web server did not return an etag. Munki cannot '
+                        'safely resume downloads without etag support on the '
+                        'web server. URL: %s' % url)
+                    WARNINGSLOGGED['HTTPetag'] = 1
+                return header
+            else:
+                # not enough bytes retreived
+                if not resume and temp_download_exists:
+                    os.remove(tempdownloadpath)
+                raise CurlError(-5, 'Expected %s bytes, got: %s' %
+                                        (targetsize, downloadedsize))
+        elif http_result == '304':
+            return header
+        else:
+            # there was a download error of some sort; clean all relevant
+            # downloads that may be in a bad state.
+            for f in [tempdownloadpath, destinationpath]:
+                try:
+                    os.unlink(f)
+                except OSError:
+                    pass
+            raise HTTPError(http_result,
+                                header.get('http_result_description',''))
 
 
 def getResourceIfChangedAtomically(url,
@@ -361,7 +563,7 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
        Returns True if a new download was required; False if the
        item is already in the local cache.
 
-       Raises GurlDownloadError if there is an error."""
+       Raises CurlDownloadError if there is an error."""
 
     etag = None
     getonlyifnewer = False
@@ -373,21 +575,23 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
             getonlyifnewer = False
 
     try:
-        header = get_url(url,
+        header = curl(url,
                       destinationpath,
+                      cert_info=cert_info,
                       custom_headers=custom_headers,
+                      etag=etag,
                       message=message,
                       onlyifnewer=getonlyifnewer,
                       resume=resume,
                       follow_redirects=follow_redirects)
 
-    except GurlError, err:
+    except CurlError, err:
         err = 'Error %s: %s' % tuple(err)
-        raise GurlDownloadError(err)
+        raise CurlDownloadError(err)
 
     except HTTPError, err:
         err = 'HTTP result %s: %s' % tuple(err)
-        raise GurlDownloadError(err)
+        raise CurlDownloadError(err)
 
     err = None
     if header['http_result_code'] == '304':

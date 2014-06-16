@@ -1638,7 +1638,7 @@ def updateAvailableLicenseSeats(installinfo):
             munkicommon.display_debug1('Got: %s', license_data)
             license_dict = FoundationPlist.readPlistFromString(
                 license_data)
-        except (fetch.MunkiDownloadError, fetch.GurlDownloadError), err:
+        except (fetch.MunkiDownloadError, fetch.CurlDownloadError), err:
             # problem fetching from URL
             munkicommon.display_error('Error from %s: %s', url, err)
         except FoundationPlist.FoundationPlistException:
@@ -1908,7 +1908,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             iteminfo['note'] = 'Integrity check failed'
             installinfo['managed_installs'].append(iteminfo)
             return False
-        except fetch.GurlDownloadError, errmsg:
+        except fetch.CurlDownloadError, errmsg:
             munkicommon.display_warning(
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
