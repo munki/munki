@@ -78,43 +78,6 @@ def security(verb_name, *args):
     return output
 
 
-def debug_output():
-    '''Debugging output for keychain'''
-    try:
-        munkicommon.display_info('***Keychain list***')
-        munkicommon.display_info(security('list-keychains', '-d', 'user'))
-        munkicommon.display_info('***Default keychain info***')
-        munkicommon.display_info(security('default-keychain', '-d', 'user'))
-        keychainfile = keychain_path()
-        munkicommon.display_info('***Info for %s***' % keychainfile)
-        munkicommon.display_info(
-                        security('show-keychain-info', keychainfile))
-    except SecurityError, err:
-        munkicommon.display_info(str(err))
-
-
-def keychain_path():
-    '''Returns an absolute path for our keychain'''
-    keychain_name = munkicommon.pref('KeychainName') or DEFAULT_KEYCHAIN_NAME
-    # If we have an odd path that appears to be all directory and no file name,
-    # revert to default filename
-    if not os.path.basename(keychain_name):
-        keychain_name = DEFAULT_KEYCHAIN_NAME
-    # Check to make sure it's just a simple file name, no directory information
-    if os.path.dirname(keychain_name):
-        # keychain name should be just the filename,
-        # so we'll drop down to the base name
-        keychain_name = os.path.basename(
-                                keychain_name).strip() or DEFAULT_KEYCHAIN_NAME
-    # Correct the filename to include '.keychain' if not already present
-    if not keychain_name.lower().endswith('.keychain'):
-        keychain_name += '.keychain'
-    # make full path
-    abs_keychain_path = os.path.realpath(
-        os.path.join(os.path.expanduser('/Library/Keychains'), keychain_name))
-    return abs_keychain_path
-
-
 def ensure_keychain_is_in_search_list(abs_keychain_path):
     # Check to make sure the keychain is in the search path
     try:
@@ -142,9 +105,25 @@ def ensure_keychain_is_in_search_list(abs_keychain_path):
 
 def setup():
     '''Unlocks the Munki's keychain if it exists; creating it if needed'''
-    abs_keychain_path = keychain_path()
+    keychain_name = munkicommon.pref('KeychainName') or DEFAULT_KEYCHAIN_NAME
     keychain_pass = (
         munkicommon.pref('KeychainPassword') or DEFAULT_KEYCHAIN_PASSWORD)
+    # If we have an odd path that appears to be all directory and no file name,
+    # revert to default filename
+    if not os.path.basename(keychain_name):
+        keychain_name = DEFAULT_KEYCHAIN_NAME
+    # Check to make sure it's just a simple file name, no directory information
+    if os.path.dirname(keychain_name):
+        # keychain name should be just the filename,
+        # so we'll drop down to the base name
+        keychain_name = os.path.basename(
+                                keychain_name).strip() or DEFAULT_KEYCHAIN_NAME
+    # Correct the filename to include '.keychain' if not already present
+    if not keychain_name.lower().endswith('.keychain'):
+        keychain_name += '.keychain'
+    # Check to see if the keychain already exists
+    abs_keychain_path = os.path.realpath(
+        os.path.join(os.path.expanduser('/Library/Keychains'), keychain_name))
     if os.path.exists(abs_keychain_path):
         ensure_keychain_is_in_search_list(abs_keychain_path)
         try:
@@ -175,8 +154,6 @@ def setup():
                 % (abs_keychain_path, err))
     if not os.path.exists(abs_keychain_path):
         make_keychain(abs_keychain_path)
-    elif munkicommon.verbose > 2:
-        debug_output()
 
 
 def make_keychain(abs_keychain_path):
@@ -332,5 +309,3 @@ def make_keychain(abs_keychain_path):
                 # We originally had a different one, set it back
                 output = security(
                     'default-keychain', '-d', 'user', '-s', default_keychain)
-    if munkicommon.verbose > 2:
-        debug_output()
