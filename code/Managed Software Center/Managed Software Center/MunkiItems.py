@@ -818,7 +818,7 @@ class OptionalItem(GenericItem):
             self['size'] = munki.humanReadable(self['installed_size'])
         else:
             self['size'] = u''
-        self['detail_link'] = u'detail-%s.html' % quote(self['name'])
+        self['detail_link'] = u'detail-%s.html' % quote(self['name'].encode('utf-8'))
         self['hide_cancel_button'] = u''
             
     def _get_status(self):
@@ -961,7 +961,7 @@ class UpdateItem(GenericItem):
         super(UpdateItem, self).__init__(*arg, **kw)
         identifier = self.get('name', '') + '--version-' + self.get('version_to_install', '')
         self['detail_link'] = ('updatedetail-%s.html'
-                                   % quote(identifier))
+                                   % quote(identifier.encode('utf-8')))
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:

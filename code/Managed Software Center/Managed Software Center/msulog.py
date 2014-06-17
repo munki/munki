@@ -196,6 +196,10 @@ def log(source, event, msg=None, *args):
 
 def debug_log(msg):
     """Log to Apple System Log facility and also to MSU log if configured"""
-    NSLog(msg)
+    try:
+        NSLog(msg)
+    except ValueError, err:
+        # msg had NSString formatting characters in it. Just pass for now.
+        pass
     log('MSC', 'debug', msg)
 

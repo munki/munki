@@ -533,7 +533,7 @@ class MSUMainWindowController(NSWindowController):
         category = None
         filter = None
         developer = None
-        value = unquote(quoted_value)
+        value = unquote(quoted_value).decode('utf-8')
         if key == 'category':
             if value != 'all':
                 category = value
@@ -556,6 +556,7 @@ class MSUMainWindowController(NSWindowController):
 
     def load_page(self, url_fragment):
         '''Tells the WebView to load the appropriate page'''
+        msulog.debug_log('load_page request for %s' % url_fragment)
         html_file = os.path.join(self.html_dir, url_fragment)
         request = NSURLRequest.requestWithURL_cachePolicy_timeoutInterval_(
             NSURL.fileURLWithPath_(html_file), NSURLRequestReloadIgnoringLocalCacheData, 10)
@@ -595,21 +596,21 @@ class MSUMainWindowController(NSWindowController):
         '''By reacting to this delegate notification, we can build the page
         the WebView wants to load'''
         url = request.URL()
-        if url.scheme() == 'file' and os.path.join(self.html_dir) in url.path():
+        if url.scheme() == u'file' and os.path.join(self.html_dir) in url.path():
             filename = url.lastPathComponent()
-            if (filename.endswith('.html')
-                and (filename.startswith('detail-')
-                     or filename.startswith('category-')
-                     or filename.startswith('filter-')
-                     or filename.startswith('developer-')
-                     or filename.startswith('updatedetail-')
-                     or filename == 'myitems.html'
-                     or filename == 'updates.html'
-                     or filename == 'categories.html')):
+            if (filename.endswith(u'.html')
+                and (filename.startswith(u'detail-')
+                     or filename.startswith(u'category-')
+                     or filename.startswith(u'filter-')
+                     or filename.startswith(u'developer-')
+                     or filename.startswith(u'updatedetail-')
+                     or filename == u'myitems.html'
+                     or filename == u'updates.html'
+                     or filename == u'categories.html')):
                 try:
                     msuhtml.build_page(filename)
                 except Exception, e:
-                    msulog.debug_log('%@', e)
+                    msulog.debug_log('%s' % e)
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
@@ -641,7 +642,7 @@ class MSUMainWindowController(NSWindowController):
     def webView_didFailProvisionalLoadWithError_forFrame_(self, view, error, frame):
         '''Stop progress spinner and log'''
         self.progressSpinner.stopAnimation_(self)
-        msulog.debug_log(u'Provisional load error: %@', error)
+        msulog.debug_log(u'Provisional load error: %s' % error)
         files = os.listdir(self.html_dir)
         msulog.debug_log('Files in html_dir: %s' % files)
 
@@ -649,7 +650,7 @@ class MSUMainWindowController(NSWindowController):
         '''Stop progress spinner and log error'''
         #TO-DO: display an error page?
         self.progressSpinner.stopAnimation_(self)
-        msulog.debug_log('Committed load error: %@', error)
+        msulog.debug_log('Committed load error: %s' % error)
 
     def isSelectorExcludedFromWebScript_(self, aSelector):
         '''Declare which methods can be called from JavaScript'''
@@ -952,7 +953,7 @@ class MSUMainWindowController(NSWindowController):
         '''User changed the search field'''
         filterString = self.searchField.stringValue().lower()
         if filterString:
-            self.load_page('filter-%s.html' % filterString)
+            self.load_page(u'filter-%s.html' % filterString)
 
     def currentPageIsUpdatesPage(self):
         '''return True if current tab selected is updates'''

@@ -46,9 +46,10 @@ def get_template(template_name, raw=False):
 
 def build_page(filename):
     '''Dispatch request to build a page to the appropriate function'''
+    msulog.debug_log('build_page for %s' % filename)
     name = os.path.splitext(filename)[0]
     key, p, quoted_value = name.partition('-')
-    value = unquote(quoted_value)
+    value = unquote(quoted_value).decode('utf-8')
     if key == 'detail':
         build_detail_page(value)
     elif key == 'category':
@@ -91,6 +92,7 @@ def assemble_page(main_page_template_name, page_dict, **kwargs):
 
 def generate_page(page_name, main_page_template_name, page_dict, **kwargs):
     '''Assembles HTML and writes the page to page_name in our local html directory'''
+    msulog.debug_log('generate_page for %s' % page_name)
     html = assemble_page(main_page_template_name, page_dict, **kwargs)
     write_page(page_name, html)
 
@@ -137,6 +139,7 @@ def build_item_not_found_page(page_name):
 
 def build_detail_page(item_name):
     '''Build page showing detail for a single optional item'''
+    msulog.debug_log('build_detail_page for %s' % item_name)
     items = MunkiItems.getOptionalInstallItems()
     page_name = u'detail-%s.html' % item_name
     for item in items:
@@ -149,7 +152,7 @@ def build_detail_page(item_name):
             more_in_category = []
             if item.get('category'):
                 category = item['category']
-                page['category_link'] = u'category-%s.html' % quote(category)
+                page['category_link'] = u'category-%s.html' % quote(category.encode('utf-8'))
                 more_in_category = [a for a in items
                                     if a.get('category') == category
                                     and a != item
@@ -169,7 +172,7 @@ def build_detail_page(item_name):
             more_by_developer = []
             if item.get('developer'):
                 developer = item['developer']
-                page['developer_link'] = (u'developer-%s.html' % quote(developer))
+                page['developer_link'] = u'developer-%s.html' % quote(developer.encode('utf-8'))
                 more_by_developer = [a for a in items
                                      if a.get('developer') == developer
                                      and a != item
@@ -234,8 +237,8 @@ def build_list_page(category=None, developer=None, filter=None):
     categories_html_list = ''
     # make HTML for list of categories
     for item in sorted(category_list):
-        categories_html_list += u'<li class="link"><a href="category-%s.html">%s</a></li>\n' % (
-                                                                                 quote(item), item)
+        categories_html_list += (u'<li class="link"><a href="category-%s.html">%s</a></li>\n'
+                                 % (quote(item.encode('utf-8')), item))
 
     page = {}
     page['list_items'] = item_html
@@ -353,7 +356,7 @@ def build_category_items_html():
         for category in sorted(category_list):
             category_data = {}
             category_data['category_name'] = category
-            category_data['category_link'] = u'category-%s.html' % quote(category)
+            category_data['category_link'] = u'category-%s.html' % quote(category.encode('utf-8'))
             category_items = [item for item in all_items if item.get('category') == category]
             shuffle(category_items)
             category_data['item1_icon'] = category_items[0]['icon']

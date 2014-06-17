@@ -102,14 +102,14 @@ class MSUAppDelegate(NSObject):
         msulog.log("MSU", "Called by external URL: %s", url)
         parsed_url = urlparse(url)
         if parsed_url.scheme != 'munki':
-            msulog.debug_log("URL %@ has unsupported scheme")
+            msulog.debug_log("URL %s has unsupported scheme" % url)
             return
-        filename = unquote(parsed_url.netloc)
+        filename = unquote(parsed_url.netloc).decode('utf-8')
         # add .html if no extension
         if not os.path.splitext(filename)[1]:
-            filename += '.html'
-        if filename.endswith('.html'):
+            filename += u'.html'
+        if filename.endswith(u'.html'):
             msuhtml.build_page(filename)
             self.mainWindowController.load_page(filename)
         else:
-            msulog.debug_log("%s doesn't have a valid extension. Prevented from opening", url)
+            msulog.debug_log("%s doesn't have a valid extension. Prevented from opening" % url)
