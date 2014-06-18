@@ -35,6 +35,7 @@ MSULOGDIR = \
     "/Users/Shared/.com.googlecode.munki.ManagedSoftwareUpdate.logs"
 MSULOGFILE = "%s.log"
 MSULOGENABLED = False
+MSUDEBUGLOGENABLED = False
 
 class FleetingFileHandler(logging.FileHandler):
     """File handler which opens/closes the log file only during log writes."""
@@ -93,10 +94,14 @@ def setup_logging(username=None):
         username: str, optional, current login name
     """
     global MSULOGENABLED
+    global MSUDEBUGLOGENABLED
 
     if (logging.root.handlers and
         logging.root.handlers[0].__class__ is FleetingFileHandler):
         return
+        
+    if  munki.pref('MSUDebugLogEnabled'):
+        MSUDEBUGLOGENABLED = True
 
     if munki.pref('MSULogEnabled'):
         MSULOGENABLED = True
@@ -196,10 +201,7 @@ def log(source, event, msg=None, *args):
 
 def debug_log(msg):
     """Log to Apple System Log facility and also to MSU log if configured"""
-    try:
-        NSLog(msg)
-    except ValueError, err:
-        # msg had NSString formatting characters in it. Just pass for now.
-        pass
-    log('MSC', 'debug', msg)
+    if MSUDEBUGLOGENABLED:
+        NSLog('%@', msg)
+        log('MSC', 'debug', msg)
 

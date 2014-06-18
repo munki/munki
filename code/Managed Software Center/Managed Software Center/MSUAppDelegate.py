@@ -20,7 +20,6 @@
 # struct for the url handler
 import struct
 import os
-from urllib import unquote
 from urlparse import urlparse
 
 from objc import YES, NO, IBAction, IBOutlet, nil
@@ -104,7 +103,7 @@ class MSUAppDelegate(NSObject):
         if parsed_url.scheme != 'munki':
             msulog.debug_log("URL %s has unsupported scheme" % url)
             return
-        filename = unquote(parsed_url.netloc).decode('utf-8')
+        filename = msuhtml.unquote(parsed_url.netloc)
         # add .html if no extension
         if not os.path.splitext(filename)[1]:
             filename += u'.html'

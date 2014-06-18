@@ -25,7 +25,6 @@ import msulib
 import munki
 
 from operator import itemgetter
-from urllib import quote, unquote
 from HTMLParser import HTMLParser, HTMLParseError
 
 from Foundation import *
@@ -38,6 +37,13 @@ user_removal_selections = set()
 
 # place to cache our expensive-to-calculate data
 _cache = {}
+
+
+def quote(a_string):
+    '''Replacement for urllib.quote that handles Unicode strings'''
+    return str(NSString.stringWithString_(
+                   a_string).stringByAddingPercentEscapesUsingEncoding_(
+                       NSUTF8StringEncoding))
 
 
 def reset():
@@ -818,7 +824,7 @@ class OptionalItem(GenericItem):
             self['size'] = munki.humanReadable(self['installed_size'])
         else:
             self['size'] = u''
-        self['detail_link'] = u'detail-%s.html' % quote(self['name'].encode('utf-8'))
+        self['detail_link'] = u'detail-%s.html' % quote(self['name'])
         self['hide_cancel_button'] = u''
             
     def _get_status(self):
@@ -960,8 +966,7 @@ class UpdateItem(GenericItem):
     def __init__(self, *arg, **kw):
         super(UpdateItem, self).__init__(*arg, **kw)
         identifier = self.get('name', '') + '--version-' + self.get('version_to_install', '')
-        self['detail_link'] = ('updatedetail-%s.html'
-                                   % quote(identifier.encode('utf-8')))
+        self['detail_link'] = 'updatedetail-%s.html' % quote(identifier)
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:

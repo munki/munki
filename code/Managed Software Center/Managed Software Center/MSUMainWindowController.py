@@ -19,8 +19,6 @@
 
 import os
 
-from urllib import quote, unquote
-
 import munki
 import msuhtml
 import msulib
@@ -529,11 +527,10 @@ class MSUMainWindowController(NSWindowController):
         page_url = self.webView.mainFrameURL()
         filename = NSURL.URLWithString_(page_url).lastPathComponent()
         name = os.path.splitext(filename)[0]
-        key, p, quoted_value = name.partition('-')
+        key, p, value = name.partition('-')
         category = None
         filter = None
         developer = None
-        value = unquote(quoted_value).decode('utf-8')
         if key == 'category':
             if value != 'all':
                 category = value
@@ -595,22 +592,27 @@ class MSUMainWindowController(NSWindowController):
             self, sender, identifier, request, redirectResponse, dataSource):
         '''By reacting to this delegate notification, we can build the page
         the WebView wants to load'''
+        msulog.debug_log('webView_resource_willSendRequest_redirectResponse_fromDataSource_')
         url = request.URL()
-        if url.scheme() == u'file' and os.path.join(self.html_dir) in url.path():
-            filename = url.lastPathComponent()
-            if (filename.endswith(u'.html')
-                and (filename.startswith(u'detail-')
-                     or filename.startswith(u'category-')
-                     or filename.startswith(u'filter-')
-                     or filename.startswith(u'developer-')
-                     or filename.startswith(u'updatedetail-')
-                     or filename == u'myitems.html'
-                     or filename == u'updates.html'
-                     or filename == u'categories.html')):
-                try:
-                    msuhtml.build_page(filename)
-                except Exception, e:
-                    msulog.debug_log('%s' % e)
+        msulog.debug_log('Got URL scheme: %s' % url.scheme())
+        if url.scheme() == NSURLFileScheme:
+            msulog.debug_log(u'Request path is %s' % url.path())
+            if self.html_dir in url.path():
+                msulog.debug_log(u'request for %s' % url.path())
+                filename = unicode(url.lastPathComponent())
+                if (filename.endswith(u'.html')
+                    and (filename.startswith(u'detail-')
+                         or filename.startswith(u'category-')
+                         or filename.startswith(u'filter-')
+                         or filename.startswith(u'developer-')
+                         or filename.startswith(u'updatedetail-')
+                         or filename == u'myitems.html'
+                         or filename == u'updates.html'
+                         or filename == u'categories.html')):
+                    try:
+                        msuhtml.build_page(filename)
+                    except BaseException, err:
+                        msulog.debug_log(u'Could not build page for %s: %s' % (filename, err))
         return request
 
     def webView_didClearWindowObject_forFrame_(self, sender, windowScriptObject, frame):
@@ -953,6 +955,7 @@ class MSUMainWindowController(NSWindowController):
         '''User changed the search field'''
         filterString = self.searchField.stringValue().lower()
         if filterString:
+            msulog.debug_log('Search filter is: %s' % repr(filterString.encode('utf-8')))
             self.load_page(u'filter-%s.html' % filterString)
 
     def currentPageIsUpdatesPage(self):

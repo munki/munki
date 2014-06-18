@@ -10,8 +10,8 @@ import os
 
 from operator import itemgetter
 from random import shuffle
-from urllib import quote, unquote
 from string import Template
+from unicodedata import normalize
 
 import MunkiItems
 import msulib
@@ -20,7 +20,20 @@ import munki
 
 from AppKit import NSApp
 from Foundation import NSBundle
-from Foundation import NSLocalizedString
+from Foundation import NSString, NSLocalizedString, NSUTF8StringEncoding
+
+
+def quote(a_string):
+    '''Replacement for urllib.quote that handles Unicode strings'''
+    return str(NSString.stringWithString_(
+                   a_string).stringByAddingPercentEscapesUsingEncoding_(
+                       NSUTF8StringEncoding))
+
+def unquote(a_string):
+    '''Replacement for urllib.unquote that handles Unicode strings'''
+    return str(NSString.stringWithString_(
+                   a_string).stringByReplacingPercentEscapesUsingEncoding_(
+                       NSUTF8StringEncoding))
 
 
 def get_template(template_name, raw=False):
@@ -46,10 +59,9 @@ def get_template(template_name, raw=False):
 
 def build_page(filename):
     '''Dispatch request to build a page to the appropriate function'''
-    msulog.debug_log('build_page for %s' % filename)
+    msulog.debug_log(u'build_page for %s' % filename)
     name = os.path.splitext(filename)[0]
-    key, p, quoted_value = name.partition('-')
-    value = unquote(quoted_value).decode('utf-8')
+    key, p, value = name.partition('-')
     if key == 'detail':
         build_detail_page(value)
     elif key == 'category':
@@ -73,9 +85,13 @@ def build_page(filename):
 def write_page(page_name, html):
     '''write html to page_name in our local html directory'''
     html_file = os.path.join(msulib.html_dir(), page_name)
-    f = open(html_file, 'w')
-    f.write(html.encode('utf-8'))
-    f.close()
+    try:
+        f = open(html_file, 'w')
+        f.write(html.encode('utf-8'))
+        f.close()
+    except (OSError, IOError), err:
+        msulog.debug_log('write_page error: %s', str(err))
+        raise
 
 
 def assemble_page(main_page_template_name, page_dict, **kwargs):
@@ -152,7 +168,7 @@ def build_detail_page(item_name):
             more_in_category = []
             if item.get('category'):
                 category = item['category']
-                page['category_link'] = u'category-%s.html' % quote(category.encode('utf-8'))
+                page['category_link'] = u'category-%s.html' % quote(category)
                 more_in_category = [a for a in items
                                     if a.get('category') == category
                                     and a != item
@@ -172,7 +188,7 @@ def build_detail_page(item_name):
             more_by_developer = []
             if item.get('developer'):
                 developer = item['developer']
-                page['developer_link'] = u'developer-%s.html' % quote(developer.encode('utf-8'))
+                page['developer_link'] = u'developer-%s.html' % quote(developer)
                 more_by_developer = [a for a in items
                                      if a.get('developer') == developer
                                      and a != item
@@ -238,7 +254,7 @@ def build_list_page(category=None, developer=None, filter=None):
     # make HTML for list of categories
     for item in sorted(category_list):
         categories_html_list += (u'<li class="link"><a href="category-%s.html">%s</a></li>\n'
-                                 % (quote(item.encode('utf-8')), item))
+                                 % (quote(item), item))
 
     page = {}
     page['list_items'] = item_html
@@ -260,6 +276,12 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
     items = MunkiItems.getOptionalInstallItems()
     item_html = u''
     if filter:
+        # since the filter term came through the filesystem,
+        # HFS+ does some unicode character decomposition which can cause issues with comparisons
+        # so before we do our comparison, we normalize the unicode string
+        # using unicodedata.normalize
+        filter = normalize('NFC', filter)
+        msulog.debug_log(u'Filtering on %s' % filter)
         items = [item for item in items
                  if filter in item['display_name'].lower()
                  or filter in item['description'].lower()
@@ -356,7 +378,7 @@ def build_category_items_html():
         for category in sorted(category_list):
             category_data = {}
             category_data['category_name'] = category
-            category_data['category_link'] = u'category-%s.html' % quote(category.encode('utf-8'))
+            category_data['category_link'] = u'category-%s.html' % quote(category)
             category_items = [item for item in all_items if item.get('category') == category]
             shuffle(category_items)
             category_data['item1_icon'] = category_items[0]['icon']
