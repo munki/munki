@@ -672,8 +672,15 @@ def main():
                 # connect to socket and quit
                 munkistatus.activate()
                 munkistatus.quit()
-            munkicommon.cleanUpTmpDir()
-            exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
+            if not options.auto:
+                munkicommon.cleanUpTmpDir()
+                exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
+            else:
+                # even if we can't reach the manifest server, we can
+                # attempt to do installs of cached items. Setting
+                # options.installonly to True will cause the updatecheck
+                # to be skipped
+                options.installonly = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -780,13 +787,7 @@ def main():
     notify_user = False
     force_action = None
     if updatesavailable or appleupdatesavailable:
-        if options.installonly or options.logoutinstall:
-            # just install
-            mustrestart = doInstallTasks(appleupdatesavailable)
-            # send a notification event so MSU can update its display
-            # if needed
-            sendUpdateNotification()
-        elif options.auto:
+        if options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     # admin says we can never install packages
@@ -866,7 +867,14 @@ def main():
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
-                   
+
+        elif options.installonly or options.logoutinstall:
+            # just install
+            mustrestart = doInstallTasks(appleupdatesavailable)
+            # send a notification event so MSU can update its display
+            # if needed
+            sendUpdateNotification()
+
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
                    'updates.' % myname)
