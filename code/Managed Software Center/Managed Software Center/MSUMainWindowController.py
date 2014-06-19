@@ -260,7 +260,7 @@ class MSUMainWindowController(NSWindowController):
         page_url = self.webView.mainFrameURL()
         filename = NSURL.URLWithString_(page_url).lastPathComponent()
         name = os.path.splitext(filename)[0]
-        key, p, quoted_value = name.partition('-')
+        key, p, value = name.partition('-')
         if key == 'detail':
             # optional item detail page
             self.webView.reload_(self)

@@ -138,7 +138,10 @@ def _build_update_list():
 
 
 def updatesRequireLogout():
-    '''Return True if any item in the update list requires a logout'''
+    '''Return True if any item in the update list requires a logout or if 
+    Munki's InstallRequiresLogout preference is true.'''
+    if munki.installRequiresLogout():
+        return True
     return len([item for item in getUpdateList()
                 if 'Logout' in item.get('RestartAction', '')]) > 0
 

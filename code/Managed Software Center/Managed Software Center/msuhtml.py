@@ -564,7 +564,8 @@ def getRestartActionForUpdateList(update_list):
     if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
         # found at least one item containing 'Restart' in its RestartAction
         return NSLocalizedString(u"Restart Required", u"Require Restart message")
-    if [item for item in update_list if 'Logout' in item.get('RestartAction', '')]:
+    if ([item for item in update_list if 'Logout' in item.get('RestartAction', '')]
+        or munki.installRequiresLogout()):
         # found at least one item containing 'Logout' in its RestartAction
         return NSLocalizedString(u"Logout Required", u"Require Logout message")
     else:
