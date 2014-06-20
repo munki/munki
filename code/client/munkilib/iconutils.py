@@ -108,7 +108,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
                             stderr=subprocess.STDOUT)
     (output, errors) = proc.communicate()
     if proc.returncode:
-        print_err_utf8(u'Could not get bom files from %s' % pkg_path)
+        print >> sys.stderr, u'Could not get bom files from %s' % pkg_path
         return []
     bomfilepaths = output.splitlines()
     pkg_dict = {}
@@ -125,7 +125,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
                                 stderr=subprocess.STDOUT)
         (output, errors) = proc.communicate()
         if proc.returncode:
-            print_err_utf8(u'Could not lsbom %s' % bomfile)
+            print >> sys.stderr, u'Could not lsbom %s' % bomfile
         # record paths to all app Info.plist files
         pkg_dict[pkgname]= [
             os.path.normpath(line) for line in output.splitlines()
@@ -153,11 +153,11 @@ def extractAppIconsFromFlatPkg(pkg_path):
                     if icon_path:
                         icon_paths.append(icon_path)
             else:
-                print_err_utf8(
+                print >> sys.stderr, (
                     u'pax could not read files from %s' % archive_path)
                 return []
     else:
-        print_err_utf8(u'Could not expand %s' % pkg_path)
+        print >> sys.stderr, u'Could not expand %s' % pkg_path
     # clean up our expanded flat package; we no longer need it
     shutil.rmtree(pkgtmp)
     return icon_paths
