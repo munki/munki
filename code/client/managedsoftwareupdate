@@ -549,7 +549,10 @@ def main():
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
-   
+
+    # Set environment variable for verbosity
+    os.environ['VERBOSE'] = str(options.verbose)
+
     if options.installonly:
         # we're only installing, not checking, so we should copy
         # some report values from the prior run
