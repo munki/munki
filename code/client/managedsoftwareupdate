@@ -551,7 +551,7 @@ def main():
     munkicommon.verbose = options.verbose
 
     # Set environment variable for verbosity
-    os.environ['VERBOSE'] = str(options.verbose)
+    os.environ['MUNKI_VERBOSITY_LEVEL'] = str(options.verbose)
 
     if options.installonly:
         # we're only installing, not checking, so we should copy
