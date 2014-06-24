@@ -305,7 +305,7 @@ def generate_pngs_from_installer_pkg(item_path, pkginfo):
     if len(icon_paths) == 1:
         png_path = os.path.join(
             destination_path, pkginfo['name'] + u'.png')
-        result = convertIconToPNG(icon_paths[0], png_path)
+        result = iconutils.convertIconToPNG(icon_paths[0], png_path)
         if result:
             print 'Created icon: %s' % png_path
         else:
