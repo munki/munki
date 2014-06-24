@@ -2495,11 +2495,13 @@ def getmanifest(partialurl, suppress_errors=False):
     if (partialurl.startswith('http://') or partialurl.startswith('https://')
         or partialurl.startswith('file:/')):
         # then it's really a request for the client's primary manifest
+        manifestdisplayname = os.path.basename(partialurl)
         manifesturl = partialurl
         partialurl = 'client_manifest'
         manifestname = 'client_manifest.plist'
     else:
         # request for nested manifest
+        manifestdisplayname = partialurl
         manifestname = os.path.split(partialurl)[1]
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
 
@@ -2507,7 +2509,7 @@ def getmanifest(partialurl, suppress_errors=False):
         return MANIFESTS[manifestname]
 
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
-    munkicommon.display_detail('Getting manifest %s...',  partialurl)
+    munkicommon.display_detail('Getting manifest %s...',  manifestdisplayname)
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = 'Retrieving list of software for this machine...'
     try:
@@ -2517,14 +2519,14 @@ def getmanifest(partialurl, suppress_errors=False):
         if not suppress_errors:
             munkicommon.display_error(
                 'Could not retrieve manifest %s from the server: %s',
-                partialurl, err)
+                manifestdisplayname, err)
         return None
 
     try:
         # read plist to see if it is valid
         unused_data = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
-        errormsg = 'manifest returned for %s is invalid.' % partialurl
+        errormsg = 'manifest returned for %s is invalid.' % manifestdisplayname
         munkicommon.display_error(errormsg)
         try:
             os.unlink(manifestpath)
