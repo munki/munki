@@ -118,19 +118,28 @@ cd "$MUNKIROOT"
 # generate a psuedo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
 GITREV=`git log -n1 --format="%H" -- code/client`
-GITREVINDEX=`git rev-list --reverse HEAD | grep -n $GITREV | cut -d: -f1`
+GITREVINDEX=`git rev-list --count $GITREV`
 SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 VERSION=$MUNKIVERS.$SVNREV
 
+# get a psuedo-svn revision number for the apps pkg
+APPSGITREV=`git log -n1 --format="%H" -- code/apps`
+GITREVINDEX=`git rev-list --count $APPSGITREV`
+APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+# get base apps version from MSC.app
+APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Managed Software Center-Info" CFBundleShortVersionString`
+# append the APPSSVNREV
+APPSVERSION=$APPSVERSION.$APPSSVNREV
+
 # get a psuedo-svn revision number for the metapackage
 MPKGGITREV=`git log -n1 --format="%H"`
-GITREVINDEX=`git rev-list --reverse HEAD | grep -n $MPKGGITREV | cut -d: -f1`
+GITREVINDEX=`git rev-list --count $MPKGGITREV`
 MPKGSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
 # get a pseudo-svn revision number for the launchd pkg
 LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd`
-GITREVINDEX=`git rev-list --reverse HEAD | grep -n $LAUNCHDGITREV | cut -d: -f1`
+GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 # Get launchd version if different
 LAUNCHDVERSION=$MUNKIVERS
@@ -159,12 +168,14 @@ echo "  Munki root: $MUNKIROOT"
 echo "  Output directory: $OUTPUTDIR"
 echo "  munki core tools version: $VERSION"
 echo "  LaunchAgents/LaunchDaemons version: $LAUNCHDVERSION"
+echo "  Apps package version: $APPSVERSION"
+echo
 echo "  metapackage version: $MPKGVERSION"
 echo
 
 # Build Managed Software Center.
 echo "Building Managed Software Update.xcodeproj..."
-pushd "$MUNKIROOT/code/Managed Software Center" > /dev/null
+pushd "$MUNKIROOT/code/apps/Managed Software Center" > /dev/null
 /usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets clean > /dev/null
 /usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets build > /dev/null
 XCODEBUILD_RESULT="$?"
@@ -174,15 +185,19 @@ if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
     exit 2
 fi
 
-if [ ! -e "$MUNKIROOT/code/Managed Software Center/build/Release/Managed Software Center.app" ]; then
+MSCAPP="$MUNKIROOT/code/apps/Managed Software Center/build/Release/Managed Software Center.app"
+if [ ! -e "$MSCAPP" ]; then
     echo "Need a release build of Managed Software Center.app!"
-    echo "Open the Xcode project $MUNKIROOT/code/Managed Software Center/Managed Software Center.xcodeproj and build it."
+    echo "Open the Xcode project $MUNKIROOT/code/apps/Managed Software Center/Managed Software Center.xcodeproj and build it."
     exit 2
+else
+    MSCVERSION=`defaults read "$MSCAPP/Contents/Info" CFBundleShortVersionString`
+    echo "Managed Software Center.app version: $MSCVERSION"
 fi
 
 # Build MunkiStatus
 echo "Building MunkiStatus.xcodeproj..."
-pushd "$MUNKIROOT/code/MunkiStatus" > /dev/null
+pushd "$MUNKIROOT/code/apps/MunkiStatus" > /dev/null
 /usr/bin/xcodebuild -project "MunkiStatus.xcodeproj" -alltargets clean > /dev/null
 /usr/bin/xcodebuild -project "MunkiStatus.xcodeproj" -alltargets build > /dev/null
 XCODEBUILD_RESULT="$?"
@@ -192,10 +207,14 @@ if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
     exit 2
 fi
 
-if [ ! -e "$MUNKIROOT/code/MunkiStatus/build/Release/MunkiStatus.app" ]; then
+MSAPP="$MUNKIROOT/code/apps/MunkiStatus/build/Release/MunkiStatus.app"
+if [ ! -e  "$MSAPP" ]; then
     echo "Need a release build of MunkiStatus.app!"
-    echo "Open the Xcode project $MUNKIROOT/code/MunkiStatus/MunkiStatus.xcodeproj and build it."
+    echo "Open the Xcode project $MUNKIROOT/code/apps/MunkiStatus/MunkiStatus.xcodeproj and build it."
     exit 2
+else
+    MSVERSION=`defaults read "$MSAPP/Contents/Info" CFBundleShortVersionString`
+    echo "MunkiStatus.app version: $MSVERSION"
 fi
 
 # Create a PackageInfo file.
@@ -215,8 +234,8 @@ makeinfo() {
     else
         restart=""
     fi
-    MSUID=`defaults read "$MUNKIROOT/code/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleIdentifier`
     if [ "$pkg" == "app" ]; then
+        MSUID=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleIdentifier`
         app="<bundle id=\"$MSUID\"
         CFBundleIdentifier=\"$MSUID\"
         path=\"./Applications/Managed Software Center.app\"
@@ -253,7 +272,7 @@ PKGTMP=`mktemp -d -t munkipkg`
 ## /usr/local/munki, minus admin tools ##
 ## plus /Library/Managed Installs      ##
 #########################################
-
+echo
 echo "Creating core package template..."
 
 # Create directory structure.
@@ -345,10 +364,10 @@ APPROOT="$PKGTMP/munki_app"
 mkdir -m 1775 "$APPROOT"
 mkdir -p "$APPROOT/Applications/Utilities"
 chmod -R 775 "$APPROOT/Applications"
-# Copy Application.
-cp -R "$MUNKIROOT/code/Managed Software Center/build/Release/Managed Software Center.app" "$APPROOT/Applications/"
+# Copy Managed Software Center application.
+cp -R "$MSCAPP" "$APPROOT/Applications/"
 # Copy MunkiStatus helper app
-cp -R "$MUNKIROOT/code/MunkiStatus/build/Release/MunkiStatus.app" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 # make a symlink for the old MSU.app
@@ -356,8 +375,7 @@ ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed 
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
-MSUVERSION=`defaults read "$MUNKIROOT/code/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleShortVersionString`
-makeinfo app "$PKGTMP/info" "$PKGID" "$MSUVERSION" $APPSIZE $NFILES norestart
+makeinfo app "$PKGTMP/info" "$PKGID" "$APPSVERSION" $APPSIZE $NFILES norestart
 
 
 ##############
@@ -465,7 +483,7 @@ cat > "$DISTFILE" <<EOF
     $CONFCHOICE
     <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$MSUVERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$APPSVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusion="RequireRestart">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
     $CONFREF
 </installer-script>
@@ -500,7 +518,7 @@ CURRENTUSER=`whoami`
 for pkg in core admin app launchd; do
     case $pkg in
         "app")
-            ver="$MSUVERSION"
+            ver="$APPSVERSION"
             SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_app"
             ;;
         "launchd")
@@ -512,8 +530,9 @@ for pkg in core admin app launchd; do
             SCRIPTS=""
             ;;
     esac
+    echo
     echo "Packaging munkitools_$pkg-$ver.pkg"
-    echo "$SCRIPTS"
+    
     # Use pkgutil --analyze to build a component property list
     # then turn off bundle relocation
     sudo /usr/bin/pkgbuild \
@@ -560,6 +579,7 @@ for pkg in core admin app launchd; do
     fi
 done
 
+echo
 # build distribution pkg from the components
 /usr/bin/productbuild \
     --distribution "$DISTFILE" \
@@ -575,7 +595,7 @@ if [ "$?" -ne 0 ]; then
 fi
 
 echo "Distribution package created at $MPKG."
-
+echo
 echo "Removing temporary files..."
 sudo rm -rf "$PKGTMP"
 
