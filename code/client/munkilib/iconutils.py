@@ -127,8 +127,8 @@ def extractAppIconsFromFlatPkg(pkg_path):
         if proc.returncode:
             print >> sys.stderr, u'Could not lsbom %s' % bomfile
         # record paths to all app Info.plist files
-        pkg_dict[pkgname]= [
-            os.path.normpath(line) for line in output.splitlines()
+        pkg_dict[pkgname] = [os.path.normpath(line) 
+            for line in output.decode('utf-8').splitlines()
             if line.endswith(u'.app/Contents/Info.plist')]
         if not pkg_dict[pkgname]:
             # remove empty lists
