@@ -737,14 +737,6 @@ div.lockup-container:not(.shelf)[data-columns-current="4"] div.lockup:nth-of-typ
     border-right: 0
 }
 
-.grouping div.lockup-container[data-columns-current="3"] div.lockup:nth-child(10) {
-    -webkit-border-bottom-left-radius: 5px
-}
-
-.grouping div.lockup-container[data-columns-current="3"] div.lockup:nth-child(12) {
-    -webkit-border-bottom-right-radius: 5px
-}
-
 div.lockup-container[data-columns-current="4"] div.lockup:nth-last-of-type(4) {
     -webkit-border-bottom-left-radius: 5px
 }
