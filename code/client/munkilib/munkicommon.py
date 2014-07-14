@@ -874,8 +874,7 @@ def hdiutilInfo():
                 bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        print >> sys.stderr, (
-            'hdiutil error %s with image %s.' % (err, dmgpath))
+        print >> sys.stderr, 'hdiutil info error: %s' % err
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
         try:
