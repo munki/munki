@@ -1672,7 +1672,7 @@ def updateAvailableLicenseSeats(installinfo):
 
 
 def processInstall(manifestitem, cataloglist, installinfo):
-    """Processes a manifest item. Determines if it needs to be
+    """Processes a manifest item for install. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Installation detail is added to
     installinfo['managed_installs']
@@ -1763,16 +1763,22 @@ def processInstall(manifestitem, cataloglist, installinfo):
             if not success:
                 dependenciesMet = False
 
-    if not dependenciesMet:
-        munkicommon.display_warning('Didn\'t attempt to install %s '
-                                    'because could not resolve all '
-                                    'dependencies.', manifestitemname)
-        return False
-
     iteminfo = {}
     iteminfo['name'] = item_pl.get('name', '')
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
+
+    if not dependenciesMet:
+        munkicommon.display_warning('Didn\'t attempt to install %s '
+                                    'because could not resolve all '
+                                    'dependencies.', manifestitemname)
+        # add information to managed_installs so we have some feedback
+        # to display in MSC.app
+        iteminfo['installed'] = False
+        iteminfo['note'] = ('Can\'t install %s because could not resolve all '
+                            'dependencies.' % iteminfo['display_name'])
+        installinfo['managed_installs'].append(iteminfo)
+        return False
 
     installed_state = installedState(item_pl)
     if installed_state == 0:
@@ -1821,8 +1827,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # required keys
             iteminfo['installer_item'] = filename
             iteminfo['installed'] = False
-            iteminfo['version_to_install'] = item_pl.get(
-                                                 'version','UNKNOWN')
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
 
             # we will ignore the unattended_install key if the item needs a
             # restart or logout...
@@ -2995,7 +3000,6 @@ def check(client_id='', localmanifestpath=None):
                             for item in installinfo['removals']
                                 if item.get('installed') == False]
 
-
         if os.path.exists(selfservemanifest):
             # for any item in the managed_uninstalls in the self-serve
             # manifest that is not installed, we should remove it from
@@ -3035,6 +3039,9 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = \
             [item for item in installinfo['removals']
                 if item.get('installed')]
+        
+        # also record problem items so MSC.app can provide feedback
+        installinfo['problem_items'] = problem_items
 
         # download display icons for optional installs
         # and active installs/removals

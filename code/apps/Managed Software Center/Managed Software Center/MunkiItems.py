@@ -819,8 +819,6 @@ class OptionalItem(GenericItem):
         else:
             self['category_and_developer'] = self['category']
         self['dependent_items'] = dependentItems(self['name'])
-        if not self.get('status'):
-            self['status'] = self._get_status()
         if self.get('installer_item_size'):
             self['size'] = munki.humanReadable(self['installer_item_size'])
         elif self.get('installed_size'):
@@ -829,7 +827,11 @@ class OptionalItem(GenericItem):
             self['size'] = u''
         self['detail_link'] = u'detail-%s.html' % quote(self['name'])
         self['hide_cancel_button'] = u''
-            
+        if not self.get('note'):
+            self['note'] = self._get_note_from_problem_items()
+        if not self.get('status'):
+            self['status'] = self._get_status()
+
     def _get_status(self):
         '''Calculates initial status for an item and also sets a boolean
         if a updatecheck is needed'''
@@ -875,6 +877,7 @@ class OptionalItem(GenericItem):
                 #   'Download failed (%s)' % errmsg
                 #   'Can\'t install %s because: %s', manifestitemname, errmsg
                 #   'Insufficient disk space to download and install.'
+                #   and others in the future
                 #
                 # for now we prevent install this way
                 status = u'unavailable'
@@ -891,6 +894,15 @@ class OptionalItem(GenericItem):
             else: # not in managed_installs
                 status = u'not-installed'
         return status
+
+    def _get_note_from_problem_items(self):
+        '''Checks InstallInfo's problem_items for any notes for self that might
+        give feedback why this item can't be downloaded or installed'''
+        problem_items = getInstallInfo().get('problem_items', [])
+        # check problem items for any whose name matches the name of the current item
+        matches = [item for item in problem_items if item['name'] == self['name']]
+        if len(matches):
+            return matches[0].get('note', '')
 
     def description(self):
         '''return a full description for the item, inserting dynamic data
@@ -909,6 +921,10 @@ class OptionalItem(GenericItem):
                  "Removal will be attempted again.\n"
                  "If this situation continues, contact your systems administrator.",
                 u"Removal Error message")
+            start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
+        if self.get('note'):
+            # some other note. Probably won't be localized.
+            warning_text = NSLocalizedString(self['note'], None)
             start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('dependent_items'):
             start_text += self.dependency_description()
