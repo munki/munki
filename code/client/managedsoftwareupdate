@@ -298,7 +298,7 @@ def munkiUpdatesAvailable():
             munkicommon.display_error('Install info at %s is invalid.' %
                                        installinfo)
     return updatesavailable
-    
+
 
 def munkiUpdatesContainAppleItems():
     """Return True if there are any Apple items in the list of updates"""
@@ -334,7 +334,7 @@ def sendDistrubutedNotification(notification_name, userInfo=None):
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
         notification_name,
-        None, 
+        None,
         userInfo,
         NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
 
@@ -689,7 +689,7 @@ def main():
     munkicommon.reset_errors()
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
-   
+
     # archive the previous session's report
     munkicommon.archive_report()
 
@@ -735,11 +735,11 @@ def main():
             os.unlink(appleupdates_plist)
         except OSError:
             pass
-        
+
     else:
         # check the normal preferences
         should_do_apple_updates = munkicommon.pref(
-                                        'InstallAppleSoftwareUpdates') 
+                                        'InstallAppleSoftwareUpdates')
 
     if should_do_apple_updates:
         if (not options.installonly and not munkicommon.stopRequested()):
@@ -827,7 +827,7 @@ def main():
                     munkicommon.munkistatusoutput = True
                     munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
-                    
+
             else:  # there are GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
