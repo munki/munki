@@ -58,7 +58,7 @@ def launchMunkiStatus():
     There needs to be a launch agent that is triggered when the launchfile
     is created; and that launch agent then runs MunkiStatus.app.'''
     initStatusDict()
-    
+
     launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     try:
         open(launchfile, 'w').close()
@@ -73,7 +73,7 @@ def postStatusNotification():
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
         NOTIFICATION_ID,
-        None, 
+        None,
         _currentStatus,
         NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
 

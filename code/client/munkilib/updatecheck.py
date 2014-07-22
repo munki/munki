@@ -1592,7 +1592,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                                warn=False):
             iteminfo['note'] = \
                 'Insufficient disk space to download and install.'
-   
+
     munkicommon.display_debug1(
         'Adding %s to the optional install list', iteminfo['name'])
     installinfo['optional_installs'].append(iteminfo)
@@ -3039,7 +3039,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = \
             [item for item in installinfo['removals']
                 if item.get('installed')]
-        
+
         # also record problem items so MSC.app can provide feedback
         installinfo['problem_items'] = problem_items
 
@@ -3049,7 +3049,7 @@ def check(client_id='', localmanifestpath=None):
         item_list.extend(installinfo['managed_installs'])
         item_list.extend(installinfo['removals'])
         download_icons(item_list)
-        
+
         # get any custom client resources
         download_client_resources()
 

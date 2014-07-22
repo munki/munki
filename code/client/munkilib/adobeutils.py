@@ -40,16 +40,16 @@ import utils
 class AdobeInstallProgressMonitor(object):
     """A class to monitor installs/removals of Adobe products.
     Finds the currently active installation log and scrapes data out of it.
-    Installations that install a product and updates may actually create 
+    Installations that install a product and updates may actually create
     multiple logs."""
-    
+
     def __init__(self, kind='CS5', operation='install'):
         '''Provide some hints as to what type of installer is running and
         whether we are installing or removing'''
         self.kind = kind
         self.operation = operation
         self.payload_count = {}
-    
+
     def get_current_log(self):
         '''Returns the current Adobe install log'''
 
@@ -71,7 +71,7 @@ class AdobeInstallProgressMonitor(object):
         '''Returns the number of completed Adobe payloads,
         and the AdobeCode of the most recently completed payload.'''
         last_adobecode = ""
-        
+
         logfile = self.get_current_log()
         if logfile:
             if self.kind in ['CS6', 'CS5']:
@@ -86,7 +86,7 @@ class AdobeInstallProgressMonitor(object):
                     regex = r'Completing installation for payload at '
                 else:
                     regex = r'Physical payload uninstall result '
-                    
+
             cmd = ['/usr/bin/grep', '-E', regex, logfile]
             proc = subprocess.Popen(cmd, bufsize=-1,
                                     stdout=subprocess.PIPE,
@@ -95,15 +95,15 @@ class AdobeInstallProgressMonitor(object):
             if output:
                 lines = str(output).splitlines()
                 completed_payloads = len(lines)
-            
+
                 if (not logfile in self.payload_count
                     or completed_payloads > self.payload_count[logfile]):
                     # record number of completed payloads
                     self.payload_count[logfile] = completed_payloads
-                
-                    # now try to get the AdobeCode of the most recently  
+
+                    # now try to get the AdobeCode of the most recently
                     # completed payload.
-                    # this isn't 100% accurate, but it's mostly for show 
+                    # this isn't 100% accurate, but it's mostly for show
                     # anyway...
                     regex = re.compile(r'[^{]*(\{[A-Fa-f0-9-]+\})')
                     lines.reverse()
@@ -118,7 +118,7 @@ class AdobeInstallProgressMonitor(object):
         total_completed_payloads = 0
         for key in self.payload_count.keys():
             total_completed_payloads += self.payload_count[key]
-            
+
         return (total_completed_payloads, last_adobecode)
 
 
@@ -502,11 +502,11 @@ def runAdobeInstallTool(
         kind="CS5", operation="install"):
     '''An abstraction of the tasks for running Adobe Setup,
     AdobeUberInstaller, AdobeUberUninstaller, AdobeDeploymentManager, etc'''
-    
+
     # initialize an AdobeInstallProgressMonitor object.
     progress_monitor = AdobeInstallProgressMonitor(
                             kind=kind, operation=operation)
-    
+
     if munkicommon.munkistatusoutput and not number_of_payloads:
         # indeterminate progress bar
         munkistatus.percent(-1)
@@ -523,7 +523,7 @@ def runAdobeInstallTool(
         if payload_completed_count > old_payload_completed_count:
             old_payload_completed_count = payload_completed_count
             if adobe_code and payloads:
-                matched_payloads = [payload for payload in payloads 
+                matched_payloads = [payload for payload in payloads
                                     if payload.get('AdobeCode') == adobe_code]
                 if matched_payloads:
                     payloadname = matched_payloads[0].get('display_name')
@@ -693,7 +693,7 @@ def runAdobeCS5AAMEEInstall(dmgpath, payloads=None):
         # big hack to convince the Adobe tools to install off a mounted
         # disk image.
         #
-        # For some reason, some versions of the Adobe install tools refuse to 
+        # For some reason, some versions of the Adobe install tools refuse to
         # install when the payloads are on a "removable" disk,
         # which includes mounted disk images.
         #
@@ -701,7 +701,7 @@ def runAdobeCS5AAMEEInstall(dmgpath, payloads=None):
         # some resources from the mounted disk image to the temporary
         # directory. When we pass this temporary directory to the Adobe
         # installation tools, they are now happy.
-        
+
         basepath = os.path.dirname(deploymentmanager)
         number_of_payloads = countPayloads(basepath)
         tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
