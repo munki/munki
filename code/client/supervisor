@@ -289,7 +289,7 @@ def Usage():
         --error-exec-exit-codes "1,100,203"
             comma-delimited list of integer exit status codes.  If the
             supervised script exits with one of these codes, the error-exec
-            executable will be run.  Default: "1" 
+            executable will be run.  Default: "1"
         --debug
             enable debugging output, all logs to stderr and not syslog.
         --help
