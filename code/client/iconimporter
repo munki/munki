@@ -87,7 +87,7 @@ def generate_pngs_from_installer_pkg(install_item, repo_path):
 
     if mountpoint:
         munkicommon.unmountdmg(mountpoint)
-        
+
     if len(icon_paths) == 1:
         png_path = os.path.join(
             repo_path, u'icons', install_item['name'] + u'.png')
@@ -121,7 +121,7 @@ def findItemsToCheck(repo_path, itemlist=None):
         name = catalogitem['name']
         if name not in itemdb:
             itemdb[name] = catalogitem
-        elif (munkicommon.MunkiLooseVersion(catalogitem['version']) 
+        elif (munkicommon.MunkiLooseVersion(catalogitem['version'])
               > munkicommon.MunkiLooseVersion(itemdb[name]['version'])):
             itemdb[name] = catalogitem
     pkg_list = []
@@ -210,5 +210,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-        
