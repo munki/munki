@@ -118,13 +118,13 @@ def _build_update_list():
             item['developer'] = u'Apple'
             item['status'] = u'will-be-installed'
         update_items.extend(apple_update_items)
-    
+
     install_info = getInstallInfo()
     managed_installs = install_info.get('managed_installs', [])
     for item in managed_installs:
         item['status'] = u'will-be-installed'
     update_items.extend(managed_installs)
-    
+
     removal_items = install_info.get('removals', [])
     for item in removal_items:
         item['status'] = u'will-be-removed'
@@ -138,7 +138,7 @@ def _build_update_list():
 
 
 def updatesRequireLogout():
-    '''Return True if any item in the update list requires a logout or if 
+    '''Return True if any item in the update list requires a logout or if
     Munki's InstallRequiresLogout preference is true.'''
     if munki.installRequiresLogout():
         return True
@@ -182,10 +182,10 @@ def getEffectiveUpdateList():
     optional_installs = getOptionalWillBeInstalledItems()
     optional_removals = getOptionalWillBeRemovedItems()
     optional_item_names = [item['name'] for item in optional_installs + optional_removals]
-    
+
     mandatory_updates = [item for item in getUpdateList()
                          if item['name'] not in optional_item_names]
-    
+
     return mandatory_updates + optional_installs + optional_removals
 
 
@@ -285,7 +285,7 @@ class MSUHTMLFilter(HTMLParser):
     tag_count = 0
     # store our filtered/transformed html fragment
     filtered_html = u''
-    
+
     def handle_starttag(self, tag, attrs):
         self.tag_count += 1
         if not self.current_ignore_element:
@@ -295,7 +295,7 @@ class MSUHTMLFilter(HTMLParser):
                 self.filtered_html += self.transform_starttags[tag]
             elif tag in self.preserve_tags:
                 self.filtered_html += self.get_starttag_text()
-    
+
     def handle_endtag(self, tag):
         if tag == self.current_ignore_element:
             self.current_ignore_element = None
@@ -304,16 +304,16 @@ class MSUHTMLFilter(HTMLParser):
                 self.filtered_html += self.transform_endtags[tag]
             elif tag in self.preserve_tags:
                 self.filtered_html += u'</%s>' % tag
-    
+
     def handle_data(self, data):
         if not self.current_ignore_element:
             self.filtered_html += data
-    
+
     def handle_entityref(self, name):
         if not self.current_ignore_element:
             # add the entity reference as-is
             self.filtered_html += u'&%s;' % name
-    
+
     def handle_charref(self, name):
         if not self.current_ignore_element:
             # just pass on unmodified
@@ -344,11 +344,11 @@ class SelfService(object):
             munki.readSelfServiceManifest().get('managed_installs', []))
         self._uninstalls = set(
             munki.readSelfServiceManifest().get('managed_uninstalls', []))
-    
+
     def __eq__(self, other):
         return (sorted(self._installs) == sorted(other._installs)
                 and sorted(self._uninstalls) == sorted(other._uninstalls))
-    
+
     def __ne__(self, other):
         return (sorted(self._installs) != sorted(other._installs)
                 or sorted(self._uninstalls) != sorted(other._uninstalls))
@@ -368,7 +368,7 @@ class SelfService(object):
         self._installs.discard(item['name'])
         self._uninstalls.add(item['name'])
         self._save_self_service_choices()
-    
+
     def unmanage(self, item):
         self._installs.discard(item['name'])
         self._uninstalls.discard(item['name'])
@@ -405,7 +405,7 @@ def unmanage(item):
 
 class GenericItem(dict):
     '''Base class for our types of Munki items'''
-    
+
     def __init__(self, *arg, **kw):
         super(GenericItem, self).__init__(*arg, **kw)
         # now normalize values
@@ -501,11 +501,12 @@ class GenericItem(dict):
     def getIcon(self):
         '''Return name/relative path of image file to use for the icon'''
         # first look for downloaded icons
+        icon_known_exts = [ 'bmp', 'gif', 'icns', 'jpg', 'jpeg', 'png', 'psd', 'tga', 'tif', 'tiff', 'yuv' ]
         icon_name = self.get('icon_name') or self['name']
         if not os.path.splitext(icon_name)[1]:
             icon_name += '.png'
         icon_path = os.path.join(msulib.html_dir(), 'icons', icon_name)
-        if os.path.exists(icon_path):
+        if not [ ext for ext in icon_known_exts if ext in icon_name ]:
             return 'icons/' + icon_name
         # didn't find one in the downloaded icons
         # so create one if needed from a locally installed app
@@ -791,7 +792,7 @@ class GenericItem(dict):
             return ''
         else:
             return self.get('version_to_install', '')
-    
+
     def developer_sort(self):
         '''returns sort priority based on developer and install/removal status'''
         if self['status'] != 'will-be-removed' and self['developer'] == 'Apple':
@@ -804,7 +805,7 @@ class GenericItem(dict):
 
 class OptionalItem(GenericItem):
     '''Dictionary subclass that models a given optional install item'''
-    
+
     def __init__(self, *arg, **kw):
         '''Initialize an OptionalItem from a item dict from the
         InstallInfo.plist optional_installs array'''
@@ -928,7 +929,7 @@ class OptionalItem(GenericItem):
             start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('dependent_items'):
             start_text += self.dependency_description()
-                
+
         return start_text + self['raw_description']
 
     def update_status(self):
@@ -981,7 +982,7 @@ class OptionalItem(GenericItem):
 
 class UpdateItem(GenericItem):
     '''GenericItem subclass that models an update install item'''
-    
+
     def __init__(self, *arg, **kw):
         super(UpdateItem, self).__init__(*arg, **kw)
         identifier = self.get('name', '') + '--version-' + self.get('version_to_install', '')
@@ -992,7 +993,7 @@ class UpdateItem(GenericItem):
                 self['type'] = NSLocalizedString(
                                 u"Critical Update", u"Critical Update type")
                 self['due_date_sort'] = force_install_after_date
-    
+
         if not 'type' in self:
              self['type'] = NSLocalizedString(u"Managed Update",
                                               u"Managed Update type")
@@ -1019,4 +1020,3 @@ class UpdateItem(GenericItem):
                 dependent_items = self.dependency_description()
 
         return warning + dependent_items + self['raw_description']
-
