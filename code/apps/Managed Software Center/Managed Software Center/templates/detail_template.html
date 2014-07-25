@@ -71,8 +71,11 @@
                                     <li>
                                         <span class="label">${statusLabel} </span>
                                         <span class="${status}" id="${name}_status_text">
-                                            ${status_text}
+                                            <span id="${name}_status_text_span">
+                                                ${status_text}
+                                            </span>
                                             <a class="follow" href="updates.html"></a>
+                                            <span class="progress-spinner"></span>
                                         </span>
                                     </li>
                                     <li class="warning">${restart_action_text}</li>

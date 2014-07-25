@@ -844,8 +844,10 @@ class MSUMainWindowController(NSWindowController):
         if not document:
             return
         status_line = document.getElementById_('%s_status_text' % item['name'])
+        status_text_span = document.getElementById_('%s_status_text_span' % item['name'])
         btn = document.getElementById_('%s_action_button_text' % item['name'])
         if not btn or not status_line:
+            msulog.debug_log('ERROR in updateDOMforOptionalItem: could not find items in DOM')
             return
         btn_classes = btn.className().split(' ')
         # filter out status class
@@ -859,7 +861,8 @@ class MSUMainWindowController(NSWindowController):
             btn.setInnerText_(item['long_action_text'])
         else:
             btn.setInnerText_(item['short_action_text'])
-        status_line.setInnerText_(item['status_text'])
+        if status_text_span:
+            status_text_span.setInnerText_(item['status_text'])
         status_line.setClassName_(item['status'])
 
     def actionButtonClicked_(self, item_name):

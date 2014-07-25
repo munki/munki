@@ -1293,7 +1293,7 @@ span.will-be-installed a.follow,
 span.update-will-be-installed a.follow,
 span.removal-requested a.follow,
 span.will-be-removed a.follow {
-    visibility: visible;
+    visibility: visible !important;
     opacity: 0.8;
     display: inline-block;
     width: 12px;
@@ -1311,16 +1311,16 @@ span a.follow:hover {
 }
 
 
-div.lockup li.will-be-installed, 
-div.lockup li.will-be-removed,
-div.lockup li.install-requested,
-div.lockup li.removal-requested,
-div.lockup li.downloading, 
-div.lockup li.preparing-removal,
-div.lockup li.update-will-be-installed, 
-div.lockup li.update-available,
-div.lockup li.install-error,
-div.lockup li.removal-error,
+div.lockup li.will-be-installed span,
+div.lockup li.will-be-removed span,
+div.lockup li.install-requested span,
+div.lockup li.removal-requested span,
+div.lockup li.downloading span,
+div.lockup li.preparing-removal span,
+div.lockup li.update-will-be-installed span,
+div.lockup li.update-available span,
+div.lockup li.install-error span,
+div.lockup li.removal-error span,
 span.install-requested,
 span.removal-requested,
 span.downloading, 
@@ -1335,17 +1335,16 @@ span.update-available {
     color: #CC0000 !important;
 }
 
-span.downloading:after, 
-span.preparing-removal:after,
-span.installing:after, 
-span.removing:after,
-div.lockup li.downloading:after, 
-div.lockup li.preparing-removal:after,
-div.lockup li.installing:after, 
-div.lockup li.removing:after {
-    visibility: visible;
+span.downloading>span.progress-spinner,
+span.preparing-removal>span.progress-spinner,
+span.installing>span.progress-spinner,
+span.removing>span.progress-spinner,
+div.lockup li.downloading span.progress-spinner,
+div.lockup li.preparing-removal span.progress-spinner,
+div.lockup li.installing span.progress-spinner,
+div.lockup li.removing span.progress-spinner {
+    visibility: visible !important;
     float: right;
-    content: ' ';
     background: url(progress-spinner.png) 0 0 no-repeat;
     -webkit-background-size: 21px 20px;
     opacity: 1;
@@ -1357,10 +1356,10 @@ div.lockup li.removing:after {
     -webkit-animation-duration: 1s;
 }
 
-
-
-div.lockup li.downloading:after, div.lockup li.preparing-removal:after,
-div.lockup li.installing:after, div.lockup li.removing:after {
+div.lockup li.downloading span.progress-spinner,
+div.lockup li.preparing-removal span.progress-spinner,
+div.lockup li.installing span.progress-spinner,
+div.lockup li.removing span.progress-spinner {
     position: absolute;
     bottom: 2px;
     right: 2px;
@@ -1370,11 +1369,14 @@ div.lockup li {
     max-width: 190px;
 }
 
-div.lockup  li.not-installed,  div.lockup  li.installing, div.lockup  li.removing {
+div.lockup li.not-installed,
+div.lockup li.installing, 
+div.lockup li.removing {
     visibility: hidden;
 }
 
-div.lockup  li.installed li.installed-not-removable {
+div.lockup li.installed,
+div.lockup li.installed-not-removable {
     color: #4f5459;
 }
 
