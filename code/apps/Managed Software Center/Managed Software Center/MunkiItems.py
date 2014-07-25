@@ -501,12 +501,13 @@ class GenericItem(dict):
     def getIcon(self):
         '''Return name/relative path of image file to use for the icon'''
         # first look for downloaded icons
-        icon_known_exts = [ 'bmp', 'gif', 'icns', 'jpg', 'jpeg', 'png', 'psd', 'tga', 'tif', 'tiff', 'yuv' ]
+        icon_known_exts = [
+            'bmp', 'gif', 'icns', 'jpg', 'jpeg', 'png', 'psd', 'tga', 'tif', 'tiff', 'yuv']
         icon_name = self.get('icon_name') or self['name']
-        if not os.path.splitext(icon_name)[1]:
+        if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
         icon_path = os.path.join(msulib.html_dir(), 'icons', icon_name)
-        if not [ ext for ext in icon_known_exts if ext in icon_name ]:
+        if os.path.exists(icon_path):
             return 'icons/' + icon_name
         # didn't find one in the downloaded icons
         # so create one if needed from a locally installed app
@@ -514,7 +515,7 @@ class GenericItem(dict):
             if key in self:
                 name = self[key]
                 icon_name = name
-                if not os.path.splitext(icon_name)[1]:
+                if not os.path.splitext(icon_name)[1] in icon_known_exts:
                     icon_name += '.png'
                 icon_path = os.path.join(msulib.html_dir(), icon_name)
                 if os.path.exists(icon_path) or convertIconToPNG(name, icon_path, 350):
