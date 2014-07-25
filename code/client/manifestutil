@@ -966,7 +966,8 @@ def main():
         while 1:
             try:
                 cmd = raw_input('> ')
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, EOFError):
+                # React to Control-C and Control-D
                 print # so we finish off the raw_input line
                 cleanupAndExit(0)
             args = shlex.split(cmd)
