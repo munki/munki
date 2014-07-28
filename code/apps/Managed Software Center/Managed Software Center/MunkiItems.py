@@ -501,8 +501,8 @@ class GenericItem(dict):
     def getIcon(self):
         '''Return name/relative path of image file to use for the icon'''
         # first look for downloaded icons
-        icon_known_exts = [
-            'bmp', 'gif', 'icns', 'jpg', 'jpeg', 'png', 'psd', 'tga', 'tif', 'tiff', 'yuv']
+        icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png', '.psd',
+                           '.tga', '.tif', '.tiff', '.yuv']
         icon_name = self.get('icon_name') or self['name']
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'

@@ -2725,8 +2725,8 @@ def download_icons(item_list):
     '''Attempts to download icons (actually png files) for items in
        item_list'''
     icon_list = []
-    icon_known_exts = ['bmp', 'gif', 'icns', 'jpg', 'jpeg', 'png', 'psd',
-                       'tga', 'tif', 'tiff', 'yuv']
+    icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png', '.psd',
+                       '.tga', '.tif', '.tiff', '.yuv']
     icon_base_url = (munkicommon.pref('IconURL') or
                      munkicommon.pref('SoftwareRepoURL') + '/icons/')
     icon_base_url = icon_base_url.rstrip('/') + '/'
