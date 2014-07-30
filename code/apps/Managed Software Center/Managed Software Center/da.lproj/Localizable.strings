@@ -1,14 +1,14 @@
 ﻿/* Multiple Updates message */
-"%s pending updates" = "%s pending updates";
+"%s pending updates" = "%s ventende opdateringer";
 
 /* One Update message */
-"1 pending update" = "1 pending update";
+"1 pending update" = "1 ventende opdatering";
 
 /* Forced Logout warning detail */
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du skal logge ud før opdatering. Vent et øjeblik - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du skal logge ud før opdatering. Vent et øjeblik da der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %s." = "En tvungen log ud vil ske ca. %s.";
@@ -26,7 +26,7 @@
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Computeren skal genstartes efter opdatering. Vent et øjeblik - der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
 /* Additional Pending Updates title */
-"Additional Pending Updates" = "Additional Pending Updates";
+"Additional Pending Updates" = "Flere ventende opdateringer";
 
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator.";
@@ -41,22 +41,22 @@
 "Cancel" = "Annuller";
 
 /* Cancel Install long action text */
-"Cancel install" = "Cancel install";
+"Cancel install" = "Annuller installering";
 
 /* Cancel Removal long action text */
 "Cancel removal" = "Cancel removal";
 
 /* Cancel Update long action text */
-"Cancel update" = "Cancel update";
+"Cancel update" = "Annuler opdatering";
 
 /* Item Not Found message */
-"Cannot display the requested item." = "Cannot display the requested item.";
+"Cannot display the requested item." = "Kan ikke vise det ønskede emne.";
 
 /* Sidebar Category label */
-"Category:" = "Category:";
+"Category:" = "Kategori:";
 
 /* Check Again button title */
-"Check Again" = "Check Again";
+"Check Again" = "Kontroller igen";
 
 /* Checking For Updates message */
 "Checking for updates..." = "Checking for updates...";
@@ -68,16 +68,16 @@
 "Continue" = "Fortsæt";
 
 /* Critical Update type */
-"Critical Update" = "Critical Update";
+"Critical Update" = "Kritisk opdatering";
 
 /* Unavailable long action text */
 "Currently Unavailable" = "Currently Unavailable";
 
 /* Sidebar Developer label */
-"Developer:" = "Developer:";
+"Developer:" = "Udvikler:";
 
 /* Downloading status text */
-"Downloading" = "Downloading";
+"Downloading" = "Downloader";
 
 /* Sidebar Due label */
 "Due:" = "Due:";
@@ -96,7 +96,7 @@
 
 /* Install long action text
    Install short action text */
-"Install" = "Install";
+"Install" = "Installer";
 
 /* Install Requested status text */
 "Install requested" = "Install requested";
@@ -108,7 +108,7 @@
 "Install session failed" = "Installeringen mislykkedes";
 
 /* Install Error status text */
-"Installation Error" = "Installation Error";
+"Installation Error" = "Fejl under installering";
 
 /* Installed long action text
    Installed short action text
@@ -118,7 +118,7 @@
 /* Installing long action text
    Installing short action text
    Installing status text */
-"Installing" = "Installing";
+"Installing" = "Installerer";
 
 /* Log out and Update button text */
 "Log out and update" = "Log ud og opdater";
@@ -143,28 +143,28 @@
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
 
 /* More link text */
-"More" = "More";
+"More" = "Mere";
 
 /* Sidebar More By Developer label */
-"More by %s" = "More by %s";
+"More by %s" = "Mere af %s";
 
 /* Sidebar More In Category label */
-"More in %s" = "More in %s";
+"More in %s" = "Mere i %s";
 
 /* My Items Header label */
-"My Items" = "My Items";
+"My Items" = "Mine emner";
 
 /* No Licenses Available display text */
-"No licenses available" = "No licenses available";
+"No licenses available" = "Ingen tilgængelige licenser";
 
 /* No Updates message */
-"No pending updates" = "No pending updates";
+"No pending updates" = "Ingen ventende opdateringer";
 
 /* Not Currently Available display text */
-"Not currently available" = "Not currently available";
+"Not currently available" = "Ikke tilgængeligt i øjeblikket";
 
 /* Not Enough Disk Space display text */
-"Not enough disk space" = "Not enough disk space";
+"Not enough disk space" = "Ikke nok plads på disken";
 
 /* Not Installed status text */
 "Not installed" = "Ikke installeret";
@@ -191,7 +191,7 @@
 "Other users logged in" = "Andre brugere er logget ind";
 
 /* Pending Updates alert title */
-"Pending updates" = "Pending updates";
+"Pending updates" = "Ventende opdateringer";
 
 /* Preparing Removal status text */
 "Preparing removal" = "Preparing removal";
@@ -208,17 +208,17 @@
 
 /* Remove long action text
    Remove short action text */
-"Remove" = "Remove";
+"Remove" = "Fjern";
 
 /* Removing long action text
    Removing short action text
    Removing status text */
-"Removing" = "Removing";
+"Removing" = "Fjerner";
 
 /* Install Required long action text
    Install Required short action text
    Update Required short action text */
-"Required" = "Required";
+"Required" = "Krævet";
 
 /* Restart button title */
 "Restart" = "Genstart";
@@ -229,10 +229,10 @@
 "Restart Required" = "Kræver genstart";
 
 /* No Installed Software secondary text */
-"Select software to install." = "Select software to install.";
+"Select software to install." = "Vælg software der skal installeres.";
 
 /* Sidebar Size label */
-"Size:" = "Size:";
+"Size:" = "Str.:";
 
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Den software, der blev installeret eller fjernet, kræver en genstart. Du får mulighed for at gemme alle åbne dokumenter.";
@@ -247,10 +247,10 @@
 "There are no available software items." = "There are no available software items.";
 
 /* No Developer Results primary text */
-"There are no items from this developer." = "There are no items from this developer.";
+"There are no items from this developer." = "Der er ingen emner fra udvikleren.";
 
 /* No Category Results primary text */
-"There are no items in this category." = "There are no items in this category.";
+"There are no items in this category." = "Der er ingen emner i kategorien.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Der er andre brugere logget ind på computeren.\nHvis du opdaterer nu, risikerer du, at de mister deres åbne dokumenter.\n\nPrøv igen senere når de andre brugere er logget ud.";
@@ -265,32 +265,32 @@
 "There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Der er et konfigurationsproblem med Managed Software Update. Processes sluttede uventet. Kontakt systemadministratoren.";
 
 /* No Pending Updates secondary text */
-"There is no new software for your computer at this time." = "Der er ingen nye opdateringer.";
+"There is no new software for your computer at this time." = "Der er ingen nye opdateringer lige nu.";
 
 /* Dependency List prologue text */
-"This item is required by:" = "This item is required by:";
+"This item is required by:" = "Dette emne kræves af:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "This item must be installed by %s";
 
 /* No Items secondary text */
-"Try again later." = "Try again later.";
+"Try again later." = "Prøv igen senere.";
 
 /* No Search Results secondary text */
-"Try searching again." = "Try searching again.";
+"Try searching again." = "Prøv at søge igen.";
 
 /* No Category Results secondary text */
-"Try selecting another category." = "Try selecting another category.";
+"Try selecting another category." = "Prøv at vælge en anden kategori.";
 
 /* No Developer Results secondary text */
-"Try selecting another developer." = "Try selecting another developer.";
+"Try selecting another developer." = "Prøv at vælge en anden udvikler.";
 
 /* Sidebar Type label */
 "Type:" = "Type:";
 
 /* Unavailable short action text
    Unavailable status text */
-"Unavailable" = "Unavailable";
+"Unavailable" = "Ikke tilgængelig";
 
 /* No Category name */
 "Uncategorized" = "Uncategorized";
@@ -298,10 +298,10 @@
 /* Update button title
    Update long action text
    Update short action text */
-"Update" = "Update";
+"Update" = "Opdater";
 
 /* Update All button title */
-"Update All" = "Update All";
+"Update All" = "Opdater alle";
 
 /* Update Available status text */
 "Update available" = "Kan opdateres";
@@ -310,10 +310,10 @@
 "Update check failed" = "Søgning efter opdateringer mislykkedes";
 
 /* Update In Progress primary text */
-"Update in progress." = "Update in progress.";
+"Update in progress." = "Opdatering i gang.";
 
 /* Update Now button title */
-"Update now" = "Update now";
+"Update now" = "Opdater nu";
 
 /* Update Required long action text
    Update Requires long action text */
@@ -324,7 +324,7 @@
 "Update will be installed" = "Update will be installed";
 
 /* Updating message */
-"Updating..." = "Updating...";
+"Updating..." = "Opdaterer...";
 
 /* Sidebar Version label */
 "Version" = "Version";
@@ -350,7 +350,7 @@
 "Your computer is not connected to a power source." = "Computeren er ikke forbundet til en strømkilde.";
 
 /* No Search Results primary text */
-"Your search had no results." = "Your search had no results.";
+"Your search had no results." = "Søgningen gav ingen resultater.";
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
