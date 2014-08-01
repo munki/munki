@@ -561,6 +561,8 @@ def build_update_status_page():
 
 def getRestartActionForUpdateList(update_list):
     '''Returns a localized overall restart action message for the list of updates'''
+    if not update_list:
+        return ''
     if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
         # found at least one item containing 'Restart' in its RestartAction
         return NSLocalizedString(u"Restart Required", u"Require Restart message")
