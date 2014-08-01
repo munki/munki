@@ -283,8 +283,7 @@ def generate_pngs_from_installer_pkg(item_path, pkginfo):
         if mountpoints:
             mountpoint = mountpoints[0]
             if pkginfo.get('package_path'):
-                pkg_path = os.path.join(
-                    mountpoint, install_item['package_path'])
+                pkg_path = os.path.join(mountpoint, pkginfo['package_path'])
             else:
                 # find first item that appears to be a pkg at the root
                 for fileitem in munkicommon.listdir(mountpoints[0]):
