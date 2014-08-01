@@ -12,13 +12,13 @@
 "29.title" = "AMainMenu";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
-"56.title" = "Managed Software Update";
+"56.title" = "MunkiStatus";
 
 /* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
-"57.title" = "Managed Software Update";
+"57.title" = "MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
-"58.title" = "Om Managed Software Update";
+"58.title" = "Om MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Hjælp";
@@ -27,7 +27,7 @@
 "106.title" = "Hjælp";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus Help"; ObjectID = "111"; */
-"111.title" = "Hjælp til Managed Software Update";
+"111.title" = "Hjælp til MunkiStatus";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
 "130.title" = "Tjenester";
@@ -36,10 +36,10 @@
 "131.title" = "Tjenester";
 
 /* Class = "NSMenuItem"; title = "Hide MunkiStatus"; ObjectID = "134"; */
-"134.title" = "Skjul Managed Software Update";
+"134.title" = "Skjul MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Quit MunkiStatus"; ObjectID = "136"; */
-"136.title" = "Slut Managed Software Update";
+"136.title" = "Slut MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
 "145.title" = "Skjul andre";
@@ -77,8 +77,8 @@
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoom";
 
-/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Managed Software Update";
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
+"1Nd-E7-vfR.title" = "Managed Software Center";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
 "M20-JG-Pmr.title" = "Stop";
@@ -87,4 +87,4 @@
 "VCy-58-vwp.title" = "BackdropWindow";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Close";
+"bd5-IY-BXv.title" = "Luk";
