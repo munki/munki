@@ -1,12 +1,12 @@
-﻿"Checking for available updates..." = "Suche nach verfügbaren Updates...";
+ "Checking for available updates..." = "Suche nach verfügbaren Updates...";
 "Checking for additional changes..." = "Suche nach weiteren Änderungen...";
 "Checking for available Apple Software Updates..." = "Suche nach neuen Apple Software Updates...";
 
 /* Multiple Updates message */
-"%s pending updates" = "%s pending updates";
+"%s pending updates" = "%s anstehende Updates";
 
 /* One Update message */
-"1 pending update" = "1 pending update";
+"1 pending update" = "1 anstehendes Update";
 
 /* Forced Logout warning detail */
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle anstehenden Aktualisierungen werden installiert. Alle ungespeicherte Arbeit geht verloren.\nDurch jetziges Abmelden können sie eine erzwungene Abmeldung verhindern";
@@ -24,19 +24,19 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Eine Abmeldung wird in weniger als einer Minute erzwungen.\nAlle anstehenden Aktualisierungen werden installiert. Alle ungespeicherte Arbeit geht verloren.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Entfernen fehlgeschlagen. Entfernen wird erneut versucht.\nFalls dieses Verhalten anhält, verständigen Sie bitte ihren Systemadministrator.";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Aktualisierung ist ein Neustart erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* Additional Pending Updates title */
-"Additional Pending Updates" = "Additional Pending Updates";
+"Additional Pending Updates" = "Weitere anstehende Updates";
 
 /* Install Error message */
-"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installation fehlgeschlagen. Installation wird wieder versucht.\nFalls dieses Verhalten anhält. verständigen Sie bitte ihren Systemadministrator.";
 
 /* Other Users Blocking Apps Running title */
-"Applications in use by others" = "Applications in use by others";
+"Applications in use by others" = "Applikationen, die von anderen benutzt werden";
 
 /* Cancel button title
    Cancel Install short action text
@@ -45,13 +45,13 @@
 "Cancel" = "Abbrechen";
 
 /* Cancel Install long action text */
-"Cancel install" = "Cancel install";
+"Cancel install" = "Installation abbrechen";
 
 /* Cancel Removal long action text */
-"Cancel removal" = "Cancel removal";
+"Cancel removal" = "Entfernen abbrechen";
 
 /* Cancel Update long action text */
-"Cancel update" = "Cancel update";
+"Cancel update" = "Update abbrechen";
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Cannot display the requested item.";
