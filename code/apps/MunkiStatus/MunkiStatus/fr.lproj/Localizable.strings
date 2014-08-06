@@ -1,4 +1,4 @@
-﻿/* No comment provided by engineer. */
+ /* No comment provided by engineer. */
 "Restart" = "Redémarrer";
 
 /* No comment provided by engineer. */
@@ -8,5 +8,5 @@
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Les logiciels installés ou supprimés nécessitent un redémarrage. Vous aurez la possibilité de sauvegarder les documents ouverts.";
 
 /* No comment provided by engineer. */
-"Starting…" = "Starting…";
+"Starting…" = "Démarrage…";
 
