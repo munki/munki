@@ -9,7 +9,7 @@
 "24.title" = "Fenêtre";
 
 /* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMainMenu";
+"29.title" = "AMenuPrincipal";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
 "56.title" = "Mise à jour de logiciels";
