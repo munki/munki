@@ -222,7 +222,7 @@ class MSUStatusController(NSObject):
 
     def setMessage_(self, messageText):
         '''Display main status message'''
-        self._status_message = messageText
+        self._status_message = NSLocalizedString(messageText, None)
         document = self.statusWindowController.webView.mainFrameDocument()
         if document:
             spinner = document.getElementById_('updates-progress-spinner')
@@ -236,7 +236,7 @@ class MSUStatusController(NSObject):
 
     def setDetail_(self, detailText):
         '''Display status detail'''
-        self._status_detail = detailText
+        self._status_detail = NSLocalizedString(detailText, None)
         document = self.statusWindowController.webView.mainFrameDocument()
         if document:
             spinner = document.getElementById_('updates-progress-spinner')
