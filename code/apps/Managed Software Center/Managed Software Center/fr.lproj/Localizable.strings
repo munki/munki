@@ -131,10 +131,10 @@
 "Logout Required" = "Fermeture de session obligatoire";
 
 /* Failed Preflight Check detail */
-"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Mise à jour de logiciels ne peut vérifier les mises à jour maintenant.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Le Centre de gestion des logiciels ne peut vérifier les mises à jour maintenant.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
 
 /* Cannot Contact Server detail */
-"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Mise à jour de logiciels ne peut contacter le serveur de mise à jour.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Le Centre de gestion des logiciels ne peut contacter le serveur de mise à jour.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
 
 /* Managed Update type */
 "Managed Update" = "Mise à jour gérée";
@@ -170,7 +170,7 @@
 "Not installed" = "Non installé";
 
 /* OK button title */
-"OK" = "Oui";
+"OK" = "OK";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %s" = "Un ou plusieurs articles doivent être installés avant %s";
@@ -344,7 +344,7 @@
 "You have no selected software." = "Vous n'avez pas sélectionné de logiciel.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Vous devez quitter les logiciels suivants avant de procéder à l'installation ou la suppression:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Vous devez quitter les logiciels suivants avant de les installer ou de les supprimer:\n\n%s";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Votre ordinateur n'est pas branché à une prise de courant.";

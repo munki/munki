@@ -12,13 +12,13 @@
 "29.title" = "AMenuPrincipal";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
-"56.title" = "Mise à jour de logiciels";
+"56.title" = "Centre de gestion des logiciels";
 
 /* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
-"57.title" = "Mise à jour de logiciels";
+"57.title" = "Centre de gestion des logiciels";
 
 /* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
-"58.title" = "À propos de Mise à jour de logiciels";
+"58.title" = "À propos de Centre de gestion des logiciels";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Aide";
@@ -27,7 +27,7 @@
 "106.title" = "Aide";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
-"111.title" = "Aide Mise à jour de logiciels";
+"111.title" = "Aide du Centre de gestion des logiciels";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
 "130.title" = "Services";
@@ -36,10 +36,10 @@
 "131.title" = "Services";
 
 /* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
-"134.title" = "Masquer Mise à jour de logiciels";
+"134.title" = "Masquer le Centre de gestion des logiciels";
 
 /* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
-"136.title" = "Quitter Mise à jour de logiciels";
+"136.title" = "Quitter le Centre de gestion des logiciels";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
 "145.title" = "Masquer les autres";
@@ -78,7 +78,7 @@
 "239.title" = "Zoom";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
-"371.title" = "Mise à jour de logiciels";
+"371.title" = "Centre de gestion des logiciels";
 
 /* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
 "375.title" = "Naviguer";
