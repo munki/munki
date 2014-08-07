@@ -113,7 +113,7 @@ class MSUMainWindowController(NSWindowController):
             NSLocalizedString(u"Quit", u"Quit button title"),
             nil,
             NSLocalizedString(u"Update now", u"Update Now button title"),
-            alertDetail)
+            u"%@", alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window(), self,
             self.updateAlertDidEnd_returnCode_contextInfo_, objc.nil)
@@ -217,7 +217,7 @@ class MSUMainWindowController(NSWindowController):
             # show the alert sheet
             self.window().makeKeyAndOrderFront_(self)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                alertMessageText, OKButtonTitle, nil, nil, detailText)
+                alertMessageText, OKButtonTitle, nil, nil, u"%@", detailText)
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
                 self.window(), self,
                 self.munkiSessionErrorAlertDidEnd_returnCode_contextInfo_, nil)

@@ -206,7 +206,7 @@ class MSUStatusController(NSObject):
             NSLocalizedString(u"Restart", u"Restart button title"),
             nil,
             nil,
-            NSLocalizedString(
+            u"%@", NSLocalizedString(
                 u"Software installed or removed requires a restart. You will "
                 "have a chance to save open documents.", u"Restart Required alert detail"))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
