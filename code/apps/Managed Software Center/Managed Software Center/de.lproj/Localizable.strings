@@ -359,3 +359,53 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ihre Software ist auf dem neuesten Stand.";
 
+/* Strings sent from managedsoftwareupdate */
+"Waiting for network..." = "Warte auf Netzwerk...";
+
+/* Strings sent from managedsoftwareupdate */
+"Starting..." = "Starte...";
+
+/* Strings sent from managedsoftwareupdate */
+"Finishing..." = "Abschließen...";
+
+/* Strings sent from managedsoftwareupdate */
+"Done." = "Fertig";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Setup" = "Starte Adobe Setup";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Uninstall" = "Starte Adobe Uninstall";
+
+/* Strings sent from managedsoftwareupdate */
+"Starting Adobe installer..." = "Starte Adobe Installer...";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Patch Installer" = "Starte Adobe Patch Installer";
+
+/* Strings sent from managedsoftwareupdate */
+"Verifying package integrity..." = "Prüfe Paketintegrität...";
+
+/* Strings sent from managedsoftwareupdate */
+"The software was successfully installed." = "Die Software wurde erfolgreich installiert.";
+
+/* Strings sent from managedsoftwareupdate */
+"Gathering information on installed packages" = "Sammle Informationen zu installierten Paketen";
+
+/* Strings sent from managedsoftwareupdate */
+"Determining which filesystem items to remove" = "Stelle fest, welche Dateien zu entfernen sind";
+
+/* Strings sent from managedsoftwareupdate */
+"Removing receipt info" = "Entferne Paketquittung";
+
+/* Strings sent from managedsoftwareupdate */
+"Nothing to remove." = "Nichts zu entfernen.";
+
+/* Strings sent from managedsoftwareupdate */
+"Package removal complete." = "Entfernen des Paketes abgeschlossen.";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for available updates..." = "Prüfe auf verfügbare Updates...";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking Apple Software Update catalog..." = "Prüfe verfügbare Apple Software Updates...";
