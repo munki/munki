@@ -355,3 +355,53 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Votre logiciel est à jour.";
 
+/* Strings sent from managedsoftwareupdate */
+"Waiting for network..." = "En attente du réseau...";
+
+/* Strings sent from managedsoftwareupdate */
+"Starting..." = "Démarrage...";
+
+/* Strings sent from managedsoftwareupdate */
+"Finishing..." = "Finalisation...";
+
+/* Strings sent from managedsoftwareupdate */
+"Done." = "Terminé.";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Setup" = "Démarrage du programme d'installation d'Adobe";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Uninstall" = "Désinstallation d'Adobe";
+
+/* Strings sent from managedsoftwareupdate */
+"Starting Adobe installer..." = "Démarrage du programme d'installation d'Adobe...";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Patch Installer" = "Démarrage du programme de mise à niveau d'Adobe";
+
+/* Strings sent from managedsoftwareupdate */
+"Verifying package integrity..." = "Vérification de l'intégrité du paquet...";
+
+/* Strings sent from managedsoftwareupdate */
+"The software was successfully installed." = "Le logiciel a été installé avec succès.";
+
+/* Strings sent from managedsoftwareupdate */
+"Gathering information on installed packages" = "Vérification de l'information sur les articles installés";
+
+/* Strings sent from managedsoftwareupdate */
+"Determining which filesystem items to remove" = "Vérification des éléments à supprimer";
+
+/* Strings sent from managedsoftwareupdate */
+"Removing receipt info" = "Suppression de l'information du reçu";
+
+/* Strings sent from managedsoftwareupdate */
+"Nothing to remove." = "Rien à supprimer.";
+
+/* Strings sent from managedsoftwareupdate */
+"Package removal complete." = "Paquet supprimé avec succès.";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for available updates..." = "Vérification des mises à jour disponibles...";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking Apple Software Update catalog..." = "Vérification des mises à jour Apple...";
