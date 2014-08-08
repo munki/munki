@@ -106,7 +106,7 @@
 "Install requested" = "Installation angefordert";
 
 /* Install Required long action text */
-"Install Required" = "Installion notwendig ";
+"Install Required" = "Installation notwendig ";
 
 /* Install Session Failed title */
 "Install session failed" = "Installation fehlgeschlagen";
@@ -325,7 +325,7 @@
 
 /* Update Required status text
    Update Will Be Installed status text */
-"Update will be installed" = "Aktualsierung wird installiert";
+"Update will be installed" = "Aktualisierung wird installiert";
 
 /* Updating message */
 "Updating..." = "Aktualisiere...";

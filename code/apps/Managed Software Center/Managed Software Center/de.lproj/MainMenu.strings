@@ -27,7 +27,7 @@
 "106.title" = "Hilfe";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
-"111.title" = "Softwareaktualiserung-Hilfe";
+"111.title" = "Softwareaktualisierung-Hilfe";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
 "130.title" = "Dienste";
@@ -36,7 +36,7 @@
 "131.title" = "Dienste";
 
 /* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
-"134.title" = "Softwareaktualiserung ausblenden";
+"134.title" = "Softwareaktualisierung ausblenden";
 
 /* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
 "136.title" = "Softwareaktualisierung beenden";
@@ -87,7 +87,7 @@
 "376.title" = "Navigation";
 
 /* Class = "NSButtonCell"; title = "My Items"; ObjectID = "783"; */
-"783.title" = "My Items";
+"783.title" = "Meine Software";
 
 /* Class = "NSButtonCell"; title = "Categories"; ObjectID = "784"; */
 "784.title" = "Kategorien";
