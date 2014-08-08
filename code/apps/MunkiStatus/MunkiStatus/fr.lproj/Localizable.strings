@@ -60,3 +60,12 @@
 
 /* Strings sent from managedsoftwareupdate */
 "Checking Apple Software Update catalog..." = "Vérification des mises à jour Apple...";
+
+/* Strings sent from managedsoftwareupdate */
+"Retrieving list of software for this machine..." = "Obtention de la liste des logiciels pour cet ordinateur..."
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for additional changes..." = "Vérification des modifications supplémentaires..."
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for available Apple Software Updates..." = "Vérification des mises à jour Apple disponibles...";
