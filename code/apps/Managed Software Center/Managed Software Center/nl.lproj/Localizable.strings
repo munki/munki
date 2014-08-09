@@ -1,38 +1,38 @@
 ﻿/* Multiple Updates message */
-"%s pending updates" = "%s pending updates";
+"%s pending updates" = "%s wachtende updates";
 
 /* One Update message */
-"1 pending update" = "1 pending update";
+"1 pending update" = "1 wachtende update";
 
 /* Forced Logout warning detail */
-"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle wachtende updates zullen worden geinstalleerd. Niet-opgeslagen werk zal verloren gaan.\nU kunt dit voorkomen door nu zelf uit te loggen.";
+"\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.\nU kunt dit voorkomen door nu zelf uit te loggen.";
 
 /* Logout Required detail */
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "U moet uitloggen voordat het bijwerken kan beginnen. Nadat het login window verschijnt kan het een ogenblik duren voordat bijwerken begint. Wilt U nu uitloggen en bijwerken?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Uitloggen zal automatisch gebeuren om ongeveer %s.";
+"A logout will be forced at approximately %s." = "U wordt automatisch uitgelogd om ongeveer %s.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Uitloggen zal automatisch gebeuren binnen %s minuten.";
+"A logout will be forced in less than %s minutes." = "U wordt automatisch uitgelogd binnen %s minuten.";
 
 /* Logout warning string when logout is in less than a minute */
-"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Uitloggen zal automatisch gebeuren in een minuut.\nAlle wachtende updates zullen worden geinstalleerd. Niet-opgeslagen werk zal verloren gaan.";
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "U wordt binnen een minuut automatisch uitgelogd.\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Het is nodig te herstarten na het bijwerken. Nadat het login window verschijnt kan het een ogenblik duren voordat bijwerken begint. Wilt U nu uitloggen en bijwerken?";
 
 /* Additional Pending Updates title */
-"Additional Pending Updates" = "Additional Pending Updates";
+"Additional Pending Updates" = "Additionele Wachtende Updates";
 
 /* Install Error message */
-"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een installatiepoging is niet geslaagd. Installatie wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder";
 
 /* Other Users Blocking Apps Running title */
-"Applications in use by others" = "Applications in use by others";
+"Applications in use by others" = "Applicaties in gebruik door anderen";
 
 /* Cancel button title
    Cancel Install short action text
@@ -41,25 +41,25 @@
 "Cancel" = "Annuleren";
 
 /* Cancel Install long action text */
-"Cancel install" = "Cancel install";
+"Cancel install" = "Annuleer installatie";
 
 /* Cancel Removal long action text */
-"Cancel removal" = "Cancel removal";
+"Cancel removal" = "Annuleer verwijdering";
 
 /* Cancel Update long action text */
-"Cancel update" = "Cancel update";
+"Cancel update" = "Annuleer update";
 
 /* Item Not Found message */
-"Cannot display the requested item." = "Cannot display the requested item.";
+"Cannot display the requested item." = "Kan het gevraagde item niet tonen.";
 
 /* Sidebar Category label */
-"Category:" = "Category:";
+"Category:" = "Categorie:";
 
 /* Check Again button title */
-"Check Again" = "Check Again";
+"Check Again" = "Check Opnieuw";
 
 /* Checking For Updates message */
-"Checking for updates..." = "Checking for updates...";
+"Checking for updates..." = "Updates opvragen...";
 
 /* Blocking Apps Running title */
 "Conflicting applications running" = "Conflicterende applicaties actief";
@@ -68,47 +68,47 @@
 "Continue" = "Ga door";
 
 /* Critical Update type */
-"Critical Update" = "Critical Update";
+"Critical Update" = "Kritieke Update";
 
 /* Unavailable long action text */
-"Currently Unavailable" = "Currently Unavailable";
+"Currently Unavailable" = "Op dit moment niet beschikbaar";
 
 /* Sidebar Developer label */
-"Developer:" = "Developer:";
+"Developer:" = "Ontwikkelaar:";
 
 /* Downloading status text */
-"Downloading" = "Downloading";
+"Downloading" = "Aan het downloaden";
 
 /* Sidebar Due label */
-"Due:" = "Due:";
+"Due:" = "Datum:";
 
 /* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update.";
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware zal worden bijgewerkt computer. Uw computer moet aangesloten zijn op het lichtnet. Het kan enkele minuten duren voordat deze update voltooid is. Onderbreek deze update niet en zorg dat de stroom aangesloten blijft.";
 
 /* No Power Source Warning detail */
-"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden Uw laptop computer aan te sluiten op een voeding in plaats van de batterij. Wilt U doorgaan met bijwerken?";
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden Uw computer aan te sluiten op de netvoeding. Weet U zeker dat U wilt doorgaan met bijwerken?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Gedwongen uitloggen voor verplichte installatie";
 
 /* Sidebar Information label */
-"Information" = "Information";
+"Information" = "Informatie";
 
 /* Install long action text
    Install short action text */
-"Install" = "Install";
+"Install" = "Installeer";
 
 /* Install Requested status text */
-"Install requested" = "Install requested";
+"Install requested" = "Installatie Verzocht";
 
 /* Install Required long action text */
-"Install Required" = "Install Required";
+"Install Required" = "Installatie Benodigd";
 
 /* Install Session Failed title */
-"Install session failed" = "Installatie sessie niet succesvol";
+"Install session failed" = "Installatie-sessie niet succesvol";
 
 /* Install Error status text */
-"Installation Error" = "Installation Error";
+"Installation Error" = "Installatie Fout";
 
 /* Installed long action text
    Installed short action text
@@ -118,7 +118,7 @@
 /* Installing long action text
    Installing short action text
    Installing status text */
-"Installing" = "Installing";
+"Installing" = "Aan het installeren";
 
 /* Log out and Update button text */
 "Log out and update" = "Uitloggen en bijwerken";
@@ -131,40 +131,40 @@
 "Logout Required" = "Uitloggen Benodigd";
 
 /* Failed Preflight Check detail */
-"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator.";
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan geen updates checken.\nProbeer later nog eens. Als deze situatie niet verandert, neem contact op met uw systeembeheerder.";
 
 /* Cannot Contact Server detail */
-"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator.";
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan de update server op dit moment niet bereiken.\nProbeer later nog eens. Als deze situatie niet verandert, neem contact op met uw systeembeheerder.";
 
 /* Managed Update type */
-"Managed Update" = "Managed Update";
+"Managed Update" = "Beheerde Update";
 
 /* Mandatory Updates Pending text */
-"Mandatory Updates Pending" = "Verplichte Updates Aanhangig";
+"Mandatory Updates Pending" = "Verplichte Updates Wachtend";
 
 /* More link text */
-"More" = "More";
+"More" = "Meer";
 
 /* Sidebar More By Developer label */
-"More by %s" = "More by %s";
+"More by %s" = "Meer van %s";
 
 /* Sidebar More In Category label */
-"More in %s" = "More in %s";
+"More in %s" = "Meer in %s";
 
 /* My Items Header label */
-"My Items" = "My Items";
+"My Items" = "Mijn Items";
 
 /* No Licenses Available display text */
-"No licenses available" = "No licenses available";
+"No licenses available" = "Geen licenties beschikbaar";
 
 /* No Updates message */
-"No pending updates" = "No pending updates";
+"No pending updates" = "Geen updates";
 
 /* Not Currently Available display text */
-"Not currently available" = "Not currently available";
+"Not currently available" = "Op dit moment niet beschikbaar";
 
 /* Not Enough Disk Space display text */
-"Not enough disk space" = "Not enough disk space";
+"Not enough disk space" = "Onvoldoende ruimte op de harde schijf";
 
 /* Not Installed status text */
 "Not installed" = "Niet geïnstalleerd";
@@ -173,52 +173,52 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "One or more items must be installed by %s";
+"One or more items must be installed by %s" = "Eén of meer items moeten voor %s worden geïnstalleerd";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Er zijn één of meerdere achterstallige updates. Verplicht uitloggen zal spoedig nodig zijn.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Één of meerdere updates zullen worden geinstalleerd op of voor %s. Geforceerd uitloggen kan mogelijk zijn als U te lang wacht met bijwerken.";
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Één of meerdere updates zullen worden geïnstalleerd op of voor %s. Geforceerd uitloggen kan mogelijk zijn als U te lang wacht met bijwerken.";
 
 /* Other Available Updates label */
-"Other available updates" = "Other available updates";
+"Other available updates" = "Andere beschikbare updates";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Andere ingelogde gebruikers hebben de volgende applicaties actief. Probeer later nog eens te updaten als ze niet langer in gebruik zijn:\n\n%s";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Andere gebruikers zijn nog ingelogd";
 
 /* Pending Updates alert title */
-"Pending updates" = "Pending updates";
+"Pending updates" = "Wachtende updates";
 
 /* Preparing Removal status text */
-"Preparing removal" = "Preparing removal";
+"Preparing removal" = "Verwijderen voorbereiden";
 
 /* Quit button title */
 "Quit" = "Afsluiten";
 
 /* Removal Error status text */
-"Removal Error" = "Removal Error";
+"Removal Error" = "Verwijderfout";
 
 /* Removal Requested display text
    Removal Requested status text */
-"Removal requested" = "Removal requested";
+"Removal requested" = "Verwijdering verzocht";
 
 /* Remove long action text
    Remove short action text */
-"Remove" = "Remove";
+"Remove" = "Verwijder";
 
 /* Removing long action text
    Removing short action text
    Removing status text */
-"Removing" = "Removing";
+"Removing" = "Verwijderen";
 
 /* Install Required long action text
    Install Required short action text
    Update Required short action text */
-"Required" = "Required";
+"Required" = "Benodigd";
 
 /* Restart button title */
 "Restart" = "Herstarten";
@@ -229,71 +229,71 @@
 "Restart Required" = "Herstart Benodigd";
 
 /* No Installed Software secondary text */
-"Select software to install." = "Select software to install.";
+"Select software to install." = "Selecteer software om te installeren.";
 
 /* Sidebar Size label */
-"Size:" = "Size:";
+"Size:" = "Grootte:";
 
 /* Restart Required alert detail */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderede software maakt een herstart nodig. U krijgt de kans om geopende documenten op te slaan.";
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software maakt een herstart nodig. U krijgt de kans om geopende documenten op te slaan.";
 
 /* Sidebar Status label */
 "Status:" = "Status:";
 
 /* Additional Pending Updates detail */
-"There are additional pending updates to install or remove." = "There are additional pending updates to install or remove.";
+"There are additional pending updates to install or remove." = "Er zijn additionele wachtende updates om te installeren of verwijderen.";
 
 /* No Items primary text */
-"There are no available software items." = "There are no available software items.";
+"There are no available software items." = "Geen software items beschikbaar.";
 
 /* No Developer Results primary text */
-"There are no items from this developer." = "There are no items from this developer.";
+"There are no items from this developer." = "Er zijn geen items van deze ontwikkelaar.";
 
 /* No Category Results primary text */
-"There are no items in this category." = "There are no items in this category.";
+"There are no items in this category." = "Er zijn geen items in deze categorie.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls U nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer opnieuw nadat de andere gebruikers zijn uitgelogd.";
 
 /* Pending Updates alert detail text */
-"There are pending updates for this computer." = "There are pending updates for this computer.";
+"There are pending updates for this computer." = "Er zijn updates voor deze computer.";
 
 /* Could Not Start Session message */
 "There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator.";
 
 /* Unexpected Session End message */
-"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software installatie. De bewerking werd onverwacht beëindigd. Neem kontakt op met uw systeembeheerder.";
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software installatie. De bewerking werd onverwacht beëindigd. Neem contact op met uw systeembeheerder.";
 
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor uw computer.";
 
 /* Dependency List prologue text */
-"This item is required by:" = "This item is required by:";
+"This item is required by:" = "Dit item is benodigd voor:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "This item must be installed by %s";
+"This item must be installed by %s" = "Dit item moet geïnstalleerd zijn voor %s";
 
 /* No Items secondary text */
-"Try again later." = "Try again later.";
+"Try again later." = "Probeer later nog eens.";
 
 /* No Search Results secondary text */
-"Try searching again." = "Try searching again.";
+"Try searching again." = "Probeer nog eens te zoeken.";
 
 /* No Category Results secondary text */
-"Try selecting another category." = "Try selecting another category.";
+"Try selecting another category." = "Selecteer een andere categorie.";
 
 /* No Developer Results secondary text */
-"Try selecting another developer." = "Try selecting another developer.";
+"Try selecting another developer." = "Selecteer een andere ontwikkelaar.";
 
 /* Sidebar Type label */
 "Type:" = "Type:";
 
 /* Unavailable short action text
    Unavailable status text */
-"Unavailable" = "Unavailable";
+"Unavailable" = "Niet beschikbaar";
 
 /* No Category name */
-"Uncategorized" = "Uncategorized";
+"Uncategorized" = "Niet gecategoriseerd";
 
 /* Update button title
    Update long action text
@@ -301,7 +301,7 @@
 "Update" = "Update";
 
 /* Update All button title */
-"Update All" = "Update All";
+"Update All" = "Update Alles";
 
 /* Update Available status text */
 "Update available" = "Update beschikbaar";
@@ -310,27 +310,27 @@
 "Update check failed" = "Update check mislukt";
 
 /* Update In Progress primary text */
-"Update in progress." = "Update in progress.";
+"Update in progress." = "Update in behandeling.";
 
 /* Update Now button title */
-"Update now" = "Update now";
+"Update now" = "Update nu";
 
 /* Update Required long action text
    Update Requires long action text */
-"Update Required" = "Update Required";
+"Update Required" = "Update benodigd";
 
 /* Update Required status text
    Update Will Be Installed status text */
-"Update will be installed" = "Update will be installed";
+"Update will be installed" = "Update wordt geïnstalleerd";
 
 /* Updating message */
-"Updating..." = "Updating...";
+"Updating..." = "Aan het updaten...";
 
 /* Sidebar Version label */
-"Version" = "Version";
+"Version" = "Versie";
 
 /* Sidebar Version label */
-"Version:" = "Version:";
+"Version:" = "Versie:";
 
 /* Install Required status text
    Will Be Installed status text */
@@ -341,16 +341,16 @@
 "Will be removed" = "Zal verwijderd worden";
 
 /* No Installed Software primary text */
-"You have no selected software." = "You have no selected software.";
+"You have no selected software." = "U heeft geen software geselecteerd.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "You must quit the following applications before proceeding with installation or removal:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "De volgende applicaties dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:\n\n%s";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Uw computer is niet aangesloten op het lichtnet.";
 
 /* No Search Results primary text */
-"Your search had no results." = "Your search had no results.";
+"Your search had no results." = "De zoekopdracht geeft geen resultaat.";
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is up to date.";
