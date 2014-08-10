@@ -80,7 +80,7 @@
 "Downloading" = "Aan het downloaden";
 
 /* Sidebar Due label */
-"Due:" = "Datum:";
+"Due:" = "Vervaldatum:";
 
 /* Firmware Alert Default detail */
 "Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware zal worden bijgewerkt computer. Uw computer moet aangesloten zijn op het lichtnet. Het kan enkele minuten duren voordat deze update voltooid is. Onderbreek deze update niet en zorg dat de stroom aangesloten blijft.";
@@ -350,7 +350,7 @@
 "Your computer is not connected to a power source." = "Uw computer is niet aangesloten op het lichtnet.";
 
 /* No Search Results primary text */
-"Your search had no results." = "De zoekopdracht geeft geen resultaat.";
+"Your search had no results." = "Uw zoekopdracht geeft geen resultaat.";
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is up to date.";
