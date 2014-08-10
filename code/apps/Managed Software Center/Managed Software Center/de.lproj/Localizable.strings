@@ -408,4 +408,10 @@
 "Checking for available updates..." = "Prüfe auf verfügbare Updates...";
 
 /* Strings sent from managedsoftwareupdate */
-"Checking Apple Software Update catalog..." = "Prüfe verfügbare Apple Software Updates...";
+"Checking Apple Software Update catalog..." = "Prüfe Apple Software Update Katalog...";
+
+/* Strings sent from managedsoftwareupdate */
+"Retrieving list of software for this machine..." = "Hole Liste von Software für diesen Computer...";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for available Apple Software Updates..." = "Prüfe verfügbare Apple Software Updates...";
