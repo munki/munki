@@ -290,10 +290,10 @@ class MSUStatusWindowController(NSObject):
             self.window, self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)
 
     def setMessage_(self, messageText):
-        self.messageFld.setStringValue_(messageText)
+        self.messageFld.setStringValue_(NSLocalizedString(messageText, None))
 
     def setDetail_(self, detailText):
-        self.detailFld.setStringValue_(detailText)
+        self.detailFld.setStringValue_(NSLocalizedString(detailText, None))
 
     def getStopBtnState(self):
         return self.stopBtnState

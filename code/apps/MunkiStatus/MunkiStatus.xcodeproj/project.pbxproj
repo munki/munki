@@ -82,6 +82,18 @@
 		C094B6D41891826700E06897 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C094B6D51891826700E06897 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
 		C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
+		E65810B31993C96E00E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E65810B51993C97500E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		E65810B61993C97C00E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E65810B71993C9B400E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_CA; path = en_CA.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E6B4BCDA1993D7D0004D1B81 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		E6B4BCDB1993D7D3004D1B81 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E6B4BCDD1993D7D8004D1B81 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E6B4BCDE1993D7E0004D1B81 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_GB; path = en_GB.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E6B4BCDF1993D7E5004D1B81 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_AU; path = en_AU.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E6B4BCE01993D7E8004D1B81 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		E6B4BCE11993D7EC004D1B81 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E6B4BCE21993D7F1004D1B81 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -245,6 +257,9 @@
 				de,
 				es,
 				nl,
+				en_CA,
+				en_GB,
+				en_AU,
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -289,7 +304,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd MunkiStatus\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8";
+			shellScript = "cd MunkiStatus\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8";
 		};
 		C09CE1DC18BEA78300B9724A /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -334,6 +349,9 @@
 				C005C5B51913F7500074AF82 /* nb */,
 				C005C5B61913F7530074AF82 /* sv */,
 				C005C5B71913F7550074AF82 /* ru */,
+				E65810B51993C97500E53A48 /* en_CA */,
+				E6B4BCDA1993D7D0004D1B81 /* en_GB */,
+				E6B4BCE01993D7E8004D1B81 /* en_AU */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
@@ -351,6 +369,9 @@
 				C005C5BE1913F7640074AF82 /* nb */,
 				C005C5BF1913F7660074AF82 /* sv */,
 				C005C5C01913F7660074AF82 /* ru */,
+				E65810B31993C96E00E53A48 /* en_CA */,
+				E6B4BCDB1993D7D3004D1B81 /* en_GB */,
+				E6B4BCE11993D7EC004D1B81 /* en_AU */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -368,6 +389,9 @@
 				C07E95791913ED3600B40B9A /* nb */,
 				C07E957B1913ED3D00B40B9A /* sv */,
 				C07E957D1913ED4C00B40B9A /* ru */,
+				E65810B61993C97C00E53A48 /* en_CA */,
+				E6B4BCDD1993D7D8004D1B81 /* en_GB */,
+				E6B4BCE21993D7F1004D1B81 /* en_AU */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -385,6 +409,9 @@
 				C07E95781913ED3600B40B9A /* nb */,
 				C07E957A1913ED3D00B40B9A /* sv */,
 				C07E957C1913ED4C00B40B9A /* ru */,
+				E65810B71993C9B400E53A48 /* en_CA */,
+				E6B4BCDE1993D7E0004D1B81 /* en_GB */,
+				E6B4BCDF1993D7E5004D1B81 /* en_AU */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

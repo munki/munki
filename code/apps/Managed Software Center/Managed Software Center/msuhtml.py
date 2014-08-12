@@ -216,7 +216,7 @@ def build_list_page(category=None, developer=None, filter=None):
     '''Build page listing available optional items'''
     items = MunkiItems.getOptionalInstallItems()
 
-    header = u'All items'
+    header = NSLocalizedString(u'All items', u'AllItemsHeaderText')
     page_name = u'category-all.html'
     if category == 'all':
         category = None
@@ -239,10 +239,11 @@ def build_list_page(category=None, developer=None, filter=None):
                             category=category, developer=developer, filter=filter)
 
     # make HTML for Categories pop-up menu
+    all_categories_label = NSLocalizedString(u'All Categories', u'AllCategoriesLabel')
     if category:
-        categories_html = u'<option>All Categories</option>\n'
+        categories_html = u'<option>%s</option>\n' % all_categories_label
     else:
-        categories_html = u'<option selected>All Categories</option>\n'
+        categories_html = u'<option selected>%s</option>\n' % all_categories_label
 
     for item in sorted(category_list):
         if item == category:
@@ -342,7 +343,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
 def build_categories_page():
     '''Build page showing available categories and some items in each one'''
     all_items = MunkiItems.getOptionalInstallItems()
-    header = u'Categories'
+    header = NSLocalizedString(u'Categories', u'CategoriesHeaderText')
     page_name = u'categories.html'
     category_list = []
     for item in all_items:
@@ -350,8 +351,9 @@ def build_categories_page():
             category_list.append(item['category'])
 
     item_html = build_category_items_html()
-
-    categories_html = u'<option selected>All Categories</option>\n'
+    
+    all_categories_label = NSLocalizedString(u'All Categories', u'AllCategoriesLabel')
+    categories_html = u'<option selected>%s</option>\n' % all_categories_label
     for item in sorted(category_list):
         categories_html += u'<option>%s</option>\n' % item
 
@@ -561,6 +563,8 @@ def build_update_status_page():
 
 def getRestartActionForUpdateList(update_list):
     '''Returns a localized overall restart action message for the list of updates'''
+    if not update_list:
+        return ''
     if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
         # found at least one item containing 'Restart' in its RestartAction
         return NSLocalizedString(u"Restart Required", u"Require Restart message")

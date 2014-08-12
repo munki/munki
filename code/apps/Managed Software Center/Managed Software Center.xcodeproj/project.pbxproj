@@ -93,6 +93,15 @@
 		C0B3744518708A0300B6204E /* WebResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebResources; sourceTree = "<group>"; };
 		C0E098BB1857A3C80045DEEB /* msulib.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msulib.py; sourceTree = "<group>"; };
 		C0F1586D187D256200052F9A /* MyStuffTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MyStuffTemplate.png; sourceTree = "<group>"; };
+		E62967521993D4A400ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_GB; path = en_GB.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E62967541993D4AF00ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E62967551993D4B900ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E665C3B81993D58D00C428C4 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E665C3BA1993D59600C428C4 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E665C3BB1993D5A600C428C4 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_AU; path = en_AU.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E68EB44F1993C3950003D10C /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E68EB4501993C3AC0003D10C /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_CA; path = en_CA.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E68EB4521993C40C0003D10C /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -267,6 +276,9 @@
 				es,
 				"nl-NL",
 				nl,
+				en_CA,
+				en_GB,
+				en_AU,
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -323,7 +335,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd Managed\\ Software\\ Center\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8";
+			shellScript = "cd Managed\\ Software\\ Center\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8\n";
 		};
 		C09CE1DA18BEA59E00B9724A /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -366,6 +378,9 @@
 				C02C98901911B83000425167 /* ru */,
 				C02C98911911B83100425167 /* sv */,
 				C07E957F1913EE4600B40B9A /* nl */,
+				E68EB4521993C40C0003D10C /* en_CA */,
+				E62967541993D4AF00ADCB43 /* en_GB */,
+				E665C3B81993D58D00C428C4 /* en_AU */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -383,6 +398,9 @@
 				C02C98821911B68800425167 /* ru */,
 				C02C98841911B69000425167 /* sv */,
 				C07E95801913EE4600B40B9A /* nl */,
+				E68EB44F1993C3950003D10C /* en_CA */,
+				E62967551993D4B900ADCB43 /* en_GB */,
+				E665C3BA1993D59600C428C4 /* en_AU */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -400,6 +418,9 @@
 				C02C98811911B68800425167 /* ru */,
 				C02C98831911B69000425167 /* sv */,
 				C07E957E1913EE4600B40B9A /* nl */,
+				E68EB4501993C3AC0003D10C /* en_CA */,
+				E62967521993D4A400ADCB43 /* en_GB */,
+				E665C3BB1993D5A600C428C4 /* en_AU */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

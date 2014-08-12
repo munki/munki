@@ -1,4 +1,4 @@
-﻿
+ 
 /* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
 "19.title" = "Fenêtre";
 
@@ -9,7 +9,7 @@
 "24.title" = "Fenêtre";
 
 /* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMainMenu";
+"29.title" = "AMenuPrincipal";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
 "56.title" = "Mise à jour de logiciels";
@@ -18,7 +18,7 @@
 "57.title" = "Mise à jour de logiciels";
 
 /* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
-"58.title" = "Á propos de Mise à jour de logiciels";
+"58.title" = "À propos de Mise à jour de logiciels";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Aide";
@@ -69,7 +69,7 @@
 "207.title" = "Annuler";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
-"215.title" = "Refaire";
+"215.title" = "Rétablir";
 
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
 "217.title" = "Modifier";
@@ -77,14 +77,14 @@
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoom";
 
-/* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Mise à jour de logiciels";
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
+"1Nd-E7-vfR.title" = "Centre de gestion des logiciels";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
-"M20-JG-Pmr.title" = "Stop";
+"M20-JG-Pmr.title" = "Arrêter";
 
 /* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
-"VCy-58-vwp.title" = "BackdropWindow";
+"VCy-58-vwp.title" = "FenetreFond";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Close";
+"bd5-IY-BXv.title" = "Fermer";
