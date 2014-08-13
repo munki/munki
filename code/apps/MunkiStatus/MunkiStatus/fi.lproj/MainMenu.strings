@@ -12,13 +12,13 @@
 "29.title" = "AMainMenu";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
-"56.title" = "Hallinnoitu ohjelmiston päivitys";
+"56.title" = "MunkiStatus";
 
 /* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
-"57.title" = "Hallinnoitu ohjelmiston päivitys";
+"57.title" = "MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
-"58.title" = "Tietoja: Hallinnoitu ohjelmiston päivitys";
+"58.title" = "Tietoja: MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Ohje";
@@ -27,7 +27,7 @@
 "106.title" = "Ohje";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus Help"; ObjectID = "111"; */
-"111.title" = "Hallinnoitu ohjelmiston päivitys -ohje";
+"111.title" = "MunkiStatus-ohje";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
 "130.title" = "Palvelut";
@@ -36,10 +36,10 @@
 "131.title" = "Palvelut";
 
 /* Class = "NSMenuItem"; title = "Hide MunkiStatus"; ObjectID = "134"; */
-"134.title" = "Kätke Hallinnoitu ohjelmiston päivitys";
+"134.title" = "Kätke MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Quit MunkiStatus"; ObjectID = "136"; */
-"136.title" = "Lopeta Hallinnoitu ohjelmiston päivitys";
+"136.title" = "Lopeta MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
 "145.title" = "Kätke muut";
@@ -78,13 +78,13 @@
 "239.title" = "Zoomaa";
 
 /* Class = "NSWindow"; title = "Managed Software Update"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Hallinnoitu ohjelmiston päivitys";
+"1Nd-E7-vfR.title" = "Managed Software Update";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
-"M20-JG-Pmr.title" = "Stop";
+"M20-JG-Pmr.title" = "Pysäytä";
 
 /* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
 "VCy-58-vwp.title" = "BackdropWindow";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Close";
+"bd5-IY-BXv.title" = "Sulje";
