@@ -87,7 +87,7 @@
 "376.title" = "Näytä";
 
 /* Class = "NSButtonCell"; title = "My Items"; ObjectID = "783"; */
-"783.title" = "Omat kohteet";
+"783.title" = "Omat";
 
 /* Class = "NSButtonCell"; title = "Categories"; ObjectID = "784"; */
 "784.title" = "Kategoriat";
@@ -99,7 +99,7 @@
 "1XY-pX-Pwv.title" = "Etsi";
 
 /* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
-"1uK-HI-wGR.title" = "Omat kohteet";
+"1uK-HI-wGR.title" = "Omat";
 
 /* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
 "9S1-fB-bKZ.title" = "Kategoriat";
