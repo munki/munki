@@ -154,11 +154,20 @@ class MSUMainWindowController(NSWindowController):
         self.displayUpdateCount()
         self.cached_self_service = MunkiItems.SelfService()
         
+    def enableOrDisableTabViewCells_(self, enabled_state):
+        '''Enable or disable cells in the NSMatrix of buttons'''
+        cell_list = self.tabControl.cells()
+        for cell in cell_list:
+            if cell.tag() == 4:
+                cell.setEnabled_(YES)
+            else:
+                cell.setEnabled_(enabled_state)
+        
     def enableOrDisableSoftwareViewControls(self):
         '''Disable or enable the controls that let us view optional items'''
         optional_items = MunkiItems.getOptionalInstallItems()
         enabled_state = (len(optional_items) > 0)
-        self.tabControl.setEnabled_(enabled_state)
+        self.enableOrDisableTabViewCells_(enabled_state)
         self.searchField.setEnabled_(enabled_state)
         self.findMenuItem.setEnabled_(enabled_state)
         self.softwareMenuItem.setEnabled_(enabled_state)
@@ -290,11 +299,13 @@ class MSUMainWindowController(NSWindowController):
         return NO
     
     def windowDidBecomeMain_(self, notification):
+        '''Our window was activated, make sure controls enabled as needed'''
         optional_items = MunkiItems.getOptionalInstallItems()
-        enabled_state = (len(optional_items) != 0)
-        self.tabControl.setEnabled_(enabled_state)
-    
+        enabled_state = (len(optional_items) > 0)
+        self.enableOrDisableTabViewCells_(enabled_state)
+
     def windowDidResignMain_(self, notification):
+        '''Our tab control doesn't auto disable when the window is not frontmost; fix this'''
         self.tabControl.setEnabled_(NO)
 
     def configureFullScreenMenuItem(self):

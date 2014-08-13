@@ -65,6 +65,8 @@ def getInstallInfo():
 
 
 def getOptionalInstallItems():
+    if munki.pref('AppleSoftwareUpdatesOnly'):
+        return []
     if not 'optional_install_items' in _cache:
         _cache['optional_install_items'] = [OptionalItem(item)
                                    for item in getInstallInfo().get('optional_installs', [])]
