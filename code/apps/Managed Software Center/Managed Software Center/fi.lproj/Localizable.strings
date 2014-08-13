@@ -1,8 +1,14 @@
 ﻿/* Multiple Updates message */
-"%s pending updates" = "%s päivitystä odottamassa";
+"%s pending updates" = "%s päivitystä saatavilla";
 
 /* One Update message */
-"1 pending update" = "1 päivitys odottamassa";
+"1 pending update" = "1 päivitys saatavilla";
+
+/* AllItemsHeaderText */
+"All items" = "Kaikki ohjelmistot";
+
+/* AllCategoriesLabel */
+"All Categories" = "Kaikki kategoriat";
 
 /* Forced Logout warning detail */
 "\nAll pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.\nVoit ohittaa pakotetun uloskirjaamisen kirjautumalla ulos nyt.";
@@ -51,6 +57,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Pyydettyä kohdetta ei voida näyttää.";
+
+/* CategoriesHeaderText */
+"Categories" = "Kategoriat";
 
 /* Sidebar Category label */
 "Category:" = "Kategoria:";
@@ -131,10 +140,10 @@
 "Logout Required" = "Vaatii uloskirjautumisen";
 
 /* Failed Preflight Check detail */
-"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei voi tarkistaa päivityksiä juuri nyt.\nYritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei voi tarkistaa päivityksiä juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* Cannot Contact Server detail */
-"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei saa yhteyttä palvelimeen juuri nyt.\nYritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei saa yhteyttä palvelimeen juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* Managed Update type */
 "Managed Update" = "Hallittu päivitys";
@@ -152,13 +161,13 @@
 "More in %s" = "Lisää kategoriassa %s";
 
 /* My Items Header label */
-"My Items" = "Omat ohjelmat";
+"My Items" = "Omat ohjelmistot";
 
 /* No Licenses Available display text */
 "No licenses available" = "Ei lisenssejä saatavilla";
 
 /* No Updates message */
-"No pending updates" = "Ei odottavia päivityksiä";
+"No pending updates" = "Ei päivityksiä";
 
 /* Not Currently Available display text */
 "Not currently available" = "Ei saatavilla tällä hetkellä";
@@ -185,7 +194,7 @@
 "Other available updates" = "Muut saatavilla olevat päivitykset";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Muut kirjautuneet käyttäjät käyttävät seuraavia ohjelmistoja. Yritä myöhemmin uudelleen kun ohjelmistot eivät ole enää käytössä:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Muut kirjautuneet käyttäjät käyttävät seuraavia ohjelmia. Yritä myöhemmin uudelleen kun ohjelmat eivät ole enää käytössä:\n\n%s";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Muut kirjautuneet käyttäjät";
@@ -363,6 +372,12 @@
 "Finishing..." = "Viimeistellään...";
 
 /* Strings sent from managedsoftwareupdate */
+"Performing preflight tasks..." = "Suoritetaan valmistavia tehtäviä...";
+
+/* Strings sent from managedsoftwareupdate */
+"Performing postflight tasks..." = "Suoritetaan viimeisteleviä tehtäviä...";
+
+/* Strings sent from managedsoftwareupdate */
 "Checking for available updates..." = "Tarkistetaan päivityksiä...";
 
 /* Strings sent from managedsoftwareupdate */
@@ -396,7 +411,7 @@
 "Removing receipt info" = "Poistetaan kuitteja";
 
 /* Strings sent from managedsoftwareupdate */
-"Nothing to remove." = "Nothing to remove.";
+"Nothing to remove." = "Ei poistettavia kohteita.";
 
 /* Strings sent from managedsoftwareupdate */
 "Package removal complete." = "Paketin poisto valmis.";
