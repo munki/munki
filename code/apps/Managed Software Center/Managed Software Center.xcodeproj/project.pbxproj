@@ -32,6 +32,7 @@
 		C0B3744718708A0300B6204E /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744518708A0300B6204E /* WebResources */; };
 		C0E098BC1857A3C80045DEEB /* msulib.py in Resources */ = {isa = PBXBuildFile; fileRef = C0E098BB1857A3C80045DEEB /* msulib.py */; };
 		C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0F1586D187D256200052F9A /* MyStuffTemplate.png */; };
+		C0FEA19A199BBCA300460194 /* Managed Software Center-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C02C98731911B55600425167 /* Managed Software Center-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,8 +75,8 @@
 		C09004F716CDD84E00BE34CE /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		C09004F816CDD84E00BE34CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		C09004FD16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Managed Software Center-Prefix.pch"; sourceTree = "<group>"; };
+		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Managed Software Center-Prefix.pch"; sourceTree = "<group>"; };
 		C090050516CDD84E00BE34CE /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		C090050716CDD84E00BE34CE /* MSUAppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = MSUAppDelegate.py; sourceTree = "<group>"; };
 		C090050A16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -279,6 +280,7 @@
 				en_CA,
 				en_GB,
 				en_AU,
+				en_US,
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -308,6 +310,7 @@
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
 				C0AAA22018BC67F90012663F /* msuhtml.py in Resources */,
+				C0FEA19A199BBCA300460194 /* Managed Software Center-Info.plist in Resources */,
 				C02C98891911B81D00425167 /* Localizable.strings in Resources */,
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */,
