@@ -97,6 +97,8 @@ def write_page(page_name, html):
 def assemble_page(main_page_template_name, page_dict, **kwargs):
     '''Returns HTML for our page from one or more templates
        and a dictionary of keys and values'''
+    # make sure our general labels are present
+    addGeneralLabels(page_dict)
     # get our main template
     main_page = get_template(main_page_template_name)
     # incorporate any sub-templates
@@ -113,7 +115,15 @@ def generate_page(page_name, main_page_template_name, page_dict, **kwargs):
     write_page(page_name, html)
 
 
-def addSidebarLabels(page):
+def addGeneralLabels(page):
+    '''adds localized labels for Software, Categories, My Items and Updates to html pages'''
+    page['SoftwareLabel'] = NSLocalizedString(u"Software", u"Software label")
+    page['CategoriesLabel'] = NSLocalizedString(u"Categories", u"Categories label")
+    page['MyItemsLabel'] = NSLocalizedString(u"My Items", u"My Items label")
+    page['UpdatesLabel'] = NSLocalizedString(u"Updates", u"Updates label")
+
+
+def addDetailSidebarLabels(page):
     '''adds localized labels for the detail view sidebars'''
     page['informationLabel'] = NSLocalizedString(
                                     u"Information",
@@ -147,6 +157,8 @@ def addSidebarLabels(page):
 def build_item_not_found_page(page_name):
     '''Build item not found page'''
     page = {}
+    page['item_not_found_title'] = NSLocalizedString(
+        u"Not Found", u"Item Not Found title")
     page['item_not_found_message'] = NSLocalizedString(
         u"Cannot display the requested item.", u"Item Not Found message")
     footer = get_template('footer_template.html', raw=True)
@@ -161,7 +173,7 @@ def build_detail_page(item_name):
     for item in items:
         if item['name'] == item_name:
             page = MunkiItems.OptionalItem(item)
-            addSidebarLabels(page)
+            addDetailSidebarLabels(page)
             # make "More in CategoryFoo" list
             page['hide_more_in_category'] = u'hidden'
             more_in_category_html = u''
@@ -605,7 +617,7 @@ def build_updatedetail_page(identifier):
     for item in items:
         if item['name'] == name and item['version_to_install'] == version:
             page = MunkiItems.UpdateItem(item)
-            addSidebarLabels(page)
+            addDetailSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
                 local_date = munki.discardTimeZoneFromDate(
