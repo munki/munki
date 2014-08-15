@@ -120,20 +120,25 @@ class MSUStatusController(NSObject):
         
     def updateStatus_(self, notification):
         '''Got update status notification from managedsoftwareupdate'''
+        msulog.debug_log('Got munkistatus update notification')
         self.got_status_update = True
         info = notification.userInfo()
-        if 'message' in info:
+        msulog.debug_log('%s' % info)
+        # explictly get keys from info object; PyObjC in Mountain Lion
+        # seems to need this
+        info_keys = info.keys()
+        if 'message' in info_keys:
             self.setMessage_(info['message'])
-        if 'detail' in info:
+        if 'detail' in info_keys:
             self.setDetail_(info['detail'])
-        if 'percent' in info:
+        if 'percent' in info_keys:
             self.setPercentageDone_(info['percent'])
-        if 'stop_button_visible' in info:
+        if 'stop_button_visible' in info_keys:
             if info['stop_button_visible']:
                 self.showStopButton()
             else:
                 self.hideStopButton()
-        if 'stop_button_enabled' in info:
+        if 'stop_button_enabled' in info_keys:
             if info['stop_button_enabled']:
                 self.enableStopButton()
             else:
