@@ -36,6 +36,8 @@ class MSUAppDelegate(NSObject):
         if consoleuser == None or consoleuser == u"loginwindow":
             # don't show menu bar
             NSMenu.setMenuBarVisible_(NO)
+            # make sure we're active
+            NSApp.activateIgnoringOtherApps_(YES)
 
     def applicationDidFinishLaunching_(self, sender):
         # Prevent automatic relaunching at login on Lion+
