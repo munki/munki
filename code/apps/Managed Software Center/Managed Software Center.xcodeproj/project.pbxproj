@@ -32,7 +32,6 @@
 		C0B3744718708A0300B6204E /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744518708A0300B6204E /* WebResources */; };
 		C0E098BC1857A3C80045DEEB /* msulib.py in Resources */ = {isa = PBXBuildFile; fileRef = C0E098BB1857A3C80045DEEB /* msulib.py */; };
 		C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0F1586D187D256200052F9A /* MyStuffTemplate.png */; };
-		C0FEA19A199BBCA300460194 /* Managed Software Center-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C02C98731911B55600425167 /* Managed Software Center-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -310,7 +309,6 @@
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
 				C0AAA22018BC67F90012663F /* msuhtml.py in Resources */,
-				C0FEA19A199BBCA300460194 /* Managed Software Center-Info.plist in Resources */,
 				C02C98891911B81D00425167 /* Localizable.strings in Resources */,
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C0A71B76188A47C700A6EE82 /* MSUMainWindowController.py in Resources */,
