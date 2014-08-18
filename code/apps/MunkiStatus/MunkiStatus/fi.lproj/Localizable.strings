@@ -5,8 +5,71 @@
 "Restart Required" = "Vaatii uudelleenkäynnistyksen";
 
 /* No comment provided by engineer. */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "Tietokone on käynnistettävä uudelleen kun päivitysten asennus tai ohjelmien poisto on suoritettu. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Tietokone on käynnistettävä uudelleen kun asennus tai ohjelmiston poisto on suoritettu. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
 
 /* No comment provided by engineer. */
 "Starting…" = "Aloitetaan…";
 
+
+/* Strings sent from managedsoftwareupdate */
+"Starting..." = "Aloitetaan...";
+
+/* Strings sent from managedsoftwareupdate */
+"Finishing..." = "Viimeistellään...";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for available updates..." = "Tarkistetaan päivityksiä...";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for additional changes..." = "Tarkistetaan muutoksia...";
+
+/* Strings sent from managedsoftwareupdate */
+"Software installed or removed requires a restart." = "Asennettu ohjelmisto tai poisto vaatii tietokoneen uudelleenkäynnistyksen.";
+
+/* Strings sent from managedsoftwareupdate */
+"Waiting for network..." = "Odotetaan verkkoyhteyttä...";
+
+/* Strings sent from managedsoftwareupdate */
+"Done." = "Valmis.";
+
+/* Strings sent from managedsoftwareupdate */
+"Retrieving list of software for this machine..." = "Haetaan ohjelmistolistaa tälle tietokoneelle...";
+
+/* Strings sent from managedsoftwareupdate */
+"Verifying package integrity..." = "Tarkistetaan paketin eheyttä...";
+
+/* Strings sent from managedsoftwareupdate */
+"The software was successfully installed." = "Ohjelmiston asennus onnistui.";
+
+/* Strings sent from managedsoftwareupdate */
+"Gathering information on installed packages" = "Kootaan tietoja asennetuista paketeista";
+
+/* Strings sent from managedsoftwareupdate */
+"Determining which filesystem items to remove" = "Määritetään poistettavia kohteita";
+
+/* Strings sent from managedsoftwareupdate */
+"Removing receipt info" = "Poistetaan kuitteja";
+
+/* Strings sent from managedsoftwareupdate */
+"Nothing to remove." = "Nothing to remove.";
+
+/* Strings sent from managedsoftwareupdate */
+"Package removal complete." = "Paketin poisto valmis.";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking for available Apple Software Updates..." = "Tarkistetaan Applen ohjelmistopäivityksiä...";
+
+/* Strings sent from managedsoftwareupdate */
+"Checking Apple Software Update catalog..." = "Tarkistetaan Applen ohjelmistopäivitysten luetteloa...";
+
+/* Strings sent from managedsoftwareupdate */
+"Downloading available Apple Software Updates..." = "Haetaan Applen ohjelmistopäivityksiä...";
+
+/* Strings sent from managedsoftwareupdate */
+"Installing available Apple Software Updates..." = "Asennetaan Applen ohjelmistopäivityksiä...";
+
+/* Strings sent from managedsoftwareupdate */
+"Running Adobe Setup" = "Ajetaan Adobe Setup -ohjelmistoa";
+"Running Adobe Uninstall" = "Ajetaan Adobe Uninstall -ohjelmistoa";
+"Starting Adobe installer..." = "Käynnistetään Adobe-asentajaa...";
+"Running Adobe Patch Installer" = "Ajetaan Adobe Patch -asentajaa";

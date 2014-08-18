@@ -87,7 +87,7 @@
 "376.title" = "Navigation";
 
 /* Class = "NSButtonCell"; title = "My Items"; ObjectID = "783"; */
-"783.title" = "Meine Software";
+"783.title" = "Installiert";
 
 /* Class = "NSButtonCell"; title = "Categories"; ObjectID = "784"; */
 "784.title" = "Kategorien";
@@ -99,7 +99,7 @@
 "1XY-pX-Pwv.title" = "Suche";
 
 /* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
-"1uK-HI-wGR.title" = "Meine Software";
+"1uK-HI-wGR.title" = "Installiert";
 
 /* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
 "9S1-fB-bKZ.title" = "Kategorien";
@@ -108,7 +108,7 @@
 "Afg-mB-WlJ.title" = "Seite neu laden";
 
 /* Class = "NSButtonCell"; title = "Updates"; ObjectID = "Lha-uh-PEV"; */
-"Lha-uh-PEV.title" = "Aktualisierungen";
+"Lha-uh-PEV.title" = "Updates";
 
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
 "VYO-og-DRc.title" = "Software";
@@ -126,7 +126,7 @@
 "jQt-Mr-wFT.title" = "Vollbild";
 
 /* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
-"tv9-wZ-XWN.title" = "Aktualisierungen";
+"tv9-wZ-XWN.title" = "Updates";
 
 /* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
 "z4Z-vu-XGX.title" = "Weiter";

@@ -74,8 +74,8 @@
 		C09004F716CDD84E00BE34CE /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		C09004F816CDD84E00BE34CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		C09004FD16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Managed Software Center-Prefix.pch"; sourceTree = "<group>"; };
+		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Managed Software Center-Prefix.pch"; sourceTree = "<group>"; };
 		C090050516CDD84E00BE34CE /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		C090050716CDD84E00BE34CE /* MSUAppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = MSUAppDelegate.py; sourceTree = "<group>"; };
 		C090050A16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -279,6 +279,7 @@
 				en_CA,
 				en_GB,
 				en_AU,
+				en_US,
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;

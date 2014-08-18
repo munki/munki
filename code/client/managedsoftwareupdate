@@ -760,6 +760,14 @@ def main():
                 munkicommon.log(traceback.format_exc())
                 munkicommon.savereport()
                 raise
+            if applesoftwareupdatesonly:
+                # normally we record the result of checking for Munki updates
+                # but if we are only doing Apple updates, we should record the
+                # result of the Apple updates check
+                if appleupdatesavailable:
+                    recordUpdateCheckResult(1)
+                else:
+                    recordUpdateCheckResult(0)
 
         if options.installonly:
             # just look and see if there are already downloaded Apple updates
