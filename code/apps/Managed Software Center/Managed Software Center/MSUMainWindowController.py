@@ -920,6 +920,24 @@ class MSUMainWindowController(NSWindowController):
 #### some Cocoa UI bindings #####
 
     @IBAction
+    def showHelp_(self, sender):
+        helpURL = munki.pref('HelpURL')
+        if helpURL:
+            NSWorkspace.sharedWorkspace().openURL_(NSURL.URLWithString_(helpURL))
+        else:
+            alertTitle = NSLocalizedString(u"Help", u"No help alert title")
+            alertDetail = NSLocalizedString(
+                u"Help isn't available for Managed Software Center.", u"No help alert detail")
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                alertTitle,
+                NSLocalizedString(u"OK", u"OK button title"),
+                nil,
+                nil,
+                u"%@", alertDetail)
+            result = alert.runModal()
+
+    
+    @IBAction
     def navigationBtnClicked_(self, sender):
         '''Handle WebView forward/back buttons'''
         segment = sender.selectedSegment()
