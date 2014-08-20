@@ -330,7 +330,7 @@ class MSUStatusController(NSObject):
 
 def more_localized_strings():
     '''Some strings that are sent to us from managedsoftwareupdate. By putting them here,
-    the localize.py script will add them to the en.lproj/Localized.strings file so localizers
+    the localize.py script will add them to the en.lproj/Localizable.strings file so localizers
     will be able to discover them'''
     foo = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
