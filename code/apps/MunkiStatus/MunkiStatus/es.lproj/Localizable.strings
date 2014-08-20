@@ -11,55 +11,55 @@
 "Starting…" = "Empezando…";
 
 /* Strings sent from managedsoftwareupdate */
-"Waiting for network..." = "Esperando red..."
+"Waiting for network..." = "Esperando red...";
 
 /* Strings sent from managedsoftwareupdate */
-"Starting..." = "Empezando..."
+"Starting..." = "Empezando...";
 
 /* Strings sent from managedsoftwareupdate */
-"Finishing..." = "Finalizando..."
+"Finishing..." = "Finalizando...";
 
 /* Strings sent from managedsoftwareupdate */
-"Done." = "Hecho."
+"Done." = "Hecho.";
 
 /* Strings sent from managedsoftwareupdate */
-"Running Adobe Setup" = "Instalación de Adobe en marcha"
+"Running Adobe Setup" = "Instalación de Adobe en marcha";
 
 /* Strings sent from managedsoftwareupdate */
-"Running Adobe Uninstall" = "Desinstalación de Adobe en marcha"
+"Running Adobe Uninstall" = "Desinstalación de Adobe en marcha";
 
 /* Strings sent from managedsoftwareupdate */
-"Starting Adobe installer..." = "Empezando el instalador de Adobe..."
+"Starting Adobe installer..." = "Empezando el instalador de Adobe...";
 
 /* Strings sent from managedsoftwareupdate */
-"Running Adobe Patch Installer" = "Instalación de un parche de Adobe en marcha"
+"Running Adobe Patch Installer" = "Instalación de un parche de Adobe en marcha";
 
 /* Strings sent from managedsoftwareupdate */
-"Verifying package integrity..." = "Comprobando la integridad del paquete..."
+"Verifying package integrity..." = "Comprobando la integridad del paquete...";
 
 /* Strings sent from managedsoftwareupdate */
-"The software was successfully installed." = "El software se instaló correctamente."
+"The software was successfully installed." = "El software se instaló correctamente.";
 
 /* Strings sent from managedsoftwareupdate */
-"Gathering information on installed packages" = "Recopilando información sobre los paquetes instalados"
+"Gathering information on installed packages" = "Recopilando información sobre los paquetes instalados";
 
 /* Strings sent from managedsoftwareupdate */
-"Determining which filesystem items to remove" = "Determinando que archivos hay que quitar"
+"Determining which filesystem items to remove" = "Determinando que archivos hay que quitar";
 
 /* Strings sent from managedsoftwareupdate */
-"Removing receipt info" = "Quitando la información del recibo"
+"Removing receipt info" = "Quitando la información del recibo";
 
 /* Strings sent from managedsoftwareupdate */
-"Nothing to remove." = "Nada que quitar."
+"Nothing to remove." = "Nada que quitar.";
 
 /* Strings sent from managedsoftwareupdate */
-"Package removal complete." = "Desinstalación del paquete completada."
+"Package removal complete." = "Desinstalación del paquete completada.";
 
 /* Strings sent from managedsoftwareupdate */
-"Checking for available updates..." = "Comprobando actualizaciones disponibles..."
+"Checking for available updates..." = "Comprobando actualizaciones disponibles...";
 
 /* Strings sent from managedsoftwareupdate */
-"Checking Apple Software Update catalog..." = "Comprobando actualizaciones del catálogo de Apple..."
+"Checking Apple Software Update catalog..." = "Comprobando actualizaciones del catálogo de Apple...";
 
 /* Strings sent from managedsoftwareupdate */
 "Retrieving list of software for this machine..." = "Obteniendo la lista de software para este equipo...";
