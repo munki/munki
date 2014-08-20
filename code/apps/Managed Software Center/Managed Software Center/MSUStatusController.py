@@ -326,3 +326,47 @@ class MSUStatusController(NSObject):
     def getRestartAlertDismissed(self):
         '''Was the restart alert dimissed?'''
         return self._status_restartAlertDismissed
+
+
+def more_localized_strings():
+    '''Some strings that are sent to us from managedsoftwareupdate. By putting them here,
+    the localize.py script will add them to the en.lproj/Localized.strings file so localizers
+    will be able to discover them'''
+    foo = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Checking for available updates...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Checking for additional changes...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Software installed or removed requires a restart.",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Waiting for network...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Done.", "managedsoftwareupdate message")
+
+    foo = NSLocalizedString(u"Retrieving list of software for this machine...",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Verifying package integrity...", "managedsoftwareupdate message")
+
+    foo = NSLocalizedString(u"The software was successfully installed.",
+                            "managedsoftwareupdate message")
+
+    foo = NSLocalizedString(u"Gathering information on installed packages",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Determining which filesystem items to remove",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Removing receipt info",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Nothing to remove.", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Package removal complete.", "managedsoftwareupdate message")
+
+    foo = NSLocalizedString(u"Checking for available Apple Software Updates...",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Checking Apple Software Update catalog...",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Downloading available Apple Software Updates...",
+                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Installing available Apple Software Updates...",
+                            "managedsoftwareupdate message")
+
+    foo = NSLocalizedString(u"Running Adobe Setup", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Running Adobe Uninstall", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Starting Adobe installer...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Running Adobe Patch Installer", "managedsoftwareupdate message")
