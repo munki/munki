@@ -927,7 +927,7 @@ class OptionalItem(GenericItem):
                 u"Removal Error message")
             start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('note'):
-            # some other note. Probably won't be localized.
+            # some other note. Probably won't be localized, but we can try
             warning_text = NSLocalizedString(self['note'], None)
             start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('dependent_items'):

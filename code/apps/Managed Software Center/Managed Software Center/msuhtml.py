@@ -228,7 +228,7 @@ def build_list_page(category=None, developer=None, filter=None):
     '''Build page listing available optional items'''
     items = MunkiItems.getOptionalInstallItems()
 
-    header = NSLocalizedString(u'All items', u'AllItemsHeaderText')
+    header = NSLocalizedString(u"All items", u"AllItemsHeaderText")
     page_name = u'category-all.html'
     if category == 'all':
         category = None
@@ -251,7 +251,7 @@ def build_list_page(category=None, developer=None, filter=None):
                             category=category, developer=developer, filter=filter)
 
     # make HTML for Categories pop-up menu
-    all_categories_label = NSLocalizedString(u'All Categories', u'AllCategoriesLabel')
+    all_categories_label = NSLocalizedString(u"All Categories", u"AllCategoriesLabel")
     if category:
         categories_html = u'<option>%s</option>\n' % all_categories_label
     else:
@@ -355,7 +355,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
 def build_categories_page():
     '''Build page showing available categories and some items in each one'''
     all_items = MunkiItems.getOptionalInstallItems()
-    header = NSLocalizedString(u'Categories', u'CategoriesHeaderText')
+    header = NSLocalizedString(u"Categories", u"CategoriesHeaderText")
     page_name = u'categories.html'
     category_list = []
     for item in all_items:
@@ -364,7 +364,7 @@ def build_categories_page():
 
     item_html = build_category_items_html()
     
-    all_categories_label = NSLocalizedString(u'All Categories', u'AllCategoriesLabel')
+    all_categories_label = NSLocalizedString(u"All Categories", u"AllCategoriesLabel")
     categories_html = u'<option selected>%s</option>\n' % all_categories_label
     for item in sorted(category_list):
         categories_html += u'<option>%s</option>\n' % item
