@@ -798,7 +798,14 @@ def main():
     notify_user = False
     force_action = None
     if updatesavailable or appleupdatesavailable:
-        if options.auto:
+        if options.installonly or options.logoutinstall:
+            # just install
+            mustrestart = doInstallTasks(appleupdatesavailable)
+            # send a notification event so MSU can update its display
+            # if needed
+            sendUpdateNotification()
+
+        elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     # admin says we can never install packages
@@ -878,13 +885,6 @@ def main():
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
-
-        elif options.installonly or options.logoutinstall:
-            # just install
-            mustrestart = doInstallTasks(appleupdatesavailable)
-            # send a notification event so MSU can update its display
-            # if needed
-            sendUpdateNotification()
 
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
