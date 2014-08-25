@@ -31,7 +31,7 @@ class AlertController(NSObject):
         NSApp.activateIgnoringOtherApps_(True)
         info = notification_obj.userInfo()
         moreText = NSLocalizedString(
-            (u"\nAll pending updates will be installed. Unsaved work will be lost."
+            (u"All pending updates will be installed. Unsaved work will be lost."
             "\nYou may avoid the forced logout by logging out now."),
             u"Forced Logout warning detail")
         logout_time = None
@@ -48,13 +48,13 @@ class AlertController(NSObject):
             formatString = NSLocalizedString(
                     u"A logout will be forced at approximately %s.",
                     u"Logout warning string when logout is an hour or more away")
-            infoText = formatString % deadline_str + moreText
+            infoText = formatString % deadline_str + u"\n" + moreText
         elif time_til_logout > 0:
             msulog.log("user", "forced_logout_warning_%s" % time_til_logout)
             formatString = NSLocalizedString(
                     u"A logout will be forced in less than %s minutes.",
                     u"Logout warning string when logout is in < 60 minutes")
-            infoText = formatString % time_til_logout + moreText
+            infoText = formatString % time_til_logout + u"\n" + moreText
         else:
             msulog.log("user", "forced_logout_warning_final")
             infoText = NSLocalizedString(
