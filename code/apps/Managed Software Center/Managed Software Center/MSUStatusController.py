@@ -207,7 +207,7 @@ class MSUStatusController(NSObject):
         '''Display a restart alert -- some item just installed or removed requires a restart'''
         self._status_restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-            NSLocalizedString(u"Restart Required", u"Restart Required alert title"),
+            NSLocalizedString(u"Restart Required", u"Restart Required title"),
             NSLocalizedString(u"Restart", u"Restart button title"),
             nil,
             nil,
@@ -227,7 +227,8 @@ class MSUStatusController(NSObject):
 
     def setMessage_(self, messageText):
         '''Display main status message'''
-        messageText = NSLocalizedString(messageText, None)
+        messageText = NSBundle.mainBundle().localizedStringForKey_value_table_(
+            messageText, messageText, None)
         self._status_message = messageText
         document = self.statusWindowController.webView.mainFrameDocument()
         if document:
@@ -242,7 +243,8 @@ class MSUStatusController(NSObject):
 
     def setDetail_(self, detailText):
         '''Display status detail'''
-        detailText = NSLocalizedString(detailText, None)
+        detailText = NSBundle.mainBundle().localizedStringForKey_value_table_(
+            detailText, detailText, None)
         self._status_detail = detailText
         document = self.statusWindowController.webView.mainFrameDocument()
         if document:
@@ -334,6 +336,8 @@ def more_localized_strings():
     will be able to discover them'''
     foo = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Performing preflight tasks...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Performing postflight tasks...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Checking for available updates...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Checking for additional changes...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Software installed or removed requires a restart.",
@@ -352,8 +356,7 @@ def more_localized_strings():
                             "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Determining which filesystem items to remove",
                             "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Removing receipt info",
-                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Removing receipt info", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Nothing to remove.", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Package removal complete.", "managedsoftwareupdate message")
 

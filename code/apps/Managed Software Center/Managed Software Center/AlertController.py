@@ -131,7 +131,7 @@ class AlertController(NSObject):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Restart Required", u"Restart Required title"),
                 NSLocalizedString(u"Log out and update", u"Log out and Update button text"),
-                NSLocalizedString(u"Cancel", u"Cancel button title"),
+                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
                 nil,
                 u"%@", NSLocalizedString(
                     (u"A restart is required after updating. Please be patient "
@@ -144,7 +144,7 @@ class AlertController(NSObject):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Required", u"Logout Required title"),
                 NSLocalizedString(u"Log out and update", u"Log out and Update button text"),
-                NSLocalizedString(u"Cancel", u"Cancel button title"),
+                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
                 nil,
                 u"%@", NSLocalizedString(
                     (u"A logout is required before updating. Please be patient "
@@ -185,7 +185,7 @@ class AlertController(NSObject):
             msulog.log("MSC", "multiple_gui_users_update_cancelled")
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Other users logged in", u"Other Users Logged In title"),
-                NSLocalizedString(u"Cancel", u"Cancel button title"),
+                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
                 nil,
                 nil,
                 u"%@", NSLocalizedString(
@@ -294,7 +294,7 @@ class AlertController(NSObject):
         for item in firmware_alert_info:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(item['name'],
                   NSLocalizedString(u"Continue", u"Continue button text"),
-                  NSLocalizedString(u"Cancel", u"Cancel button title"),
+                  NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
                   nil,
                   u"")
             if on_battery_power:
@@ -326,7 +326,7 @@ class AlertController(NSObject):
                 NSLocalizedString(
                     u"Your computer is not connected to a power source.", u"No Power Source Warning text"),
                 NSLocalizedString(u"Continue", u"Continue button text"),
-                NSLocalizedString(u"Cancel", u"Cancel button title"),
+                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
                 nil,
                 u"%@", NSLocalizedString(
                     (u"For best results, you should connect your computer to a "

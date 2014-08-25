@@ -52,7 +52,10 @@ class MSUMainWindowController(NSWindowController):
     html_dir = None
     
     # Cocoa UI binding properties
-    tabControl = IBOutlet()
+    softwareToolbarButton = IBOutlet()
+    categoriesToolbarButton = IBOutlet()
+    myItemsToolbarButton = IBOutlet()
+    updatesToolbarButton = IBOutlet()
     webView = IBOutlet()
     navigationBtn = IBOutlet()
     progressSpinner = IBOutlet()
@@ -153,21 +156,26 @@ class MSUMainWindowController(NSWindowController):
             self.loadAllSoftwarePage_(self)
         self.displayUpdateCount()
         self.cached_self_service = MunkiItems.SelfService()
-        
-    def enableOrDisableTabViewCells_(self, enabled_state):
-        '''Enable or disable cells in the NSMatrix of buttons'''
-        cell_list = self.tabControl.cells()
-        for cell in cell_list:
-            if cell.tag() == 4:
-                cell.setEnabled_(YES)
-            else:
-                cell.setEnabled_(enabled_state)
+    
+    def highlightToolbarButtons_(self, nameToHighlight):
+        '''Highlight/dim buttons in our toolbar'''
+        self.softwareToolbarButton.setState_(nameToHighlight == "Software")
+        self.categoriesToolbarButton.setState_(nameToHighlight == "Categories")
+        self.myItemsToolbarButton.setState_(nameToHighlight == "My Items")
+        self.updatesToolbarButton.setState_(nameToHighlight == "Updates")
+
+    def enableOrDisableToolbarButtons_(self, enabled_state):
+        '''Enable or disable buttons in our toolbar'''
+        self.softwareToolbarButton.setEnabled_(enabled_state)
+        self.categoriesToolbarButton.setEnabled_(enabled_state)
+        self.myItemsToolbarButton.setEnabled_(enabled_state)
+        self.updatesToolbarButton.setEnabled_(YES)
         
     def enableOrDisableSoftwareViewControls(self):
         '''Disable or enable the controls that let us view optional items'''
         optional_items = MunkiItems.getOptionalInstallItems()
         enabled_state = (len(optional_items) > 0)
-        self.enableOrDisableTabViewCells_(enabled_state)
+        self.enableOrDisableToolbarButtons_(enabled_state)
         self.searchField.setEnabled_(enabled_state)
         self.findMenuItem.setEnabled_(enabled_state)
         self.softwareMenuItem.setEnabled_(enabled_state)
@@ -298,15 +306,11 @@ class MSUMainWindowController(NSWindowController):
         NSApp.terminate_(self)
         return NO
     
-    def windowDidBecomeMain_(self, notification):
-        '''Our window was activated, make sure controls enabled as needed'''
-        optional_items = MunkiItems.getOptionalInstallItems()
-        enabled_state = (len(optional_items) > 0)
-        self.enableOrDisableTabViewCells_(enabled_state)
-
-    def windowDidResignMain_(self, notification):
-        '''Our tab control doesn't auto disable when the window is not frontmost; fix this'''
-        self.tabControl.setEnabled_(NO)
+    #def windowDidBecomeMain_(self, notification):
+    #    '''Our window was activated, make sure controls enabled as needed'''
+    #    optional_items = MunkiItems.getOptionalInstallItems()
+    #    enabled_state = (len(optional_items) > 0)
+    #    self.enableOrDisableToolbarButtons_(enabled_state)
 
     def configureFullScreenMenuItem(self):
         '''check to see if NSWindow's toggleFullScreen: selector is implemented.
@@ -636,15 +640,15 @@ class MSUMainWindowController(NSWindowController):
         self.progressSpinner.startAnimation_(self)
         main_url = self.webView.mainFrameURL()
         if main_url.endswith('category-all.html'):
-            self.tabControl.selectCellWithTag_(1)
+            self.highlightToolbarButtons_("Software")
         elif main_url.endswith('categories.html'):
-            self.tabControl.selectCellWithTag_(2)
+            self.highlightToolbarButtons_("Categories")
         elif main_url.endswith('myitems.html'):
-            self.tabControl.selectCellWithTag_(3)
+            self.highlightToolbarButtons_("My Items")
         elif main_url.endswith('updates.html'):
-            self.tabControl.selectCellWithTag_(4)
+            self.highlightToolbarButtons_("Updates")
         else:
-            self.tabControl.deselectAllCells()
+            self.highlightToolbarButtons_(None)
 
     def webView_didFinishLoadForFrame_(self, view, frame):
         '''Stop progress spinner and update state of back/forward buttons'''
@@ -723,7 +727,7 @@ class MSUMainWindowController(NSWindowController):
         install_all_button = document.getElementById_('install-all-button-text')
         if install_all_button:
             install_all_button.setInnerText_(
-                NSLocalizedString(u"Cancel", u"Cancel button title"))
+                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"))
             #btn_classes = install_all_button.className().split(' ')
             #if not 'checking' in btn_classes:
             #    btn_classes.append('checking')
@@ -950,7 +954,7 @@ class MSUMainWindowController(NSWindowController):
     def loadAllSoftwarePage_(self, sender):
         '''Called by Navigate menu item'''
         self.load_page('category-all.html')
-
+    
     @IBAction
     def loadCategoriesPage_(self, sender):
         '''Called by Navigate menu item'''
@@ -968,19 +972,24 @@ class MSUMainWindowController(NSWindowController):
         self._alertedUserToOutstandingUpdates = True
 
     @IBAction
-    def tabControlClicked_(self, sender):
-        '''Handle a click on our toolbar buttons'''
-        selectedCell = sender.selectedCell()
-        if selectedCell:
-            tag = selectedCell.tag()
-            if tag == 1:
-                self.loadAllSoftwarePage_(sender)
-            if tag == 2:
-                self.loadCategoriesPage_(sender)
-            if tag == 3:
-                self.loadMyItemsPage_(sender)
-            if tag == 4:
-                self.loadUpdatesPage_(sender)
+    def softwareToolbarButtonClicked_(self, sender):
+        '''User clicked Software toolbar button'''
+        self.loadAllSoftwarePage_(sender)
+    
+    @IBAction
+    def categoriesToolbarButtonClicked_(self, sender):
+        '''User clicked Categories toolbar button'''
+        self.loadCategoriesPage_(sender)
+
+    @IBAction
+    def myItemsToolbarButtonClicked_(self, sender):
+        '''User clicked My Items toolbar button'''
+        self.loadMyItemsPage_(sender)
+    
+    @IBAction
+    def updatesToolbarButtonClicked_(self, sender):
+        '''User clicked Updates toolbar button'''
+        self.loadUpdatesPage_(sender)
 
     @IBAction
     def searchFilterChanged_(self, sender):
@@ -991,16 +1000,13 @@ class MSUMainWindowController(NSWindowController):
             self.load_page(u'filter-%s.html' % filterString)
 
     def currentPageIsUpdatesPage(self):
-        '''return True if current tab selected is updates'''
-        selectedCell = self.tabControl.selectedCell()
-        return (selectedCell is not None and selectedCell.tag() == 4)
-    
-    def currentPageIsMyItemsPage(self):
-        '''return True if current tab selected is updates'''
-        selectedCell = self.tabControl.selectedCell()
-        return (selectedCell is not None and selectedCell.tag() == 3)
+        '''return True if current tab selected is Updates'''
+        return (self.updatesToolbarButton.state() == NSOnState)
 
-    def currentPageIsCategoriesPage(self):
-        '''return True if current tab selected is updates'''
-        selectedCell = self.tabControl.selectedCell()
-        return (selectedCell is not None and selectedCell.tag() == 2)
+    #def currentPageIsMyItemsPage(self):
+    #    '''return True if current tab selected is My Items'''
+    #    return (self.myItemsToolbarButton.state() == NSOnState)
+
+    #def currentPageIsCategoriesPage(self):
+    #    '''return True if current tab selected is Categories'''
+    #    return (self.categoriesToolbarButton.state() == NSOnState)

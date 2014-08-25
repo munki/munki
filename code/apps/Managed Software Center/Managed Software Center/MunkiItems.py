@@ -434,12 +434,12 @@ class GenericItem(dict):
         elif self['RestartAction'] in ['RequireRestart', 'RecommendRestart']:
             self['restart_sort'] = 0
             self['restart_action_text'] = NSLocalizedString(
-                u"Restart Required", u"Require Restart message")
+                u"Restart Required", u"Restart Required title")
             self['restart_action_text'] += u'<div class="restart-needed-icon"></div>'
         elif self['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
             self['restart_sort'] = 1
             self['restart_action_text'] = NSLocalizedString(
-                u"Logout Required", u"Require Logout message")
+                u"Logout Required", u"Logout Required title")
             self['restart_action_text'] += u'<div class="logout-needed-icon"></div>'
 
         # sort bigger installs to the top
@@ -574,7 +574,7 @@ class GenericItem(dict):
                                   u"Will Be Installed status text"),
             'must-be-installed':
                 NSLocalizedString(u"Will be installed",
-                                  u"Install Required status text"),
+                                  u"Will Be Installed status text"),
             'removal-requested':
                 NSLocalizedString(u"Removal requested",
                                   u"Removal Requested status text"),
@@ -592,7 +592,7 @@ class GenericItem(dict):
                                   u"Update Will Be Installed status text"),
             'update-must-be-installed':
                 NSLocalizedString(u"Update will be installed",
-                                  u"Update Required status text"),
+                                  u"Update Will Be Installed status text"),
             'update-available':
                 NSLocalizedString(u"Update available",
                                   u"Update Available status text"),
@@ -607,58 +607,58 @@ class GenericItem(dict):
         map = {
             'install-error':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Install short action text"),
+                                  u"Cancel button title/short action text"),
             'removal-error':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Removal short action text"),
+                                  u"Cancel button title/short action text"),
             'installed':
                 NSLocalizedString(u"Remove",
-                                  u"Remove short action text"),
+                                  u"Remove action text"),
             'installing':
                 NSLocalizedString(u"Installing",
-                                  u"Installing short action text"),
+                                  u"Installing status text"),
             'installed-not-removable':
                 NSLocalizedString(u"Installed",
-                                  u"Installed short action text"),
+                                  u"Installed status text"),
             'not-installed':
                 NSLocalizedString(u"Install",
-                                  u"Install short action text"),
+                                  u"Install action text"),
             'install-requested':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Install short action text"),
+                                  u"Cancel button title/short action text"),
             'downloading':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Install short action text"),
+                                  u"Cancel button title/short action text"),
             'will-be-installed':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Install short action text"),
+                                  u"Cancel button title/short action text"),
             'must-be-installed':
                 NSLocalizedString(u"Required",
-                                  u"Install Required short action text"),
+                                  u"Install Required action text"),
             'removal-requested':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Removal short action text"),
+                                  u"Cancel button title/short action text"),
             'preparing-removal':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Install short action text"),
+                                  u"Cancel button title/short action text"),
             'will-be-removed':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Removal short action text"),
+                                  u"Cancel button title/short action text"),
             'removing':
                 NSLocalizedString(u"Removing",
-                                  u"Removing short action text"),
+                                  u"Removing status text"),
             'update-will-be-installed':
                 NSLocalizedString(u"Cancel",
-                                  u"Cancel Update short action text"),
+                                  u"Cancel button title/short action text"),
             'update-must-be-installed':
                 NSLocalizedString(u"Required",
-                                  u"Update Required short action text"),
+                                  u"Install Required action text"),
             'update-available':
                 NSLocalizedString(u"Update",
-                                  u"Update short action text"),
+                                  u"Update button title/action text"),
             'unavailable':
                 NSLocalizedString(u"Unavailable",
-                                  u"Unavailable short action text"),
+                                  u"Unavailable status text"),
         }
         return map.get(self['status'], self['status'])
 
@@ -673,16 +673,16 @@ class GenericItem(dict):
                                   u"Cancel Removal long action text"),
             'installed':
                 NSLocalizedString(u"Remove",
-                                  u"Remove long action text"),
+                                  u"Remove action text"),
             'installing':
                 NSLocalizedString(u"Installing",
-                                  u"Installing long action text"),
+                                  u"Installing status text"),
             'installed-not-removable':
                 NSLocalizedString(u"Installed",
-                                  u"Installed long action text"),
+                                  u"Installed status text"),
             'not-installed':
                 NSLocalizedString(u"Install",
-                                  u"Install long action text"),
+                                  u"Install action text"),
             'install-requested':
                 NSLocalizedString(u"Cancel install",
                                   u"Cancel Install long action text"),
@@ -694,7 +694,7 @@ class GenericItem(dict):
                                   u"Cancel Install long action text"),
             'must-be-installed':
                 NSLocalizedString(u"Install Required",
-                                  u"Install Required long action text"),
+                                  u"Install Required action text"),
             'removal-requested':
                 NSLocalizedString(u"Cancel removal",
                                   u"Cancel Removal long action text"),
@@ -706,16 +706,16 @@ class GenericItem(dict):
                                   u"Cancel Removal long action text"),
             'removing':
                 NSLocalizedString(u"Removing",
-                                  u"Removing long action text"),
+                                  u"Removing status text"),
             'update-will-be-installed':
                 NSLocalizedString(u"Cancel update",
                                   u"Cancel Update long action text"),
             'update-must-be-installed':
                 NSLocalizedString(u"Update Required",
-                                  u"Update Requires long action text"),
+                                  u"Update Required long action text"),
             'update-available':
                 NSLocalizedString(u"Update",
-                                  u"Update long action text"),
+                                  u"Update button title/action text"),
             'unavailable':
                 NSLocalizedString(u"Currently Unavailable",
                                   u"Unavailable long action text"),
@@ -733,13 +733,13 @@ class GenericItem(dict):
                                   u"Cancel Removal long action text"),
             'installed':
                 NSLocalizedString(u"Remove",
-                                  u"Remove long action text"),
+                                  u"Remove action text"),
             'installing':
                 NSLocalizedString(u"Installing",
-                                  u"Installing long action text"),
+                                  u"Installing status text"),
             'installed-not-removable':
                 NSLocalizedString(u"Installed",
-                                  u"Installed long action text"),
+                                  u"Installed status text"),
             'removal-requested':
                 NSLocalizedString(u"Cancel removal",
                                   u"Cancel Removal long action text"),
@@ -751,13 +751,13 @@ class GenericItem(dict):
                                   u"Cancel Removal long action text"),
             'removing':
                 NSLocalizedString(u"Removing",
-                                  u"Removing long action text"),
+                                  u"Removing status text"),
             'update-available':
                 NSLocalizedString(u"Update",
-                                  u"Update long action text"),
+                                  u"Update button title/action text"),
             'update-will-be-installed':
                 NSLocalizedString(u"Remove",
-                                  u"Remove long action text"),
+                                  u"Remove action text"),
             'update-must-be-installed':
                 NSLocalizedString(u"Update Required",
                                   u"Update Required long action text"),
@@ -772,7 +772,7 @@ class GenericItem(dict):
                                   u"Cancel Install long action text"),
             'must-be-installed':
                 NSLocalizedString(u"Required",
-                                  u"Install Required long action text"),
+                                  u"Install Required action text"),
         }
         return map.get(self['status'], self['status'])
 
@@ -780,11 +780,11 @@ class GenericItem(dict):
         '''Text for the version label'''
         if self['status'] == 'will-be-removed':
             removal_text = NSLocalizedString(
-                u"Will be removed", u"Will Be Removed display text")
+                u"Will be removed", u"Will Be Removed status text")
             return '<span class="warning">%s</span>' % removal_text
         if self['status'] == 'removal-requested':
             removal_text = NSLocalizedString(
-                u"Removal requested", u"Removal Requested display text")
+                u"Removal requested", u"Removal Requested status text")
             return '<span class="warning">%s</span>' % removal_text
         else:
             return NSLocalizedString(u"Version", u"Sidebar Version label")
@@ -928,7 +928,8 @@ class OptionalItem(GenericItem):
             start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('note'):
             # some other note. Probably won't be localized, but we can try
-            warning_text = NSLocalizedString(self['note'], None)
+            warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
+                self['note'], self['note'], None)
             start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
         if self.get('dependent_items'):
             start_text += self.dependency_description()

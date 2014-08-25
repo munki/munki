@@ -13,7 +13,6 @@
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C079D9C118BD435200BAD62E /* AlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C079D9C018BD435200BAD62E /* AlertController.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
-		C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
 		C090050016CDD84E00BE34CE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C09004FF16CDD84E00BE34CE /* main.m */; };
 		C090050616CDD84E00BE34CE /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = C090050516CDD84E00BE34CE /* main.py */; };
 		C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = C090050716CDD84E00BE34CE /* MSUAppDelegate.py */; };
@@ -30,6 +29,7 @@
 		C0B37443187089F300B6204E /* toolbarUpdatesTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C0B3743E187089F300B6204E /* toolbarUpdatesTemplate.pdf */; };
 		C0B3744618708A0300B6204E /* templates in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744418708A0300B6204E /* templates */; };
 		C0B3744718708A0300B6204E /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744518708A0300B6204E /* WebResources */; };
+		C0B9E8B219AB8E5500DB7247 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
 		C0E098BC1857A3C80045DEEB /* msulib.py in Resources */ = {isa = PBXBuildFile; fileRef = C0E098BB1857A3C80045DEEB /* msulib.py */; };
 		C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0F1586D187D256200052F9A /* MyStuffTemplate.png */; };
 /* End PBXBuildFile section */
@@ -91,6 +91,19 @@
 		C0B3743E187089F300B6204E /* toolbarUpdatesTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = toolbarUpdatesTemplate.pdf; sourceTree = "<group>"; };
 		C0B3744418708A0300B6204E /* templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = templates; sourceTree = "<group>"; };
 		C0B3744518708A0300B6204E /* WebResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebResources; sourceTree = "<group>"; };
+		C0B9E89F19AA2B6800DB7247 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A119AA2B8400DB7247 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A219AA2B8600DB7247 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A319AA2B8900DB7247 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A419AA2B8B00DB7247 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A519AA2B8D00DB7247 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A619AA2B9100DB7247 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A719AA2B9400DB7247 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A819AA2B9700DB7247 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A919AA2B9A00DB7247 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8AD19AA55DC00DB7247 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8AE19AA55DC00DB7247 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8AF19AA55DC00DB7247 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C0E098BB1857A3C80045DEEB /* msulib.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msulib.py; sourceTree = "<group>"; };
 		C0F1586D187D256200052F9A /* MyStuffTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MyStuffTemplate.png; sourceTree = "<group>"; };
 		E62967521993D4A400ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_GB; path = en_GB.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -180,6 +193,7 @@
 		C09004FA16CDD84E00BE34CE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C0B9E89E19AA2B6800DB7247 /* MainMenu.strings */,
 				C02C98871911B81D00425167 /* Localizable.strings */,
 				C02C98731911B55600425167 /* Managed Software Center-Info.plist */,
 				C09004FC16CDD84E00BE34CE /* InfoPlist.strings */,
@@ -280,6 +294,9 @@
 				en_GB,
 				en_AU,
 				en_US,
+				"en-CA",
+				"en-GB",
+				"en-AU",
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -296,8 +313,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0B9E8B219AB8E5500DB7247 /* InfoPlist.strings in Resources */,
 				C0B37443187089F300B6204E /* toolbarUpdatesTemplate.pdf in Resources */,
-				C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */,
 				C0E098BC1857A3C80045DEEB /* msulib.py in Resources */,
 				C0AAA21E18BAD8710012663F /* msulog.py in Resources */,
 				C094B6CF188F7C7700E06897 /* MSUStatusController.py in Resources */,
@@ -424,6 +441,26 @@
 				E665C3BB1993D5A600C428C4 /* en_AU */,
 			);
 			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		C0B9E89E19AA2B6800DB7247 /* MainMenu.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C0B9E89F19AA2B6800DB7247 /* en */,
+				C0B9E8A119AA2B8400DB7247 /* fr */,
+				C0B9E8A219AA2B8600DB7247 /* de */,
+				C0B9E8A319AA2B8900DB7247 /* es */,
+				C0B9E8A419AA2B8B00DB7247 /* da */,
+				C0B9E8A519AA2B8D00DB7247 /* fi */,
+				C0B9E8A619AA2B9100DB7247 /* nb */,
+				C0B9E8A719AA2B9400DB7247 /* ru */,
+				C0B9E8A819AA2B9700DB7247 /* sv */,
+				C0B9E8A919AA2B9A00DB7247 /* nl */,
+				C0B9E8AD19AA55DC00DB7247 /* en_AU */,
+				C0B9E8AE19AA55DC00DB7247 /* en_CA */,
+				C0B9E8AF19AA55DC00DB7247 /* en_GB */,
+			);
+			name = MainMenu.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

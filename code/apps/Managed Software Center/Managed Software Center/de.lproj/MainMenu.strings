@@ -86,15 +86,6 @@
 /* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
 "376.title" = "Navigation";
 
-/* Class = "NSButtonCell"; title = "My Items"; ObjectID = "783"; */
-"783.title" = "Installiert";
-
-/* Class = "NSButtonCell"; title = "Categories"; ObjectID = "784"; */
-"784.title" = "Kategorien";
-
-/* Class = "NSButtonCell"; title = "Software"; ObjectID = "785"; */
-"785.title" = "Software";
-
 /* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
 "1XY-pX-Pwv.title" = "Suche";
 
@@ -107,8 +98,26 @@
 /* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "Afg-mB-WlJ"; */
 "Afg-mB-WlJ.title" = "Seite neu laden";
 
-/* Class = "NSButtonCell"; title = "Updates"; ObjectID = "Lha-uh-PEV"; */
-"Lha-uh-PEV.title" = "Updates";
+/* Class = "NSToolbarItem"; label = "Updates"; ObjectID = "AjB-m1-mu8"; */
+"AjB-m1-mu8.label" = "Updates";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Updates"; ObjectID = "AjB-m1-mu8"; */
+"AjB-m1-mu8.paletteLabel" = "Updates";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
+"CEb-sx-e3H.paletteLabel" = "Navigation";
+
+/* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
+"G2X-M7-NVB.label" = "Kategorien";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
+"G2X-M7-NVB.paletteLabel" = "Kategorien";
+
+/* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "Uby-CQ-lvU"; */
+"Uby-CQ-lvU.label" = "Installiert";
+
+/* Class = "NSToolbarItem"; paletteLabel = "My Items"; ObjectID = "Uby-CQ-lvU"; */
+"Uby-CQ-lvU.paletteLabel" = "Installiert";
 
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
 "VYO-og-DRc.title" = "Software";
@@ -119,11 +128,20 @@
 /* Class = "NSMenuItem"; title = "Back"; ObjectID = "fEq-6D-Ce0"; */
 "fEq-6D-Ce0.title" = "Zurück";
 
-/* Class = "NSBox"; title = "Box"; ObjectID = "har-U9-FkJ"; */
-"har-U9-FkJ.title" = "Box";
+/* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "fbJ-cF-weR"; */
+"fbJ-cF-weR.paletteLabel" = "Suche";
+
+/* Class = "NSToolbarItem"; label = "Software"; ObjectID = "jTu-Wf-fi2"; */
+"jTu-Wf-fi2.label" = "Software";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "jTu-Wf-fi2"; */
+"jTu-Wf-fi2.paletteLabel" = "Software";
 
 /* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
 "jQt-Mr-wFT.title" = "Vollbild";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "sF1-NQ-sSb"; */
+"sF1-NQ-sSb.paletteLabel" = "Narrow Space";
 
 /* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
 "tv9-wZ-XWN.title" = "Updates";

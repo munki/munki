@@ -293,10 +293,14 @@ class MSUStatusWindowController(NSObject):
             self.window, self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)
 
     def setMessage_(self, messageText):
-        self.messageFld.setStringValue_(NSLocalizedString(messageText, None))
+        messageText = NSBundle.mainBundle().localizedStringForKey_value_table_(
+            messageText, messageText, None)
+        self.messageFld.setStringValue_(messageText)
 
     def setDetail_(self, detailText):
-        self.detailFld.setStringValue_(NSLocalizedString(detailText, None))
+        detailText = NSBundle.mainBundle().localizedStringForKey_value_table_(
+            detailText, detailText, None)
+        self.detailFld.setStringValue_(detailText)
 
     def getStopBtnState(self):
         return self.stopBtnState
@@ -323,6 +327,9 @@ def more_localized_strings():
     will be able to discover them'''
     foo = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Performing preflight tasks...", "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Performing postflight tasks...", "managedsoftwareupdate message")
+
     foo = NSLocalizedString(u"Checking for available updates...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Checking for additional changes...", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Software installed or removed requires a restart.",
@@ -341,8 +348,7 @@ def more_localized_strings():
                             "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Determining which filesystem items to remove",
                             "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Removing receipt info",
-                            "managedsoftwareupdate message")
+    foo = NSLocalizedString(u"Removing receipt info", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Nothing to remove.", "managedsoftwareupdate message")
     foo = NSLocalizedString(u"Package removal complete.", "managedsoftwareupdate message")
 
