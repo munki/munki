@@ -27,6 +27,8 @@ import FoundationPlist
 import MSUBadgedTemplateImage
 import MunkiItems
 
+from urlparse import urlparse
+
 from AlertController import AlertController
 
 from objc import YES, NO, IBAction, IBOutlet, nil
@@ -636,18 +638,26 @@ class MSUMainWindowController(NSWindowController):
         windowScriptObject.setValue_forKey_(self, 'AppController')
 
     def webView_didStartProvisionalLoadForFrame_(self, view, frame):
-        '''Animate progress spinner while we load a page'''
+        '''Animate progress spinner while we load a page and highlight the proper
+        toolbar button'''
         self.progressSpinner.startAnimation_(self)
         main_url = self.webView.mainFrameURL()
-        if main_url.endswith('category-all.html'):
+        parts = urlparse(main_url)
+        pagename = os.path.basename(parts.path)
+        msulog.debug_log('Requested pagename is %s' % pagename)
+        if (pagename == 'category-all.html'
+                or pagename.startswith('detail-')
+                or pagename.startswith('filter-')
+                or pagename.startswith('developer-')):
             self.highlightToolbarButtons_("Software")
-        elif main_url.endswith('categories.html'):
+        elif pagename == 'categories.html' or pagename.startswith('category-'):
             self.highlightToolbarButtons_("Categories")
-        elif main_url.endswith('myitems.html'):
+        elif pagename == 'myitems.html':
             self.highlightToolbarButtons_("My Items")
-        elif main_url.endswith('updates.html'):
+        elif pagename == 'updates.html' or pagename.startswith('updatedetail-'):
             self.highlightToolbarButtons_("Updates")
         else:
+            # no idea what type of item it is
             self.highlightToolbarButtons_(None)
 
     def webView_didFinishLoadForFrame_(self, view, frame):
