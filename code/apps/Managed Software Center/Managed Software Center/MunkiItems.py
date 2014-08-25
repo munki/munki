@@ -259,7 +259,7 @@ class MSUHTMLFilter(HTMLParser):
     ignore_elements = ['script', 'style', 'head', 'table', 'form']
     # preserve these tags
     preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub', 'sup', 'ins',
-                     'del', 'mark', 'span', 'br']
+                     'del', 'mark', 'span', 'br', 'img']
     # transform these tags
     transform_starttags = { 'ul': '<br>',
         'ol': '<br>',
