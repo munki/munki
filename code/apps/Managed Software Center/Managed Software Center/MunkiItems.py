@@ -255,38 +255,40 @@ def convertIconToPNG(app_name, destination_path, desired_size):
 
 class MSUHTMLFilter(HTMLParser):
     '''Filters HTML and HTML fragments for use inside description paragraphs'''
-    # ignore everything inside one of these tags
-    ignore_elements = ['script', 'style', 'head', 'table', 'form']
-    # preserve these tags
-    preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub', 'sup', 'ins',
-                     'del', 'mark', 'span', 'br', 'img']
-    # transform these tags
-    transform_starttags = { 'ul': '<br>',
-        'ol': '<br>',
-        'li': '&nbsp;&nbsp;&bull; ',
-        'h1': '<strong>',
-        'h2': '<strong>',
-        'h3': '<strong>',
-        'h4': '<strong>',
-        'h5': '<strong>',
-        'h6': '<strong>',
-        'p': ''}
-    transform_endtags =   { 'ul': '<br>',
-        'ol': '<br>',
-        'li': '<br>',
-        'h1': '</strong><br>',
-        'h2': '</strong><br>',
-        'h3': '</strong><br>',
-        'h4': '</strong><br>',
-        'h5': '</strong><br>',
-        'h6': '</strong><br>',
-        'p': '<br>'}
-    # track the currently-ignored element if any
-    current_ignore_element = None
-    # track the number of tags we found
-    tag_count = 0
-    # store our filtered/transformed html fragment
-    filtered_html = u''
+    def __init__(self):
+        HTMLParser.__init__(self)
+        # ignore everything inside one of these tags
+        self.ignore_elements = ['script', 'style', 'head', 'table', 'form']
+        # preserve these tags
+        self.preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub', 'sup', 'ins',
+                              'del', 'mark', 'span', 'br', 'img']
+        # transform these tags
+        self.transform_starttags = { 'ul': '<br>',
+                                     'ol': '<br>',
+                                     'li': '&nbsp;&nbsp;&bull; ',
+                                     'h1': '<strong>',
+                                     'h2': '<strong>',
+                                     'h3': '<strong>',
+                                     'h4': '<strong>',
+                                     'h5': '<strong>',
+                                     'h6': '<strong>',
+                                     'p': ''}
+        self.transform_endtags =   { 'ul': '<br>',
+                                     'ol': '<br>',
+                                     'li': '<br>',
+                                     'h1': '</strong><br>',
+                                     'h2': '</strong><br>',
+                                     'h3': '</strong><br>',
+                                     'h4': '</strong><br>',
+                                     'h5': '</strong><br>',
+                                     'h6': '</strong><br>',
+                                     'p': '<br>'}
+        # track the currently-ignored element if any
+        self.current_ignore_element = None
+        # track the number of tags we found
+        self.tag_count = 0
+        # store our filtered/transformed html fragment
+        self.filtered_html = u''
 
     def handle_starttag(self, tag, attrs):
         self.tag_count += 1
@@ -322,10 +324,12 @@ class MSUHTMLFilter(HTMLParser):
             self.filtered_html += name
 
 
-def filtered_html(text):
+def filtered_html(text, filter_images=False):
     '''Returns filtered HTML for use in description paragraphs
        or converts plain text into basic HTML for the same use'''
     parser = MSUHTMLFilter()
+    if filter_images:
+        parser.preserve_tags.remove('img')
     parser.feed(text)
     if parser.tag_count:
         # found at least one html tag, so this is probably HTML
@@ -471,6 +475,9 @@ class GenericItem(dict):
 
     def description(self):
         return self['raw_description']
+    
+    def description_without_images(self):
+        return filtered_html(self.description(), filter_images=True)
 
     def dependency_description(self):
         '''Return an html description of items this item depends on'''
