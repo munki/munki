@@ -50,7 +50,7 @@ def getInstallAllButtonTextForCount(count):
     if count == 0:
         return NSLocalizedString(u"Check Again", u"Check Again button title")
     elif count == 1:
-        return NSLocalizedString(u"Update", u"Update button title")
+        return NSLocalizedString(u"Update", u"Update button title/action text")
     else:
         return NSLocalizedString(u"Update All", u"Update All button title")
 

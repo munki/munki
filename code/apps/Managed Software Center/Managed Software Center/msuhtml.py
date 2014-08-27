@@ -228,7 +228,7 @@ def build_list_page(category=None, developer=None, filter=None):
     '''Build page listing available optional items'''
     items = MunkiItems.getOptionalInstallItems()
 
-    header = NSLocalizedString(u'All items', u'AllItemsHeaderText')
+    header = NSLocalizedString(u"All items", u"AllItemsHeaderText")
     page_name = u'category-all.html'
     if category == 'all':
         category = None
@@ -251,7 +251,7 @@ def build_list_page(category=None, developer=None, filter=None):
                             category=category, developer=developer, filter=filter)
 
     # make HTML for Categories pop-up menu
-    all_categories_label = NSLocalizedString(u'All Categories', u'AllCategoriesLabel')
+    all_categories_label = NSLocalizedString(u"All Categories", u"AllCategoriesLabel")
     if category:
         categories_html = u'<option>%s</option>\n' % all_categories_label
     else:
@@ -355,7 +355,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
 def build_categories_page():
     '''Build page showing available categories and some items in each one'''
     all_items = MunkiItems.getOptionalInstallItems()
-    header = NSLocalizedString(u'Categories', u'CategoriesHeaderText')
+    header = NSLocalizedString(u"Categories", u"Categories label")
     page_name = u'categories.html'
     category_list = []
     for item in all_items:
@@ -364,7 +364,7 @@ def build_categories_page():
 
     item_html = build_category_items_html()
     
-    all_categories_label = NSLocalizedString(u'All Categories', u'AllCategoriesLabel')
+    all_categories_label = NSLocalizedString(u"All Categories", u"AllCategoriesLabel")
     categories_html = u'<option selected>%s</option>\n' % all_categories_label
     for item in sorted(category_list):
         categories_html += u'<option>%s</option>\n' % item
@@ -440,7 +440,7 @@ def build_myitems_page():
 
     page = {}
     page['my_items_header_label'] = NSLocalizedString(
-        u"My Items", u"My Items Header label")
+        u"My Items", u"My Items label")
     page['myitems_rows'] = build_myitems_rows()
     
     footer = get_template('footer_template.html', raw=True)
@@ -566,7 +566,7 @@ def build_update_status_page():
 
     # don't like this bit as it ties us yet another object
     page['update_count'] = NSApp.delegate().mainWindowController._status_title or status_title_default
-    page['install_btn_label'] = NSLocalizedString(u"Cancel", u"Cancel button title")
+    page['install_btn_label'] = NSLocalizedString(u"Cancel", u"Cancel button title/short action text")
     page['warning_text'] = u''
 
     footer = get_template('footer_template.html', raw=True)
@@ -579,11 +579,11 @@ def getRestartActionForUpdateList(update_list):
         return ''
     if [item for item in update_list if 'Restart' in item.get('RestartAction', '')]:
         # found at least one item containing 'Restart' in its RestartAction
-        return NSLocalizedString(u"Restart Required", u"Require Restart message")
+        return NSLocalizedString(u"Restart Required", u"Restart Required title")
     if ([item for item in update_list if 'Logout' in item.get('RestartAction', '')]
         or munki.installRequiresLogout()):
         # found at least one item containing 'Logout' in its RestartAction
-        return NSLocalizedString(u"Logout Required", u"Require Logout message")
+        return NSLocalizedString(u"Logout Required", u"Logout Required title")
     else:
         return ''
 

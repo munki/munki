@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C002ECE41913F6D6003DD155 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE01913F6D6003DD155 /* MainMenu.strings */; };
 		C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE21913F6D6003DD155 /* Localizable.strings */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
 		C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */; };
@@ -276,7 +275,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C002ECE41913F6D6003DD155 /* MainMenu.strings in Resources */,
 				C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,

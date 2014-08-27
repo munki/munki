@@ -128,7 +128,7 @@
                             </menuItem>
                             <menuItem title="Search" keyEquivalent="f" id="1XY-pX-Pwv">
                                 <connections>
-                                    <action selector="selectText:" target="557" id="Zt1-i5-XcP"/>
+                                    <action selector="selectText:" target="gLI-O8-siB" id="0D8-FV-q15"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Jey-TI-2ca"/>
@@ -208,134 +208,171 @@
                 <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="har-U9-FkJ">
-                        <rect key="frame" x="0.0" y="674" width="1143" height="5"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                        <font key="titleFont" metaFont="system"/>
-                    </box>
                     <webView id="S5Y-lq-2nB">
-                        <rect key="frame" x="0.0" y="0.0" width="1143" height="676"/>
+                        <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
                             <nil key="identifier"/>
                         </webPreferences>
                     </webView>
-                    <searchField verticalHuggingPriority="750" id="557">
-                        <rect key="frame" x="979" y="694" width="149" height="22"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="558">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </searchFieldCell>
-                        <connections>
-                            <action selector="searchFilterChanged:" target="KMl-S0-0FF" id="bfv-In-bkh"/>
-                        </connections>
-                    </searchField>
-                    <customView autoresizesSubviews="NO" wantsLayer="YES" id="802">
-                        <rect key="frame" x="406" y="676" width="330" height="52"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <subviews>
-                            <button focusRingType="none" id="782">
-                                <rect key="frame" x="167" y="7" width="72" height="14"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="squareTextured" title="My Items" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="783">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="smallSystem"/>
-                                </buttonCell>
-                            </button>
-                            <button focusRingType="none" id="TMK-lk-F15">
-                                <rect key="frame" x="242" y="7" width="72" height="14"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="squareTextured" title="Updates" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="Lha-uh-PEV">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="smallSystem"/>
-                                </buttonCell>
-                            </button>
-                            <button focusRingType="none" id="781">
-                                <rect key="frame" x="91" y="7" width="72" height="14"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="squareTextured" title="Categories" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="784">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="smallSystem"/>
-                                </buttonCell>
-                            </button>
-                            <button focusRingType="none" id="780">
-                                <rect key="frame" x="15" y="7" width="72" height="14"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="squareTextured" title="Software" bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" state="on" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="785">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="smallSystem"/>
-                                </buttonCell>
-                            </button>
-                            <matrix verticalHuggingPriority="750" selectionByRect="NO" autosizesCells="NO" id="796">
-                                <rect key="frame" x="16" y="13" width="295" height="48"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                <size key="cellSize" width="67" height="48"/>
-                                <size key="intercellSpacing" width="9" height="0.0"/>
-                                <buttonCell key="prototype" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="797">
-                                    <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="smallSystem"/>
-                                </buttonCell>
-                                <cells>
-                                    <column>
-                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="only" alignment="center" state="on" tag="1" imageScaling="proportionallyDown" inset="2" id="769">
-                                            <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="smallSystem"/>
-                                        </buttonCell>
-                                    </column>
-                                    <column>
-                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="overlaps" alignment="center" tag="2" imageScaling="proportionallyDown" inset="2" id="771">
-                                            <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="smallSystem"/>
-                                        </buttonCell>
-                                    </column>
-                                    <column>
-                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="overlaps" alignment="center" tag="3" imageScaling="proportionallyDown" inset="2" id="773">
-                                            <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="smallSystem"/>
-                                        </buttonCell>
-                                    </column>
-                                    <column>
-                                        <buttonCell type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="overlaps" alignment="center" tag="4" imageScaling="proportionallyDown" inset="2" id="fG2-SY-8g2">
-                                            <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="smallSystem"/>
-                                        </buttonCell>
-                                    </column>
-                                </cells>
-                                <connections>
-                                    <action selector="tabControlClicked:" target="KMl-S0-0FF" id="pKT-yQ-fzz"/>
-                                </connections>
-                            </matrix>
-                        </subviews>
-                    </customView>
-                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="X8X-xa-e0T">
-                        <rect key="frame" x="72" y="697" width="16" height="16"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    </progressIndicator>
-                    <segmentedControl verticalHuggingPriority="750" id="Ist-mg-GMr">
-                        <rect key="frame" x="11" y="692" width="53" height="25"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <segmentedCell key="cell" alignment="left" style="texturedRounded" trackingMode="momentary" id="ogG-0o-C7e">
-                            <font key="font" metaFont="system"/>
-                            <segments>
-                                <segment image="NSGoLeftTemplate" width="23">
-                                    <nil key="label"/>
-                                </segment>
-                                <segment image="NSGoRightTemplate" width="23" tag="1">
-                                    <nil key="label"/>
-                                </segment>
-                            </segments>
-                        </segmentedCell>
-                        <connections>
-                            <action selector="navigationBtnClicked:" target="KMl-S0-0FF" id="TAf-0r-G7K"/>
-                        </connections>
-                    </segmentedControl>
                 </subviews>
             </view>
+            <toolbar key="toolbar" implicitIdentifier="1393D938-3469-4EFC-8191-CC1B9C26850B" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconAndLabel" sizeMode="regular" id="c5f-Iv-Tk6">
+                <allowedToolbarItems>
+                    <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="Hjz-lX-eQa"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="O3a-eC-4fX"/>
+                    <toolbarItem implicitItemIdentifier="450E106F-9925-4E50-9609-9457D33597D0" label="Software" paletteLabel="Software" image="AllItemsTemplate" id="jTu-Wf-fi2">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="29"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="CPR-oF-gUx">
+                            <rect key="frame" x="3" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="smallSystem"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="softwareToolbarButtonClicked:" target="KMl-S0-0FF" id="EBL-9Q-w81"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Categories" paletteLabel="Categories" image="toolbarCategoriesTemplate" id="G2X-M7-NVB">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="29"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="YGi-pE-3SV">
+                            <rect key="frame" x="8" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="categoriesToolbarButtonClicked:" target="KMl-S0-0FF" id="LGx-sG-Vqt"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="My Items" paletteLabel="My Items" image="MyStuffTemplate" id="Uby-CQ-lvU">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="29"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="eek-hQ-v8t">
+                            <rect key="frame" x="4" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="myItemsToolbarButtonClicked:" target="KMl-S0-0FF" id="aEj-Et-K0C"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="toolbarUpdatesTemplate" id="AjB-m1-mu8">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="caG-fL-UJh">
+                            <rect key="frame" x="1" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="only" alignment="center" inset="2" id="ZVD-Hl-dlF">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="updatesToolbarButtonClicked:" target="KMl-S0-0FF" id="J7I-Tj-wjp"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="A52A96D0-F85E-407F-818C-DC4B93605053" label="" paletteLabel="Narrow Space" tag="-1" id="sF1-NQ-sSb">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="4" height="30"/>
+                        <size key="maxSize" width="4" height="31"/>
+                        <customView key="view" id="Mui-Sc-36b">
+                            <rect key="frame" x="38" y="14" width="4" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        </customView>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="DF488649-5B94-417F-B23E-C646362F6FCA" label="" paletteLabel="Navigation" tag="-1" id="CEb-sx-e3H">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="150" height="30"/>
+                        <size key="maxSize" width="150" height="30"/>
+                        <box key="view" autoresizesSubviews="NO" transparent="YES" borderWidth="0.0" boxType="custom" borderType="none" titlePosition="noTitle" id="E6X-hz-53x">
+                            <rect key="frame" x="0.0" y="14" width="150" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view key="contentView">
+                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="mXP-yD-2El">
+                                        <rect key="frame" x="62" y="2" width="16" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    </progressIndicator>
+                                    <segmentedControl verticalHuggingPriority="750" id="jcc-R8-zGb">
+                                        <rect key="frame" x="1" y="-2" width="53" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <segmentedCell key="cell" alignment="left" style="texturedRounded" trackingMode="momentary" id="ZsM-fh-8z5">
+                                            <font key="font" metaFont="system"/>
+                                            <segments>
+                                                <segment image="NSGoLeftTemplate" width="23"/>
+                                                <segment image="NSGoRightTemplate" width="23" tag="1"/>
+                                            </segments>
+                                        </segmentedCell>
+                                        <connections>
+                                            <action selector="navigationBtnClicked:" target="KMl-S0-0FF" id="CvU-yd-Zcd"/>
+                                        </connections>
+                                    </segmentedControl>
+                                </subviews>
+                            </view>
+                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </box>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="E1A9A599-F94D-4780-9330-F2B0F75FA3BA" label="" paletteLabel="Search" tag="-1" id="fbJ-cF-weR">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="150" height="30"/>
+                        <size key="maxSize" width="150" height="30"/>
+                        <box key="view" autoresizesSubviews="NO" transparent="YES" borderWidth="0.0" boxType="custom" borderType="none" titlePosition="noTitle" id="KHk-ld-jkr">
+                            <rect key="frame" x="0.0" y="14" width="150" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view key="contentView">
+                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <searchField verticalHuggingPriority="750" id="gLI-O8-siB">
+                                        <rect key="frame" x="0.0" y="0.0" width="150" height="22"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Rxm-nO-bmO">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </searchFieldCell>
+                                        <connections>
+                                            <action selector="searchFilterChanged:" target="KMl-S0-0FF" id="497-kJ-NwJ"/>
+                                        </connections>
+                                    </searchField>
+                                </subviews>
+                            </view>
+                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </box>
+                    </toolbarItem>
+                </allowedToolbarItems>
+                <defaultToolbarItems>
+                    <toolbarItem reference="CEb-sx-e3H"/>
+                    <toolbarItem reference="O3a-eC-4fX"/>
+                    <toolbarItem reference="jTu-Wf-fi2"/>
+                    <toolbarItem reference="sF1-NQ-sSb"/>
+                    <toolbarItem reference="G2X-M7-NVB"/>
+                    <toolbarItem reference="sF1-NQ-sSb"/>
+                    <toolbarItem reference="Uby-CQ-lvU"/>
+                    <toolbarItem reference="sF1-NQ-sSb"/>
+                    <toolbarItem reference="AjB-m1-mu8"/>
+                    <toolbarItem reference="O3a-eC-4fX"/>
+                    <toolbarItem reference="fbJ-cF-weR"/>
+                </defaultToolbarItems>
+            </toolbar>
             <contentBorderThickness maxY="52"/>
             <connections>
                 <outlet property="delegate" destination="KMl-S0-0FF" id="TkM-Lg-q7E"/>
@@ -356,15 +393,18 @@
         <customObject id="KMl-S0-0FF" userLabel="MSUMainWindowController" customClass="MSUMainWindowController">
             <connections>
                 <outlet property="categoriesMenuItem" destination="9S1-fB-bKZ" id="cfs-BV-4tQ"/>
+                <outlet property="categoriesToolbarButton" destination="YGi-pE-3SV" id="7tq-ma-J77"/>
                 <outlet property="findMenuItem" destination="1XY-pX-Pwv" id="nT2-rv-DIX"/>
                 <outlet property="fullScreenMenuItem" destination="jQt-Mr-wFT" id="9tf-Lb-Mec"/>
                 <outlet property="myItemsMenuItem" destination="1uK-HI-wGR" id="Jkb-QR-M6x"/>
-                <outlet property="navigationBtn" destination="Ist-mg-GMr" id="uqa-wT-V3E"/>
-                <outlet property="progressSpinner" destination="X8X-xa-e0T" id="DtO-PP-ORa"/>
-                <outlet property="searchField" destination="557" id="HM7-VX-9cg"/>
+                <outlet property="myItemsToolbarButton" destination="eek-hQ-v8t" id="HdQ-Tf-9h7"/>
+                <outlet property="navigationBtn" destination="jcc-R8-zGb" id="Iv5-MT-vc7"/>
+                <outlet property="progressSpinner" destination="mXP-yD-2El" id="i8K-at-fcb"/>
+                <outlet property="searchField" destination="gLI-O8-siB" id="APe-GG-ZHl"/>
                 <outlet property="softwareMenuItem" destination="VYO-og-DRc" id="K69-dp-kBp"/>
-                <outlet property="tabControl" destination="796" id="AEs-wG-NLb"/>
-                <outlet property="updateButtonCell" destination="fG2-SY-8g2" id="92m-84-OS5"/>
+                <outlet property="softwareToolbarButton" destination="CPR-oF-gUx" id="PJp-bn-F4D"/>
+                <outlet property="updateButtonCell" destination="ZVD-Hl-dlF" id="epg-T1-8v1"/>
+                <outlet property="updatesToolbarButton" destination="caG-fL-UJh" id="Czs-cR-TvW"/>
                 <outlet property="webView" destination="S5Y-lq-2nB" id="TPJ-jP-F85"/>
                 <outlet property="window" destination="371" id="JK3-nH-LOl"/>
                 <outlet property="windowMenuSeperatorItem" destination="92" id="eCt-83-MtH"/>
