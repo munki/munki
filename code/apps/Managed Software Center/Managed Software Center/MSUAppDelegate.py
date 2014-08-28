@@ -51,6 +51,14 @@ class MSUAppDelegate(NSObject):
 
         ver = NSBundle.mainBundle().infoDictionary().get('CFBundleShortVersionString')
         msulog.log("MSC", "launched", "VER=%s" % ver)
+        
+        # if we're running under Snow Leopard, swap out the Dock icon for one
+        # without the Retina assets to avoid an appearance issue when the
+        # icon has a badge in the Dock (and App Switcher)
+        # Darwin major version 10 is Snow Leopard (10.6)
+        if os.uname()[2].split('.')[0] == '10':
+            myImage = NSImage.imageNamed_("Managed Software Center 10_6")
+            NSApp.setApplicationIconImage_(myImage)
 
         # setup client logging
         msulog.setup_logging()

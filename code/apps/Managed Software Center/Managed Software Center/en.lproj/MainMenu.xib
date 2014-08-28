@@ -223,7 +223,7 @@
                     <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="O3a-eC-4fX"/>
                     <toolbarItem implicitItemIdentifier="450E106F-9925-4E50-9609-9457D33597D0" label="Software" paletteLabel="Software" image="AllItemsTemplate" id="jTu-Wf-fi2">
                         <nil key="toolTip"/>
-                        <size key="minSize" width="48" height="29"/>
+                        <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
                         <button key="view" id="CPR-oF-gUx">
                             <rect key="frame" x="3" y="14" width="48" height="30"/>
@@ -239,7 +239,7 @@
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Categories" paletteLabel="Categories" image="toolbarCategoriesTemplate" id="G2X-M7-NVB">
                         <nil key="toolTip"/>
-                        <size key="minSize" width="48" height="29"/>
+                        <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
                         <button key="view" id="YGi-pE-3SV">
                             <rect key="frame" x="8" y="14" width="48" height="30"/>
@@ -255,7 +255,7 @@
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="My Items" paletteLabel="My Items" image="MyStuffTemplate" id="Uby-CQ-lvU">
                         <nil key="toolTip"/>
-                        <size key="minSize" width="48" height="29"/>
+                        <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
                         <button key="view" id="eek-hQ-v8t">
                             <rect key="frame" x="4" y="14" width="48" height="30"/>
