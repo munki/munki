@@ -5,7 +5,7 @@
 "106.title" = "Hjälp";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus Help"; ObjectID = "111"; */
-"111.title" = "Hjälp om Managed Software Update";
+"111.title" = "Hjälp för MunkiStatus";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
 "130.title" = "Tjänster";
@@ -14,10 +14,10 @@
 "131.title" = "Tjänster";
 
 /* Class = "NSMenuItem"; title = "Hide MunkiStatus"; ObjectID = "134"; */
-"134.title" = "Göm Managed Software Update";
+"134.title" = "Göm MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Quit MunkiStatus"; ObjectID = "136"; */
-"136.title" = "Avsluta Managed Software Update";
+"136.title" = "Avsluta MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
 "145.title" = "Göm övriga";
@@ -38,7 +38,7 @@
 "199.title" = "Klipp ut";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Managed Software Update";
+"1Nd-E7-vfR.title" = "Managed Software Center";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
 "202.title" = "Radera";
@@ -71,19 +71,19 @@
 "29.title" = "AHuvudmeny";
 
 /* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
-"56.title" = "Managed Software Update";
+"56.title" = "MunkiStatus";
 
 /* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
-"57.title" = "Managed Software Update";
+"57.title" = "MunkiStatus";
 
 /* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
-"58.title" = "Om Managed Software Update";
+"58.title" = "Om MunkiStatus";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
-"M20-JG-Pmr.title" = "Stop";
+"M20-JG-Pmr.title" = "Stopp";
 
 /* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
 "VCy-58-vwp.title" = "BackdropWindow";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Close";
+"bd5-IY-BXv.title" = "Stäng";
