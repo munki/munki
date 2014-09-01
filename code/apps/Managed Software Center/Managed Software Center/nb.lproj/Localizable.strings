@@ -227,8 +227,7 @@
 "Other available updates" = "Andre tilgjengelige oppdateringer";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = 
-"Andre påloggede brukere anvender følgende programmer. Prøv å oppdatere senere når de ikke lengere er i bruk:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Andre påloggede brukere anvender følgende programmer. Prøv å oppdatere senere når de ikke lengere er i bruk:\n\n%s";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Andre brukere er pålogget";
@@ -420,8 +419,10 @@
 "You have no selected software." = "Du har ikke valgt noe program.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = 
-"Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:\n\n%s";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:\n\n%s";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Datamaskinen er ikke tilkoblet en strømforsyning.";
