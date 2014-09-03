@@ -142,7 +142,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
                 # get out of fsitem loop
                 break
 
-    if not cataloginfo:
+    if not cataloginfo and not options.item:
         # look for one of the many possible Adobe installer/updaters
         cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0],
                                                     options.pkgname or '')
