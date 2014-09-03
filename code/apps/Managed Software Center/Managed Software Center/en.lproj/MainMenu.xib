@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13E28" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13E28" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" defaultVersion="1060" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="5053"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="5056"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -225,10 +225,10 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="CPR-oF-gUx">
+                        <button key="view" id="CPR-oF-gUx" customClass="MSCToolbarButton">
                             <rect key="frame" x="3" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs">
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
@@ -241,10 +241,10 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="YGi-pE-3SV">
+                        <button key="view" id="YGi-pE-3SV" customClass="MSCToolbarButton">
                             <rect key="frame" x="8" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV">
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -257,10 +257,10 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="eek-hQ-v8t">
+                        <button key="view" id="eek-hQ-v8t" customClass="MSCToolbarButton">
                             <rect key="frame" x="4" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy">
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -273,10 +273,10 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="caG-fL-UJh">
+                        <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
                             <rect key="frame" x="1" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="only" alignment="center" inset="2" id="ZVD-Hl-dlF">
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="only" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>

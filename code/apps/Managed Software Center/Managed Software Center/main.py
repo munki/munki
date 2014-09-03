@@ -16,6 +16,7 @@ from PyObjCTools import AppHelper
 import MSUAppDelegate
 import MSUMainWindowController
 import MSUStatusController
+import toolbar
 
 # get more debugging info on exceptions
 objc.setVerbose(1)
