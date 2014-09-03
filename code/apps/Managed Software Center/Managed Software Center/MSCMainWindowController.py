@@ -168,10 +168,15 @@ class MSCMainWindowController(NSWindowController):
 
     def enableOrDisableToolbarButtons_(self, enabled_state):
         '''Enable or disable buttons in our toolbar'''
+        if self.window().isMainWindow() == NO:
+            enabled_state = NO
+            updates_button_state = NO
+        else:
+            updates_button_state = YES
         self.softwareToolbarButton.setEnabled_(enabled_state)
         self.categoriesToolbarButton.setEnabled_(enabled_state)
         self.myItemsToolbarButton.setEnabled_(enabled_state)
-        self.updatesToolbarButton.setEnabled_(YES)
+        self.updatesToolbarButton.setEnabled_(updates_button_state)
         
     def enableOrDisableSoftwareViewControls(self):
         '''Disable or enable the controls that let us view optional items'''
@@ -308,11 +313,16 @@ class MSCMainWindowController(NSWindowController):
         NSApp.terminate_(self)
         return NO
     
-    #def windowDidBecomeMain_(self, notification):
-    #    '''Our window was activated, make sure controls enabled as needed'''
-    #    optional_items = MunkiItems.getOptionalInstallItems()
-    #    enabled_state = (len(optional_items) > 0)
-    #    self.enableOrDisableToolbarButtons_(enabled_state)
+    def windowDidBecomeMain_(self, notification):
+        '''Our window was activated, make sure controls enabled as needed'''
+        optional_items = MunkiItems.getOptionalInstallItems()
+        enabled_state = (len(optional_items) > 0)
+        self.enableOrDisableToolbarButtons_(enabled_state)
+    
+    def windowDidResignMain_(self, notification):
+        '''Our window was deactivated, make sure controls enabled as needed'''
+        self.enableOrDisableToolbarButtons_(NO)
+
 
     def configureFullScreenMenuItem(self):
         '''check to see if NSWindow's toggleFullScreen: selector is implemented.
