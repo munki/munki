@@ -10,7 +10,7 @@ import os
 #import sys
 
 import munki
-import msulog
+import msclog
 import MunkiItems
 
 from objc import YES, NO, IBAction, IBOutlet, nil
@@ -44,19 +44,19 @@ class AlertController(NSObject):
         time_til_logout = int(logout_time.timeIntervalSinceNow() / 60)
         if time_til_logout > 55:
             deadline_str = munki.stringFromDate(logout_time)
-            msulog.log("user", "forced_logout_warning_initial")
+            msclog.log("user", "forced_logout_warning_initial")
             formatString = NSLocalizedString(
                     u"A logout will be forced at approximately %s.",
                     u"Logout warning string when logout is an hour or more away")
             infoText = formatString % deadline_str + u"\n" + moreText
         elif time_til_logout > 0:
-            msulog.log("user", "forced_logout_warning_%s" % time_til_logout)
+            msclog.log("user", "forced_logout_warning_%s" % time_til_logout)
             formatString = NSLocalizedString(
                     u"A logout will be forced in less than %s minutes.",
                     u"Logout warning string when logout is in < 60 minutes")
             infoText = formatString % time_til_logout + u"\n" + moreText
         else:
-            msulog.log("user", "forced_logout_warning_final")
+            msclog.log("user", "forced_logout_warning_final")
             infoText = NSLocalizedString(
                 (u"A logout will be forced in less than a minute.\nAll pending "
                   "updates will be installed. Unsaved work will be lost."),
@@ -98,10 +98,10 @@ class AlertController(NSObject):
         '''Called when the forced logout warning alert ends'''
         btn_pressed = self._force_warning_btns.get(returncode)
         if btn_pressed == self._force_warning_logout_btn:
-            msulog.log("user", "install_with_logout")
+            msclog.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
         elif btn_pressed == self._force_warning_ok_btn:
-            msulog.log("user", "dismissed_forced_logout_warning")
+            msclog.log("user", "dismissed_forced_logout_warning")
 
     def alertToExtraUpdates(self):
         '''Notify user of additional pending updates'''
@@ -155,7 +155,7 @@ class AlertController(NSObject):
                     self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
         else:
             # we shouldn't have been invoked if neither a restart or logout was required
-            msulog.debug_log(
+            msclog.debug_log(
                         'confirmUpdatesAndInstall was called but no restart or logout was needed')
 
     @AppHelper.endSheetMethod
@@ -167,22 +167,22 @@ class AlertController(NSObject):
             # might involve opening another alert sheet
             alert.window().orderOut_(self)
             if self.alertedToFirmwareUpdatesAndCancelled():
-                msulog.log("user", "alerted_to_firmware_updates_and_cancelled")
+                msclog.log("user", "alerted_to_firmware_updates_and_cancelled")
                 return
             elif self.alertedToRunningOnBatteryAndCancelled():
-                msulog.log("user", "alerted_on_battery_power_and_cancelled")
+                msclog.log("user", "alerted_on_battery_power_and_cancelled")
                 return
-            msulog.log("user", "install_with_logout")
+            msclog.log("user", "install_with_logout")
             result = munki.logoutAndUpdate()
             if result:
                 self.installSessionErrorAlert()
         elif returncode == NSAlertAlternateReturn:
-            msulog.log("user", "cancelled")
+            msclog.log("user", "cancelled")
 
     def alertedToMultipleUsers(self):
         '''Returns True if there are multiple GUI logins; alerts as a side effect'''
         if len(munki.currentGUIusers()) > 1:
-            msulog.log("MSC", "multiple_gui_users_update_cancelled")
+            msclog.log("MSC", "multiple_gui_users_update_cancelled")
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Other users logged in", u"Other Users Logged In title"),
                 NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
@@ -223,7 +223,7 @@ class AlertController(NSObject):
                                 if item['user'] != current_user]
             my_apps = [item['display_name'] for item in running_apps
                        if item['user'] == current_user]
-            msulog.log("MSC", "conflicting_apps", ','.join(other_users_apps + my_apps))
+            msclog.log("MSC", "conflicting_apps", ','.join(other_users_apps + my_apps))
             if other_users_apps:
                 detailText = NSLocalizedString(
                     (u"Other logged in users are using the following applications. "
@@ -332,7 +332,7 @@ class AlertController(NSObject):
                     (u"For best results, you should connect your computer to a "
                     "power source before updating. Are you sure you want to "
                     "continue the update?"), u"No Power Source Warning detail"))
-            msulog.log("MSU", "alert_on_battery_power")
+            msclog.log("MSU", "alert_on_battery_power")
             # making UI consistent with Apple Software Update...
             # set Cancel button to be activated by return key
             alert.buttons()[1].setKeyEquivalent_('\r')

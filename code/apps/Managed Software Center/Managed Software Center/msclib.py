@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-#  msulib.py
+#  msclib.py
 #
 #  Created by Greg Neagle on 12/10/13.
 #  Copyright 2010-2014 Greg Neagle.
@@ -29,7 +29,7 @@ from zipfile import ZipFile
 from Foundation import *
 from AppKit import *
 
-import msulog
+import msclog
 import munki
 
 _html_dir = None
@@ -67,12 +67,12 @@ def get_custom_resources():
             try:
                 shutil.rmtree(dest_path, ignore_errors=True)
             except (OSError, IOError), err:
-                msulog.debug_log('Error clearing %s: %s' % (dest_path, err))
+                msclog.debug_log('Error clearing %s: %s' % (dest_path, err))
         if not os.path.exists(dest_path):
             try:
                 os.mkdir(dest_path)
             except (OSError, IOError), err:
-                msulog.debug_log('Error creating %s: %s' % (dest_path, err))
+                msclog.debug_log('Error creating %s: %s' % (dest_path, err))
         archive = ZipFile(source_path)
         archive_files = archive.namelist()
         # sanity checking in case the archive is not built correctly
@@ -80,7 +80,7 @@ def get_custom_resources():
                             if filename.startswith('resources/')
                             or filename.startswith('templates/')]
         if not files_to_extract:
-            msulog.debug_log('Invalid client resources archive.')
+            msclog.debug_log('Invalid client resources archive.')
         for filename in files_to_extract:
             try:
                 if filename.endswith('/'):
@@ -90,7 +90,7 @@ def get_custom_resources():
                 else:
                     archive.extract(filename, dest_path)
             except (OSError, IOError), err:
-                msulog.debug_log('Error expanding %s from archive: %s' % (filename, err))
+                msclog.debug_log('Error expanding %s from archive: %s' % (filename, err))
 
 
 def html_dir():

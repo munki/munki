@@ -378,19 +378,19 @@
                 <outlet property="delegate" destination="KMl-S0-0FF" id="TkM-Lg-q7E"/>
             </connections>
         </window>
-        <customObject id="373" userLabel="MSUAppDelegate" customClass="MSUAppDelegate">
+        <customObject id="373" userLabel="MSCAppDelegate" customClass="MSCAppDelegate">
             <connections>
                 <outlet property="mainWindowController" destination="KMl-S0-0FF" id="m7n-3a-HoQ"/>
                 <outlet property="statusController" destination="GhX-6Z-STv" id="3ln-OI-LRD"/>
             </connections>
         </customObject>
         <customObject id="420" customClass="NSFontManager"/>
-        <customObject id="GhX-6Z-STv" customClass="MSUStatusController">
+        <customObject id="GhX-6Z-STv" customClass="MSCStatusController">
             <connections>
                 <outlet property="statusWindowController" destination="KMl-S0-0FF" id="bGK-ut-hWM"/>
             </connections>
         </customObject>
-        <customObject id="KMl-S0-0FF" userLabel="MSUMainWindowController" customClass="MSUMainWindowController">
+        <customObject id="KMl-S0-0FF" userLabel="MSCMainWindowController" customClass="MSCMainWindowController">
             <connections>
                 <outlet property="categoriesMenuItem" destination="9S1-fB-bKZ" id="cfs-BV-4tQ"/>
                 <outlet property="categoriesToolbarButton" destination="YGi-pE-3SV" id="7tq-ma-J77"/>

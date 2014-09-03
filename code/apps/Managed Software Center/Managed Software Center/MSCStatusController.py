@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# MSUStatusController.py
+# MSCStatusController.py
 #
 # Copyright 2009-2014 Greg Neagle.
 #
@@ -21,7 +21,7 @@ from objc import YES, NO, IBAction, IBOutlet, nil
 import os
 import time
 import munki
-import msulog
+import msclog
 import FoundationPlist
 from Foundation import *
 from AppKit import *
@@ -29,7 +29,7 @@ from PyObjCTools import AppHelper
 
 debug = False
 
-class MSUStatusController(NSObject):
+class MSCStatusController(NSObject):
     '''
     Handles status messages from managedsoftwareupdate
     '''
@@ -96,10 +96,10 @@ class MSUStatusController(NSObject):
                 self.timeout_counter = 6
                 self.saw_process = True
             else:
-                msulog.debug_log('managedsoftwareupdate not running...')
+                msclog.debug_log('managedsoftwareupdate not running...')
                 self.timeout_counter -= 1
             if self.timeout_counter == 0:
-                msulog.debug_log('Timed out waiting for managedsoftwareupdate.')
+                msclog.debug_log('Timed out waiting for managedsoftwareupdate.')
                 if self.saw_process:
                     self.sessionEnded_(UNEXPECTEDLY_QUIT)
                 else:
@@ -120,10 +120,10 @@ class MSUStatusController(NSObject):
         
     def updateStatus_(self, notification):
         '''Got update status notification from managedsoftwareupdate'''
-        msulog.debug_log('Got munkistatus update notification')
+        msclog.debug_log('Got munkistatus update notification')
         self.got_status_update = True
         info = notification.userInfo()
-        msulog.debug_log('%s' % info)
+        msclog.debug_log('%s' % info)
         # explictly get keys from info object; PyObjC in Mountain Lion
         # seems to need this
         info_keys = info.keys()
@@ -150,7 +150,7 @@ class MSUStatusController(NSObject):
             # so switch to the right mode
             self.startMunkiStatusSession()
         if command:
-            msulog.debug_log('Received command: %s' % command)
+            msclog.debug_log('Received command: %s' % command)
         if command == 'activate':
             pass
             #NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?

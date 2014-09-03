@@ -21,7 +21,7 @@
 
 import os
 import sys
-import msulib
+import msclib
 import munki
 
 from operator import itemgetter
@@ -253,7 +253,7 @@ def convertIconToPNG(app_name, destination_path, desired_size):
     return False
 
 
-class MSUHTMLFilter(HTMLParser):
+class MSCHTMLFilter(HTMLParser):
     '''Filters HTML and HTML fragments for use inside description paragraphs'''
     def __init__(self):
         HTMLParser.__init__(self)
@@ -327,7 +327,7 @@ class MSUHTMLFilter(HTMLParser):
 def filtered_html(text, filter_images=False):
     '''Returns filtered HTML for use in description paragraphs
        or converts plain text into basic HTML for the same use'''
-    parser = MSUHTMLFilter()
+    parser = MSCHTMLFilter()
     if filter_images:
         parser.preserve_tags.remove('img')
     parser.feed(text)
@@ -515,7 +515,7 @@ class GenericItem(dict):
         icon_name = self.get('icon_name') or self['name']
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
-        icon_path = os.path.join(msulib.html_dir(), 'icons', icon_name)
+        icon_path = os.path.join(msclib.html_dir(), 'icons', icon_name)
         if os.path.exists(icon_path):
             return 'icons/' + icon_name
         # didn't find one in the downloaded icons
@@ -526,7 +526,7 @@ class GenericItem(dict):
                 icon_name = name
                 if not os.path.splitext(icon_name)[1] in icon_known_exts:
                     icon_name += '.png'
-                icon_path = os.path.join(msulib.html_dir(), icon_name)
+                icon_path = os.path.join(msclib.html_dir(), icon_name)
                 if os.path.exists(icon_path) or convertIconToPNG(name, icon_path, 350):
                     return icon_name
         else:

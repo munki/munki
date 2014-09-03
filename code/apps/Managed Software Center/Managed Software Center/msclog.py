@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-#  msulog.py
+#  msclog.py
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 2/23/14.

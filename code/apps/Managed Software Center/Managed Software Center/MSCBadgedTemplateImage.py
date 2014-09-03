@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# MSUBadgedTemplateImage.py
+# MSCBadgedTemplateImage.py
 # Managed Software Center
 #
 # Copyright 2014 Greg Neagle.
@@ -21,7 +21,7 @@
 from Foundation import *
 from AppKit import *
 
-class MSUBadgedTemplateImage(NSImage):
+class MSCBadgedTemplateImage(NSImage):
     '''Subclass to handle our updates template image with a badge showing the count
     of available updates'''
     
@@ -38,7 +38,7 @@ class MSUBadgedTemplateImage(NSImage):
         
         if count == 0:
             # no badge if there are no updates
-            return super(MSUBadgedTemplateImage, self).imageNamed_(name)
+            return super(MSCBadgedTemplateImage, self).imageNamed_(name)
         # build badge string and get its size
         badgeString = NSString.stringWithString_(unicode(count))
         badgeFont = NSFontManager.sharedFontManager().fontWithFamily_traits_weight_size_(
@@ -53,7 +53,7 @@ class MSUBadgedTemplateImage(NSImage):
             badgeOutlineWidth = badgeOutlineHeight
         
         # get our base image
-        baseImage = super(MSUBadgedTemplateImage, self).imageNamed_(name).copy()
+        baseImage = super(MSCBadgedTemplateImage, self).imageNamed_(name).copy()
         
         # size our composite image large enough to include the badge
         compositeImageSize = NSMakeSize(baseImage.size().width + badgeOutlineHeight,

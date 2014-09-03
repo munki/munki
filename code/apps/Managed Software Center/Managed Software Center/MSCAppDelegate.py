@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-#  MSUAppDelegate.py
+#  MSCAppDelegate.py
 #  Managed Software Center
 #
 #  Copyright 2013-2014 Greg Neagle.
@@ -27,14 +27,14 @@ import PyObjCTools
 from Foundation import *
 from AppKit import *
 
-from MSUStatusController import MSUStatusController
+from MSCStatusController import MSCStatusController
 
 import munki
-import msuhtml
-import msulog
+import mschtml
+import msclog
 import MunkiItems
 
-class MSUAppDelegate(NSObject):
+class MSCAppDelegate(NSObject):
 
     mainWindowController = IBOutlet()
     statusController = IBOutlet()
@@ -50,7 +50,7 @@ class MSUAppDelegate(NSObject):
             NSApp.disableRelaunchOnLogin()
 
         ver = NSBundle.mainBundle().infoDictionary().get('CFBundleShortVersionString')
-        msulog.log("MSC", "launched", "VER=%s" % ver)
+        msclog.log("MSC", "launched", "VER=%s" % ver)
         
         # if we're running under Snow Leopard, swap out the Dock icon for one
         # without the Retina assets to avoid an appearance issue when the
@@ -61,7 +61,7 @@ class MSUAppDelegate(NSObject):
             NSApp.setApplicationIconImage_(myImage)
 
         # setup client logging
-        msulog.setup_logging()
+        msclog.setup_logging()
 
         # have the statuscontroller register for its own notifications
         self.statusController.registerForNotifications()
@@ -106,17 +106,17 @@ class MSUAppDelegate(NSObject):
         '''Handle openURL messages'''
         keyDirectObject = struct.unpack(">i", "----")[0]
         url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
-        msulog.log("MSU", "Called by external URL: %s", url)
+        msclog.log("MSU", "Called by external URL: %s", url)
         parsed_url = urlparse(url)
         if parsed_url.scheme != 'munki':
-            msulog.debug_log("URL %s has unsupported scheme" % url)
+            msclog.debug_log("URL %s has unsupported scheme" % url)
             return
-        filename = msuhtml.unquote(parsed_url.netloc)
+        filename = mschtml.unquote(parsed_url.netloc)
         # add .html if no extension
         if not os.path.splitext(filename)[1]:
             filename += u'.html'
         if filename.endswith(u'.html'):
-            msuhtml.build_page(filename)
+            mschtml.build_page(filename)
             self.mainWindowController.load_page(filename)
         else:
-            msulog.debug_log("%s doesn't have a valid extension. Prevented from opening" % url)
+            msclog.debug_log("%s doesn't have a valid extension. Prevented from opening" % url)

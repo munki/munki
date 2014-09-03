@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-#  toolbar
+#  MSCToolbar
 #  Managed Software Center
 #
 #  Created by Daniel Hazelbaker on 9/2/14.

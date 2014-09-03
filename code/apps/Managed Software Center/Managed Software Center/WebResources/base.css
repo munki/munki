@@ -847,11 +847,11 @@ div.lockup-container div.lockup.category li.genre a {
     color: #4f5459
 }
 
-div.msu-button.small {
+div.msc-button.small {
     display: inline;
 }
 
-div.msu-button-inner {
+div.msc-button-inner {
     height: 13px;
     -webkit-border-radius: 10px;
     background: -webkit-gradient(linear, 0% 0, 0% 100%, from( #A8AAAF), color-stop(0.05, #A6A8AE), color-stop(0.5, #A1A3A9), color-stop(0.96, #9C9EA4), to( #989DA3));
@@ -864,12 +864,12 @@ div.msu-button-inner {
     padding-right: 10px;
 }
 
-div.msu-button-inner.installed-not-removable, 
-div.msu-button-inner.unavailable,
-div.msu-button-inner.installing, 
-div.msu-button-inner.must-be-installed,
-div.msu-button-inner.update-must-be-installed,
-div.msu-button-inner.removing {
+div.msc-button-inner.installed-not-removable, 
+div.msc-button-inner.unavailable,
+div.msc-button-inner.installing, 
+div.msc-button-inner.must-be-installed,
+div.msc-button-inner.update-must-be-installed,
+div.msc-button-inner.removing {
     background: none;
     cursor: default;
     pointer-events: none;
@@ -877,11 +877,11 @@ div.msu-button-inner.removing {
     color: rgba(40,40,40,.35);
 }
 
-div.msu-button-inner:not(.installed-not-removable):hover {
+div.msc-button-inner:not(.installed-not-removable):hover {
     background: -webkit-gradient(linear, left top, left bottom, from( #85868d), color-stop(0.05, #84858c), color-stop(0.5, #888188), color-stop(0.96, #7b7c83), to( #7a7bb2))
 }
 
-div.msu-button button {
+div.msc-button button {
     -webkit-appearance: none;
     -webkit-border-radius: 0;
     -webkit-font-smoothing: antialiased;
@@ -893,7 +893,7 @@ div.msu-button button {
     cursor: default;
 }
 
-div.msu-button-inner.large {
+div.msc-button-inner.large {
     height: 23px;
     position: relative;
     min-width: 50px;
@@ -910,12 +910,12 @@ div.msu-button-inner.large {
     -webkit-border-radius: 5px;
 }
 
-div.msu-button-inner.large.installed-not-removable,
-div.msu-button-inner.large.must-be-installed,
-div.msu-button-inner.large.update-must-be-installed,
-div.msu-button-inner.large.unavailable,
-div.msu-button-inner.large.installing, 
-div.msu-button-inner.large.removing {
+div.msc-button-inner.large.installed-not-removable,
+div.msc-button-inner.large.must-be-installed,
+div.msc-button-inner.large.update-must-be-installed,
+div.msc-button-inner.large.unavailable,
+div.msc-button-inner.large.installing, 
+div.msc-button-inner.large.removing {
     background: none;
     border: 1px solid rgba(40,40,40,.35);
     color: rgba(40,40,40,.35);
@@ -924,20 +924,20 @@ div.msu-button-inner.large.removing {
     text-shadow: rgba(255,255,255,1) 0 1px 0;
 }
 
-div.msu-button-inner.large:not(.installed-not-removable):hover {
+div.msc-button-inner.large:not(.installed-not-removable):hover {
     background: -webkit-gradient(linear, left top, left bottom, from( #0067B8), color-stop(0.49, #00509A), color-stop(0.50, #003E85), to( #003777))
 }
 
-div.msu-button.install-updates {
+div.msc-button.install-updates {
     display: inline;
     float: right;
 }
 
-div.msu-button.install-updates.in-header {
+div.msc-button.install-updates.in-header {
     margin-top: -2px;
 }
 
-div.msu-button-inner.install-updates {
+div.msc-button-inner.install-updates {
     height: 23px;
     position: relative;
     min-width: 90px;
@@ -954,13 +954,13 @@ div.msu-button-inner.install-updates {
     -webkit-border-radius: 3px;
 }
 
-div.msu-button-inner.install-updates.disabled,
-div.msu-button-inner.install-updates.installed-not-removable,
-div.msu-button-inner.install-updates.unavailable,
-div.msu-button-inner.install.must-be-installed,
-div.msu-button-inner.install.update-must-be-installed,
-div.msu-button-inner.install-updates.installing,
-div.msu-button-inner.install-updates.removing {
+div.msc-button-inner.install-updates.disabled,
+div.msc-button-inner.install-updates.installed-not-removable,
+div.msc-button-inner.install-updates.unavailable,
+div.msc-button-inner.install.must-be-installed,
+div.msc-button-inner.install.update-must-be-installed,
+div.msc-button-inner.install-updates.installing,
+div.msc-button-inner.install-updates.removing {
     background: none;
     border: 1px solid rgba(40,40,40,.35);
     color: rgba(40,40,40,.35);
@@ -969,7 +969,7 @@ div.msu-button-inner.install-updates.removing {
     text-shadow: rgba(255,255,255,1) 0 1px 0;
 }
 
-div.msu-button-inner.install-updates:not(.installed-not-removable):hover {
+div.msc-button-inner.install-updates:not(.installed-not-removable):hover {
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#5e5fa0), color-stop(4%,#67686f), color-stop(50%,#736d73), color-stop(95%,#6f7077), color-stop(100%,#707178));
 }
 

@@ -13,10 +13,10 @@ import AppKit
 from PyObjCTools import AppHelper
 
 # import modules containing classes required to start application and load MainMenu.nib
-import MSUAppDelegate
-import MSUMainWindowController
-import MSUStatusController
-import toolbar
+import MSCAppDelegate
+import MSCMainWindowController
+import MSCStatusController
+import MSCToolbar
 
 # get more debugging info on exceptions
 objc.setVerbose(1)

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-#  msuhtml.py
+#  mschtml.py
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 2/24/14.
@@ -14,8 +14,8 @@ from string import Template
 from unicodedata import normalize
 
 import MunkiItems
-import msulib
-import msulog
+import msclib
+import msclog
 import munki
 
 from AppKit import NSApp
@@ -39,7 +39,7 @@ def unquote(a_string):
 def get_template(template_name, raw=False):
     '''return an html template. If raw is True, just return the string; otherwise
     return a string Template object'''
-    customTemplatesPath = os.path.join(msulib.html_dir(), 'custom/templates')
+    customTemplatesPath = os.path.join(msclib.html_dir(), 'custom/templates')
     resourcesPath = NSBundle.mainBundle().resourcePath()
     defaultTemplatesPath = os.path.join(resourcesPath, 'templates')
     for directory in [customTemplatesPath, defaultTemplatesPath]:
@@ -59,7 +59,7 @@ def get_template(template_name, raw=False):
 
 def build_page(filename):
     '''Dispatch request to build a page to the appropriate function'''
-    msulog.debug_log(u'build_page for %s' % filename)
+    msclog.debug_log(u'build_page for %s' % filename)
     name = os.path.splitext(filename)[0]
     key, p, value = name.partition('-')
     if key == 'detail':
@@ -84,13 +84,13 @@ def build_page(filename):
 
 def write_page(page_name, html):
     '''write html to page_name in our local html directory'''
-    html_file = os.path.join(msulib.html_dir(), page_name)
+    html_file = os.path.join(msclib.html_dir(), page_name)
     try:
         f = open(html_file, 'w')
         f.write(html.encode('utf-8'))
         f.close()
     except (OSError, IOError), err:
-        msulog.debug_log('write_page error: %s', str(err))
+        msclog.debug_log('write_page error: %s', str(err))
         raise
 
 
@@ -110,7 +110,7 @@ def assemble_page(main_page_template_name, page_dict, **kwargs):
 
 def generate_page(page_name, main_page_template_name, page_dict, **kwargs):
     '''Assembles HTML and writes the page to page_name in our local html directory'''
-    msulog.debug_log('generate_page for %s' % page_name)
+    msclog.debug_log('generate_page for %s' % page_name)
     html = assemble_page(main_page_template_name, page_dict, **kwargs)
     write_page(page_name, html)
 
@@ -167,7 +167,7 @@ def build_item_not_found_page(page_name):
 
 def build_detail_page(item_name):
     '''Build page showing detail for a single optional item'''
-    msulog.debug_log('build_detail_page for %s' % item_name)
+    msclog.debug_log('build_detail_page for %s' % item_name)
     items = MunkiItems.getOptionalInstallItems()
     page_name = u'detail-%s.html' % item_name
     for item in items:
@@ -220,7 +220,7 @@ def build_detail_page(item_name):
             footer = get_template('footer_template.html', raw=True)
             generate_page(page_name, 'detail_template.html', page, footer=footer)
             return
-    msulog.debug_log('No detail found for %s' % item_name)
+    msclog.debug_log('No detail found for %s' % item_name)
     build_item_not_found_page(page_name)
 
 
@@ -294,7 +294,7 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
         # so before we do our comparison, we normalize the unicode string
         # using unicodedata.normalize
         filter = normalize('NFC', filter)
-        msulog.debug_log(u'Filtering on %s' % filter)
+        msclog.debug_log(u'Filtering on %s' % filter)
         items = [item for item in items
                  if filter in item['display_name'].lower()
                  or filter in item['description'].lower()
@@ -508,8 +508,8 @@ def build_updates_page():
         page['update_rows'] = status_results_template.safe_substitute(alert)
 
     count = len(item_list)
-    page['update_count'] = msulib.updateCountMessage(count)
-    page['install_btn_label'] = msulib.getInstallAllButtonTextForCount(count)
+    page['update_count'] = msclib.updateCountMessage(count)
+    page['install_btn_label'] = msclib.getInstallAllButtonTextForCount(count)
     page['warning_text'] = get_warning_text()
 
     page['other_updates_header_message'] = NSLocalizedString(
@@ -634,6 +634,6 @@ def build_updatedetail_page(identifier):
             generate_page(page_name, 'updatedetail_template.html', page, footer=footer)
             return
     # if we get here we didn't find any item matching identifier
-    msulog.debug_log('No update detail found for %s' % item_name)
+    msclog.debug_log('No update detail found for %s' % item_name)
     build_item_not_found_page(page_name)
 
