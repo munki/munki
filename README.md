@@ -1,7 +1,7 @@
 munki
 =====
 
-Managed software installation for OS X
+_Managed software installation for OS X_
 
 Munki is a set of tools that, used together with a webserver-based repository of packages and package metadata, can be used by OS X administrators to manage software installs (and in many cases removals) on OS X client machines.
 
