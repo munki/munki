@@ -11,7 +11,7 @@ Additionally, Munki can be configured to install Apple Software Updates, either 
 
 Munki is currently in use at organizations all over the world, managing software for tens of thousands of Macs.
 
-Check out the Wiki for some notes and documentation, and browse and/or check out the source. See [munkibuilds.org](https://munkibuilds.org) for pre-built installer packages.
+Check out the Wiki for some notes and documentation, and browse and/or check out the source. See the [releases page](https://github.com/munki/munki/releases) or [munkibuilds.org](https://munkibuilds.org) for pre-built installer packages.
 
 Get started with Munki here: [Getting Started with Munki](https://github.com/munki/munki/wiki/Getting-Started-With-Munki)
 
