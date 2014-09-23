@@ -139,11 +139,12 @@ def initMunkiDirs():
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     manifestsdir = os.path.join(ManagedInstallDir, 'manifests')
     catalogsdir = os.path.join(ManagedInstallDir, 'catalogs')
+    iconsdir = os.path.join(ManagedInstallDir, 'icons')
     cachedir = os.path.join(ManagedInstallDir, 'Cache')
     logdir = os.path.join(ManagedInstallDir, 'Logs')
 
     if not createDirsIfNeeded([ManagedInstallDir, manifestsdir, catalogsdir,
-                               cachedir, logdir]):
+                               iconsdir, cachedir, logdir]):
         munkicommon.display_error('Could not create needed directories '
                                   'in %s' % ManagedInstallDir)
         return False
@@ -297,7 +298,7 @@ def munkiUpdatesAvailable():
             munkicommon.display_error('Install info at %s is invalid.' %
                                        installinfo)
     return updatesavailable
-    
+
 
 def munkiUpdatesContainAppleItems():
     """Return True if there are any Apple items in the list of updates"""
@@ -328,14 +329,39 @@ def recordUpdateCheckResult(result):
     munkicommon.set_pref('LastCheckResult', result)
 
 
+def sendDistrubutedNotification(notification_name, userInfo=None):
+    '''Sends a NSDistributedNotification'''
+    dnc = NSDistributedNotificationCenter.defaultCenter()
+    dnc.postNotificationName_object_userInfo_options_(
+        notification_name,
+        None,
+        userInfo,
+        NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+
+
 def sendUpdateNotification():
     '''Sends an update notification via NSDistributedNotificationCenter
     MSU.app registers to receive these events.'''
-    dnc = NSDistributedNotificationCenter.defaultCenter()
-    dnc.postNotificationName_object_userInfo_options_(
-        'com.googlecode.munki.ManagedSoftwareUpdate.update',
-        None, None,
-        NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.updateschanged',
+        userInfo)
+
+
+def sendStartNotification():
+    '''Sends a start notification via NSDistributedNotificationCenter'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.started',
+        userInfo)
+
+
+def sendEndNotification():
+    '''Sends a start notification via NSDistributedNotificationCenter'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.ended',
+        userInfo)
 
 
 def notifyUserOfUpdates(force=False):
@@ -396,11 +422,6 @@ def main():
     # install handler for SIGTERM
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # check to see if we're root
-    if os.geteuid() != 0:
-        print >> sys.stderr, 'You must run this as root!'
-        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
-
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 
@@ -445,6 +466,16 @@ def main():
                       help='Print the version of the munki tools and exit.')
 
     options, unused_arguments = p.parse_args()
+
+    if options.version:
+        print munkicommon.get_version()
+        exit(0)
+
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print >> sys.stderr, 'You must run this as root!'
+        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
+
     runtype = 'custom'
 
     checkandinstallatstartupflag = \
@@ -452,10 +483,6 @@ def main():
     installatstartupflag = \
                '/Users/Shared/.com.googlecode.munki.installatstartup'
     installatlogoutflag = '/private/tmp/com.googlecode.munki.installatlogout'
-
-    if options.version:
-        print munkicommon.get_version()
-        exit(0)
 
     if options.auto:
         # typically invoked by a launch daemon periodically.
@@ -575,6 +602,7 @@ def main():
         print 'http://code.google.com/p/munki\n'
 
     munkicommon.display_status_major('Starting...')
+    sendStartNotification()
     # run the preflight script if it exists
     preflightscript = os.path.join(scriptdir, 'preflight')
     result = runScript(preflightscript, 'preflight', runtype)
@@ -647,14 +675,21 @@ def main():
                 # connect to socket and quit
                 munkistatus.activate()
                 munkistatus.quit()
-            munkicommon.cleanUpTmpDir()
-            exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
+            if not options.auto:
+                munkicommon.cleanUpTmpDir()
+                exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
+            else:
+                # even if we can't reach the manifest server, we can
+                # attempt to do installs of cached items. Setting
+                # options.installonly to True will cause the updatecheck
+                # to be skipped
+                options.installonly = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
     munkicommon.reset_warnings()
     munkicommon.rotate_main_log()
-   
+
     # archive the previous session's report
     munkicommon.archive_report()
 
@@ -700,11 +735,11 @@ def main():
             os.unlink(appleupdates_plist)
         except OSError:
             pass
-        
+
     else:
         # check the normal preferences
         should_do_apple_updates = munkicommon.pref(
-                                        'InstallAppleSoftwareUpdates') 
+                                        'InstallAppleSoftwareUpdates')
 
     if should_do_apple_updates:
         if (not options.installonly and not munkicommon.stopRequested()):
@@ -766,6 +801,10 @@ def main():
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks(appleupdatesavailable)
+            # send a notification event so MSU can update its display
+            # if needed
+            sendUpdateNotification()
+
         elif options.auto:
             if not munkicommon.currentGUIusers():  # no GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
@@ -801,8 +840,9 @@ def main():
                     # no GUI users, system is idle, so we can install
                     # but first, enable status output over login window
                     munkicommon.munkistatusoutput = True
+                    munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
-                    
+
             else:  # there are GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
@@ -819,7 +859,7 @@ def main():
                 # send a notification event so MSU can update its display
                 # if needed
                 sendUpdateNotification()
-               
+
                 force_action = updatecheck.checkForceInstallPackages()
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
@@ -845,7 +885,7 @@ def main():
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
-                   
+
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
                    'updates.' % myname)
@@ -870,6 +910,7 @@ def main():
     munkicommon.savereport()
 
     munkicommon.display_status_major('Finishing...')
+    sendEndNotification()
     # save application inventory data
     munkicommon.saveappdata()
     # run the postflight script if it exists
@@ -881,10 +922,7 @@ def main():
     if options.verbose:
         print 'Done.'
 
-    if options.manualcheck:
-        # just quit munkistatus; Managed Software Update will notify
-        munkistatus.quit()
-    elif notify_user:
+    if notify_user:
         # it may have been more than a minute since we ran our
         # original updatecheck so tickle the updatecheck time
         # so MSU.app knows to display results immediately
@@ -947,6 +985,7 @@ def main():
                         os.unlink(checkandinstallatstartupflag)
                     except OSError:
                         pass
+
 
 if __name__ == '__main__':
     main()

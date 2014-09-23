@@ -1572,6 +1572,10 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['description'] = item_pl.get('description', '')
     iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
     iteminfo['display_name'] = item_pl.get('display_name', '')
+    for key in ['category', 'developer', 'icon_name',
+                'requires', 'RestartAction']:
+        if key in item_pl:
+            iteminfo[key] = item_pl[key]
     iteminfo['installed'] = someVersionInstalled(item_pl)
     if iteminfo['installed']:
         iteminfo['needs_update'] = (installedState(item_pl) == 0)
@@ -1668,7 +1672,7 @@ def updateAvailableLicenseSeats(installinfo):
 
 
 def processInstall(manifestitem, cataloglist, installinfo):
-    """Processes a manifest item. Determines if it needs to be
+    """Processes a manifest item for install. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Installation detail is added to
     installinfo['managed_installs']
@@ -1759,16 +1763,22 @@ def processInstall(manifestitem, cataloglist, installinfo):
             if not success:
                 dependenciesMet = False
 
-    if not dependenciesMet:
-        munkicommon.display_warning('Didn\'t attempt to install %s '
-                                    'because could not resolve all '
-                                    'dependencies.', manifestitemname)
-        return False
-
     iteminfo = {}
     iteminfo['name'] = item_pl.get('name', '')
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
+
+    if not dependenciesMet:
+        munkicommon.display_warning('Didn\'t attempt to install %s '
+                                    'because could not resolve all '
+                                    'dependencies.', manifestitemname)
+        # add information to managed_installs so we have some feedback
+        # to display in MSC.app
+        iteminfo['installed'] = False
+        iteminfo['note'] = ('Can\'t install %s because could not resolve all '
+                            'dependencies.' % iteminfo['display_name'])
+        installinfo['managed_installs'].append(iteminfo)
+        return False
 
     installed_state = installedState(item_pl)
     if installed_state == 0:
@@ -1817,8 +1827,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # required keys
             iteminfo['installer_item'] = filename
             iteminfo['installed'] = False
-            iteminfo['version_to_install'] = item_pl.get(
-                                                 'version','UNKNOWN')
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
 
             # we will ignore the unattended_install key if the item needs a
             # restart or logout...
@@ -1851,7 +1860,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'items_to_copy',  # used w/ copy_from_dmg
                              'copy_local',     # used w/ AdobeCS5 Updaters
                              'force_install_after_date',
-                             'apple_item']
+                             'apple_item',
+                             'category',
+                             'developer',
+                             'icon_name']
 
             for key in optional_keys:
                 if key in item_pl:
@@ -2293,7 +2305,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'payloads',
                     'preuninstall_script',
                     'postuninstall_script',
-                    'apple_item']
+                    'apple_item',
+                    'category',
+                    'developer',
+                    'icon_name']
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
@@ -2476,6 +2491,7 @@ class ManifestException(Exception):
     manifest."""
     pass
 
+
 MANIFESTS = {}
 def getmanifest(partialurl, suppress_errors=False):
     """Gets a manifest from the server.
@@ -2484,10 +2500,10 @@ def getmanifest(partialurl, suppress_errors=False):
       string local path to the downloaded manifest.
     """
     #global MANIFESTS
-    manifestbaseurl = munkicommon.pref('ManifestURL') or \
-                      munkicommon.pref('SoftwareRepoURL') + '/manifests/'
-    if not manifestbaseurl.endswith('?') and \
-       not manifestbaseurl.endswith('/'):
+    manifestbaseurl = (munkicommon.pref('ManifestURL') or
+                       munkicommon.pref('SoftwareRepoURL') + '/manifests/')
+    if (not manifestbaseurl.endswith('?') and
+        not manifestbaseurl.endswith('/')):
         manifestbaseurl = manifestbaseurl + '/'
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
@@ -2705,6 +2721,115 @@ def getDownloadCachePath(destinationpathprefix, url):
         destinationpathprefix, getInstallerItemBasename(url))
 
 
+def download_icons(item_list):
+    '''Attempts to download icons (actually png files) for items in
+       item_list'''
+    icon_list = []
+    icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png', '.psd',
+                       '.tga', '.tif', '.tiff', '.yuv']
+    icon_base_url = (munkicommon.pref('IconURL') or
+                     munkicommon.pref('SoftwareRepoURL') + '/icons/')
+    icon_base_url = icon_base_url.rstrip('/') + '/'
+    icon_dir = os.path.join(munkicommon.pref('ManagedInstallDir'), 'icons')
+    munkicommon.display_debug2('Icon base URL is: %s', icon_base_url)
+    for item in item_list:
+        icon_name = item.get('icon_name') or item['name']
+        if not os.path.splitext(icon_name)[1] in icon_known_exts:
+            icon_name += '.png'
+        icon_list.append(icon_name)
+        icon_url = icon_base_url + urllib2.quote(icon_name)
+        icon_path = os.path.join(icon_dir, icon_name)
+        icon_subdir = os.path.dirname(icon_path)
+        if not os.path.exists(icon_subdir):
+            try:
+                os.makedirs(icon_subdir, 0755)
+            except OSError, err:
+                munkicommon.display_error(
+                    'Could not create %s' % icon_subdir)
+                continue
+        munkicommon.display_detail('Getting icon %s...',  icon_name)
+        item_name = item.get('display_name') or item['name']
+        message = 'Getting icon for %s...' % item_name
+        try:
+            unused_value = getResourceIfChangedAtomically(
+                icon_url, icon_path, message=message)
+        except fetch.MunkiDownloadError, err:
+            munkicommon.display_debug1(
+                    'Could not retrieve icon %s from the server: %s',
+                    icon_name, err)
+    # remove no-longer needed icons from the local directory
+    for (dirpath, dirnames, filenames) in os.walk(icon_dir, topdown=False):
+        for filename in filenames:
+            icon_path = os.path.join(dirpath, filename)
+            rel_path = icon_path[len(icon_dir):].lstrip('/')
+            if rel_path not in icon_list:
+                try:
+                    os.unlink(icon_path)
+                except (IOError, OSError), err:
+                    pass
+        if len(munkicommon.listdir(dirpath)) == 0:
+            # did we empty out this directory (or is it already empty)?
+            # if so, remove it
+            try:
+                os.rmdir(dirpath)
+            except (IOError, OSError), err:
+                pass
+
+
+def download_client_resources():
+    # download client customization resources (if any).
+    # Munki's preferences can specify an explict name
+    # under ClientResourcesFilename
+    # if that doesn't exist, use the primary manifest name as the
+    # filename. If that fails, try site_default.zip
+    filenames = []
+    resources_name = munkicommon.pref('ClientResourcesFilename')
+    if resources_name:
+        if os.path.splitext(resources_name)[1] != '.zip':
+            resources_name += '.zip'
+    else:
+        filenames.append(munkicommon.report['ManifestName'] + '.zip')
+    filenames.append('site_default.zip')
+
+    resource_base_url = (munkicommon.pref('ClientResourceURL') or
+                     munkicommon.pref('SoftwareRepoURL') + '/client_resources/')
+    resource_base_url = resource_base_url.rstrip('/') + '/'
+    resource_dir = os.path.join(
+        munkicommon.pref('ManagedInstallDir'), 'client_resources')
+    munkicommon.display_debug2(
+        'Client resources base URL is: %s', resource_base_url)
+    # make sure local resource directory exists
+    if not os.path.exists(resource_dir):
+        try:
+            os.makedirs(resource_dir, 0755)
+        except OSError, err:
+            munkicommon.display_error(
+                'Could not create %s' % resource_dir)
+            return
+    resource_archive_path = os.path.join(resource_dir, 'custom.zip')
+    message = 'Getting client resources...'
+    downloaded_resource_path = None
+    for filename in filenames:
+        resource_url = resource_base_url + filename
+        try:
+            unused_value = getResourceIfChangedAtomically(
+                resource_url, resource_archive_path, message=message)
+            downloaded_resource_path = resource_archive_path
+            break
+        except fetch.MunkiDownloadError, err:
+            munkicommon.display_debug1(
+                'Could not retrieve client resources with name %s: %s',
+                filename, err)
+    if downloaded_resource_path is None:
+        # make sure we don't have an old custom.zip hanging around
+        if os.path.exists(resource_archive_path):
+            try:
+                os.unlink(resource_archive_path)
+            except (OSError, IOError), err:
+                munkicommon.display_error(
+                    'Could not remove stale %s: %s', resource_archive_path, err)
+
+
 MACHINE = {}
 CONDITIONS = {}
 def check(client_id='', localmanifestpath=None):
@@ -2877,7 +3002,6 @@ def check(client_id='', localmanifestpath=None):
                             for item in installinfo['removals']
                                 if item.get('installed') == False]
 
-
         if os.path.exists(selfservemanifest):
             # for any item in the managed_uninstalls in the self-serve
             # manifest that is not installed, we should remove it from
@@ -2917,6 +3041,19 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = \
             [item for item in installinfo['removals']
                 if item.get('installed')]
+
+        # also record problem items so MSC.app can provide feedback
+        installinfo['problem_items'] = problem_items
+
+        # download display icons for optional installs
+        # and active installs/removals
+        item_list = list(installinfo.get('optional_installs', []))
+        item_list.extend(installinfo['managed_installs'])
+        item_list.extend(installinfo['removals'])
+        download_icons(item_list)
+
+        # get any custom client resources
+        download_client_resources()
 
         # record the filtered lists
         munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
@@ -3300,4 +3437,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13E28" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment version="1060" defaultVersion="1060" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="5056"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application">
+            <connections>
+                <outlet property="delegate" destination="373" id="374"/>
+            </connections>
+        </customObject>
+        <menu title="AMainMenu" systemMenu="main" id="29" userLabel="MainMenu">
+            <items>
+                <menuItem title="Managed Software Center" id="56">
+                    <menu key="submenu" title="Managed Software Center" systemMenu="apple" id="57">
+                        <items>
+                            <menuItem title="About Managed Software Center" id="58">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="236">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Services" id="131">
+                                <menu key="submenu" title="Services" systemMenu="services" id="130"/>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="144">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Hide Managed Software Center" keyEquivalent="h" id="134">
+                                <connections>
+                                    <action selector="hide:" target="-1" id="367"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Hide Others" keyEquivalent="h" id="145">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="hideOtherApplications:" target="-1" id="368"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Show All" id="150">
+                                <connections>
+                                    <action selector="unhideAllApplications:" target="-1" id="370"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="149">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Quit Managed Software Center" keyEquivalent="q" id="136" userLabel="1111">
+                                <connections>
+                                    <action selector="terminate:" target="-1" id="369"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Edit" id="217">
+                    <menu key="submenu" title="Edit" id="205">
+                        <items>
+                            <menuItem title="Undo" keyEquivalent="z" id="207">
+                                <connections>
+                                    <action selector="undo:" target="-1" id="223"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Redo" keyEquivalent="Z" id="215">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="redo:" target="-1" id="231"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="206">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Cut" keyEquivalent="x" id="199">
+                                <connections>
+                                    <action selector="cut:" target="-1" id="228"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Copy" keyEquivalent="c" id="197">
+                                <connections>
+                                    <action selector="copy:" target="-1" id="224"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Paste" keyEquivalent="v" id="203">
+                                <connections>
+                                    <action selector="paste:" target="-1" id="226"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Delete" id="202">
+                                <connections>
+                                    <action selector="delete:" target="-1" id="235"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Select All" keyEquivalent="a" id="198">
+                                <connections>
+                                    <action selector="selectAll:" target="-1" id="232"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Navigate" id="375">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Navigate" autoenablesItems="NO" id="376">
+                        <items>
+                            <menuItem title="Back" keyEquivalent="[" id="fEq-6D-Ce0">
+                                <connections>
+                                    <action selector="goBack:" target="S5Y-lq-2nB" id="0f7-qp-Ei9"/>
+                                    <binding destination="KMl-S0-0FF" name="enabled" keyPath="webView.canGoBack" id="dxu-ec-sN0"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Forward" keyEquivalent="]" id="z4Z-vu-XGX">
+                                <connections>
+                                    <action selector="goForward:" target="S5Y-lq-2nB" id="boz-Ie-dlh"/>
+                                    <binding destination="KMl-S0-0FF" name="enabled" keyPath="webView.canGoForward" id="Ys1-WO-dkB"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Reload Page" keyEquivalent="r" id="Afg-mB-WlJ">
+                                <connections>
+                                    <action selector="reload:" target="S5Y-lq-2nB" id="pCf-RP-OGr"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Search" keyEquivalent="f" id="1XY-pX-Pwv">
+                                <connections>
+                                    <action selector="selectText:" target="gLI-O8-siB" id="0D8-FV-q15"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Jey-TI-2ca"/>
+                            <menuItem title="Software" enabled="NO" keyEquivalent="1" id="VYO-og-DRc">
+                                <connections>
+                                    <action selector="loadAllSoftwarePage:" target="KMl-S0-0FF" id="F3m-2h-riT"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Categories" enabled="NO" keyEquivalent="2" id="9S1-fB-bKZ">
+                                <connections>
+                                    <action selector="loadCategoriesPage:" target="KMl-S0-0FF" id="npC-5v-bMY"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="My Items" enabled="NO" keyEquivalent="3" id="1uK-HI-wGR">
+                                <connections>
+                                    <action selector="loadMyItemsPage:" target="KMl-S0-0FF" id="qsB-5W-uX4"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Updates" keyEquivalent="4" id="tv9-wZ-XWN">
+                                <connections>
+                                    <action selector="loadUpdatesPage:" target="KMl-S0-0FF" id="wag-1E-xys"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Window" id="19">
+                    <menu key="submenu" title="Window" systemMenu="window" id="24">
+                        <items>
+                            <menuItem title="Close" keyEquivalent="w" id="bd5-IY-BXv">
+                                <connections>
+                                    <action selector="performClose:" target="-1" id="992-qp-IXJ"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Minimize" keyEquivalent="m" id="23">
+                                <connections>
+                                    <action selector="performMiniaturize:" target="-1" id="37"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Zoom" id="239">
+                                <connections>
+                                    <action selector="performZoom:" target="-1" id="240"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" hidden="YES" id="92">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Enter Full Screen" hidden="YES" enabled="NO" keyEquivalent="f" id="jQt-Mr-wFT">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleFullScreen:" target="-1" id="3pL-iV-Ndq"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Help" id="103" userLabel="1">
+                    <menu key="submenu" title="Help" id="106" userLabel="2">
+                        <items>
+                            <menuItem title="Managed Software Center Help" keyEquivalent="?" id="111">
+                                <connections>
+                                    <action selector="showHelp:" target="-1" id="360"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+            </items>
+        </menu>
+        <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="371">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" unifiedTitleAndToolbar="YES"/>
+            <rect key="contentRect" x="132" y="116" width="1143" height="730"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <value key="minSize" type="size" width="1000" height="475"/>
+            <view key="contentView" id="372">
+                <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <webView id="S5Y-lq-2nB">
+                        <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
+                            <nil key="identifier"/>
+                        </webPreferences>
+                    </webView>
+                </subviews>
+            </view>
+            <toolbar key="toolbar" implicitIdentifier="1393D938-3469-4EFC-8191-CC1B9C26850B" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconAndLabel" sizeMode="regular" id="c5f-Iv-Tk6">
+                <allowedToolbarItems>
+                    <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="Hjz-lX-eQa"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="O3a-eC-4fX"/>
+                    <toolbarItem implicitItemIdentifier="450E106F-9925-4E50-9609-9457D33597D0" label="Software" paletteLabel="Software" image="AllItemsTemplate" id="jTu-Wf-fi2">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="CPR-oF-gUx" customClass="MSCToolbarButton">
+                            <rect key="frame" x="3" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="smallSystem"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="softwareToolbarButtonClicked:" target="KMl-S0-0FF" id="EBL-9Q-w81"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Categories" paletteLabel="Categories" image="toolbarCategoriesTemplate" id="G2X-M7-NVB">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="YGi-pE-3SV" customClass="MSCToolbarButton">
+                            <rect key="frame" x="8" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="categoriesToolbarButtonClicked:" target="KMl-S0-0FF" id="LGx-sG-Vqt"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="My Items" paletteLabel="My Items" image="MyStuffTemplate" id="Uby-CQ-lvU">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="eek-hQ-v8t" customClass="MSCToolbarButton">
+                            <rect key="frame" x="4" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="myItemsToolbarButtonClicked:" target="KMl-S0-0FF" id="aEj-Et-K0C"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="toolbarUpdatesTemplate" id="AjB-m1-mu8">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="48" height="30"/>
+                        <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
+                            <rect key="frame" x="1" y="14" width="48" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="only" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="updatesToolbarButtonClicked:" target="KMl-S0-0FF" id="J7I-Tj-wjp"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="A52A96D0-F85E-407F-818C-DC4B93605053" label="" paletteLabel="Narrow Space" tag="-1" id="sF1-NQ-sSb">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="4" height="30"/>
+                        <size key="maxSize" width="4" height="31"/>
+                        <customView key="view" id="Mui-Sc-36b">
+                            <rect key="frame" x="38" y="14" width="4" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        </customView>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="DF488649-5B94-417F-B23E-C646362F6FCA" label="" paletteLabel="Navigation" tag="-1" id="CEb-sx-e3H">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="150" height="30"/>
+                        <size key="maxSize" width="150" height="30"/>
+                        <box key="view" autoresizesSubviews="NO" transparent="YES" borderWidth="0.0" boxType="custom" borderType="none" titlePosition="noTitle" id="E6X-hz-53x">
+                            <rect key="frame" x="0.0" y="14" width="150" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view key="contentView">
+                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="mXP-yD-2El">
+                                        <rect key="frame" x="62" y="2" width="16" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    </progressIndicator>
+                                    <segmentedControl verticalHuggingPriority="750" id="jcc-R8-zGb">
+                                        <rect key="frame" x="1" y="-2" width="53" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <segmentedCell key="cell" alignment="left" style="texturedRounded" trackingMode="momentary" id="ZsM-fh-8z5">
+                                            <font key="font" metaFont="system"/>
+                                            <segments>
+                                                <segment image="NSGoLeftTemplate" width="23"/>
+                                                <segment image="NSGoRightTemplate" width="23" tag="1"/>
+                                            </segments>
+                                        </segmentedCell>
+                                        <connections>
+                                            <action selector="navigationBtnClicked:" target="KMl-S0-0FF" id="CvU-yd-Zcd"/>
+                                        </connections>
+                                    </segmentedControl>
+                                </subviews>
+                            </view>
+                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </box>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="E1A9A599-F94D-4780-9330-F2B0F75FA3BA" label="" paletteLabel="Search" tag="-1" id="fbJ-cF-weR">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="150" height="30"/>
+                        <size key="maxSize" width="150" height="30"/>
+                        <box key="view" autoresizesSubviews="NO" transparent="YES" borderWidth="0.0" boxType="custom" borderType="none" titlePosition="noTitle" id="KHk-ld-jkr">
+                            <rect key="frame" x="0.0" y="14" width="150" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view key="contentView">
+                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <searchField verticalHuggingPriority="750" id="gLI-O8-siB">
+                                        <rect key="frame" x="0.0" y="0.0" width="150" height="22"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="Rxm-nO-bmO">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </searchFieldCell>
+                                        <connections>
+                                            <action selector="searchFilterChanged:" target="KMl-S0-0FF" id="497-kJ-NwJ"/>
+                                        </connections>
+                                    </searchField>
+                                </subviews>
+                            </view>
+                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </box>
+                    </toolbarItem>
+                </allowedToolbarItems>
+                <defaultToolbarItems>
+                    <toolbarItem reference="CEb-sx-e3H"/>
+                    <toolbarItem reference="O3a-eC-4fX"/>
+                    <toolbarItem reference="jTu-Wf-fi2"/>
+                    <toolbarItem reference="sF1-NQ-sSb"/>
+                    <toolbarItem reference="G2X-M7-NVB"/>
+                    <toolbarItem reference="sF1-NQ-sSb"/>
+                    <toolbarItem reference="Uby-CQ-lvU"/>
+                    <toolbarItem reference="sF1-NQ-sSb"/>
+                    <toolbarItem reference="AjB-m1-mu8"/>
+                    <toolbarItem reference="O3a-eC-4fX"/>
+                    <toolbarItem reference="fbJ-cF-weR"/>
+                </defaultToolbarItems>
+            </toolbar>
+            <connections>
+                <outlet property="delegate" destination="KMl-S0-0FF" id="TkM-Lg-q7E"/>
+            </connections>
+        </window>
+        <customObject id="373" userLabel="MSCAppDelegate" customClass="MSCAppDelegate">
+            <connections>
+                <outlet property="mainWindowController" destination="KMl-S0-0FF" id="m7n-3a-HoQ"/>
+                <outlet property="statusController" destination="GhX-6Z-STv" id="3ln-OI-LRD"/>
+            </connections>
+        </customObject>
+        <customObject id="420" customClass="NSFontManager"/>
+        <customObject id="GhX-6Z-STv" customClass="MSCStatusController">
+            <connections>
+                <outlet property="statusWindowController" destination="KMl-S0-0FF" id="bGK-ut-hWM"/>
+            </connections>
+        </customObject>
+        <customObject id="KMl-S0-0FF" userLabel="MSCMainWindowController" customClass="MSCMainWindowController">
+            <connections>
+                <outlet property="categoriesMenuItem" destination="9S1-fB-bKZ" id="cfs-BV-4tQ"/>
+                <outlet property="categoriesToolbarButton" destination="YGi-pE-3SV" id="7tq-ma-J77"/>
+                <outlet property="findMenuItem" destination="1XY-pX-Pwv" id="nT2-rv-DIX"/>
+                <outlet property="fullScreenMenuItem" destination="jQt-Mr-wFT" id="9tf-Lb-Mec"/>
+                <outlet property="myItemsMenuItem" destination="1uK-HI-wGR" id="Jkb-QR-M6x"/>
+                <outlet property="myItemsToolbarButton" destination="eek-hQ-v8t" id="HdQ-Tf-9h7"/>
+                <outlet property="navigationBtn" destination="jcc-R8-zGb" id="Iv5-MT-vc7"/>
+                <outlet property="progressSpinner" destination="mXP-yD-2El" id="i8K-at-fcb"/>
+                <outlet property="searchField" destination="gLI-O8-siB" id="APe-GG-ZHl"/>
+                <outlet property="softwareMenuItem" destination="VYO-og-DRc" id="K69-dp-kBp"/>
+                <outlet property="softwareToolbarButton" destination="CPR-oF-gUx" id="PJp-bn-F4D"/>
+                <outlet property="updateButtonCell" destination="ZVD-Hl-dlF" id="epg-T1-8v1"/>
+                <outlet property="updatesToolbarButton" destination="caG-fL-UJh" id="Czs-cR-TvW"/>
+                <outlet property="webView" destination="S5Y-lq-2nB" id="TPJ-jP-F85"/>
+                <outlet property="window" destination="371" id="JK3-nH-LOl"/>
+                <outlet property="windowMenuSeperatorItem" destination="92" id="eCt-83-MtH"/>
+            </connections>
+        </customObject>
+        <userDefaultsController representsSharedInstance="YES" id="602"/>
+    </objects>
+    <resources>
+        <image name="AllItemsTemplate" width="28" height="26"/>
+        <image name="MyStuffTemplate" width="28" height="23.5"/>
+        <image name="NSGoLeftTemplate" width="9" height="9"/>
+        <image name="NSGoRightTemplate" width="9" height="9"/>
+        <image name="toolbarCategoriesTemplate" width="25" height="24"/>
+        <image name="toolbarUpdatesTemplate" width="23" height="23"/>
+    </resources>
+</document>

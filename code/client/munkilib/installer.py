@@ -1173,14 +1173,6 @@ def run(only_unattended=False):
             munkicommon.display_error("Invalid %s" % installinfopath)
             return -1
 
-        # remove the install info file
-        # it's no longer valid once we start running
-        #try:
-        #    os.unlink(installinfopath)
-        #except (OSError, IOError):
-        #    munkicommon.display_warning(
-        #        "Could not remove %s" % installinfopath)
-
         if (munkicommon.munkistatusoutput and
             munkicommon.pref('SuppressStopButtonOnInstall')):
             munkistatus.hideStopButton()
@@ -1232,25 +1224,33 @@ def run(only_unattended=False):
                         only_unattended=only_unattended)
                     # if any installs were skipped record them for later
                     installinfo['managed_installs'] = skipped_installs
-                    
+
         # update optional_installs with new installation/removal status
-        for removal in munkicommon.report['RemovalResults']:
+        for removal in munkicommon.report.get('RemovalResults', []):
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
-                if item['name'] == removal['name'] and removal['status'] == 0]
+                if item['name'] == removal['name']]
             if len(matching_optional_installs) == 1:
-                matching_optional_installs[0]['installed'] = False
-                matching_optional_installs[0]['will_be_removed'] = False
+                if removal['status'] != 0:
+                    matching_optional_installs[0]['removal_error'] = True
+                    matching_optional_installs[0]['will_be_removed'] = False
+                else:
+                    matching_optional_installs[0]['installed'] = False
+                    matching_optional_installs[0]['will_be_removed'] = False
 
-        for install in munkicommon.report['InstallResults']:
+        for install in munkicommon.report.get('InstallResults', []):
             matching_optional_installs = [
                 item for item in installinfo.get('optional_installs', [])
                 if item['name'] == install['name']
-                and item['version_to_install'] == install['version']
-                and install['status'] == 0]
+                and item['version_to_install'] == install['version']]
             if len(matching_optional_installs) == 1:
-                matching_optional_installs[0]['installed'] = True
-                matching_optional_installs[0]['will_be_installed'] = False
+                if install['status'] != 0:
+                    matching_optional_installs[0]['install_error'] = True
+                    matching_optional_installs[0]['will_be_installed'] = False
+                else:
+                    matching_optional_installs[0]['installed'] = True
+                    matching_optional_installs[0]['needs_update'] = False
+                    matching_optional_installs[0]['will_be_installed'] = False
 
         # write updated installinfo back to disk to reflect current state
         try:

@@ -54,6 +54,10 @@ from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 
+from Foundation import NSObject
+from Foundation import NSDistributedNotificationCenter
+from Foundation import NSNotificationSuspensionBehaviorDeliverImmediately
+
 import munkistatus
 import FoundationPlist
 import LaunchServices
@@ -684,8 +688,8 @@ def archive_report():
                                              % itempath)
 
 
-
 # misc functions
+
 
 def validPlist(path):
     """Uses plutil to determine if path contains a valid plist.
@@ -697,12 +701,23 @@ def validPlist(path):
         return False
 
 
+_stop_requested = False
 def stopRequested():
-    """Allows user to cancel operations when
-    MunkiStatus is being used"""
+    """Allows user to cancel operations when GUI status is being used"""
+    global _stop_requested
+    if _stop_requested:
+        return True
+    STOP_REQUEST_FLAG = '/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested'
     if munkistatusoutput:
-        if munkistatus.getStopButtonState() == 1:
+        if os.path.exists(STOP_REQUEST_FLAG):
+            # store this so it's persistent until this session is over
+            _stop_requested = True
             log('### User stopped session ###')
+            try:
+                os.unlink(STOP_REQUEST_FLAG)
+            except OSError, err:
+                display_error(
+                    'Could not remove %s: %s', STOP_REQUEST_FLAG, err)
             return True
     return False
 

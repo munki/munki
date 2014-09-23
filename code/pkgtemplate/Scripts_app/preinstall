@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# remove any Managed Software Update.app bundle since the installer
+# won't replace a bundle with a symlink, leading to yucky stuff like
+# "/Applications/Utilities/Managed Software Update.app 1"
+
+if [ -d "$3/Applications/Utilities/Managed Software Update.app" ] ; then
+    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app"
+fi
+
+if [ -d "$3/Applications/Utilities/Managed Software Update.app 1" ] ; then
+    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app 1"
+fi
