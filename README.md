@@ -15,7 +15,7 @@ Munki is currently in use at organizations all over the world, managing software
 
 ####Get started
 
-Get started with Munki here: [Getting Started with Munki](https://github.com/munki/munki/wiki/Getting-Started-With-Munki)
+Get started with Munki here: [Getting Started with Munki](https://github.com/munki/munki/wiki/)
 
 Check out the Wiki for some notes and documentation, and browse and/or check out the source. See the [releases page](https://github.com/munki/munki/releases) or [munkibuilds.org](https://munkibuilds.org) for pre-built installer packages.
 
