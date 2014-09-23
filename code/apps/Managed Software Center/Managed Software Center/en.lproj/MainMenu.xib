@@ -200,7 +200,6 @@
         </menu>
         <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" unifiedTitleAndToolbar="YES"/>
-            <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="132" y="116" width="1143" height="730"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="1000" height="475"/>
@@ -373,7 +372,6 @@
                     <toolbarItem reference="fbJ-cF-weR"/>
                 </defaultToolbarItems>
             </toolbar>
-            <contentBorderThickness maxY="52"/>
             <connections>
                 <outlet property="delegate" destination="KMl-S0-0FF" id="TkM-Lg-q7E"/>
             </connections>
