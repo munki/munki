@@ -2787,6 +2787,7 @@ def download_client_resources():
     if resources_name:
         if os.path.splitext(resources_name)[1] != '.zip':
             resources_name += '.zip'
+        filenames.append(resources_name)
     else:
         filenames.append(munkicommon.report['ManifestName'] + '.zip')
     filenames.append('site_default.zip')
