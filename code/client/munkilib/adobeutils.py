@@ -475,7 +475,8 @@ def killStupidProcesses():
     stupid_processes = ["Adobe AIR Installer",
                         "Adobe AIR Application Installer",
                         "InstallAdobeHelp",
-                        "open -a /Library/Application Support/Adobe/SwitchBoard/SwitchBoard.app"]
+                        "open -a /Library/Application Support/Adobe/SwitchBoard/SwitchBoard.app",
+                        "/bin/bash /Library/Application Support/Adobe/SwitchBoard/SwitchBoard.app/Contents/MacOS/switchboard.sh"]
 
     for procname in stupid_processes:
         pid = utils.getPIDforProcessName(procname)
