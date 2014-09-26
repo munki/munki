@@ -250,7 +250,7 @@
 		C09004E416CDD84E00BE34CE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				CLASSPREFIX = MSU;
+				CLASSPREFIX = MSC;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "The Munki Project";
 			};
