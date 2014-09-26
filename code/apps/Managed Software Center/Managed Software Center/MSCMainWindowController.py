@@ -928,7 +928,8 @@ class MSCMainWindowController(NSWindowController):
     def changeSelectedCategory_(self, category):
         '''this method is called from JavaScript when the user
         changes the category selected in the sidebar popup'''
-        if category == 'All Categories':
+        all_categories_label = NSLocalizedString(u"All Categories", u"AllCategoriesLabel")
+        if category == all_categories_label:
             category = u'all'
         self.load_page('category-%s.html' % category)
 
