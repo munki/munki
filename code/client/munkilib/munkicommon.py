@@ -22,7 +22,6 @@ Created by Greg Neagle on 2008-11-18.
 Common functions used by the munki tools.
 """
 
-import atexit
 import ctypes
 import ctypes.util
 import fcntl
@@ -2707,13 +2706,8 @@ def blockingApplicationsRunning(pkginfoitem):
 #debug = False
 verbose = 1
 munkistatusoutput = False
-report = {}
-
 tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
-def cleanup_tmpdir():
-    shutil.rmtree(tmpdir)
-atexit.register(cleanup_tmpdir)
-
+report = {}
 
 def main():
     """Placeholder"""
