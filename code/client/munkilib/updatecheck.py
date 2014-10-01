@@ -1592,6 +1592,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                                warn=False):
             iteminfo['note'] = \
                 'Insufficient disk space to download and install.'
+    iteminfo['user_agreement'] = item_pl.get('user_agreement', '')
 
     munkicommon.display_debug1(
         'Adding %s to the optional install list', iteminfo['name'])

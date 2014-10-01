@@ -53,6 +53,8 @@ class MSCMainWindowController(NSWindowController):
     
     html_dir = None
     
+    clickedItem = None
+    
     # Cocoa UI binding properties
     softwareToolbarButton = IBOutlet()
     categoriesToolbarButton = IBOutlet()
@@ -904,6 +906,33 @@ class MSCMainWindowController(NSWindowController):
     def actionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
         the Install/Removel/Cancel button in the list or detail view'''
+        
+        self.clickedItem = item_name
+        
+        item = MunkiItems.optionalItemForName_(item_name)
+        if not item:
+            msclog.debug_log(
+                'User clicked Install/Removel/Cancel button in the list or detail view')
+            msclog.debug_log('Can\'t find item: %s' % item_name)
+            return
+        
+        # determine if there are any install conditions that the user needs to accept.
+        if not item['status'] in ['not-installed'] or not item['user_agreement']:
+            # go straight to processing the cancel/remove
+            self.actionButtonPerformAction_(self.clickedItem)
+        elif item['user_agreement']:
+            AcceptButtonTitle = NSLocalizedString(u"Accept", u"Accept button title")
+            CancelButtonTitle = NSLocalizedString(u"Cancel", u"Cancel button title")
+            alertMessageText = NSLocalizedString(u"Do you accept the agreement", u"Do you accept the agreement text")
+            detailText = NSLocalizedString((u'%s' % item['user_agreement']), u'user agreement text')
+            
+            # show the alert sheet
+            self.window().makeKeyAndOrderFront_(self)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertMessageText, CancelButtonTitle, AcceptButtonTitle, nil, detailText)
+            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
+        
+    def actionButtonPerformAction_(self, item_name):
+        
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             msclog.debug_log(
@@ -924,6 +953,14 @@ class MSCMainWindowController(NSWindowController):
                                 'will-be-removed']:
             # cancelled a pending install or removal; should run an updatecheck
             self.checkForUpdates(suppress_apple_update_check=True)
+
+    def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        '''Called when alert invoked by actionButtonClicked_ ends'''
+        if returncode == NSAlertDefaultReturn:
+            msclog.log("user", "user_agreement canceled")
+        else:
+            msclog.log("user", "user_agreement accepted")
+            self.actionButtonPerformAction_(self.clickedItem)
 
     def changeSelectedCategory_(self, category):
         '''this method is called from JavaScript when the user
