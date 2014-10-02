@@ -917,29 +917,31 @@ class MSCMainWindowController(NSWindowController):
             return
         
         # determine if there are any install conditions that the user needs to accept.
-        if not item['status'] in ['not-installed'] or not item['user_agreement']:
+        if not item['status'] in ['not-installed'] or not item.get('alert'):
             # go straight to processing the cancel/remove
-            self.actionButtonPerformAction_(self.clickedItem)
-        elif item['user_agreement']:
-            OKButtonTitle = NSLocalizedString(u"OK", u"OK button title")
-            CancelButtonTitle = NSLocalizedString(u"Cancel", u"Cancel button title")
-            alertMessageText = NSLocalizedString(u"Alert", u"Alert title text")
-            detailText = NSLocalizedString((u"Do you agree to be a good person"), u"Alert detail text")
-
-            dictitem = item['user_agreement']
-            if dictitem['alert_title']:
-                alertMessageText = NSLocalizedString(u'%s' % dictitem['alert_title'], u"Alert title text")
-            if dictitem['alert_text']:
-                detailText = NSLocalizedString(u'%s' % dictitem['alert_text'], u"Alert detail text")
-            if dictitem['alt_ok_label']:
-                OKButtonTitle = NSLocalizedString(u'%s' % dictitem['alt_ok_label'], u"Accept button title")
-            if dictitem['alt_cancel_label']:
-                CancelButtonTitle = NSLocalizedString(u'%s' % dictitem['alt_cancel_label'], u"Cancel button title")
+            self.actionButtonPerformAction_(item_name)
+        elif item.get('alert'):
+            
+            dictitem = item['alert']
+           
+            alertTitleText = NSLocalizedString(u'%s' % dictitem.get('alert_title', "Attention"), u"Alert title text")
+            alertDetailText = NSLocalizedString(u'%s' % dictitem.get('alert_text',"Some conditions apply to this software. \
+                                                    Please contact your administrator for more details"), u"Alert detail text")
+            OKButtonText = NSLocalizedString(u'%s' % dictitem.get('alt_ok_label', "OK"), u"Accept button title")
+            cancelButtonText = NSLocalizedString(u'%s' % dictitem.get('alt_cancel_label', "Cancel"), u"Cancel button title")
 
             # show the alert sheet
             self.window().makeKeyAndOrderFront_(self)
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertMessageText, CancelButtonTitle, OKButtonTitle, nil, detailText)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertTitleText, cancelButtonText, OKButtonText, nil, alertDetailText)
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
+                
+    def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        '''Called when alert invoked by actionButtonClicked_ ends'''
+        if returncode == NSAlertDefaultReturn:
+            msclog.log("user", "alert canceled")
+        else:
+            msclog.log("user", "alert accepted")
+            self.actionButtonPerformAction_(self.clickedItem)
         
     def actionButtonPerformAction_(self, item_name):
         
@@ -963,14 +965,6 @@ class MSCMainWindowController(NSWindowController):
                                 'will-be-removed']:
             # cancelled a pending install or removal; should run an updatecheck
             self.checkForUpdates(suppress_apple_update_check=True)
-
-    def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
-        '''Called when alert invoked by actionButtonClicked_ ends'''
-        if returncode == NSAlertDefaultReturn:
-            msclog.log("user", "user_agreement canceled")
-        else:
-            msclog.log("user", "user_agreement accepted")
-            self.actionButtonPerformAction_(self.clickedItem)
 
     def changeSelectedCategory_(self, category):
         '''this method is called from JavaScript when the user

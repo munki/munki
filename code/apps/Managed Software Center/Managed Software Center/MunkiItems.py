@@ -842,8 +842,6 @@ class OptionalItem(GenericItem):
             self['note'] = self._get_note_from_problem_items()
         if not self.get('status'):
             self['status'] = self._get_status()
-        if not self.get('user_agreement'):
-            self['user_agreement'] = u''
 
     def _get_status(self):
         '''Calculates initial status for an item and also sets a boolean
