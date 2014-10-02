@@ -921,14 +921,24 @@ class MSCMainWindowController(NSWindowController):
             # go straight to processing the cancel/remove
             self.actionButtonPerformAction_(self.clickedItem)
         elif item['user_agreement']:
-            AcceptButtonTitle = NSLocalizedString(u"Accept", u"Accept button title")
+            OKButtonTitle = NSLocalizedString(u"OK", u"OK button title")
             CancelButtonTitle = NSLocalizedString(u"Cancel", u"Cancel button title")
-            alertMessageText = NSLocalizedString(u"Do you accept the agreement", u"Do you accept the agreement text")
-            detailText = NSLocalizedString((u'%s' % item['user_agreement']), u'user agreement text')
-            
+            alertMessageText = NSLocalizedString(u"Alert", u"Alert title text")
+            detailText = NSLocalizedString((u"Do you agree to be a good person"), u"Alert detail text")
+
+            dictitem = item['user_agreement']
+            if dictitem['alert_title']:
+                alertMessageText = NSLocalizedString(u'%s' % dictitem['alert_title'], u"Alert title text")
+            if dictitem['alert_text']:
+                detailText = NSLocalizedString(u'%s' % dictitem['alert_text'], u"Alert detail text")
+            if dictitem['alt_ok_label']:
+                OKButtonTitle = NSLocalizedString(u'%s' % dictitem['alt_ok_label'], u"Accept button title")
+            if dictitem['alt_cancel_label']:
+                CancelButtonTitle = NSLocalizedString(u'%s' % dictitem['alt_cancel_label'], u"Cancel button title")
+
             # show the alert sheet
             self.window().makeKeyAndOrderFront_(self)
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertMessageText, CancelButtonTitle, AcceptButtonTitle, nil, detailText)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertMessageText, CancelButtonTitle, OKButtonTitle, nil, detailText)
             alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
         
     def actionButtonPerformAction_(self, item_name):
