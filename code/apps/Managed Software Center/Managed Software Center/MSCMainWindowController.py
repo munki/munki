@@ -53,6 +53,7 @@ class MSCMainWindowController(NSWindowController):
     
     html_dir = None
     
+    # var for recording the item clicked. Used if there is a preinstall_alert to process.
     clickedItem = None
     
     # Cocoa UI binding properties
@@ -907,8 +908,6 @@ class MSCMainWindowController(NSWindowController):
         '''this method is called from JavaScript when the user clicks
         the Install/Removel/Cancel button in the list or detail view'''
         
-        self.clickedItem = item_name
-        
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             msclog.debug_log(
@@ -917,23 +916,30 @@ class MSCMainWindowController(NSWindowController):
             return
         
         # determine if there are any install conditions that the user needs to accept.
-        if not item['status'] in ['not-installed'] or not item.get('alert'):
+        if not item['status'] in ['not-installed'] or not item.get('preinstall_alert'):
             # go straight to processing the cancel/remove
             self.actionButtonPerformAction_(item_name)
-        elif item.get('alert'):
-            
-            dictitem = item['alert']
-           
-            alertTitleText = NSLocalizedString(u'%s' % dictitem.get('alert_title', "Attention"), u"Alert title text")
-            alertDetailText = NSLocalizedString(u'%s' % dictitem.get('alert_text',"Some conditions apply to this software. \
-                                                    Please contact your administrator for more details"), u"Alert detail text")
-            OKButtonText = NSLocalizedString(u'%s' % dictitem.get('alt_ok_label', "OK"), u"Accept button title")
-            cancelButtonText = NSLocalizedString(u'%s' % dictitem.get('alt_cancel_label', "Cancel"), u"Cancel button title")
+        elif item.get('preinstall_alert'):
+            self.clickedItem = item_name
+            self.displayPreinstallAlert_(item['preinstall_alert'])
+    
+    def displayPreinstallAlert_(self, dict):
+        ''' Display an alert sheet before processing item install '''
+        defaultAlertTitle = NSLocalizedString(u'Attention', u'PreInstall Alert Title')
+        defaultAlertDetail = NSLocalizedString(u'Some conditions apply to this software. \
+                                                   Please contact your administrator for more details', u'PreInstall Alert Detail')
+        defaultOKLabel = NSLocalizedString(u'OK', u'PreInstall OK Label')
+        defaultCancelLabel = NSLocalizedString(u'Cancel', u'PreInstall Cancel Label')
 
-            # show the alert sheet
-            self.window().makeKeyAndOrderFront_(self)
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertTitleText, cancelButtonText, OKButtonText, nil, alertDetailText)
-            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
+        alertTitle = dict.get('alert_title', defaultAlertTitle)
+        alertDetail = dict.get('alert_detail', defaultAlertDetail)
+        OKLabel = dict.get('ok_label', defaultOKLabel)
+        cancelLabel = dict.get('cancel_label', defaultCancelLabel)
+
+        # show the alert sheet
+        self.window().makeKeyAndOrderFront_(self)
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertTitle, cancelLabel, OKLabel, nil, alertDetail)
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
                 
     def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
         '''Called when alert invoked by actionButtonClicked_ ends'''
