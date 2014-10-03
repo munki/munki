@@ -191,10 +191,10 @@
 			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "MunkiStatus" */;
 			buildPhases = (
 				C09CE1DB18BEA77500B9724A /* Localize */,
-				C09CE1DC18BEA78300B9724A /* Embed version info */,
 				C09004E916CDD84E00BE34CE /* Sources */,
 				C09004EA16CDD84E00BE34CE /* Frameworks */,
 				C09004EB16CDD84E00BE34CE /* Resources */,
+				C09CE1DC18BEA78300B9724A /* Embed version info */,
 			);
 			buildRules = (
 			);
@@ -442,7 +442,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -464,7 +464,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
