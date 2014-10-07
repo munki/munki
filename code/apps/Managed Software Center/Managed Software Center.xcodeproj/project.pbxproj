@@ -230,10 +230,10 @@
 			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Center" */;
 			buildPhases = (
 				C09CE1D918BEA41000B9724A /* Localize */,
-				C09CE1DA18BEA59E00B9724A /* Embed version info */,
 				C09004E916CDD84E00BE34CE /* Sources */,
 				C09004EA16CDD84E00BE34CE /* Frameworks */,
 				C09004EB16CDD84E00BE34CE /* Resources */,
+				C09CE1DA18BEA59E00B9724A /* Embed version info */,
 			);
 			buildRules = (
 			);
