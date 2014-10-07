@@ -915,12 +915,12 @@ class MSCMainWindowController(NSWindowController):
             msclog.debug_log('Can\'t find item: %s' % item_name)
             return
         
-        if item['status'] == 'not-installed' and item.get('pre_install_alert'):
+        if item['status'] == 'not-installed' and item.get('preinstall_alert'):
             self.clickedItem = item_name
-            self.displayPreInstallUninstallAlert_(item['pre_install_alert'])
-        elif item['status'] == 'installed' and item.get('pre_uninstall_alert'):
+            self.displayPreInstallUninstallAlert_(item['preinstall_alert'])
+        elif item['status'] == 'installed' and item.get('preuninstall_alert'):
             self.clickedItem = item_name
-            self.displayPreInstallUninstallAlert_(item['pre_uninstall_alert'])
+            self.displayPreInstallUninstallAlert_(item['preuninstall_alert'])
         else:
             self.actionButtonPerformAction_(item_name)
     
