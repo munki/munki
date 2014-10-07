@@ -53,6 +53,9 @@ class MSCMainWindowController(NSWindowController):
     
     html_dir = None
     
+    # var for recording the item clicked. Used if there is a preinstall_alert to process.
+    clickedItem = None
+    
     # Cocoa UI binding properties
     softwareToolbarButton = IBOutlet()
     categoriesToolbarButton = IBOutlet()
@@ -904,10 +907,55 @@ class MSCMainWindowController(NSWindowController):
     def actionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
         the Install/Removel/Cancel button in the list or detail view'''
+        
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             msclog.debug_log(
-                'User clicked Install/Removel/Cancel button in the list or detail view')
+                'User clicked Install/Remove/Cancel button in the list or detail view')
+            msclog.debug_log('Can\'t find item: %s' % item_name)
+            return
+        
+        if item['status'] == 'not-installed' and item.get('preinstall_alert'):
+            self.clickedItem = item_name
+            self.displayPreInstallUninstallAlert_(item['preinstall_alert'])
+        elif item['status'] == 'installed' and item.get('preuninstall_alert'):
+            self.clickedItem = item_name
+            self.displayPreInstallUninstallAlert_(item['preuninstall_alert'])
+        else:
+            self.actionButtonPerformAction_(item_name)
+    
+    def displayPreInstallUninstallAlert_(self, dict):
+        ''' Display an alert sheet before processing item install or uninstall '''
+        defaultAlertTitle = NSLocalizedString(u'Attention', u'Pre Install Uninstall Alert Title')
+        defaultAlertDetail = NSLocalizedString(u'Some conditions apply to this software. \
+                                                   Please contact your administrator for more details', u'Pre Install Uninstall Alert Detail')
+        defaultOKLabel = NSLocalizedString(u'OK', u'Pre Install Uninstall OK Label')
+        defaultCancelLabel = NSLocalizedString(u'Cancel', u'Pre Install Uninstall Cancel Label')
+
+        alertTitle = dict.get('alert_title', defaultAlertTitle)
+        alertDetail = dict.get('alert_detail', defaultAlertDetail)
+        OKLabel = dict.get('ok_label', defaultOKLabel)
+        cancelLabel = dict.get('cancel_label', defaultCancelLabel)
+
+        # show the alert sheet
+        self.window().makeKeyAndOrderFront_(self)
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertTitle, cancelLabel, OKLabel, nil, alertDetail)
+        alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
+                
+    def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
+        '''Called when alert invoked by actionButtonClicked_ ends'''
+        if returncode == NSAlertDefaultReturn:
+            msclog.log("user", "alert canceled")
+        else:
+            msclog.log("user", "alert accepted")
+            self.actionButtonPerformAction_(self.clickedItem)
+        
+    def actionButtonPerformAction_(self, item_name):
+        
+        item = MunkiItems.optionalItemForName_(item_name)
+        if not item:
+            msclog.debug_log(
+                'User clicked Install/Removal/Cancel button in the list or detail view')
             msclog.debug_log('Can\'t find item: %s' % item_name)
             return
         
