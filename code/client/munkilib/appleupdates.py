@@ -48,6 +48,7 @@ from LaunchServices import LSFindApplicationForInfo
 
 import FoundationPlist
 import fetch
+import keychain
 import launchd
 import munkicommon
 import munkistatus
@@ -306,6 +307,7 @@ class AppleUpdates(object):
             "User-Agent: managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
             % (machine['munki_version'], darwin_version,
                machine['arch'], machine['machine_model']))
+        keychain_obj = keychain.MunkiKeychain()
         return fetch.getResourceIfChangedAtomically(
                                             url,
                                             destinationpath,
@@ -768,12 +770,9 @@ class AppleUpdates(object):
             self.CacheAppleCatalog()
         except CatalogNotFoundError:
             return False
-        except ReplicationError, err:
+        except (ReplicationError, fetch.MunkiDownloadError), err:
             munkicommon.display_warning('Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', str(err))
-            return False
-        except fetch.MunkiDownloadError:
-            munkicommon.display_warning('Could not download Apple SUS catalog.')
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):
