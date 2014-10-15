@@ -1519,32 +1519,54 @@ def getFlatPackageInfo(pkgpath):
     cwd = os.getcwd()
     # change into our tmpdir so we can use xar to unarchive the flat package
     os.chdir(pkgtmp)
-    cmd = ['/usr/bin/xar', '-xf', abspkgpath, '--exclude', 'Payload']
-    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+    # Get the TOC of the flat pkg so we can search it later
+    cmd_toc = ['/usr/bin/xar', '-tf', abspkgpath]
+    proc = subprocess.Popen(cmd_toc, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (unused_output, err) = proc.communicate()
+    (toc, err) = proc.communicate()
+    toc = toc.strip().split('\n')
     if proc.returncode == 0:
-        currentdir = pkgtmp
-        packageinfofile = os.path.join(currentdir, 'PackageInfo')
-        if os.path.exists(packageinfofile):
-            infoarray = parsePkgRefs(packageinfofile)
-
-        if not infoarray:
-            # found no PackageInfo file
-            # so let's look at the Distribution file
-            distributionfile = os.path.join(currentdir, 'Distribution')
-            if os.path.exists(distributionfile):
-                infoarray = parsePkgRefs(distributionfile, path_to_pkg=pkgpath)
-
-        if not infoarray:
-            # No PackageInfo file or Distribution file
-            # look for subpackages at the top level
-            for item in listdir(currentdir):
-                itempath = os.path.join(currentdir, item)
-                if itempath.endswith('.pkg') and os.path.isdir(itempath):
-                    packageinfofile = os.path.join(itempath, 'PackageInfo')
-                    if os.path.exists(packageinfofile):
-                        infoarray.extend(parsePkgRefs(packageinfofile))
+        # Walk trough the TOC entries
+        for toc_entry in toc:
+            # If the TOC entry is a top-level PackageInfo, extract it
+            if toc_entry.startswith('PackageInfo') and len(infoarray) == 0:
+                cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
+                result = subprocess.call(cmd_extract)
+                if result == 0:
+                    packageinfoabspath = os.path.abspath(os.path.join(pkgtmp,
+                                                            toc_entry))
+                    infoarray = parsePkgRefs(packageinfoabspath)
+                    break
+                else:
+                    display_warning("An error occurred while extracting %s: %s"
+                                    % (toc_entry, err))
+            # If the TOC entry matches "Distribution" at the top level, get it
+            elif toc_entry.startswith('Distribution') and len(infoarray) == 0:
+                # Extract the Distribution file
+                cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
+                result = subprocess.call(cmd_extract)
+                if result == 0:
+                    distributionabspath = os.path.abspath(os.path.join(pkgtmp,
+                                                            toc_entry))
+                    infoarray = parsePkgRefs(distributionabspath,
+                                                path_to_pkg=pkgpath)
+                    break
+                else:
+                    display_warning("An error occurred while extracting %s: %s"
+                                    % (toc_entry, err))
+            # If there are PackageInfo files elsewhere, gather them up
+            elif toc_entry.endswith('.pkg/PackageInfo'):
+                cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
+                result = subprocess.call(cmd_extract)
+                if result == 0:
+                    packageinfoabspath = os.path.abspath(os.path.join(pkgtmp,
+                                                            toc_entry))
+                    infoarray.extend(parsePkgRefs(packageinfoabspath))
+                else:
+                    display_warning("An error occurred while extracting %s: %s"
+                                    % (toc_entry, err))
+        if len(infoarray) == 0:
+            display_warning('No valid Distribution or PackageInfo found.')
     else:
         display_warning(err)
 
@@ -2715,4 +2737,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
