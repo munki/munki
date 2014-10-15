@@ -1528,8 +1528,20 @@ def getFlatPackageInfo(pkgpath):
     if proc.returncode == 0:
         # Walk trough the TOC entries
         for toc_entry in toc:
+            # If the TOC entry is a top-level PackageInfo, extract it
+            if toc_entry.startswith('PackageInfo') and len(infoarray) == 0:
+                cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
+                result = subprocess.call(cmd_extract)
+                if result == 0:
+                    packageinfoabspath = os.path.abspath(os.path.join(pkgtmp,
+                                                            toc_entry))
+                    infoarray = parsePkgRefs(packageinfoabspath)
+                    break
+                else:
+                    display_warning("An error occurred while extracting %s: %s"
+                                    % (toc_entry, err))
             # If the TOC entry matches "Distribution" at the top level, get it
-            if toc_entry.startswith('Distribution') and len(infoarray) == 0:
+            elif toc_entry.startswith('Distribution') and len(infoarray) == 0:
                 # Extract the Distribution file
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
                 result = subprocess.call(cmd_extract)
@@ -1542,18 +1554,6 @@ def getFlatPackageInfo(pkgpath):
                 else:
                     display_warning("An error occurred while extracting %s: %s"
                                     % (toc_entry, err))
-            # If the TOC entry is a top-level PackageInfo, extract it
-            elif toc_entry.startswith('PackageInfo') and len(infoarray) == 0:
-                cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
-                result = subprocess.call(cmd_extract)
-                if result == 0:
-                    packageinfoabspath = os.path.abspath(os.path.join(pkgtmp,
-                                                            toc_entry))
-                    infoarray = parsePkgRefs(packageinfoabspath)
-                else:
-                    display_warning("An error occurred while extracting %s: %s"
-                                    % (toc_entry, err))
-                break
             # If there are PackageInfo files elsewhere, gather them up
             elif toc_entry.endswith('.pkg/PackageInfo'):
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
