@@ -65,7 +65,9 @@ DEFAULT_CATALOG_URLS = {
     '10.8': ('http://swscan.apple.com/content/catalogs/others/'
              'index-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
     '10.9': ('https://swscan.apple.com/content/catalogs/others/'
-          'index-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog')
+         'index-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
+    '10.10': ('https://swscan.apple.com/content/catalogs/others/'
+    'index-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog')
 }
 
 # Preference domain for Apple Software Update.
