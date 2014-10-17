@@ -85,7 +85,7 @@ fi
 
 
 echo "Cloning munki repo branch $BRANCH from code.google.com..."
-git clone --branch "$BRANCH" --no-checkout -- https://github.com/munki/munki.git"$MUNKIDIR"
+git clone --branch "$BRANCH" --no-checkout -- https://github.com/munki/munki.git "$MUNKIDIR"
 CLONE_RESULT="$?"
 if [ "$CLONE_RESULT" != "0" ]; then
     echo "Error cloning munki repo: $CLONE_RESULT" 1>&2
