@@ -25,251 +25,10 @@ Incorporating work and ideas from Michael Lynn here:
 
 import optparse
 import os
-import re
 import sys
 
-from munkilib import keychain
 from munkilib import munkicommon
-
-
-DEFAULT_KEYCHAIN_PASSWORD = 'munki'
-
-
-def read_file(pathname):
-    '''Return the contents of pathname as a string'''
-    try:
-        fileobj = open(pathname, mode='r')
-        data = fileobj.read()
-        fileobj.close()
-        return data
-    except (OSError, IOError), err:
-        munkicommon.display_error(
-            'Could not read %s: %s' % (pathname, err))
-        return ''
-
-
-def write_file(stringdata, pathname):
-    '''Writes stringdata to pathname.
-    Returns the pathname on success, empty string on failure.'''
-    try:
-        fileobject = open(pathname, mode='w')
-        fileobject.write(stringdata)
-        fileobject.close()
-        return pathname
-    except (OSError, IOError), err:
-        munkicommon.display_error("Couldn't write %s to %s: %s"
-                                  % (stringdata, pathname, err))
-        return ""
-
-
-def add_ca_certs_to_system_keychain(ca_cert_path=None, ca_dir_path=None):
-    '''Adds any CA certs as trusted root certs to System.keychain'''
-
-    SYSTEM_KEYCHAIN = "/Library/Keychains/System.keychain"
-    if not os.path.exists(SYSTEM_KEYCHAIN):
-        munkicommon.display_info('%s not found.' % SYSTEM_KEYCHAIN)
-        return
-
-    if not ca_cert_path and not ca_dir_path:
-        # no CA certs, so nothing to do
-        munkicommon.display_info(
-            'No CA cert info provided, so nothing to add to System keychain.')
-        return
-    else:
-        munkicommon.display_info('CA cert path:     %s', ca_cert_path)
-        munkicommon.display_info('CA dir path:      %s', ca_dir_path)
-
-    # Add CA certs
-    if ca_cert_path:
-        munkicommon.display_info('Adding CA cert...')
-        output = keychain.security(
-            'add-trusted-cert', '-d', '-k', SYSTEM_KEYCHAIN, ca_cert_path)
-    if ca_dir_path:
-        # import any pem files in the ca_dir_path directory
-        for item in os.listdir(ca_dir_path):
-            if item.endswith('.pem'):
-                cert_path = os.path.join(ca_dir_path, item)
-                munkicommon.display_info('Adding CA cert %s...' % cert_path)
-                output = keychain.security('add-trusted-cert', '-d',
-                                           '-k', SYSTEM_KEYCHAIN, cert_path)
-
-    munkicommon.display_info('System.keychain updated.')
-
-
-def make_client_keychain(client_cert_path=None, client_key_path=None,
-                         site_url=None):
-    '''Builds a client cert keychain for use by managedsoftwareupdate'''
-
-    our_keychain = None
-    if not client_cert_path:
-        # no client, so nothing to do
-        munkicommon.display_info(
-            'No client cert info provided, '
-            'so no client keychain will be created.')
-        return
-    else:
-        munkicommon.display_info('Client cert path: %s', client_cert_path)
-        munkicommon.display_info('Client key path:  %s', client_key_path)
-
-    keychain_pass = (
-        munkicommon.pref('KeychainPassword') or DEFAULT_KEYCHAIN_PASSWORD)
-    abs_keychain_path = keychain.get_keychain_path()
-    if os.path.exists(abs_keychain_path):
-        os.unlink(abs_keychain_path)
-    if not os.path.exists(os.path.dirname(abs_keychain_path)):
-        os.makedirs(os.path.dirname(abs_keychain_path))
-    # create a new keychain
-    munkicommon.display_info('Creating client keychain...')
-    output = keychain.security(
-        'create-keychain', '-p', keychain_pass, abs_keychain_path)
-
-    # Ensure the keychain is in the search path and unlocked
-    our_keychain = keychain.MunkiKeychain()
-
-    # Add client cert (and optionally key)
-    if client_cert_path:
-        if client_key_path:
-            # combine client cert and private key before we import
-            cert_data = read_file(client_cert_path)
-            key_data = read_file(client_key_path)
-            # write the combined data
-            combined_pem = os.path.join('/tmp', 'combined.pem')
-            if write_file(cert_data + key_data, combined_pem):
-                munkicommon.display_info('Importing client cert and key...')
-                output = keychain.security(
-                    'import', combined_pem, '-A', '-k', abs_keychain_path)
-            os.unlink(combined_pem)
-        else:
-            munkicommon.display_info('Importing client cert and key...')
-            output = keychain.security(
-                'import', client_cert_path, '-A', '-k', abs_keychain_path)
-
-        # set up identity preference linking the identity (cert and key)
-        # to the site_url
-        if not site_url:
-            # trailing slash is needed so preference is used for all
-            # URLs at the site
-            site_url = munkicommon.pref('SoftwareRepoURL').rstrip('/') + '/'
-        # Set up an identity if it doesn't exist already for our site
-        # First we need to find the existing identity in our keychain
-        output = keychain.security('find-identity', abs_keychain_path)
-        if not ' 1 identities found' in output:
-            munkicommon.display_error('No identities found!')
-        else:
-            # We have a solitary match and can configure / verify
-            # the identity preference
-            id_hash = re.findall(r'\W+1\)\W+([0-9A-F]+)\W', output)[0]
-            # First, check to see if we have an identity already
-            create_identity = False
-            try:
-                output = keychain.security(
-                    'get-identity-preference', '-s', site_url, '-Z')
-                # No error, we found an identity
-                # Check if it matches the one we want
-                current_hash = re.match(
-                    r'SHA-1 hash:\W+([A-F0-9]+)\W', output).group(1)
-                if id_hash != current_hash:
-                    # We only care if there's a different hash being used.
-                    # Remove the incorrect one.
-                    output = keychain.security(
-                        'set-identity-preference', '-n', '-s', site_url)
-                    # Signal that we want to create a new identity preference
-                    create_identity = True
-            except keychain.SecurityError, err:
-                # error finding identity-preference
-                create_identity = True
-            #elif id_hash not in output:
-            #    # Non-zero error code and hash not detected in output
-            #    # Signal that we want to create a new identity preference
-            #    create_identity = True
-            if create_identity:
-                # This code was moved into a common block that both routes could
-                # access as it's a little complicated.
-                # security will only create an identity preference in the
-                # default keychain - which means a default has to be
-                # defined/selected. For normal users, this is login.keychain -
-                # but for root there's no login.keychain and no default keychain
-                # configured. So we'll handle the case of no default keychain
-                # (just set one) as well as pre-existing default keychain
-                # (in which case we set it long enough to create the preference,
-                # then set it back)
-                munkicommon.display_info('Creating identity preference...')
-                try:
-                    output = keychain.security('default-keychain')
-                    # One is defined, remember the path
-                    default_keychain = [
-                        x.strip().strip('"')
-                        for x in output.split('\n') if x.strip()][0]
-                except keychain.SecurityError, err:
-                    # error raised if there is no default
-                    default_keychain = None
-                # Temporarily assign the default keychain to ours
-                try:
-                    output = keychain.security(
-                        'default-keychain', '-s', abs_keychain_path)
-                except keychain.SecurityError, err:
-                    munkicommon.display_error(
-                        'Could not set default keychain to %s failed: %s'
-                        % (abs_keychain_path, err))
-                    default_keychain = None
-                # Create the identity preference
-                try:
-                    output = keychain.security(
-                        'set-identity-preference', '-s', site_url, '-Z',
-                        id_hash, abs_keychain_path)
-                except keychain.SecurityError, err:
-                    munkicommon.display_error(
-                        'Setting identity preference failed: %s' % err)
-                if default_keychain:
-                    # We originally had a different one, set it back
-                    output = keychain.security(
-                        'default-keychain', '-s', default_keychain)
-
-    if our_keychain:
-        # remove it from the keychain list
-        our_keychain.remove_from_search_list()
-        munkicommon.display_info(
-            'Completed creation of client keychain at %s' % abs_keychain_path)
-
-
-def get_munki_cert_data():
-    '''Attempt to get information we need from Munki's preferences or
-    defaults.'''
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    cert_data = {}
-
-    # get server CA cert if it exists so we can verify the munki server
-    cert_data['ca_cert_path'] = None
-    cert_data['ca_dir_path'] = None
-    if munkicommon.pref('SoftwareRepoCAPath'):
-        CA_path = munkicommon.pref('SoftwareRepoCAPath')
-        if os.path.isfile(CA_path):
-            cert_data['ca_cert_path'] = CA_path
-        elif os.path.isdir(CA_path):
-            cert_data['ca_dir_path'] = CA_path
-    if munkicommon.pref('SoftwareRepoCACertificate'):
-        cert_data['ca_cert_path'] = munkicommon.pref(
-            'SoftwareRepoCACertificate')
-    if cert_data['ca_cert_path'] == None:
-        ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
-        if os.path.exists(ca_cert_path):
-            cert_data['ca_cert_path'] = ca_cert_path
-
-    cert_data['client_cert_path'] = None
-    cert_data['client_key_path'] = None
-    # get client cert if it exists
-    if munkicommon.pref('UseClientCertificate'):
-        cert_data['client_cert_path'] = (
-            munkicommon.pref('ClientCertificatePath') or None)
-        cert_data['client_key_path'] = munkicommon.pref('ClientKeyPath') or None
-        if not cert_data['client_cert_path']:
-            for name in ['cert.pem', 'client.pem', 'munki.pem']:
-                client_cert_path = os.path.join(
-                    ManagedInstallDir, 'certs', name)
-                if os.path.exists(client_cert_path):
-                    cert_data['client_cert_path'] = client_cert_path
-                    break
-    return cert_data
+from munkilib import keychain
 
 
 def main():
@@ -290,40 +49,29 @@ def main():
         print >> sys.stderr, 'You must run this as root!'
         exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
 
-    if os.environ['HOME'] != '/var/root':
-        print >> sys.stderr, (
-            'SORRY! '
-            'You must actually login as root, or use `sudo su` to inherit '
-            'root\'s environment before running this tool. '
-            '`sudo` or `sudo -s` is not sufficient.')
-        exit(munkicommon.EXIT_STATUS_ROOT_REQUIRED)
-
     if arguments:
         print >> sys.stderr, 'Extra arguments supplied!'
         parser.print_usage()
         exit(-1)
 
-    cert_data = get_munki_cert_data()
+    server_cert_data = keychain.get_munki_server_cert_data()
+    client_cert_data = keychain.get_munki_client_cert_data()
 
     # command-line options override what we find from Munki
     if options.ca_cert_path:
-        cert_data['ca_cert_path'] = options.ca_cert_path
+        server_cert_data['ca_cert_path'] = options.ca_cert_path
     if options.ca_dir_path:
-        cert_data['ca_dir_path'] = options.ca_dir_path
+        server_cert_data['ca_dir_path'] = options.ca_dir_path
+
     if options.client_cert_path:
-        cert_data['client_cert_path'] = options.client_cert_path
+        client_cert_data['client_cert_path'] = options.client_cert_path
     if options.client_key_path:
-        cert_data['client_key_path'] = options.client_key_path
-    site_url = None
+        client_cert_data['client_key_path'] = options.client_key_path
     if options.site_url:
-        site_url = options.site_url
+        client_cert_data['site_url'] = options.site_url
 
-    add_ca_certs_to_system_keychain(ca_cert_path=cert_data['ca_cert_path'],
-                                    ca_dir_path=cert_data['ca_dir_path'])
-
-    make_client_keychain(client_cert_path=cert_data['client_cert_path'],
-                         client_key_path=cert_data['client_key_path'],
-                         site_url=site_url)
+    keychain.add_ca_certs_to_system_keychain(server_cert_data)
+    keychain.make_client_keychain(client_cert_data)
 
 
 if __name__ == '__main__':

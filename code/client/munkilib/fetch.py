@@ -189,7 +189,7 @@ def get_url(url, destinationpath,
             connection.error.localizedDescription())
         if connection.SSLerror:
             munkicommon.display_detail(
-                'SSL error detail: %s' % str(connection.SSLerror))
+                'SSL error detail: %s', str(connection.SSLerror))
             keychain.debug_output()
         munkicommon.display_detail('Headers: %s', connection.headers)
         if os.path.exists(tempdownloadpath) and not resume:
@@ -393,8 +393,8 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
     err = None
     if header['http_result_code'] == '304':
         # not modified, return existing file
-        munkicommon.display_debug1('%s already exists and is up-to-date.'
-                                        % destinationpath)
+        munkicommon.display_debug1('%s already exists and is up-to-date.',
+                                   destinationpath)
         # file is in cache and is unchanged, so we return False
         return False
     else:
