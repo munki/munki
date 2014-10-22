@@ -406,6 +406,25 @@ def remove_from_keychain_list(keychain_path):
                 'Could not set new keychain list: %s', err)
 
 
+def client_certs_newer_than_keychain():
+    '''Returns True if we have client certs that are newer than our
+    client keychain, False otherwise'''
+    certdata = get_munki_client_cert_data()
+    client_cert_path = certdata['client_cert_path']
+    client_key_path = certdata['client_key_path']
+    keychain_path = get_keychain_path()
+    if not os.path.exists(client_cert_path):
+        return False
+    if not os.path.exists(keychain_path):
+        return False
+    keychain_mod_time = os.stat(keychain_path).st_mtime
+    if os.stat(client_cert_path).st_mtime > keychain_mod_time:
+        return True
+    if os.stat(client_key_path).st_mtime > keychain_mod_time:
+        return True
+    return False
+
+
 def debug_output():
     '''Debugging output for keychain'''
     try:
@@ -477,6 +496,9 @@ class MunkiKeychain(object):
         Creates a new client keychain if needed.'''
         add_ca_certs_to_system_keychain()
         self.keychain_path = get_keychain_path()
+        if client_certs_newer_than_keychain():
+            # updated client certs; we should build a new keychain
+            os.unlink(self.keychain_path)
         if os.path.exists(self.keychain_path):
             # ensure existing keychain is available for use
             self.added_keychain = add_to_keychain_list(self.keychain_path)
