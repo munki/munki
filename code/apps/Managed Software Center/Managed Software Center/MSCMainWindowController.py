@@ -939,7 +939,12 @@ class MSCMainWindowController(NSWindowController):
 
         # show the alert sheet
         self.window().makeKeyAndOrderFront_(self)
-        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(alertTitle, cancelLabel, OKLabel, nil, alertDetail)
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                alertTitle,
+                cancelLabel,
+                OKLabel,
+                nil,
+                u"%@", alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
                 
     def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
