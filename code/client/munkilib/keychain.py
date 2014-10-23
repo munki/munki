@@ -150,7 +150,8 @@ def add_ca_certs_to_system_keychain(certdata=None):
         try:
             output = security('add-trusted-cert', '-d',
                               '-k', SYSTEM_KEYCHAIN, cert)
-            munkicommon.display_debug2(output)
+            if output:
+                munkicommon.display_debug2(output)
         except SecurityError, err:
             munkicommon.display_error(
                 'Could not add CA cert %s into System keychain: %s', cert, err)
@@ -202,6 +203,8 @@ def make_client_keychain(certdata=None):
     try:
         output = security('create-keychain',
                           '-p', keychain_pass, abs_keychain_path)
+        if output:
+            munkicommon.display_debug2(output)
     except SecurityError, err:
         munkicommon.display_error(
             'Could not create keychain %s: %s', abs_keychain_path, err)
@@ -226,6 +229,8 @@ def make_client_keychain(certdata=None):
             try:
                 output = security(
                     'import', combined_pem, '-A', '-k', abs_keychain_path)
+                if output:
+                    munkicommon.display_debug2(output)
             except SecurityError, err:
                 munkicommon.display_error(
                     'Could not import %s: %s', combined_pem, err)
@@ -238,6 +243,8 @@ def make_client_keychain(certdata=None):
         try:
             output = security(
                 'import', client_cert_path, '-A', '-k', abs_keychain_path)
+            if output:
+                munkicommon.display_debug2(output)
         except SecurityError, err:
             munkicommon.display_error(
                 'Could not import %s: %s', client_cert_path, err)
@@ -247,6 +254,8 @@ def make_client_keychain(certdata=None):
     # First we need to find the existing identity in our keychain
     try:
         output = security('find-identity', abs_keychain_path)
+        if output:
+            munkicommon.display_debug2(output)
     except SecurityError:
         pass
     if not ' 1 identities found' in output:
@@ -260,6 +269,8 @@ def make_client_keychain(certdata=None):
         try:
             output = security(
                 'get-identity-preference', '-s', site_url, '-Z')
+            if output:
+                munkicommon.display_debug2(output)
             # No error, we found an identity
             # Check if it matches the one we want
             current_hash = re.match(
@@ -269,6 +280,8 @@ def make_client_keychain(certdata=None):
                 # Remove the incorrect one.
                 output = security(
                     'set-identity-preference', '-n', '-s', site_url)
+                if output:
+                    munkicommon.display_debug2(output)
                 # Signal that we want to create a new identity preference
                 create_identity = True
         except SecurityError, err:
@@ -292,6 +305,8 @@ def make_client_keychain(certdata=None):
             munkicommon.display_debug1('Creating identity preference...')
             try:
                 output = security('default-keychain')
+                if output:
+                    munkicommon.display_debug2(output)
                 # One is defined, remember the path
                 default_keychain = [
                     x.strip().strip('"')
@@ -303,6 +318,8 @@ def make_client_keychain(certdata=None):
             try:
                 output = security(
                     'default-keychain', '-s', abs_keychain_path)
+                if output:
+                    munkicommon.display_debug2(output)
             except SecurityError, err:
                 munkicommon.display_error(
                     'Could not set default keychain to %s failed: %s'
@@ -313,6 +330,8 @@ def make_client_keychain(certdata=None):
                 output = security(
                     'set-identity-preference', '-s', site_url, '-Z',
                     id_hash, abs_keychain_path)
+                if output:
+                    munkicommon.display_debug2(output)
             except SecurityError, err:
                 munkicommon.display_error(
                     'Setting identity preference failed: %s' % err)
@@ -320,7 +339,8 @@ def make_client_keychain(certdata=None):
                 # We originally had a different one, set it back
                 output = security(
                     'default-keychain', '-s', default_keychain)
-
+                if output:
+                    munkicommon.display_debug2(output)
     # we're done, clean up.
     remove_from_keychain_list(abs_keychain_path)
     if original_home:
@@ -347,6 +367,8 @@ def add_to_keychain_list(keychain_path):
         try:
             output = security(
                 'list-keychains', '-d', 'user', '-s', *search_keychains)
+            if output:
+                munkicommon.display_debug2(output)
             added_keychain = True
         except SecurityError, err:
             munkicommon.display_error(
@@ -363,7 +385,8 @@ def unlock_and_set_nonlocking(keychain_path):
     try:
         output = security(
             'unlock-keychain', '-p', keychain_pass, keychain_path)
-        munkicommon.display_debug2(output)
+        if output:
+            munkicommon.display_debug2(output)
     except SecurityError, err:
         # some problem unlocking the keychain.
         munkicommon.display_error(
@@ -377,7 +400,8 @@ def unlock_and_set_nonlocking(keychain_path):
         return
     try:
         output = security('set-keychain-settings', keychain_path)
-        munkicommon.display_debug2(output)
+        if output:
+            munkicommon.display_debug2(output)
     except SecurityError, err:
         munkicommon.display_error(
             'Could not set keychain settings for %s: %s',
@@ -401,6 +425,8 @@ def remove_from_keychain_list(keychain_path):
         try:
             output = security(
                 'list-keychains', '-d', 'user', '-s', *filtered_keychains)
+            if output:
+                munkicommon.display_debug2(output)
         except SecurityError, err:
             munkicommon.display_error(
                 'Could not set new keychain list: %s', err)
