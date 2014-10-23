@@ -944,7 +944,7 @@ class MSCMainWindowController(NSWindowController):
                 cancelLabel,
                 OKLabel,
                 nil,
-                u"%@", NSLocalizedString(alertDetail, u'alertDetail text'))
+                u"%@", alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(self.window(), self, self.actionAlertDidEnd_returnCode_contextInfo_, nil)
                 
     def actionAlertDidEnd_returnCode_contextInfo_(self, alert, returncode, contextinfo):
