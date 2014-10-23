@@ -38,7 +38,7 @@
 "199.title" = "Knip";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Beheerde Softwarebijwerking";
+"1Nd-E7-vfR.title" = "Managed Software Center";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
 "202.title" = "Verwijder";
