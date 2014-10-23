@@ -186,7 +186,7 @@ def main():
     p.add_option('--force', '-f', action='store_true', dest='force',
         help='Create pngs even if there is an existing icon in the repo.')
     p.add_option('--item', '-i', action='append', type='string', dest='items',
-        help='Only run for specified items.')
+        help='Only run for given pkginfo item name(s).')
     p.set_defaults(force=False)
     options, arguments = p.parse_args()
 
