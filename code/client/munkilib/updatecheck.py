@@ -2287,7 +2287,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo = {}
     iteminfo['name'] = uninstall_item.get('name', '')
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
-    iteminfo['description'] = 'Will be removed.'
+    iteminfo['description'] = uninstall_item.get(
+      'uninstall_description',
+      'Will be removed.'
+    )
 
     # we will ignore the unattended_uninstall key if the item needs a restart
     # or logout...
