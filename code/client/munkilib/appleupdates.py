@@ -48,7 +48,6 @@ from LaunchServices import LSFindApplicationForInfo
 
 import FoundationPlist
 import fetch
-import keychain
 import launchd
 import munkicommon
 import munkistatus
@@ -309,7 +308,6 @@ class AppleUpdates(object):
             "User-Agent: managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
             % (machine['munki_version'], darwin_version,
                machine['arch'], machine['machine_model']))
-        keychain_obj = keychain.MunkiKeychain()
         return fetch.getResourceIfChangedAtomically(
                                             url,
                                             destinationpath,
