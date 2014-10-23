@@ -131,7 +131,7 @@ def findItemsToCheck(repo_path, itemlist=None):
 
 
 def generate_pngs_from_munki_items(repo_path, force=False, itemlist=None):
-    itemlist = findItemsToCheck(repo_path, itemlist=None)
+    itemlist = findItemsToCheck(repo_path, itemlist=itemlist)
     icons_dir = os.path.join(repo_path, u'icons')
     if not os.path.exists(icons_dir):
         os.mkdir(icons_dir)
@@ -185,6 +185,8 @@ def main():
     p = OptionParser(usage=usage)
     p.add_option('--force', '-f', action='store_true', dest='force',
         help='Create pngs even if there is an existing icon in the repo.')
+    p.add_option('--item', '-i', action='append', type='string', dest='items',
+        help='Only run for given pkginfo item name(s).')
     p.set_defaults(force=False)
     options, arguments = p.parse_args()
 
@@ -206,7 +208,8 @@ def main():
         exit(-1)
 
     # generate icons!
-    generate_pngs_from_munki_items(repo_path, force=options.force)
+    generate_pngs_from_munki_items(repo_path, force=options.force,
+        itemlist=options.items)
 
 if __name__ == '__main__':
     main()
