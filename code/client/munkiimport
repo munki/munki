@@ -734,6 +734,9 @@ def main():
     parser.add_option('--repo_url', '--repo-url', default='',
                     help="""Optional repo fileshare URL that takes precedence
                     over the default repo_url specified via --configure.""")
+    parser.add_option('--icon_path', '--icon-path', default='', type='string',
+                    help="""Path to an icon file for the package.
+                    Will overwrite an existing icon.""")
     parser.add_option('--version', '-V', action='store_true',
                     help='Print the version of the munki tools and exit.')
     parser.add_option('--verbose', '-v', action='store_true',
@@ -766,6 +769,10 @@ def main():
 
     if options.repo_url:
         REPO_URL = options.repo_url
+
+    if options.icon_path and not os.path.isfile(options.icon_path):
+        print >> sys.stderr, ('The specified icon file does not exist.')
+        exit(-1)
 
     if len(arguments) == 0:
         parser.print_usage()
@@ -975,7 +982,7 @@ def main():
             options.subdirectory = promptForSubdirectory(
                                                     options.subdirectory)
 
-        if not iconExistsInRepo(pkginfo):
+        if not iconExistsInRepo(pkginfo) and not options.icon_path:
             print 'No existing product icon found.'
             answer = raw_input('Attempt to create a product icon? [y/n] ')
             if answer.lower().startswith('y'):
@@ -1026,9 +1033,9 @@ def main():
             pkginfo['uninstaller_item_hash'] = itemhash
 
     # if we have an icon, upload it
-    if False: #options.iconpath:
+    if options.icon_path:
         try:
-            copyIconToRepo(options.iconpath)
+            convert_and_install_icon(pkginfo, options.icon_path)
         except RepoCopyError, errmsg:
             print >> sys.stderr, errmsg
 
