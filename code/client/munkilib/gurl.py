@@ -385,8 +385,7 @@ class Gurl(NSObject):
         if self.destination:
             self.destination.write(str(data))
         else:
-            self.log(NSString.alloc().initWithData_encoding_(
-                                                data, NSUTF8StringEncoding))
+            self.log(str(data).decode('UTF-8'))
         self.bytesReceived += len(data)
         if self.expectedLength != NSURLResponseUnknownLength:
             self.percentComplete = int(
