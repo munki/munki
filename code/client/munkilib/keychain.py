@@ -439,7 +439,7 @@ def client_certs_newer_than_keychain():
     client_cert_path = certdata['client_cert_path']
     client_key_path = certdata['client_key_path']
     keychain_path = get_keychain_path()
-    if not os.path.exists(client_cert_path):
+    if not client_cert_path or not os.path.exists(client_cert_path):
         return False
     if not os.path.exists(keychain_path):
         return False
