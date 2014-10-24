@@ -88,6 +88,7 @@ def getManifestNames():
                 # don't process these
                 continue
             manifests.append(os.path.join(subdir, name).lstrip('/'))
+    manifests.sort()
     return manifests
 
 
@@ -107,6 +108,7 @@ def getCatalogs():
             pass
         else:
             catalogs.append(name)
+    catalogs.sort()
     return catalogs
 
 
