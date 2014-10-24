@@ -24,7 +24,7 @@ import sys
 
 import shutil
 
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipfile
 
 from Foundation import *
 from AppKit import *
@@ -73,7 +73,11 @@ def get_custom_resources():
                 os.mkdir(dest_path)
             except (OSError, IOError), err:
                 msclog.debug_log('Error creating %s: %s' % (dest_path, err))
-        archive = ZipFile(source_path)
+        try:
+            archive = ZipFile(source_path)
+        except BadZipfile:
+            # ignore it
+            return
         archive_files = archive.namelist()
         # sanity checking in case the archive is not built correctly
         files_to_extract = [filename for filename in archive_files
