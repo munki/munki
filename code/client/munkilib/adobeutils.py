@@ -660,7 +660,7 @@ def doAdobeCS5Uninstall(adobeInstallInfo, payloads=None):
         munkicommon.display_error("No uninstall.xml in adobe_install_info")
         return -1
     payloadcount = adobeInstallInfo.get('payload_count', 0)
-    path = os.path.join(munkicommon.tmpdir, "uninstall.xml")
+    path = os.path.join(munkicommon.tmpdir(), "uninstall.xml")
     deploymentFile = writefile(uninstallxml, path)
     if not deploymentFile:
         return -1

@@ -223,7 +223,7 @@ def make_client_keychain(certdata=None):
         cert_data = read_file(client_cert_path)
         key_data = read_file(client_key_path)
         # write the combined data
-        combined_pem = os.path.join(munkicommon.tmpdir, 'combined.pem')
+        combined_pem = os.path.join(munkicommon.tmpdir(), 'combined.pem')
         if write_file(cert_data + key_data, combined_pem):
             munkicommon.display_debug1('Importing client cert and key...')
             try:

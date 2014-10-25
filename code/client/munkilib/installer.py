@@ -727,7 +727,7 @@ def installWithInfo(
                 munkicommon.display_debug1("suppress_bundle_relocation: %s" %
                                                     suppressBundleRelocation )
                 if 'installer_choices_xml' in item:
-                    choicesXMLfile = os.path.join(munkicommon.tmpdir,
+                    choicesXMLfile = os.path.join(munkicommon.tmpdir(),
                                                   "choices.xml")
                     FoundationPlist.writePlist(item['installer_choices_xml'],
                                                choicesXMLfile)

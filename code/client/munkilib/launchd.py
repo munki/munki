@@ -42,7 +42,7 @@ class Job(object):
     '''launchd job object'''
 
     def __init__(self, cmd, environment_vars=None):
-        tmpdir = munkicommon.tmpdir
+        tmpdir = munkicommon.tmpdir()
         LABELPREFIX = 'com.googlecode.munki.'
         # create a unique id for this job
         jobid = str(uuid.uuid1())

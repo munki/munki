@@ -2287,10 +2287,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo = {}
     iteminfo['name'] = uninstall_item.get('name', '')
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
-    iteminfo['description'] = uninstall_item.get(
-      'uninstall_description',
-      'Will be removed.'
-    )
+    iteminfo['description'] = 'Will be removed.'
 
     # we will ignore the unattended_uninstall key if the item needs a restart
     # or logout...
@@ -3325,7 +3322,7 @@ def getDataFromURL(url):
     '''Returns data from url as string. We use the existing
     getResourceIfChangedAtomically function so any custom
     authentication/authorization headers are reused'''
-    urldata = os.path.join(munkicommon.tmpdir, 'urldata')
+    urldata = os.path.join(munkicommon.tmpdir(), 'urldata')
     if os.path.exists(urldata):
         try:
             os.unlink(urldata)
