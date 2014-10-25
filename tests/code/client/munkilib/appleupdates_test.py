@@ -1073,13 +1073,11 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.munkicommon.getsha256hash(
             self.au.apple_download_catalog_path).AndReturn(None)
         self.au.CacheAppleCatalog().AndRaise(exc(s))
-        if exc == appleupdates.ReplicationError:
+        if exc == appleupdates.ReplicationError or \
+           exc == appleupdates.fetch.MunkiDownloadError:
             appleupdates.munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
             appleupdates.munkicommon.display_warning('\t%s', s)
-        elif exc == appleupdates.fetch.MunkiDownloadError:
-            appleupdates.munkicommon.display_warning(
-                'Could not download Apple SUS catalog.')
 
         self.mox.ReplayAll()
         self.assertFalse(self.au.CheckForSoftwareUpdates())
