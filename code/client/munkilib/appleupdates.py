@@ -770,12 +770,9 @@ class AppleUpdates(object):
             self.CacheAppleCatalog()
         except CatalogNotFoundError:
             return False
-        except ReplicationError, err:
+        except (ReplicationError, fetch.MunkiDownloadError), err:
             munkicommon.display_warning('Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', str(err))
-            return False
-        except fetch.MunkiDownloadError:
-            munkicommon.display_warning('Could not download Apple SUS catalog.')
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):

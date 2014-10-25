@@ -33,6 +33,7 @@ from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 # our libs
 import fetch
+import keychain
 import munkicommon
 import munkistatus
 import appleupdates
@@ -1643,7 +1644,7 @@ def updateAvailableLicenseSeats(installinfo):
             munkicommon.display_debug1('Got: %s', license_data)
             license_dict = FoundationPlist.readPlistFromString(
                 license_data)
-        except (fetch.MunkiDownloadError, fetch.CurlDownloadError), err:
+        except (fetch.MunkiDownloadError, fetch.GurlDownloadError), err:
             # problem fetching from URL
             munkicommon.display_error('Error from %s: %s', url, err)
         except FoundationPlist.FoundationPlistException:
@@ -1918,7 +1919,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             iteminfo['note'] = 'Integrity check failed'
             installinfo['managed_installs'].append(iteminfo)
             return False
-        except fetch.CurlDownloadError, errmsg:
+        except fetch.GurlDownloadError, errmsg:
             munkicommon.display_warning(
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
@@ -2286,10 +2287,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     iteminfo = {}
     iteminfo['name'] = uninstall_item.get('name', '')
     iteminfo['display_name'] = uninstall_item.get('display_name', '')
-    iteminfo['description'] = uninstall_item.get(
-      'uninstall_description',
-      'Will be removed.'
-    )
+    iteminfo['description'] = 'Will be removed.'
 
     # we will ignore the unattended_uninstall key if the item needs a restart
     # or logout...
@@ -2854,6 +2852,8 @@ def check(client_id='', localmanifestpath=None):
     munkicommon.getConditions()
     CONDITIONS = munkicommon.getConditions()
 
+    keychain_obj = keychain.MunkiKeychain()
+
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     if munkicommon.munkistatusoutput:
         munkistatus.activate()
@@ -3322,7 +3322,7 @@ def getDataFromURL(url):
     '''Returns data from url as string. We use the existing
     getResourceIfChangedAtomically function so any custom
     authentication/authorization headers are reused'''
-    urldata = os.path.join(munkicommon.tmpdir, 'urldata')
+    urldata = os.path.join(munkicommon.tmpdir(), 'urldata')
     if os.path.exists(urldata):
         try:
             os.unlink(urldata)
@@ -3351,39 +3351,39 @@ def getResourceIfChangedAtomically(url,
     exists, and adds any additional headers'''
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    # get server CA cert if it exists so we can verify the munki server
-    ca_cert_path = None
-    ca_dir_path = None
-    if munkicommon.pref('SoftwareRepoCAPath'):
-        CA_path = munkicommon.pref('SoftwareRepoCAPath')
-        if os.path.isfile(CA_path):
-            ca_cert_path = CA_path
-        elif os.path.isdir(CA_path):
-            ca_dir_path = CA_path
-    if munkicommon.pref('SoftwareRepoCACertificate'):
-        ca_cert_path = munkicommon.pref('SoftwareRepoCACertificate')
-    if ca_cert_path == None:
-        ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
-        if not os.path.exists(ca_cert_path):
-            ca_cert_path = None
+    ## get server CA cert if it exists so we can verify the munki server
+    #ca_cert_path = None
+    #ca_dir_path = None
+    #if munkicommon.pref('SoftwareRepoCAPath'):
+    #    CA_path = munkicommon.pref('SoftwareRepoCAPath')
+    #    if os.path.isfile(CA_path):
+    #        ca_cert_path = CA_path
+    #    elif os.path.isdir(CA_path):
+    #        ca_dir_path = CA_path
+    #if munkicommon.pref('SoftwareRepoCACertificate'):
+    #    ca_cert_path = munkicommon.pref('SoftwareRepoCACertificate')
+    #if ca_cert_path == None:
+    #    ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
+    #    if not os.path.exists(ca_cert_path):
+    #        ca_cert_path = None
 
-    client_cert_path = None
-    client_key_path = None
-    # get client cert if it exists
-    if munkicommon.pref('UseClientCertificate'):
-        client_cert_path = munkicommon.pref('ClientCertificatePath') or None
-        client_key_path = munkicommon.pref('ClientKeyPath') or None
-        if not client_cert_path:
-            for name in ['cert.pem', 'client.pem', 'munki.pem']:
-                client_cert_path = os.path.join(ManagedInstallDir, 'certs',
-                                                                    name)
-                if os.path.exists(client_cert_path):
-                    break
-    cert_info = {}
-    cert_info['cacert'] = ca_cert_path
-    cert_info['capath'] = ca_dir_path
-    cert_info['cert'] = client_cert_path
-    cert_info['key'] = client_key_path
+    #client_cert_path = None
+    #client_key_path = None
+    ## get client cert if it exists
+    #if munkicommon.pref('UseClientCertificate'):
+    #    client_cert_path = munkicommon.pref('ClientCertificatePath') or None
+    #    client_key_path = munkicommon.pref('ClientKeyPath') or None
+    #    if not client_cert_path:
+    #        for name in ['cert.pem', 'client.pem', 'munki.pem']:
+    #            client_cert_path = os.path.join(ManagedInstallDir, 'certs',
+    #                                                                name)
+    #            if os.path.exists(client_cert_path):
+    #                break
+    #cert_info = {}
+    #cert_info['cacert'] = ca_cert_path
+    #cert_info['capath'] = ca_dir_path
+    #cert_info['cert'] = client_cert_path
+    #cert_info['key'] = client_key_path
 
     # Add any additional headers specified in ManagedInstalls.plist.
     # AdditionalHttpHeaders must be an array of strings with valid HTTP
@@ -3398,7 +3398,6 @@ def getResourceIfChangedAtomically(url,
 
     return fetch.getResourceIfChangedAtomically(url,
                                                 destinationpath,
-                                                cert_info=cert_info,
                                                 custom_headers=custom_headers,
                                                 expected_hash=expected_hash,
                                                 message=message,

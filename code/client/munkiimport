@@ -74,7 +74,7 @@ def makeDMG(pkgpath):
     pkgname = os.path.basename(pkgpath)
     print 'Making disk image containing %s...' % pkgname
     diskimagename = os.path.splitext(pkgname)[0] + '.dmg'
-    diskimagepath = os.path.join(munkicommon.tmpdir, diskimagename)
+    diskimagepath = os.path.join(munkicommon.tmpdir(), diskimagename)
     cmd = ['/usr/bin/hdiutil', 'create', '-srcfolder', pkgpath, diskimagepath]
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,

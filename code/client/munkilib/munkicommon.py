@@ -831,8 +831,8 @@ def DMGisWritable(dmgpath):
     if pliststr:
         try:
             plist = FoundationPlist.readPlistFromString(pliststr)
-            format = plist.get('Format')
-            if format in ['UDSB', 'UDSP', 'UDRW', 'RdWr']:
+            dmg_format = plist.get('Format')
+            if dmg_format in ['UDSB', 'UDSP', 'UDRW', 'RdWr']:
                 return True
         except FoundationPlist.NSPropertyListSerializationException:
             pass
@@ -1514,7 +1514,7 @@ def getFlatPackageInfo(pkgpath):
     # get the absolute path to the pkg because we need to do a chdir later
     abspkgpath = os.path.abspath(pkgpath)
     # make a tmp dir to expand the flat package into
-    pkgtmp = tempfile.mkdtemp(dir=tmpdir)
+    pkgtmp = tempfile.mkdtemp(dir=tmpdir())
     # record our current working dir
     cwd = os.getcwd()
     # change into our tmpdir so we can use xar to unarchive the flat package
@@ -2483,16 +2483,24 @@ def getAvailableDiskSpace(volumepath='/'):
     return int(st.f_frsize * st.f_bavail / 1024) # f_bavail matches df(1) output
 
 
+def tmpdir():
+    '''Returns a temporary directory for this session'''
+    global _TMPDIR
+    if not _TMPDIR:
+        _TMPDIR = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
+    return _TMPDIR
+
+
 def cleanUpTmpDir():
     """Cleans up our temporary directory."""
-    global tmpdir
-    if tmpdir:
+    global _TMPDIR
+    if _TMPDIR:
         try:
-            shutil.rmtree(tmpdir)
+            shutil.rmtree(_TMPDIR)
         except (OSError, IOError):
             display_warning(
-                'Unable to clean up temporary dir %s: %s', tmpdir, str(e))
-        tmpdir = None
+                'Unable to clean up temporary dir %s: %s', _TMPDIR, str(e))
+        _TMPDIR = None
 
 
 def listdir(path):
@@ -2602,7 +2610,7 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
         return -1
 
     # write the script to a temp file
-    scriptpath = os.path.join(tmpdir, scriptname)
+    scriptpath = os.path.join(tmpdir(), scriptname)
     if writefile(script_text, scriptpath):
         cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
         retcode = subprocess.call(cmd)
@@ -2728,7 +2736,7 @@ def blockingApplicationsRunning(pkginfoitem):
 #debug = False
 verbose = 1
 munkistatusoutput = False
-tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
+_TMPDIR = None
 report = {}
 
 def main():
