@@ -51,6 +51,10 @@ class InsecureFilePermissionsError(VerifyFilePermissionsError):
     """The permissions of the specified file are insecure."""
 
 
+# Munki uses a lot of camelCase names due to its OS X and Cocoa relationships.
+# so disable PyLint warnings about invalid function names
+# pylint: disable=C0103
+
 def verifyFileOnlyWritableByMunkiAndRoot(file_path):
     """
     Check the permissions on a given file path; fail if owner or group
@@ -66,9 +70,9 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
     """
     try:
         file_stat = os.stat(file_path)
-    except OSError, e:
+    except OSError, err:
         raise VerifyFilePermissionsError(
-            '%s does not exist. \n %s' % (file_path, str(e)))
+            '%s does not exist. \n %s' % (file_path, str(err)))
 
     try:
         admin_gid = grp.getgrnam('admin').gr_gid
@@ -86,9 +90,9 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
         # verify other users cannot write to the file.
         elif file_stat.st_mode & stat.S_IWOTH != 0:
             raise InsecureFilePermissionsError('world writable!')
-    except InsecureFilePermissionsError, e:
+    except InsecureFilePermissionsError, err:
         raise InsecureFilePermissionsError(
-            '%s is not secure! %s' % (file_path, e.args[0]))
+            '%s is not secure! %s' % (file_path, err.args[0]))
 
 
 def runExternalScript(script, allow_insecure=False, script_args=()):
@@ -110,9 +114,9 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
     if not allow_insecure:
         try:
             verifyFileOnlyWritableByMunkiAndRoot(script)
-        except VerifyFilePermissionsError, e:
+        except VerifyFilePermissionsError, err:
             msg = ('Skipping execution due to failed file permissions '
-                   'verification: %s\n%s' % (script, str(e)))
+                   'verification: %s\n%s' % (script, str(err)))
             raise RunExternalScriptError(msg)
 
     if os.access(script, os.X_OK):
@@ -124,8 +128,8 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         (stdout, stderr) = proc.communicate()
-        return proc.returncode, stdout.decode('UTF-8','replace'), \
-                                stderr.decode('UTF-8','replace')
+        return proc.returncode, stdout.decode('UTF-8', 'replace'), \
+                                stderr.decode('UTF-8', 'replace')
     else:
         raise RunExternalScriptError('%s not executable' % script)
 
@@ -141,7 +145,7 @@ def getPIDforProcessName(processname):
         return 0
 
     while True:
-        line =  proc.stdout.readline().decode('UTF-8')
+        line = proc.stdout.readline().decode('UTF-8')
         if not line and (proc.poll() != None):
             break
         line = line.rstrip('\n')
