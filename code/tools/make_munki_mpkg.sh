@@ -37,7 +37,7 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package]"
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
-    -c package  Include a configuration package
+    -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
 
 EOF
 }
@@ -434,20 +434,22 @@ if [ ! -z "$CONFPKG" ]; then
         echo "Flat configuration package not implemented"
         exit 1
     else
-        if [ -d "$CONFPKG/Contents/Resources/English.lproj" ]; then
-            eng_resources="$CONFPKG/Contents/Resources/English.lproj"
-        elif [ -d "$CONFPKG/Contents/Resources/en.lproj" ]; then
-            eng_resources="$CONFPKG/Contents/Resources/en.lproj"
-        else
-            echo "Can't find English.lproj or en.lproj in $CONFPKG/Contents/Resources"
-            exit 1
-        fi
-        CONFTITLE=`defaults read "$eng_resources/Description" IFPkgDescriptionTitle`
-        CONFDESC=`defaults read "$eng_resources/Description" IFPkgDescriptionDescription`
-        CONFID=`defaults read "$CONFPKG/Contents/Info" CFBundleIdentifier`
-        CONFSIZE=`defaults read "$CONFPKG/Contents/Info" IFPkgFlagInstalledSize`
-        CONFVERSION=`defaults read "$CONFPKG/Contents/Info" CFBundleShortVersionString`
-        CONFBASENAME=`basename "$CONFPKG"`
+        echo "Bundle-style configuration package not supported"
+        exit 1
+        #if [ -d "$CONFPKG/Contents/Resources/English.lproj" ]; then
+        #    eng_resources="$CONFPKG/Contents/Resources/English.lproj"
+        #elif [ -d "$CONFPKG/Contents/Resources/en.lproj" ]; then
+        #    eng_resources="$CONFPKG/Contents/Resources/en.lproj"
+        #else
+        #    echo "Can't find English.lproj or en.lproj in $CONFPKG/Contents/Resources"
+        #    exit 1
+        #fi
+        #CONFTITLE=`defaults read "$eng_resources/Description" IFPkgDescriptionTitle`
+        #CONFDESC=`defaults read "$eng_resources/Description" IFPkgDescriptionDescription`
+        #CONFID=`defaults read "$CONFPKG/Contents/Info" CFBundleIdentifier`
+        #CONFSIZE=`defaults read "$CONFPKG/Contents/Info" IFPkgFlagInstalledSize`
+        #CONFVERSION=`defaults read "$CONFPKG/Contents/Info" CFBundleShortVersionString`
+        #CONFBASENAME=`basename "$CONFPKG"`
     fi
     CONFOUTLINE="<line choice=\"config\"/>"
     CONFCHOICE="<choice id=\"config\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
