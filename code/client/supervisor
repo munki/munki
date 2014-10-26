@@ -80,7 +80,7 @@ class Supervisor(object):
         for k in kwargs:
             self.options[k] = kwargs[k]
 
-    def signalHandler(self, signum, unused_frame):
+    def signalHandler(self, signum, dummy_frame):
         if signum == signal.SIGUSR1:
             self.continue_sleeping = False
 

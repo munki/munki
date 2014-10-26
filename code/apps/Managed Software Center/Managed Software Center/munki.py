@@ -384,7 +384,7 @@ def pythonScriptRunning(scriptname):
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
+    (out, dummy_err) = proc.communicate()
     mypid = os.getpid()
     lines = str(out).splitlines()
     for line in lines:
@@ -421,7 +421,7 @@ def getRunningProcessesWithUsers():
                             shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (output, unused_err) = proc.communicate()
+    (output, dummy_err) = proc.communicate()
     if proc.returncode == 0:
         proc_lines = [item for item in output.splitlines()]
         LaunchCFMApp = ('/System/Library/Frameworks/Carbon.framework'
@@ -443,7 +443,7 @@ def getRunningProcessesWithUsers():
                                     shell=False, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, unused_err) = proc.communicate()
+            (output, dummy_err) = proc.communicate()
             if proc.returncode == 0:
                 proc_lines = [item for item in output.splitlines()]
                 for line in proc_lines:
@@ -507,7 +507,7 @@ def getPowerInfo():
     cmd = ['/usr/bin/pmset', '-g', 'ps']
     proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    (output, unused_error) = proc.communicate()
+    (output, dummy_error) = proc.communicate()
     if proc.returncode:
         # handle error
         return power_dict

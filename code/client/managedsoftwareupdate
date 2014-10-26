@@ -57,7 +57,7 @@ else:
     from munkilib import utils
 
 
-def signal_handler(signum, unused_frame):
+def signal_handler(signum, dummy_frame):
     """Handle any signals we've been told to.
     Right now just handle SIGTERM so clean up can happen, like
     garbage collection, which will trigger object destructors and
@@ -72,7 +72,7 @@ def getIdleSeconds():
     cmd = ['/usr/sbin/ioreg', '-c', 'IOHIDSystem']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, unused_err) = proc.communicate()
+    (output, dummy_err) = proc.communicate()
     ioreglines = str(output).splitlines()
     idle_time = 0
     regex = re.compile(r'"?HIDIdleTime"?\s+=\s+(\d+)')
@@ -94,7 +94,7 @@ def networkUp():
     cmd = ['/sbin/ifconfig', '-a', 'inet']
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, unused_err) = proc.communicate()
+    (output, dummy_err) = proc.communicate()
     lines = str(output).splitlines()
     for line in lines:
         if 'inet' in line:
@@ -269,7 +269,7 @@ def doRestart():
     if not consoleuser or consoleuser == u'loginwindow':
         # no-one is logged in or we're at the loginwindow
         time.sleep(5)
-        unused_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
+        dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:
             # someone is logged in and we're using munkistatus
@@ -465,7 +465,7 @@ def main():
     p.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
 
-    options, unused_arguments = p.parse_args()
+    options, dummy_arguments = p.parse_args()
 
     if options.version:
         print munkicommon.get_version()
@@ -520,7 +520,7 @@ def main():
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for unused_i in range(5):
+                    for dummy_i in range(5):
                         if networkUp():
                             break
                         time.sleep(2)
@@ -820,7 +820,7 @@ def main():
                     # check for packages that need to be force installed
                     # soon and convert them to unattended_installs if they
                     # don't require a logout
-                    unused_action = updatecheck.checkForceInstallPackages()
+                    dummy_action = updatecheck.checkForceInstallPackages()
                     # now install anything that can be done unattended
                     munkicommon.log('Installing only items marked unattended '
                                     'because SuppressLoginwindowInstall is '
@@ -851,7 +851,7 @@ def main():
                     # check for packages that need to be force installed
                     # soon and convert them to unattended_installs if they
                     # don't require a logout
-                    unused_action = updatecheck.checkForceInstallPackages()
+                    dummy_action = updatecheck.checkForceInstallPackages()
                     # install anything that can be done unattended
                     ignore_restart = doInstallTasks(
                         appleupdatesavailable, only_unattended=True)
@@ -970,7 +970,7 @@ def main():
                     #munkicommon.log(
                     #    'Killing loginwindow so we will run again...')
                     #cmd = ['/usr/bin/killall', 'loginwindow']
-                    #unused_retcode = subprocess.call(cmd)
+                    #dummy_retcode = subprocess.call(cmd)
                     # with the new LaunchAgent, we don't have to kill
                     # the loginwindow
                     pass

@@ -817,7 +817,7 @@ def main():
                         "To use it with munki, you should encapsulate it "
                         "in a disk image.\n")  % item
                     # need to walk the dir and add it all up
-                    for (path, unused_dirs, files) in os.walk(item):
+                    for (path, dummy_dirs, files) in os.walk(item):
                         for name in files:
                             filename = os.path.join(path, name)
                             # use os.lstat so we don't follow symlinks

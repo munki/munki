@@ -120,8 +120,8 @@ def mountRepoGUI():
         return
     print 'Attempting to connect to munki repo...'
     cmd = ['/usr/bin/open', REPO_URL]
-    unused_retcode = subprocess.call(cmd)
-    for unused_i in range(60):
+    dummy_retcode = subprocess.call(cmd)
+    for dummy_i in range(60):
         # wait up to 60 seconds to connect to repo
         if os.path.exists(REPO_PATH):
             break
@@ -393,7 +393,7 @@ def openPkginfoInEditor(pkginfo_path):
         else:
             cmd = [editor, pkginfo_path]
         try:
-            unused_returncode = subprocess.check_call(cmd)
+            dummy_returncode = subprocess.check_call(cmd)
         except (OSError, subprocess.CalledProcessError), err:
             print >> sys.stderr, 'Problem running editor %s: %s.' % (
                                     editor, err)

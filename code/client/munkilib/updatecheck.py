@@ -155,7 +155,7 @@ def getInstalledPackages():
     proc = subprocess.Popen(['/usr/sbin/pkgutil', '--regexp',
                              '--pkg-info-plist', '.*'], bufsize=8192,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
+    (out, dummy_err) = proc.communicate()
     while out:
         (pliststr, out) = munkicommon.getFirstPlist(out)
         if pliststr:
@@ -1518,7 +1518,7 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     if someVersionInstalled(item_pl):
         # add to the list of processed managed_updates
         installinfo['managed_updates'].append(manifestitemname)
-        unused_result = processInstall(manifestitem, cataloglist, installinfo)
+        dummy_result = processInstall(manifestitem, cataloglist, installinfo)
     else:
         munkicommon.display_debug1(
             '%s does not appear to be installed, so no managed updates...',
@@ -1907,7 +1907,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             for update_item in update_list:
                 # call processInstall recursively so we get the
                 # latest version and dependencies
-                unused_result = processInstall(update_item,
+                dummy_result = processInstall(update_item,
                                                cataloglist,
                                                installinfo)
             return True
@@ -1975,7 +1975,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
         for update_item in update_list:
             # call processInstall recursively so we get updates
             # and any dependencies
-            unused_result = processInstall(update_item, cataloglist,
+            dummy_result = processInstall(update_item, cataloglist,
                                            installinfo)
 
         return True
@@ -2090,14 +2090,14 @@ def processManifestForKey(manifest, manifest_key, installinfo,
             if munkicommon.stopRequested():
                 return {}
             if manifest_key == 'managed_installs':
-                unused_result = processInstall(item, cataloglist,
+                dummy_result = processInstall(item, cataloglist,
                                                installinfo)
             elif manifest_key == 'managed_updates':
                 processManagedUpdate(item, cataloglist, installinfo)
             elif manifest_key == 'optional_installs':
                 processOptionalInstall(item, cataloglist, installinfo)
             elif manifest_key == 'managed_uninstalls':
-                unused_result = processRemoval(item, cataloglist,
+                dummy_result = processRemoval(item, cataloglist,
                                                installinfo)
 
 
@@ -2396,7 +2396,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         lookForUpdates(alt_uninstall_item_name_with_version, cataloglist))
     for update_item in update_list:
         # call us recursively...
-        unused_result = processRemoval(update_item, cataloglist, installinfo)
+        dummy_result = processRemoval(update_item, cataloglist, installinfo)
 
     # finish recording info for this removal
     iteminfo['installed'] = True
@@ -2462,7 +2462,7 @@ def getCatalogs(cataloglist):
             munkicommon.display_detail('Getting catalog %s...', catalogname)
             message = 'Retrieving catalog "%s"...' % catalogname
             try:
-                unused_value = getResourceIfChangedAtomically(
+                dummy_value = getResourceIfChangedAtomically(
                     catalogurl, catalogpath, message=message)
             except fetch.MunkiDownloadError, err:
                 munkicommon.display_error(
@@ -2534,7 +2534,7 @@ def getmanifest(partialurl, suppress_errors=False):
     manifestpath = os.path.join(manifest_dir, manifestname)
     message = 'Retrieving list of software for this machine...'
     try:
-        unused_value = getResourceIfChangedAtomically(
+        dummy_value = getResourceIfChangedAtomically(
             manifesturl, manifestpath, message=message)
     except fetch.MunkiDownloadError, err:
         if not suppress_errors:
@@ -2545,7 +2545,7 @@ def getmanifest(partialurl, suppress_errors=False):
 
     try:
         # read plist to see if it is valid
-        unused_data = FoundationPlist.readPlist(manifestpath)
+        dummy_data = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
         errormsg = 'manifest returned for %s is invalid.' % manifestdisplayname
         munkicommon.display_error(errormsg)
@@ -2756,7 +2756,7 @@ def download_icons(item_list):
         item_name = item.get('display_name') or item['name']
         message = 'Getting icon for %s...' % item_name
         try:
-            unused_value = getResourceIfChangedAtomically(
+            dummy_value = getResourceIfChangedAtomically(
                 icon_url, icon_path, message=message)
         except fetch.MunkiDownloadError, err:
             munkicommon.display_debug1(
@@ -2818,7 +2818,7 @@ def download_client_resources():
     for filename in filenames:
         resource_url = resource_base_url + filename
         try:
-            unused_value = getResourceIfChangedAtomically(
+            dummy_value = getResourceIfChangedAtomically(
                 resource_url, resource_archive_path, message=message)
             downloaded_resource_path = resource_archive_path
             break
@@ -2911,7 +2911,7 @@ def check(client_id='', localmanifestpath=None):
         for item in autoremovalitems:
             if munkicommon.stopRequested():
                 return 0
-            unused_result = processRemoval(item, cataloglist, installinfo)
+            dummy_result = processRemoval(item, cataloglist, installinfo)
 
         # look for additional updates
         munkicommon.display_detail('**Checking for managed updates**')
@@ -2976,7 +2976,7 @@ def check(client_id='', localmanifestpath=None):
                 selfserveinstalls = [item for item in selfserveinstalls
                                      if item in available_optional_installs]
                 for item in selfserveinstalls:
-                    unused_result = processInstall(
+                    dummy_result = processInstall(
                         item, cataloglist, installinfo)
 
             # we don't need to filter uninstalls
@@ -3328,7 +3328,7 @@ def getDataFromURL(url):
             os.unlink(urldata)
         except (IOError, OSError), err:
             munkicommon.display_warning('Error in getDataFromURL: %s', err)
-    unused_result = getResourceIfChangedAtomically(url, urldata)
+    dummy_result = getResourceIfChangedAtomically(url, urldata)
     try:
         fdesc = open(urldata)
         data = fdesc.read()

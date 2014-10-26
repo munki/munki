@@ -352,7 +352,7 @@ def ImportBom(bompath, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, unused_err) = proc.communicate()
+    (pliststr, dummy_err) = proc.communicate()
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "install-location" in plist:
@@ -433,7 +433,7 @@ def ImportFromPkgutil(pkgname, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, unused_err) = proc.communicate()
+    (pliststr, dummy_err) = proc.communicate()
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "pkg-version" in plist:
@@ -763,7 +763,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
 
             if receiptpath and os.path.exists(receiptpath):
                 munkicommon.display_detail("Removing %s...", receiptpath)
-                unused_retcode = subprocess.call(
+                dummy_retcode = subprocess.call(
                                             ["/bin/rm", "-rf", receiptpath])
 
         # remove pkg info from our database
@@ -806,7 +806,7 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
                 proc = subprocess.Popen(cmd, bufsize=1,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
-                (output, unused_err) = proc.communicate()
+                (output, dummy_err) = proc.communicate()
                 if output:
                     munkicommon.display_detail(
                         str(output).decode('UTF-8').rstrip('\n'))

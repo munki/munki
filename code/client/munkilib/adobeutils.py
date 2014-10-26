@@ -58,7 +58,7 @@ class AdobeInstallProgressMonitor(object):
         proc = subprocess.Popen(['/bin/ls', '-t1', logpath],
                                 bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, unused_err) = proc.communicate()
+        (output, dummy_err) = proc.communicate()
         if output:
             firstitem = str(output).splitlines()[0]
             if firstitem.endswith(".log"):
@@ -91,7 +91,7 @@ class AdobeInstallProgressMonitor(object):
             proc = subprocess.Popen(cmd, bufsize=-1,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, unused_err) = proc.communicate()
+            (output, dummy_err) = proc.communicate()
             if output:
                 lines = str(output).splitlines()
                 completed_payloads = len(lines)
@@ -170,7 +170,7 @@ def getCS5mediaSignature(dirpath):
 
     payloads_dir = ""
     # look for a payloads folder
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith('/payloads'):
             payloads_dir = path
 
@@ -277,7 +277,7 @@ def getAdobeSetupInfo(installroot):
     payloads = []
 
     # look for all the payloads folders
-    for (path, unused_dirs, unused_files) in os.walk(installroot):
+    for (path, dummy_dirs, dummy_files) in os.walk(installroot):
         if path.endswith('/payloads'):
             driverfolder = ''
             mediaSignature = ''
@@ -316,7 +316,7 @@ def getAdobeSetupInfo(installroot):
 
     if not payloads:
         # look for an extensions folder; almost certainly this is an Updater
-        for (path, unused_dirs, unused_files) in os.walk(installroot):
+        for (path, dummy_dirs, dummy_files) in os.walk(installroot):
             if path.endswith("/extensions"):
                 for item in munkicommon.listdir(path):
                     #skip LanguagePacks
@@ -398,7 +398,7 @@ def getAdobePackageInfo(installroot):
 def countPayloads(dirpath):
     '''Attempts to count the payloads in the Adobe installation item'''
     count = 0
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith("/payloads"):
             for subitem in munkicommon.listdir(path):
                 subitempath = os.path.join(path, subitem)
@@ -426,7 +426,7 @@ def getPercent(current, maximum):
 def findSetupApp(dirpath):
     '''Search dirpath and enclosed directories for Setup.app.
     Returns the path to the actual executable.'''
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith("Setup.app"):
             setup_path = os.path.join(path, "Contents", "MacOS", "Setup")
             if os.path.exists(setup_path):
@@ -437,7 +437,7 @@ def findSetupApp(dirpath):
 def findInstallApp(dirpath):
     '''Searches dirpath and enclosed directories for Install.app.
     Returns the path to the actual executable.'''
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith("Install.app"):
             setup_path = os.path.join(path, "Contents", "MacOS", "Install")
             if os.path.exists(setup_path):
@@ -448,7 +448,7 @@ def findInstallApp(dirpath):
 def findAdobePatchInstallerApp(dirpath):
     '''Searches dirpath and enclosed directories for AdobePatchInstaller.app.
     Returns the path to the actual executable.'''
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith("AdobePatchInstaller.app"):
             setup_path = os.path.join(path, "Contents", "MacOS",
                                                     "AdobePatchInstaller")
@@ -460,7 +460,7 @@ def findAdobePatchInstallerApp(dirpath):
 def findAdobeDeploymentManager(dirpath):
     '''Searches dirpath and enclosed directories for AdobeDeploymentManager.
     Returns path to the executable.'''
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith("pkg/Contents/Resources"):
             dm_path = os.path.join(path, "AdobeDeploymentManager")
             if os.path.exists(dm_path):
@@ -741,7 +741,7 @@ def runAdobeCS5AAMEEInstall(dmgpath, payloads=None):
                 cmd, number_of_payloads, killAdobeAIR=True, payloads=payloads,
                 kind='CS5', operation='install')
         # now clean up our symlink hackfest
-        unused_result = subprocess.call(["/bin/rm", "-rf", tmpdir])
+        dummy_result = subprocess.call(["/bin/rm", "-rf", tmpdir])
     else:
         munkicommon.display_error(
                        "%s doesn't appear to contain AdobeDeploymentManager" %
@@ -773,7 +773,7 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False, payloads=None):
                 return -1
             # remove the dmg file to free up space, since we don't need it
             # any longer
-            unused_result = subprocess.call(["/bin/rm", dmgpath])
+            dummy_result = subprocess.call(["/bin/rm", dmgpath])
         else:
             updatedir = mountpoints[0]
 
@@ -796,7 +796,7 @@ def runAdobeCS5PatchInstaller(dmgpath, copylocal=False, payloads=None):
             retcode = -1
         if copylocal:
             # clean up our mess
-            unused_result = subprocess.call(["/bin/rm", "-rf", updatedir])
+            dummy_result = subprocess.call(["/bin/rm", "-rf", updatedir])
         else:
             munkicommon.unmountdmg(mountpoints[0])
         return retcode
@@ -859,7 +859,7 @@ def findAcrobatPatchApp(dirpath):
     in dirpath. If found, returns the path to the bundled
     patching script.'''
 
-    for (path, unused_dirs, unused_files) in os.walk(dirpath):
+    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
         if path.endswith(".app"):
             # look for Adobe's patching script
             patch_script_path = os.path.join(path, "Contents", "Resources",

@@ -492,7 +492,7 @@ class AppleUpdates(object):
         blocking_apps = []
         # use set() to eliminate any duplicate application ids
         for app_id in set(must_close_app_ids):
-            unused_resultcode, unused_fileref, nsurl = LSFindApplicationForInfo(
+            dummy_resultcode, dummy_fileref, nsurl = LSFindApplicationForInfo(
                 0, app_id, None, None, None)
             fileurl = str(nsurl)
             if fileurl.startswith('file://localhost'):
@@ -698,7 +698,7 @@ class AppleUpdates(object):
         self._ResetMunkiStatusAndDisplayMessage(msg)
         munkicommon.display_detail('Caching CatalogURL %s', catalog_url)
         try:
-            unused_file_changed = self.GetSoftwareUpdateResource(
+            dummy_file_changed = self.GetSoftwareUpdateResource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
             self.ExtractAndCopyDownloadedCatalog()
         except fetch.MunkiDownloadError:
@@ -716,7 +716,7 @@ class AppleUpdates(object):
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, unused_err = proc.communicate()
+        output, dummy_err = proc.communicate()
 
         current_apple_packages_checksum = hashlib.sha256(output).hexdigest()
         old_apple_packages_checksum = munkicommon.pref(
@@ -1415,7 +1415,7 @@ class AppleUpdates(object):
         # clean up our now stale local cache
         if os.path.exists(self.cache_dir) and not only_unattended:
             # TODO(unassigned): change this to Pythonic delete.
-            unused_retcode = subprocess.call(['/bin/rm', '-rf', self.cache_dir])
+            dummy_retcode = subprocess.call(['/bin/rm', '-rf', self.cache_dir])
         # remove the now invalid AppleUpdates.plist file.
         try:
             os.unlink(self.apple_updates_plist)
@@ -1494,7 +1494,7 @@ class AppleUpdates(object):
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, unused_err = proc.communicate()
+        output, dummy_err = proc.communicate()
         if proc.returncode == 0:
             updates = [str(item)[5:] for item in str(output).splitlines()
                        if str(item).startswith('   * ')]

@@ -76,7 +76,7 @@ def pythonScriptRunning(scriptname):
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, unused_err) = proc.communicate()
+    (out, dummy_err) = proc.communicate()
     mypid = os.getpid()
     lines = str(out).splitlines()
     for line in lines:

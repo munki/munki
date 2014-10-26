@@ -37,7 +37,6 @@ import xattr
 import keychain
 import munkicommon
 from gurl import Gurl
-#import munkistatus
 
 from Foundation import NSHTTPURLResponse
 

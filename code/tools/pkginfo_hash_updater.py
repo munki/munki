@@ -155,7 +155,7 @@ def main():
                help='Munki packages dir name; default "pkgs".')
   p.add_option('-u', "--update_existing", action='store_true',
                 help='Update existing hashes.')
-  options, unused_arguments = p.parse_args()
+  options, dummy_arguments = p.parse_args()
   
   pkgsinfo_path = os.path.join(options.munki_root, options.pkgsinfo_dir_name)
   pkgs_path = os.path.join(options.munki_root, options.pkgs_dir_name)
