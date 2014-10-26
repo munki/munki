@@ -24,17 +24,23 @@ Functions to work with product images ('icons') for Managed Software Center
 """
 
 import glob
-import sys
 import os
-
+import shutil
 import subprocess
 import tempfile
-import shutil
 
-from Foundation import NSData
-from AppKit import NSBitmapImageRep, NSPNGFileType
 import munkicommon
 import FoundationPlist
+
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import NSData
+from AppKit import NSBitmapImageRep, NSPNGFileType
+# pylint: enable=E0611
+
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
 
 
 def convertIconToPNG(icon_path, destination_path, desired_pixel_height=350):
@@ -66,7 +72,7 @@ def findIconForApp(app_path):
     try:
         info = FoundationPlist.readPlist(
             os.path.join(app_path, u'Contents/Info.plist'))
-    except (FoundationPlist.FoundationPlistException):
+    except FoundationPlist.FoundationPlistException:
         return None
     app_name = os.path.basename(app_path)
     icon_filename = info.get('CFBundleIconFile', app_name)
@@ -90,11 +96,7 @@ def extractAppBitsFromPkgArchive(archive_path, target_dir):
         cmd = ['/bin/pax', '-rzf', archive_path,
                '*.app/Contents/Info.plist',
                '*.app/Contents/Resources/*.icns']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT)
-        (output, errors) = proc.communicate()
-        result = proc.returncode
+        result = subprocess.call(cmd)
         os.chdir(original_dir)
     return result
 
@@ -106,9 +108,9 @@ def extractAppIconsFromFlatPkg(pkg_path):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
-    (output, errors) = proc.communicate()
+    output = proc.communicate()[0]
     if proc.returncode:
-        print >> sys.stderr, u'Could not get bom files from %s' % pkg_path
+        munkicommon.display_error(u'Could not get bom files from %s', pkg_path)
         return []
     bomfilepaths = output.splitlines()
     pkg_dict = {}
@@ -123,16 +125,17 @@ def extractAppIconsFromFlatPkg(pkg_path):
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        (output, errors) = proc.communicate()
+        output = proc.communicate()[0]
         if proc.returncode:
-            print >> sys.stderr, u'Could not lsbom %s' % bomfile
+            munkicommon.display_error(u'Could not lsbom %s', bomfile)
         # record paths to all app Info.plist files
-        pkg_dict[pkgname] = [os.path.normpath(line)
+        pkg_dict[pkgname] = [
+            os.path.normpath(line)
             for line in output.decode('utf-8').splitlines()
             if line.endswith(u'.app/Contents/Info.plist')]
         if not pkg_dict[pkgname]:
             # remove empty lists
-            del(pkg_dict[pkgname])
+            del pkg_dict[pkgname]
     if not pkg_dict:
         return []
     icon_paths = []
@@ -153,11 +156,11 @@ def extractAppIconsFromFlatPkg(pkg_path):
                     if icon_path:
                         icon_paths.append(icon_path)
             else:
-                print >> sys.stderr, (
-                    u'pax could not read files from %s' % archive_path)
+                munkicommon.display_error(
+                    u'pax could not read files from %s', archive_path)
                 return []
     else:
-        print >> sys.stderr, u'Could not expand %s' % pkg_path
+        munkicommon.display_error(u'Could not expand %s', pkg_path)
     # clean up our expanded flat package; we no longer need it
     shutil.rmtree(pkgtmp)
     return icon_paths
@@ -218,7 +221,7 @@ def getAppInfoPathsFromBundleComponentPkg(pkg_path):
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        (output, errors) = proc.communicate()
+        output = proc.communicate()[0]
         return [line for line in output.splitlines()
                 if line.endswith('.app/Contents/Info.plist')]
     return []
