@@ -23,23 +23,25 @@ curl replacement using NSURLConnection and friends
 """
 
 import os
-import sys
 import xattr
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
 from Foundation import NSRunLoop, NSDate
 from Foundation import NSObject, NSURL, NSURLConnection
 from Foundation import NSMutableURLRequest
 from Foundation import NSURLRequestReloadIgnoringLocalCacheData
 from Foundation import NSURLResponseUnknownLength
 from Foundation import NSLog
-from Foundation import NSString, NSUTF8StringEncoding
 from Foundation import NSURLCredential, NSURLCredentialPersistenceNone
+from Foundation import NSPropertyListSerialization
+from Foundation import NSPropertyListMutableContainersAndLeaves
+from Foundation import NSPropertyListXMLFormat_v1_0
+# pylint: enable=E0611
 
-from Foundation import NSData, \
-                       NSPropertyListSerialization, \
-                       NSPropertyListMutableContainersAndLeaves, \
-                       NSPropertyListXMLFormat_v1_0
-
+# Disable PyLint complaining about 'invalid' names
+# pylint: disable=C0103
 
 ssl_error_codes = {
     -9800: u'SSL protocol error',
@@ -98,9 +100,17 @@ class Gurl(NSObject):
     '''A class for getting content from a URL
        using NSURLConnection and friends'''
 
+    # since we inherit from NSObject, PyLint issues a few bogus warnings
+    # pylint: disable=W0232,E1002
+
+    # Don't want to define the attributes twice that are initialized in
+    # initWithOptions_(), so:
+    # pylint: disable=E1101,W0201
+
     GURL_XATTR = 'com.googlecode.munki.downloadData'
 
     def initWithOptions_(self, options):
+        '''Set up our Gurl object'''
         self = super(Gurl, self).init()
         if not self:
             return
@@ -113,10 +123,10 @@ class Gurl(NSObject):
         self.username = options.get('username')
         self.password = options.get('password')
         self.download_only_if_changed = options.get(
-                                            'download_only_if_changed', False)
+            'download_only_if_changed', False)
         self.cache_data = options.get('cache_data')
         self.connection_timeout = options.get('connection_timeout', 10)
-        
+
         self.log = options.get('logging_function', NSLog)
 
         self.resume = False
@@ -135,6 +145,7 @@ class Gurl(NSObject):
         return self
 
     def start(self):
+        '''Start the connection'''
         if not self.destination_path:
             self.log('No output file specified.')
             self.done = True
@@ -142,7 +153,7 @@ class Gurl(NSObject):
         url = NSURL.URLWithString_(self.url)
         request = (
             NSMutableURLRequest.requestWithURL_cachePolicy_timeoutInterval_(
-                url, NSURLRequestReloadIgnoringLocalCacheData, 
+                url, NSURLRequestReloadIgnoringLocalCacheData,
                 self.connection_timeout))
         if self.additional_headers:
             for header, value in self.additional_headers.items():
@@ -150,8 +161,8 @@ class Gurl(NSObject):
         # does the file already exist? See if we can resume a partial download
         if os.path.isfile(self.destination_path):
             stored_data = self.get_stored_headers()
-            if (self.can_resume and 'expected-length' in stored_data
-                and ('last-modified' in stored_data or 'etag' in stored_data)):
+            if (self.can_resume and 'expected-length' in stored_data and
+                    ('last-modified' in stored_data or 'etag' in stored_data)):
                 # we have a partial file and we're allowed to resume
                 self.resume = True
                 local_filesize = os.path.getsize(self.destination_path)
@@ -166,14 +177,17 @@ class Gurl(NSObject):
                 request.setValue_forHTTPHeaderField_(
                     stored_data['etag'], 'if-none-match')
         self.connection = NSURLConnection.alloc().initWithRequest_delegate_(
-                            request, self)
+            request, self)
 
     def cancel(self):
+        '''Cancel the connection'''
         if self.connection:
             self.connection.cancel()
             self.done = True
 
     def isDone(self):
+        '''Check if the connection request is complete. As a side effect,
+        allow the delegates to work my letting the run loop run for a bit'''
         if self.done:
             return self.done
         # let the delegates do their thing
@@ -192,8 +206,8 @@ class Gurl(NSObject):
         data = buffer(stored_plist_str)
         dataObject, plistFormat, error = (
             NSPropertyListSerialization.
-                propertyListFromData_mutabilityOption_format_errorDescription_(
-                    data, NSPropertyListMutableContainersAndLeaves, None, None))
+            propertyListFromData_mutabilityOption_format_errorDescription_(
+                data, NSPropertyListMutableContainersAndLeaves, None, None))
         if error:
             return {}
         else:
@@ -203,8 +217,8 @@ class Gurl(NSObject):
         '''Store dictionary data as an xattr for self.destination_path'''
         plistData, error = (
             NSPropertyListSerialization.
-                dataFromPropertyList_format_errorDescription_(
-                    headers, NSPropertyListXMLFormat_v1_0, None))
+            dataFromPropertyList_format_errorDescription_(
+                headers, NSPropertyListXMLFormat_v1_0, None))
         if error:
             string = ''
         else:
@@ -212,20 +226,29 @@ class Gurl(NSObject):
         try:
             xattr.setxattr(self.destination_path, self.GURL_XATTR, string)
         except IOError, err:
-            self.log('Could not store metadata to %s: %s' % 
-                (self.destination_path, err))
-            pass
+            self.log('Could not store metadata to %s: %s'
+                     % (self.destination_path, err))
 
     def normalize_header_dict(self, a_dict):
         '''Since HTTP header names are not case-sensitive, we normalize a
         dictionary of HTTP headers by converting all the key names to
         lower case'''
+
+        # yes, we don't use 'self'!
+        # pylint: disable=R0201
+
         new_dict = {}
         for key, value in a_dict.items():
             new_dict[key.lower()] = value
         return new_dict
 
     def connection_didFailWithError_(self, connection, error):
+        '''NSURLConnection delegate method
+        Sent when a connection fails to load its request successfully.'''
+
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
         self.error = error
         # If this was an SSL error, try to extract the SSL error code.
         if 'NSUnderlyingError' in error.userInfo():
@@ -240,6 +263,12 @@ class Gurl(NSObject):
             # delete it? Might not want to...
 
     def connectionDidFinishLoading_(self, connection):
+        '''NSURLConnectionDataDelegat delegate method
+        Sent when a connection has finished loading successfully.'''
+
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
         self.done = True
         if self.destination and self.destination_path:
             self.destination.close()
@@ -251,6 +280,10 @@ class Gurl(NSObject):
                 self.store_headers(headers)
 
     def connection_didReceiveResponse_(self, connection, response):
+        '''NSURLConnectionDataDelegate delegate method
+        Sent when the connection has received sufficient data to construct the
+        URL response for its request.'''
+
         self.response = response
         self.bytesReceived = 0
         self.percentComplete = -1
@@ -264,20 +297,23 @@ class Gurl(NSObject):
             normalized_headers = self.normalize_header_dict(self.headers)
             if 'last-modified' in normalized_headers:
                 download_data['last-modified'] = normalized_headers[
-                                                            'last-modified']
+                    'last-modified']
             if 'etag' in normalized_headers:
                 download_data['etag'] = normalized_headers['etag']
             download_data['expected-length'] = self.expectedLength
+
+        # self.destination is defined in initWithOptions_
+        # pylint: disable=E0203
 
         if not self.destination and self.destination_path:
             if self.status == 206 and self.resume:
                 # 206 is Partial Content response
                 stored_data = self.get_stored_headers()
-                if (not stored_data
-                    or stored_data.get('etag') != download_data.get('etag')
-                    or stored_data.get('last-modified') != download_data.get(
-                                                            'last-modified')):
-                    # file on server is different than the one 
+                if (not stored_data or
+                        stored_data.get('etag') != download_data.get('etag') or
+                        stored_data.get('last-modified') != download_data.get(
+                            'last-modified')):
+                    # file on server is different than the one
                     # we have a partial for
                     self.log(
                         'Can\'t resume download; file on server has changed.')
@@ -298,7 +334,7 @@ class Gurl(NSObject):
                 self.expectedLength += local_filesize
                 # open file for append
                 self.destination = open(self.destination_path, 'a')
-                
+
             elif str(self.status).startswith('2'):
                 # not resuming, just open the file for writing
                 self.destination = open(self.destination_path, 'w')
@@ -308,7 +344,14 @@ class Gurl(NSObject):
                 self.store_headers(download_data)
 
     def connection_willSendRequest_redirectResponse_(
-                                        self, connection, request, response):
+            self, connection, request, response):
+        '''NSURLConnectionDataDelegate delegate method
+        Sent when the connection determines that it must change URLs in order to
+        continue loading a request.'''
+
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
         if response == None:
             # This isn't a real redirect, this is without talking to a server.
             # Pass it back as-is
@@ -328,29 +371,17 @@ class Gurl(NSObject):
             self.log('Denying redirect to: %s' % newURL)
             return None
 
-    def connection_canAuthenticateAgainstProtectionSpace_(
-                                            self, connection, protectionSpace):
-        # this is not called in 10.5.x.
-        self.log('connection_canAuthenticateAgainstProtectionSpace_')
-        if protectionSpace:
-            host = protectionSpace.host()
-            realm = protectionSpace.realm()
-            authenticationMethod = protectionSpace.authenticationMethod()
-            self.log('Protection space found. Host: %s Realm: %s AuthMethod: %s'
-                  % (host, realm, authenticationMethod))
-            if self.username and self.password and authenticationMethod in [
-                'NSURLAuthenticationMethodDefault', 
-                'NSURLAuthenticationMethodHTTPBasic', 
-                'NSURLAuthenticationMethodHTTPDigest']:
-                # we know how to handle this
-                self.log('Can handle this authentication request')
-                return True
-        # we don't know how to handle this; let the OS try
-        self.log('Allowing OS to handle authentication request')
-        return False
+    def connection_willSendRequestForAuthenticationChallenge_(
+            self, connection, challenge):
+        '''NSURLConnection delegate method
+        Tells the delegate that the connection will send a request for an
+        authentication challenge.
+        New in 10.7.'''
 
-    def connection_didReceiveAuthenticationChallenge_(
-                                                self, connection, challenge):
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
+        self.log('connection_willSendRequestForAuthenticationChallenge_')
         protectionSpace = challenge.protectionSpace()
         host = protectionSpace.host()
         realm = protectionSpace.realm()
@@ -363,25 +394,103 @@ class Gurl(NSObject):
             self.log('Previous authentication attempt failed.')
             challenge.sender().cancelAuthenticationChallenge_(challenge)
         if self.username and self.password and authenticationMethod in [
-            'NSURLAuthenticationMethodDefault',
-            'NSURLAuthenticationMethodHTTPBasic',
-            'NSURLAuthenticationMethodHTTPDigest']:
+                'NSURLAuthenticationMethodDefault',
+                'NSURLAuthenticationMethodHTTPBasic',
+                'NSURLAuthenticationMethodHTTPDigest']:
             self.log('Will attempt to authenticate.')
-            self.log('Username: %s Password: %s' 
-                  % (self.username, ('*' * len(self.password or ''))))
+            self.log('Username: %s Password: %s'
+                     % (self.username, ('*' * len(self.password or ''))))
             credential = (
                 NSURLCredential.credentialWithUser_password_persistence_(
-                self.username, self.password, NSURLCredentialPersistenceNone))
+                    self.username, self.password,
+                    NSURLCredentialPersistenceNone))
             challenge.sender().useCredential_forAuthenticationChallenge_(
-                                                        credential, challenge)
+                credential, challenge)
+        else:
+            # fall back to system-provided default behavior
+            self.log('Allowing OS to handle authentication request')
+            challenge.sender(
+                ).performDefaultHandlingForAuthenticationChallenge_(
+                    challenge)
+
+    def connection_canAuthenticateAgainstProtectionSpace_(
+            self, connection, protectionSpace):
+        '''NSURLConnection delegate method
+        Sent to determine whether the delegate is able to respond to a
+        protection space’s form of authentication.
+        Deprecated in 10.10'''
+
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
+        # this is not called in 10.5.x.
+        self.log('connection_canAuthenticateAgainstProtectionSpace_')
+        if protectionSpace:
+            host = protectionSpace.host()
+            realm = protectionSpace.realm()
+            authenticationMethod = protectionSpace.authenticationMethod()
+            self.log('Protection space found. Host: %s Realm: %s AuthMethod: %s'
+                     % (host, realm, authenticationMethod))
+            if self.username and self.password and authenticationMethod in [
+                    'NSURLAuthenticationMethodDefault',
+                    'NSURLAuthenticationMethodHTTPBasic',
+                    'NSURLAuthenticationMethodHTTPDigest']:
+                # we know how to handle this
+                self.log('Can handle this authentication request')
+                return True
+        # we don't know how to handle this; let the OS try
+        self.log('Allowing OS to handle authentication request')
+        return False
+
+    def connection_didReceiveAuthenticationChallenge_(
+            self, connection, challenge):
+        '''NSURLConnection delegate method
+        Sent when a connection must authenticate a challenge in order to
+        download its request.
+        Deprecated in 10.10'''
+
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
+        self.log('connection_didReceiveAuthenticationChallenge_')
+        protectionSpace = challenge.protectionSpace()
+        host = protectionSpace.host()
+        realm = protectionSpace.realm()
+        authenticationMethod = protectionSpace.authenticationMethod()
+        self.log(
+            'Authentication challenge for Host: %s Realm: %s AuthMethod: %s'
+            % (host, realm, authenticationMethod))
+        if challenge.previousFailureCount() > 0:
+            # we have the wrong credentials. just fail
+            self.log('Previous authentication attempt failed.')
+            challenge.sender().cancelAuthenticationChallenge_(challenge)
+        if self.username and self.password and authenticationMethod in [
+                'NSURLAuthenticationMethodDefault',
+                'NSURLAuthenticationMethodHTTPBasic',
+                'NSURLAuthenticationMethodHTTPDigest']:
+            self.log('Will attempt to authenticate.')
+            self.log('Username: %s Password: %s'
+                     % (self.username, ('*' * len(self.password or ''))))
+            credential = (
+                NSURLCredential.credentialWithUser_password_persistence_(
+                    self.username, self.password,
+                    NSURLCredentialPersistenceNone))
+            challenge.sender().useCredential_forAuthenticationChallenge_(
+                credential, challenge)
         else:
             # fall back to system-provided default behavior
             self.log('Continuing without credential.')
             challenge.sender(
                 ).continueWithoutCredentialForAuthenticationChallenge_(
-                                                                    challenge)
+                    challenge)
 
     def connection_didReceiveData_(self, connection, data):
+        '''NSURLConnectionDataDelegate method
+        Sent as a connection loads data incrementally'''
+
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+
         if self.destination:
             self.destination.write(str(data))
         else:
