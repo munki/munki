@@ -24,13 +24,18 @@ to display status and progress.
 """
 
 import os
-import subprocess
 import time
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
 from Foundation import NSDistributedNotificationCenter
 from Foundation import NSNotificationDeliverImmediately
 from Foundation import NSNotificationPostToAllSessions
+# pylint: enable=E0611
 
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
 
 # our NSDistributedNotification identifier
 NOTIFICATION_ID = 'com.googlecode.munki.managedsoftwareupdate.statusUpdate'
@@ -40,6 +45,8 @@ NOTIFICATION_ID = 'com.googlecode.munki.managedsoftwareupdate.statusUpdate'
 _currentStatus = {}
 
 def initStatusDict():
+    '''Initialize our status dictionary'''
+    global _currentStatus
     _currentStatus = {
         'message': '',
         'detail': '',
@@ -62,7 +69,7 @@ def launchMunkiStatus():
     launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     try:
         open(launchfile, 'w').close()
-    except (OSError, IOError), err:
+    except (OSError, IOError):
         pass
     time.sleep(0.1)
     if os.path.exists(launchfile):
@@ -70,6 +77,7 @@ def launchMunkiStatus():
 
 
 def postStatusNotification():
+    '''Post a status notification'''
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
         NOTIFICATION_ID,
