@@ -29,6 +29,8 @@ import subprocess
 
 import munkicommon
 
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
 
 DEFAULT_KEYCHAIN_NAME = 'munki.keychain'
 DEFAULT_KEYCHAIN_PASSWORD = 'munki'
@@ -342,7 +344,8 @@ def make_client_keychain(certdata=None):
                 if output:
                     munkicommon.display_debug2(output)
     # we're done, clean up.
-    remove_from_keychain_list(abs_keychain_path)
+    if added_keychain:
+        remove_from_keychain_list(abs_keychain_path)
     if original_home:
         # switch it back
         os.environ['HOME'] = original_home
@@ -353,6 +356,10 @@ def make_client_keychain(certdata=None):
 def add_to_keychain_list(keychain_path):
     '''Ensure the keychain is in the search path. Returns True if we
     added the keychain to the list.'''
+
+    # we use *foo to expand a list of keychain paths
+    # pylint: disable=W0142
+
     added_keychain = False
     output = security('list-keychains', '-d', 'user')
     # Split the output and strip it of whitespace and leading/trailing
@@ -376,6 +383,34 @@ def add_to_keychain_list(keychain_path):
                 keychain_path, err)
             added_keychain = False
     return added_keychain
+
+
+def remove_from_keychain_list(keychain_path):
+    '''Remove keychain from the list of keychains'''
+
+    # we use *foo to expand a list of keychain paths
+    # pylint: disable=W0142
+
+    output = security('list-keychains', '-d', 'user')
+    # Split the output and strip it of whitespace and leading/trailing
+    # quotes, the result are absolute paths to keychains
+    # Preserve the order in case we need to append to them
+    search_keychains = [x.strip().strip('"')
+                        for x in output.split('\n') if x.strip()]
+    if keychain_path in search_keychains:
+        # Keychain is in the search path
+        munkicommon.display_debug1(
+            'Removing %s from search path...', keychain_path)
+        filtered_keychains = [keychain for keychain in search_keychains
+                              if keychain != keychain_path]
+        try:
+            output = security(
+                'list-keychains', '-d', 'user', '-s', *filtered_keychains)
+            if output:
+                munkicommon.display_debug2(output)
+        except SecurityError, err:
+            munkicommon.display_error(
+                'Could not set new keychain list: %s', err)
 
 
 def unlock_and_set_nonlocking(keychain_path):
@@ -406,30 +441,6 @@ def unlock_and_set_nonlocking(keychain_path):
         munkicommon.display_error(
             'Could not set keychain settings for %s: %s',
             keychain_path, err)
-
-
-def remove_from_keychain_list(keychain_path):
-    '''Remove keychain from the list of keychains'''
-    output = security('list-keychains', '-d', 'user')
-    # Split the output and strip it of whitespace and leading/trailing
-    # quotes, the result are absolute paths to keychains
-    # Preserve the order in case we need to append to them
-    search_keychains = [x.strip().strip('"')
-                        for x in output.split('\n') if x.strip()]
-    if keychain_path in search_keychains:
-        # Keychain is in the search path
-        munkicommon.display_debug1(
-            'Removing %s from search path...', keychain_path)
-        filtered_keychains = [keychain for keychain in search_keychains
-                              if keychain != keychain_path]
-        try:
-            output = security(
-                'list-keychains', '-d', 'user', '-s', *filtered_keychains)
-            if output:
-                munkicommon.display_debug2(output)
-        except SecurityError, err:
-            munkicommon.display_error(
-                'Could not set new keychain list: %s', err)
 
 
 def client_certs_newer_than_keychain():
