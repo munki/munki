@@ -1687,7 +1687,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         output = self.au.SoftwareUpdateList()
         self.assertEqual(output, self.au._update_list_cache)
 
-    def testSofwareUpdateList(self):
+    def testSoftwareUpdateList(self):
         """Tests SoftwareUpdateList() success."""
         self._MockMunkiDisplay()
         self.mox.StubOutWithMock(appleupdates.subprocess, 'Popen')
@@ -1707,14 +1707,14 @@ class TestAppleUpdates(mox.MoxTestBase):
             'Getting list of available Apple Software Updates')
         mock_process = self.mox.CreateMockAnything()
         appleupdates.subprocess.Popen(
-            ['/usr/sbin/softwareupdate', '-l'], shell=False, bufsize=1,
+            ['/usr/sbin/softwareupdate', '-l'], shell=False, bufsize=-1,
             stdin=appleupdates.subprocess.PIPE,
             stdout=appleupdates.subprocess.PIPE,
             stderr=appleupdates.subprocess.PIPE).AndReturn(mock_process)
         mock_process.communicate().AndReturn((process_output, 'unused'))
         mock_process.returncode = 0
         appleupdates.munkicommon.display_detail(
-            'softwareupdate returned %d updates.' % 4)
+            'softwareupdate returned %d updates.', 4)
 
         self.mox.ReplayAll()
         output = self.au.SoftwareUpdateList()

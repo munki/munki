@@ -32,6 +32,16 @@ import urlparse
 from xml.dom import minidom
 from xml.parsers import expat
 
+import FoundationPlist
+import fetch
+import launchd
+import munkicommon
+import munkistatus
+import updatecheck
+
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
 from AppKit import NSAttributedString
 from Foundation import NSDate
 from CoreFoundation import CFPreferencesAppValueIsForced
@@ -45,13 +55,10 @@ from CoreFoundation import kCFPreferencesAnyUser
 from CoreFoundation import kCFPreferencesCurrentUser
 from CoreFoundation import kCFPreferencesCurrentHost
 from LaunchServices import LSFindApplicationForInfo
+# pylint: enable=E0611
 
-import FoundationPlist
-import fetch
-import launchd
-import munkicommon
-import munkistatus
-import updatecheck
+# Disable PyLint complaining about 'invalid' camelCase names
+# pylint: disable=C0103
 
 
 # Apple Software Update Catalog URLs.
@@ -65,9 +72,11 @@ DEFAULT_CATALOG_URLS = {
     '10.8': ('http://swscan.apple.com/content/catalogs/others/'
              'index-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
     '10.9': ('https://swscan.apple.com/content/catalogs/others/'
-         'index-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
+             'index-10.9-mountainlion-lion-snowleopard-leopard.merged-1'
+             '.sucatalog'),
     '10.10': ('https://swscan.apple.com/content/catalogs/others/'
-    'index-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog')
+              'index-10.10-10.9-mountainlion-lion-snowleopard-leopard'
+              '.merged-1.sucatalog')
 }
 
 # Preference domain for Apple Software Update.
@@ -159,9 +168,9 @@ class AppleUpdates(object):
             if os.path.exists(self.cache_dir):
                 # there should not be a file or directory at that path!
                 # move it
-                new_name = os.path.join('/tmp',
-                    ('munki_swupd_cache_moved_%s' %
-                        time.strftime('%Y.%m.%d.%H.%M.%S')))
+                new_name = os.path.join(
+                    '/tmp', ('munki_swupd_cache_moved_%s'
+                             % time.strftime('%Y.%m.%d.%H.%M.%S')))
                 os.rename(self.cache_dir, new_name)
             os.symlink(real_cache_dir, self.cache_dir)
         except (OSError, IOError), err:
@@ -173,7 +182,7 @@ class AppleUpdates(object):
             self.cache_dir, LOCAL_CATALOG_DIR_REL_PATH)
 
         self.apple_updates_plist = os.path.join(
-                self._managed_install_dir, 'AppleUpdates.plist')
+            self._managed_install_dir, 'AppleUpdates.plist')
         self.applicable_updates_plist = os.path.join(
             self.cache_dir, APPLICABLE_UPDATES)
 
@@ -309,11 +318,8 @@ class AppleUpdates(object):
             % (machine['munki_version'], darwin_version,
                machine['arch'], machine['machine_model']))
         return fetch.getResourceIfChangedAtomically(
-                                            url,
-                                            destinationpath,
-                                            custom_headers=[user_agent_header],
-                                            resume=resume,
-                                            follow_redirects=True)
+            url, destinationpath, custom_headers=[user_agent_header],
+            resume=resume, follow_redirects=True)
 
     def CacheUpdateMetadata(self):
         """Copies ServerMetadata (.smd), Metadata (.pkm), and
@@ -776,11 +782,11 @@ class AppleUpdates(object):
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):
-            munkicommon.display_info('Skipping Apple Software Update check '
+            munkicommon.display_info(
+                'Skipping Apple Software Update check '
                 'because sucatalog is unchanged, installed Apple packages are '
                 'unchanged and we recently did a full check.')
-            #return False
-            # instead of returning False, return True if we have cached updates
+            # return True if we have cached updates
             # False otherwise
             if self.GetSoftwareUpdateInfo():
                 return True
@@ -877,7 +883,7 @@ class AppleUpdates(object):
                 if update.get('restartRequired') == 'YES':
                     iteminfo['RestartAction'] = 'RequireRestart'
                 firmware_alert_text = self.GetFirmwareAlertText(
-                                                update['productKey'])
+                    update['productKey'])
                 if firmware_alert_text:
                     iteminfo['firmware_alert_text'] = firmware_alert_text
                 infoarray.append(iteminfo)
@@ -892,9 +898,8 @@ class AppleUpdates(object):
         apple_updates = self.GetSoftwareUpdateInfo()
         if apple_updates:
             if not munkicommon.pref('AppleSoftwareUpdatesOnly'):
-                cataloglist = \
-                    updatecheck.getPrimaryManifestCatalogs(self.client_id,
-                        force_refresh=self.force_catalog_refresh)
+                cataloglist = updatecheck.getPrimaryManifestCatalogs(
+                    self.client_id, force_refresh=self.force_catalog_refresh)
                 if cataloglist:
                     # Check for apple_update_metadata
                     munkicommon.display_detail(
@@ -902,12 +907,12 @@ class AppleUpdates(object):
                     for item in apple_updates:
                         # Find matching metadata item
                         metadata_item = updatecheck.getItemDetail(
-                                            item['productKey'], cataloglist,
-                                            vers='apple_update_metadata')
+                            item['productKey'], cataloglist,
+                            vers='apple_update_metadata')
                         if metadata_item:
                             munkicommon.display_debug1(
-                                'Processing metadata for %s, %s...'
-                                % (item['productKey'], item['display_name']))
+                                'Processing metadata for %s, %s...',
+                                item['productKey'], item['display_name'])
                             self.copyUpdateMetadata(item, metadata_item)
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
@@ -960,7 +965,8 @@ class AppleUpdates(object):
 
     def _GetCatalogURL(self):
         """Returns Software Update's CatalogURL"""
-        return CFPreferencesCopyValue('CatalogURL',
+        return CFPreferencesCopyValue(
+            'CatalogURL',
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
 
@@ -976,17 +982,20 @@ class AppleUpdates(object):
             if not original_catalog_url:
                 # can't store None as a CFPreference
                 original_catalog_url = ""
-            CFPreferencesSetValue(self.ORIGINAL_CATALOG_URL_KEY,
+            CFPreferencesSetValue(
+                self.ORIGINAL_CATALOG_URL_KEY,
                 original_catalog_url,
                 APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         # now set our custom CatalogURL
-        CFPreferencesSetValue('CatalogURL', catalog_url,
+        CFPreferencesSetValue(
+            'CatalogURL', catalog_url,
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         # finally, sync things up
-        if not CFPreferencesSynchronize(APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
-            kCFPreferencesAnyUser, kCFPreferencesCurrentHost):
+        if not CFPreferencesSynchronize(
+                APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost):
             munkicommon.display_error(
                 'Error setting com.apple.SoftwareUpdate CatalogURL.')
 
@@ -1005,16 +1014,19 @@ class AppleUpdates(object):
         if not original_catalog_url:
             original_catalog_url = None
         # reset CatalogURL to the one we stored
-        CFPreferencesSetValue('CatalogURL', original_catalog_url,
+        CFPreferencesSetValue(
+            'CatalogURL', original_catalog_url,
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         # remove ORIGINAL_CATALOG_URL_KEY
-        CFPreferencesSetValue(self.ORIGINAL_CATALOG_URL_KEY, None,
+        CFPreferencesSetValue(
+            self.ORIGINAL_CATALOG_URL_KEY, None,
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         # sync
-        if not CFPreferencesSynchronize(APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
-            kCFPreferencesAnyUser, kCFPreferencesCurrentHost):
+        if not CFPreferencesSynchronize(
+                APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost):
             munkicommon.display_error(
                 'Error resetting com.apple.SoftwareUpdate CatalogURL.')
 
@@ -1127,8 +1139,8 @@ class AppleUpdates(object):
         return retcode
 
     def _RunSoftwareUpdate(
-        self, options_list, catalog_url=None,
-        stop_allowed=False, mode=None, results=None):
+            self, options_list, catalog_url=None, stop_allowed=False,
+            mode=None, results=None):
         """Runs /usr/sbin/softwareupdate with options.
 
         Provides user feedback via command line or MunkiStatus.
@@ -1396,7 +1408,7 @@ class AppleUpdates(object):
                 install_status = 'FAILED for unknown reason'
                 munkicommon.display_warning(
                     'Apple update %s, %s failed to install. No record of '
-                    'success or failure.' % (rep['name'],rep['productKey']))
+                    'success or failure.', rep['name'], rep['productKey'])
 
             munkicommon.report['InstallResults'].append(rep)
             log_msg = message % (rep['name'], rep['version'], install_status)
@@ -1409,7 +1421,7 @@ class AppleUpdates(object):
         # since we may have performed some unattended installs
         if only_unattended:
             product_ids = self.GetAvailableUpdateProductIDs(
-                          catalog_path=self.filtered_catalog_path)
+                catalog_path=self.filtered_catalog_path)
             self._WriteFilteredCatalog(product_ids, self.filtered_catalog_path)
 
         # clean up our now stale local cache
@@ -1433,7 +1445,7 @@ class AppleUpdates(object):
         return restartneeded
 
     def AppleSoftwareUpdatesAvailable(
-        self, force_check=False, suppress_check=False):
+            self, force_check=False, suppress_check=False):
         """Checks for available Apple Software Updates, trying not to hit the
         SUS more than needed.
 
@@ -1443,7 +1455,6 @@ class AppleUpdates(object):
         Returns:
           Boolean. True if Apple updates are available, False otherwise.
         """
-        success = True
         if suppress_check:
             # typically because we're doing a logout install; if
             # there are no waiting Apple Updates we shouldn't
@@ -1452,7 +1463,7 @@ class AppleUpdates(object):
         elif force_check:
             # typically because user initiated the check from
             # Managed Software Update.app
-            success = self.CheckForSoftwareUpdates(force_check=True)
+            dummy_success = self.CheckForSoftwareUpdates(force_check=True)
         else:
             # have we checked recently?  Don't want to check with
             # Apple Software Update server too frequently
@@ -1472,9 +1483,9 @@ class AppleUpdates(object):
                 except (ValueError, TypeError):
                     pass
             if now.timeIntervalSinceDate_(next_su_check) >= 0:
-                success = self.CheckForSoftwareUpdates(force_check=True)
+                dummy_success = self.CheckForSoftwareUpdates(force_check=True)
             else:
-                success = self.CheckForSoftwareUpdates(force_check=False)
+                dummy_success = self.CheckForSoftwareUpdates(force_check=False)
         # always update or remove AppleUpdates.plist
         result = self.WriteAppleUpdatesFile()
         if munkicommon.stopRequested():
@@ -1491,15 +1502,15 @@ class AppleUpdates(object):
         munkicommon.display_detail(
             'Getting list of available Apple Software Updates')
         cmd = ['/usr/sbin/softwareupdate', '-l']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                               stdin=subprocess.PIPE,
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, dummy_err = proc.communicate()
         if proc.returncode == 0:
             updates = [str(item)[5:] for item in str(output).splitlines()
                        if str(item).startswith('   * ')]
         munkicommon.display_detail(
-            'softwareupdate returned %d updates.' % len(updates))
+            'softwareupdate returned %d updates.', len(updates))
         self._update_list_cache = updates
         return updates
 
@@ -1534,13 +1545,13 @@ class AppleUpdates(object):
                     # Ensure that a heavier weighted 'RestartAction' is not
                     # overriden by one supplied in metadata
                     if metadata[key] not in RestartActions.get(
-                        item.get(key, 'None')):
+                            item.get(key, 'None')):
                         munkicommon.display_debug2(
                             '\tSkipping metadata RestartAction\'%s\' '
                             'for item %s (ProductKey %s), '
-                            'item\'s original \'%s\' is preferred.'
-                             % (metadata[key], item.get('name'),
-                                item.get('productKey'), item[key]))
+                            'item\'s original \'%s\' is preferred.',
+                            metadata[key], item.get('name'),
+                            item.get('productKey'), item[key])
                         continue
                 elif key == 'unattended_install':
                     # Don't apply unattended_install if a RestartAction exists
@@ -1549,9 +1560,9 @@ class AppleUpdates(object):
                         munkicommon.display_warning(
                             '\tIgnoring unattended_install key for Apple '
                             'update %s (ProductKey %s) '
-                            'because metadata RestartAction is %s.'
-                            % (item.get('name'), item.get('productKey'),
-                               metadata.get('RestartAction')))
+                            'because metadata RestartAction is %s.',
+                            item.get('name'), item.get('productKey'),
+                            metadata.get('RestartAction'))
                         continue
                     if item.get('RestartAction', 'None') != 'None':
                         munkicommon.display_warning(
@@ -1628,7 +1639,7 @@ def installAppleUpdates(only_unattended=False):
 
 
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
-    client_id='', forcecatalogrefresh=False):
+                                  client_id='', forcecatalogrefresh=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
     appleUpdatesObject = getAppleUpdatesInstance()
     if appleUpdatesObject.CatalogURLisManaged():
