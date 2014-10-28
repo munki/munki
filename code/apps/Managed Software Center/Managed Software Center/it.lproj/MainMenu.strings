@@ -120,7 +120,7 @@
 "Uby-CQ-lvU.paletteLabel" = "I Miei Elementi";
 
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
-"VYO-og-DRc.title" = "Applicazione";
+"VYO-og-DRc.title" = "Applicazioni";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
 "bd5-IY-BXv.title" = "Chiudi";
@@ -135,10 +135,10 @@
 "jQt-Mr-wFT.title" = "Schermo Pieno";
 
 /* Class = "NSToolbarItem"; label = "Software"; ObjectID = "jTu-Wf-fi2"; */
-"jTu-Wf-fi2.label" = "Applicazione";
+"jTu-Wf-fi2.label" = "Applicazioni";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "jTu-Wf-fi2"; */
-"jTu-Wf-fi2.paletteLabel" = "Applicazione";
+"jTu-Wf-fi2.paletteLabel" = "Applicazioni";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "sF1-NQ-sSb"; */
 "sF1-NQ-sSb.paletteLabel" = "Spazio Ristretto";
