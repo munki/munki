@@ -10,6 +10,8 @@
 		C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE21913F6D6003DD155 /* Localizable.strings */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
 		C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */; };
+		C046261B1A00015600AF1E48 /* MunkiStatus-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */; };
+		C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE01913F6D6003DD155 /* MainMenu.strings */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
 		C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
@@ -46,6 +48,10 @@
 		C005C5C01913F7660074AF82 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
 		C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
+		C04626191A00014800AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C046261A1A00015600AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C046261C1A00016200AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C046261D1A00019800AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = it; path = it.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = munki.py; path = MunkiStatus/munki.py; sourceTree = SOURCE_ROOT; };
 		C07E956C1913ECEF00B40B9A /* fr */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fr; path = fr.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C07E956D1913ECEF00B40B9A /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -69,10 +75,10 @@
 		C09004F116CDD84E00BE34CE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C09004F616CDD84E00BE34CE /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		C09004F816CDD84E00BE34CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MunkiStatus-Info.plist"; sourceTree = "<group>"; };
+		C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MunkiStatus-Info.plist"; sourceTree = "<group>"; };
 		C09004FD16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C090050116CDD84E00BE34CE /* MunkiStatus-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MunkiStatus-Prefix.pch"; sourceTree = "<group>"; };
+		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C090050116CDD84E00BE34CE /* MunkiStatus-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MunkiStatus-Prefix.pch"; sourceTree = "<group>"; };
 		C090050516CDD84E00BE34CE /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		C090050716CDD84E00BE34CE /* MSUAppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = MSUAppDelegate.py; sourceTree = "<group>"; };
 		C090050A16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -259,6 +265,7 @@
 				en_CA,
 				en_GB,
 				en_AU,
+				it,
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -276,10 +283,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */,
+				C046261B1A00015600AF1E48 /* MunkiStatus-Info.plist in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */,
 				C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */,
+				C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
@@ -302,7 +311,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd MunkiStatus\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8";
+			shellScript = "cd MunkiStatus\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to it --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8";
 		};
 		C09CE1DC18BEA78300B9724A /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -350,6 +359,7 @@
 				E65810B51993C97500E53A48 /* en_CA */,
 				E6B4BCDA1993D7D0004D1B81 /* en_GB */,
 				E6B4BCE01993D7E8004D1B81 /* en_AU */,
+				C04626191A00014800AF1E48 /* it */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
@@ -370,6 +380,7 @@
 				E65810B31993C96E00E53A48 /* en_CA */,
 				E6B4BCDB1993D7D3004D1B81 /* en_GB */,
 				E6B4BCE11993D7EC004D1B81 /* en_AU */,
+				C046261A1A00015600AF1E48 /* it */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -390,6 +401,7 @@
 				E65810B61993C97C00E53A48 /* en_CA */,
 				E6B4BCDD1993D7D8004D1B81 /* en_GB */,
 				E6B4BCE21993D7F1004D1B81 /* en_AU */,
+				C046261C1A00016200AF1E48 /* it */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -410,6 +422,7 @@
 				E65810B71993C9B400E53A48 /* en_CA */,
 				E6B4BCDE1993D7E0004D1B81 /* en_GB */,
 				E6B4BCDF1993D7E5004D1B81 /* en_AU */,
+				C046261D1A00019800AF1E48 /* it */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
