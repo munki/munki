@@ -457,8 +457,9 @@ def client_certs_newer_than_keychain():
     keychain_mod_time = os.stat(keychain_path).st_mtime
     if os.stat(client_cert_path).st_mtime > keychain_mod_time:
         return True
-    if os.stat(client_key_path).st_mtime > keychain_mod_time:
-        return True
+    if client_key_path and os.path.exists(client_key_path):
+        if os.stat(client_key_path).st_mtime > keychain_mod_time:
+            return True
     return False
 
 
