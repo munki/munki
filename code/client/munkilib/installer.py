@@ -1213,7 +1213,7 @@ def run(only_unattended=False):
                             munkistatus.message("Installing 1 item...")
                         else:
                             munkistatus.message(
-                                "Installing %i items...", len(installlist))
+                                "Installing %i items..." % len(installlist))
                         munkistatus.detail("")
                         # set indeterminate progress bar
                         munkistatus.percent(-1)
