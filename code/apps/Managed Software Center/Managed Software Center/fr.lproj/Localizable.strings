@@ -215,7 +215,7 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Un ou plusieurs articles doivent être installés avant %s";
+"One or more items must be installed by %s" = "Un ou plusieurs articles doivent être installés avant le %s";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Une ou plusieurs mises à jour obligatoires sont en retard. Une fermeture de session va être forcée très bientôt.";
