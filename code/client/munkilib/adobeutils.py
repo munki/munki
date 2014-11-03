@@ -153,18 +153,20 @@ def mountAdobeDmg(dmgpath):
 
 def getCS5uninstallXML(optionXMLfile):
     '''Gets the uninstall deployment data from a CS5 installer'''
+    xml = ''
     dom = minidom.parse(optionXMLfile)
     DeploymentInfo = dom.getElementsByTagName('DeploymentInfo')
     if DeploymentInfo:
-        DeploymentUninstall = DeploymentInfo[0].getElementsByTagName(
-            'DeploymentUninstall')
-        if DeploymentUninstall:
-            deploymentData = DeploymentUninstall[0].getElementsByTagName(
-                'Deployment')
-            if deploymentData:
-                Deployment = deploymentData[0]
-                return Deployment.toxml('UTF-8')
-    return ''
+        for info_item in DeploymentInfo:
+            DeploymentUninstall = info_item.getElementsByTagName(
+                'DeploymentUninstall')
+            if DeploymentUninstall:
+                deploymentData = DeploymentUninstall[0].getElementsByTagName(
+                    'Deployment')
+                if deploymentData:
+                    Deployment = deploymentData[0]
+                    xml += Deployment.toxml('UTF-8')
+    return xml
 
 
 def getCS5mediaSignature(dirpath):
@@ -389,6 +391,56 @@ def getAdobePackageInfo(installroot):
 
     if not info.get('display_name'):
         info['display_name'] = os.path.basename(installroot)
+    return info
+
+
+def getXMLtextElement(dom_node, name):
+    '''Returns the text value of the first item found with the given
+    tagname'''
+    value = None
+    subelements = dom_node.getElementsByTagName(name)
+    if subelements:
+        value = ''
+        for node in subelements[0].childNodes:
+            value += node.nodeValue
+    return value
+
+
+def parseOptionXML(option_xml_file):
+    '''Parses an optionXML.xml file and pulls ot items of interest, returning
+    them in a dictionary'''
+    info = {}
+    dom = minidom.parse(option_xml_file)
+    installinfo = dom.getElementsByTagName('InstallInfo')
+    if installinfo:
+        if 'id' in installinfo[0].attributes.keys():
+            info['packager_id'] = installinfo[0].attributes['id'].value
+        if 'version' in installinfo[0].attributes.keys():
+            info['packager_version'] = installinfo[
+                0].attributes['version'].value
+        info['package_name'] = getXMLtextElement(installinfo[0], 'PackageName')
+        info['package_id'] = getXMLtextElement(installinfo[0], 'PackageID')
+        info['products'] = []
+        medias_elements = installinfo[0].getElementsByTagName('Medias')
+        if medias_elements:
+            media_elements = medias_elements[0].getElementsByTagName('Media')
+            if media_elements:
+                for media in media_elements:
+                    product = {}
+                    product['prodName'] = getXMLtextElement(media, 'prodName')
+                    product['prodVersion'] = getXMLtextElement(
+                        media, 'prodVersion')
+                    setup_elements = media.getElementsByTagName('Setup')
+                    if setup_elements:
+                        mediaSignatureElements = setup_elements[
+                            0].getElementsByTagName('mediaSignature')
+                        if mediaSignatureElements:
+                            product['mediaSignature'] = ''
+                            element = mediaSignatureElements[0]
+                            for node in element.childNodes:
+                                product['mediaSignature'] += node.nodeValue
+                    info['products'].append(product)
+            
     return info
 
 
@@ -677,6 +729,91 @@ def doAdobeCS5Uninstall(adobeInstallInfo, payloads=None):
     munkicommon.display_status_minor('Running Adobe Uninstall')
     return runAdobeInstallTool(uninstall_cmd, payloadcount, payloads=payloads,
                                kind='CS5', operation='uninstall')
+
+
+def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
+    '''Installs or removes an Adobe product packaged via 
+    Creative Cloud Packager'''
+    munkicommon.display_status_minor(
+        'Mounting disk image %s' % os.path.basename(dmgpath))
+    mountpoints = mountAdobeDmg(dmgpath)
+    if not mountpoints:
+        munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
+        return -1
+
+    deploymentmanager = findAdobeDeploymentManager(mountpoints[0])
+    if not deploymentmanager:
+        munkicommon.display_error(
+            '%s doesn\'t appear to contain AdobeDeploymentManager',
+            os.path.basename(dmgpath))
+        munkicommon.unmountdmg(mountpoints[0])
+        return -1
+        
+    # big hack to convince the Adobe tools to install off a mounted
+    # disk image.
+    #
+    # For some reason, some versions of the Adobe install tools refuse to
+    # install when the payloads are on a "removable" disk,
+    # which includes mounted disk images.
+    #
+    # we create a temporary directory on the local disk and then symlink
+    # some resources from the mounted disk image to the temporary
+    # directory. When we pass this temporary directory to the Adobe
+    # installation tools, they are now happy.
+
+    basepath = os.path.dirname(deploymentmanager)
+    preinstall_script = os.path.join(basepath, "preinstall")
+    if not os.path.exists(preinstall_script):
+        if operation == 'install':
+            munkicommon.display_error(
+                "No Adobe install script found on %s" % dmgpath)
+        else:
+            munkicommon.display_error(
+                "No Adobe uninstall script found on %s" % dmgpath)
+        munkicommon.unmountdmg(mountpoints[0])
+        return -1
+    number_of_payloads = countPayloads(basepath)
+    tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
+
+    # make our symlinks
+    for dir_name in ['ASU' 'ASU2', 'ProvisioningTool', 'uninstallinfo']:
+        if os.path.isdir(os.path.join(basepath, dir_name)):
+            os.symlink(os.path.join(basepath, dir_name), 
+                       os.path.join(tmpdir, dir_name))
+
+    for dir_name in ['Patches', 'Setup']:
+        realdir = os.path.join(basepath, dir_name)
+        if os.path.isdir(realdir):
+            tmpsubdir = os.path.join(tmpdir, dir_name)
+            os.mkdir(tmpsubdir)
+            for item in munkicommon.listdir(realdir):
+                os.symlink(os.path.join(realdir, item),
+                           os.path.join(tmpsubdir, item))
+
+    if (not munkicommon.getconsoleuser() or
+            munkicommon.getconsoleuser() == u"loginwindow"):
+        # we're at the loginwindow, so we need to run the deployment
+        # manager in the loginwindow context using launchctl bsexec
+        loginwindowPID = utils.getPIDforProcessName("loginwindow")
+        cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
+    else:
+        cmd = []
+
+    # preinstall script is in pkg/Contents/Resources, so calculate
+    # path to pkg
+    pkg_dir = os.path.dirname(os.path.dirname(basepath))
+    cmd.extend([preinstall_script, pkg_dir, '/', '/'])
+
+    if operation == 'install':
+        munkicommon.display_status_minor('Starting Adobe installer...')
+    retcode = runAdobeInstallTool(
+        cmd, number_of_payloads, killAdobeAIR=True, payloads=payloads,
+        kind='CS6', operation=operation)
+
+    # now clean up and return
+    dummy_result = subprocess.call(["/bin/rm", "-rf", tmpdir])
+    munkicommon.unmountdmg(mountpoints[0])
+    return retcode
 
 
 def runAdobeCS5AAMEEInstall(dmgpath, payloads=None):
@@ -1022,28 +1159,51 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
     deploymentmanager = findAdobeDeploymentManager(mountpoint)
     if deploymentmanager:
         dirpath = os.path.dirname(deploymentmanager)
+        option_xml_file = os.path.join(dirpath, 'optionXML.xml')
+        option_xml_info = {}
+        if os.path.exists(option_xml_file):
+            option_xml_info = parseOptionXML(option_xml_file)            
         cataloginfo = getAdobePackageInfo(dirpath)
         if cataloginfo:
             # add some more data
-            cataloginfo['name'] = cataloginfo['display_name'].replace(' ', '')
-            cataloginfo['uninstallable'] = True
-            cataloginfo['uninstall_method'] = "AdobeCS5AAMEEPackage"
-            cataloginfo['installer_type'] = "AdobeCS5AAMEEPackage"
-            cataloginfo['minimum_os_version'] = "10.5.0"
-            cataloginfo['adobe_install_info'] = getAdobeInstallInfo(
-                installdir=dirpath)
-            mediasignature = cataloginfo['adobe_install_info'].get(
-                "media_signature")
-            if mediasignature:
-                # make a default <key>installs</key> entry
+            if option_xml_info.get('packager_id') == u'CloudPackager':
+                # CCP package
+                cataloginfo['display_name'] = option_xml_info.get(
+                    'package_name', 'unknown')
+                cataloginfo['name'] = cataloginfo['display_name'].replace(
+                    ' ', '')
+                cataloginfo['uninstallable'] = True
+                cataloginfo['uninstall_method'] = "AdobeCCPUninstaller"
+                cataloginfo['installer_type'] = "AdobeCCPInstaller"
+                cataloginfo['minimum_os_version'] = "10.6.8"
+                mediasignatures = [
+                    item['mediaSignature'] 
+                    for item in option_xml_info.get('products', [])
+                    if 'mediaSignature' in item]
+            else:
+                # AAMEE package
+                cataloginfo['name'] = cataloginfo['display_name'].replace(
+                    ' ', '')
+                cataloginfo['uninstallable'] = True
+                cataloginfo['uninstall_method'] = "AdobeCS5AAMEEPackage"
+                cataloginfo['installer_type'] = "AdobeCS5AAMEEPackage"
+                cataloginfo['minimum_os_version'] = "10.5.0"
+                cataloginfo['adobe_install_info'] = getAdobeInstallInfo(
+                    installdir=dirpath)
+                mediasignature = cataloginfo['adobe_install_info'].get(
+                    "media_signature")
+                mediasignatures = [mediasignature]
+            if mediasignatures:
+                # make a default <key>installs</key> array
                 uninstalldir = "/Library/Application Support/Adobe/Uninstall"
-                signaturefile = mediasignature + ".db"
-                filepath = os.path.join(uninstalldir, signaturefile)
                 installs = []
-                installitem = {}
-                installitem['path'] = filepath
-                installitem['type'] = 'file'
-                installs.append(installitem)
+                for mediasignature in mediasignatures:
+                    signaturefile = mediasignature + ".db"
+                    filepath = os.path.join(uninstalldir, signaturefile)
+                    installitem = {}
+                    installitem['path'] = filepath
+                    installitem['type'] = 'file'
+                    installs.append(installitem)
                 cataloginfo['installs'] = installs
 
             return cataloginfo
@@ -1242,6 +1402,11 @@ def doAdobeRemoval(item):
         adobeInstallInfo = item.get('adobe_install_info')
         retcode = doAdobeCS5Uninstall(adobeInstallInfo, payloads=payloads)
 
+    elif uninstallmethod == "AdobeCCPUninstaller":
+        # Adobe Creative Cloud Packager packages
+        retcode = runAdobeCCPpkgScript(
+            itempath, payloads=payloads, operation="uninstall")
+
     if retcode:
         munkicommon.display_error("Uninstall of %s failed.", item['name'])
     return retcode
@@ -1274,6 +1439,9 @@ def doAdobeInstall(item):
         # Adobe CS5 updater
         retcode = runAdobeCS5PatchInstaller(
             itempath, copylocal=item.get("copy_local"), payloads=payloads)
+    elif installer_type == "AdobeCCPInstaller":
+        # Adobe Creative Cloud Packager packages
+        retcode = runAdobeCCPpkgScript(itempath, payloads=payloads)
     return retcode
 
 

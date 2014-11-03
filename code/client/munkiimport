@@ -614,6 +614,9 @@ def makePkgInfo(options=None, test_mode=False):
     if proc.returncode:
         print >> sys.stderr, stderr.rstrip('\n')
         return {}
+    if stderr:
+        # just warnings if returncode is 0
+        print >> sys.stderr, stderr.rstrip('\n')
     return FoundationPlist.readPlistFromString(stdout)
 
 
@@ -785,7 +788,16 @@ def main():
         APPLEMETADATA = True
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
-    installer_item = makePkgInfo(options=arguments, test_mode=True)
+    return_dict = makePkgInfo(
+        options=arguments, test_mode=True)
+    try:
+        return_dict = FoundationPlist.readPlistFromString(return_dict)
+    except FoundationPlist.FoundationPlistException, err:
+        print >> sys.stderr, (
+            'Error getting info from makepkginfo: %s' % err)
+        cleanupAndExit(-1)
+    installer_item = return_dict.get('installeritem')
+    uninstaller_item = return_dict.get('uninstalleritem')
     if not installer_item and not APPLEMETADATA:
         cleanupAndExit(-1)
 
@@ -837,19 +849,37 @@ def main():
                 else:
                     print >> sys.stderr, (
                         'Could not convert %s to a disk image.'
-                                            % installer_item)
+                        % installer_item)
                     cleanupAndExit(-1)
 
         # append the installer_item to arguments which
         # may have changed if bundle was wrapped into dmg
         arguments.append(installer_item) # End of indent
 
+        if uninstaller_item:
+            if os.path.isdir(uninstaller_item):
+                if munkicommon.hasValidDiskImageExt(uninstaller_item):
+                    # a directory named foo.dmg or foo.iso!
+                    print >> sys.stderr, (
+                        '%s is an unknown type.' % uninstaller_item)
+                    cleanupAndExit(-1)
+                else:
+                    # we need to convert to dmg
+                    dmg_path = makeDMG(uninstaller_item)
+                    if dmg_path:
+                        uninstaller_item = dmg_path
+                    else:
+                        print >> sys.stderr, (
+                            'Could not convert %s to a disk image.'
+                            % uninstaller_item)
+                        cleanupAndExit(-1)
+
     # if catalog/catalogs have not been explictly specified via command-line,
     # append our default catalog
     if not '--catalog' in arguments and not '-c' in arguments:
         default_catalog = pref('default_catalog') or 'testing'
         arguments.extend(['--catalog', default_catalog])
-    pkginfo = makePkgInfo(arguments, test_mode=False)
+    pkginfo = makePkgInfo(arguments)
     if not pkginfo:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
@@ -990,6 +1020,23 @@ def main():
         # adjust the installer_item_location to match
         # the actual location and name
         pkginfo['installer_item_location'] = uploaded_pkgpath
+
+        if uninstaller_item:
+            try:
+                uploaded_pkgpath = copyItemToRepo(uninstaller_item,
+                                                  pkginfo.get('version'),
+                                                  options.subdirectory)
+            except RepoCopyError, errmsg:
+                print >> sys.stderr, errmsg
+                cleanupAndExit(-1)
+
+            # adjust the uninstaller_item_location to match
+            # the actual location and name; update size and hash
+            pkginfo['uninstaller_item_location'] = uploaded_pkgpath
+            itemsize = int(os.path.getsize(uninstaller_item))
+            itemhash = munkicommon.getsha256hash(uninstaller_item)
+            pkginfo['uninstaller_item_size'] = int(itemsize/1024)
+            pkginfo['uninstaller_item_hash'] = itemhash
 
     # if we have an icon, upload it
     if False: #options.iconpath:

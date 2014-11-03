@@ -145,7 +145,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
     if not cataloginfo and not options.item:
         # look for one of the many possible Adobe installer/updaters
         cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0],
-                                                    options.pkgname or '')
+                                                     options.pkgname or '')
 
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
@@ -564,11 +564,15 @@ def main():
     # Adobe package specific options
     adobe_options = optparse.OptionGroup(p, 'Adobe-specific Options')
     adobe_options.add_option(
-        '--uninstallerdmg', '-U',
+        '--uninstallerdmg', '--uninstallerpkg', '--uninstallpkg', '-U',
+        metavar='UNINSTALLERITEM', dest='uninstalleritem',
         help=('If the installer item is a disk image containing an Adobe CS4 '
               'Deployment Toolkit installation package or Adobe CS3 deployment '
-              'package, UNINSTALLERDMG is a path to a disk image containing an '
-              'AdobeUberUninstaller for this item.')
+              'package, UNINSTALLERITEM is a path to a disk image containing '
+              'an AdobeUberUninstaller for this item.\n'
+              'If the installer item is a Creative Cloud Packager install '
+              'package, UNINSTALLERITEM is a path to the matching Creative '
+              'Cloud Packager uninstall package.')
         )
     p.add_option_group(adobe_options)
 
@@ -725,7 +729,11 @@ def main():
                 'Can process only one installer item at a time.'
             exit(3)
         if not options.apple_update:
-            print >> sys.stdout, arguments[0]
+            return_dict = {}
+            if options.uninstalleritem:
+                return_dict['uninstalleritem'] = options.uninstalleritem
+            return_dict['installeritem'] = arguments[0]
+            print >> sys.stdout, FoundationPlist.writePlistToString(return_dict)
         exit(0)
 
     if (len(arguments) == 0
@@ -743,10 +751,10 @@ def main():
         p.print_usage()
         exit(-1)
 
-    if options.minimum_os_version and \
-        not options.minimum_os_version[0].isdigit():
-        print >> sys.stderr, \
-            'Minimum OS Version must start with a number, e.g. 10.7.2.'
+    if (options.minimum_os_version and 
+            not options.minimum_os_version[0].isdigit()):
+        print >> sys.stderr, (
+            'Minimum OS Version must start with a number, e.g. 10.7.2.')
         exit(-1)
 
     if len(arguments) > 1:
@@ -790,32 +798,32 @@ def main():
                     itemhash = "N/A"
                 catinfo = getCatalogInfoFromDmg(item, options)
                 if (catinfo and
-                    catinfo.get('installer_type') == "AdobeCS5Installer"):
+                        catinfo.get('installer_type') == "AdobeCS5Installer"):
                     print >> sys.stderr, (
-                        "This disk image appears to contain an Adobe CS5 "
+                        "This disk image appears to contain an Adobe CS5/CS6 "
                         "product install.\n"
                         "Please use Adobe Application Manager, Enterprise "
                         "Edition (AAMEE) to create an installation package "
                         "for this product.")
                     exit(-1)
                 if not catinfo:
-                    print >> sys.stderr, \
-                        "Could not find a supported installer item in %s!" % \
-                         item
+                    print >> sys.stderr, (
+                        "Could not find a supported installer item in %s!"
+                         % item)
                     exit(-1)
 
             elif munkicommon.hasValidPackageExt(item):
                 catinfo = getCatalogInfoFromPath(item, options)
                 if not catinfo:
                     print >> sys.stderr, (
-                        "%s doesn't appear to be a valid installer item!" %
-                         item)
+                        "%s doesn't appear to be a valid installer item!"
+                        % item)
                     exit(-1)
                 if os.path.isdir(item):
                     print >> sys.stderr, (
                         "WARNING: %s is a bundle-style package!\n"
-                        "To use it with munki, you should encapsulate it "
-                        "in a disk image.\n")  % item
+                        "To use it with Munki, you should encapsulate it "
+                        "in a disk image.\n") % item
                     # need to walk the dir and add it all up
                     for (path, dummy_dirs, files) in os.walk(item):
                         for name in files:
@@ -849,8 +857,19 @@ def main():
             catinfo['installer_item_location'] = location
 
             # ADOBE STUFF - though maybe generalizable in the future?
-            if options.uninstallerdmg:
-                uninstallerpath = options.uninstallerdmg
+            if (catinfo.get('installer_type') == "AdobeCCPInstaller" and
+                    not options.uninstalleritem):
+                print >> sys.stderr, (
+                    "WARNING: This item appears to be an Adobe Creative "
+                    "Cloud product install.\n"
+                    "No uninstaller package was specified so product "
+                    "removal will not be possible.")
+                catinfo['uninstallable'] = False
+                if 'uninstall_method' in catinfo:
+                    del catinfo['uninstall_method']
+
+            if options.uninstalleritem:
+                uninstallerpath = options.uninstalleritem
                 if os.path.exists(uninstallerpath):
                     # try to generate the correct item location
                     temppath = uninstallerpath
@@ -871,8 +890,8 @@ def main():
                     catinfo['uninstaller_item_size'] = int(itemsize/1024)
                     catinfo['uninstaller_item_hash'] = itemhash
                 else:
-                    print >> sys.stderr, "No uninstaller at %s" % \
-                                        uninstallerpath
+                    print >> sys.stderr, (
+                        "No uninstaller item at %s" % uninstallerpath)
 
             # if we have receipts, assume we can uninstall using them
             if catinfo.get('receipts', None):

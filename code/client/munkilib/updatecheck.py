@@ -2206,7 +2206,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             if packagesToRemove:
                 uninstall_item = item
         elif uninstallmethod.startswith('Adobe'):
-            # Adobe CS3/CS4/CS5 product
+            # Adobe CS3/CS4/CS5/CS6/CC product
             uninstall_item = item
         elif uninstallmethod in ['remove_copied_items',
                                  'remove_app',
@@ -2352,7 +2352,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     iteminfo['uninstall_method'] = uninstallmethod
     if uninstallmethod.startswith('Adobe'):
-        if 'adobe_install_info' in item:
+        if (uninstallmethod == "AdobeCS5AAMEEPackage" and 
+                'adobe_install_info' in item):
             iteminfo['adobe_install_info'] = item['adobe_install_info']
         else:
             if 'uninstaller_item_location' in item:
