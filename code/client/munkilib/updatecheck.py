@@ -829,7 +829,8 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     if not os.path.exists(destinationpath):
         # check to see if there is enough free space to download and install
-        if not enoughDiskSpace(item_pl, installinfo['managed_installs']):
+        if not enoughDiskSpace(item_pl, installinfo['managed_installs'],
+                               uninstalling=uninstalling):
             raise fetch.MunkiDownloadError(
                 'Insufficient disk space to download and install %s', pkgname)
         else:
@@ -2352,7 +2353,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     iteminfo['uninstall_method'] = uninstallmethod
     if uninstallmethod.startswith('Adobe'):
-        if (uninstallmethod == "AdobeCS5AAMEEPackage" and 
+        if (uninstallmethod == "AdobeCS5AAMEEPackage" and
                 'adobe_install_info' in item):
             iteminfo['adobe_install_info'] = item['adobe_install_info']
         else:
@@ -2761,7 +2762,8 @@ def download_icons(item_list):
                 'Could not retrieve icon %s from the server: %s',
                 icon_name, err)
     # remove no-longer needed icons from the local directory
-    for (dirpath, dummy_dirnames, filenames) in os.walk(icon_dir, topdown=False):
+    for (dirpath, dummy_dirnames, filenames) in os.walk(
+            icon_dir, topdown=False):
         for filename in filenames:
             icon_path = os.path.join(dirpath, filename)
             rel_path = icon_path[len(icon_dir):].lstrip('/')
@@ -3342,7 +3344,7 @@ def getResourceIfChangedAtomically(
         url, destinationpath, message=None, resume=False, expected_hash=None,
         verify=False):
 
-    '''Gets a given URL from the Munki server. 
+    '''Gets a given URL from the Munki server.
     Adds any additional headers to the request if present'''
 
     # Add any additional headers specified in ManagedInstalls.plist.
