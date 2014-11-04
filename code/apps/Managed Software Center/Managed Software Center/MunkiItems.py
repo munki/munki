@@ -20,6 +20,7 @@
 # limitations under the License.
 
 import os
+import re
 import sys
 import msclib
 import munki
@@ -287,6 +288,8 @@ class MSCHTMLFilter(HTMLParser):
         self.current_ignore_element = None
         # track the number of tags we found
         self.tag_count = 0
+        # track the number of HTML entities we found
+        self.entity_count = 0
         # store our filtered/transformed html fragment
         self.filtered_html = u''
 
@@ -314,6 +317,7 @@ class MSCHTMLFilter(HTMLParser):
             self.filtered_html += data
 
     def handle_entityref(self, name):
+        self.entity_count += 1
         if not self.current_ignore_element:
             # add the entity reference as-is
             self.filtered_html += u'&%s;' % name
@@ -331,8 +335,8 @@ def filtered_html(text, filter_images=False):
     if filter_images:
         parser.preserve_tags.remove('img')
     parser.feed(text)
-    if parser.tag_count:
-        # found at least one html tag, so this is probably HTML
+    if parser.tag_count or parser.entity_count:
+        # found at least one HTML tag or HTML entity, so this is probably HTML
         return parser.filtered_html
     else:
         # might be plain text, so we should escape a few entities and
