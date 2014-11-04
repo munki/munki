@@ -599,7 +599,7 @@ def main():
     if options.verbose:
         print 'Managed Software Update Tool'
         print 'Copyright 2010-2014 The Munki Project'
-        print 'http://code.google.com/p/munki\n'
+        print 'https://github.com/munki/munki\n'
 
     munkicommon.display_status_major('Starting...')
     sendStartNotification()
