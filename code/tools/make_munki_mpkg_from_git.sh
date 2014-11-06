@@ -84,7 +84,7 @@ if [ ! -x "/usr/bin/xcodebuild" ]; then
 fi
 
 
-echo "Cloning munki repo branch $BRANCH from code.google.com..."
+echo "Cloning munki repo branch $BRANCH from github..."
 git clone --branch "$BRANCH" --no-checkout -- https://github.com/munki/munki.git "$MUNKIDIR"
 CLONE_RESULT="$?"
 if [ "$CLONE_RESULT" != "0" ]; then
