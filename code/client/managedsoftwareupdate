@@ -534,10 +534,10 @@ def main():
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for dummy_i in range(5):
+                    for dummy_i in range(60):
                         if networkUp():
                             break
-                        time.sleep(2)
+                        time.sleep(0.5)
                 else:
                     # delete triggerfile if _not_ checkandinstallatstartup
                     os.unlink(filename)
