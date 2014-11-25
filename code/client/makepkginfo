@@ -719,7 +719,8 @@ def main():
         exit(0)
 
     if options.verify_options_only:
-        if len(arguments) == 0 and not options.apple_update:
+        if (len(arguments) == 0 and not options.apple_update and 
+                not options.nopkg):
             print >> sys.stderr, 'makepkginfo options FAILED verification'
             print >> sys.stderr, 'No installer item was provided.'
             exit(1)
@@ -728,26 +729,26 @@ def main():
             print >> sys.stderr, \
                 'Can process only one installer item at a time.'
             exit(3)
-        if not options.apple_update:
-            return_dict = {}
-            if options.uninstalleritem:
-                return_dict['uninstalleritem'] = options.uninstalleritem
+        return_dict = {}
+        if options.uninstalleritem:
+            return_dict['uninstalleritem'] = options.uninstalleritem
+        if arguments:
             return_dict['installeritem'] = arguments[0]
-            print >> sys.stdout, FoundationPlist.writePlistToString(return_dict)
+        print >> sys.stdout, FoundationPlist.writePlistToString(return_dict)
         exit(0)
 
-    if (len(arguments) == 0
-        and not options.file
-        and not options.nopkg
-        and not options.installer_environment
-        and not options.installcheck_script
-        and not options.uninstallcheck_script
-        and not options.preinstall_script
-        and not options.postinstall_script
-        and not options.preuninstall_script
-        and not options.postuninstall_script
-        and not options.uninstall_script
-        and not options.apple_update):
+    if (len(arguments) == 0 and
+            not options.file and
+            not options.nopkg and
+            not options.installer_environment and
+            not options.installcheck_script and
+            not options.uninstallcheck_script and
+            not options.preinstall_script and
+            not options.postinstall_script and
+            not options.preuninstall_script and
+            not options.postuninstall_script and
+            not options.uninstall_script and
+            not options.apple_update):
         p.print_usage()
         exit(-1)
 
