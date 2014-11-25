@@ -979,7 +979,7 @@ def main():
 
         if options.subdirectory == '':
             pkgs_path = os.path.join(REPO_PATH, 'pkgs')
-            if installer_item.startswith(pkgs_path) and not APPLEMETADATA:
+            if not APPLEMETADATA and installer_item.startswith(pkgs_path):
                 # the installer item is already in the repo.
                 # use its relative path as the subdirectory
                 installer_item_dirpath = os.path.dirname(installer_item)
