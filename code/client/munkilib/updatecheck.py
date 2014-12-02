@@ -2292,7 +2292,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     # or logout...
     if (uninstall_item.get('unattended_uninstall') or
             uninstall_item.get('forced_uninstall')):
-        if uninstall_item.get('RestartAction'):
+        if uninstall_item.get('RestartAction', 'None') != 'None':
             munkicommon.display_warning(
                 'Ignoring unattended_uninstall key for %s '
                 'because RestartAction is %s.',
