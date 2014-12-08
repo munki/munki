@@ -154,7 +154,6 @@ class MSCMainWindowController(NSWindowController):
 
     def loadInitialView(self):
         '''Called by app delegate from applicationDidFinishLaunching:'''
-        self.window().setFrameAutosaveName_('main')
         self.enableOrDisableSoftwareViewControls()
         optional_items = MunkiItems.getOptionalInstallItems()
         if not optional_items or self.getUpdateCount():
