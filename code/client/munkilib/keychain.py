@@ -138,7 +138,9 @@ def add_ca_certs_to_system_keychain(certdata=None):
         munkicommon.display_debug2('CA cert path:     %s', ca_cert_path)
         munkicommon.display_debug2('CA dir path:      %s', ca_dir_path)
 
-    # Add CA certs
+    # Add CA certs. security add-trusted-cert does the right thing even if
+    # the cert is already added, so we just do it; checking to see if the
+    # cert is already added is hard.
     certs_to_add = []
     if ca_cert_path:
         certs_to_add.append(ca_cert_path)
@@ -158,7 +160,7 @@ def add_ca_certs_to_system_keychain(certdata=None):
             munkicommon.display_error(
                 'Could not add CA cert %s into System keychain: %s', cert, err)
 
-    munkicommon.display_info('System.keychain updated.')
+    munkicommon.display_detail('System.keychain updated.')
 
 
 def make_client_keychain(certdata=None):
