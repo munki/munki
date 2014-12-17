@@ -121,11 +121,15 @@ def getCatalogInfoForProfile(profile_path):
     except FoundationPlist.NSPropertyListSerializationException:
         pass
     if profile.get('PayloadType') == 'Configuration':
+        try:
+            cataloginfo['PayloadIdentifier'] = profile['PayloadIdentifier']
+        except (KeyError, AttributeError):
+            # this thing is broken! return the empty info
+            return cataloginfo
         cataloginfo['name'] = os.path.basename(profile_path)
         cataloginfo['display_name'] = profile.get(
             'PayloadDisplayName', cataloginfo['name'])
-        cataloginfo['description'] = profile.get('PayloadDescription')
-        cataloginfo['PayloadIdentifier'] = profile.get('PayloadIdentifier')
+        cataloginfo['description'] = profile.get('PayloadDescription', '')
         cataloginfo['version'] = '1.0'
         cataloginfo['installer_type'] = 'profile'
         cataloginfo['uninstallable'] = True
