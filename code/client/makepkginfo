@@ -113,6 +113,28 @@ def getCatalogInfoFromPath(pkgpath, options):
     return cataloginfo
 
 
+def getCatalogInfoForProfile(profile_path):
+    '''Populates some metadata for profile pkginfo'''
+    cataloginfo = {}
+    try:
+        profile = FoundationPlist.readPlist(profile_path)
+    except FoundationPlist.NSPropertyListSerializationException:
+        pass
+    if profile.get('PayloadType') == 'configuration':
+        cataloginfo['name'] = os.path.basename(profile_path)
+        cataloginfo['display_name'] = profile.get(
+            'PayloadDisplayName', cataloginfo['name'])
+        cataloginfo['description'] = profile.get('PayloadDescription')
+        cataloginfo['PayloadIdentifier'] = profile.get('PayloadIdentifier')
+        cataloginfo['version'] = '1.0'
+        cataloginfo['installer_type'] = 'profile'
+        cataloginfo['uninstall_method'] = 'remove_profile'
+        cataloginfo['unattended_install'] = True
+        cataloginfo['unattended_uninstall'] = True
+        cataloginfo['minimum_os_version'] = '10.7'
+    return cataloginfo
+
+
 def getCatalogInfoFromDmg(dmgpath, options):
     """
     * Mounts a disk image if it's not already mounted
@@ -834,6 +856,9 @@ def main():
                     # convert to kbytes
                     itemsize = int(itemsize/1024)
 
+            elif munkicommon.hasValidConfigProfileExt(item):
+                catinfo = getCatalogInfoForProfile(item)
+
             else:
                 print >> sys.stderr, "%s is not a valid installer item!" % item
                 exit(-1)
@@ -1072,7 +1097,7 @@ def main():
             catinfo['display_name'] = options.displayname
         catinfo['installer_type'] = 'apple_update_metadata'
 
-# add user/environment metadata
+    # add user/environment metadata
     catinfo['_metadata'] = make_pkginfo_metadata()
 
     # and now, what we've all been waiting for...
