@@ -120,7 +120,7 @@ def getCatalogInfoForProfile(profile_path):
         profile = FoundationPlist.readPlist(profile_path)
     except FoundationPlist.NSPropertyListSerializationException:
         pass
-    if profile.get('PayloadType') == 'configuration':
+    if profile.get('PayloadType') == 'Configuration':
         cataloginfo['name'] = os.path.basename(profile_path)
         cataloginfo['display_name'] = profile.get(
             'PayloadDisplayName', cataloginfo['name'])
@@ -128,6 +128,7 @@ def getCatalogInfoForProfile(profile_path):
         cataloginfo['PayloadIdentifier'] = profile.get('PayloadIdentifier')
         cataloginfo['version'] = '1.0'
         cataloginfo['installer_type'] = 'profile'
+        cataloginfo['uninstallable'] = True
         cataloginfo['uninstall_method'] = 'remove_profile'
         cataloginfo['unattended_install'] = True
         cataloginfo['unattended_uninstall'] = True
