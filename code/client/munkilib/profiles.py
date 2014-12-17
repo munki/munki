@@ -115,6 +115,15 @@ def read_signed_profile(profile_path):
     '''Attempts to read a signed profile. This is a bit hacky, as we're just
     searching the data for an embedded plist. If Apple ever allows binary-style
     plists in the signed profile, this will break.'''
+
+    # filed for future reference:
+    # openssl smime -inform DER -verify -in Signed.mobileconfig
+    #                           -noverify -out Unsigned.mobileconfig
+    # will strip the signing from a signed profile
+    # this might be a better approach
+    # from: http://apple.stackexchange.com/questions/105981/
+    #       how-do-i-view-or-verify-signed-mobileconfig-files-using-terminal
+
     try:
         fileobj = open(profile_path, mode='r')
         data = fileobj.read()
