@@ -20,6 +20,7 @@ Munki module for working with configuration profiles.
 """
 
 import os
+import re
 import subprocess
 import tempfile
 
@@ -98,14 +99,46 @@ def store_profile_install_data(identifier, hash_value):
 
 
 def read_profile(profile_path):
-    '''Reads a profile. Currently supports only unsigned, unencrypted
-    profiles'''
+    '''Reads a profile.'''
     try:
         return FoundationPlist.readPlist(profile_path)
+    except FoundationPlist.NSPropertyListSerializationException:
+        # possibly a signed profile
+        return read_signed_profile(profile_path)
     except BaseException, err:
         munkicommon.display_error(
             'Error reading profile %s: %s' % (profile_path, err))
         return {}
+
+
+def read_signed_profile(profile_path):
+    '''Attempts to read a signed profile. This is a bit hacky, as we're just
+    searching the data for an embedded plist. If Apple ever allows binary-style
+    plists in the signed profile, this will break.'''
+    try:
+        fileobj = open(profile_path, mode='r')
+        data = fileobj.read()
+        fileobj.close()
+    except (OSError, IOError), err:
+        munkicommon.display_error(
+            'Could not read %s: %s', pathname, err)
+        return {}
+    (header, xml_tag, remainder) = data.partition('<?xml')
+    if xml_tag and remainder:
+        (plist_content,
+         plist_end_tag, trailer) = remainder.rpartition('</plist>')
+        if plist_end_tag:
+            plist_data = xml_tag + plist_content + plist_end_tag
+            try:
+                return FoundationPlist.readPlistFromString(plist_data)
+            except FoundationPlist.NSPropertyListSerializationException, err:
+                munkicommon.display_error(
+                    'Error reading profile %s: %s' % (profile_path, err))
+                return {}
+    # if we get here we could not figure out what we are dealing with
+    munkicommon.display_error(
+        'Error reading profile %s: cannot determine format.' % profile_path)
+    return {}
 
 
 def record_profile_hash(profile_path):

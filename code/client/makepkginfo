@@ -42,6 +42,7 @@ from optparse import OptionValueError
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
+from munkilib import profiles
 
 from Foundation import NSDate, NSUserName
 
@@ -116,10 +117,7 @@ def getCatalogInfoFromPath(pkgpath, options):
 def getCatalogInfoForProfile(profile_path):
     '''Populates some metadata for profile pkginfo'''
     cataloginfo = {}
-    try:
-        profile = FoundationPlist.readPlist(profile_path)
-    except FoundationPlist.NSPropertyListSerializationException:
-        pass
+    profile = profiles.read_profile(profile_path)
     if profile.get('PayloadType') == 'Configuration':
         try:
             cataloginfo['PayloadIdentifier'] = profile['PayloadIdentifier']
