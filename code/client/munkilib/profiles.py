@@ -181,7 +181,14 @@ def remove_profile_receipt(identifier):
 
 def get_profile_receipt(profile_identifier):
     '''Returns the receipt dict for profile_identifier'''
-    return profile_receipt_data().get(profile_identifier)
+    receipt = profile_receipt_data().get(profile_identifier)
+    # validate it before returning it
+    try:
+        test = receipt['FileHash']
+        return receipt
+    except (TypeError, AttributeError, KeyError):
+        # invalid receipt!
+        return None
 
 
 def install_profile(profile_path):
@@ -224,19 +231,20 @@ def profile_needs_to_be_installed(identifier, hash_value):
         munkicommon.display_debug2(
             'Profile identifier %s is not installed.' % identifier)
         return True
-    receipt_dict = get_profile_receipt(identifier)
-    if not receipt_dict:
+    receipt = get_profile_receipt(identifier)
+    if not receipt:
         munkicommon.display_debug2(
             'No receipt for profile identifier %s.' % identifier)
         return True
-    if receipt_dict.get('FileHash') != hash_value:
+    munkicommon.display_debug2('Receipt for %s:\n%s' % (identifier, receipt))
+    if receipt.get('FileHash') != hash_value:
         munkicommon.display_debug2(
             'Receipt FileHash for profile identifier %s does not match.'
             % identifier)
         return True
     installed_dict = profile_info_for_installed_identifier(identifier)
     if (installed_dict.get('ProfileInstallDate') 
-            != receipt_dict.get('ProfileInstallDate')):
+            != receipt.get('ProfileInstallDate')):
         munkicommon.display_debug2(
             'Receipt ProfileInstallDate for profile identifier %s does not '
             'match.' % identifier)
