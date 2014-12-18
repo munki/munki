@@ -140,6 +140,9 @@ def read_signed_profile(profile_path):
     # from: http://apple.stackexchange.com/questions/105981/
     #       how-do-i-view-or-verify-signed-mobileconfig-files-using-terminal
 
+    # another approach to consider:
+    # security cms -D -i /path/to/Signed.mobileconfig
+
     try:
         fileobj = open(profile_path, mode='r')
         data = fileobj.read()
