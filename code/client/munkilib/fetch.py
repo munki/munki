@@ -258,6 +258,8 @@ def getResourceIfChangedAtomically(url,
             xattr_hash = writeCachedChecksum(destinationpath)
         if xattr_hash == expected_hash:
             #File is already current, no change.
+            munkicommon.display_debug1('%s: stored hash matches '
+                'with expected hash.' % destinationpath)
             return False
         elif munkicommon.pref(
              'PackageVerificationMode').lower() in ['hash_strict', 'hash']:
