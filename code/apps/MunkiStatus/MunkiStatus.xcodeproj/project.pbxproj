@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9EA21C381A43020D0096B76C /* Window.m in Sources */ = {isa = PBXBuildFile; fileRef = 9EA21C371A43020D0096B76C /* Window.m */; };
+		9EAB7F901A43FAF00071505D /* StatusWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 9EAB7F8F1A43FAF00071505D /* StatusWindow.m */; };
+		9EAB7F931A43FB090071505D /* StatusWindowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9EAB7F921A43FB090071505D /* StatusWindowView.m */; };
 		C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE21913F6D6003DD155 /* Localizable.strings */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
 		C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */; };
-		C046261B1A00015600AF1E48 /* MunkiStatus-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */; };
 		C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE01913F6D6003DD155 /* MainMenu.strings */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
@@ -27,9 +27,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		9EA21C361A43020D0096B76C /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
-		9EA21C371A43020D0096B76C /* Window.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Window.m; sourceTree = "<group>"; };
 		9EA21C3A1A43032E0096B76C /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		9EAB7F8E1A43FAF00071505D /* StatusWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatusWindow.h; sourceTree = "<group>"; };
+		9EAB7F8F1A43FAF00071505D /* StatusWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatusWindow.m; sourceTree = "<group>"; };
+		9EAB7F911A43FB090071505D /* StatusWindowView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatusWindowView.h; sourceTree = "<group>"; };
+		9EAB7F921A43FB090071505D /* StatusWindowView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatusWindowView.m; sourceTree = "<group>"; };
 		C002ECE11913F6D6003DD155 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C002ECE31913F6D6003DD155 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C005C5AF1913F7410074AF82 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -143,8 +145,10 @@
 		C09004F916CDD84E00BE34CE /* MunkiStatus */ = {
 			isa = PBXGroup;
 			children = (
-				9EA21C361A43020D0096B76C /* Window.h */,
-				9EA21C371A43020D0096B76C /* Window.m */,
+				9EAB7F8E1A43FAF00071505D /* StatusWindow.h */,
+				9EAB7F8F1A43FAF00071505D /* StatusWindow.m */,
+				9EAB7F911A43FB090071505D /* StatusWindowView.h */,
+				9EAB7F921A43FB090071505D /* StatusWindowView.m */,
 				C094B6D31891826700E06897 /* BorderlessWindow.m */,
 				C094B6D41891826700E06897 /* ScaledImageView.h */,
 				C094B6D51891826700E06897 /* ScaledImageView.m */,
@@ -210,7 +214,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = MT;
-				LastUpgradeCheck = 0450;
+				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = MacTech;
 			};
 			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "MunkiStatus" */;
@@ -275,7 +279,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */,
-				C046261B1A00015600AF1E48 /* MunkiStatus-Info.plist in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */,
@@ -326,7 +329,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EA21C381A43020D0096B76C /* Window.m in Sources */,
+				9EAB7F901A43FAF00071505D /* StatusWindow.m in Sources */,
+				9EAB7F931A43FB090071505D /* StatusWindowView.m in Sources */,
 				C094B6D61891826700E06897 /* BorderlessWindow.m in Sources */,
 				C090050016CDD84E00BE34CE /* main.m in Sources */,
 				C094B6D71891826700E06897 /* ScaledImageView.m in Sources */,
@@ -414,7 +418,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -435,7 +438,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -443,7 +446,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -457,14 +459,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
 		C090050F16CDD84E00BE34CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -487,7 +489,7 @@
 		C090051016CDD84E00BE34CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
 				HEADER_SEARCH_PATHS = (

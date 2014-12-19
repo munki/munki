@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6254" systemVersion="13F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6249" systemVersion="14B25" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6254"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6249"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -157,14 +157,13 @@
         </customObject>
         <customObject id="420" customClass="NSFontManager"/>
         <userDefaultsController representsSharedInstance="YES" id="602"/>
-        <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1Nd-E7-vfR" userLabel="Status Window" customClass="Window">
-            <windowStyleMask key="styleMask" resizable="YES"/>
-            <windowPositionMask key="initialPositionMask" topStrut="YES"/>
+        <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1Nd-E7-vfR" userLabel="Status Window" customClass="StatusWindow">
+            <windowStyleMask key="styleMask" titled="YES"/>
             <rect key="contentRect" x="441" y="543" width="424" height="324"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="532" height="123"/>
             <value key="maxSize" type="size" width="1024" height="123"/>
-            <view key="contentView" id="0kN-7t-Llv">
+            <view key="contentView" id="0kN-7t-Llv" customClass="StatusWindowView">
                 <rect key="frame" x="0.0" y="-2" width="424" height="324"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
@@ -212,6 +211,7 @@
             </view>
             <connections>
                 <outlet property="delegate" destination="I9V-I1-u8s" id="1bd-RW-Bhf"/>
+                <outlet property="view" destination="0kN-7t-Llv" id="Q1E-ov-zsp"/>
             </connections>
             <point key="canvasLocation" x="502" y="316"/>
         </window>

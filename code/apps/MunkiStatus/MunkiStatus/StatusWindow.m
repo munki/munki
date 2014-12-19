@@ -1,14 +1,14 @@
 //
-//  NSWindow+Window.m
+//  StatusWindow.m
 //  MunkiStatus
 //
-//  Created by Küng, Steve (tpc) on 18/12/14.
+//  Created by Steve Küng on 19/12/14.
 //  Copyright (c) 2014 MacTech. All rights reserved.
 //
 
-#import "Window.h"
+#import "StatusWindow.h"
 
-@implementation Window
+@implementation StatusWindow
 
 -(BOOL)canBecomeKeyWindow
 {
@@ -22,7 +22,7 @@
     if ( self )
     {
         [self setOpaque:NO];
-        //[self setBackgroundColor:[NSColor clearColor]];
+        [self setBackgroundColor:[NSColor clearColor]];
         [self setMovableByWindowBackground:TRUE];
         [self setStyleMask:NSBorderlessWindowMask];
         [self setHasShadow:YES];
@@ -31,5 +31,16 @@
     
     return self;
 }
+
+- (void) setContentView:(NSView *)aView
+{
+    aView.wantsLayer            = YES;
+    aView.layer.frame           = aView.frame;
+    aView.layer.cornerRadius    = 5q.0;
+    aView.layer.masksToBounds   = YES;
+    
+    [super setContentView:aView];
+}
+
 
 @end
