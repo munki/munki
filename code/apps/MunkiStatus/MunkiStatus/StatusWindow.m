@@ -36,7 +36,7 @@
 {
     aView.wantsLayer            = YES;
     aView.layer.frame           = aView.frame;
-    aView.layer.cornerRadius    = 5q.0;
+    aView.layer.cornerRadius    = 5.0;
     aView.layer.masksToBounds   = YES;
     
     [super setContentView:aView];
