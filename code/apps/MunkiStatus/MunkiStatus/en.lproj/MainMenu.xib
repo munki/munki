@@ -158,44 +158,35 @@
         <customObject id="420" customClass="NSFontManager"/>
         <userDefaultsController representsSharedInstance="YES" id="602"/>
         <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1Nd-E7-vfR" userLabel="Status Window" customClass="StatusWindow">
-            <windowStyleMask key="styleMask" titled="YES"/>
-            <rect key="contentRect" x="441" y="543" width="424" height="324"/>
+            <windowStyleMask key="styleMask" titled="YES" resizable="YES"/>
+            <rect key="contentRect" x="441" y="543" width="454" height="341"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="532" height="123"/>
             <value key="maxSize" type="size" width="1024" height="123"/>
             <view key="contentView" id="0kN-7t-Llv" customClass="StatusWindowView">
-                <rect key="frame" x="0.0" y="-2" width="424" height="324"/>
+                <rect key="frame" x="0.0" y="0.0" width="454" height="341"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <progressIndicator verticalHuggingPriority="750" minValue="20" maxValue="100" doubleValue="20" bezeled="NO" indeterminate="YES" style="bar" id="yFK-Ya-d24">
-                        <rect key="frame" x="45" y="78" width="334" height="20"/>
+                        <rect key="frame" x="40" y="103" width="374" height="20"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     </progressIndicator>
-                    <textField verticalHuggingPriority="750" id="aUN-kO-8dF">
-                        <rect key="frame" x="43" y="105" width="338" height="17"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="eWh-Ya-joW">
-                            <font key="font" metaFont="systemBold"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <textField verticalHuggingPriority="750" id="Xa0-XA-1hm">
-                        <rect key="frame" x="43" y="57" width="338" height="14"/>
+                        <rect key="frame" x="38" y="82" width="378" height="14"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="b6Q-ET-o8V">
+                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" id="b6Q-ET-o8V">
                             <font key="font" metaFont="smallSystem"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <imageView id="aZW-jZ-KiY">
-                        <rect key="frame" x="128" y="157" width="168" height="129"/>
+                        <rect key="frame" x="143" y="167" width="168" height="129"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="MunkiStatus" id="FGG-pb-xd8"/>
                     </imageView>
                     <button verticalHuggingPriority="750" id="rxM-GK-Unu">
-                        <rect key="frame" x="254" y="31" width="131" height="32"/>
+                        <rect key="frame" x="289" y="36" width="131" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                         <buttonCell key="cell" type="push" title="Stop" bezelStyle="rounded" alignment="center" refusesFirstResponder="YES" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="M20-JG-Pmr">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -207,13 +198,22 @@
                             <action selector="stopBtnClicked:" target="I9V-I1-u8s" id="Hh5-n2-LP0"/>
                         </connections>
                     </button>
+                    <textField verticalHuggingPriority="750" id="aUN-kO-8dF">
+                        <rect key="frame" x="38" y="130" width="378" height="17"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" id="eWh-Ya-joW">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
             <connections>
                 <outlet property="delegate" destination="I9V-I1-u8s" id="1bd-RW-Bhf"/>
                 <outlet property="view" destination="0kN-7t-Llv" id="Q1E-ov-zsp"/>
             </connections>
-            <point key="canvasLocation" x="502" y="316"/>
+            <point key="canvasLocation" x="517" y="324.5"/>
         </window>
         <window title="BackdropWindow" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="VCy-58-vwp" userLabel="BackdropWindow" customClass="BorderlessWindow">
             <windowStyleMask key="styleMask" titled="YES"/>
