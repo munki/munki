@@ -20,7 +20,6 @@ Munki module for working with configuration profiles.
 """
 
 import os
-import re
 import subprocess
 import tempfile
 
@@ -128,9 +127,7 @@ def read_profile(profile_path):
 
 
 def read_signed_profile(profile_path):
-    '''Attempts to read a signed profile. This is a bit hacky, as we're just
-    searching the data for an embedded plist. If Apple ever allows binary-style
-    plists in the signed profile, this will break.'''
+    '''Attempts to read a (presumably) signed profile.'''
 
     # filed for future reference:
     # openssl smime -inform DER -verify -in Signed.mobileconfig
@@ -140,33 +137,23 @@ def read_signed_profile(profile_path):
     # from: http://apple.stackexchange.com/questions/105981/
     #       how-do-i-view-or-verify-signed-mobileconfig-files-using-terminal
 
-    # another approach to consider:
-    # security cms -D -i /path/to/Signed.mobileconfig
+    # but... we're going to use an Apple-provided tool instead.
 
-    try:
-        fileobj = open(profile_path, mode='r')
-        data = fileobj.read()
-        fileobj.close()
-    except (OSError, IOError), err:
+    cmd = ['/usr/bin/security', 'cms', '-D', '-i', profile_path]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    if proc.returncode:
+        # security cms -D couldn't decode the file
         munkicommon.display_error(
-            'Could not read %s: %s', pathname, err)
+            'Error reading profile %s: %s' % (profile_path, stderr))
         return {}
-    (header, xml_tag, remainder) = data.partition('<?xml')
-    if xml_tag and remainder:
-        (plist_content,
-         plist_end_tag, trailer) = remainder.rpartition('</plist>')
-        if plist_end_tag:
-            plist_data = xml_tag + plist_content + plist_end_tag
-            try:
-                return FoundationPlist.readPlistFromString(plist_data)
-            except FoundationPlist.NSPropertyListSerializationException, err:
-                munkicommon.display_error(
-                    'Error reading profile %s: %s' % (profile_path, err))
-                return {}
-    # if we get here we could not figure out what we are dealing with
-    munkicommon.display_error(
-        'Error reading profile %s: cannot determine format.' % profile_path)
-    return {}
+    try:
+        return FoundationPlist.readPlistFromString(stdout)
+    except FoundationPlist.NSPropertyListSerializationException, err:
+        # not a valid plist
+        munkicommon.display_error(
+            'Error reading profile %s: %s' % (profile_path, err))
+        return {}
 
 
 def record_profile_receipt(profile_path):
@@ -187,7 +174,8 @@ def get_profile_receipt(profile_identifier):
     receipt = profile_receipt_data().get(profile_identifier)
     # validate it before returning it
     try:
-        test = receipt['FileHash']
+        # try to get a value for the FileHash key
+        dummy = receipt['FileHash']
         return receipt
     except (TypeError, AttributeError, KeyError):
         # invalid receipt!
@@ -246,7 +234,7 @@ def profile_needs_to_be_installed(identifier, hash_value):
             % identifier)
         return True
     installed_dict = profile_info_for_installed_identifier(identifier)
-    if (installed_dict.get('ProfileInstallDate') 
+    if (installed_dict.get('ProfileInstallDate')
             != receipt.get('ProfileInstallDate')):
         munkicommon.display_debug2(
             'Receipt ProfileInstallDate for profile identifier %s does not '
