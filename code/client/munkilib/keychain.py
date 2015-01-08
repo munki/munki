@@ -90,82 +90,83 @@ def pem_cert_sha1_digest(cert_path):
         return None
 
 
-def get_munki_server_cert_data():
+def get_munki_server_cert_info():
     '''Attempt to get information we need from Munki's preferences or
     defaults. Returns a dictionary.'''
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    cert_data = {}
+    cert_info = {}
 
     # get server CA cert if it exists so we can verify the Munki server
-    cert_data['ca_cert_path'] = None
-    cert_data['ca_dir_path'] = None
+    cert_info['ca_cert_path'] = None
+    cert_info['ca_dir_path'] = None
     if munkicommon.pref('SoftwareRepoCAPath'):
         CA_path = munkicommon.pref('SoftwareRepoCAPath')
         if os.path.isfile(CA_path):
-            cert_data['ca_cert_path'] = CA_path
+            cert_info['ca_cert_path'] = CA_path
         elif os.path.isdir(CA_path):
-            cert_data['ca_dir_path'] = CA_path
+            cert_info['ca_dir_path'] = CA_path
     if munkicommon.pref('SoftwareRepoCACertificate'):
-        cert_data['ca_cert_path'] = munkicommon.pref(
+        cert_info['ca_cert_path'] = munkicommon.pref(
             'SoftwareRepoCACertificate')
-    if cert_data['ca_cert_path'] == None:
+    if cert_info['ca_cert_path'] == None:
         ca_cert_path = os.path.join(ManagedInstallDir, 'certs', 'ca.pem')
         if os.path.exists(ca_cert_path):
-            cert_data['ca_cert_path'] = ca_cert_path
-    return cert_data
+            cert_info['ca_cert_path'] = ca_cert_path
+    return cert_info
 
 
-def get_munki_client_cert_data():
+def get_munki_client_cert_info():
     '''Attempt to get information we need from Munki's preferences or
     defaults. Returns a dictionary.'''
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-    cert_data = {}
+    cert_info = {}
+    cert_info['client_cert_path'] = None
+    cert_info['client_key_path'] = None
+    cert_info['site_urls'] = []
 
-    cert_data['client_cert_path'] = None
-    cert_data['client_key_path'] = None
     # get client cert if it exists
     if munkicommon.pref('UseClientCertificate'):
-        cert_data['client_cert_path'] = (
+        cert_info['client_cert_path'] = (
             munkicommon.pref('ClientCertificatePath') or None)
-        cert_data['client_key_path'] = munkicommon.pref('ClientKeyPath') or None
-        if not cert_data['client_cert_path']:
+        cert_info['client_key_path'] = munkicommon.pref('ClientKeyPath') or None
+        if not cert_info['client_cert_path']:
             for name in ['cert.pem', 'client.pem', 'munki.pem']:
                 client_cert_path = os.path.join(
                     ManagedInstallDir, 'certs', name)
                 if os.path.exists(client_cert_path):
-                    cert_data['client_cert_path'] = client_cert_path
+                    cert_info['client_cert_path'] = client_cert_path
                     break
-    site_urls = []
-    for key in ['SoftwareRepoURL', 'PackageURL', 'CatalogURL',
-                'ManifestURL', 'IconURL', 'ClientResourceURL']:
-        url = munkicommon.pref(key)
-        if url:
-            site_urls.append(url.rstrip('/') + '/')
-    cert_data['site_urls'] = site_urls
-    return cert_data
+        site_urls = []
+        for key in ['SoftwareRepoURL', 'PackageURL', 'CatalogURL',
+                    'ManifestURL', 'IconURL', 'ClientResourceURL']:
+            url = munkicommon.pref(key)
+            if url:
+                site_urls.append(url.rstrip('/') + '/')
+        cert_info['site_urls'] = site_urls
+    return cert_info
 
 
-def add_ca_certs_to_system_keychain(certdata=None):
+def add_ca_certs_to_system_keychain(cert_info=None):
     '''Adds any CA certs as trusted root certs to System.keychain'''
 
-    if not certdata:
-        certdata = get_munki_server_cert_data()
+    if not cert_info:
+        cert_info = get_munki_server_cert_info()
 
-    ca_cert_path = certdata['ca_cert_path']
-    ca_dir_path = certdata['ca_dir_path']
-    SYSTEM_KEYCHAIN = "/Library/Keychains/System.keychain"
-    if not os.path.exists(SYSTEM_KEYCHAIN):
-        munkicommon.display_warning('%s not found.', SYSTEM_KEYCHAIN)
-        return
-
+    ca_cert_path = cert_info['ca_cert_path']
+    ca_dir_path = cert_info['ca_dir_path']
     if not ca_cert_path and not ca_dir_path:
         # no CA certs, so nothing to do
         munkicommon.display_debug2(
             'No CA cert info provided, so nothing to add to System keychain.')
         return
     else:
-        munkicommon.display_debug2('CA cert path:     %s', ca_cert_path)
-        munkicommon.display_debug2('CA dir path:      %s', ca_dir_path)
+        munkicommon.display_debug2('CA cert path: %s', ca_cert_path)
+        munkicommon.display_debug2('CA dir path:  %s', ca_dir_path)
+
+    SYSTEM_KEYCHAIN = "/Library/Keychains/System.keychain"
+    if not os.path.exists(SYSTEM_KEYCHAIN):
+        munkicommon.display_warning('%s not found.', SYSTEM_KEYCHAIN)
+        return
 
     # Add CA certs. security add-trusted-cert does the right thing even if
     # the cert is already added, so we just do it; checking to see if the
@@ -192,16 +193,16 @@ def add_ca_certs_to_system_keychain(certdata=None):
     munkicommon.display_detail('System.keychain updated.')
 
 
-def make_client_keychain(certdata=None):
+def make_client_keychain(cert_info=None):
     '''Builds a client cert keychain from existing client certs'''
 
-    if not certdata:
+    if not cert_info:
         # just grab data from Munki's preferences/defaults
-        certdata = get_munki_client_cert_data()
+        cert_info = get_munki_client_cert_info()
 
-    client_cert_path = certdata['client_cert_path']
-    client_key_path = certdata['client_key_path']
-    site_urls = certdata['site_urls']
+    client_cert_path = cert_info['client_cert_path']
+    client_key_path = cert_info['client_key_path']
+    site_urls = cert_info['site_urls']
     if not client_cert_path:
         # no client, so nothing to do
         munkicommon.display_debug1(
@@ -318,6 +319,8 @@ def make_client_keychain(certdata=None):
         # Create the identity preferences
         for url in site_urls:
             try:
+                munkicommon.display_debug2(
+                    'Adding identity preference for %s...' % url)
                 output = security(
                     'set-identity-preference',
                     '-s', url, '-Z', id_hash, abs_keychain_path)
@@ -434,12 +437,25 @@ def unlock_and_set_nonlocking(keychain_path):
             keychain_path, err)
 
 
+def client_certs_exist():
+    '''Returns True if there a client cert exists
+    that we need to import into a keychain'''
+    cert_info = get_munki_client_cert_info()
+    client_cert_path = cert_info['client_cert_path']
+    # we must have a client cert; we don't at this stage need
+    # to check for a key
+    if client_cert_path and os.path.exists(client_cert_path):
+        return True
+    else:
+        return False
+
+
 def client_certs_newer_than_keychain():
     '''Returns True if we have client certs that are newer than our
     client keychain, False otherwise'''
-    certdata = get_munki_client_cert_data()
-    client_cert_path = certdata['client_cert_path']
-    client_key_path = certdata['client_key_path']
+    cert_info = get_munki_client_cert_info()
+    client_cert_path = cert_info['client_cert_path']
+    client_key_path = cert_info['client_key_path']
     keychain_path = get_keychain_path()
     if not client_cert_path or not os.path.exists(client_cert_path):
         return False
@@ -525,9 +541,14 @@ class MunkiKeychain(object):
         Creates a new client keychain if needed.'''
         add_ca_certs_to_system_keychain()
         self.keychain_path = get_keychain_path()
-        if client_certs_newer_than_keychain():
-            # updated client certs; we should build a new keychain
-            os.unlink(self.keychain_path)
+        if client_certs_exist() and os.path.exists(self.keychain_path):
+            # we have client certs; we should build a keychain using them
+            try:
+                os.unlink(self.keychain_path)
+            except (OSError, IOError), err:
+                munkicommon.display_error(
+                    'Could not remove pre-existing %s: %s'
+                    % (self.keychain_path, err))
         if os.path.exists(self.keychain_path):
             # ensure existing keychain is available for use
             self.added_keychain = add_to_keychain_list(self.keychain_path)
