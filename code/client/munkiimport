@@ -645,6 +645,9 @@ def cleanupAndExit(exitcode):
                 result = unmountRepoCLI()
         else:
             result = unmountRepoCLI()
+    # clean up tmpdir
+    munkicommon.cleanUpTmpDir()
+
     exit(exitcode or result)
 
 

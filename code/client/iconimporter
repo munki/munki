@@ -211,5 +211,8 @@ def main():
     generate_pngs_from_munki_items(repo_path, force=options.force,
         itemlist=options.items)
 
+    # clean up
+    munkicommon.cleanUpTmpDir()
+
 if __name__ == '__main__':
     main()

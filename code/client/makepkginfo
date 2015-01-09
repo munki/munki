@@ -1072,11 +1072,14 @@ def main():
             catinfo['display_name'] = options.displayname
         catinfo['installer_type'] = 'apple_update_metadata'
 
-# add user/environment metadata
+    # add user/environment metadata
     catinfo['_metadata'] = make_pkginfo_metadata()
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
+
+    # clean up
+    munkicommon.cleanUpTmpDir()
 
 
 if __name__ == '__main__':
