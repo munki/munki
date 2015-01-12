@@ -2083,6 +2083,10 @@ def processManifestForKey(manifest, manifest_key, installinfo,
                 munkicommon.display_warning(
                     'Missing predicate for conditional_item %s', item)
                 continue
+            except BaseException:
+                munkicommon.display_warning(
+                    'Conditional item is malformed: %s', item)
+                continue
             INFO_OBJECT['catalogs'] = cataloglist
             if predicateEvaluatesAsTrue(predicate):
                 conditionalmanifest = item
