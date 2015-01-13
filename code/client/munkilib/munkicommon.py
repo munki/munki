@@ -1840,6 +1840,12 @@ def nameAndVersion(aString):
         return (aString, '')
 
 
+def hasValidConfigProfileExt(path):
+    """Verifies a path ends in '.mobileconfig'"""
+    ext = os.path.splitext(path)[1]
+    return ext.lower() == '.mobileconfig'
+
+
 def hasValidPackageExt(path):
     """Verifies a path ends in '.pkg' or '.mpkg'"""
     ext = os.path.splitext(path)[1]
@@ -1854,7 +1860,8 @@ def hasValidDiskImageExt(path):
 
 def hasValidInstallerItemExt(path):
     """Verifies we have an installer item"""
-    return hasValidPackageExt(path) or hasValidDiskImageExt(path)
+    return (hasValidPackageExt(path) or hasValidDiskImageExt(path)
+            or hasValidConfigProfileExt(path))
 
 
 def getChoiceChangesXML(pkgitem):

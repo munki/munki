@@ -42,6 +42,7 @@ from optparse import OptionValueError
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
+from munkilib import profiles
 
 from Foundation import NSDate, NSUserName
 
@@ -110,6 +111,30 @@ def getCatalogInfoFromPath(pkgpath, options):
         # maybe an Adobe installer/updater/patcher?
         cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath,
                                                     options.pkgname or '')
+    return cataloginfo
+
+
+def getCatalogInfoForProfile(profile_path):
+    '''Populates some metadata for profile pkginfo'''
+    cataloginfo = {}
+    profile = profiles.read_profile(profile_path)
+    if profile.get('PayloadType') == 'Configuration':
+        try:
+            cataloginfo['PayloadIdentifier'] = profile['PayloadIdentifier']
+        except (KeyError, AttributeError):
+            # this thing is broken! return the empty info
+            return cataloginfo
+        cataloginfo['name'] = os.path.basename(profile_path)
+        cataloginfo['display_name'] = profile.get(
+            'PayloadDisplayName', cataloginfo['name'])
+        cataloginfo['description'] = profile.get('PayloadDescription', '')
+        cataloginfo['version'] = '1.0'
+        cataloginfo['installer_type'] = 'profile'
+        cataloginfo['uninstallable'] = True
+        cataloginfo['uninstall_method'] = 'remove_profile'
+        cataloginfo['unattended_install'] = True
+        cataloginfo['unattended_uninstall'] = True
+        cataloginfo['minimum_os_version'] = '10.7'
     return cataloginfo
 
 
@@ -833,6 +858,9 @@ def main():
                             itemsize += int(os.lstat(filename).st_size)
                     # convert to kbytes
                     itemsize = int(itemsize/1024)
+
+            elif munkicommon.hasValidConfigProfileExt(item):
+                catinfo = getCatalogInfoForProfile(item)
 
             else:
                 print >> sys.stderr, "%s is not a valid installer item!" % item

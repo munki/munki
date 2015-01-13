@@ -80,7 +80,7 @@ def makeDMG(pkgpath):
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     while True:
-        output =  proc.stdout.readline()
+        output = proc.stdout.readline()
         if not output and (proc.poll() != None):
             break
         print output.rstrip('\n').encode('UTF-8')
@@ -431,6 +431,7 @@ def makeCatalogDB():
     app_table = {}
     installer_item_table = {}
     hash_table = {}
+    profile_table = {}
 
     itemindex = -1
     for item in catalogitems:
@@ -451,6 +452,10 @@ def makeCatalogDB():
         if 'installer_item_location' in item:
             installer_item_name = os.path.basename(
                 item['installer_item_location'])
+            (name, ext) = os.path.splitext(installer_item_name)
+            if '-' in name:
+                (name, vers) = munkicommon.nameAndVersion(name)
+            installer_item_name = name + ext
             if not installer_item_name in installer_item_table:
                 installer_item_table[installer_item_name] = {}
             if not vers in installer_item_table[installer_item_name]:
@@ -486,11 +491,20 @@ def makeCatalogDB():
                     'Bad install data for %s-%s: %s'
                     % (name, vers, install))
 
+        # add to table of PayloadIdentifiers
+        if 'PayloadIdentifier' in item:
+            if not item['PayloadIdentifier'] in profile_table:
+                profile_table[item['PayloadIdentifier']] = {}
+            if not vers in profile_table[item['PayloadIdentifier']]:
+                profile_table[item['PayloadIdentifier']][vers] = []
+            profile_table[item['PayloadIdentifier']][vers].append(itemindex)
+
     pkgdb = {}
     pkgdb['hashes'] = hash_table
     pkgdb['receipts'] = pkgid_table
     pkgdb['applications'] = app_table
     pkgdb['installer_items'] = installer_item_table
+    pkgdb['profiles'] = profile_table
     pkgdb['items'] = catalogitems
 
     return pkgdb
@@ -548,6 +562,15 @@ def findMatchingPkginfo(pkginfo):
                 versionlist.sort(compare_version_keys)
                 indexes = catdb['applications'][app][versionlist[0]]
                 return catdb['items'][indexes[0]]
+
+    if 'PayloadIdentifier' in pkginfo:
+        identifier = pkginfo['PayloadIdentifier']
+        possiblematches = catdb['profiles'].get(identifier)
+        if possiblematches:
+            versionlist = possiblematches.keys()
+            versionlist.sort(compare_version_keys)
+            indexes = catdb['profiles'][identifier][versionlist[0]]
+            return catdb['items'][indexes[0]]
 
     # no matches by receipts or installed applications,
     # let's try to match based on installer_item_name
@@ -881,7 +904,6 @@ def main():
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
         cleanupAndExit(-1)
-
     if not options.nointeractive:
         # try to find existing pkginfo items that match this one
         matchingpkginfo = findMatchingPkginfo(pkginfo)

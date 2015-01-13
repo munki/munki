@@ -31,6 +31,7 @@ import adobeutils
 import launchd
 import munkicommon
 import munkistatus
+import profiles
 import updatecheck
 import FoundationPlist
 from removepackages import removepackages
@@ -713,6 +714,8 @@ def installWithInfo(
                 munkicommon.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = copyAppFromDMG(itempath)
+            elif installer_type == 'profile':
+                retcode = profiles.install_profile(itempath)
             elif installer_type == "nopkg": # Packageless install
                 if (item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
@@ -1020,6 +1023,17 @@ def processRemovals(removallist, only_unattended=False):
                         "Application removal info missing from %s",
                         display_name)
 
+            elif uninstallmethod == 'remove_profile':
+                identifier = item.get('PayloadIdentifier')
+                if identifier:
+                    retcode = 0
+                    if not profiles.remove_profile(identifier):
+                        retcode = -1
+                        munkicommon.display_error(
+                            "Profile removal error for %s", identifier)
+                else:
+                    munkicommon.display_error(
+                        "Profile removal info missing from %s", display_name)
             elif uninstallmethod == 'uninstall_script':
                 retcode = munkicommon.runEmbeddedScript(
                     'uninstall_script', item)
