@@ -3064,7 +3064,7 @@ def check(client_id='', localmanifestpath=None):
         item_list.extend(installinfo['managed_installs'])
         item_list.extend(installinfo['removals'])
         download_icons(item_list)
-        
+
         # get any custom client resources
         download_client_resources()
 
