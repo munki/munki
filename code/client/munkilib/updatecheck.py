@@ -28,6 +28,7 @@ import subprocess
 import socket
 import urllib2
 import urlparse
+import xattr
 from urllib import quote_plus
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
@@ -2746,7 +2747,12 @@ def download_icons(item_list):
         icon_url = icon_base_url + urllib2.quote(icon_name)
         icon_path = os.path.join(icon_dir, icon_name)
         if os.path.isfile(icon_path):
-            local_icon_hash = munkicommon.getsha256hash(icon_path)
+            local_xattrs = xattr.xattr(icon_path)
+            if 'icon_hash' in local_xattrs:
+                local_icon_hash = local_xattrs['icon_hash']
+            else:
+                local_icon_hash = munkicommon.getsha256hash(icon_path)
+                local_xattrs['icon_hash'] = local_icon_hash
         else:
             local_icon_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
