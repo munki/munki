@@ -1220,6 +1220,11 @@ def pref(pref_name):
     if isinstance(pref_value, NSDate):
         # convert NSDate/CFDates to strings
         pref_value = str(pref_value)
+    if 'URL' in pref_name and not pref_value == None:
+        if not 'https' in pref_value:
+            display_warning(
+                "%s is not secure. See the munki wiki for details on"
+                "securing your repository." % pref_value)
     return pref_value
 
 #####################################################
