@@ -3062,12 +3062,9 @@ def check(client_id='', localmanifestpath=None):
         # and active installs/removals
         item_list = list(installinfo.get('optional_installs', []))
         item_list.extend(installinfo['managed_installs'])
-        download_icons(item_list)
-        # We don't need to download iconds for items being removed,
-        # they should alredy be present and if they aren't we're
-        # making beds in a burning building.
         item_list.extend(installinfo['removals'])
-
+        download_icons(item_list)
+        
         # get any custom client resources
         download_client_resources()
 
