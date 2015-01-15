@@ -2749,7 +2749,7 @@ def download_icons(item_list):
             xattr_hash = fetch.getxattr(icon_path, XATTR_SHA)
             if not xattr_hash:
               xattr_hash = munkicommon.getsha256hash(icon_path)
-              fetch.writeCachedChecksum(icon_path, xattr_hash)
+              fetch.writeCachedChecksum(icon_path, XATTR_SHA)
         else:
             xattr_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
@@ -2772,7 +2772,7 @@ def download_icons(item_list):
                     icon_name, err)
             else:
                 if os.path.isfile(icon_path):
-                    fetch.writeCachedChecksum(icon_path, xattr_hash)
+                    fetch.writeCachedChecksum(icon_path, XATTR_SHA)
     # remove no-longer needed icons from the local directory
     for (dirpath, dummy_dirnames, filenames) in os.walk(
             icon_dir, topdown=False):
