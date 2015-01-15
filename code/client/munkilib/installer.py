@@ -401,7 +401,18 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             return -1
 
         # check destination path
-        destpath = item.get("destination_path")
+        destpath = item.get('destination_path')
+        if not destpath:
+            destpath = item.get('destination_item')
+            if destpath:
+                # split it into path and name
+                dest_itemname = os.path.basename(destpath)
+                destpath = os.path.dirname(destpath)
+
+        if not destpath:
+            munkicommon.display_error("Missing destination path for item!")
+            return -1
+
         if not os.path.exists(destpath):
             munkicommon.display_detail(
                 "Destination path %s does not exist, will determine "
