@@ -28,7 +28,6 @@ import subprocess
 import socket
 import urllib2
 import urlparse
-import xattr
 from urllib import quote_plus
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
@@ -2747,14 +2746,12 @@ def download_icons(item_list):
         icon_url = icon_base_url + urllib2.quote(icon_name)
         icon_path = os.path.join(icon_dir, icon_name)
         if os.path.isfile(icon_path):
-            local_xattrs = xattr.xattr(icon_path)
-            if 'icon_hash' in local_xattrs:
-                local_icon_hash = local_xattrs['icon_hash']
-            else:
-                local_icon_hash = munkicommon.getsha256hash(icon_path)
-                local_xattrs['icon_hash'] = local_icon_hash
+            xattr_hash = fetch.getxattr(icon_path, XATTR_SHA)
+            if not xattr_hash:
+              xattr_hash = munkicommon.getsha256hash(icon_path)
+              fetch.writeCachedChecksum(icon_path, xattr_hash)
         else:
-            local_icon_hash = 'nonexistent'
+            xattr_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
         if not os.path.exists(icon_subdir):
             try:
@@ -2763,7 +2760,7 @@ def download_icons(item_list):
                 munkicommon.display_error(
                     'Could not create %s' % icon_subdir)
                 continue
-        if pkginfo_icon_hash != local_icon_hash:
+        if pkginfo_icon_hash != xattr_hash:
             item_name = item.get('display_name') or item['name']
             message = 'Getting icon %s for %s...' % (icon_name, item_name)
             try:
@@ -2773,6 +2770,9 @@ def download_icons(item_list):
                 munkicommon.display_debug1(
                     'Could not retrieve icon %s from the server: %s',
                     icon_name, err)
+            else:
+                if os.path.isfile(icon_path):
+                    fetch.writeCachedChecksum(icon_path, xattr_hash)
     # remove no-longer needed icons from the local directory
     for (dirpath, dummy_dirnames, filenames) in os.walk(
             icon_dir, topdown=False):
