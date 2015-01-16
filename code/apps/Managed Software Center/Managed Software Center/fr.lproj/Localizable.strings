@@ -215,7 +215,7 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Un ou plusieurs articles doivent être installés avant le %s";
+"One or more items must be installed by %s" = "Un article doit être installé avant le %s";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Une ou plusieurs mises à jour obligatoires sont en retard. Une fermeture de session va être forcée très bientôt.";
@@ -344,7 +344,7 @@
 "This item is required by:" = "Cet article est requis avant:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Cet article doit être installé avant %s";
+"This item must be installed by %s" = "Cet article doit être installé avant le %s";
 
 /* No Items secondary text */
 "Try again later." = "Essayez plus tard.";

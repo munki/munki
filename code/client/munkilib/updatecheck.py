@@ -32,11 +32,12 @@ from urllib import quote_plus
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 # our libs
+import appleupdates
 import fetch
 import keychain
 import munkicommon
 import munkistatus
-import appleupdates
+import profiles
 import FoundationPlist
 
 # Apple's libs
@@ -1226,6 +1227,14 @@ def installedState(item_pl):
             # return 1 so we're marked as not needing to be installed
             return 1
 
+    if item_pl.get('installer_type') == 'profile':
+        identifier = item_pl.get('PayloadIdentifier')
+        hash_value = item_pl.get('installer_item_hash')
+        if profiles.profile_needs_to_be_installed(identifier, hash_value):
+            return 0
+        else:
+            return 1
+
      # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
@@ -1289,6 +1298,13 @@ def someVersionInstalled(item_pl):
         # non-zero could be an error or successfully indicating
         # that an install is not needed. We hope it's the latter.
         return True
+
+    if item_pl.get('installer_type') == 'profile':
+        identifier = item_pl.get('PayloadIdentifier')
+        if profiles.profile_is_installed(identifier):
+            return True
+        else:
+            return False
 
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs'):
@@ -1358,6 +1374,13 @@ def evidenceThisIsInstalled(item_pl):
         # non-zero could be an error or successfully indicating
         # that an install is not needed
         return True
+
+    if item_pl.get('installer_type') == 'profile':
+        identifier = item_pl.get('PayloadIdentifier')
+        if profiles.profile_is_installed(identifier):
+            return True
+        else:
+            return False
 
     foundallinstallitems = False
     if ('installs' in item_pl and
@@ -1875,6 +1898,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'category',
                              'developer',
                              'icon_name',
+                             'PayloadIdentifier',
                              'icon_hash']
 
             for key in optional_keys:
@@ -2084,6 +2108,10 @@ def processManifestForKey(manifest, manifest_key, installinfo,
                 munkicommon.display_warning(
                     'Missing predicate for conditional_item %s', item)
                 continue
+            except BaseException:
+                munkicommon.display_warning(
+                    'Conditional item is malformed: %s', item)
+                continue
             INFO_OBJECT['catalogs'] = cataloglist
             if predicateEvaluatesAsTrue(predicate):
                 conditionalmanifest = item
@@ -2212,7 +2240,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             uninstall_item = item
         elif uninstallmethod in ['remove_copied_items',
                                  'remove_app',
-                                 'uninstall_script']:
+                                 'uninstall_script',
+                                 'remove_profile']:
             uninstall_item = item
         else:
             # uninstall_method is a local script.
@@ -2293,7 +2322,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     # or logout...
     if (uninstall_item.get('unattended_uninstall') or
             uninstall_item.get('forced_uninstall')):
-        if uninstall_item.get('RestartAction'):
+        if uninstall_item.get('RestartAction', 'None') != 'None':
             munkicommon.display_warning(
                 'Ignoring unattended_uninstall key for %s '
                 'because RestartAction is %s.',
@@ -2313,7 +2342,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'apple_item',
                     'category',
                     'developer',
-                    'icon_name']
+                    'icon_name',
+                    'PayloadIdentifier']
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]

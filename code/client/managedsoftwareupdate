@@ -417,6 +417,20 @@ def notifyUserOfUpdates(force=False):
     return user_was_notified
 
 
+def warn_if_server_is_default(server):
+    '''Munki defaults to using http://munki/repo as the base URL.
+    This is useful as a bootstrapping default, but is insecure.
+    Warn the admin if Munki is using an insecure default.'''
+    # server can be either ManifestURL or SoftwareRepoURL
+    if server.rstrip('/') in ['http://munki/repo',
+                              'http://munki/repo/manifests']:
+        munkicommon.display_warning(
+            'Client is configured to use the default repo, which is insecure. '
+            'Client could be trivially compromised when off your '
+            'organization\'s network. '
+            'Consider using a non-default URL, and preferably an https:// URL.')
+
+
 def main():
     """Main"""
     # install handler for SIGTERM
@@ -516,14 +530,14 @@ def main():
                     options.installonly = False
                     options.auto = True
                     # HACK: sometimes this runs before the network is up.
-                    # we'll attempt to wait up to 10 seconds for the
+                    # we'll attempt to wait up to 30 seconds for the
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for dummy_i in range(5):
+                    for dummy_i in range(30):
                         if networkUp():
                             break
-                        time.sleep(2)
+                        time.sleep(1)
                 else:
                     # delete triggerfile if _not_ checkandinstallatstartup
                     os.unlink(filename)
@@ -664,6 +678,7 @@ def main():
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
+        warn_if_server_is_default(server)
         result = updatecheck.checkServer(server)
         if result != (0, 'OK'):
             munkicommon.display_error(

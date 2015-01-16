@@ -31,6 +31,7 @@ import adobeutils
 import launchd
 import munkicommon
 import munkistatus
+import profiles
 import updatecheck
 import FoundationPlist
 from removepackages import removepackages
@@ -400,7 +401,18 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             return -1
 
         # check destination path
-        destpath = item.get("destination_path")
+        destpath = item.get('destination_path')
+        if not destpath:
+            destpath = item.get('destination_item')
+            if destpath:
+                # split it into path and name
+                dest_itemname = os.path.basename(destpath)
+                destpath = os.path.dirname(destpath)
+
+        if not destpath:
+            munkicommon.display_error("Missing destination path for item!")
+            return -1
+
         if not os.path.exists(destpath):
             munkicommon.display_detail(
                 "Destination path %s does not exist, will determine "
@@ -713,6 +725,8 @@ def installWithInfo(
                 munkicommon.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = copyAppFromDMG(itempath)
+            elif installer_type == 'profile':
+                retcode = profiles.install_profile(itempath)
             elif installer_type == "nopkg": # Packageless install
                 if (item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
@@ -1020,6 +1034,17 @@ def processRemovals(removallist, only_unattended=False):
                         "Application removal info missing from %s",
                         display_name)
 
+            elif uninstallmethod == 'remove_profile':
+                identifier = item.get('PayloadIdentifier')
+                if identifier:
+                    retcode = 0
+                    if not profiles.remove_profile(identifier):
+                        retcode = -1
+                        munkicommon.display_error(
+                            "Profile removal error for %s", identifier)
+                else:
+                    munkicommon.display_error(
+                        "Profile removal info missing from %s", display_name)
             elif uninstallmethod == 'uninstall_script':
                 retcode = munkicommon.runEmbeddedScript(
                     'uninstall_script', item)

@@ -111,7 +111,7 @@ def html_dir():
         cache_dir = u'/private/tmp'
     our_cache_dir = os.path.join(cache_dir, bundle_id)
     if not os.path.exists(our_cache_dir):
-         os.mkdirs(our_cache_dir)
+         os.makedirs(our_cache_dir)
     _html_dir = os.path.join(our_cache_dir, 'html')
     if os.path.exists(_html_dir):
         # empty it
