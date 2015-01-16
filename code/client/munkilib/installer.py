@@ -726,7 +726,10 @@ def installWithInfo(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = copyAppFromDMG(itempath)
             elif installer_type == 'profile':
-                retcode = profiles.install_profile(itempath)
+                # profiles.install_profile returns True/False
+                retcode = 0
+                if not profiles.install_profile(itempath):
+                    retcode = -1
             elif installer_type == "nopkg": # Packageless install
                 if (item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
