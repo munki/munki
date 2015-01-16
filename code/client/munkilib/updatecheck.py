@@ -1603,7 +1603,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['description'] = item_pl.get('description', '')
     iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
     iteminfo['display_name'] = item_pl.get('display_name', '')
-    for key in ['category', 'developer', 'icon_name',
+    for key in ['category', 'developer', 'icon_name', 'icon_hash',
                 'requires', 'RestartAction']:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
@@ -1898,7 +1898,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'category',
                              'developer',
                              'icon_name',
-                             'PayloadIdentifier']
+                             'PayloadIdentifier',
+                             'icon_hash']
 
             for key in optional_keys:
                 if key in item_pl:
@@ -2768,11 +2769,19 @@ def download_icons(item_list):
     munkicommon.display_debug2('Icon base URL is: %s', icon_base_url)
     for item in item_list:
         icon_name = item.get('icon_name') or item['name']
+        pkginfo_icon_hash = item.get('icon_hash')
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
         icon_list.append(icon_name)
         icon_url = icon_base_url + urllib2.quote(icon_name)
         icon_path = os.path.join(icon_dir, icon_name)
+        if os.path.isfile(icon_path):
+            xattr_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
+            if not xattr_hash:
+              xattr_hash = munkicommon.getsha256hash(icon_path)
+              fetch.writeCachedChecksum(icon_path, xattr_hash)
+        else:
+            xattr_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
         if not os.path.exists(icon_subdir):
             try:
@@ -2781,16 +2790,19 @@ def download_icons(item_list):
                 munkicommon.display_error(
                     'Could not create %s' % icon_subdir)
                 continue
-        munkicommon.display_detail('Getting icon %s...', icon_name)
-        item_name = item.get('display_name') or item['name']
-        message = 'Getting icon for %s...' % item_name
-        try:
-            dummy_value = getResourceIfChangedAtomically(
-                icon_url, icon_path, message=message)
-        except fetch.MunkiDownloadError, err:
-            munkicommon.display_debug1(
-                'Could not retrieve icon %s from the server: %s',
-                icon_name, err)
+        if pkginfo_icon_hash != xattr_hash:
+            item_name = item.get('display_name') or item['name']
+            message = 'Getting icon %s for %s...' % (icon_name, item_name)
+            try:
+                dummy_value = getResourceIfChangedAtomically(
+                    icon_url, icon_path, message=message)
+            except fetch.MunkiDownloadError, err:
+                munkicommon.display_debug1(
+                    'Could not retrieve icon %s from the server: %s',
+                    icon_name, err)
+            else:
+                if os.path.isfile(icon_path):
+                    fetch.writeCachedChecksum(icon_path)
     # remove no-longer needed icons from the local directory
     for (dirpath, dummy_dirnames, filenames) in os.walk(
             icon_dir, topdown=False):
