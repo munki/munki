@@ -217,15 +217,27 @@ def copyItemToRepo(itempath, vers, subdirectory=''):
         return os.path.join(subdirectory, item_name)
 
 
-def iconExistsInRepo(pkginfo):
-    """Returns True if there is an icon for this item in the repo"""
+def getIconPath(pkginfo):
+    """Return path for icon"""
     icon_name = pkginfo.get('icon_name') or pkginfo['name']
     if not os.path.splitext(icon_name)[1]:
         icon_name += u'.png'
-    icon_path = os.path.join(REPO_PATH, u'icons', icon_name)
+    return os.path.join(REPO_PATH, u'icons', icon_name)
+
+
+def iconExistsInRepo(pkginfo):
+    """Returns True if there is an icon for this item in the repo"""
+    icon_path = getIconPath(pkginfo)
     if os.path.exists(icon_path):
         return True
     return False
+
+
+def addIconHashToPkginfo(pkginfo):
+    """Adds the icon hash tp pkginfo if the icon exists in repo"""
+    icon_path = getIconPath(pkginfo)
+    if os.path.isfile(icon_path):
+        pkginfo['icon_hash'] = munkicommon.getsha256hash(icon_path)
 
 
 def generate_png_from_copy_from_dmg_item(dmg_path, pkginfo):
@@ -1064,6 +1076,9 @@ def main():
         except RepoCopyError, errmsg:
             print >> sys.stderr, errmsg
 
+    # add icon to pkginfo if in repository
+    addIconHashToPkginfo(pkginfo)
+    
     # installer_item upload was successful, so upload pkginfo to repo
     try:
         pkginfo_path = copyPkginfoToRepo(pkginfo, options.subdirectory)
