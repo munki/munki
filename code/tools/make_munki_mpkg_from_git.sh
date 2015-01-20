@@ -16,10 +16,9 @@ usage() {
     cat <<EOF
 Usage: `basename $0` [-f] [-i id] [-o dir] [-c package] [-r revision]"
 
-    -f          Build a flat package (bundle is the default)
     -i id       Set the base package bundle ID
     -o dir      Set the output directory
-    -c package  Include a configuration package
+    -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -b branch   Git branch to clone (master is the default)
     -r revision Git revision to check out (HEAD is the default)
 
@@ -27,14 +26,9 @@ EOF
 }
 
 
-while getopts "fi:r:o:b:c:h" option
+while getopts "i:r:o:b:c:h" option
 do
     case $option in
-        "f")
-            echo "Flat metapackage creation is not yet implemented."
-            exit 1
-            PKGTYPE="flat"
-            ;;
         "i")
             PKGID="$OPTARG"
             ;;
@@ -74,15 +68,18 @@ if [ "$WHICH_GIT_RESULT" != "0" ]; then
     echo "    http://code.google.com/p/git-osx-installer/downloads/list"
     exit 1
 fi
-if [ ! -x "/Developer/usr/bin/packagemaker" ]; then
-    echo "PackageMaker is not installed!" 1>&2
+if [ ! -x "/usr/bin/pkgbuild" ]; then
+    echo "pkgbuild is not installed!"
+    exit 1
+fi
+if [ ! -x "/usr/bin/productbuild" ]; then
+    echo "productbuild is not installed!"
     exit 1
 fi
 if [ ! -x "/usr/bin/xcodebuild" ]; then
-    echo "Xcode is not installed!" 1>&2
+    echo "xcodebuild is not installed!"
     exit 1
 fi
-
 
 echo "Cloning munki repo branch $BRANCH from github..."
 git clone --branch "$BRANCH" --no-checkout -- https://github.com/munki/munki.git "$MUNKIDIR"
