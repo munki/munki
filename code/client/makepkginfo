@@ -135,6 +135,7 @@ def getCatalogInfoForProfile(profile_path):
         cataloginfo['unattended_install'] = True
         cataloginfo['unattended_uninstall'] = True
         cataloginfo['minimum_os_version'] = '10.7'
+        cataloginfo['minimum_munki_version'] = '2.2'
     return cataloginfo
 
 
