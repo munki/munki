@@ -42,6 +42,7 @@ class MSCMainWindowController(NSWindowController):
     _alertedUserToOutstandingUpdates = False
     
     _update_in_progress = False
+    _pending_update = 0
     managedsoftwareupdate_task = None
     _update_queue = set()
     
@@ -385,6 +386,12 @@ class MSCMainWindowController(NSWindowController):
         # switch to updates view, then display alert
         self.loadUpdatesPage_(self)
         self.alert_controller.forcedLogoutWarning(notification_obj)
+
+    def checkForUpdatesAfterDelay(self, suppress_apple_update_check=False):
+        '''Start an update check session if we've not triggered another'''
+        self._pending_update-=1;
+        if self._pending_update == 0:
+            self.checkForUpdates(suppress_apple_update_check);
 
     def checkForUpdates(self, suppress_apple_update_check=False):
         '''start an update check session'''
@@ -840,7 +847,8 @@ class MSCMainWindowController(NSWindowController):
         
         if MunkiItems.updateCheckNeeded():
             # check for updates after a short delay so UI changes visually complete first
-            self.performSelector_withObject_afterDelay_(self.checkForUpdates, True, 1.0)
+            self._pending_update+=1;
+            self.performSelector_withObject_afterDelay_(self.checkForUpdatesAfterDelay, True, 1.5)
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
