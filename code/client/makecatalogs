@@ -99,7 +99,7 @@ def makecatalogs(repopath, options):
 
     # Make sure the icons directory exists
     iconspath = os.path.join(repopath, 'icons')
-    # make sure pkgsinfopath is Unicode so that os.walk later gives us
+    # make sure iconspath is Unicode so that os.walk later gives us
     # Unicode names back.
     if type(iconspath) is str:
         iconspath = unicode(iconspath, 'utf-8')
