@@ -107,39 +107,42 @@ def makecatalogs(repopath, options):
         iconspath = unicode(iconspath)
 
     if not os.path.exists(iconspath):
-        print_err_utf8("icons path %s doesn't exist!" % iconspath)
-        exit(-1)
+        print_err_utf8("icons path %s doesn't exist, skipping hashing!" % iconspath)
+        iconhashing=False
+        # exit(-1) don't exit so we don't break when no icons dir
+    else:
+        icons={}
+        iconhashing=True
 
-    icons={}
+        # Walk through the icon files
+        for dirpath, dirnames, filenames in os.walk(iconspath):
+            for dirname in dirnames:
+                # don't recurse into directories that start
+                # with a period.
+                if dirname.startswith('.'):
+                    dirnames.remove(dirname)
+            for filename in filenames:
+                if filename.startswith('.'):
+                    # skip files that start with a period as well
+                    continue
 
-    # Walk through the icon files
-    for dirpath, dirnames, filenames in os.walk(iconspath):
-        for dirname in dirnames:
-            # don't recurse into directories that start
-            # with a period.
-            if dirname.startswith('.'):
-                dirnames.remove(dirname)
-        for filename in filenames:
-            if filename.startswith('.'):
-                # skip files that start with a period as well
-                continue
+                filepath = os.path.join(dirpath, filename)
 
-            filepath = os.path.join(dirpath, filename)
+                iconpath = filepath.rsplit(iconspath+'/',1)[1]
 
-            iconpath = filepath.rsplit(iconspath+'/',1)[1]
-
-            # Try to read the icon file
-            try:
-                iconhash = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
-                icons.update({iconpath:iconhash})
-            except IOError, inst:
-                errors.append("IO error for %s: %s" % (filepath, inst))
-                exitCode = -1
-                continue
-            except Exception, inst:
-                errors.append("Unexpected error for %s: %s" % (filepath, inst))
-                exitCode = -1
-                continue
+                # Try to read the icon file
+                try:
+                    print_utf8("Hashing %s..." % (iconpath))
+                    iconhash = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
+                    icons.update({iconpath:iconhash})
+                except IOError, inst:
+                    errors.append("IO error for %s: %s" % (filepath, inst))
+                    exitCode = -1
+                    continue
+                except Exception, inst:
+                    errors.append("Unexpected error for %s: %s" % (filepath, inst))
+                    exitCode = -1
+                    continue
 
     # Make sure the pkgsinfo directory exists
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
@@ -196,25 +199,28 @@ def makecatalogs(repopath, options):
                 if key.startswith('_'):
                     del(pkginfo[key])
 
-            name = pkginfo.get('name')
 
-            if pkginfo.get('icon_name'):
-                try:
-                    iconhash = icons.get(icon_name)
-                except:
-                    del(pkginfo['icon_name'])
-            else:
-                try:
-                    iconhash = icons.get(name+'.png')
-                except:
-                    continue
+            if iconhashing:
 
-            # we are generating the icon hashes above so strip this key if it exists - we'll be replacing it.
-            if pkginfo.get('icon_hash'):
-                del(pkginfo['icon_hash'])
+                name = pkginfo.get('name')
 
-            if iconhash is not None:
-                pkginfo.update({'icon_hash':iconhash})
+                if pkginfo.get('icon_name'):
+                    try:
+                        iconhash = icons.get(icon_name)
+                    except:
+                        del(pkginfo['icon_name'])
+                else:
+                    try:
+                        iconhash = icons.get(name+'.png')
+                    except:
+                        continue
+
+                # we are generating the icon hashes above so strip this key if it exists - we'll be replacing it.
+                if pkginfo.get('icon_hash'):
+                    del(pkginfo['icon_hash'])
+
+                if iconhash is not None:
+                    pkginfo.update({'icon_hash':iconhash})
 
             #simple sanity checking
             do_pkg_check = True
