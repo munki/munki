@@ -207,17 +207,14 @@ def makecatalogs(repopath, options):
                 name = pkginfo.get('name')
 
                 if pkginfo.get('icon_name'):
-                    if icons.get(pkginfo.get('icon_name')):
-                        iconhash = icons.get(pkginfo.get('icon_name'))
-                    elif icons.get(pkginfo.get('icon_name')+'.png'):
-                        iconhash = icons.get(pkginfo.get('icon_name')+'.png')
-                    else:
+                    iconhash = (icons.get(pkginfo['icon_name'])
+                        or icons.get(pkginfo['icon_name'] + '.png'))
+                    if not iconhash:
                         errors.append("WARNING: icon_name specified"
-                        " in info file %s but it does not exist"
-                        % filepath[len(pkgsinfopath)+1:])
+                                      " in info file %s but it does not exist"
+                                      % filepath[len(pkgsinfopath) + 1:])
                 else:
-                    if icons.get(name+'.png'):
-                        iconhash = icons.get(name+'.png')
+                    iconhash = icons.get(name + '.png')
 
                 if iconhash is not None:
                     pkginfo['icon_hash'] = iconhash
