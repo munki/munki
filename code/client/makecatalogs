@@ -134,9 +134,8 @@ def makecatalogs(repopath, options):
                 # Try to read the icon file
                 try:
                     print_utf8("Hashing %s..." % (iconpath))
-                    iconhash = (hashlib.sha256(open(filepath, 'rb').
-                    read()).hexdigest())
-                    icons[iconpath] = iconhash
+                    icons[iconpath] = (hashlib.sha256(open(filepath, 'rb').
+                        read()).hexdigest())
                 except IOError, inst:
                     errors.append("IO error for %s: %s" % (filepath, inst))
                     exitCode = -1
