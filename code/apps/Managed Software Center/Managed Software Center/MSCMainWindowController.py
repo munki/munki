@@ -389,9 +389,9 @@ class MSCMainWindowController(NSWindowController):
 
     def checkForUpdatesAfterDelay(self, suppress_apple_update_check=False):
         '''Start an update check session if we've not triggered another'''
-        self._pending_update-=1;
+        self._pending_update-=1
         if self._pending_update == 0:
-            self.checkForUpdates(suppress_apple_update_check);
+            self.checkForUpdates(suppress_apple_update_check)
 
     def checkForUpdates(self, suppress_apple_update_check=False):
         '''start an update check session'''
@@ -708,6 +708,7 @@ class MSCMainWindowController(NSWindowController):
                          'myItemsActionButtonClicked:',
                          'changeSelectedCategory:',
                          'installButtonClicked',
+                         'incrementPendingUpdate',
                          'updateOptionalInstallButtonClicked:']:
             return NO # this selector is NOT _excluded_ from scripting, so it can be called.
         return YES # disallow everything else
@@ -771,6 +772,9 @@ class MSCMainWindowController(NSWindowController):
                 container_div_classes.append('updating')
                 container_div.setClassName_(' '.join(container_div_classes))
 
+    def incrementPendingUpdate(self):
+        self._pending_update+=1
+
     def updateOptionalInstallButtonClicked_(self, item_name):
         '''this method is called from JavaScript when a user clicks
         the cancel or add button in the updates list'''
@@ -806,6 +810,7 @@ class MSCMainWindowController(NSWindowController):
                 table = document.getElementById_('other-updates-table')
             if not table:
                 msclog.debug_log('Unexpected error: could not find other-updates-table')
+                self._pending_update-=1
                 return
             # this isn't the greatest way to add something to the DOM
             # but it works...
@@ -847,8 +852,9 @@ class MSCMainWindowController(NSWindowController):
         
         if MunkiItems.updateCheckNeeded():
             # check for updates after a short delay so UI changes visually complete first
-            self._pending_update+=1;
-            self.performSelector_withObject_afterDelay_(self.checkForUpdatesAfterDelay, True, 1.5)
+            self.performSelector_withObject_afterDelay_(self.checkForUpdatesAfterDelay, True, 3.5)
+        else:
+            self._pending_update-=1
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
