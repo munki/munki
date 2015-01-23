@@ -30,6 +30,7 @@ User calling this needs to be able to write to repo/catalogs.
 import sys
 import os
 import optparse
+import hashlib
 
 try:
     from munkilib import FoundationPlist as plistlib
@@ -95,6 +96,56 @@ def makecatalogs(repopath, options):
     User calling this needs to be able to write to the repo/catalogs
     directory.'''
 
+
+    # Make sure the icons directory exists
+    iconspath = os.path.join(repopath, 'icons')
+    # make sure iconspath is Unicode so that os.walk later gives us
+    # Unicode names back.
+    if type(iconspath) is str:
+        iconspath = unicode(iconspath, 'utf-8')
+    elif type(iconspath) is not unicode:
+        iconspath = unicode(iconspath)
+
+    if not os.path.exists(iconspath):
+        print_err_utf8("icons path %s doesn't exist, skipping hashing!"
+        % iconspath)
+        iconhashing=False
+        # exit(-1) don't exit so we don't break when no icons dir
+    else:
+        icons={}
+        iconhashing=True
+
+        # Walk through the icon files
+        for dirpath, dirnames, filenames in os.walk(iconspath):
+            for dirname in dirnames:
+                # don't recurse into directories that start
+                # with a period.
+                if dirname.startswith('.'):
+                    dirnames.remove(dirname)
+            for filename in filenames:
+                if filename.startswith('.'):
+                    # skip files that start with a period as well
+                    continue
+
+                filepath = os.path.join(dirpath, filename)
+
+                iconpath = filepath.rsplit(iconspath+'/', 1)[1]
+
+                # Try to read the icon file
+                try:
+                    print_utf8("Hashing %s..." % (iconpath))
+                    icons[iconpath] = (hashlib.sha256(open(filepath, 'rb').
+                        read()).hexdigest())
+                except IOError, inst:
+                    errors.append("IO error for %s: %s" % (filepath, inst))
+                    exitCode = -1
+                    continue
+                except Exception, inst:
+                    errors.append("Unexpected error for %s: %s"
+                    % (filepath, inst))
+                    exitCode = -1
+                    continue
+
     # Make sure the pkgsinfo directory exists
     pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
     # make sure pkgsinfopath is Unicode so that os.walk later gives us
@@ -149,6 +200,24 @@ def makecatalogs(repopath, options):
             for key in pkginfo.keys():
                 if key.startswith('_'):
                     del(pkginfo[key])
+
+            if iconhashing:
+
+                name = pkginfo.get('name')
+
+                if pkginfo.get('icon_name'):
+                    iconhash = (icons.get(pkginfo['icon_name'])
+                        or icons.get(pkginfo['icon_name'] + '.png'))
+                    if not iconhash:
+                        errors.append("WARNING: icon_name specified"
+                                      " in info file %s but it does not exist"
+                                      % filepath[len(pkgsinfopath) + 1:])
+                else:
+                    iconhash = icons.get(name + '.png')
+
+                if iconhash is not None:
+                    pkginfo['icon_hash'] = iconhash
+                    iconhash = None
 
             #simple sanity checking
             do_pkg_check = True
