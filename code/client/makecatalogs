@@ -42,7 +42,7 @@ except ImportError:
     except ImportError:
         # maybe we're not on an OS X machine...
         print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
-                             "using plistlib instead.")
+                              "using plistlib instead.")
         import plistlib
         LOCAL_PREFS_SUPPORT = False
 
@@ -96,6 +96,8 @@ def makecatalogs(repopath, options):
     User calling this needs to be able to write to the repo/catalogs
     directory.'''
 
+    # start with no errors!
+    errors = []
 
     # Make sure the icons directory exists
     iconspath = os.path.join(repopath, 'icons')
@@ -108,12 +110,12 @@ def makecatalogs(repopath, options):
 
     if not os.path.exists(iconspath):
         print_err_utf8("icons path %s doesn't exist, skipping hashing!"
-        % iconspath)
-        iconhashing=False
+                       % iconspath)
+        iconhashing = False
         # exit(-1) don't exit so we don't break when no icons dir
     else:
-        icons={}
-        iconhashing=True
+        icons = {}
+        iconhashing = True
 
         # Walk through the icon files
         for dirpath, dirnames, filenames in os.walk(iconspath):
@@ -134,16 +136,16 @@ def makecatalogs(repopath, options):
                 # Try to read the icon file
                 try:
                     print_utf8("Hashing %s..." % (iconpath))
-                    icons[iconpath] = (hashlib.sha256(open(filepath, 'rb').
-                        read()).hexdigest())
+                    icons[iconpath] = (
+                        hashlib.sha256(open(filepath, 'rb').read()).hexdigest())
                 except IOError, inst:
                     errors.append("IO error for %s: %s" % (filepath, inst))
-                    exitCode = -1
+                    exit_code = -1
                     continue
-                except Exception, inst:
+                except BaseException, inst:
                     errors.append("Unexpected error for %s: %s"
-                    % (filepath, inst))
-                    exitCode = -1
+                                  % (filepath, inst))
+                    exit_code = -1
                     continue
 
     # Make sure the pkgsinfo directory exists
@@ -160,9 +162,8 @@ def makecatalogs(repopath, options):
         exit(-1)
 
     # Set a default exit code
-    exitCode = 0
+    exit_code = 0
 
-    errors = []
     catalogs = {}
     catalogs['all'] = []
 
@@ -185,29 +186,29 @@ def makecatalogs(repopath, options):
                 pkginfo = plistlib.readPlist(filepath)
             except IOError, inst:
                 errors.append("IO error for %s: %s" % (filepath, inst))
-                exitCode = -1
+                exit_code = -1
                 continue
-            except Exception, inst:
+            except BaseException, inst:
                 errors.append("Unexpected error for %s: %s" % (filepath, inst))
-                exitCode = -1
+                exit_code = -1
                 continue
 
             # don't copy admin notes to catalogs.
             if pkginfo.get('notes'):
-                del(pkginfo['notes'])
+                del pkginfo['notes']
             # strip out any keys that start with "_"
             # (example: pkginfo _metadata)
             for key in pkginfo.keys():
                 if key.startswith('_'):
-                    del(pkginfo[key])
+                    del pkginfo[key]
 
             if iconhashing:
 
                 name = pkginfo.get('name')
 
                 if pkginfo.get('icon_name'):
-                    iconhash = (icons.get(pkginfo['icon_name'])
-                        or icons.get(pkginfo['icon_name'] + '.png'))
+                    iconhash = (icons.get(pkginfo['icon_name']) or
+                                icons.get(pkginfo['icon_name'] + '.png'))
                     if not iconhash:
                         errors.append("WARNING: icon_name specified"
                                       " in info file %s but it does not exist"
@@ -236,18 +237,19 @@ def makecatalogs(repopath, options):
                         % filepath[len(pkgsinfopath)+1:])
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
-                        exitCode = -1
+                        exit_code = -1
                         continue
 
                 # Try to form a path and fail if the
                 # installer_item_location is not a valid type
                 try:
-                    installeritempath = os.path.join(repopath, "pkgs",
-                                pkginfo['installer_item_location'])
+                    installeritempath = os.path.join(
+                        repopath, "pkgs", pkginfo['installer_item_location'])
                 except TypeError:
-                    errors.append("WARNING: invalid installer_item_location"
-                        " in info file %s" % filepath[len(pkgsinfopath)+1:])
-                    exitCode = -1
+                    errors.append("WARNING: invalid installer_item_location "
+                                  "in info file %s"
+                                  % filepath[len(pkgsinfopath)+1:])
+                    exit_code = -1
                     continue
 
                 # Check if the installer item actually exists
@@ -258,7 +260,7 @@ def makecatalogs(repopath, options):
                                    pkginfo['installer_item_location']))
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
-                        exitCode = -1
+                        exit_code = -1
                         continue
 
             catalogs['all'].append(pkginfo)
@@ -267,7 +269,7 @@ def makecatalogs(repopath, options):
                 if not catalogname:
                     errors.append("WARNING: Info file %s has an empty "
                                   "catalog name!" % infofilename)
-                    exitCode = -1
+                    exit_code = -1
                     continue
                 if not catalogname in catalogs:
                     catalogs[catalogname] = []
@@ -295,11 +297,12 @@ def makecatalogs(repopath, options):
     for key in catalogs.keys():
         catalogpath = os.path.join(repopath, "catalogs", key)
         if os.path.exists(catalogpath):
-            print_err_utf8("WARNING: catalog %s already exists at "
-                "%s. Perhaps this is a non-case sensitive filesystem and you "
+            print_err_utf8(
+                "WARNING: catalog %s already exists at %s. "
+                "Perhaps this is a non-case sensitive filesystem and you "
                 "have catalogs with names differing only in case?"
                 % (key, catalogpath))
-            exitCode = -1
+            exit_code = -1
         elif len(catalogs[key]) != 0:
             plistlib.writePlist(catalogs[key], catalogpath)
             print "Created catalog %s..." % (catalogpath)
@@ -308,12 +311,12 @@ def makecatalogs(repopath, options):
                 "WARNING: Did not create catalog %s "
                 "because it is empty "
                 % (key))
-            exitCode = -1
+            exit_code = -1
 
-    # Exit with "exitCode" if we got this far.
+    # Exit with "exit_code" if we got this far.
     # This will be -1 if there were any errors
     # that prevented the catalogs to be written.
-    exit(exitCode)
+    exit(exit_code)
 
 
 def pref(prefname):
@@ -322,7 +325,7 @@ def pref(prefname):
         return None
     try:
         _prefs = plistlib.readPlist(PREFSPATH)
-    except Exception:
+    except BaseException:
         return None
     if prefname in _prefs:
         return _prefs[prefname]
@@ -336,13 +339,13 @@ PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
 def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root]"
-    p = optparse.OptionParser(usage=usage)
-    p.add_option('--version', '-V', action='store_true',
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
-    p.add_option('--force', '-f', action='store_true', dest='force',
+    parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    p.set_defaults(force=False)
-    options, arguments = p.parse_args()
+    parser.set_defaults(force=False)
+    options, arguments = parser.parse_args()
 
     if options.version:
         print get_version()
