@@ -98,6 +98,7 @@ def makecatalogs(repopath, options):
 
     # start with no errors!
     errors = []
+    exit_code = 0
 
     # Make sure the icons directory exists
     iconspath = os.path.join(repopath, 'icons')
@@ -161,9 +162,7 @@ def makecatalogs(repopath, options):
         print_err_utf8("pkgsinfo path %s doesn't exist!" % pkgsinfopath)
         exit(-1)
 
-    # Set a default exit code
-    exit_code = 0
-
+    # start with empty catalogs dict
     catalogs = {}
     catalogs['all'] = []
 
