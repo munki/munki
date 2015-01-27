@@ -728,7 +728,8 @@ def installWithInfo(
             elif installer_type == 'profile':
                 # profiles.install_profile returns True/False
                 retcode = 0
-                if not profiles.install_profile(itempath):
+                identifier = item.get('PayloadIdentifier')
+                if not profiles.install_profile(itempath, identifier):
                     retcode = -1
             elif installer_type == "nopkg": # Packageless install
                 if (item.get("RestartAction") == "RequireRestart" or

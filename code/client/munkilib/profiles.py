@@ -156,9 +156,8 @@ def read_signed_profile(profile_path):
         return {}
 
 
-def record_profile_receipt(profile_path):
+def record_profile_receipt(profile_path, profile_identifier):
     '''Stores a receipt for this profile in our profile tracking plist'''
-    profile_identifier = read_profile(profile_path).get('PayloadIdentifier')
     profile_hash = munkicommon.getsha256hash(profile_path)
     if profile_identifier:
         store_profile_receipt_data(profile_identifier, profile_hash)
@@ -182,7 +181,7 @@ def get_profile_receipt(profile_identifier):
         return None
 
 
-def install_profile(profile_path):
+def install_profile(profile_path, profile_identifier):
     '''Installs a profile. Returns True on success, False otherwise'''
     cmd = ['/usr/bin/profiles', '-IF', profile_path]
     proc = subprocess.Popen(
@@ -193,7 +192,12 @@ def install_profile(profile_path):
             'Profile %s installation failed: %s'
             % (os.path.basename(profile_path), proc.stderr))
         return False
-    record_profile_receipt(profile_path)
+    if profile_identifier:
+        record_profile_receipt(profile_path, profile_identifier)
+    else:
+        munkicommon.display_warning(
+            'No identifier for profile %s; cannot record an installation '
+            'receipt.' % os.path.basename(profile_path))
     return True
 
 
