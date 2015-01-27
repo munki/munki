@@ -33,7 +33,8 @@ def config_profile_info(ignore_cache=False):
     global CONFIG_PROFILE_INFO
     if not ignore_cache and CONFIG_PROFILE_INFO is not None:
         return CONFIG_PROFILE_INFO
-    output_plist = tempfile.mkdtemp(dir=munkicommon.tmpdir())
+    output_plist = os.path.join(
+        tempfile.mkdtemp(dir=munkicommon.tmpdir()), 'profiles')
     cmd = ['/usr/bin/profiles', '-C', '-o', output_plist]
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
