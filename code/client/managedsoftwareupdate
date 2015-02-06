@@ -272,13 +272,19 @@ def doRestart():
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:
-            # someone is logged in and we're using munkistatus
+            # someone is logged in and we're using Managed Software Center.
+            # We need to notifiy the active user that a restart is required.
+            # We actually should almost never get here; generally Munki knows
+            # a restart is needed before even starting the updates and forces
+            # a logout before applying the updates
             munkicommon.display_info(
                 'Notifying currently logged-in user to restart.')
             munkistatus.activate()
             munkistatus.restartAlert()
-            munkicommon.osascript(
-                'tell application "System Events" to restart')
+            # Managed Software Center will trigger a restart
+            # when the alert is dismissed. If a user gets clever and subverts
+            # this restart (perhaps by force-quitting the app),
+            # that's their problem...
         else:
             print 'Please restart immediately.'
 
@@ -357,7 +363,7 @@ def sendStartNotification():
 
 
 def sendEndNotification():
-    '''Sends a start notification via NSDistributedNotificationCenter'''
+    '''Sends an ended notification via NSDistributedNotificationCenter'''
     userInfo = {'pid': os.getpid()}
     sendDistrubutedNotification(
         'com.googlecode.munki.managedsoftwareupdate.ended',

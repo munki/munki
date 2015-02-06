@@ -46,6 +46,25 @@ def call(cmd):
     (output, err) = proc.communicate()
     return proc.returncode
 
+
+def osascript(osastring):
+    """Wrapper to run AppleScript commands"""
+    cmd = ['/usr/bin/osascript', '-e', osastring]
+    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if proc.returncode != 0:
+        print >> sys.stderr, 'Error: ', err
+    if out:
+        return str(out).decode('UTF-8').rstrip('\n')
+
+
+def restartNow():
+    '''Trigger a restart'''
+    osascript('tell application "System Events" to restart')
+
+
 BUNDLE_ID = u'ManagedInstalls'
 
 def reload_prefs():
