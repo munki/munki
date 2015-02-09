@@ -850,11 +850,8 @@ class MSCMainWindowController(NSWindowController):
         # update count badges
         self.displayUpdateCount()
         
-        if MunkiItems.updateCheckNeeded():
-            # check for updates after a short delay so UI changes visually complete first
-            self.performSelector_withObject_afterDelay_(self.checkForUpdatesAfterDelay, True, 3.5)
-        else:
-            self._pending_update-=1
+        # check for updates after a delay to ensure that user doesn't wish to make more changes.
+        self.performSelector_withObject_afterDelay_(self.checkForUpdatesAfterDelay, True, 3.5)
 
     def myItemsActionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
