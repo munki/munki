@@ -105,7 +105,7 @@ def header_dict_from_list(array):
 
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=False):
+            resume=False, follow_redirects=True):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -233,7 +233,7 @@ def getResourceIfChangedAtomically(url,
                                    message=None,
                                    resume=False,
                                    verify=False,
-                                   follow_redirects=False):
+                                   follow_redirects=True):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -354,7 +354,7 @@ def getFileIfChangedAtomically(path, destinationpath):
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                    custom_headers=None,
                                    message=None, resume=False,
-                                   follow_redirects=False):
+                                   follow_redirects=True):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 

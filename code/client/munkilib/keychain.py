@@ -142,6 +142,11 @@ def get_munki_client_cert_info():
             url = munkicommon.pref(key)
             if url:
                 site_urls.append(url.rstrip('/') + '/')
+        # CertificateWildcardURL cannot contain an ending /, so separate it out:
+        for key in ['CertificateWildcardURL']:
+            url = munkicommon.pref(key)
+            if url:
+                site_urls.append(url)
         cert_info['site_urls'] = site_urls
     return cert_info
 
