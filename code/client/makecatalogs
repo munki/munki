@@ -192,6 +192,12 @@ def makecatalogs(repopath, options):
                 exit_code = -1
                 continue
 
+            if not 'name' in pkginfo:
+                errors.append(
+                    "WARNING: file %s is missing name"
+                    % filepath[len(pkgsinfopath)+1:])
+                continue
+
             # don't copy admin notes to catalogs.
             if pkginfo.get('notes'):
                 del pkginfo['notes']
