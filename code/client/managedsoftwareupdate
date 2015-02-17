@@ -674,7 +674,8 @@ def main():
     applesoftwareupdatesonly = (munkicommon.pref('AppleSoftwareUpdatesOnly')
         or options.applesuspkgsonly)
 
-    if not options.installonly and not applesoftwareupdatesonly:
+    skipcheck = (options.installonly or applesoftwareupdatesonly)
+    if not skipcheck:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
@@ -696,9 +697,9 @@ def main():
             else:
                 # even if we can't reach the manifest server, we can
                 # attempt to do installs of cached items. Setting
-                # options.installonly to True will cause the updatecheck
+                # skipcheck to True will cause the updatecheck
                 # to be skipped
-                options.installonly = True
+                skipcheck = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -713,7 +714,7 @@ def main():
                'Software Updates only.')
 
     updatecheckresult = None
-    if not options.installonly and not applesoftwareupdatesonly:
+    if not skipcheck:
         try:
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
@@ -757,7 +758,7 @@ def main():
                                         'InstallAppleSoftwareUpdates')
 
     if should_do_apple_updates:
-        if (not options.installonly and not munkicommon.stopRequested()):
+        if (not skipcheck and not munkicommon.stopRequested()):
             force_update_check = False
             force_catalog_refresh = False
             if (options.manualcheck or runtype == 'checkandinstallatstartup'):
@@ -784,7 +785,7 @@ def main():
                 else:
                     recordUpdateCheckResult(0)
 
-        if options.installonly:
+        if skipcheck:
             # just look and see if there are already downloaded Apple updates
             # to install; don't run softwareupdate to check with Apple
             try:
@@ -797,12 +798,11 @@ def main():
                 munkicommon.savereport()
                 raise
 
-    if not options.installonly:
-        # display any available update information
-        if updatecheckresult:
-            updatecheck.displayUpdateInfo()
-        if appleupdatesavailable:
-            appleupdates.displayAppleUpdateInfo()
+    # display any available update information
+    if updatecheckresult:
+        updatecheck.displayUpdateInfo()
+    if appleupdatesavailable:
+        appleupdates.displayAppleUpdateInfo()
 
     # send a notification event so MSU can update its display
     # if needed

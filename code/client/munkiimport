@@ -990,7 +990,7 @@ def main():
         pkginfo['catalogs'] = [item.strip()
                                for item in newvalue.split(',')]
 
-        if not APPLEMETADATA:
+        if not APPLEMETADATA and not pkginfo.get('installer_type') == 'profile':
             if 'receipts' not in pkginfo and 'installs' not in pkginfo:
                 print >> sys.stderr, ('WARNING: There are no receipts and no '
                                       '\'installs\' items for this installer '
