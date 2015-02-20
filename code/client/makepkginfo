@@ -136,6 +136,9 @@ def getCatalogInfoForProfile(profile_path):
         cataloginfo['unattended_uninstall'] = True
         cataloginfo['minimum_os_version'] = '10.7'
         cataloginfo['minimum_munki_version'] = '2.2'
+    else:
+        print >> sys.stderr, (
+            'Profile PayloadType is %s' % profile.get('PayloadType'))
     return cataloginfo
 
 
@@ -862,7 +865,11 @@ def main():
 
             elif munkicommon.hasValidConfigProfileExt(item):
                 catinfo = getCatalogInfoForProfile(item)
-
+                if not catinfo:
+                    print >> sys.stderr, (
+                        "%s doesn't appear to be a supported configuration "
+                        "profile!" % item)
+                    exit(-1)
             else:
                 print >> sys.stderr, "%s is not a valid installer item!" % item
                 exit(-1)
