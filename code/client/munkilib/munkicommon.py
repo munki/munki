@@ -1444,6 +1444,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
     dom = minidom.parse(filename)
     pkgrefs = dom.getElementsByTagName('pkg-info')
     if pkgrefs:
+        # this is a PackageInfo file
         for ref in pkgrefs:
             keys = ref.attributes.keys()
             if 'identifier' in keys and 'version' in keys:
@@ -1459,11 +1460,14 @@ def parsePkgRefs(filename, path_to_pkg=None):
                         pkginfo['installed_size'] = int(
                             payloads[0].attributes[
                                 'installKBytes'].value.encode('UTF-8'))
-                if not pkginfo in info:
-                    info.append(pkginfo)
+                    if not pkginfo in info:
+                        info.append(pkginfo)
+                # if there isn't a payload, no receipt is left by a flat
+                # pkg, so don't add this to the info array
     else:
         pkgrefs = dom.getElementsByTagName('pkg-ref')
         if pkgrefs:
+            # this is a Distribution or .dist file
             pkgref_dict = {}
             for ref in pkgrefs:
                 keys = ref.attributes.keys()
