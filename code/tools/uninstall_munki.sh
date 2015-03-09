@@ -9,7 +9,7 @@ fi
 
 launchctl unload /Library/LaunchDaemons/com.googlecode.munki.*
 rm -rf '/Applications/Utilities/Managed Software Update.app'
-rm -rf '/Applications/Utilities/Managed Software Center.app'
+rm -rf '/Applications/Managed Software Center.app'
 rm -f /Library/LaunchDaemons/com.googlecode.munki.*
 rm -f /Library/LaunchAgents/com.googlecode.munki.*
 rm -rf '/Library/Managed Installs'
