@@ -3,7 +3,7 @@ munki
 
 _Managed software installation for OS X_
 
-###Announcment
+###Announcement
 An exploit has been discovered against Munki tools older than version 2.1.
 
 Untrusted input can be passed to the curl binary, causing arbitrary files to be downloaded to arbitrary locations.
