@@ -2847,8 +2847,10 @@ def check(client_id='', localmanifestpath=None):
                         item, cataloglist, installinfo)
 
             # we don't need to filter uninstalls
-            processManifestForKey(selfservemanifest, 'managed_uninstalls',
-                                  installinfo, cataloglist)
+            selfserveuninstalls = getManifestValueForKey(
+                selfservemanifest, 'managed_uninstalls') or []
+            for item in selfserveuninstalls:
+                unused_result = processRemoval(item, cataloglist, installinfo)
 
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
