@@ -680,8 +680,8 @@ def main():
     applesoftwareupdatesonly = (munkicommon.pref('AppleSoftwareUpdatesOnly')
         or options.applesuspkgsonly)
 
-    skipcheck = (options.installonly or applesoftwareupdatesonly)
-    if not skipcheck:
+    skip_munki_check = (options.installonly or applesoftwareupdatesonly)
+    if not skip_munki_check:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
@@ -703,9 +703,9 @@ def main():
             else:
                 # even if we can't reach the manifest server, we can
                 # attempt to do installs of cached items. Setting
-                # skipcheck to True will cause the updatecheck
+                # skip_munki_check to True will cause the updatecheck
                 # to be skipped
-                skipcheck = True
+                skip_munki_check = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -720,7 +720,7 @@ def main():
                'Software Updates only.')
 
     updatecheckresult = None
-    if not skipcheck:
+    if not skip_munki_check:
         try:
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
@@ -764,7 +764,7 @@ def main():
                                         'InstallAppleSoftwareUpdates')
 
     if should_do_apple_updates:
-        if (not skipcheck and not munkicommon.stopRequested()):
+        if (not options.installonly and not munkicommon.stopRequested()):
             force_update_check = False
             force_catalog_refresh = False
             if (options.manualcheck or runtype == 'checkandinstallatstartup'):
@@ -791,7 +791,7 @@ def main():
                 else:
                     recordUpdateCheckResult(0)
 
-        if skipcheck:
+        if options.installonly:
             # just look and see if there are already downloaded Apple updates
             # to install; don't run softwareupdate to check with Apple
             try:
