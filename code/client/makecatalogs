@@ -234,6 +234,7 @@ def makecatalogs(repopath, options):
                 do_pkg_check = False
             if pkginfo.get('PackageURL'):
                 do_pkg_check = False
+                
 
             if do_pkg_check:
                 if not 'installer_item_location' in pkginfo:
@@ -263,6 +264,46 @@ def makecatalogs(repopath, options):
                                   "missing installer item: %s" %
                                   (filepath[len(pkgsinfopath)+1:],
                                    pkginfo['installer_item_location']))
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        exit_code = -1
+                        continue
+
+            #uninstaller sanity checking
+            do_pkg_check = False
+            uninstaller_type = pkginfo.get('uninstall_method')
+            if uninstaller_type in ['AdobeCCPUninstaller']:
+                do_pkg_check = True
+                
+
+            if do_pkg_check:
+                if not 'uninstaller_item_location' in pkginfo:
+                    errors.append(
+                        "WARNING: file %s is missing uninstaller_item_location"
+                        % filepath[len(pkgsinfopath)+1:])
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        exit_code = -1
+                        continue
+
+                # Try to form a path and fail if the
+                # uninstaller_item_location is not a valid type
+                try:
+                    uninstalleritempath = os.path.join(
+                        repopath, "pkgs", pkginfo['uninstaller_item_location'])
+                except TypeError:
+                    errors.append("WARNING: invalid uninstaller_item_location "
+                                  "in info file %s"
+                                  % filepath[len(pkgsinfopath)+1:])
+                    exit_code = -1
+                    continue
+
+                # Check if the uninstaller item actually exists
+                if not os.path.exists(uninstalleritempath):
+                    errors.append("WARNING: Info file %s refers to "
+                                  "missing uninstaller item: %s" %
+                                  (filepath[len(pkgsinfopath)+1:],
+                                   pkginfo['uninstaller_item_location']))
                     # Skip this pkginfo unless we're running with force flag
                     if not options.force:
                         exit_code = -1
