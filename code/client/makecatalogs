@@ -272,7 +272,7 @@ def makecatalogs(repopath, options):
             #uninstaller sanity checking
             do_pkg_check = False
             uninstaller_type = pkginfo.get('uninstall_method')
-            if uninstaller_type in ['AdobeCCPUninstaller']:
+            if uninstaller_type.startswith('Adobe'):
                 do_pkg_check = True
                 
 
