@@ -639,6 +639,7 @@ def makePkgInfo(options=None, test_mode=False):
     if stderr:
         # just warnings if returncode is 0
         print >> sys.stderr, stderr.rstrip('\n')
+    
     return FoundationPlist.readPlistFromString(stdout)
 
 
@@ -780,6 +781,7 @@ def main():
     parser.add_option('--verbose', '-v', action='store_true',
                     help='Print more output.')
 
+    sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
 
     if options.version:

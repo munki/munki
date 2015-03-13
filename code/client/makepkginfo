@@ -741,6 +741,7 @@ def main():
         )
     p.add_option_group(additional_options)
 
+    sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = p.parse_args()
 
     if options.version:
