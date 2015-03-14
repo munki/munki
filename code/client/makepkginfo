@@ -385,6 +385,15 @@ def check_mode(option, opt, value, parser):
                                                             (opt, mode))
     setattr(parser.values, option.dest, value)
 
+def has_valid_install_critieria(catinfo):
+    """
+    Inspects compiled catalog info dictionary for valid install criteria.
+    Returns boolean.
+    """
+    results = []
+    for key in ['installs', 'receipts', 'installcheck_script']:
+        results.append(catinfo.has_key(key) and len(catinfo[key]) != 0)
+    any(results)
 
 def main():
     '''Main routine'''
