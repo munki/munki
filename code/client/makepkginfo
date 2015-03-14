@@ -391,9 +391,10 @@ def has_valid_install_critieria(catinfo):
     Returns boolean.
     """
     results = []
-    for key in ['installs', 'receipts', 'installcheck_script']:
-        results.append(catinfo.has_key(key) and len(catinfo[key]) != 0)
-    any(results)
+    keys = ['installs', 'receipts', 'installcheck_script', 'PayloadIdentifier']
+    for key in keys:
+        results.append(catinfo.get(key))
+    return any(results)
 
 def main():
     '''Main routine'''
