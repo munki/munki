@@ -1917,8 +1917,6 @@ def getPackageMetaData(pkgitem):
     installerinfo = getInstallerPkgInfo(pkgitem)
     # now look for receipt/subpkg info
     receiptinfo = getReceiptInfo(pkgitem)
-    if not receiptinfo:
-        return None
 
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
