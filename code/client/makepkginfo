@@ -1124,13 +1124,13 @@ def main():
 
     if not has_valid_install_critieria(catinfo):
         item = catinfo['name']
-        print >> sys.stderr, (
-            "WARNING: %s contains no discernible install criteria!\n"
-            "If you do not supply a receipt, install item, "
-            "installcheck_script \n"
-            "or PayloadIdentifier, munki will have no way to determine the \n"
-            "package's installation state. This can result in undesirable or \n"
-            "unexpected behaviour (ie. looping).\n") % item
+        msg  = """WARNING: \'%s\' contains no discernible install criteria!
+        If you do not supply a receipt, install item, or
+        installcheck_script, Munki will have no way to
+        determine the package's installation state. This can
+        result in repeated installation attempts or failure
+        to attempt installation at all."""
+        print >> sys.stderr, (msg) % item
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
