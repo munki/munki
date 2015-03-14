@@ -385,6 +385,16 @@ def check_mode(option, opt, value, parser):
                                                             (opt, mode))
     setattr(parser.values, option.dest, value)
 
+def has_valid_install_critieria(catinfo):
+    """
+    Inspects compiled catalog info dictionary for valid install criteria.
+    Returns boolean.
+    """
+    results = []
+    keys = ['installs', 'receipts', 'installcheck_script', 'PayloadIdentifier']
+    for key in keys:
+        results.append(catinfo.get(key))
+    return any(results)
 
 def main():
     '''Main routine'''
@@ -749,7 +759,7 @@ def main():
         exit(0)
 
     if options.verify_options_only:
-        if (len(arguments) == 0 and not options.apple_update and 
+        if (len(arguments) == 0 and not options.apple_update and
                 not options.nopkg):
             print >> sys.stderr, 'makepkginfo options FAILED verification'
             print >> sys.stderr, 'No installer item was provided.'
@@ -782,7 +792,7 @@ def main():
         p.print_usage()
         exit(-1)
 
-    if (options.minimum_os_version and 
+    if (options.minimum_os_version and
             not options.minimum_os_version[0].isdigit()):
         print >> sys.stderr, (
             'Minimum OS Version must start with a number, e.g. 10.7.2.')
@@ -1111,6 +1121,16 @@ def main():
 
     # add user/environment metadata
     catinfo['_metadata'] = make_pkginfo_metadata()
+
+    if not has_valid_install_critieria(catinfo):
+        item = catinfo['name']
+        msg  = """WARNING: \'%s\' contains no discernible install criteria!
+        If you do not supply a receipt, install item, or
+        installcheck_script, Munki will have no way to
+        determine the package's installation state. This can
+        result in repeated installation attempts or failure
+        to attempt installation at all."""
+        print >> sys.stderr, (msg) % item
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
