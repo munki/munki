@@ -1121,6 +1121,15 @@ def main():
     # add user/environment metadata
     catinfo['_metadata'] = make_pkginfo_metadata()
 
+    if not has_valid_install_critieria(catinfo):
+        item = catinfo['name']
+        print >> sys.stderr, (
+            "WARNING: %s contains no discernible install criteria!\n"
+            "If you do not supply a receipt, install item or \n"
+            "installcheck_script, munki will have no way to determine \n"
+            "the package's installation state. This can result in \n"
+            "undesirable or unexpected behaviour (ie. looping).\n") % item
+
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
 
