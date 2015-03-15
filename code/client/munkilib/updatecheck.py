@@ -1198,6 +1198,11 @@ def installedState(item_pl):
     """
     foundnewer = False
 
+    if item_pl.get('OnDemand'):
+        # always install these items -- retcode 0 means install is needed
+        munkicommon.display_debug1('This is an OnDemand item. Must install.')
+        return 0
+
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'installcheck_script', item_pl, suppress_error=True)
@@ -1286,6 +1291,11 @@ def someVersionInstalled(item_pl):
 
     Returns a boolean.
     """
+    if item_pl.get('OnDemand'):
+        # These should never be counted as installed
+        munkicommon.display_debug1('This is an OnDemand item.')
+        return False
+
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'installcheck_script', item_pl, suppress_error=True)
@@ -1349,6 +1359,11 @@ def evidenceThisIsInstalled(item_pl):
 
     Returns a boolean.
     """
+    if item_pl.get('OnDemand'):
+        # These should never be counted as installed
+        munkicommon.display_debug1('This is an OnDemand item.')
+        return False
+
     if item_pl.get('uninstallcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'uninstallcheck_script', item_pl, suppress_error=True)
@@ -1623,10 +1638,12 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                                warn=False):
             iteminfo['note'] = (
                 'Insufficient disk space to download and install.')
-    if item_pl.get('preinstall_alert'):
-        iteminfo['preinstall_alert'] = item_pl.get('preinstall_alert')
-    if item_pl.get('preuninstall_alert'):
-        iteminfo['preuninstall_alert'] = item_pl.get('preuninstall_alert')
+    optional_keys = ['preinstall_alert',
+                     'preuninstall_alert',
+                     'OnDemand']
+    for key in optional_keys:
+        if key in item_pl:
+            iteminfo[key] = item_pl[key]
 
     munkicommon.display_debug1(
         'Adding %s to the optional install list', iteminfo['name'])
@@ -1899,7 +1916,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'developer',
                              'icon_name',
                              'PayloadIdentifier',
-                             'icon_hash']
+                             'icon_hash',
+                             'OnDemand']
 
             for key in optional_keys:
                 if key in item_pl:
@@ -2778,8 +2796,8 @@ def download_icons(item_list):
         if os.path.isfile(icon_path):
             xattr_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
             if not xattr_hash:
-              xattr_hash = munkicommon.getsha256hash(icon_path)
-              fetch.writeCachedChecksum(icon_path, xattr_hash)
+                xattr_hash = munkicommon.getsha256hash(icon_path)
+                fetch.writeCachedChecksum(icon_path, xattr_hash)
         else:
             xattr_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
@@ -3026,7 +3044,7 @@ def check(client_id='', localmanifestpath=None):
             selfserveuninstalls = getManifestValueForKey(
                 selfservemanifest, 'managed_uninstalls') or []
             for item in selfserveuninstalls:
-                unused_result = processRemoval(item, cataloglist, installinfo)
+                dummy_result = processRemoval(item, cataloglist, installinfo)
 
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
