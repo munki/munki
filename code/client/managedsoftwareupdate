@@ -861,6 +861,7 @@ def main():
                     # no GUI users, system is idle, so we can install
                     # but first, enable status output over login window
                     munkicommon.munkistatusoutput = True
+                    munkicommon.log('No GUI users, installing at login window.')
                     munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
 
