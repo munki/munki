@@ -530,11 +530,11 @@ def main():
                     options.installonly = False
                     options.auto = True
                     # HACK: sometimes this runs before the network is up.
-                    # we'll attempt to wait up to 30 seconds for the
+                    # we'll attempt to wait up to 60 seconds for the
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for dummy_i in range(30):
+                    for dummy_i in range(60):
                         if networkUp():
                             break
                         time.sleep(1)
