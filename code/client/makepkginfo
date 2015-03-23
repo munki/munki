@@ -130,6 +130,7 @@ def getCatalogInfoForProfile(profile_path):
         cataloginfo['description'] = profile.get('PayloadDescription', '')
         cataloginfo['version'] = '1.0'
         cataloginfo['installer_type'] = 'profile'
+        cataloginfo['OnDemand'] = True
         cataloginfo['uninstallable'] = True
         cataloginfo['uninstall_method'] = 'remove_profile'
         cataloginfo['unattended_install'] = True
@@ -460,6 +461,13 @@ def main():
         p, 'Script Options',
         'All scripts are read and embedded into the pkginfo.')
     script_options.add_option(
+        '--ondemand_script', '--ondemand-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an OnDemand script to be '
+              'run as root.  '
+              'Always removed one finished. There are no receipts.')
+        )
+    script_options.add_option(
         '--installcheck_script', '--installcheck-script',
         metavar='SCRIPT_PATH',
         help=('Path to an optional installcheck script to be '
@@ -675,6 +683,12 @@ def main():
               'not listed in any applicable \'managed_installs\'.')
         )
     additional_options.add_option(
+        '--OnDemand',
+        action='store_true',
+        help=('Indicates this package should be an OnDemand package '
+              'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
         '--minimum_munki_version', '--minimum-munki-version',
         metavar='VERSION',
         help=('Minimum version of munki required to perform installation. '
@@ -781,6 +795,7 @@ def main():
             not options.file and
             not options.nopkg and
             not options.installer_environment and
+            not options.ondemand_script and
             not options.installcheck_script and
             not options.uninstallcheck_script and
             not options.preinstall_script and
@@ -1027,6 +1042,10 @@ def main():
         # remove minimum_os_version as we don't include it for --file only
         catinfo.pop('minimum_os_version')
 
+    if options.ondemand_script:
+        scriptstring = readfile(options.ondemand_script)
+        if scriptstring:
+            catinfo['ondemand_script'] = scriptstring
     if options.installcheck_script:
         scriptstring = readfile(options.installcheck_script)
         if scriptstring:
@@ -1060,6 +1079,8 @@ def main():
         catinfo['autoremove'] = True
     if options.minimum_munki_version:
         catinfo['minimum_munki_version'] = options.minimum_munki_version
+    if options.OnDemand:
+        catinfo['OnDemand'] = True
     if options.unattended_install:
         catinfo['unattended_install'] = True
     if options.unattended_uninstall:
