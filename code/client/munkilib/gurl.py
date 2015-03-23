@@ -24,6 +24,7 @@ curl replacement using NSURLConnection and friends
 
 import os
 import xattr
+from urlparse import urlparse
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -361,8 +362,9 @@ class Gurl(NSObject):
         # site that told us to redirect. All we know is that we were told
         # to redirect and where the new location is.
         newURL = request.URL().absoluteString()
+        parsedURL = urlparse(newURL)
         self.redirection.append([newURL, dict(response.allHeaderFields())])
-        if self.follow_redirects:
+        if (self.follow_redirects == 'https' and parsedURL.scheme == 'https') or self.follow_redirects:
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             return request

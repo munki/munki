@@ -69,7 +69,6 @@ class PackageVerificationError(MunkiDownloadError):
     """Package failed verification"""
     pass
 
-
 def getxattr(pathname, attr):
     """Get a named xattr from a file. Return None if not present"""
     if attr in xattr.listxattr(pathname):
@@ -105,7 +104,7 @@ def header_dict_from_list(array):
 
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=False):
+            resume=False, follow_redirects=None):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -116,6 +115,9 @@ def get_url(url, destinationpath,
     server.
     If you set resume to True, Gurl will attempt to resume an
     interrupted download."""
+
+    if follow_redirects is None:
+        follow_redirects = munkicommon.pref('AllowHTTPRedirects')
 
     tempdownloadpath = destinationpath + '.download'
     if os.path.exists(tempdownloadpath) and not resume:
@@ -184,7 +186,7 @@ def get_url(url, destinationpath,
     if connection.error != None:
         # Gurl returned an error
         munkicommon.display_detail(
-            'Download error %s: %s', connection.error.code(), 
+            'Download error %s: %s', connection.error.code(),
             connection.error.localizedDescription())
         if connection.SSLerror:
             munkicommon.display_detail(
@@ -193,7 +195,7 @@ def get_url(url, destinationpath,
         munkicommon.display_detail('Headers: %s', connection.headers)
         if os.path.exists(tempdownloadpath) and not resume:
             os.remove(tempdownloadpath)
-        raise GurlError(connection.error.code(), 
+        raise GurlError(connection.error.code(),
                         connection.error.localizedDescription())
 
     if connection.response != None:
@@ -233,7 +235,7 @@ def getResourceIfChangedAtomically(url,
                                    message=None,
                                    resume=False,
                                    verify=False,
-                                   follow_redirects=False):
+                                   follow_redirects=None):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -354,7 +356,7 @@ def getFileIfChangedAtomically(path, destinationpath):
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                    custom_headers=None,
                                    message=None, resume=False,
-                                   follow_redirects=False):
+                                   follow_redirects=None):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 
@@ -486,4 +488,3 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
             'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
 
     return (False, chash)
-
