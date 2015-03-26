@@ -620,12 +620,18 @@ def build_updatedetail_page(identifier):
             addDetailSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
-                local_date = munki.discardTimeZoneFromDate(
+                try:
+                    local_date = munki.discardTimeZoneFromDate(
                                                 force_install_after_date)
-                date_str = munki.shortRelativeStringFromDate(
+                    date_str = munki.shortRelativeStringFromDate(
                                                 local_date)
-                page['dueLabel'] += u' '
-                page['short_due_date'] = date_str
+                    page['dueLabel'] += u' '
+                    page['short_due_date'] = date_str
+                except munki.BadDateError:
+                    # some issue with the stored date
+                    msclog.debug_log('Problem with force_install_after_date for %s' % identifier)
+                    page['dueLabel'] = u''
+                    page['short_due_date'] = u''
             else:
                 page['dueLabel'] = u''
                 page['short_due_date'] = u''
@@ -634,6 +640,6 @@ def build_updatedetail_page(identifier):
             generate_page(page_name, 'updatedetail_template.html', page, footer=footer)
             return
     # if we get here we didn't find any item matching identifier
-    msclog.debug_log('No update detail found for %s' % item_name)
+    msclog.debug_log('No update detail found for %s' % identifier)
     build_item_not_found_page(page_name)
 

@@ -25,6 +25,9 @@ import stat
 import subprocess
 import random
 import FoundationPlist
+
+import msclog
+
 import Foundation
 from Foundation import NSDate
 from Foundation import NSFileManager
@@ -195,10 +198,14 @@ def thereAreUpdatesToBeForcedSoon(hours=72):
         for item in installinfo:
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
-                force_install_after_date = discardTimeZoneFromDate(
-                    force_install_after_date)
-                if now_xhours >= force_install_after_date:
-                    return True
+                try:
+                    force_install_after_date = discardTimeZoneFromDate(
+                        force_install_after_date)
+                    if now_xhours >= force_install_after_date:
+                        return True
+                except BadDateError:
+                    # some issue with the stored date
+                    pass
     return False
 
 
@@ -216,13 +223,18 @@ def earliestForceInstallDate(installinfo=None):
         this_force_install_date = install.get('force_install_after_date')
 
         if this_force_install_date:
-            this_force_install_date = discardTimeZoneFromDate(
-                this_force_install_date)
-            if not earliest_date or this_force_install_date < earliest_date:
-                earliest_date = this_force_install_date
-
+            try:
+                this_force_install_date = discardTimeZoneFromDate(this_force_install_date)
+                if not earliest_date or this_force_install_date < earliest_date:
+                    earliest_date = this_force_install_date
+            except BadDateError:
+                # some issue with the stored date
+                pass
     return earliest_date
 
+
+class BadDateError(Exception):
+    pass
 
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
@@ -231,9 +243,11 @@ def discardTimeZoneFromDate(the_date):
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
-    # get local offset
-    offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
-        '%z', None, None)
+    try:
+        # get local offset
+        offset = the_date.descriptionWithCalendarFormat_timeZone_locale_('%z', None, None)
+    except:
+        raise BadDateError()
     hour_offset = int(offset[0:3])
     minute_offset = int(offset[0] + offset[3:])
     seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset

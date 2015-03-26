@@ -1021,15 +1021,20 @@ class UpdateItem(GenericItem):
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
                 # insert installation deadline into description
-                local_date = munki.discardTimeZoneFromDate(
+                try:
+                    local_date = munki.discardTimeZoneFromDate(
                                                 force_install_after_date)
-                date_str = munki.stringFromDate(local_date)
-                forced_date_text = NSLocalizedString(
-                                    u"This item must be installed by %s",
-                                    u"Forced Date warning")
-                warning = ('<span class="warning">'
-                           + forced_date_text % date_str
-                           + '</span><br><br>')
+                except munki.BadDateError:
+                    # some issue with the stored date
+                    pass
+                else:
+                    date_str = munki.stringFromDate(local_date)
+                    forced_date_text = NSLocalizedString(
+                        u"This item must be installed by %s",
+                        u"Forced Date warning")
+                    warning = ('<span class="warning">'
+                               + forced_date_text % date_str
+                               + '</span><br><br>')
             if self.get('dependent_items'):
                 dependent_items = self.dependency_description()
 
