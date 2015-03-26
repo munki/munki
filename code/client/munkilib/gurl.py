@@ -364,7 +364,8 @@ class Gurl(NSObject):
         newURL = request.URL().absoluteString()
         parsedURL = urlparse(newURL)
         self.redirection.append([newURL, dict(response.allHeaderFields())])
-        if (self.follow_redirects == 'https' and parsedURL.scheme == 'https') or self.follow_redirects:
+        if (self.follow_redirects == 'https' and parsedURL.scheme == 'https') or \
+           self.follow_redirects == True:
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             return request
