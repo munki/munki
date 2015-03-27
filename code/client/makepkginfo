@@ -130,6 +130,7 @@ def getCatalogInfoForProfile(profile_path):
         cataloginfo['description'] = profile.get('PayloadDescription', '')
         cataloginfo['version'] = '1.0'
         cataloginfo['installer_type'] = 'profile'
+        cataloginfo['OnDemand'] = True
         cataloginfo['uninstallable'] = True
         cataloginfo['uninstall_method'] = 'remove_profile'
         cataloginfo['unattended_install'] = True
@@ -675,6 +676,12 @@ def main():
               'not listed in any applicable \'managed_installs\'.')
         )
     additional_options.add_option(
+        '--OnDemand',
+        action='store_true',
+        help=('Indicates this package should be an OnDemand package '
+              'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
         '--minimum_munki_version', '--minimum-munki-version',
         metavar='VERSION',
         help=('Minimum version of munki required to perform installation. '
@@ -1060,6 +1067,8 @@ def main():
         catinfo['autoremove'] = True
     if options.minimum_munki_version:
         catinfo['minimum_munki_version'] = options.minimum_munki_version
+    if options.OnDemand:
+        catinfo['OnDemand'] = True
     if options.unattended_install:
         catinfo['unattended_install'] = True
     if options.unattended_uninstall:
