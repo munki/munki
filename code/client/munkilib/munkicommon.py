@@ -1209,7 +1209,7 @@ def pref(pref_name):
         'SuppressAutoInstall': False,
         'SuppressStopButtonOnInstall': False,
         'PackageVerificationMode': 'hash',
-        'AllowHTTPRedirects': False,
+        'AllowHTTPRedirects': 'none',
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:

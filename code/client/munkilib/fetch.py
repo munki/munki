@@ -101,10 +101,9 @@ def header_dict_from_list(array):
             header_dict[key.strip()] = value.strip()
     return header_dict
 
-
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=None):
+            resume=False, follow_redirects=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -115,9 +114,6 @@ def get_url(url, destinationpath,
     server.
     If you set resume to True, Gurl will attempt to resume an
     interrupted download."""
-
-    if follow_redirects is None:
-        follow_redirects = munkicommon.pref('AllowHTTPRedirects')
 
     tempdownloadpath = destinationpath + '.download'
     if os.path.exists(tempdownloadpath) and not resume:
@@ -135,7 +131,8 @@ def get_url(url, destinationpath,
 
     options = {'url': url,
                'file': tempdownloadpath,
-               'follow_redirects': follow_redirects,
+               'must_follow_redirects': follow_redirects,
+               'allow_redirects': munkicommon.pref('AllowHTTPRedirects'),
                'can_resume': resume,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
@@ -235,7 +232,7 @@ def getResourceIfChangedAtomically(url,
                                    message=None,
                                    resume=False,
                                    verify=False,
-                                   follow_redirects=None):
+                                   follow_redirects=False):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -356,7 +353,7 @@ def getFileIfChangedAtomically(path, destinationpath):
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                    custom_headers=None,
                                    message=None, resume=False,
-                                   follow_redirects=None):
+                                   follow_redirects=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 

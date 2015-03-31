@@ -116,7 +116,8 @@ class Gurl(NSObject):
         if not self:
             return
 
-        self.follow_redirects = options.get('follow_redirects', False)
+        self.must_follow_redirects = options.get('must_follow_redirects', False)
+        self.allow_redirects = options.get('allow_redirects', 'none')
         self.destination_path = options.get('file')
         self.can_resume = options.get('can_resume', False)
         self.url = options.get('url')
@@ -344,6 +345,23 @@ class Gurl(NSObject):
                 # has changed
                 self.store_headers(download_data)
 
+    def redirect_allowed(self, url):
+        # Some code paths (e.g., Apple software updates) require that
+        # we do follow redirects always, so get that out of the way:
+        if self.must_follow_redirects:
+            return True
+
+        parsedURL = urlparse(url)
+        if self.allow_redirects == 'all' or \
+           (self.allow_redirects == 'https' and parsedURL.scheme == 'https'):
+            return True
+        else:
+            if self.allow_redirects != 'none':
+                self.log("Unexpected value '%s' for AllowHTTPRedirects"
+                         % self.allow_redirects)
+            return False
+
+
     def connection_willSendRequest_redirectResponse_(
             self, connection, request, response):
         '''NSURLConnectionDataDelegate delegate method
@@ -362,10 +380,8 @@ class Gurl(NSObject):
         # site that told us to redirect. All we know is that we were told
         # to redirect and where the new location is.
         newURL = request.URL().absoluteString()
-        parsedURL = urlparse(newURL)
         self.redirection.append([newURL, dict(response.allHeaderFields())])
-        if (self.follow_redirects == 'https' and parsedURL.scheme == 'https') or \
-           self.follow_redirects == True:
+        if self.redirect_allowed(newURL):
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             return request
