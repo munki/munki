@@ -534,10 +534,19 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.os, 'unlink')
 
         appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(self.au.applicable_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(
+            self.au.applicable_updates_plist).AndRaise(OSError)
+        appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(
+            self.au.applicable_updates_plist).AndRaise(IOError)
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(OSError)
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(IOError)
 
         self.mox.ReplayAll()
+        self.au.ClearAppleUpdateInfo()
+        self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
