@@ -547,6 +547,9 @@ class AppleUpdates(object):
         """
         try:
             os.unlink(self.apple_updates_plist)
+            # also remove our cached ApplicableUpdates.plist since it is
+            # used to generate AppleUpdates.plist; it, too is no longer valid
+            os.unlink(self.applicable_updates_plist)
         except (OSError, IOError):
             pass
 
