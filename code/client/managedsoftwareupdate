@@ -831,6 +831,11 @@ def main():
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks(appleupdatesavailable)
+            # reset our count of available updates (it might not actually
+            # be zero, but we want to clear the badge on the Dock icon;
+            # it can be updated to the "real" count on the next Munki run)
+            updatesavailable = 0
+            appleupdatesavailable = 0
             # send a notification event so MSU can update its display
             # if needed
             sendUpdateNotification()
@@ -873,7 +878,9 @@ def main():
                     munkicommon.log('No GUI users, installing at login window.')
                     munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
-
+                    # reset our count of available updates 
+                    updatesavailable = 0
+                    appleupdatesavailable = 0
             else:  # there are GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
