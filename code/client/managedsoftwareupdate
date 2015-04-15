@@ -290,15 +290,15 @@ def doRestart():
 
 
 def munkiUpdatesAvailable():
-    """Return True if there are available updates, False otherwise."""
-    updatesavailable = False
+    """Return count of available updates."""
+    updatesavailable = 0
     installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
             plist = FoundationPlist.readPlist(installinfo)
-            updatesavailable = len(plist.get('removals', [])) or \
-                               len(plist.get('managed_installs', []))
+            updatesavailable = (len(plist.get('removals', [])) +
+                                len(plist.get('managed_installs', [])))
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             munkicommon.display_error('Install info at %s is invalid.' %
@@ -351,6 +351,15 @@ def sendUpdateNotification():
     userInfo = {'pid': os.getpid()}
     sendDistrubutedNotification(
         'com.googlecode.munki.managedsoftwareupdate.updateschanged',
+        userInfo)
+
+
+def sendDockUpdateNotification():
+    '''Sends an update notification via NSDistributedNotificationCenter
+    MSU.app's docktileplugin registers to receive these events.'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.dock.updateschanged',
         userInfo)
 
 
@@ -733,7 +742,7 @@ def main():
         recordUpdateCheckResult(updatecheckresult)
 
     updatesavailable = munkiUpdatesAvailable()
-    appleupdatesavailable = False
+    appleupdatesavailable = 0
 
     # should we do Apple Software updates this run?
     if applesoftwareupdatesonly:
@@ -893,6 +902,7 @@ def main():
                 # it's possible that we no longer have any available updates
                 # so we need to check InstallInfo.plist and
                 # AppleUpdates.plist again
+                updatesavailable = munkiUpdatesAvailable()
                 try:
                     appleupdatesavailable = \
                         appleupdates.appleSoftwareUpdatesAvailable(
@@ -903,7 +913,7 @@ def main():
                     munkicommon.log(traceback.format_exc())
                     munkicommon.savereport()
                     raise
-                if appleupdatesavailable or munkiUpdatesAvailable():
+                if appleupdatesavailable or updatesavailable:
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
@@ -930,6 +940,14 @@ def main():
     munkicommon.report['ConsoleUser'] = munkicommon.getconsoleuser() or \
                                         '<None>'
     munkicommon.savereport()
+
+    # store the current pending update count
+    munkicommon.set_pref('PendingUpdateCount',
+                         updatesavailable + appleupdatesavailable)
+
+    # send a notification event so Dock tile badge can be updated
+    # if needed
+    sendDockUpdateNotification()
 
     munkicommon.display_status_major('Finishing...')
     sendEndNotification()

@@ -896,7 +896,7 @@ class AppleUpdates(object):
         """Writes a file used by the MSU GUI to display available updates.
 
         Returns:
-          Boolean. True if apple updates was updated, False otherwise.
+          Integer. Count of available Apple updates.
         """
         apple_updates = self.GetSoftwareUpdateInfo()
         if apple_updates:
@@ -919,13 +919,13 @@ class AppleUpdates(object):
                             self.copyUpdateMetadata(item, metadata_item)
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
-            return True
+            return len(apple_updates)
         else:
             try:
                 os.unlink(self.apple_updates_plist)
             except (OSError, IOError):
                 pass
-            return False
+            return 0
 
     def DisplayAppleUpdateInfo(self):
         """Prints Apple update information and updates ManagedInstallReport."""
@@ -1456,7 +1456,7 @@ class AppleUpdates(object):
           force_check: Boolean. If True, forces a softwareupdate run.
           suppress_check: Boolean. If True, skips a softwareupdate run.
         Returns:
-          Boolean. True if Apple updates are available, False otherwise.
+          Integer. Count of available Apple updates.
         """
         if suppress_check:
             # typically because we're doing a logout install; if
@@ -1490,11 +1490,10 @@ class AppleUpdates(object):
             else:
                 dummy_success = self.CheckForSoftwareUpdates(force_check=False)
         # always update or remove AppleUpdates.plist
-        result = self.WriteAppleUpdatesFile()
+        count = self.WriteAppleUpdatesFile()
         if munkicommon.stopRequested():
-            return False
-        return result
-
+            return 0
+        return count
 
     def SoftwareUpdateList(self):
         """Returns a list of str update names using softwareupdate -l."""
@@ -1516,8 +1515,6 @@ class AppleUpdates(object):
             'softwareupdate returned %d updates.', len(updates))
         self._update_list_cache = updates
         return updates
-
-
 
     def copyUpdateMetadata(self, item, metadata):
         """Applies metadata to Apple update item restricted
