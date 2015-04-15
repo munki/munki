@@ -294,16 +294,16 @@ def makecatalogs(repopath, options):
                     exit_code = -1
                     continue
 
-            # Check if the uninstaller item actually exists
-            if not os.path.exists(uninstalleritempath):
-                errors.append("WARNING: Info file %s refers to "
-                              "missing uninstaller item: %s" %
-                              (filepath[len(pkgsinfopath)+1:],
-                               pkginfo['uninstaller_item_location']))
-                # Skip this pkginfo unless we're running with force flag
-                if not options.force:
-                    exit_code = -1
-                    continue
+                # Check if the uninstaller item actually exists
+                if not os.path.exists(uninstalleritempath):
+                    errors.append("WARNING: Info file %s refers to "
+                                  "missing uninstaller item: %s" %
+                                  (filepath[len(pkgsinfopath)+1:],
+                                   pkginfo['uninstaller_item_location']))
+                    # Skip this pkginfo unless we're running with force flag
+                    if not options.force:
+                        exit_code = -1
+                        continue
 
             catalogs['all'].append(pkginfo)
             for catalogname in pkginfo.get("catalogs", []):
