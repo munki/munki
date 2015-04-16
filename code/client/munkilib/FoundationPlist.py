@@ -76,7 +76,7 @@ def readPlist(filepath):
         NSPropertyListSerialization.
         propertyListFromData_mutabilityOption_format_errorDescription_(
             plistData, NSPropertyListMutableContainers, None, None))
-    if error:
+    if not dataObject:
         error = error.encode('ascii', 'ignore')
         errmsg = "%s in file %s" % (error, filepath)
         raise NSPropertyListSerializationException(errmsg)
@@ -94,7 +94,7 @@ def readPlistFromString(data):
         NSPropertyListSerialization.
         propertyListFromData_mutabilityOption_format_errorDescription_(
             plistData, NSPropertyListMutableContainers, None, None))
-    if error:
+    if not dataObject:
         error = error.encode('ascii', 'ignore')
         raise NSPropertyListSerializationException(error)
     else:
@@ -109,7 +109,7 @@ def writePlist(dataObject, filepath):
         NSPropertyListSerialization.
         dataFromPropertyList_format_errorDescription_(
             dataObject, NSPropertyListXMLFormat_v1_0, None))
-    if error:
+    if not plistData:
         error = error.encode('ascii', 'ignore')
         raise NSPropertyListSerializationException(error)
     else:
@@ -126,7 +126,7 @@ def writePlistToString(rootObject):
         NSPropertyListSerialization.
         dataFromPropertyList_format_errorDescription_(
             rootObject, NSPropertyListXMLFormat_v1_0, None))
-    if error:
+    if not plistData:
         error = error.encode('ascii', 'ignore')
         raise NSPropertyListSerializationException(error)
     else:
