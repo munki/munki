@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7531" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1060" defaultVersion="1060" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="5056"/>
+        <deployment version="1060" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7531"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="7531"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application">
+        <customObject id="-3" userLabel="Application" customClass="NSObject">
             <connections>
                 <outlet property="delegate" destination="373" id="374"/>
             </connections>
@@ -200,6 +200,7 @@
         </menu>
         <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="main" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" unifiedTitleAndToolbar="YES"/>
+            <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="132" y="116" width="1143" height="730"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="1000" height="475"/>
@@ -268,14 +269,14 @@
                             </connections>
                         </button>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="toolbarUpdatesTemplate" id="AjB-m1-mu8">
+                    <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="updatesTemplate" id="AjB-m1-mu8">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
                         <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
                             <rect key="frame" x="1" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarUpdatesTemplate" imagePosition="only" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="updatesTemplate" imagePosition="overlaps" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -311,7 +312,7 @@
                                     <segmentedControl verticalHuggingPriority="750" id="jcc-R8-zGb">
                                         <rect key="frame" x="1" y="-2" width="53" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <segmentedCell key="cell" alignment="left" style="texturedRounded" trackingMode="momentary" id="ZsM-fh-8z5">
+                                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="ZsM-fh-8z5">
                                             <font key="font" metaFont="system"/>
                                             <segments>
                                                 <segment image="NSGoLeftTemplate" width="23"/>
@@ -339,7 +340,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <searchField verticalHuggingPriority="750" id="gLI-O8-siB">
+                                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="gLI-O8-siB">
                                         <rect key="frame" x="0.0" y="0.0" width="150" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="Rxm-nO-bmO">
@@ -413,9 +414,9 @@
     <resources>
         <image name="AllItemsTemplate" width="28" height="26"/>
         <image name="MyStuffTemplate" width="28" height="23.5"/>
-        <image name="NSGoLeftTemplate" width="9" height="9"/>
-        <image name="NSGoRightTemplate" width="9" height="9"/>
+        <image name="NSGoLeftTemplate" width="9" height="12"/>
+        <image name="NSGoRightTemplate" width="9" height="12"/>
         <image name="toolbarCategoriesTemplate" width="25" height="24"/>
-        <image name="toolbarUpdatesTemplate" width="23" height="23"/>
+        <image name="updatesTemplate" width="28" height="27.5"/>
     </resources>
 </document>
