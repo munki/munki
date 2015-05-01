@@ -167,7 +167,7 @@ def makecatalogs(repopath, options):
     catalogs['all'] = []
 
     # Walk through the pkginfo files
-    for dirpath, dirnames, filenames in os.walk(pkgsinfopath):
+    for dirpath, dirnames, filenames in os.walk(pkgsinfopath, followlinks=True):
         for dirname in dirnames:
             # don't recurse into directories that start
             # with a period.
@@ -234,7 +234,7 @@ def makecatalogs(repopath, options):
                 do_pkg_check = False
             if pkginfo.get('PackageURL'):
                 do_pkg_check = False
-                
+
 
             if do_pkg_check:
                 if not 'installer_item_location' in pkginfo:
