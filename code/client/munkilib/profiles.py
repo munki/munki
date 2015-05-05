@@ -26,11 +26,19 @@ import tempfile
 import FoundationPlist
 import munkicommon
 
+def profiles_supported():
+    '''Returns True if config profiles are supported on this OS'''
+    darwin_vers = int(os.uname()[2].split('.')[0])
+    return (darwin_vers > 10)
+
 
 CONFIG_PROFILE_INFO = None
 def config_profile_info(ignore_cache=False):
     '''Returns a dictionary representing the output of `profiles -C -o`'''
     global CONFIG_PROFILE_INFO
+    if not profiles_supported():
+        CONFIG_PROFILE_INFO = {}
+        return CONFIG_PROFILE_INFO
     if not ignore_cache and CONFIG_PROFILE_INFO is not None:
         return CONFIG_PROFILE_INFO
     output_plist = os.path.join(
@@ -184,6 +192,8 @@ def get_profile_receipt(profile_identifier):
 
 def install_profile(profile_path, profile_identifier):
     '''Installs a profile. Returns True on success, False otherwise'''
+    if not profiles_supported():
+        return False
     cmd = ['/usr/bin/profiles', '-IF', profile_path]
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -205,6 +215,8 @@ def install_profile(profile_path, profile_identifier):
 def remove_profile(identifier):
     '''Removes a profile with the given identifier. Returns True on success,
     False otherwise'''
+    if not profiles_supported():
+        return False
     cmd = ['/usr/bin/profiles', '-Rp', identifier]
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -223,6 +235,8 @@ def profile_needs_to_be_installed(identifier, hash_value):
     2) We don't have a receipt for this profile identifier
     3) receipt's hash_value for identifier does not match ours
     4) ProfileInstallDate doesn't match the receipt'''
+    if not profiles_supported():
+        return False
     if not identifier_in_config_profile_info(identifier):
         munkicommon.display_debug2(
             'Profile identifier %s is not installed.' % identifier)
@@ -251,6 +265,8 @@ def profile_needs_to_be_installed(identifier, hash_value):
 def profile_is_installed(identifier):
     '''If identifier is in the output of `profiles -C`
     return True, else return False'''
+    if not profiles_supported():
+        return False
     if identifier_in_config_profile_info(identifier):
         munkicommon.display_debug2(
             'Profile identifier %s is installed.' % identifier)
