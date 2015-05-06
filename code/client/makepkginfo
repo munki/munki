@@ -391,11 +391,11 @@ def has_valid_install_critieria(catinfo):
     Inspects compiled catalog info dictionary for valid install criteria.
     Returns boolean.
     """
-    return (catinfo.get('installs') 
+    return (catinfo.get('installs')
             or catinfo.get('receipts')
             or catinfo.get('installcheck_script')
-            or catinfo['installer_type'] == 'profile'
-            or catinfo['installer_type'] == 'apple_update_metadata')
+            or catinfo.get('installer_type') == 'profile'
+            or catinfo.get('installer_type') == 'apple_update_metadata')
 
 def main():
     '''Main routine'''
