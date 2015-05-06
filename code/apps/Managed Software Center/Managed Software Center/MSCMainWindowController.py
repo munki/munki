@@ -529,7 +529,7 @@ class MSCMainWindowController(NSWindowController):
         and as an icon badge in the Dock'''
         updateCount = self.getUpdateCount()
         btn_image = MSCBadgedTemplateImage.imageNamed_withCount_(
-                            'toolbarUpdatesTemplate.pdf', updateCount)
+            'updatesTemplate.pdf', updateCount)
         self.updateButtonCell.setImage_(btn_image)
         if updateCount not in [u'★', 0]:
             NSApp.dockTile().setBadgeLabel_(str(updateCount))
