@@ -24,6 +24,7 @@ curl replacement using NSURLConnection and friends
 
 import os
 import xattr
+from urlparse import urlparse
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -115,7 +116,8 @@ class Gurl(NSObject):
         if not self:
             return
 
-        self.follow_redirects = options.get('follow_redirects', False)
+        self.must_follow_redirects = options.get('must_follow_redirects', False)
+        self.allow_redirects = options.get('allow_redirects', 'none')
         self.destination_path = options.get('file')
         self.can_resume = options.get('can_resume', False)
         self.url = options.get('url')
@@ -343,6 +345,23 @@ class Gurl(NSObject):
                 # has changed
                 self.store_headers(download_data)
 
+    def redirect_allowed(self, url):
+        # Some code paths (e.g., Apple software updates) require that
+        # we do follow redirects always, so get that out of the way:
+        if self.must_follow_redirects:
+            return True
+
+        parsedURL = urlparse(url)
+        if self.allow_redirects == 'all' or \
+           (self.allow_redirects == 'https' and parsedURL.scheme == 'https'):
+            return True
+        else:
+            if self.allow_redirects != 'none':
+                self.log("Unexpected value '%s' for AllowHTTPRedirects"
+                         % self.allow_redirects)
+            return False
+
+
     def connection_willSendRequest_redirectResponse_(
             self, connection, request, response):
         '''NSURLConnectionDataDelegate delegate method
@@ -362,7 +381,7 @@ class Gurl(NSObject):
         # to redirect and where the new location is.
         newURL = request.URL().absoluteString()
         self.redirection.append([newURL, dict(response.allHeaderFields())])
-        if self.follow_redirects:
+        if self.redirect_allowed(newURL):
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             return request

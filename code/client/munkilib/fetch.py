@@ -69,7 +69,6 @@ class PackageVerificationError(MunkiDownloadError):
     """Package failed verification"""
     pass
 
-
 def getxattr(pathname, attr):
     """Get a named xattr from a file. Return None if not present"""
     if attr in xattr.listxattr(pathname):
@@ -102,7 +101,6 @@ def header_dict_from_list(array):
             header_dict[key.strip()] = value.strip()
     return header_dict
 
-
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
             resume=False, follow_redirects=False):
@@ -133,7 +131,8 @@ def get_url(url, destinationpath,
 
     options = {'url': url,
                'file': tempdownloadpath,
-               'follow_redirects': follow_redirects,
+               'must_follow_redirects': follow_redirects,
+               'allow_redirects': munkicommon.pref('AllowHTTPRedirects'),
                'can_resume': resume,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
@@ -184,7 +183,7 @@ def get_url(url, destinationpath,
     if connection.error != None:
         # Gurl returned an error
         munkicommon.display_detail(
-            'Download error %s: %s', connection.error.code(), 
+            'Download error %s: %s', connection.error.code(),
             connection.error.localizedDescription())
         if connection.SSLerror:
             munkicommon.display_detail(
@@ -193,7 +192,7 @@ def get_url(url, destinationpath,
         munkicommon.display_detail('Headers: %s', connection.headers)
         if os.path.exists(tempdownloadpath) and not resume:
             os.remove(tempdownloadpath)
-        raise GurlError(connection.error.code(), 
+        raise GurlError(connection.error.code(),
                         connection.error.localizedDescription())
 
     if connection.response != None:
@@ -486,4 +485,3 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
             'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
 
     return (False, chash)
-
