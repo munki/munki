@@ -25,6 +25,9 @@ curl replacement using NSURLConnection and friends
 import os
 import xattr
 
+# builtin super doesn't work with Cocoa classes in recent PyObjC releases.
+from objc import super
+
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
