@@ -46,13 +46,15 @@ class MSCAppDelegate(NSObject):
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
         
-        userNotification = sender.userInfo().get('NSApplicationLaunchUserNotificationKey')
-        # we get this notification at launch because it's too early to have declared ourself
-        # a NSUserNotificationCenterDelegate
-        if userNotification:
-            NSLog("Launched via Notification interaction")
-            self.userNotificationCenter_didActivateNotification_(
-                NSUserNotificationCenter.defaultUserNotificationCenter(), userNotification)
+        # userInfo dict can be nil, seems to be with 10.6
+        if sender.userInfo():
+            userNotification = sender.userInfo().get('NSApplicationLaunchUserNotificationKey')
+            # we get this notification at launch because it's too early to have declared ourself
+            # a NSUserNotificationCenterDelegate
+            if userNotification:
+                NSLog("Launched via Notification interaction")
+                self.userNotificationCenter_didActivateNotification_(
+                    NSUserNotificationCenter.defaultUserNotificationCenter(), userNotification)
         
         # Prevent automatic relaunching at login on Lion+
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
