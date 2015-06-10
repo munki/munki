@@ -520,7 +520,7 @@ class GenericItem(dict):
             icon_name += '.png'
         icon_path = os.path.join(msclib.html_dir(), 'icons', icon_name)
         if os.path.exists(icon_path):
-            return 'icons/' + icon_name
+            return 'icons/' + quote(icon_name)
         # didn't find one in the downloaded icons
         # so create one if needed from a locally installed app
         for key in ['icon_name', 'display_name', 'name']:
@@ -531,7 +531,7 @@ class GenericItem(dict):
                     icon_name += '.png'
                 icon_path = os.path.join(msclib.html_dir(), icon_name)
                 if os.path.exists(icon_path) or convertIconToPNG(name, icon_path, 350):
-                    return icon_name
+                    return quote(icon_name)
         else:
             # use the Generic package icon
             return 'static/Generic.png'
