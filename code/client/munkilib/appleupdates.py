@@ -75,7 +75,10 @@ DEFAULT_CATALOG_URLS = {
              'index-10.9-mountainlion-lion-snowleopard-leopard.merged-1'
              '.sucatalog'),
     '10.10': ('https://swscan.apple.com/content/catalogs/others/'
-              'index-10.10-10.9-mountainlion-lion-snowleopard-leopard'
+              'index-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1'
+              '.sucatalog'),
+    '10.11': ('https://swscan.apple.com/content/catalogs/others/'
+              'index-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard'
               '.merged-1.sucatalog')
 }
 
