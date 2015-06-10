@@ -1131,7 +1131,8 @@ def main():
     # add user/environment metadata
     catinfo['_metadata'] = make_pkginfo_metadata()
 
-    if not has_valid_install_critieria(catinfo):
+    if (len(arguments) == 1 and
+            not has_valid_install_critieria(catinfo)):
         item = catinfo['name']
         msg = (
             "WARNING: pkginfo for '%s' contains no installation check info!\n"
