@@ -814,7 +814,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     else:
         if not downloadbaseurl.endswith('/'):
             downloadbaseurl = downloadbaseurl + '/'
-        pkgurl = downloadbaseurl + urllib2.quote(location)
+        pkgurl = downloadbaseurl + urllib2.quote(location.encode('UTF-8'))
 
     pkgname = getInstallerItemBasename(location)
     munkicommon.display_debug2('Download base URL is: %s', downloadbaseurl)
@@ -2505,7 +2505,8 @@ def getCatalogs(cataloglist):
 
     for catalogname in cataloglist:
         if not catalogname in CATALOG:
-            catalogurl = catalogbaseurl + urllib2.quote(catalogname)
+            catalogurl = catalogbaseurl + urllib2.quote(
+                catalogname.encode('UTF-8'))
             catalogpath = os.path.join(catalog_dir, catalogname)
             munkicommon.display_detail('Getting catalog %s...', catalogname)
             message = 'Retrieving catalog "%s"...' % catalogname
@@ -2674,7 +2675,7 @@ def getPrimaryManifest(alternate_id):
 
         if not manifest:
             manifest = getmanifest(
-                manifesturl + urllib2.quote(clientidentifier.encode('utf-8')))
+                manifesturl + urllib2.quote(clientidentifier.encode('UTF-8')))
         if manifest:
             # record this info for later
             munkicommon.report['ManifestName'] = clientidentifier
@@ -2791,7 +2792,7 @@ def download_icons(item_list):
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
         icon_list.append(icon_name)
-        icon_url = icon_base_url + urllib2.quote(icon_name)
+        icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))
         icon_path = os.path.join(icon_dir, icon_name)
         if os.path.isfile(icon_path):
             xattr_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
