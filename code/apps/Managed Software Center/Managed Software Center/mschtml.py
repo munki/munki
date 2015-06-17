@@ -557,6 +557,7 @@ def build_updates_page():
     if other_updates:
         page['hide_other_updates'] = u''
         for item in other_updates:
+            escapeAndQuoteCommonFields(item)
             page['other_update_rows'] += item_template.safe_substitute(item)
     
     footer = get_template('footer_template.html', raw=True)
