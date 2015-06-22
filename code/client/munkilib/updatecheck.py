@@ -2572,7 +2572,10 @@ def getmanifest(partialurl, suppress_errors=False):
     else:
         # request for nested manifest
         manifestdisplayname = partialurl
-        manifestname = os.path.split(partialurl)[1]
+        
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        manifestname = ''.join(c if c in valid_chars else "_" for c in partialurl)
+
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
 
     if manifestname in MANIFESTS:
