@@ -2553,6 +2553,42 @@ def getmanifest(partialurl, suppress_errors=False):
       string local path to the downloaded manifest.
     """
     #global MANIFESTS
+
+    def walkManifestCache(path):
+        """Walks MANIFESTS to the specified path, creating any intermediate
+        dictionaries if they don't exist.
+
+        Returns:
+          The dictionary at the specified path.
+        """
+        branch = MANIFESTS
+
+        if path:
+            for part in path.split('/'):
+                branch = branch.setdefault(part, { })
+
+        return branch
+
+    def addToManifestCache(path, value):
+        """Sets the item at the specified path to the given value.
+        """
+        parts = os.path.split(path);
+
+        folder = walkManifestCache(parts[0])
+        folder[parts[1]] = value
+
+
+    def getFromManifestCache(path):
+        """Retrieves the item at the specified path.
+
+        Returns:
+            The item at path in MANIFESTS
+        """
+        parts = os.path.split(path);
+
+        folder = walkManifestCache(parts[0])
+        return folder.get(parts[1], None)
+
     manifestbaseurl = (munkicommon.pref('ManifestURL') or
                        munkicommon.pref('SoftwareRepoURL') + '/manifests/')
     if (not manifestbaseurl.endswith('?') and
@@ -2572,10 +2608,7 @@ def getmanifest(partialurl, suppress_errors=False):
     else:
         # request for nested manifest
         manifestdisplayname = partialurl
-        
-        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-        manifestname = ''.join(c if c in valid_chars else "_" for c in partialurl)
-
+        manifestname = partialurl
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
 
     if manifestname in MANIFESTS:
@@ -2584,6 +2617,15 @@ def getmanifest(partialurl, suppress_errors=False):
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
     manifestpath = os.path.join(manifest_dir, manifestname)
+    manifestdir = os.path.dirname(manifestpath)
+
+    # Create the folder the manifest shall be stored in
+    try:
+        os.makedirs(manifestdir)
+    except OSError:
+        if not os.path.isdir(manifestdir):
+            raise
+
     message = 'Retrieving list of software for this machine...'
     try:
         dummy_value = getResourceIfChangedAtomically(
