@@ -2558,7 +2558,7 @@ def getmanifest(partialurl, suppress_errors=False):
     if (not manifestbaseurl.endswith('?') and
             not manifestbaseurl.endswith('/')):
         manifestbaseurl = manifestbaseurl + '/'
-    manifestrootdir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
 
     if (partialurl.startswith('http://') or
@@ -2580,14 +2580,14 @@ def getmanifest(partialurl, suppress_errors=False):
 
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
-    manifestpath = os.path.join(manifestrootdir, manifestname)
-    
+    manifestpath = os.path.join(manifest_dir, manifestname)
+
     # Create the folder the manifest shall be stored in
-    manifestdestdir = os.path.dirname(manifestpath)
+    destinationdir = os.path.dirname(manifestpath)
     try:
-        os.makedirs(manifestdestdir)
+        os.makedirs(destinationdir)
     except OSError:
-        if not os.path.isdir(manifestdestdir):
+        if not os.path.isdir(destinationdir):
             raise
 
     message = 'Retrieving list of software for this machine...'
@@ -2616,6 +2616,31 @@ def getmanifest(partialurl, suppress_errors=False):
         # plist is valid
         MANIFESTS[manifestname] = manifestpath
         return manifestpath
+
+def cleanUpManifests(subdir=""):
+    """Removes any manifest files that are no longer in use by this client"""
+    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                               'manifests')
+
+    # For recursive calls (checking subfolders), append subdir to root manifest directory
+    if subdir:
+        manifest_dir = os.path.join(manifest_dir, subdir)
+
+    for item in os.listdir(manifest_dir):
+        cachename = os.path.join(subdir, item)
+        if cachename not in MANIFESTS.keys():
+            path = os.path.join(manifest_dir, item)
+            if os.path.isdir(path):
+                cleanUpManifests(cachename)
+            else:
+                os.unlink(path)
+
+    # Remove folder is empty
+    try:
+        os.rmdir(manifest_dir)
+    except OSError:
+        pass
+
 
 
 def getPrimaryManifest(alternate_id):
@@ -3139,6 +3164,9 @@ def check(client_id='', localmanifestpath=None):
 
         # clean up catalogs directory
         cleanUpCatalogs()
+
+        # clean up manifests directory
+        cleanUpManifests()
 
         # clean up cache dir
         # remove any item in the cache that isn't scheduled
