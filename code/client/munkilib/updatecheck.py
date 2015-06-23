@@ -2553,48 +2553,12 @@ def getmanifest(partialurl, suppress_errors=False):
       string local path to the downloaded manifest.
     """
     #global MANIFESTS
-
-    def walkManifestCache(path):
-        """Walks MANIFESTS to the specified path, creating any intermediate
-        dictionaries if they don't exist.
-
-        Returns:
-          The dictionary at the specified path.
-        """
-        branch = MANIFESTS
-
-        if path:
-            for part in path.split('/'):
-                branch = branch.setdefault(part, { })
-
-        return branch
-
-    def addToManifestCache(path, value):
-        """Sets the item at the specified path to the given value.
-        """
-        parts = os.path.split(path);
-
-        folder = walkManifestCache(parts[0])
-        folder[parts[1]] = value
-
-
-    def getFromManifestCache(path):
-        """Retrieves the item at the specified path.
-
-        Returns:
-            The item at path in MANIFESTS
-        """
-        parts = os.path.split(path);
-
-        folder = walkManifestCache(parts[0])
-        return folder.get(parts[1], None)
-
     manifestbaseurl = (munkicommon.pref('ManifestURL') or
                        munkicommon.pref('SoftwareRepoURL') + '/manifests/')
     if (not manifestbaseurl.endswith('?') and
             not manifestbaseurl.endswith('/')):
         manifestbaseurl = manifestbaseurl + '/'
-    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+    manifestrootdir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
 
     if (partialurl.startswith('http://') or
@@ -2611,19 +2575,19 @@ def getmanifest(partialurl, suppress_errors=False):
         manifestname = partialurl
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
 
-    if getFromManifestCache(manifestname)
-        return getFromManifestCache(manifestname)
+    if manifestname in MANIFESTS:
+        return MANIFESTS[manifestname]
 
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
-    manifestpath = os.path.join(manifest_dir, manifestname)
-    manifestdir = os.path.dirname(manifestpath)
-
+    manifestpath = os.path.join(manifestrootdir, manifestname)
+    
     # Create the folder the manifest shall be stored in
+    manifestdestdir = os.path.dirname(manifestpath)
     try:
-        os.makedirs(manifestdir)
+        os.makedirs(manifestdestdir)
     except OSError:
-        if not os.path.isdir(manifestdir):
+        if not os.path.isdir(manifestdestdir):
             raise
 
     message = 'Retrieving list of software for this machine...'
@@ -2650,7 +2614,7 @@ def getmanifest(partialurl, suppress_errors=False):
         raise ManifestException(errormsg)
     else:
         # plist is valid
-        addToManifestCache(manifestname, manifestpath)
+        MANIFESTS[manifestname] = manifestpath
         return manifestpath
 
 
