@@ -2622,12 +2622,20 @@ def cleanUpManifests(subdir=""):
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                'manifests')
 
+    exceptions = [
+        "SelfServeManifest"
+    ]
+
     # For recursive calls (checking subfolders), append subdir to root manifest directory
     if subdir:
         manifest_dir = os.path.join(manifest_dir, subdir)
 
     for item in os.listdir(manifest_dir):
         cachename = os.path.join(subdir, item)
+
+        if cachename in exceptions:
+            continue
+            
         if cachename not in MANIFESTS.keys():
             path = os.path.join(manifest_dir, item)
             if os.path.isdir(path):
