@@ -2611,8 +2611,8 @@ def getmanifest(partialurl, suppress_errors=False):
         manifestname = partialurl
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
 
-    if manifestname in MANIFESTS:
-        return MANIFESTS[manifestname]
+    if getFromManifestCache(manifestname)
+        return getFromManifestCache(manifestname)
 
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
@@ -2650,7 +2650,7 @@ def getmanifest(partialurl, suppress_errors=False):
         raise ManifestException(errormsg)
     else:
         # plist is valid
-        MANIFESTS[manifestname] = manifestpath
+        addToManifestCache(manifestname, manifestpath)
         return manifestpath
 
 
