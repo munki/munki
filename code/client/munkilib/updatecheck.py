@@ -2635,7 +2635,7 @@ def cleanUpManifests(subdir=""):
             else:
                 os.unlink(path)
 
-    # Remove folder is empty
+    # Remove folder if empty
     try:
         os.rmdir(manifest_dir)
     except OSError:
