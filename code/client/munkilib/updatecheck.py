@@ -2635,11 +2635,12 @@ def cleanUpManifests():
 
     for (dirpath, dirnames, filenames) in os.walk(manifest_dir, topdown=False):
         for name in filenames:
+
+            if name in exceptions:
+                continue
+                
             abs_path = os.path.join(dirpath, name)
             rel_path = abs_path[len(manifest_dir):].lstrip("/")
-
-            if rel_path in exceptions:
-                continue
 
             if rel_path not in MANIFESTS.keys():
                 os.unlink(abs_path)
