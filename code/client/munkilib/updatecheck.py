@@ -2586,9 +2586,16 @@ def getmanifest(partialurl, suppress_errors=False):
     destinationdir = os.path.dirname(manifestpath)
     try:
         os.makedirs(destinationdir)
-    except OSError:
+    except OSError as e:
+        # OSError will be raised if destinationdir exists, ignore this case
         if not os.path.isdir(destinationdir):
-            raise
+            if not suppress_errors:
+                munkicommon.display_error(
+                    'Could not create folder to store manifest %s: %s',
+                    manifestdisplayname, e
+                )
+
+            return None
 
     message = 'Retrieving list of software for this machine...'
     try:
@@ -2617,7 +2624,7 @@ def getmanifest(partialurl, suppress_errors=False):
         MANIFESTS[manifestname] = manifestpath
         return manifestpath
 
-def cleanUpManifests(subdir=""):
+def cleanUpManifests():
     """Removes any manifest files that are no longer in use by this client"""
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                'manifests')
@@ -2626,28 +2633,23 @@ def cleanUpManifests(subdir=""):
         "SelfServeManifest"
     ]
 
-    # For recursive calls (checking subfolders), append subdir to root manifest directory
-    if subdir:
-        manifest_dir = os.path.join(manifest_dir, subdir)
+    for (dirpath, dirnames, filenames) in os.walk(manifest_dir, topdown=False):
+        for name in filenames:
+            abs_path = os.path.join(dirpath, name)
+            rel_path = abs_path[len(manifest_dir):].lstrip("/")
 
-    for item in os.listdir(manifest_dir):
-        cachename = os.path.join(subdir, item)
+            if rel_path in exceptions:
+                continue
 
-        if cachename in exceptions:
-            continue
-            
-        if cachename not in MANIFESTS.keys():
-            path = os.path.join(manifest_dir, item)
-            if os.path.isdir(path):
-                cleanUpManifests(cachename)
-            else:
-                os.unlink(path)
+            if rel_path not in MANIFESTS.keys():
+                os.unlink(abs_path)
 
-    # Remove folder if empty
-    try:
-        os.rmdir(manifest_dir)
-    except OSError:
-        pass
+        # Try and remove the directory (rmdir will fail if directory is not empty)
+        try:
+            if dirpath != manifest_dir:
+                os.rmdir(dirpath)
+        except OSError:
+            pass
 
 
 
