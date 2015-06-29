@@ -309,7 +309,7 @@ chmod +x "$COREROOT/usr/local/munki"
 # make paths.d file
 mkdir -p "$COREROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
-chmod -R 755 "$COREROOT/private/etc/paths.d"
+chmod -R 755 "$COREROOT/private"
 
 # Create directory structure for /Library/Managed Installs.
 mkdir -m 1775 "$COREROOT/Library"
@@ -350,7 +350,7 @@ chmod +x "$ADMINROOT/usr/local/munki"
 # make paths.d file
 mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
-chmod -R 755 "$ADMINROOT/private/etc/paths.d"
+chmod -R 755 "$ADMINROOT/private"
 
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
