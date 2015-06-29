@@ -306,6 +306,11 @@ chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
 #chmod +x "$COREROOT/usr/local/munki/munkilib/"*.py
 
+# make paths.d file
+mkdir -p "$COREROOT/private/etc/paths.d"
+echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
+chmod -R 755 "$COREROOT/private"
+
 # Create directory structure for /Library/Managed Installs.
 mkdir -m 1775 "$COREROOT/Library"
 mkdir -m 755 -p "$COREROOT/Library/Managed Installs"
@@ -341,6 +346,7 @@ done
 # Set permissions.
 chmod -R go-w "$ADMINROOT/usr/local/munki"
 chmod +x "$ADMINROOT/usr/local/munki"
+
 # make paths.d file
 mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
