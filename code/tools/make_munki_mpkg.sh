@@ -347,6 +347,11 @@ done
 chmod -R go-w "$ADMINROOT/usr/local/munki"
 chmod +x "$ADMINROOT/usr/local/munki"
 
+# make paths.d file
+mkdir -p "$ADMINROOT/private/etc/paths.d"
+echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
+chmod -R 755 "$ADMINROOT/private/etc/paths.d"
+
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
 NFILES=$(echo `find $ADMINROOT/ | wc -l`)
