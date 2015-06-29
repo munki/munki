@@ -534,10 +534,19 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.os, 'unlink')
 
         appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(self.au.applicable_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(
+            self.au.applicable_updates_plist).AndRaise(OSError)
+        appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(
+            self.au.applicable_updates_plist).AndRaise(IOError)
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(OSError)
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(IOError)
 
         self.mox.ReplayAll()
+        self.au.ClearAppleUpdateInfo()
+        self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
@@ -1424,7 +1433,7 @@ class TestAppleUpdates(mox.MoxTestBase):
             {'AppleUpdates': 'appleupdates'},
             self.au.apple_updates_plist).AndReturn(None)
         self.mox.ReplayAll()
-        self.assertTrue(self.au.WriteAppleUpdatesFile())
+        self.assertTrue(self.au.WriteAppleUpdatesFile() == len('appleupdates'))
         self.mox.VerifyAll()
 
     def testWriteAppleUpdatesFileFailure(self):
@@ -1437,7 +1446,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(OSError)
 
         self.mox.ReplayAll()
-        self.assertFalse(self.au.WriteAppleUpdatesFile())
+        self.assertTrue(self.au.WriteAppleUpdatesFile() == 0)
         self.mox.VerifyAll()
 
     def testDisplayAppleUpdateInfo(self):

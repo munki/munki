@@ -31,6 +31,7 @@ import adobeutils
 import launchd
 import munkicommon
 import munkistatus
+import profiles
 import updatecheck
 import FoundationPlist
 from removepackages import removepackages
@@ -400,7 +401,18 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             return -1
 
         # check destination path
-        destpath = item.get("destination_path")
+        destpath = item.get('destination_path')
+        if not destpath:
+            destpath = item.get('destination_item')
+            if destpath:
+                # split it into path and name
+                dest_itemname = os.path.basename(destpath)
+                destpath = os.path.dirname(destpath)
+
+        if not destpath:
+            munkicommon.display_error("Missing destination path for item!")
+            return -1
+
         if not os.path.exists(destpath):
             munkicommon.display_detail(
                 "Destination path %s does not exist, will determine "
@@ -713,6 +725,12 @@ def installWithInfo(
                 munkicommon.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = copyAppFromDMG(itempath)
+            elif installer_type == 'profile':
+                # profiles.install_profile returns True/False
+                retcode = 0
+                identifier = item.get('PayloadIdentifier')
+                if not profiles.install_profile(itempath, identifier):
+                    retcode = -1
             elif installer_type == "nopkg": # Packageless install
                 if (item.get("RestartAction") == "RequireRestart" or
                         item.get("RestartAction") == "RecommendRestart"):
@@ -815,6 +833,11 @@ def installWithInfo(
                 # reset retcode to 0 so we will mark this install
                 # as successful
                 retcode = 0
+
+        # if install was successful and this is a SelfService OnDemand install
+        # remove the item from the SelfServeManifest's managed_installs
+        if retcode == 0 and item.get('OnDemand'):
+            removeItemFromSelfServeInstallList(item['name'])
 
         # record install success/failure
         if not 'InstallResults' in munkicommon.report:
@@ -1020,6 +1043,17 @@ def processRemovals(removallist, only_unattended=False):
                         "Application removal info missing from %s",
                         display_name)
 
+            elif uninstallmethod == 'remove_profile':
+                identifier = item.get('PayloadIdentifier')
+                if identifier:
+                    retcode = 0
+                    if not profiles.remove_profile(identifier):
+                        retcode = -1
+                        munkicommon.display_error(
+                            "Profile removal error for %s", identifier)
+                else:
+                    munkicommon.display_error(
+                        "Profile removal info missing from %s", display_name)
             elif uninstallmethod == 'uninstall_script':
                 retcode = munkicommon.runEmbeddedScript(
                     'uninstall_script', item)
@@ -1062,7 +1096,7 @@ def processRemovals(removallist, only_unattended=False):
         if retcode == 0:
             success_msg = "Removal of %s: SUCCESSFUL" % display_name
             munkicommon.log(success_msg, "Install.log")
-            removeItemFromSelfServeUninstallList(item.get('name'))
+            removeItemFromSelfServeUninstallList(item['name'])
         else:
             failure_msg = "Removal of %s: " % display_name + \
                           " FAILED with return code: %s" % retcode
@@ -1082,28 +1116,48 @@ def processRemovals(removallist, only_unattended=False):
     return (restartFlag, skipped_removals)
 
 
+def removeItemFromSelfServeInstallList(itemname):
+    """Remove the given itemname from the self-serve manifest's
+    managed_installs list"""
+    removeItemFromSelfServeSection(itemname, 'managed_installs')
+
+
 def removeItemFromSelfServeUninstallList(itemname):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
+    removeItemFromSelfServeSection(itemname, 'managed_uninstalls')
+
+
+def removeItemFromSelfServeSection(itemname, section):
+    """Remove the given itemname from the self-serve manifest's
+    managed_uninstalls list"""
+    munkicommon.display_debug1(
+        "Removing %s from SelfSeveManifest's %s...", itemname, section)
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     selfservemanifest = os.path.join(
         ManagedInstallDir, "manifests", "SelfServeManifest")
-    if os.path.exists(selfservemanifest):
-        # if item_name is in the managed_uninstalls in the self-serve
-        # manifest, we should remove it from the list
+    if not os.path.exists(selfservemanifest):
+        # SelfServeManifest doesn't exist, bail
+        munkicommon.display_debug1("%s doesn't exist.", selfservemanifest)
+        return
+    try:
+        plist = FoundationPlist.readPlist(selfservemanifest)
+    except FoundationPlist.FoundationPlistException, err:
+        # SelfServeManifest is broken, bail
+        munkicommon.display_debug1(
+            "Error reading %s: %s", selfservemanifest, err)
+        return
+    # make sure the section is in the plist
+    if section in plist:
+        # filter out our item
+        plist[section] = [
+            item for item in plist[section] if item != itemname
+        ]
         try:
-            plist = FoundationPlist.readPlist(selfservemanifest)
-        except FoundationPlist.FoundationPlistException:
-            pass
-        else:
-            plist['managed_uninstalls'] = [
-                item for item in plist.get('managed_uninstalls', [])
-                if item != itemname
-            ]
-            try:
-                FoundationPlist.writePlist(plist, selfservemanifest)
-            except FoundationPlist.FoundationPlistException:
-                pass
+            FoundationPlist.writePlist(plist, selfservemanifest)
+        except FoundationPlist.FoundationPlistException, err:
+            munkicommon.display_debug1(
+                "Error writing %s: %s", selfservemanifest, err)
 
 
 def blockingApplicationsRunning(pkginfoitem):
@@ -1245,6 +1299,10 @@ def run(only_unattended=False):
             if len(matching_optional_installs) == 1:
                 if install_item['status'] != 0:
                     matching_optional_installs[0]['install_error'] = True
+                    matching_optional_installs[0]['will_be_installed'] = False
+                elif matching_optional_installs[0].get('OnDemand'):
+                    matching_optional_installs[0]['installed'] = False
+                    matching_optional_installs[0]['needs_update'] = False
                     matching_optional_installs[0]['will_be_installed'] = False
                 else:
                     matching_optional_installs[0]['installed'] = True

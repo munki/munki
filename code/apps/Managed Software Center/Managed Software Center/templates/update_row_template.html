@@ -1,14 +1,14 @@
-<tr class='installation ${added_or_deleted}' id="${name}_update_table_row">
+<tr class='installation ${added_or_deleted}' id="${name_escaped}_update_table_row">
   <td>
     <a href="${detail_link}" class="artwork-link">
       <div class="artwork">
-        <img width="75" height="75" alt="${display_name}" class="artwork" src="${icon}">
+        <img width="75" height="75" alt="${display_name_escaped}" class="artwork" src="${icon}">
       </div>
     </a>
     <ul class="list info">
-        <li><h2><a title="${display_name}" href="${detail_link}">${display_name}</a></h2></li>
-        <li>${developer}</li>
-        <li>${version_label} ${display_version}</li>
+        <li><h2><a title="${display_name_escaped}" href="${detail_link}">${display_name_escaped}</a></h2></li>
+        <li>${developer_escaped}</li>
+        <li>${version_label} ${display_version_escaped}</li>
         <li class="warning">${restart_action_text}</li>
     </ul>
   </td>
@@ -20,6 +20,6 @@
   </td>
   <td class="${hide_cancel_button}">
       <button title="${long_action_text}" class="cancel-or-add" aria-label="${long_action_text}"
-          onClick="fadeOutAndRemove('${name}');"></button>
+          onClick="fadeOutAndRemove('${name_quoted}');"></button>
   </td>
 </tr>

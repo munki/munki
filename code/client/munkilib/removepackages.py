@@ -487,7 +487,10 @@ def ImportFromPkgutil(pkgname, curs):
             # /tmp/com.microsoft.updater/office_location
             if ppath == "tmp/com.microsoft.updater/office_location":
                 ppath = "Applications"
-
+            # another special case for Office 2011 updaters
+            if ppath.startswith(
+                    'tmp/com.microsoft.office.updater/com.microsoft.office.'):
+                ppath = ""
             #prepend the ppath so the paths match the actual install locations
             path = path.lstrip("./")
             if ppath:

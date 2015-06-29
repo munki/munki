@@ -272,27 +272,33 @@ def doRestart():
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:
-            # someone is logged in and we're using munkistatus
+            # someone is logged in and we're using Managed Software Center.
+            # We need to notifiy the active user that a restart is required.
+            # We actually should almost never get here; generally Munki knows
+            # a restart is needed before even starting the updates and forces
+            # a logout before applying the updates
             munkicommon.display_info(
                 'Notifying currently logged-in user to restart.')
             munkistatus.activate()
             munkistatus.restartAlert()
-            munkicommon.osascript(
-                'tell application "System Events" to restart')
+            # Managed Software Center will trigger a restart
+            # when the alert is dismissed. If a user gets clever and subverts
+            # this restart (perhaps by force-quitting the app),
+            # that's their problem...
         else:
             print 'Please restart immediately.'
 
 
 def munkiUpdatesAvailable():
-    """Return True if there are available updates, False otherwise."""
-    updatesavailable = False
+    """Return count of available updates."""
+    updatesavailable = 0
     installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
             plist = FoundationPlist.readPlist(installinfo)
-            updatesavailable = len(plist.get('removals', [])) or \
-                               len(plist.get('managed_installs', []))
+            updatesavailable = (len(plist.get('removals', [])) +
+                                len(plist.get('managed_installs', [])))
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             munkicommon.display_error('Install info at %s is invalid.' %
@@ -348,6 +354,15 @@ def sendUpdateNotification():
         userInfo)
 
 
+def sendDockUpdateNotification():
+    '''Sends an update notification via NSDistributedNotificationCenter
+    MSU.app's docktileplugin registers to receive these events.'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.dock.updateschanged',
+        userInfo)
+
+
 def sendStartNotification():
     '''Sends a start notification via NSDistributedNotificationCenter'''
     userInfo = {'pid': os.getpid()}
@@ -357,7 +372,7 @@ def sendStartNotification():
 
 
 def sendEndNotification():
-    '''Sends a start notification via NSDistributedNotificationCenter'''
+    '''Sends an ended notification via NSDistributedNotificationCenter'''
     userInfo = {'pid': os.getpid()}
     sendDistrubutedNotification(
         'com.googlecode.munki.managedsoftwareupdate.ended',
@@ -674,7 +689,8 @@ def main():
     applesoftwareupdatesonly = (munkicommon.pref('AppleSoftwareUpdatesOnly')
         or options.applesuspkgsonly)
 
-    if not options.installonly and not applesoftwareupdatesonly:
+    skip_munki_check = (options.installonly or applesoftwareupdatesonly)
+    if not skip_munki_check:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
@@ -696,9 +712,9 @@ def main():
             else:
                 # even if we can't reach the manifest server, we can
                 # attempt to do installs of cached items. Setting
-                # options.installonly to True will cause the updatecheck
+                # skip_munki_check to True will cause the updatecheck
                 # to be skipped
-                options.installonly = True
+                skip_munki_check = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -713,7 +729,7 @@ def main():
                'Software Updates only.')
 
     updatecheckresult = None
-    if not options.installonly and not applesoftwareupdatesonly:
+    if not skip_munki_check:
         try:
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
@@ -726,7 +742,7 @@ def main():
         recordUpdateCheckResult(updatecheckresult)
 
     updatesavailable = munkiUpdatesAvailable()
-    appleupdatesavailable = False
+    appleupdatesavailable = 0
 
     # should we do Apple Software updates this run?
     if applesoftwareupdatesonly:
@@ -797,12 +813,11 @@ def main():
                 munkicommon.savereport()
                 raise
 
-    if not options.installonly:
-        # display any available update information
-        if updatecheckresult:
-            updatecheck.displayUpdateInfo()
-        if appleupdatesavailable:
-            appleupdates.displayAppleUpdateInfo()
+    # display any available update information
+    if updatecheckresult:
+        updatecheck.displayUpdateInfo()
+    if appleupdatesavailable:
+        appleupdates.displayAppleUpdateInfo()
 
     # send a notification event so MSU can update its display
     # if needed
@@ -816,6 +831,11 @@ def main():
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks(appleupdatesavailable)
+            # reset our count of available updates (it might not actually
+            # be zero, but we want to clear the badge on the Dock icon;
+            # it can be updated to the "real" count on the next Munki run)
+            updatesavailable = 0
+            appleupdatesavailable = 0
             # send a notification event so MSU can update its display
             # if needed
             sendUpdateNotification()
@@ -855,9 +875,12 @@ def main():
                     # no GUI users, system is idle, so we can install
                     # but first, enable status output over login window
                     munkicommon.munkistatusoutput = True
+                    munkicommon.log('No GUI users, installing at login window.')
                     munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
-
+                    # reset our count of available updates 
+                    updatesavailable = 0
+                    appleupdatesavailable = 0
             else:  # there are GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
@@ -886,6 +909,7 @@ def main():
                 # it's possible that we no longer have any available updates
                 # so we need to check InstallInfo.plist and
                 # AppleUpdates.plist again
+                updatesavailable = munkiUpdatesAvailable()
                 try:
                     appleupdatesavailable = \
                         appleupdates.appleSoftwareUpdatesAvailable(
@@ -896,7 +920,7 @@ def main():
                     munkicommon.log(traceback.format_exc())
                     munkicommon.savereport()
                     raise
-                if appleupdatesavailable or munkiUpdatesAvailable():
+                if appleupdatesavailable or updatesavailable:
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
@@ -923,6 +947,14 @@ def main():
     munkicommon.report['ConsoleUser'] = munkicommon.getconsoleuser() or \
                                         '<None>'
     munkicommon.savereport()
+
+    # store the current pending update count
+    munkicommon.set_pref('PendingUpdateCount',
+                         updatesavailable + appleupdatesavailable)
+
+    # send a notification event so Dock tile badge can be updated
+    # if needed
+    sendDockUpdateNotification()
 
     munkicommon.display_status_major('Finishing...')
     sendEndNotification()

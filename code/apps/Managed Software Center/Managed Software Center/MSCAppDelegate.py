@@ -45,6 +45,17 @@ class MSCAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
+        
+        # userInfo dict can be nil, seems to be with 10.6
+        if sender.userInfo():
+            userNotification = sender.userInfo().get('NSApplicationLaunchUserNotificationKey')
+            # we get this notification at launch because it's too early to have declared ourself
+            # a NSUserNotificationCenterDelegate
+            if userNotification:
+                NSLog("Launched via Notification interaction")
+                self.userNotificationCenter_didActivateNotification_(
+                    NSUserNotificationCenter.defaultUserNotificationCenter(), userNotification)
+        
         # Prevent automatic relaunching at login on Lion+
         if NSApp.respondsToSelector_('disableRelaunchOnLogin'):
             NSApp.disableRelaunchOnLogin()
@@ -59,6 +70,11 @@ class MSCAppDelegate(NSObject):
         if os.uname()[2].split('.')[0] == '10':
             myImage = NSImage.imageNamed_("Managed Software Center 10_6")
             NSApp.setApplicationIconImage_(myImage)
+
+        # if we are running under Mountain Lion or later set ourselves as a delegate
+        # for NSUserNotificationCenter notifications
+        if os.uname()[2].split('.')[0] > '11':
+            NSUserNotificationCenter.defaultUserNotificationCenter().setDelegate_(self)
 
         # setup client logging
         msclog.setup_logging()
@@ -102,11 +118,8 @@ class MSCAppDelegate(NSObject):
             struct.unpack(">i", "GURL")[0],
             struct.unpack(">i", "GURL")[0])
 
-    def openURL_withReplyEvent_(self, event, replyEvent):
-        '''Handle openURL messages'''
-        keyDirectObject = struct.unpack(">i", "----")[0]
-        url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
-        msclog.log("MSU", "Called by external URL: %s", url)
+    def openMunkiURL(self, url):
+        '''Display page associated with munki:// url'''
         parsed_url = urlparse(url)
         if parsed_url.scheme != 'munki':
             msclog.debug_log("URL %s has unsupported scheme" % url)
@@ -120,3 +133,27 @@ class MSCAppDelegate(NSObject):
             self.mainWindowController.load_page(filename)
         else:
             msclog.debug_log("%s doesn't have a valid extension. Prevented from opening" % url)
+
+    def openURL_withReplyEvent_(self, event, replyEvent):
+        '''Handle openURL messages'''
+        keyDirectObject = struct.unpack(">i", "----")[0]
+        url = event.paramDescriptorForKeyword_(keyDirectObject).stringValue().decode('utf8')
+        msclog.log("MSU", "Called by external URL: %s", url)
+        self.openMunkiURL(url)
+
+    def userNotificationCenter_didActivateNotification_(self, center, notification):
+        '''User clicked on a Notification Center alert'''
+        user_info = notification.userInfo()
+        if user_info.get('action') == 'open_url':
+            url = user_info.get('value')
+            msclog.log("MSU", "Got user notification to open %s" % url)
+            self.openMunkiURL(url)
+            center.removeDeliveredNotification_(notification)
+        else:
+            msclog.log("MSU", "Got user notification with unrecognized userInfo")
+
+    def userNotificationCenter_shouldPresentNotification_(self, center, notification):
+        return True
+
+    def userNotificationCenter_didDeliverNotification_(self, center, notification):
+        pass

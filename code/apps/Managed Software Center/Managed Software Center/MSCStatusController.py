@@ -156,6 +156,8 @@ class MSCStatusController(NSObject):
             #NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
             #self.statusWindowController.window().orderFrontRegardless()
         elif command == 'showRestartAlert':
+            if self.session_started:
+                self.sessionEnded_(0)
             self.doRestartAlert()
         elif command == 'quit':
             self.sessionEnded_(0)
@@ -223,7 +225,7 @@ class MSCStatusController(NSObject):
                                         self, alert, returncode, contextinfo):
         '''Called when restartAlert ends'''
         self._status_restartAlertDismissed = 1
-        # TO-DO: initiate actual restart
+        munki.restartNow()
 
     def setMessage_(self, messageText):
         '''Display main status message'''

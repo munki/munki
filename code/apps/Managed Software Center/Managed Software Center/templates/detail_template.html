@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>${display_name}</title>
+    <title>${display_name_escaped}</title>
 
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/detail.css" />
@@ -19,13 +19,13 @@
                         <div class="product-detail">
                             <div class="lockup product">
                                 <div class="artwork">
-                                    <img width="175" height="175" alt="${display_name}" class="artwork" src="${icon}" />
+                                    <img width="175" height="175" alt="${display_name_escaped}" class="artwork" src="${icon}" />
                                 </div>
                                 <div class="msc-button large">
                                     <button class="button-area uppercase" 
-                                     onClick="window.AppController.actionButtonClicked_('${name}');">
+                                     onClick="window.AppController.actionButtonClicked_('${name_quoted}');">
                                         <div class="msc-button-inner large ${status}"
-                                             id="${name}_action_button_text">
+                                             id="${name_escaped}_action_button_text">
                                             ${long_action_text}
                                         </div>
                                     </button>
@@ -39,7 +39,7 @@
                             <div class="product-info box-flex">
                                 <div class="product-review">
                                     <div class="title">
-                                        <h1>${display_name}</h1>
+                                        <h1>${display_name_escaped}</h1>
                                     </div>
                                     <p class="more-text">
                                         ${description}
@@ -63,15 +63,15 @@
                                     <li><span class="label">${sizeLabel} </span>${size}</li>
                                     <li>
                                         <span class="label">${developerLabel} </span>
-                                        <a href="${developer_link}">${developer}</a>
+                                        <a href="${developer_link}">${developer_escaped}</a>
                                     </li>
                                 </ul>
                                 <hr/>
                                 <ul class="list">
                                     <li>
                                         <span class="label">${statusLabel} </span>
-                                        <span class="${status}" id="${name}_status_text">
-                                            <span id="${name}_status_text_span">
+                                        <span class="${status}" id="${name_escaped}_status_text">
+                                            <span id="${name_escaped}_status_text_span">
                                                 ${status_text}
                                             </span>
                                             <a class="follow" href="updates.html"></a>

@@ -290,6 +290,10 @@ class MSUStatusWindowController(NSObject):
         if command == 'activate':
             self.window.orderFrontRegardless()
         elif command == 'showRestartAlert':
+            # clean up timer
+            if self.timer:
+                self.timer.invalidate()
+                self.timer = None
             self.doRestartAlert()
         elif command == 'quit':
             self.cleanUpStatusSession()
