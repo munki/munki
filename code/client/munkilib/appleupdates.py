@@ -1434,11 +1434,8 @@ class AppleUpdates(object):
         if os.path.exists(self.cache_dir) and not only_unattended:
             # TODO(unassigned): change this to Pythonic delete.
             dummy_retcode = subprocess.call(['/bin/rm', '-rf', self.cache_dir])
-        # remove the now invalid AppleUpdates.plist file.
-        try:
-            os.unlink(self.apple_updates_plist)
-        except OSError:
-            pass
+        # remove the now invalid AppleUpdates.plist and AvailableUpdates.plist
+        self.ClearAppleUpdateInfo()
         # Also clear our pref value for last check date. We may have
         # just installed an update which is a pre-req for some other update.
         # Let's check again soon.
