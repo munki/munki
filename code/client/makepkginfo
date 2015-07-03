@@ -130,7 +130,6 @@ def getCatalogInfoForProfile(profile_path):
         cataloginfo['description'] = profile.get('PayloadDescription', '')
         cataloginfo['version'] = '1.0'
         cataloginfo['installer_type'] = 'profile'
-        cataloginfo['OnDemand'] = True
         cataloginfo['uninstallable'] = True
         cataloginfo['uninstall_method'] = 'remove_profile'
         cataloginfo['unattended_install'] = True
