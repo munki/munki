@@ -932,10 +932,10 @@ class MSCMainWindowController(NSWindowController):
         defaultOKLabel = NSLocalizedString(u'OK', u'Pre Install Uninstall OK Label')
         defaultCancelLabel = NSLocalizedString(u'Cancel', u'Pre Install Uninstall Cancel Label')
 
-        alertTitle = dict.get('alert_title', defaultAlertTitle)
+        alertTitle = dict.get('alert_title') or defaultAlertTitle # shouldn't be an empty string
         alertDetail = dict.get('alert_detail', defaultAlertDetail)
-        OKLabel = dict.get('ok_label', defaultOKLabel)
-        cancelLabel = dict.get('cancel_label', defaultCancelLabel)
+        OKLabel = dict.get('ok_label') or defaultOKLabel # can't be an empty string
+        cancelLabel = dict.get('cancel_label') or defaultCancelLabel # can't be an empty string
 
         # show the alert sheet
         self.window().makeKeyAndOrderFront_(self)
