@@ -1203,7 +1203,7 @@ def pref(pref_name):
         'AppleSoftwareUpdatesOnly': False,
         'SoftwareUpdateServerURL': '',
         'DaysBetweenNotifications': 1,
-        'LastNotifiedDate': NSDate.dateWithTimeIntervalSince1970_(0),
+        'LastNotifiedDate': '',
         'UseClientCertificate': False,
         'SuppressUserNotification': False,
         'SuppressAutoInstall': False,
