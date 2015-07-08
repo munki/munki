@@ -1,0 +1,86 @@
+﻿/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "アップルソフトウェアアップデートカタログを確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "追加変更を確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートを確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "入手可能なアップデートを確認中…";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "どのファイルシステムアイテムを削除するか特定中";
+
+/* managedsoftwareupdate message */
+"Done." = "完了";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "入手可能なアップル ソフトウェアアップデートをダウンロード中…";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "仕上げ中…";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "インストールされたパッケージの情報を収集中";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをインストール中…";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "削除する項目がありません";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "パッケージの削除が完了しました";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "postflightタスクを実行中…";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "preflightタスクを実行中…";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "receipt情報を削除中です";
+
+/* No comment provided by engineer. */
+"Restart" = "再起動";
+
+/* No comment provided by engineer. */
+"Restart Required" = "再起動が必要です";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "このコンピューターのソフトウェアリストを取得中…";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Adobeアップデートをインストール中";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Adobeセットアップ実行中";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Adobeアンインストール実行中";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "インストールまた削除したソフトウェアがあるため再起動が必要です";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "インストールまた削除したソフトウェアがあるため再起動が必要です。現在使用中のドキュメントの保存ができます。";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Adobeインストーラーを開始…";
+
+/* managedsoftwareupdate message */
+"Starting..." = "開始…";
+
+/* No comment provided by engineer. */
+"Starting…" = "Starting…";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "ソフトウェアのインストールが完了しました";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "パッケージの完全性を検証中…";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "ネットーワークを待っています…";
