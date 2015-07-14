@@ -790,10 +790,14 @@ def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
                 os.symlink(os.path.join(realdir, item),
                            os.path.join(tmpsubdir, item))
 
-    if (not munkicommon.getconsoleuser() or
-            munkicommon.getconsoleuser() == u"loginwindow"):
+    os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
+    if (os_version_tuple < (10, 11) and
+            (not munkicommon.getconsoleuser() or
+             munkicommon.getconsoleuser() == u"loginwindow")):
         # we're at the loginwindow, so we need to run the deployment
         # manager in the loginwindow context using launchctl bsexec
+        # launchctl bsexec doesn't work for this in El Cap, so do it
+        # only if we're running Yosemite or earlier
         loginwindowPID = utils.getPIDforProcessName("loginwindow")
         cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
     else:
