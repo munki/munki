@@ -75,10 +75,10 @@
 "371.title" = "Managed Software Center";
 
 /* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
-"375.title" = "ナビゲートする";
+"375.title" = "ナビゲート";
 
 /* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
-"376.title" = "ナビゲートする";
+"376.title" = "ナビゲート";
 
 /* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
 "1XY-pX-Pwv.title" = "検索";
@@ -135,4 +135,4 @@
 "tv9-wZ-XWN.title" = "アップデート";
 
 /* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
-"z4Z-vu-XGX.title" = "先へ";
+"z4Z-vu-XGX.title" = "次へ";

@@ -75,10 +75,10 @@
 "1Nd-E7-vfR.title" = "Managed Software Center";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
-"M20-JG-Pmr.title" = "Stop";
+"M20-JG-Pmr.title" = "停止";
 
 /* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
 "VCy-58-vwp.title" = "BackdropWindow";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Close";
+"bd5-IY-BXv.title" = "閉じる";
