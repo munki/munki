@@ -31,6 +31,7 @@ from objc import super
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
+from Foundation import NSBundle
 from Foundation import NSRunLoop, NSDate
 from Foundation import NSObject, NSURL, NSURLConnection
 from Foundation import NSMutableURLRequest
@@ -45,6 +46,14 @@ from Foundation import NSPropertyListXMLFormat_v1_0
 
 # Disable PyLint complaining about 'invalid' names
 # pylint: disable=C0103
+
+
+# disturbing hack warning!
+# this works around an issue with App Transport Security on 10.11
+bundle = NSBundle.mainBundle()
+info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
+
 
 ssl_error_codes = {
     -9800: u'SSL protocol error',
