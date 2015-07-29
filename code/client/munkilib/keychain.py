@@ -27,6 +27,7 @@ and here:
 import base64
 import hashlib
 import os
+import re
 import subprocess
 
 import munkicommon
@@ -88,6 +89,29 @@ def pem_cert_sha1_digest(cert_path):
     except BaseException, err:
         munkicommon.display_error('Error reading %s: %s' % (cert_path, err))
         return None
+
+
+def is_x509_cert_self_signed(cert_path):
+    '''Test for matching certificate issuer and subject to identify
+    self signed certificates.'''
+    openssl_output = openssl(
+        'x509', '-in', cert_path, '-noout', '-issuer', '-subject'
+    )
+
+    properties = {}
+    property_match = re.compile(r'^([^=]+)= (/.*)')
+    for line in openssl_output.split('\n'):
+        match = property_match.search(line)
+        if match:
+            properties[match.group(1)] = match.group(2)
+
+    if 'subject' in properties and 'issuer' in properties:
+        if properties['subject'] == properties['issuer']:
+            return True
+        else:
+            return False
+
+    raise OpenSSLError('Unable to identify issuer and subject of certificate.')
 
 
 def get_munki_server_cert_info():
@@ -182,11 +206,23 @@ def add_ca_certs_to_system_keychain(cert_info=None):
     for cert in certs_to_add:
         munkicommon.display_debug1('Adding CA cert %s...', cert)
         try:
-            output = security('add-trusted-cert', '-d',
-                              '-k', SYSTEM_KEYCHAIN, cert)
+            if is_x509_cert_self_signed(cert):
+                output = security('add-trusted-cert', '-d',
+                                  '-k', SYSTEM_KEYCHAIN, cert)
+            else:
+                # For intermediate certificates set the resultType
+                # argument to unspecified, security appears to error
+                # when a non-self signed cert is presented as a root.
+                output = security('add-trusted-cert', '-d',
+                                  '-k', SYSTEM_KEYCHAIN,
+                                  '-r', 'unspecified',
+                                  cert)
             if output:
                 munkicommon.display_debug2(output)
         except SecurityError, err:
+            munkicommon.display_error(
+                'Could not add CA cert %s into System keychain: %s', cert, err)
+        except OpenSSLError, err:
             munkicommon.display_error(
                 'Could not add CA cert %s into System keychain: %s', cert, err)
 
@@ -502,6 +538,25 @@ def security(verb_name, *args):
     (output, err) = proc.communicate()
     if proc.returncode:
         raise SecurityError('%s: %s' % (proc.returncode, err))
+    return output or err
+
+
+class OpenSSLError(Exception):
+    '''An exception class to raise if there is an error running
+    /usr/bin/openssl'''
+    pass
+
+
+def openssl(verb_name, *args):
+    '''Runs the openssl binary with args. Returns stdout.
+    Raises OpenSSLError for a non-zero return code'''
+    cmd = ['/usr/bin/openssl', verb_name] + list(args)
+    proc = subprocess.Popen(
+        cmd, shell=False, bufsize=-1,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (output, err) = proc.communicate()
+    if proc.returncode:
+        raise OpenSSLError('%s: %s' % (proc.returncode, err))
     return output or err
 
 
