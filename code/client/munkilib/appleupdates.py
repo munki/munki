@@ -623,7 +623,7 @@ class AppleUpdates(object):
         if munkicommon.stopRequested():
             return []
         if retcode:  # there was an error
-            if munkicommon.getOsVersion() == '10.5':
+            if os_version_tuple == (10, 5):
                 pass  # Leopard softwareupdate always returns a non-zero exit.
             else:
                 munkicommon.display_error('softwareupdate error: %s' % retcode)
