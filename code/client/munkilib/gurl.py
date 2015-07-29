@@ -47,12 +47,14 @@ from Foundation import NSPropertyListXMLFormat_v1_0
 # Disable PyLint complaining about 'invalid' names
 # pylint: disable=C0103
 
+import munkicommon
 
-# disturbing hack warning!
-# this works around an issue with App Transport Security on 10.11
-bundle = NSBundle.mainBundle()
-info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
+if not munkicommon.pref('NSAllowsArbitraryLoads') == False:
+    # disturbing hack warning!
+    # this works around an issue with App Transport Security on 10.11
+    bundle = NSBundle.mainBundle()
+    info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+    info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
 
 
 ssl_error_codes = {
