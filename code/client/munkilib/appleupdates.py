@@ -1052,7 +1052,7 @@ class AppleUpdates(object):
             if original_catalog_url:
                 # use softwareupdate --set-catalog
                 cmd = ['/usr/sbin/softwareupdate',
-                       '--set-catalog', original_catalog_url],
+                       '--set-catalog', original_catalog_url]
             else:
                 # use softwareupdate --clear-catalog
                 cmd = ['/usr/sbin/softwareupdate', '--clear-catalog']
