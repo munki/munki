@@ -49,7 +49,7 @@ from Foundation import NSPropertyListXMLFormat_v1_0
 
 import munkicommon
 
-if not munkicommon.pref('AllowInsecureConnections') == False:
+if munkicommon.pref('AllowInsecureConnections') == True:
     # disturbing hack warning!
     # this works around an issue with App Transport Security on 10.11
     bundle = NSBundle.mainBundle()
