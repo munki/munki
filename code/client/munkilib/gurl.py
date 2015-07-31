@@ -47,16 +47,6 @@ from Foundation import NSPropertyListXMLFormat_v1_0
 # Disable PyLint complaining about 'invalid' names
 # pylint: disable=C0103
 
-import munkicommon
-
-if munkicommon.pref('AllowInsecureConnections') == True:
-    # disturbing hack warning!
-    # this works around an issue with App Transport Security on 10.11
-    bundle = NSBundle.mainBundle()
-    info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-    info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
-
-
 ssl_error_codes = {
     -9800: u'SSL protocol error',
     -9801: u'Cipher Suite negotiation failure',
@@ -142,6 +132,14 @@ class Gurl(NSObject):
         self.connection_timeout = options.get('connection_timeout', 10)
 
         self.log = options.get('logging_function', NSLog)
+
+        self.allow_insecure_connections = options.get('allow_insecure_connections', False)
+        if self.allow_insecure_connections:
+            # disturbing hack warning!
+            # this works around an issue with App Transport Security on 10.11
+            bundle = NSBundle.mainBundle()
+            info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+            info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
 
         self.resume = False
         self.response = None
