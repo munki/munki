@@ -131,6 +131,8 @@ def get_url(url, destinationpath,
         cache_data = gurl_obj.get_stored_headers()
         del gurl_obj
 
+    allow_insecure_connections = munkicommon.pref('AllowInsecureConnections')
+    
     options = {'url': url,
                'file': tempdownloadpath,
                'follow_redirects': follow_redirects,
@@ -138,7 +140,8 @@ def get_url(url, destinationpath,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
-               'logging_function': munkicommon.display_debug2}
+               'logging_function': munkicommon.display_debug2,
+               'allow_insecure_connections': allow_insecure_connections}
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
