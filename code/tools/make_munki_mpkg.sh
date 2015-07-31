@@ -174,7 +174,7 @@ echo "  metapackage version: $MPKGVERSION"
 echo
 
 # Build Managed Software Center.
-echo "Building Managed Software Update.xcodeproj..."
+echo "Building Managed Software Center.xcodeproj..."
 pushd "$MUNKIROOT/code/apps/Managed Software Center" > /dev/null
 /usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets clean > /dev/null
 /usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets build > /dev/null
@@ -376,8 +376,6 @@ cp -R "$MSCAPP" "$APPROOT/Applications/"
 cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
-# make a symlink for the old MSU.app
-ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed Software Update.app"
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
