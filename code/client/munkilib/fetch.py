@@ -105,8 +105,7 @@ def header_dict_from_list(array):
 
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=False, 
-            allow_insecure_connections=False):
+            resume=False, follow_redirects=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -139,8 +138,7 @@ def get_url(url, destinationpath,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
-               'logging_function': munkicommon.display_debug2,
-               'allow_insecure_connections': allow_insecure_connections}
+               'logging_function': munkicommon.display_debug2}
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
@@ -235,8 +233,7 @@ def getResourceIfChangedAtomically(url,
                                    message=None,
                                    resume=False,
                                    verify=False,
-                                   follow_redirects=False,
-                                   allow_insecure_connections=False):
+                                   follow_redirects=False):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -277,8 +274,7 @@ def getResourceIfChangedAtomically(url,
         changed = getHTTPfileIfChangedAtomically(
             url, destinationpath,
             custom_headers=custom_headers,
-            message=message, resume=resume, follow_redirects=follow_redirects,
-            allow_insecure_connections=allow_insecure_connections)
+            message=message, resume=resume, follow_redirects=follow_redirects)
     elif url_parse.scheme == 'file':
         changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
     else:
@@ -358,8 +354,7 @@ def getFileIfChangedAtomically(path, destinationpath):
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                    custom_headers=None,
                                    message=None, resume=False,
-                                   follow_redirects=False,
-                                   allow_insecure_connections=False):
+                                   follow_redirects=False):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 
@@ -384,8 +379,7 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
                       message=message,
                       onlyifnewer=getonlyifnewer,
                       resume=resume,
-                      follow_redirects=follow_redirects,
-                      allow_insecure_connections=allow_insecure_connections)
+                      follow_redirects=follow_redirects)
 
     except GurlError, err:
         err = 'Error %s: %s' % tuple(err)

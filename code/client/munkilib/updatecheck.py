@@ -845,8 +845,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
                                               resume=True,
                                               message=dl_message,
                                               expected_hash=expected_hash,
-                                              verify=True, 
-                                              allow_insecure_connections=False)
+                                              verify=True)
     except fetch.MunkiDownloadError:
         raise
 
@@ -2513,8 +2512,7 @@ def getCatalogs(cataloglist):
             message = 'Retrieving catalog "%s"...' % catalogname
             try:
                 dummy_value = getResourceIfChangedAtomically(
-                    catalogurl, catalogpath, message=message, 
-                    allow_insecure_connections=allow_insecure_connections)
+                    catalogurl, catalogpath, message=message)
             except fetch.MunkiDownloadError, err:
                 munkicommon.display_error(
                     'Could not retrieve catalog %s from server: %s',
@@ -2603,8 +2601,7 @@ def getmanifest(partialurl, suppress_errors=False):
     message = 'Retrieving list of software for this machine...'
     try:
         dummy_value = getResourceIfChangedAtomically(
-            manifesturl, manifestpath, message=message, 
-            allow_insecure_connections=allow_insecure_connections)
+            manifesturl, manifestpath, message=message)
     except fetch.MunkiDownloadError, err:
         if not suppress_errors:
             munkicommon.display_error(
@@ -2862,8 +2859,7 @@ def download_icons(item_list):
             message = 'Getting icon %s for %s...' % (icon_name, item_name)
             try:
                 dummy_value = getResourceIfChangedAtomically(
-                    icon_url, icon_path, message=message,
-                    allow_insecure_connections=allow_insecure_connections)
+                    icon_url, icon_path, message=message)
             except fetch.MunkiDownloadError, err:
                 munkicommon.display_debug1(
                     'Could not retrieve icon %s from the server: %s',
@@ -2930,8 +2926,7 @@ def download_client_resources():
         resource_url = resource_base_url + filename
         try:
             dummy_value = getResourceIfChangedAtomically(
-                resource_url, resource_archive_path, message=message,
-                allow_insecure_connections=allow_insecure_connections)
+                resource_url, resource_archive_path, message=message)
             downloaded_resource_path = resource_archive_path
             break
         except fetch.MunkiDownloadError, err:
@@ -3444,8 +3439,7 @@ def getDataFromURL(url):
             os.unlink(urldata)
         except (IOError, OSError), err:
             munkicommon.display_warning('Error in getDataFromURL: %s', err)
-    dummy_result = getResourceIfChangedAtomically(url, urldata,
-        allow_insecure_connections=allow_insecure_connections)
+    dummy_result = getResourceIfChangedAtomically(url, urldata)
     try:
         fdesc = open(urldata)
         data = fdesc.read()
@@ -3459,7 +3453,7 @@ def getDataFromURL(url):
 
 def getResourceIfChangedAtomically(
         url, destinationpath, message=None, resume=False, expected_hash=None,
-        verify=False, allow_insecure_connections=False):
+        verify=False):
 
     '''Gets a given URL from the Munki server.
     Adds any additional headers to the request if present'''
@@ -3481,8 +3475,7 @@ def getResourceIfChangedAtomically(
                                                 expected_hash=expected_hash,
                                                 message=message,
                                                 resume=resume,
-                                                verify=verify,
-                                                allow_insecure_connections=allow_insecure_connections)
+                                                verify=verify)
 
 
 def getPrimaryManifestCatalogs(client_id='', force_refresh=False):

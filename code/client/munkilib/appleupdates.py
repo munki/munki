@@ -319,13 +319,9 @@ class AppleUpdates(object):
             "User-Agent: managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
             % (machine['munki_version'], darwin_version,
                machine['arch'], machine['machine_model']))
-
-        allow_insecure_connections= munkicommon.pref('AllowInsecureConnections')
-
         return fetch.getResourceIfChangedAtomically(
             url, destinationpath, custom_headers=[user_agent_header],
-            resume=resume, follow_redirects=True, 
-            allow_insecure_connections=allow_insecure_connections)
+            resume=resume, follow_redirects=True)
 
     def CacheUpdateMetadata(self):
         """Copies ServerMetadata (.smd), Metadata (.pkm), and
