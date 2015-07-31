@@ -6,6 +6,6 @@
 if [ -d "$3/Applications/Utilities/Managed Software Update.app" ] ; then
     /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app"
     # make a symlink for the old MSU.app
-	/bin/ln -s "$3/Applications/Managed Software Center.app" \
-	 "$3/Applications/Utilities/Managed Software Update.app"
+    /bin/ln -s "$3/Applications/Managed Software Center.app" \
+    "$3/Applications/Utilities/Managed Software Update.app"
 fi
