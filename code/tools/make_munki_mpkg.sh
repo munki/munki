@@ -368,7 +368,6 @@ echo "Creating applications package template..."
 # Create directory structure.
 APPROOT="$PKGTMP/munki_app"
 mkdir -m 1775 "$APPROOT"
-mkdir -p "$APPROOT/Applications/Utilities"
 chmod -R 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
