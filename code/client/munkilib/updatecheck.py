@@ -1640,6 +1640,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                 'Insufficient disk space to download and install.')
     optional_keys = ['preinstall_alert',
                      'preuninstall_alert',
+                     'preupgrade_alert',
                      'OnDemand']
     for key in optional_keys:
         if key in item_pl:

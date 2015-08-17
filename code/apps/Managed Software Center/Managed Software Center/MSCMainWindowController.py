@@ -911,7 +911,7 @@ class MSCMainWindowController(NSWindowController):
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             msclog.debug_log(
-                'User clicked Install/Remove/Cancel button in the list or detail view')
+                'User clicked Install/Remove/Upgrade/Cancel button in the list or detail view')
             msclog.debug_log('Can\'t find item: %s' % item_name)
             return
         
@@ -921,16 +921,19 @@ class MSCMainWindowController(NSWindowController):
         elif item['status'] == 'installed' and item.get('preuninstall_alert'):
             self.clickedItem = item_name
             self.displayPreInstallUninstallAlert_(item['preuninstall_alert'])
+        elif item['status'] == 'update-available' and item.get('preupgrade_alert'):
+            self.clickedItem = item_name
+            self.displayPreInstallUninstallAlert_(item['preupgrade_alert'])
         else:
             self.actionButtonPerformAction_(item_name)
     
     def displayPreInstallUninstallAlert_(self, dict):
-        ''' Display an alert sheet before processing item install or uninstall '''
-        defaultAlertTitle = NSLocalizedString(u'Attention', u'Pre Install Uninstall Alert Title')
+        ''' Display an alert sheet before processing item install/upgrade or uninstall '''
+        defaultAlertTitle = NSLocalizedString(u'Attention', u'Pre Install Uninstall Upgrade Alert Title')
         defaultAlertDetail = NSLocalizedString(u'Some conditions apply to this software. \
-                                                   Please contact your administrator for more details', u'Pre Install Uninstall Alert Detail')
-        defaultOKLabel = NSLocalizedString(u'OK', u'Pre Install Uninstall OK Label')
-        defaultCancelLabel = NSLocalizedString(u'Cancel', u'Pre Install Uninstall Cancel Label')
+                                                   Please contact your administrator for more details', u'Pre Install Uninstall Upgrade Alert Detail')
+        defaultOKLabel = NSLocalizedString(u'OK', u'Pre Install Uninstall Upgrade OK Label')
+        defaultCancelLabel = NSLocalizedString(u'Cancel', u'Pre Install Uninstall Upgrade Cancel Label')
 
         alertTitle = dict.get('alert_title') or defaultAlertTitle # shouldn't be an empty string
         alertDetail = dict.get('alert_detail', defaultAlertDetail)
@@ -960,7 +963,7 @@ class MSCMainWindowController(NSWindowController):
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:
             msclog.debug_log(
-                'User clicked Install/Removal/Cancel button in the list or detail view')
+                'User clicked Install/Upgrade/Removal/Cancel button in the list or detail view')
             msclog.debug_log('Can\'t find item: %s' % item_name)
             return
         
