@@ -25,7 +25,7 @@ Assists with importing installer items into the munki repo
 
 import sys
 import os
-import readline
+#import readline
 import subprocess
 import time
 from optparse import OptionParser, BadOptionError, AmbiguousOptionError
@@ -178,8 +178,8 @@ def copyItemToRepo(itempath, vers, subdirectory=''):
         try:
             os.makedirs(destination_path)
         except OSError, errmsg:
-            raise RepoCopyError('Could not create %s: %s' %
-                                    (destination_path, errmsg))
+            raise RepoCopyError('Could not create %s: %s'
+                                % (destination_path, errmsg))
 
     item_name = os.path.basename(itempath)
     destination_path_name = os.path.join(destination_path, item_name)
@@ -211,8 +211,8 @@ def copyItemToRepo(itempath, vers, subdirectory=''):
     cmd = ['/bin/cp', itempath, destination_path_name]
     retcode = subprocess.call(cmd)
     if retcode:
-        raise RepoCopyError('Unable to copy %s to %s' %
-                                (itempath, destination_path_name))
+        raise RepoCopyError('Unable to copy %s to %s'
+                            % (itempath, destination_path_name))
     else:
         return os.path.join(subdirectory, item_name)
 
@@ -331,8 +331,8 @@ def copyIconToRepo(iconpath):
         try:
             os.makedirs(destination_path)
         except OSError, errmsg:
-            raise RepoCopyError('Could not create %s: %s' %
-                                   (destination_path, errmsg))
+            raise RepoCopyError('Could not create %s: %s'
+                                % (destination_path, errmsg))
     icon_name = os.path.basename(iconpath)
     destination_path_name = os.path.join(destination_path, icon_name)
 
@@ -341,14 +341,14 @@ def copyIconToRepo(iconpath):
         try:
             os.unlink(destination_path_name)
         except OSError, errmsg:
-            raise RepoCopyError('Could not remove existing %s' %
-                                   (destination_path_name))
+            raise RepoCopyError('Could not remove existing %s'
+                                % (destination_path_name))
     print 'Copying %s to %s...' % (icon_name, destination_path_name)
     cmd = ['/bin/cp', iconpath, destination_path_name]
     retcode = subprocess.call(cmd)
     if retcode:
-        raise RepoCopyError('Unable to copy %s to %s' %
-                                (iconpath, destination_path_name))
+        raise RepoCopyError('Unable to copy %s to %s'
+                            % (iconpath, destination_path_name))
 
 
 def copyPkginfoToRepo(pkginfo, subdirectory=''):
@@ -360,8 +360,8 @@ def copyPkginfoToRepo(pkginfo, subdirectory=''):
         try:
             os.makedirs(destination_path)
         except OSError, errmsg:
-            raise RepoCopyError('Could not create %s: %s' %
-                                   (destination_path, errmsg))
+            raise RepoCopyError('Could not create %s: %s'
+                                % (destination_path, errmsg))
     pkginfo_ext = pref('pkginfo_extension') or ''
     if pkginfo_ext and not pkginfo_ext.startswith('.'):
         pkginfo_ext = '.' + pkginfo_ext
@@ -372,7 +372,7 @@ def copyPkginfoToRepo(pkginfo, subdirectory=''):
     while os.path.exists(pkginfo_path):
         index += 1
         pkginfo_name = '%s-%s__%s%s' % (pkginfo['name'], pkginfo['version'],
-                                     index, pkginfo_ext)
+                                        index, pkginfo_ext)
         pkginfo_path = os.path.join(destination_path, pkginfo_name)
 
     print 'Saving pkginfo to %s...' % pkginfo_path
@@ -394,16 +394,15 @@ def openPkginfoInEditor(pkginfo_path):
         try:
             dummy_returncode = subprocess.check_call(cmd)
         except (OSError, subprocess.CalledProcessError), err:
-            print >> sys.stderr, 'Problem running editor %s: %s.' % (
-                                    editor, err)
+            print >> sys.stderr, (
+                'Problem running editor %s: %s.' % (editor, err))
 
 
 def promptForSubdirectory(subdirectory):
     """Prompts the user for a subdirectory for the pkg and pkginfo"""
     while True:
         newdir = raw_input(
-                    'Upload item to subdirectory path [%s]: '
-                    % subdirectory)
+            'Upload item to subdirectory path [%s]: ' % subdirectory)
         if newdir:
             if not repoAvailable():
                 raise RepoCopyError('Could not connect to munki repo.')
@@ -413,7 +412,7 @@ def promptForSubdirectory(subdirectory):
                 destination_path = os.path.join(REPO_PATH, 'pkgs', newdir)
             if not os.path.exists(destination_path):
                 answer = raw_input('Path %s doesn\'t exist. Create it? [y/n] '
-                                    % destination_path)
+                                   % destination_path)
                 if answer.lower().startswith('y'):
                     break
             else:
@@ -478,11 +477,13 @@ def makeCatalogDB():
         for receipt in item.get('receipts', []):
             try:
                 if 'packageid' in receipt and 'version' in receipt:
-                    if not receipt['packageid'] in pkgid_table:
-                        pkgid_table[receipt['packageid']] = {}
-                    if not vers in pkgid_table[receipt['packageid']]:
-                        pkgid_table[receipt['packageid']][vers] = []
-                    pkgid_table[receipt['packageid']][vers].append(itemindex)
+                    pkgid = receipt['packageid']
+                    pkgvers = receipt['version']
+                    if not pkgid in pkgid_table:
+                        pkgid_table[pkgid] = {}
+                    if not pkgvers in pkgid_table[pkgid]:
+                        pkgid_table[pkgid][pkgvers] = []
+                    pkgid_table[pkgid][pkgvers].append(itemindex)
             except TypeError:
                 munkicommon.display_warning(
                     'Bad receipt data for %s-%s: %s'
@@ -538,7 +539,7 @@ def findMatchingPkginfo(pkginfo):
 
     if 'installer_item_hash' in pkginfo:
         matchingindexes = catdb['hashes'].get(
-                          pkginfo['installer_item_hash'])
+            pkginfo['installer_item_hash'])
         if matchingindexes:
             return catdb['items'][matchingindexes[0]]
 
@@ -557,7 +558,7 @@ def findMatchingPkginfo(pkginfo):
                     for pkgindex in testpkgindexes:
                         testpkginfo = catdb['items'][pkgindex]
                         testpkgids = [item['packageid'] for item in
-                                      testpkginfo.get('receipts',[])
+                                      testpkginfo.get('receipts', [])
                                       if 'packageid' in item]
                         if set(testpkgids) == set(pkgids):
                             return testpkginfo
@@ -587,7 +588,7 @@ def findMatchingPkginfo(pkginfo):
     # no matches by receipts or installed applications,
     # let's try to match based on installer_item_name
     installer_item_name = os.path.basename(
-        pkginfo.get('installer_item_location',''))
+        pkginfo.get('installer_item_location', ''))
     possiblematches = catdb['installer_items'].get(installer_item_name)
     if possiblematches:
         versionlist = possiblematches.keys()
@@ -622,9 +623,10 @@ def makePkgInfo(options=None, test_mode=False):
             syntax_error = [error for error in stderr.splitlines()
                             if 'error' in error]
             print >> sys.stderr, ('Option syntax error: %s' %
-                syntax_error[-1].split(': ',2)[-1])
+                                  syntax_error[-1].split(': ', 2)[-1])
             print >> sys.stderr, ('See \'%s --help\' for valid options that '
-                'can be used with munkiimport.') % makepkginfo_path
+                                  'can be used with munkiimport.'
+                                  % makepkginfo_path)
             exit(-1)
         elif proc.returncode:
             # catch-all for any other error
@@ -639,7 +641,7 @@ def makePkgInfo(options=None, test_mode=False):
     if stderr:
         # just warnings if returncode is 0
         print >> sys.stderr, stderr.rstrip('\n')
-    
+
     return FoundationPlist.readPlistFromString(stdout)
 
 
@@ -703,12 +705,13 @@ def configure():
     """Configures munkiimport for use"""
     _prefs = {}
     for (key, prompt) in [
-        ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-        ('repo_url',
-         'Repo fileshare URL (example: afp://munki.example.com/repo)'),
-        ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
-        ('editor', 'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
-        ('default_catalog', 'Default catalog to use (example: testing)')]:
+            ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+            ('repo_url',
+             'Repo fileshare URL (example: afp://munki.example.com/repo)'),
+            ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
+            ('editor',
+             'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
+            ('default_catalog', 'Default catalog to use (example: testing)')]:
 
         _prefs[key] = raw_input_with_default('%15s' % prompt, pref(key))
 
@@ -756,30 +759,33 @@ def main():
     parser = PassThroughOptionParser(usage=usage, epilog=epilog)
 
     parser.add_option('--configure', action='store_true',
-                    help="""Configure munkiimport with details about your
-                    munki repo, preferred editor, and the like. Any other
-                    options and arguments are ignored.""")
+                      help='Configure munkiimport with details about your '
+                           'munki repo, preferred editor, and the like. Any '
+                           'other options and arguments are ignored.')
     parser.add_option('--subdirectory', default='',
-                    help="""When importing an installer item, item will be
-                    uploaded to this subdirectory path in the repo pkgs
-                    directory, and the pkginfo file will be stored under
-                    this subdirectory under the pkgsinfo directory.""")
+                      help='When importing an installer item, item will be '
+                           'uploaded to this subdirectory path in the repo '
+                           'pkgs directory, and the pkginfo file will be '
+                           'stored under this subdirectory under the pkgsinfo '
+                           'directory.')
     parser.add_option('--nointeractive', '-n', action='store_true',
-                    help="""No interactive prompts. May cause a failure
-                    if repo path is unavailable.""")
+                      help='No interactive prompts. May cause a failure '
+                           'if repo path is unavailable.')
     parser.add_option('--repo_path', '--repo-path', default='',
-                    help="""Optional path to munki repo that takes precedence
-                    over the default repo_path specified via --configure.""")
+                      help='Optional path to munki repo that takes precedence '
+                           'over the default repo_path specified via '
+                           '--configure.')
     parser.add_option('--repo_url', '--repo-url', default='',
-                    help="""Optional repo fileshare URL that takes precedence
-                    over the default repo_url specified via --configure.""")
+                      help='Optional repo fileshare URL that takes precedence '
+                           'over the default repo_url specified via '
+                           '--configure.')
     parser.add_option('--icon_path', '--icon-path', default='', type='string',
-                    help="""Path to an icon file for the package.
-                    Will overwrite an existing icon.""")
+                      help='Path to an icon file for the package. '
+                           'Will overwrite an existing icon.')
     parser.add_option('--version', '-V', action='store_true',
-                    help='Print the version of the munki tools and exit.')
+                      help='Print the version of the munki tools and exit.')
     parser.add_option('--verbose', '-v', action='store_true',
-                    help='Print more output.')
+                      help='Print more output.')
 
     sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
@@ -924,8 +930,8 @@ def main():
         exactmatch = False
         if matchingpkginfo:
             if ('installer_item_hash' in matchingpkginfo and
-                matchingpkginfo['installer_item_hash'] ==
-                pkginfo.get('installer_item_hash')):
+                    matchingpkginfo['installer_item_hash'] ==
+                    pkginfo.get('installer_item_hash')):
                 exactmatch = True
                 print ('***This item is identical to an existing item in '
                        'the repo***:')
@@ -937,8 +943,8 @@ def main():
                       ('Version', 'version'),
                       ('Installer item path', 'installer_item_location'))
             for (name, key) in fields:
-                print '%21s: %s' % (name, matchingpkginfo.get(
-                                                      key,'').encode('UTF-8'))
+                print '%21s: %s' % (
+                    name, matchingpkginfo.get(key, '').encode('UTF-8'))
             print
             if exactmatch:
                 answer = raw_input('Import this item anyway? [y/n] ')
@@ -954,7 +960,7 @@ def main():
                 pkginfo['description'] = pkginfo.get('description') or \
                     matchingpkginfo.get('description', '')
                 if (options.subdirectory == '' and
-                    matchingpkginfo.get('installer_item_location')):
+                        matchingpkginfo.get('installer_item_location')):
                     options.subdirectory = os.path.dirname(
                         matchingpkginfo['installer_item_location'])
                 for key in ['blocking_applications',
@@ -968,8 +974,7 @@ def main():
                             'developer',
                             'icon_name']:
                     if key in matchingpkginfo:
-                        print 'Copying %s: %s' % (key,
-                            matchingpkginfo[key])
+                        print 'Copying %s: %s' % (key, matchingpkginfo[key])
                         pkginfo[key] = matchingpkginfo[key]
 
         # now let user do some basic editing
@@ -982,7 +987,7 @@ def main():
                      )
         for (name, key) in editfields:
             prompt = '%15s' % name
-            default = pkginfo.get(key,'').encode('UTF-8')
+            default = pkginfo.get(key, '').encode('UTF-8')
             pkginfo[key] = raw_input_with_default(prompt, default)
 
         # special handling for catalogs array
@@ -1002,7 +1007,7 @@ def main():
 
         print
         for (name, key) in editfields:
-            print '%15s: %s' % (name, pkginfo.get(key,'').encode('UTF-8'))
+            print '%15s: %s' % (name, pkginfo.get(key, '').encode('UTF-8'))
         print '%15s: %s' % (
             'Catalogs', ', '.join(pkginfo['catalogs']).encode('UTF-8'))
         print
@@ -1019,7 +1024,7 @@ def main():
                 options.subdirectory = \
                     installer_item_dirpath[len(pkgs_path)+1:]
             options.subdirectory = promptForSubdirectory(
-                                                    options.subdirectory)
+                options.subdirectory)
 
         if not iconExistsInRepo(pkginfo) and not options.icon_path:
             print 'No existing product icon found.'
@@ -1029,7 +1034,7 @@ def main():
                 installer_type = pkginfo.get('installer_type')
                 if installer_type == 'copy_from_dmg':
                     generate_png_from_copy_from_dmg_item(
-                                                    installer_item, pkginfo)
+                        installer_item, pkginfo)
                 elif installer_type in [None, '']:
                     generate_pngs_from_installer_pkg(installer_item, pkginfo)
                 else:
@@ -1080,7 +1085,7 @@ def main():
 
     # add icon to pkginfo if in repository
     addIconHashToPkginfo(pkginfo)
-    
+
     # installer_item upload was successful, so upload pkginfo to repo
     try:
         pkginfo_path = copyPkginfoToRepo(pkginfo, options.subdirectory)

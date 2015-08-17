@@ -47,6 +47,10 @@
 		C005C5BF1913F7660074AF82 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C005C5C01913F7660074AF82 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C02A5D4D1B4DAF8800A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ja; path = ja.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02A5D4E1B4DAF8F00A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C02A5D4F1B4DAF9400A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02A5D501B4DAF9900A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
 		C04626191A00014800AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C046261A1A00015600AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -266,6 +270,7 @@
 				en_GB,
 				en_AU,
 				it,
+				ja,
 			);
 			mainGroup = C09004E216CDD84E00BE34CE;
 			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
@@ -311,7 +316,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd MunkiStatus\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to it --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8";
+			shellScript = "cd MunkiStatus\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to it --utf8\n./Localize.py --from en --to ja --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8";
 		};
 		C09CE1DC18BEA78300B9724A /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -360,6 +365,7 @@
 				E6B4BCDA1993D7D0004D1B81 /* en_GB */,
 				E6B4BCE01993D7E8004D1B81 /* en_AU */,
 				C04626191A00014800AF1E48 /* it */,
+				C02A5D4E1B4DAF8F00A929F4 /* ja */,
 			);
 			name = MainMenu.strings;
 			sourceTree = "<group>";
@@ -381,6 +387,7 @@
 				E6B4BCDB1993D7D3004D1B81 /* en_GB */,
 				E6B4BCE11993D7EC004D1B81 /* en_AU */,
 				C046261A1A00015600AF1E48 /* it */,
+				C02A5D4F1B4DAF9400A929F4 /* ja */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -402,6 +409,7 @@
 				E6B4BCDD1993D7D8004D1B81 /* en_GB */,
 				E6B4BCE21993D7F1004D1B81 /* en_AU */,
 				C046261C1A00016200AF1E48 /* it */,
+				C02A5D501B4DAF9900A929F4 /* ja */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -423,6 +431,7 @@
 				E6B4BCDE1993D7E0004D1B81 /* en_GB */,
 				E6B4BCDF1993D7E5004D1B81 /* en_AU */,
 				C046261D1A00019800AF1E48 /* it */,
+				C02A5D4D1B4DAF8800A929F4 /* ja */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

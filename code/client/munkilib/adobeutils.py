@@ -226,7 +226,7 @@ def getPayloadInfo(dirpath):
                 conn = sqlite3.connect(db_path)
                 cur = conn.cursor()
                 cur.execute("SELECT value FROM PayloadData WHERE "
-                          "PayloadData.key = 'PayloadInfo'")
+                            "PayloadData.key = 'PayloadInfo'")
                 result = cur.fetchone()
                 cur.close()
                 if result:
@@ -440,7 +440,7 @@ def parseOptionXML(option_xml_file):
                             for node in element.childNodes:
                                 product['mediaSignature'] += node.nodeValue
                     info['products'].append(product)
-            
+
     return info
 
 
@@ -732,7 +732,7 @@ def doAdobeCS5Uninstall(adobeInstallInfo, payloads=None):
 
 
 def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
-    '''Installs or removes an Adobe product packaged via 
+    '''Installs or removes an Adobe product packaged via
     Creative Cloud Packager'''
     munkicommon.display_status_minor(
         'Mounting disk image %s' % os.path.basename(dmgpath))
@@ -748,7 +748,7 @@ def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
             os.path.basename(dmgpath))
         munkicommon.unmountdmg(mountpoints[0])
         return -1
-        
+
     # big hack to convince the Adobe tools to install off a mounted
     # disk image.
     #
@@ -778,7 +778,7 @@ def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
     # make our symlinks
     for dir_name in ['ASU' 'ASU2', 'ProvisioningTool', 'uninstallinfo']:
         if os.path.isdir(os.path.join(basepath, dir_name)):
-            os.symlink(os.path.join(basepath, dir_name), 
+            os.symlink(os.path.join(basepath, dir_name),
                        os.path.join(tmpdir, dir_name))
 
     for dir_name in ['Patches', 'Setup']:
@@ -790,10 +790,14 @@ def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
                 os.symlink(os.path.join(realdir, item),
                            os.path.join(tmpsubdir, item))
 
-    if (not munkicommon.getconsoleuser() or
-            munkicommon.getconsoleuser() == u"loginwindow"):
+    os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
+    if (os_version_tuple < (10, 11) and
+            (not munkicommon.getconsoleuser() or
+             munkicommon.getconsoleuser() == u"loginwindow")):
         # we're at the loginwindow, so we need to run the deployment
         # manager in the loginwindow context using launchctl bsexec
+        # launchctl bsexec doesn't work for this in El Cap, so do it
+        # only if we're running Yosemite or earlier
         loginwindowPID = utils.getPIDforProcessName("loginwindow")
         cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
     else:
@@ -860,10 +864,14 @@ def runAdobeCS5AAMEEInstall(dmgpath, payloads=None):
                         os.path.join(tmpsubdir, item))
 
         optionXMLfile = os.path.join(basepath, "optionXML.xml")
-        if (not munkicommon.getconsoleuser() or
-                munkicommon.getconsoleuser() == u"loginwindow"):
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
+        if (os_version_tuple < (10, 11) and
+                (not munkicommon.getconsoleuser() or
+                 munkicommon.getconsoleuser() == u"loginwindow")):
             # we're at the loginwindow, so we need to run the deployment
             # manager in the loginwindow context using launchctl bsexec
+            # launchctl bsexec doesn't work for this in El Cap, so do it
+            # only if we're running Yosemite or earlier
             loginwindowPID = utils.getPIDforProcessName("loginwindow")
             cmd = ['/bin/launchctl', 'bsexec', loginwindowPID]
         else:
@@ -1162,7 +1170,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
         option_xml_file = os.path.join(dirpath, 'optionXML.xml')
         option_xml_info = {}
         if os.path.exists(option_xml_file):
-            option_xml_info = parseOptionXML(option_xml_file)            
+            option_xml_info = parseOptionXML(option_xml_file)
         cataloginfo = getAdobePackageInfo(dirpath)
         if cataloginfo:
             # add some more data
@@ -1177,7 +1185,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 cataloginfo['installer_type'] = "AdobeCCPInstaller"
                 cataloginfo['minimum_os_version'] = "10.6.8"
                 mediasignatures = [
-                    item['mediaSignature'] 
+                    item['mediaSignature']
                     for item in option_xml_info.get('products', [])
                     if 'mediaSignature' in item]
             else:
