@@ -1,13 +1,11 @@
 #!/bin/sh
 
-# remove any Managed Software Update.app bundle since the installer
-# won't replace a bundle with a symlink, leading to yucky stuff like
-# "/Applications/Utilities/Managed Software Update.app 1"
+# Replace any Managed Software Update.app bundle with a symlink to Managed
+# Software Center.app
 
 if [ -d "$3/Applications/Utilities/Managed Software Update.app" ] ; then
     /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app"
-fi
-
-if [ -d "$3/Applications/Utilities/Managed Software Update.app 1" ] ; then
-    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app 1"
+    # make a symlink for the old MSU.app
+    /bin/ln -s "$3/Applications/Managed Software Center.app" \
+    "$3/Applications/Utilities/Managed Software Update.app"
 fi
