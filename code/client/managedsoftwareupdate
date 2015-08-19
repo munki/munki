@@ -473,7 +473,7 @@ def main():
                     help="""Uses MunkiStatus.app for progress feedback when
                     installing.""")
     p.add_option('--id', default='',
-                    help='Alternate identifier for catalog retreival')
+                    help='Alternate identifier for manifest retrieval')
     p.add_option('--quiet', '-q', action='store_true',
                     help="""Quiet mode. Logs messages, but nothing to stdout.
                     --verbose is ignored if --quiet is used.""")
