@@ -404,7 +404,6 @@ def find(args):
                             if findtext.upper() in item.upper():
                                 print '%s: %s' % (name, item)
                                 count += 1
-                                break
                         except AttributeError, err:
                             pass
                 elif findtext.upper() in value.upper():
@@ -419,7 +418,6 @@ def find(args):
                             if findtext.upper() in item.upper():
                                 print '%s (%s): %s' % (name, key, item)
                                 count += 1
-                                break
                         except AttributeError, err:
                             pass
                 elif findtext.upper() in value.upper():
