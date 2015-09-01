@@ -424,7 +424,7 @@ def find(args):
                     print '%s (%s): %s' % (name, key, value)
                     count += 1
 
-    print '%s items found.' % count
+    print '%s matches found.' % count
     return 0
 
 
