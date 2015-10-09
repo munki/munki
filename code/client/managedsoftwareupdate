@@ -755,6 +755,9 @@ def main():
         # shouldn't run Software Update if we're doing Apple items
         # with Munki items
         should_do_apple_updates = False
+        munkicommon.log('Skipping Apple Software Updates because '
+                        'items to be installed from the Munki repo contain '
+                        'Apple items.')
         # if there are force_install_after_date items in a pre-existing
         # AppleUpdates.plist this means we are blocking those updates.
         # we need to delete AppleUpdates.plist so that other code doesn't
@@ -766,8 +769,6 @@ def main():
             os.unlink(appleupdates_plist)
         except OSError:
             pass
-        munkicommon.log('Not doing Apple Software Updates because we are '
-                        'installing Apple items with Munki items.')
     else:
         # check the normal preferences
         should_do_apple_updates = munkicommon.pref(
