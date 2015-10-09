@@ -833,7 +833,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
         if not enoughDiskSpace(item_pl, installinfo['managed_installs'],
                                uninstalling=uninstalling):
             raise fetch.MunkiDownloadError(
-                'Insufficient disk space to download and install %s', pkgname)
+                'Insufficient disk space to download and install %s' % pkgname)
         else:
             munkicommon.display_detail(
                 'Downloading %s from %s', pkgname, location)
