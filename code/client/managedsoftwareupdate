@@ -766,7 +766,8 @@ def main():
             os.unlink(appleupdates_plist)
         except OSError:
             pass
-
+        munkicommon.log('Not doing Apple Software Updates because we are '
+                        'installing Apple items with Munki items.')
     else:
         # check the normal preferences
         should_do_apple_updates = munkicommon.pref(
@@ -878,7 +879,7 @@ def main():
                     munkicommon.log('No GUI users, installing at login window.')
                     munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
-                    # reset our count of available updates 
+                    # reset our count of available updates
                     updatesavailable = 0
                     appleupdatesavailable = 0
             else:  # there are GUI users
