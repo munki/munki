@@ -749,6 +749,10 @@ def currentGUIusers():
             parts = line.split()
             gui_users.append(parts[0])
 
+    # 10.11 sometimes has a phantom '_mbsetupuser' user. Filter it out.
+    users_to_ignore = ['_mbsetupuser']
+    gui_users = [user for user in gui_users if user not in users_to_ignore]
+
     return gui_users
 
 
