@@ -800,7 +800,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     location = item_pl.get(download_item_key)
     if not location:
         raise fetch.MunkiDownloadError(
-            "No %s in item info.", download_item_key)
+            "No %s in item info." % download_item_key)
 
     # allow pkginfo preferences to override system munki preferences
     downloadbaseurl = item_pl.get('PackageCompleteURL') or \
@@ -833,7 +833,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
         if not enoughDiskSpace(item_pl, installinfo['managed_installs'],
                                uninstalling=uninstalling):
             raise fetch.MunkiDownloadError(
-                'Insufficient disk space to download and install %s', pkgname)
+                'Insufficient disk space to download and install %s' % pkgname)
         else:
             munkicommon.display_detail(
                 'Downloading %s from %s', pkgname, location)
