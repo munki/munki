@@ -578,7 +578,7 @@ class AppleUpdates(object):
             retcode = self._LeopardDownloadAvailableUpdates(catalog_url)
         elif os_version_tuple >= (10, 11):
             # 10.11 seems not to like file:// URLs
-            catalog_url = self._GetAppleCatalogURL()
+            catalog_url = self._ElCapitanGetCatalogURL()
             retcode = self._RunSoftwareUpdate(
                 ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
         else:
@@ -612,7 +612,7 @@ class AppleUpdates(object):
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
             # 10.11 does not appear to like file:// URLs
-            catalog_url = self._GetAppleCatalogURL()
+            catalog_url = self._ElCapitanGetCatalogURL()
         else:
             # use our locally-cached Apple catalog
             catalog_url = 'file://localhost' + urllib2.quote(catalog_path)
@@ -670,6 +670,15 @@ class AppleUpdates(object):
         f = _open(local_apple_sus_catalog, 'wb')
         f.write(contents)
         f.close()
+
+    def _ElCapitanGetCatalogURL(self):
+        """Returns SoftwareUpdateServerURL set in Munki's preferences or None.
+        Works around an issue with catalog changes causing cached downloads to
+        be deleted."""
+        munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
+        if munkisuscatalog:
+            return munkisuscatalog
+        return None
 
     def _GetAppleCatalogURL(self):
         """Returns the catalog URL of the Apple SU catalog for the current Mac.
@@ -1432,8 +1441,8 @@ class AppleUpdates(object):
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
             su_options.append('--no-scan')
-            # 10.11 seems not like file:// URLs
-            catalog_url = self._GetAppleCatalogURL()
+            # 10.11 seems not to like file:// URLs
+            catalog_url = self._ElCapitanGetCatalogURL()
 
         retcode = self._RunSoftwareUpdate(
             su_options, mode='install', catalog_url=catalog_url,
