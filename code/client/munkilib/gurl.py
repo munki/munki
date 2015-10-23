@@ -24,6 +24,7 @@ curl replacement using NSURLConnection and friends
 
 import os
 import xattr
+from urlparse import urlparse
 
 # builtin super doesn't work with Cocoa classes in recent PyObjC releases.
 from objc import super
@@ -374,12 +375,19 @@ class Gurl(NSObject):
         # to redirect and where the new location is.
         newURL = request.URL().absoluteString()
         self.redirection.append([newURL, dict(response.allHeaderFields())])
-        if self.follow_redirects:
+        newParsedURL = urlparse(newURL)
+        if self.follow_redirects == True or self.follow_redirects == 'all':
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             return request
+        elif self.follow_redirects == 'https' and newParsedURL.scheme == 'https':
+            # Once again, allow the redirect
+            self.log('Allowing redirect to: %s' % newURL)
+            return request
         else:
-            # Deny the redirect
+            # If we're down here either the preference was set to 'none',
+            # the url we're forwarding on to isn't https or follow_redirects
+            # was explicitly set to False
             self.log('Denying redirect to: %s' % newURL)
             return None
 
