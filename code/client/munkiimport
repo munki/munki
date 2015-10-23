@@ -1026,8 +1026,9 @@ def main():
             options.subdirectory = promptForSubdirectory(
                 options.subdirectory)
 
-        if (not iconExistsInRepo(pkginfo) and not options.icon_path and not
-            APPLEMETADATA and not pkginfo.get('installer_type') == 'profile'):
+        if (not iconExistsInRepo(pkginfo) and not options.icon_path
+                and not APPLEMETADATA
+                and not pkginfo.get('installer_type') == 'profile'):
             print 'No existing product icon found.'
             answer = raw_input('Attempt to create a product icon? [y/n] ')
             if answer.lower().startswith('y'):
