@@ -741,7 +741,7 @@ def main():
 
     usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
-       Installer item can be a pkg, mpkg, dmg, or app.
+       Installer item can be a pkg, mpkg, dmg, mobileconfig, or app.
        Bundle-style pkgs and apps are wrapped in a dmg file before upload.
 
        Example:
