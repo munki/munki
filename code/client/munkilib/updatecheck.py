@@ -2640,7 +2640,7 @@ def cleanUpManifests():
 
             if name in exceptions:
                 continue
-                
+
             abs_path = os.path.join(dirpath, name)
             rel_path = abs_path[len(manifest_dir):].lstrip("/")
 
@@ -3037,6 +3037,46 @@ def check(client_id='', localmanifestpath=None):
         # verify available license seats for optional installs
         if installinfo.get('optional_installs'):
             updateAvailableLicenseSeats(installinfo)
+
+        # process LocalOnlyManifest installs
+        localonlymanifestname = munkicommon.pref('LocalOnlyManifest')
+        if localonlymanifestname:
+            localonlymanifest = os.path.join(
+                ManagedInstallDir, 'manifests', localonlymanifestname)
+
+            # if the manifest already exists, the name is being reused
+            if localonlymanifestname in MANIFESTS:
+                munkicommon.display_error(
+                    "LocalOnlyManifest %s has the same name as an existing " \
+                     "manifest, skipping...", localonlymanifestname
+                )
+            else:
+                MANIFESTS[localonlymanifestname] = localonlymanifest
+                if os.path.exists(localonlymanifest):
+                    # use catalogs from main manifest for local only manifest
+                    cataloglist = getManifestValueForKey(
+                        mainmanifestpath, 'catalogs')
+                    munkicommon.display_detail(
+                        '**Processing local-only choices**'
+                    )
+
+                    localonlyinstalls = getManifestValueForKey(
+                        localonlymanifest, 'managed_installs') or []
+                    for item in localonlyinstalls:
+                        dummy_result = processInstall(
+                            item,
+                            cataloglist,
+                            installinfo
+                        )
+
+                    localonlyuninstalls = getManifestValueForKey(
+                        localonlymanifest, 'managed_uninstalls') or []
+                    for item in localonlyuninstalls:
+                        dummy_result = processRemoval(
+                            item,
+                            cataloglist,
+                            installinfo
+                        )
 
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'
