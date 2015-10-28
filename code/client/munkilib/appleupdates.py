@@ -330,6 +330,8 @@ class AppleUpdates(object):
         of these files."""
         catalog = FoundationPlist.readPlist(self.filtered_catalog_path)
         if not 'Products' in catalog:
+            munkicommon.display_warning(
+                '"Products" not found in %s', self.filtered_catalog_path)
             return
 
         for product_key in catalog['Products'].keys():
