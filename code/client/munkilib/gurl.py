@@ -24,10 +24,15 @@ curl replacement using NSURLConnection and friends
 
 import os
 import xattr
+from urlparse import urlparse
+
+# builtin super doesn't work with Cocoa classes in recent PyObjC releases.
+from objc import super
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
+from Foundation import NSBundle
 from Foundation import NSRunLoop, NSDate
 from Foundation import NSObject, NSURL, NSURLConnection
 from Foundation import NSMutableURLRequest
@@ -42,6 +47,14 @@ from Foundation import NSPropertyListXMLFormat_v1_0
 
 # Disable PyLint complaining about 'invalid' names
 # pylint: disable=C0103
+
+
+# disturbing hack warning!
+# this works around an issue with App Transport Security on 10.11
+bundle = NSBundle.mainBundle()
+info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
+
 
 ssl_error_codes = {
     -9800: u'SSL protocol error',
@@ -362,12 +375,19 @@ class Gurl(NSObject):
         # to redirect and where the new location is.
         newURL = request.URL().absoluteString()
         self.redirection.append([newURL, dict(response.allHeaderFields())])
-        if self.follow_redirects:
+        newParsedURL = urlparse(newURL)
+        if self.follow_redirects == True or self.follow_redirects == 'all':
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             return request
+        elif self.follow_redirects == 'https' and newParsedURL.scheme == 'https':
+            # Once again, allow the redirect
+            self.log('Allowing redirect to: %s' % newURL)
+            return request
         else:
-            # Deny the redirect
+            # If we're down here either the preference was set to 'none',
+            # the url we're forwarding on to isn't https or follow_redirects
+            # was explicitly set to False
             self.log('Denying redirect to: %s' % newURL)
             return None
 

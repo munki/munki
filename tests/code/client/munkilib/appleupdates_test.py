@@ -534,10 +534,19 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.mox.StubOutWithMock(appleupdates.os, 'unlink')
 
         appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(self.au.applicable_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(
+            self.au.applicable_updates_plist).AndRaise(OSError)
+        appleupdates.os.unlink(self.au.apple_updates_plist).AndReturn(None)
+        appleupdates.os.unlink(
+            self.au.applicable_updates_plist).AndRaise(IOError)
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(OSError)
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(IOError)
 
         self.mox.ReplayAll()
+        self.au.ClearAppleUpdateInfo()
+        self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
         self.au.ClearAppleUpdateInfo()
@@ -560,7 +569,7 @@ class TestAppleUpdates(mox.MoxTestBase):
 
         appleupdates.os.path.exists(
             self.au.local_download_catalog_path).AndReturn(True)
-        appleupdates.munkicommon.getOsVersion().AndReturn('10.7')
+        appleupdates.munkicommon.getOsVersion(as_tuple=True).AndReturn((10, 7))
         self.au._RunSoftwareUpdate(
             ['-d', '-a'],
             catalog_url=catalog_url,
@@ -586,7 +595,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         self.au._ResetMunkiStatusAndDisplayMessage(msg).AndReturn(None)
         appleupdates.os.path.exists(
             self.au.local_download_catalog_path).AndReturn(True)
-        appleupdates.munkicommon.getOsVersion().AndReturn('10.5')
+        appleupdates.munkicommon.getOsVersion(as_tuple=True).AndReturn((10,5))
         self.au._LeopardDownloadAvailableUpdates(catalog_url).AndReturn(2)
         appleupdates.munkicommon.display_error('softwareupdate error: %s' % 2)
 
@@ -627,6 +636,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.unlink(self.au.applicable_updates_plist).AndRaise(
             OSError)
 
+        appleupdates.munkicommon.getOsVersion(as_tuple=True).AndReturn((10, 6))
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
@@ -634,7 +644,6 @@ class TestAppleUpdates(mox.MoxTestBase):
             catalog_url=catalog_url, 
             stop_allowed=True).AndReturn(1)
 
-        appleupdates.munkicommon.getOsVersion().AndReturn('10.6')
         appleupdates.munkicommon.display_error('softwareupdate error: %s' % 1)
         appleupdates.munkicommon.stopRequested().AndReturn(False)
 
@@ -656,6 +665,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.unlink(self.au.applicable_updates_plist).AndRaise(
             OSError)
 
+        appleupdates.munkicommon.getOsVersion(as_tuple=True).AndReturn((10, 6))
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
@@ -685,6 +695,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.unlink(self.au.applicable_updates_plist).AndRaise(
             OSError)
 
+        appleupdates.munkicommon.getOsVersion(as_tuple=True).AndReturn((10, 6))
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
@@ -721,6 +732,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.unlink(self.au.applicable_updates_plist).AndRaise(
             OSError)
 
+        appleupdates.munkicommon.getOsVersion(as_tuple=True).AndReturn((10, 6))
         catalog_url = 'file://localhost' + appleupdates.urllib2.quote(
             self.au.extracted_catalog_path)
         self.au._RunSoftwareUpdate(
@@ -1424,7 +1436,7 @@ class TestAppleUpdates(mox.MoxTestBase):
             {'AppleUpdates': 'appleupdates'},
             self.au.apple_updates_plist).AndReturn(None)
         self.mox.ReplayAll()
-        self.assertTrue(self.au.WriteAppleUpdatesFile())
+        self.assertTrue(self.au.WriteAppleUpdatesFile() == len('appleupdates'))
         self.mox.VerifyAll()
 
     def testWriteAppleUpdatesFileFailure(self):
@@ -1437,7 +1449,7 @@ class TestAppleUpdates(mox.MoxTestBase):
         appleupdates.os.unlink(self.au.apple_updates_plist).AndRaise(OSError)
 
         self.mox.ReplayAll()
-        self.assertFalse(self.au.WriteAppleUpdatesFile())
+        self.assertTrue(self.au.WriteAppleUpdatesFile() == 0)
         self.mox.VerifyAll()
 
     def testDisplayAppleUpdateInfo(self):

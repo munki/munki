@@ -42,6 +42,7 @@ from optparse import OptionValueError
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import adobeutils
+from munkilib import profiles
 
 from Foundation import NSDate, NSUserName
 
@@ -110,6 +111,34 @@ def getCatalogInfoFromPath(pkgpath, options):
         # maybe an Adobe installer/updater/patcher?
         cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath,
                                                     options.pkgname or '')
+    return cataloginfo
+
+
+def getCatalogInfoForProfile(profile_path):
+    '''Populates some metadata for profile pkginfo'''
+    cataloginfo = {}
+    profile = profiles.read_profile(profile_path)
+    if profile.get('PayloadType') == 'Configuration':
+        try:
+            cataloginfo['PayloadIdentifier'] = profile['PayloadIdentifier']
+        except (KeyError, AttributeError):
+            # this thing is broken! return the empty info
+            return cataloginfo
+        cataloginfo['name'] = os.path.basename(profile_path)
+        cataloginfo['display_name'] = profile.get(
+            'PayloadDisplayName', cataloginfo['name'])
+        cataloginfo['description'] = profile.get('PayloadDescription', '')
+        cataloginfo['version'] = '1.0'
+        cataloginfo['installer_type'] = 'profile'
+        cataloginfo['uninstallable'] = True
+        cataloginfo['uninstall_method'] = 'remove_profile'
+        cataloginfo['unattended_install'] = True
+        cataloginfo['unattended_uninstall'] = True
+        cataloginfo['minimum_os_version'] = '10.7'
+        cataloginfo['minimum_munki_version'] = '2.2'
+    else:
+        print >> sys.stderr, (
+            'Profile PayloadType is %s' % profile.get('PayloadType'))
     return cataloginfo
 
 
@@ -356,6 +385,16 @@ def check_mode(option, opt, value, parser):
                                                             (opt, mode))
     setattr(parser.values, option.dest, value)
 
+def has_valid_install_critieria(catinfo):
+    """
+    Inspects compiled catalog info dictionary for valid install criteria.
+    Returns boolean.
+    """
+    return (catinfo.get('installs')
+            or catinfo.get('receipts')
+            or catinfo.get('installcheck_script')
+            or catinfo.get('installer_type') == 'profile'
+            or catinfo.get('installer_type') == 'apple_update_metadata')
 
 def main():
     '''Main routine'''
@@ -636,6 +675,12 @@ def main():
               'not listed in any applicable \'managed_installs\'.')
         )
     additional_options.add_option(
+        '--OnDemand',
+        action='store_true',
+        help=('Indicates this package should be an OnDemand package '
+              'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
         '--minimum_munki_version', '--minimum-munki-version',
         metavar='VERSION',
         help=('Minimum version of munki required to perform installation. '
@@ -712,6 +757,7 @@ def main():
         )
     p.add_option_group(additional_options)
 
+    sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = p.parse_args()
 
     if options.version:
@@ -719,7 +765,7 @@ def main():
         exit(0)
 
     if options.verify_options_only:
-        if (len(arguments) == 0 and not options.apple_update and 
+        if (len(arguments) == 0 and not options.apple_update and
                 not options.nopkg):
             print >> sys.stderr, 'makepkginfo options FAILED verification'
             print >> sys.stderr, 'No installer item was provided.'
@@ -752,7 +798,7 @@ def main():
         p.print_usage()
         exit(-1)
 
-    if (options.minimum_os_version and 
+    if (options.minimum_os_version and
             not options.minimum_os_version[0].isdigit()):
         print >> sys.stderr, (
             'Minimum OS Version must start with a number, e.g. 10.7.2.')
@@ -834,6 +880,13 @@ def main():
                     # convert to kbytes
                     itemsize = int(itemsize/1024)
 
+            elif munkicommon.hasValidConfigProfileExt(item):
+                catinfo = getCatalogInfoForProfile(item)
+                if not catinfo:
+                    print >> sys.stderr, (
+                        "%s doesn't appear to be a supported configuration "
+                        "profile!" % item)
+                    exit(-1)
             else:
                 print >> sys.stderr, "%s is not a valid installer item!" % item
                 exit(-1)
@@ -1013,6 +1066,8 @@ def main():
         catinfo['autoremove'] = True
     if options.minimum_munki_version:
         catinfo['minimum_munki_version'] = options.minimum_munki_version
+    if options.OnDemand:
+        catinfo['OnDemand'] = True
     if options.unattended_install:
         catinfo['unattended_install'] = True
     if options.unattended_uninstall:
@@ -1072,11 +1127,30 @@ def main():
             catinfo['display_name'] = options.displayname
         catinfo['installer_type'] = 'apple_update_metadata'
 
-# add user/environment metadata
+    # add user/environment metadata
     catinfo['_metadata'] = make_pkginfo_metadata()
+
+    if (len(arguments) == 1 and
+            not has_valid_install_critieria(catinfo)):
+        item = catinfo['name']
+        msg = (
+            "WARNING: pkginfo for '%s' contains no installation check info!\n"
+            "    No useful receipts were detected, and no 'installs' "
+            "items were provided.\n"
+            "    If you do not add an 'installs' item or "
+            "an installcheck_script,\n"
+            "    Munki will have no way to determine the item's installation "
+            "state.\n"
+            "    This can result in repeated installation attempts or failure "
+            "to attempt\n"
+            "    installation at all.")
+        print >> sys.stderr, msg % item
 
     # and now, what we've all been waiting for...
     print FoundationPlist.writePlistToString(catinfo)
+
+    # clean up
+    munkicommon.cleanUpTmpDir()
 
 
 if __name__ == '__main__':

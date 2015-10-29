@@ -21,16 +21,25 @@
 '''munki-specific code for use with Managed Software Center'''
 
 import os
-import stat
 import subprocess
-import random
 import FoundationPlist
-import Foundation
+
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
 from Foundation import NSDate
 from Foundation import NSFileManager
 from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesAppSynchronize
+from Foundation import NSDateFormatter
+from Foundation import NSDateFormatterBehavior10_4
+from Foundation import kCFDateFormatterLongStyle
+from Foundation import kCFDateFormatterShortStyle
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+# pylint: enable=E0611
 
+# Disable PyLint complaining about 'invalid' camelCase names
+# pylint: disable=C0103
 
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
 UPDATECHECKLAUNCHFILE = \
@@ -41,10 +50,29 @@ INSTALLWITHOUTLOGOUTFILE = \
 def call(cmd):
     '''Convenience function; works around an issue with subprocess.call
     in PyObjC in Snow Leopard'''
-    proc = subprocess.Popen(cmd, bufsize=1, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-    (output, err) = proc.communicate()
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    _ = proc.communicate()
     return proc.returncode
+
+
+def osascript(osastring):
+    """Wrapper to run AppleScript commands"""
+    cmd = ['/usr/bin/osascript', '-e', osastring]
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, _) = proc.communicate()
+    if proc.returncode != 0:
+        return ''
+    if out:
+        return str(out).decode('UTF-8').rstrip('\n')
+
+
+def restartNow():
+    '''Trigger a restart'''
+    osascript('tell application "System Events" to restart')
+
 
 BUNDLE_ID = u'ManagedInstalls'
 
@@ -92,7 +120,7 @@ def readSelfServiceManifest():
         # no working copy, look for system copy
         managedinstallbase = pref('ManagedInstallDir')
         SelfServeManifest = os.path.join(managedinstallbase, "manifests",
-                                            "SelfServeManifest")
+                                         "SelfServeManifest")
     if os.path.exists(SelfServeManifest):
         try:
             return FoundationPlist.readPlist(SelfServeManifest)
@@ -117,14 +145,15 @@ def userSelfServiceChoicesChanged():
     the 'system' version of this file?'''
     if not os.path.exists(WRITEABLE_SELF_SERVICE_MANIFEST_PATH):
         return False
-    user_choices = FoundationPlist.readPlist(WRITEABLE_SELF_SERVICE_MANIFEST_PATH)
+    user_choices = FoundationPlist.readPlist(
+        WRITEABLE_SELF_SERVICE_MANIFEST_PATH)
     managedinstallbase = pref('ManagedInstallDir')
     system_path = os.path.join(managedinstallbase, "manifests",
-                           "SelfServeManifest")
+                               "SelfServeManifest")
     if not os.path.exists(system_path):
         return True
     system_choices = FoundationPlist.readPlist(system_path)
-    return (user_choices != system_choices)
+    return user_choices != system_choices
 
 
 def getRemovalDetailPrefs():
@@ -171,15 +200,18 @@ def thereAreUpdatesToBeForcedSoon(hours=72):
     installinfo.extend(getAppleUpdates().get('AppleUpdates', []))
 
     if installinfo:
-        now = NSDate.date()
         now_xhours = NSDate.dateWithTimeIntervalSinceNow_(hours * 3600)
         for item in installinfo:
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
-                force_install_after_date = discardTimeZoneFromDate(
-                    force_install_after_date)
-                if now_xhours >= force_install_after_date:
-                    return True
+                try:
+                    force_install_after_date = discardTimeZoneFromDate(
+                        force_install_after_date)
+                    if now_xhours >= force_install_after_date:
+                        return True
+                except BadDateError:
+                    # some issue with the stored date
+                    pass
     return False
 
 
@@ -188,7 +220,7 @@ def earliestForceInstallDate(installinfo=None):
     Returns None or earliest force_install_after_date converted to local time
     """
     earliest_date = None
-    
+
     if not installinfo:
         installinfo = getInstallInfo().get('managed_installs', [])
         installinfo.extend(getAppleUpdates().get('AppleUpdates', []))
@@ -197,13 +229,20 @@ def earliestForceInstallDate(installinfo=None):
         this_force_install_date = install.get('force_install_after_date')
 
         if this_force_install_date:
-            this_force_install_date = discardTimeZoneFromDate(
-                this_force_install_date)
-            if not earliest_date or this_force_install_date < earliest_date:
-                earliest_date = this_force_install_date
-
+            try:
+                this_force_install_date = discardTimeZoneFromDate(
+                    this_force_install_date)
+                if not earliest_date or this_force_install_date < earliest_date:
+                    earliest_date = this_force_install_date
+            except BadDateError:
+                # some issue with the stored date
+                pass
     return earliest_date
 
+
+class BadDateError(Exception):
+    '''Exception when transforming dates'''
+    pass
 
 def discardTimeZoneFromDate(the_date):
     """Input: NSDate object
@@ -212,9 +251,12 @@ def discardTimeZoneFromDate(the_date):
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
-    # get local offset
-    offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
-        '%z', None, None)
+    try:
+        # get local offset
+        offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
+            '%z', None, None)
+    except:
+        raise BadDateError()
     hour_offset = int(offset[0:3])
     minute_offset = int(offset[0] + offset[3:])
     seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
@@ -226,10 +268,10 @@ def stringFromDate(nsdate):
     """Input: NSDate object
     Output: unicode object, date and time formatted per system locale.
     """
-    df = Foundation.NSDateFormatter.alloc().init()
-    df.setFormatterBehavior_(Foundation.NSDateFormatterBehavior10_4)
-    df.setDateStyle_(Foundation.kCFDateFormatterLongStyle)
-    df.setTimeStyle_(Foundation.kCFDateFormatterShortStyle)
+    df = NSDateFormatter.alloc().init()
+    df.setFormatterBehavior_(NSDateFormatterBehavior10_4)
+    df.setDateStyle_(kCFDateFormatterLongStyle)
+    df.setTimeStyle_(kCFDateFormatterShortStyle)
     return unicode(df.stringForObjectValue_(nsdate))
 
 
@@ -237,9 +279,9 @@ def shortRelativeStringFromDate(nsdate):
     """Input: NSDate object
     Output: unicode object, date and time formatted per system locale.
     """
-    df = Foundation.NSDateFormatter.alloc().init()
-    df.setDateStyle_(Foundation.kCFDateFormatterShortStyle)
-    df.setTimeStyle_(Foundation.kCFDateFormatterShortStyle)
+    df = NSDateFormatter.alloc().init()
+    df.setDateStyle_(kCFDateFormatterShortStyle)
+    df.setTimeStyle_(kCFDateFormatterShortStyle)
     df.setDoesRelativeDateFormatting_(True)
     return unicode(df.stringFromDate_(nsdate))
 
@@ -267,7 +309,7 @@ def getAppleUpdates():
     appleUpdatesFile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
     if (os.path.exists(appleUpdatesFile) and
             (pref('InstallAppleSoftwareUpdates') or
-            pref('AppleSoftwareUpdatesOnly'))):
+             pref('AppleSoftwareUpdatesOnly'))):
         try:
             plist = FoundationPlist.readPlist(appleUpdatesFile)
         except FoundationPlist.NSPropertyListSerializationException:
@@ -299,14 +341,13 @@ def trimVersionString(version_string):
     version_parts = version_string.split('.')
     # strip off all trailing 0's in the version, while over 2 parts.
     while len(version_parts) > 2 and version_parts[-1] == '0':
-        del(version_parts[-1])
+        del version_parts[-1]
     return '.'.join(version_parts)
 
 
 def getconsoleuser():
     '''Get current GUI user'''
-    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
-    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+    cfuser = SCDynamicStoreCopyConsoleUser(None, None, None)
     return cfuser[0]
 
 
@@ -316,12 +357,16 @@ def currentGUIusers():
     proc = subprocess.Popen("/usr/bin/who", shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, err) = proc.communicate()
+    (output, _) = proc.communicate()
     lines = str(output).splitlines()
     for line in lines:
         if "console" in line:
             parts = line.split()
             gui_users.append(parts[0])
+
+    # 10.11 sometimes has a phantom '_mbsetupuser' user. Filter it out.
+    users_to_ignore = ['_mbsetupuser']
+    gui_users = [user for user in gui_users if user not in users_to_ignore]
 
     return gui_users
 
@@ -339,7 +384,7 @@ ignoring application responses
 end ignoring
 """
     cmd = ['/usr/bin/osascript', '-e', script]
-    result = call(cmd)
+    _ = call(cmd)
 
 
 def logoutAndUpdate():
@@ -398,7 +443,7 @@ def pythonScriptRunning(scriptname):
             try:
                 # first look for Python processes
                 if (args[0].find('MacOS/Python') != -1 or
-                    args[0].find('python') != -1):
+                        args[0].find('python') != -1):
                     # look for first argument being scriptname
                     if args[1].find(scriptname) != -1:
                         try:
@@ -472,7 +517,8 @@ def getRunningBlockingApps(appnames):
                               if item['pathname'] == appname]
         elif appname.endswith('.app'):
             # search by filename
-            matching_items = [item for item in proc_list
+            matching_items = [
+                item for item in proc_list
                 if '/'+ appname + '/Contents/MacOS/' in item['pathname']]
         else:
             # check executable name
@@ -481,7 +527,8 @@ def getRunningBlockingApps(appnames):
 
         if not matching_items:
             # try adding '.app' to the name and check again
-            matching_items = [item for item in proc_list
+            matching_items = [
+                item for item in proc_list
                 if '/' + appname + '.app/Contents/MacOS/' in item['pathname']]
 
         #matching_items = set(matching_items)
@@ -506,7 +553,7 @@ def getPowerInfo():
     power_dict['TimeRemaining'] = -1
     cmd = ['/usr/bin/pmset', '-g', 'ps']
     proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+                            stderr=subprocess.PIPE)
     (output, dummy_error) = proc.communicate()
     if proc.returncode:
         # handle error

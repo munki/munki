@@ -23,6 +23,7 @@
 import os
 import stat
 import subprocess
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
 
@@ -36,7 +37,6 @@ def call(cmd):
 
 
 def getconsoleuser():
-    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
     cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
     return cfuser[0]
 

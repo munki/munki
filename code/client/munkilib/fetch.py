@@ -225,7 +225,6 @@ def get_url(url, destinationpath,
         raise HTTPError(connection.status,
                         connection.headers.get('http_result_description',''))
 
-
 def getResourceIfChangedAtomically(url,
                                    destinationpath,
                                    custom_headers=None,
@@ -268,6 +267,10 @@ def getResourceIfChangedAtomically(url,
         munkicommon.log('Cached payload does not match hash in catalog, '
                 'will check if changed and redownload: %s' % destinationpath)
         #continue with normal if-modified-since/etag update methods.
+
+    if follow_redirects != True:
+        # If we haven't explicitly said to follow redirect, the preference decides
+        follow_redirects = munkicommon.pref('FollowHTTPRedirects')
 
     url_parse = urlparse.urlparse(url)
     if url_parse.scheme in ['http', 'https']:

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>${display_name}</title>
+    <title>${display_name_escaped}</title>
 
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/detail.css" />
@@ -20,7 +20,7 @@
                             <div class="lockup product">
                                 <!--<a href="#">-->
                                     <div class="artwork">
-                                        <img width="175" height="175" alt="${display_name}" class="artwork" src="${icon}" />
+                                        <img width="175" height="175" alt="${display_name_escaped}" class="artwork" src="${icon}" />
                                     </div>
                                 <!--</a>-->
                                 <div class="warning">
@@ -32,7 +32,7 @@
                             <div class="product-info box-flex">
                                 <div class="product-review">
                                     <div class="title">
-                                        <h1>${display_name}</h1>
+                                        <h1>${display_name_escaped}</h1>
                                     </div>
                                     <p class="more-text">
                                         ${description}
@@ -48,9 +48,9 @@
                             <div class="content">
                                 <ul class="list">
                                     <li><span class="label">${typeLabel} </span>${type}</li>
-                                    <li><span class="label">${versionLabel} </span>${display_version}</li>
+                                    <li><span class="label">${versionLabel} </span>${display_version_escaped}</li>
                                     <li><span class="label">${sizeLabel} </span>${size}</li>
-                                    <li><span class="label">${developerLabel} </span>${developer}</li>
+                                    <li><span class="label">${developerLabel} </span>${developer_escaped}</li>
                                 </ul>
                                 <hr/>
                                 <ul class="list">

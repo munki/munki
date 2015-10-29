@@ -32,11 +32,12 @@ from urllib import quote_plus
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 # our libs
+import appleupdates
 import fetch
 import keychain
 import munkicommon
 import munkistatus
-import appleupdates
+import profiles
 import FoundationPlist
 
 # Apple's libs
@@ -799,7 +800,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     location = item_pl.get(download_item_key)
     if not location:
         raise fetch.MunkiDownloadError(
-            "No %s in item info.", download_item_key)
+            "No %s in item info." % download_item_key)
 
     # allow pkginfo preferences to override system munki preferences
     downloadbaseurl = item_pl.get('PackageCompleteURL') or \
@@ -813,7 +814,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     else:
         if not downloadbaseurl.endswith('/'):
             downloadbaseurl = downloadbaseurl + '/'
-        pkgurl = downloadbaseurl + urllib2.quote(location)
+        pkgurl = downloadbaseurl + urllib2.quote(location.encode('UTF-8'))
 
     pkgname = getInstallerItemBasename(location)
     munkicommon.display_debug2('Download base URL is: %s', downloadbaseurl)
@@ -832,7 +833,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
         if not enoughDiskSpace(item_pl, installinfo['managed_installs'],
                                uninstalling=uninstalling):
             raise fetch.MunkiDownloadError(
-                'Insufficient disk space to download and install %s', pkgname)
+                'Insufficient disk space to download and install %s' % pkgname)
         else:
             munkicommon.display_detail(
                 'Downloading %s from %s', pkgname, location)
@@ -1197,6 +1198,11 @@ def installedState(item_pl):
     """
     foundnewer = False
 
+    if item_pl.get('OnDemand'):
+        # always install these items -- retcode 0 means install is needed
+        munkicommon.display_debug1('This is an OnDemand item. Must install.')
+        return 0
+
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'installcheck_script', item_pl, suppress_error=True)
@@ -1224,6 +1230,14 @@ def installedState(item_pl):
                 '%s is not in available Apple Software Updates',
                 item_pl['softwareupdatename'])
             # return 1 so we're marked as not needing to be installed
+            return 1
+
+    if item_pl.get('installer_type') == 'profile':
+        identifier = item_pl.get('PayloadIdentifier')
+        hash_value = item_pl.get('installer_item_hash')
+        if profiles.profile_needs_to_be_installed(identifier, hash_value):
+            return 0
+        else:
             return 1
 
      # does 'installs' exist and is it non-empty?
@@ -1277,6 +1291,11 @@ def someVersionInstalled(item_pl):
 
     Returns a boolean.
     """
+    if item_pl.get('OnDemand'):
+        # These should never be counted as installed
+        munkicommon.display_debug1('This is an OnDemand item.')
+        return False
+
     if item_pl.get('installcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'installcheck_script', item_pl, suppress_error=True)
@@ -1289,6 +1308,13 @@ def someVersionInstalled(item_pl):
         # non-zero could be an error or successfully indicating
         # that an install is not needed. We hope it's the latter.
         return True
+
+    if item_pl.get('installer_type') == 'profile':
+        identifier = item_pl.get('PayloadIdentifier')
+        if profiles.profile_is_installed(identifier):
+            return True
+        else:
+            return False
 
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs'):
@@ -1333,6 +1359,11 @@ def evidenceThisIsInstalled(item_pl):
 
     Returns a boolean.
     """
+    if item_pl.get('OnDemand'):
+        # These should never be counted as installed
+        munkicommon.display_debug1('This is an OnDemand item.')
+        return False
+
     if item_pl.get('uninstallcheck_script'):
         retcode = munkicommon.runEmbeddedScript(
             'uninstallcheck_script', item_pl, suppress_error=True)
@@ -1358,6 +1389,13 @@ def evidenceThisIsInstalled(item_pl):
         # non-zero could be an error or successfully indicating
         # that an install is not needed
         return True
+
+    if item_pl.get('installer_type') == 'profile':
+        identifier = item_pl.get('PayloadIdentifier')
+        if profiles.profile_is_installed(identifier):
+            return True
+        else:
+            return False
 
     foundallinstallitems = False
     if ('installs' in item_pl and
@@ -1580,7 +1618,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['description'] = item_pl.get('description', '')
     iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
     iteminfo['display_name'] = item_pl.get('display_name', '')
-    for key in ['category', 'developer', 'icon_name',
+    for key in ['category', 'developer', 'icon_name', 'icon_hash',
                 'requires', 'RestartAction']:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
@@ -1600,10 +1638,13 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
                                warn=False):
             iteminfo['note'] = (
                 'Insufficient disk space to download and install.')
-    if item_pl.get('preinstall_alert'):
-        iteminfo['preinstall_alert'] = item_pl.get('preinstall_alert')
-    if item_pl.get('preuninstall_alert'):
-        iteminfo['preuninstall_alert'] = item_pl.get('preuninstall_alert')
+    optional_keys = ['preinstall_alert',
+                     'preuninstall_alert',
+                     'preupgrade_alert',
+                     'OnDemand']
+    for key in optional_keys:
+        if key in item_pl:
+            iteminfo[key] = item_pl[key]
 
     munkicommon.display_debug1(
         'Adding %s to the optional install list', iteminfo['name'])
@@ -1874,7 +1915,10 @@ def processInstall(manifestitem, cataloglist, installinfo):
                              'apple_item',
                              'category',
                              'developer',
-                             'icon_name']
+                             'icon_name',
+                             'PayloadIdentifier',
+                             'icon_hash',
+                             'OnDemand']
 
             for key in optional_keys:
                 if key in item_pl:
@@ -2083,6 +2127,10 @@ def processManifestForKey(manifest, manifest_key, installinfo,
                 munkicommon.display_warning(
                     'Missing predicate for conditional_item %s', item)
                 continue
+            except BaseException:
+                munkicommon.display_warning(
+                    'Conditional item is malformed: %s', item)
+                continue
             INFO_OBJECT['catalogs'] = cataloglist
             if predicateEvaluatesAsTrue(predicate):
                 conditionalmanifest = item
@@ -2211,7 +2259,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             uninstall_item = item
         elif uninstallmethod in ['remove_copied_items',
                                  'remove_app',
-                                 'uninstall_script']:
+                                 'uninstall_script',
+                                 'remove_profile']:
             uninstall_item = item
         else:
             # uninstall_method is a local script.
@@ -2312,7 +2361,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'apple_item',
                     'category',
                     'developer',
-                    'icon_name']
+                    'icon_name',
+                    'PayloadIdentifier']
     for key in optionalKeys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
@@ -2456,7 +2506,8 @@ def getCatalogs(cataloglist):
 
     for catalogname in cataloglist:
         if not catalogname in CATALOG:
-            catalogurl = catalogbaseurl + urllib2.quote(catalogname)
+            catalogurl = catalogbaseurl + urllib2.quote(
+                catalogname.encode('UTF-8'))
             catalogpath = os.path.join(catalog_dir, catalogname)
             munkicommon.display_detail('Getting catalog %s...', catalogname)
             message = 'Retrieving catalog "%s"...' % catalogname
@@ -2523,7 +2574,7 @@ def getmanifest(partialurl, suppress_errors=False):
     else:
         # request for nested manifest
         manifestdisplayname = partialurl
-        manifestname = os.path.split(partialurl)[1]
+        manifestname = partialurl
         manifesturl = manifestbaseurl + urllib2.quote(partialurl)
 
     if manifestname in MANIFESTS:
@@ -2532,6 +2583,22 @@ def getmanifest(partialurl, suppress_errors=False):
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
     manifestpath = os.path.join(manifest_dir, manifestname)
+
+    # Create the folder the manifest shall be stored in
+    destinationdir = os.path.dirname(manifestpath)
+    try:
+        os.makedirs(destinationdir)
+    except OSError as e:
+        # OSError will be raised if destinationdir exists, ignore this case
+        if not os.path.isdir(destinationdir):
+            if not suppress_errors:
+                munkicommon.display_error(
+                    'Could not create folder to store manifest %s: %s',
+                    manifestdisplayname, e
+                )
+
+            return None
+
     message = 'Retrieving list of software for this machine...'
     try:
         dummy_value = getResourceIfChangedAtomically(
@@ -2558,6 +2625,35 @@ def getmanifest(partialurl, suppress_errors=False):
         # plist is valid
         MANIFESTS[manifestname] = manifestpath
         return manifestpath
+
+def cleanUpManifests():
+    """Removes any manifest files that are no longer in use by this client"""
+    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+                               'manifests')
+
+    exceptions = [
+        "SelfServeManifest"
+    ]
+
+    for (dirpath, dirnames, filenames) in os.walk(manifest_dir, topdown=False):
+        for name in filenames:
+
+            if name in exceptions:
+                continue
+
+            abs_path = os.path.join(dirpath, name)
+            rel_path = abs_path[len(manifest_dir):].lstrip("/")
+
+            if rel_path not in MANIFESTS.keys():
+                os.unlink(abs_path)
+
+        # Try and remove the directory (rmdir will fail if directory is not empty)
+        try:
+            if dirpath != manifest_dir:
+                os.rmdir(dirpath)
+        except OSError:
+            pass
+
 
 
 def getPrimaryManifest(alternate_id):
@@ -2625,7 +2721,7 @@ def getPrimaryManifest(alternate_id):
 
         if not manifest:
             manifest = getmanifest(
-                manifesturl + urllib2.quote(clientidentifier.encode('utf-8')))
+                manifesturl + urllib2.quote(clientidentifier.encode('UTF-8')))
         if manifest:
             # record this info for later
             munkicommon.report['ManifestName'] = clientidentifier
@@ -2738,11 +2834,19 @@ def download_icons(item_list):
     munkicommon.display_debug2('Icon base URL is: %s', icon_base_url)
     for item in item_list:
         icon_name = item.get('icon_name') or item['name']
+        pkginfo_icon_hash = item.get('icon_hash')
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
         icon_list.append(icon_name)
-        icon_url = icon_base_url + urllib2.quote(icon_name)
+        icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))
         icon_path = os.path.join(icon_dir, icon_name)
+        if os.path.isfile(icon_path):
+            xattr_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
+            if not xattr_hash:
+                xattr_hash = munkicommon.getsha256hash(icon_path)
+                fetch.writeCachedChecksum(icon_path, xattr_hash)
+        else:
+            xattr_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
         if not os.path.exists(icon_subdir):
             try:
@@ -2751,16 +2855,19 @@ def download_icons(item_list):
                 munkicommon.display_error(
                     'Could not create %s' % icon_subdir)
                 continue
-        munkicommon.display_detail('Getting icon %s...', icon_name)
-        item_name = item.get('display_name') or item['name']
-        message = 'Getting icon for %s...' % item_name
-        try:
-            dummy_value = getResourceIfChangedAtomically(
-                icon_url, icon_path, message=message)
-        except fetch.MunkiDownloadError, err:
-            munkicommon.display_debug1(
-                'Could not retrieve icon %s from the server: %s',
-                icon_name, err)
+        if pkginfo_icon_hash != xattr_hash:
+            item_name = item.get('display_name') or item['name']
+            message = 'Getting icon %s for %s...' % (icon_name, item_name)
+            try:
+                dummy_value = getResourceIfChangedAtomically(
+                    icon_url, icon_path, message=message)
+            except fetch.MunkiDownloadError, err:
+                munkicommon.display_debug1(
+                    'Could not retrieve icon %s from the server: %s',
+                    icon_name, err)
+            else:
+                if os.path.isfile(icon_path):
+                    fetch.writeCachedChecksum(icon_path)
     # remove no-longer needed icons from the local directory
     for (dirpath, dummy_dirnames, filenames) in os.walk(
             icon_dir, topdown=False):
@@ -2931,6 +3038,46 @@ def check(client_id='', localmanifestpath=None):
         if installinfo.get('optional_installs'):
             updateAvailableLicenseSeats(installinfo)
 
+        # process LocalOnlyManifest installs
+        localonlymanifestname = munkicommon.pref('LocalOnlyManifest')
+        if localonlymanifestname:
+            localonlymanifest = os.path.join(
+                ManagedInstallDir, 'manifests', localonlymanifestname)
+
+            # if the manifest already exists, the name is being reused
+            if localonlymanifestname in MANIFESTS:
+                munkicommon.display_error(
+                    "LocalOnlyManifest %s has the same name as an existing " \
+                     "manifest, skipping...", localonlymanifestname
+                )
+            else:
+                MANIFESTS[localonlymanifestname] = localonlymanifest
+                if os.path.exists(localonlymanifest):
+                    # use catalogs from main manifest for local only manifest
+                    cataloglist = getManifestValueForKey(
+                        mainmanifestpath, 'catalogs')
+                    munkicommon.display_detail(
+                        '**Processing local-only choices**'
+                    )
+
+                    localonlyinstalls = getManifestValueForKey(
+                        localonlymanifest, 'managed_installs') or []
+                    for item in localonlyinstalls:
+                        dummy_result = processInstall(
+                            item,
+                            cataloglist,
+                            installinfo
+                        )
+
+                    localonlyuninstalls = getManifestValueForKey(
+                        localonlymanifest, 'managed_uninstalls') or []
+                    for item in localonlyuninstalls:
+                        dummy_result = processRemoval(
+                            item,
+                            cataloglist,
+                            installinfo
+                        )
+
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'
         selfservemanifest = os.path.join(
@@ -2981,8 +3128,10 @@ def check(client_id='', localmanifestpath=None):
                         item, cataloglist, installinfo)
 
             # we don't need to filter uninstalls
-            processManifestForKey(selfservemanifest, 'managed_uninstalls',
-                                  installinfo, cataloglist)
+            selfserveuninstalls = getManifestValueForKey(
+                selfservemanifest, 'managed_uninstalls') or []
+            for item in selfserveuninstalls:
+                dummy_result = processRemoval(item, cataloglist, installinfo)
 
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
@@ -3068,6 +3217,9 @@ def check(client_id='', localmanifestpath=None):
 
         # clean up catalogs directory
         cleanUpCatalogs()
+
+        # clean up manifests directory
+        cleanUpManifests()
 
         # clean up cache dir
         # remove any item in the cache that isn't scheduled

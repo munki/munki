@@ -27,21 +27,28 @@ import sys
 import time
 import traceback
 
+# Disable PyLint complaining about 'invalid' camelCase names
+# pylint: disable=C0103
+
 # Do not place any imports with ObjC bindings above this!
 try:
+    # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+    # No name 'Foo' in module 'Bar' warnings. Disable them.
+    # pylint: disable=E0611
     from Foundation import NSDate
     from Foundation import NSDistributedNotificationCenter
     from Foundation import NSNotificationDeliverImmediately
     from Foundation import NSNotificationPostToAllSessions
+    # pylint: enable=E0611
 except ImportError:
     # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
     print >> sys.stderr, 'Python is missing ObjC bindings.'
-    scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-    script = os.path.join(scriptdir, 'report_broken_client')
+    _scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    _script = os.path.join(_scriptdir, 'report_broken_client')
     try:
-        result, stdout, stderr = utils.runExternalScript(script)
-        print >> sys.stderr, result, stdout, stderr
+        _result, _stdout, _stderr = utils.runExternalScript(_script)
+        print >> sys.stderr, _result, _stdout, _stderr
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, err:
@@ -171,21 +178,23 @@ def runScript(script, display_name, runtype):
             utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
         except utils.VerifyFilePermissionsError, err:
             # OK, managedsoftwareupdate is insecure anyway - warn & execute.
-            munkicommon.display_warning('Multiple munki executable scripts '
-                'have insecure file permissions. Executing '
-                '%s anyway. Error: %s' % (display_name, err))
+            munkicommon.display_warning(
+                'Multiple munki executable scripts have insecure file '
+                'permissions. Executing %s anyway. Error: %s'
+                % (display_name, err))
         else:
             # Just the preflight/postflight is insecure. Do not execute.
-            munkicommon.display_warning('Skipping execution of %s due to '
-                'insecure file permissions. Error: %s' % (display_name, err))
+            munkicommon.display_warning(
+                'Skipping execution of %s due to insecure file permissions. '
+                'Error: %s' % (display_name, err))
             return result
 
     try:
         result, stdout, stderr = utils.runExternalScript(
             script, allow_insecure=True, script_args=[runtype])
         if result:
-            munkicommon.display_info('%s return code: %d'
-                                    % (display_name, result))
+            munkicommon.display_info(
+                '%s return code: %d' % (display_name, result))
         if stdout:
             munkicommon.display_info('%s stdout: %s' % (display_name, stdout))
         if stderr:
@@ -219,7 +228,8 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            munki_need_to_restart = installer.run(only_unattended=only_unattended)
+            munki_need_to_restart = installer.run(
+                only_unattended=only_unattended)
         except:
             munkicommon.display_error('Unexpected error in munkilib.installer:')
             munkicommon.log(traceback.format_exc())
@@ -230,7 +240,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
         # install Apple updates
         try:
             apple_need_to_restart = appleupdates.installAppleUpdates(
-                                            only_unattended=only_unattended)
+                only_unattended=only_unattended)
         except:
             munkicommon.display_error(
                 'Unexpected error in appleupdates.installAppleUpdates:')
@@ -272,31 +282,37 @@ def doRestart():
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:
-            # someone is logged in and we're using munkistatus
+            # someone is logged in and we're using Managed Software Center.
+            # We need to notifiy the active user that a restart is required.
+            # We actually should almost never get here; generally Munki knows
+            # a restart is needed before even starting the updates and forces
+            # a logout before applying the updates
             munkicommon.display_info(
                 'Notifying currently logged-in user to restart.')
             munkistatus.activate()
             munkistatus.restartAlert()
-            munkicommon.osascript(
-                'tell application "System Events" to restart')
+            # Managed Software Center will trigger a restart
+            # when the alert is dismissed. If a user gets clever and subverts
+            # this restart (perhaps by force-quitting the app),
+            # that's their problem...
         else:
             print 'Please restart immediately.'
 
 
 def munkiUpdatesAvailable():
-    """Return True if there are available updates, False otherwise."""
-    updatesavailable = False
+    """Return count of available updates."""
+    updatesavailable = 0
     installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                'InstallInfo.plist')
     if os.path.exists(installinfo):
         try:
             plist = FoundationPlist.readPlist(installinfo)
-            updatesavailable = len(plist.get('removals', [])) or \
-                               len(plist.get('managed_installs', []))
+            updatesavailable = (len(plist.get('removals', [])) +
+                                len(plist.get('managed_installs', [])))
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
-            munkicommon.display_error('Install info at %s is invalid.' %
-                                       installinfo)
+            munkicommon.display_error(
+                'Install info at %s is invalid.' % installinfo)
     return updatesavailable
 
 
@@ -308,8 +324,8 @@ def munkiUpdatesContainAppleItems():
         try:
             plist = FoundationPlist.readPlist(installinfo)
         except FoundationPlist.NSPropertyListSerializationException:
-            munkicommon.display_error('Install info at %s is invalid.' %
-                                           installinfo)
+            munkicommon.display_error(
+                'Install info at %s is invalid.' % installinfo)
         else:
             # check managed_installs
             for item in plist.get('managed_installs', []):
@@ -348,6 +364,15 @@ def sendUpdateNotification():
         userInfo)
 
 
+def sendDockUpdateNotification():
+    '''Sends an update notification via NSDistributedNotificationCenter
+    MSU.app's docktileplugin registers to receive these events.'''
+    userInfo = {'pid': os.getpid()}
+    sendDistrubutedNotification(
+        'com.googlecode.munki.managedsoftwareupdate.dock.updateschanged',
+        userInfo)
+
+
 def sendStartNotification():
     '''Sends a start notification via NSDistributedNotificationCenter'''
     userInfo = {'pid': os.getpid()}
@@ -357,7 +382,7 @@ def sendStartNotification():
 
 
 def sendEndNotification():
-    '''Sends a start notification via NSDistributedNotificationCenter'''
+    '''Sends an ended notification via NSDistributedNotificationCenter'''
     userInfo = {'pid': os.getpid()}
     sendDistrubutedNotification(
         'com.googlecode.munki.managedsoftwareupdate.ended',
@@ -440,44 +465,41 @@ def main():
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 
     p = optparse.OptionParser()
-    p.set_usage("""Usage: %prog [options]""")
+    p.set_usage('Usage: %prog [options]')
     p.add_option('--auto', '-a', action='store_true',
-                    help="""Used by launchd LaunchAgent for scheduled runs.
-                    No user feedback or intervention. All other options
-                    ignored.""")
+                 help='Used by launchd LaunchAgent for scheduled runs. '
+                 'No user feedback or intervention. All other options '
+                 'ignored.')
     p.add_option('--logoutinstall', '-l', action='store_true',
-                    help="""Used by launchd LaunchAgent when running at the
-                    loginwindow.""")
+                 help='Used by launchd LaunchAgent when running at the '
+                 'loginwindow.')
     p.add_option('--installwithnologout', action='store_true',
-                    help="""Used by Managed Software Update.app when user
-                            triggers an install without logging out.""")
+                 help='Used by Managed Software Update.app when user '
+                 'triggers an install without logging out.')
     p.add_option('--manualcheck', action='store_true',
-                    help="""Used by launchd LaunchAgent when checking
-                    manually.""")
+                 help='Used by launchd LaunchAgent when checking manually.')
     p.add_option('--munkistatusoutput', '-m', action='store_true',
-                    help="""Uses MunkiStatus.app for progress feedback when
-                    installing.""")
+                 help='Uses MunkiStatus.app for progress feedback when '
+                 'installing.')
     p.add_option('--id', default='',
-                    help='Alternate identifier for catalog retreival')
+                 help='Alternate identifier for manifest retrieval')
     p.add_option('--quiet', '-q', action='store_true',
-                    help="""Quiet mode. Logs messages, but nothing to stdout.
-                    --verbose is ignored if --quiet is used.""")
+                 help='Quiet mode. Logs messages, but nothing to stdout. '
+                 '--verbose is ignored if --quiet is used.')
     p.add_option('--verbose', '-v', action='count', default=1,
-                    help="""More verbose output. May be specified multiple
-                     times.""")
+                 help='More verbose output. May be specified multiple times.')
     p.add_option('--checkonly', action='store_true',
-                       help="""Check for updates, but don't install them.
-                       This is the default behavior.""")
+                 help='Check for updates, but don\'t install them. This is '
+                 'the default behavior.')
     p.add_option('--installonly', action='store_true',
-                       help='Skip checking and install any pending updates.')
+                 help='Skip checking and install any pending updates.')
     p.add_option('--applesuspkgsonly', action='store_true',
-                       help=('Only check/install Apple SUS packages, '
-                             'skip Munki packages.'))
+                 help='Only check/install Apple SUS packages, skip Munki '
+                 'packages.')
     p.add_option('--munkipkgsonly', action='store_true',
-                       help=('Only check/install Munki packages, '
-                             'skip Apple SUS.'))
+                 help='Only check/install Munki packages, skip Apple SUS.')
     p.add_option('--version', '-V', action='store_true',
-                      help='Print the version of the munki tools and exit.')
+                 help='Print the version of the munki tools and exit.')
 
     options, dummy_arguments = p.parse_args()
 
@@ -530,11 +552,11 @@ def main():
                     options.installonly = False
                     options.auto = True
                     # HACK: sometimes this runs before the network is up.
-                    # we'll attempt to wait up to 30 seconds for the
+                    # we'll attempt to wait up to 60 seconds for the
                     # network interfaces to come up
                     # before continuing
                     munkicommon.display_status_minor('Waiting for network...')
-                    for dummy_i in range(30):
+                    for dummy_i in range(60):
                         if networkUp():
                             break
                         time.sleep(1)
@@ -567,7 +589,7 @@ def main():
         if os.path.exists(launchdtriggerfile):
             try:
                 launch_options = FoundationPlist.readPlist(launchdtriggerfile)
-                options.munkipkgsonly =  launch_options.get(
+                options.munkipkgsonly = launch_options.get(
                     'SuppressAppleUpdateCheck')
             except FoundationPlist.FoundationPlistException:
                 pass
@@ -672,9 +694,10 @@ def main():
         exit(0)
 
     applesoftwareupdatesonly = (munkicommon.pref('AppleSoftwareUpdatesOnly')
-        or options.applesuspkgsonly)
+                                or options.applesuspkgsonly)
 
-    if not options.installonly and not applesoftwareupdatesonly:
+    skip_munki_check = (options.installonly or applesoftwareupdatesonly)
+    if not skip_munki_check:
         # check to see if we can talk to the manifest server
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
@@ -696,9 +719,9 @@ def main():
             else:
                 # even if we can't reach the manifest server, we can
                 # attempt to do installs of cached items. Setting
-                # options.installonly to True will cause the updatecheck
+                # skip_munki_check to True will cause the updatecheck
                 # to be skipped
-                options.installonly = True
+                skip_munki_check = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
@@ -713,7 +736,7 @@ def main():
                'Software Updates only.')
 
     updatecheckresult = None
-    if not options.installonly and not applesoftwareupdatesonly:
+    if not skip_munki_check:
         try:
             updatecheckresult = updatecheck.check(client_id=options.id)
         except:
@@ -726,7 +749,7 @@ def main():
         recordUpdateCheckResult(updatecheckresult)
 
     updatesavailable = munkiUpdatesAvailable()
-    appleupdatesavailable = False
+    appleupdatesavailable = 0
 
     # should we do Apple Software updates this run?
     if applesoftwareupdatesonly:
@@ -739,6 +762,9 @@ def main():
         # shouldn't run Software Update if we're doing Apple items
         # with Munki items
         should_do_apple_updates = False
+        munkicommon.log('Skipping Apple Software Updates because '
+                        'items to be installed from the Munki repo contain '
+                        'Apple items.')
         # if there are force_install_after_date items in a pre-existing
         # AppleUpdates.plist this means we are blocking those updates.
         # we need to delete AppleUpdates.plist so that other code doesn't
@@ -750,19 +776,18 @@ def main():
             os.unlink(appleupdates_plist)
         except OSError:
             pass
-
     else:
         # check the normal preferences
         should_do_apple_updates = munkicommon.pref(
-                                        'InstallAppleSoftwareUpdates')
+            'InstallAppleSoftwareUpdates')
 
     if should_do_apple_updates:
-        if (not options.installonly and not munkicommon.stopRequested()):
+        if not options.installonly and not munkicommon.stopRequested():
             force_update_check = False
             force_catalog_refresh = False
-            if (options.manualcheck or runtype == 'checkandinstallatstartup'):
+            if options.manualcheck or runtype == 'checkandinstallatstartup':
                 force_update_check = True
-            if (runtype == 'custom' and applesoftwareupdatesonly):
+            if runtype == 'custom' and applesoftwareupdatesonly:
                 force_update_check = True
                 force_catalog_refresh = True
             try:
@@ -797,12 +822,11 @@ def main():
                 munkicommon.savereport()
                 raise
 
-    if not options.installonly:
-        # display any available update information
-        if updatecheckresult:
-            updatecheck.displayUpdateInfo()
-        if appleupdatesavailable:
-            appleupdates.displayAppleUpdateInfo()
+    # display any available update information
+    if updatecheckresult:
+        updatecheck.displayUpdateInfo()
+    if appleupdatesavailable:
+        appleupdates.displayAppleUpdateInfo()
 
     # send a notification event so MSU can update its display
     # if needed
@@ -816,6 +840,11 @@ def main():
         if options.installonly or options.logoutinstall:
             # just install
             mustrestart = doInstallTasks(appleupdatesavailable)
+            # reset our count of available updates (it might not actually
+            # be zero, but we want to clear the badge on the Dock icon;
+            # it can be updated to the "real" count on the next Munki run)
+            updatesavailable = 0
+            appleupdatesavailable = 0
             # send a notification event so MSU can update its display
             # if needed
             sendUpdateNotification()
@@ -840,14 +869,14 @@ def main():
                     munkicommon.log('Installing only items marked unattended '
                                     'because SuppressLoginwindowInstall is '
                                     'true.')
-                    ignore_restart = doInstallTasks(
+                    dummy_restart = doInstallTasks(
                         appleupdatesavailable, only_unattended=True)
                 elif getIdleSeconds() < 10:
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because system is not idle '
                                     '(keyboard or mouse activity).')
                 elif munkicommon.isAppRunning(
-                    '/System/Library/CoreServices/FileSyncAgent.app'):
+                        '/System/Library/CoreServices/FileSyncAgent.app'):
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because FileSyncAgent.app is running '
                                     '(HomeSyncing a mobile account on login?).')
@@ -855,20 +884,23 @@ def main():
                     # no GUI users, system is idle, so we can install
                     # but first, enable status output over login window
                     munkicommon.munkistatusoutput = True
+                    munkicommon.log('No GUI users, installing at login window.')
                     munkistatus.launchMunkiStatus()
                     mustrestart = doInstallTasks(appleupdatesavailable)
-
+                    # reset our count of available updates
+                    updatesavailable = 0
+                    appleupdatesavailable = 0
             else:  # there are GUI users
                 if munkicommon.pref('SuppressAutoInstall'):
                     munkicommon.log('Skipping unattended installs because '
-                                     'SuppressAutoInstall is true.')
+                                    'SuppressAutoInstall is true.')
                 else:
                     # check for packages that need to be force installed
                     # soon and convert them to unattended_installs if they
                     # don't require a logout
                     dummy_action = updatecheck.checkForceInstallPackages()
                     # install anything that can be done unattended
-                    ignore_restart = doInstallTasks(
+                    dummy_restart = doInstallTasks(
                         appleupdatesavailable, only_unattended=True)
 
                 # send a notification event so MSU can update its display
@@ -886,6 +918,7 @@ def main():
                 # it's possible that we no longer have any available updates
                 # so we need to check InstallInfo.plist and
                 # AppleUpdates.plist again
+                updatesavailable = munkiUpdatesAvailable()
                 try:
                     appleupdatesavailable = \
                         appleupdates.appleSoftwareUpdatesAvailable(
@@ -896,7 +929,7 @@ def main():
                     munkicommon.log(traceback.format_exc())
                     munkicommon.savereport()
                     raise
-                if appleupdatesavailable or munkiUpdatesAvailable():
+                if appleupdatesavailable or updatesavailable:
                     # set a flag to notify the user of available updates
                     # after we conclude this run.
                     notify_user = True
@@ -923,6 +956,14 @@ def main():
     munkicommon.report['ConsoleUser'] = munkicommon.getconsoleuser() or \
                                         '<None>'
     munkicommon.savereport()
+
+    # store the current pending update count
+    munkicommon.set_pref('PendingUpdateCount',
+                         updatesavailable + appleupdatesavailable)
+
+    # send a notification event so Dock tile badge can be updated
+    # if needed
+    sendDockUpdateNotification()
 
     munkicommon.display_status_major('Finishing...')
     sendEndNotification()

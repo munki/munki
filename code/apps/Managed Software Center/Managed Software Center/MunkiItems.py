@@ -520,7 +520,7 @@ class GenericItem(dict):
             icon_name += '.png'
         icon_path = os.path.join(msclib.html_dir(), 'icons', icon_name)
         if os.path.exists(icon_path):
-            return 'icons/' + icon_name
+            return 'icons/' + quote(icon_name)
         # didn't find one in the downloaded icons
         # so create one if needed from a locally installed app
         for key in ['icon_name', 'display_name', 'name']:
@@ -531,7 +531,7 @@ class GenericItem(dict):
                     icon_name += '.png'
                 icon_path = os.path.join(msclib.html_dir(), icon_name)
                 if os.path.exists(icon_path) or convertIconToPNG(name, icon_path, 350):
-                    return icon_name
+                    return quote(icon_name)
         else:
             # use the Generic package icon
             return 'static/Generic.png'
@@ -1021,15 +1021,20 @@ class UpdateItem(GenericItem):
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
                 # insert installation deadline into description
-                local_date = munki.discardTimeZoneFromDate(
+                try:
+                    local_date = munki.discardTimeZoneFromDate(
                                                 force_install_after_date)
-                date_str = munki.stringFromDate(local_date)
-                forced_date_text = NSLocalizedString(
-                                    u"This item must be installed by %s",
-                                    u"Forced Date warning")
-                warning = ('<span class="warning">'
-                           + forced_date_text % date_str
-                           + '</span><br><br>')
+                except munki.BadDateError:
+                    # some issue with the stored date
+                    pass
+                else:
+                    date_str = munki.stringFromDate(local_date)
+                    forced_date_text = NSLocalizedString(
+                        u"This item must be installed by %s",
+                        u"Forced Date warning")
+                    warning = ('<span class="warning">'
+                               + forced_date_text % date_str
+                               + '</span><br><br>')
             if self.get('dependent_items'):
                 dependent_items = self.dependency_description()
 

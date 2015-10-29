@@ -115,6 +115,32 @@ def generate_page(page_name, main_page_template_name, page_dict, **kwargs):
     write_page(page_name, html)
 
 
+def escape_quotes(text):
+    """Escape single and double-quotes for JavaScript"""
+    return text.replace("'", r"\'").replace('"', r'\"')
+
+
+def escape_html(text):
+    """Convert some problematic characters to entities"""
+    html_escape_table = {
+        "&": "&amp;",
+        '"': "&quot;",
+        "'": "&#39;",
+        ">": "&gt;",
+        "<": "&lt;",
+    }
+    return "".join(html_escape_table.get(c, c) for c in text)
+
+
+def escapeAndQuoteCommonFields(item):
+    '''Adds _escaped and _quoted versions of several commonly-used fields'''
+    item['name_escaped'] = escape_html(item['name'])
+    item['name_quoted'] = escape_html(escape_quotes(item['name']))
+    item['display_name_escaped'] = escape_html(item['display_name'])
+    item['developer_escaped'] = escape_html(item['developer'])
+    item['display_version_escaped'] = escape_html(item['display_version'])
+
+
 def addGeneralLabels(page):
     '''adds localized labels for Software, Categories, My Items and Updates to html pages'''
     page['SoftwareLabel'] = NSLocalizedString(u"Software", u"Software label")
@@ -172,7 +198,9 @@ def build_detail_page(item_name):
     page_name = u'detail-%s.html' % item_name
     for item in items:
         if item['name'] == item_name:
+            # make a copy of the item to use to build our page
             page = MunkiItems.OptionalItem(item)
+            escapeAndQuoteCommonFields(page)
             addDetailSidebarLabels(page)
             # make "More in CategoryFoo" list
             page['hide_more_in_category'] = u'hidden'
@@ -191,6 +219,7 @@ def build_detail_page(item_name):
                     shuffle(more_in_category)
                     more_template = get_template('detail_more_items_template.html')
                     for more_item in more_in_category[:4]:
+                        more_item['display_name_escaped'] = escape_html(more_item['display_name'])
                         more_item['second_line'] = more_item.get('developer', '')
                         more_in_category_html += more_template.safe_substitute(more_item)
             page['more_in_category'] = more_in_category_html
@@ -214,6 +243,7 @@ def build_detail_page(item_name):
                     more_template = get_template(
                                         'detail_more_items_template.html')
                     for more_item in more_by_developer[:4]:
+                        escapeAndQuoteCommonFields(more_item)
                         more_item['second_line'] = more_item.get('category', '')
                         more_by_developer_html += more_template.safe_substitute(more_item)
             page['more_by_developer'] = more_by_developer_html
@@ -310,6 +340,8 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
     if items:
         item_template = get_template('list_item_template.html')
         for item in sorted(items, key=itemgetter('display_name_lower')):
+            escapeAndQuoteCommonFields(item)
+            item['category_and_developer_escaped'] = escape_html(item['category_and_developer'])
             item_html += item_template.safe_substitute(item)
         # pad with extra empty items so we have a multiple of 3
         if len(items) % 3:
@@ -391,24 +423,27 @@ def build_category_items_html():
         item_html = u''
         for category in sorted(category_list):
             category_data = {}
-            category_data['category_name'] = category
+            category_data['category_name_escaped'] = escape_html(category)
             category_data['category_link'] = u'category-%s.html' % quote(category)
             category_items = [item for item in all_items if item.get('category') == category]
             shuffle(category_items)
             category_data['item1_icon'] = category_items[0]['icon']
-            category_data['item1_display_name'] = category_items[0]['display_name']
+            category_data['item1_display_name_escaped'] = escape_html(
+                 category_items[0]['display_name'])
             category_data['item1_detail_link'] = category_items[0]['detail_link']
             if len(category_items) > 1:
-                category_data['item2_display_name'] = category_items[1]['display_name']
+                category_data['item2_display_name_escaped'] = escape_html(
+                    category_items[1]['display_name'])
                 category_data['item2_detail_link'] = category_items[1]['detail_link']
             else:
-                category_data['item2_display_name'] = u''
+                category_data['item2_display_name_escaped'] = u''
                 category_data['item2_detail_link'] = u'#'
             if len(category_items) > 2:
-                category_data['item3_display_name'] = category_items[2]['display_name']
+                category_data['item3_display_name_escaped'] = escape_html(
+                    category_items[2]['display_name'])
                 category_data['item3_detail_link'] = category_items[2]['detail_link']
             else:
-                category_data['item3_display_name'] = u''
+                category_data['item3_display_name_escaped'] = u''
                 category_data['item3_detail_link'] = u'#'
 
             item_html += item_template.safe_substitute(category_data)
@@ -454,6 +489,7 @@ def build_myitems_rows():
         item_template = get_template('myitems_row_template.html')
         myitems_rows = u''
         for item in sorted(item_list, key=itemgetter('display_name_lower')):
+            escapeAndQuoteCommonFields(item)
             myitems_rows += item_template.safe_substitute(item)
     else:
         status_results_template = get_template('status_results_template.html')
@@ -494,6 +530,7 @@ def build_updates_page():
 
     if item_list:
         for item in item_list:
+            escapeAndQuoteCommonFields(item)
             page['update_rows'] += item_template.safe_substitute(item)
     elif not other_updates:
         status_results_template = get_template('status_results_template.html')
@@ -520,6 +557,7 @@ def build_updates_page():
     if other_updates:
         page['hide_other_updates'] = u''
         for item in other_updates:
+            escapeAndQuoteCommonFields(item)
             page['other_update_rows'] += item_template.safe_substitute(item)
     
     footer = get_template('footer_template.html', raw=True)
@@ -615,17 +653,24 @@ def build_updatedetail_page(identifier):
     page_name = u'updatedetail-%s.html' % identifier
     name, sep, version = identifier.partition('--version-')
     for item in items:
-        if item['name'] == name and item['version_to_install'] == version:
+        if item['name'] == name and item.get('version_to_install', '') == version:
             page = MunkiItems.UpdateItem(item)
+            escapeAndQuoteCommonFields(page)
             addDetailSidebarLabels(page)
             force_install_after_date = item.get('force_install_after_date')
             if force_install_after_date:
-                local_date = munki.discardTimeZoneFromDate(
+                try:
+                    local_date = munki.discardTimeZoneFromDate(
                                                 force_install_after_date)
-                date_str = munki.shortRelativeStringFromDate(
+                    date_str = munki.shortRelativeStringFromDate(
                                                 local_date)
-                page['dueLabel'] += u' '
-                page['short_due_date'] = date_str
+                    page['dueLabel'] += u' '
+                    page['short_due_date'] = date_str
+                except munki.BadDateError:
+                    # some issue with the stored date
+                    msclog.debug_log('Problem with force_install_after_date for %s' % identifier)
+                    page['dueLabel'] = u''
+                    page['short_due_date'] = u''
             else:
                 page['dueLabel'] = u''
                 page['short_due_date'] = u''
@@ -634,6 +679,6 @@ def build_updatedetail_page(identifier):
             generate_page(page_name, 'updatedetail_template.html', page, footer=footer)
             return
     # if we get here we didn't find any item matching identifier
-    msclog.debug_log('No update detail found for %s' % item_name)
+    msclog.debug_log('No update detail found for %s' % identifier)
     build_item_not_found_page(page_name)
 
