@@ -376,6 +376,8 @@ class Gurl(NSObject):
         newURL = request.URL().absoluteString()
         self.redirection.append([newURL, dict(response.allHeaderFields())])
         newParsedURL = urlparse(newURL)
+        # This code was largely based on the work of Andreas Fuchs 
+        # (https://github.com/munki/munki/pull/465)
         if self.follow_redirects == True or self.follow_redirects == 'all':
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
