@@ -93,8 +93,15 @@ def writeCachedChecksum(file_path, fhash=None):
 def header_dict_from_list(array):
     """Given a list of strings in http header format, return a dict.
     If array is None, return None"""
+    header_dict = {}
+    machine = munkicommon.getMachineFacts()
+    darwin_version = os.uname()[2]
+    header_dict["User-Agent"] = ("managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
+        % (machine['munki_version'], darwin_version,
+           machine['arch'], machine['machine_model']))
+
     if array is None:
-        return array
+        return header_dict
     header_dict = {}
     for item in array:
         (key, sep, value) = item.partition(':')
