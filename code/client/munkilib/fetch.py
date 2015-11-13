@@ -92,7 +92,8 @@ def writeCachedChecksum(file_path, fhash=None):
 
 def header_dict_from_list(array):
     """Given a list of strings in http header format, return a dict.
-    If array is None, return None"""
+    A User-Agent header is added if none is present in the list.
+    If array is None, returns a dict with only the User-Agent header."""
     header_dict = {}
     machine = munkicommon.getMachineFacts()
     darwin_version = os.uname()[2]
