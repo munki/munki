@@ -103,7 +103,6 @@ def header_dict_from_list(array):
 
     if array is None:
         return header_dict
-    header_dict = {}
     for item in array:
         (key, sep, value) = item.partition(':')
         if sep and value:
