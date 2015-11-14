@@ -1137,7 +1137,7 @@ class AppleUpdates(object):
         self._LeopardSetupSoftwareUpdateCheck()
         # switch to our local filtered sucatalog
         # Using the NSDefaults Argument Domain described here:
-        # http://developer.apple.com/library/mac/#documentation/
+        # https://developer.apple.com/library/mac/#documentation/
         #        Cocoa/Conceptual/UserDefaults/Concepts/DefaultsDomains.html
         cmd = [softwareupdatecheck, '-CatalogURL', catalog_url]
         try:

@@ -27,7 +27,7 @@ your plists before running this script!
 
 Dependencies:
 - Linux: Python2.6 or higher, or 2.4/2.5 with python-plistlib manually
-         installed: http://docs.python.org/library/plistlib.html
+         installed: https://docs.python.org/library/plistlib.html
 - Mac OSX: Python2.4 or higher.
 
 Created on 2010-09-02.

@@ -2551,8 +2551,8 @@ def listdir(path):
     # work for us, instead of decoding each item in the output list.
     #
     # references:
-    # http://docs.python.org/howto/unicode.html#unicode-filenames
-    # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
+    # https://docs.python.org/howto/unicode.html#unicode-filenames
+    # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
     if type(path) is str:

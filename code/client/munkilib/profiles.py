@@ -143,7 +143,7 @@ def read_signed_profile(profile_path):
     #                           -noverify -out Unsigned.mobileconfig
     # will strip the signing from a signed profile
     # this might be a better approach
-    # from: http://apple.stackexchange.com/questions/105981/
+    # from: https://apple.stackexchange.com/questions/105981/
     #       how-do-i-view-or-verify-signed-mobileconfig-files-using-terminal
 
     # but... we're going to use an Apple-provided tool instead.
