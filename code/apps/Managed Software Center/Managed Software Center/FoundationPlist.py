@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""FoundationPlist.py -- a tool to generate and parse MacOSX .plist files.
+"""FoundationPlist.py -- a tool to generate and parse OS X .plist files.
 
 This is intended as a drop-in replacement for Python's included plistlib,
 with a few caveats:
