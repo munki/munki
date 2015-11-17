@@ -12,7 +12,7 @@ Utilities for dealing with Apple Software Update.
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -1137,7 +1137,7 @@ class AppleUpdates(object):
         self._LeopardSetupSoftwareUpdateCheck()
         # switch to our local filtered sucatalog
         # Using the NSDefaults Argument Domain described here:
-        # http://developer.apple.com/library/mac/#documentation/
+        # https://developer.apple.com/library/mac/#documentation/
         #        Cocoa/Conceptual/UserDefaults/Concepts/DefaultsDomains.html
         cmd = [softwareupdatecheck, '-CatalogURL', catalog_url]
         try:

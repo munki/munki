@@ -36,8 +36,8 @@ Check out the Wiki for some notes and documentation, and browse and/or check out
 
 ####Get help
 
-If you have questions, or need additional help getting started, the [munki-dev](http://groups.google.com/group/munki-dev) group is the best place to start. Please don't post support questions as comments on wiki documentation pages.
+If you have questions, or need additional help getting started, the [munki-dev](https://groups.google.com/group/munki-dev) group is the best place to start. Please don't post support questions as comments on wiki documentation pages.
 
-Issues with MunkiWebAdmin should be discussed in its group: [munki-web-admin](http://groups.google.com/group/munki-web-admin).
+Issues with MunkiWebAdmin should be discussed in its group: [munki-web-admin](https://groups.google.com/group/munki-web-admin).
 
 ![](https://github.com/munki/munki/wiki/images/managed_software_center.png)

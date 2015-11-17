@@ -13,7 +13,7 @@ And Wil Shipley's 'Pimp My Code, Part 17: Lost in Translations'
     http://wilshipley.com/blog/2009/10/pimp-my-code-part-17-lost-in.html
 
 Written by David Keegan for Murky
-    http://bitbucket.org/snej/murky
+    https://bitbucket.org/snej/murky
 
 Usage:
     Localize.py -help
