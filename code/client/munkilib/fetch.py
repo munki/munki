@@ -25,6 +25,7 @@ Created by Greg Neagle on 2011-09-29.
 import calendar
 import errno
 import os
+import sys
 import re
 import shutil
 import subprocess
@@ -39,6 +40,7 @@ import munkicommon
 from gurl import Gurl
 
 from Foundation import NSHTTPURLResponse
+import FoundationPlist
 
 
 # XATTR name storing the ETAG of the file when downloaded via http(s).
@@ -97,8 +99,10 @@ def header_dict_from_list(array):
     header_dict = {}
     machine = munkicommon.getMachineFacts()
     darwin_version = os.uname()[2]
-    header_dict["User-Agent"] = ("managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
-        % (machine['munki_version'], darwin_version,
+    python_version = "%d.%d.%d" % (sys.version_info[0],sys.version_info[1],sys.version_info[2])
+    cfnetwork_version = FoundationPlist.readPlist("/System/Library/Frameworks/CFNetwork.framework/Resources/Info.plist")['CFBundleShortVersionString']
+    header_dict["User-Agent"] = ("Python/%s CFNetwork/%s managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
+        % (python_version, cfnetwork_version, machine['munki_version'], darwin_version,
            machine['arch'], machine['machine_model']))
 
     if array is None:
