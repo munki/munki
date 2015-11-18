@@ -317,7 +317,6 @@ class MSCHTMLFilter(HTMLParser):
 
     def handle_entityref(self, name):
         self.entity_count += 1
-        print "Found an entity: %s" % name
         if not self.current_ignore_element:
             # add the entity reference as-is
             self.filtered_html += u'&%s;' % name
