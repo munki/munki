@@ -48,6 +48,15 @@ XATTR_ETAG = 'com.googlecode.munki.etag'
 # XATTR name storing the sha256 of the file after original download by munki.
 XATTR_SHA = 'com.googlecode.munki.sha256'
 
+# default value for User-Agent header
+machine = munkicommon.getMachineFacts()
+darwin_version = os.uname()[2]
+python_version = "%d.%d.%d" % sys.version_info[:3]
+cfnetwork_version = FoundationPlist.readPlist("/System/Library/Frameworks/CFNetwork.framework/Resources/Info.plist")['CFBundleShortVersionString']
+DEFAULT_USER_AGENT = "Python/%s CFNetwork/%s managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
+                     % (python_version, cfnetwork_version, machine['munki_version'],
+                        darwin_version, machine['arch'], machine['machine_model'])
+
 
 class GurlError(Exception):
     pass
@@ -97,13 +106,7 @@ def header_dict_from_list(array):
     A User-Agent header is added if none is present in the list.
     If array is None, returns a dict with only the User-Agent header."""
     header_dict = {}
-    machine = munkicommon.getMachineFacts()
-    darwin_version = os.uname()[2]
-    python_version = "%d.%d.%d" % (sys.version_info[0],sys.version_info[1],sys.version_info[2])
-    cfnetwork_version = FoundationPlist.readPlist("/System/Library/Frameworks/CFNetwork.framework/Resources/Info.plist")['CFBundleShortVersionString']
-    header_dict["User-Agent"] = ("Python/%s CFNetwork/%s managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
-        % (python_version, cfnetwork_version, machine['munki_version'], darwin_version,
-           machine['arch'], machine['machine_model']))
+    header_dict["User-Agent"] = DEFAULT_USER_AGENT
 
     if array is None:
         return header_dict
