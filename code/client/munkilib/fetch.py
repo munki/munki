@@ -53,9 +53,9 @@ machine = munkicommon.getMachineFacts()
 darwin_version = os.uname()[2]
 python_version = "%d.%d.%d" % sys.version_info[:3]
 cfnetwork_version = FoundationPlist.readPlist("/System/Library/Frameworks/CFNetwork.framework/Resources/Info.plist")['CFBundleShortVersionString']
-DEFAULT_USER_AGENT = "Python/%s CFNetwork/%s managedsoftwareupdate/%s Darwin/%s (%s) (%s)"
-                     % (python_version, cfnetwork_version, machine['munki_version'],
-                        darwin_version, machine['arch'], machine['machine_model'])
+DEFAULT_USER_AGENT = "Python/%s CFNetwork/%s managedsoftwareupdate/%s Darwin/%s (%s) (%s)" % (
+                      python_version, cfnetwork_version, machine['munki_version'],
+                      darwin_version, machine['arch'], machine['machine_model'])
 
 
 class GurlError(Exception):
