@@ -469,6 +469,16 @@ cat > "$DISTFILE" <<EOF
     <title>Munki - Managed software installation for OS X</title>
     <options customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
+    <script>
+        function needsInstalled()
+        {
+            var action = my.choice.packageUpgradeAction;
+            if (action == 'installed') {
+                return false;
+            }
+            return true;
+        }
+    </script>
     <choices-outline>
         <line choice="core"/>
         <line choice="admin"/>
@@ -485,7 +495,7 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='system.env.OS_INSTALL == 1 || system.compareVersions(my.target.receiptForIdentifier("$PKGID.launchd").version, "$LAUNCHDVERSION") != 0'>
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='my.choice.packageUpgradeAction != "installed"'>
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $CONFCHOICE
