@@ -469,16 +469,6 @@ cat > "$DISTFILE" <<EOF
     <title>Munki - Managed software installation for OS X</title>
     <options customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
-    <script>
-        function needsInstalled()
-        {
-            var action = my.choice.packageUpgradeAction;
-            if (action == 'installed') {
-                return false;
-            }
-            return true;
-        }
-    </script>
     <choices-outline>
         <line choice="core"/>
         <line choice="admin"/>
