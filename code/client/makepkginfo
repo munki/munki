@@ -587,7 +587,7 @@ def main():
         '--installer_choices_xml', '--installer-choices-xml',
         action='store_true',
         help=('Generate installer choices for metapackages. '
-              'Note: Requires OS X 10.6.6 or later.')
+              'Note: Requires Mac OS X 10.6.6 or later.')
         )
     apple_options.add_option(
         '--installer_environment', '--installer-environment', '-E',
