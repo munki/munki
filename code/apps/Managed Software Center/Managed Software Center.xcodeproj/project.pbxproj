@@ -666,6 +666,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "Managed Software Center";
+				SDKROOT = macosx10.10;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -689,6 +690,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = "Managed Software Center";
+				SDKROOT = macosx10.10;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -730,7 +732,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
 				WRAPPER_EXTENSION = docktileplugin;
 			};
@@ -769,7 +771,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
 				WRAPPER_EXTENSION = docktileplugin;
 			};

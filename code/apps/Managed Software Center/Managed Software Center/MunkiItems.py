@@ -11,7 +11,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -322,9 +322,10 @@ class MSCHTMLFilter(HTMLParser):
             self.filtered_html += u'&%s;' % name
 
     def handle_charref(self, name):
+        self.entity_count += 1
         if not self.current_ignore_element:
-            # just pass on unmodified
-            self.filtered_html += name
+            # add the char reference as-is
+            self.filtered_html += u'&#%s;' % name
 
 
 def filtered_html(text, filter_images=False):

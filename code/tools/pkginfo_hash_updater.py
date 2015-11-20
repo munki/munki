@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@ plists before running this script!
 
 Dependencies:
 - Linux: Python2.6 or higher, or 2.4/2.5 with python-plistlib manually
-         installed: http://docs.python.org/library/plistlib.html
+         installed: https://docs.python.org/library/plistlib.html
 - OS X: Python2.4 or higher.
 
 Created on 2010-09-02.
