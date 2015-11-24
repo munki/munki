@@ -2398,6 +2398,29 @@ def getIntel64Support():
     else:
         return False
 
+def get_machine_deploy_percent(serial=None, salt=None, chunks=100):
+    """
+    get_machine_deploy_percent(serial=None, salt=None, chunks=100)
+    Returns the machine's unique deploy percent number. If deploy_percent is
+    set manually in ManagedInstalls.plist, use that value, otherwise generate
+    the deploy percent.
+    serial => Pass a serial for machine to get its deploy percent
+    salt   => Pass a salt to generate the hash
+    chunks => Pass an int to set number of chunks.
+    """
+    if pref('deploy_percent'):
+        return pref('deploy_percent')
+    else:
+        md5 = hashlib.md5()
+        if salt:
+            serial = str(serial) + str(salt)
+        md5.update(serial)
+        digest = md5.hexdigest()
+        number = int(digest, 16)
+        deploy_percent = number % int(chunks)
+        return int(deploy_percent) + 1
+
+
 MACHINE = {}
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
@@ -2411,6 +2434,9 @@ def getMachineFacts():
         MACHINE['munki_version'] = get_version()
         MACHINE['ipv4_address'] = get_ipv4_addresses()
         MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
+        MACHINE['deploy_percent'] = get_machine_deploy_percent(
+            MACHINE.get('serial_number', 'UNKNOWN')
+        )
 
         if MACHINE['arch'] == 'x86_64':
             MACHINE['x86_64_capable'] = True
