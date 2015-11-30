@@ -45,6 +45,8 @@ class MSCAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
+        # setup client logging
+        msclog.setup_logging()
         
         # userInfo dict can be nil, seems to be with 10.6
         if sender.userInfo():
@@ -75,9 +77,6 @@ class MSCAppDelegate(NSObject):
         # for NSUserNotificationCenter notifications
         if os.uname()[2].split('.')[0] > '11':
             NSUserNotificationCenter.defaultUserNotificationCenter().setDelegate_(self)
-
-        # setup client logging
-        msclog.setup_logging()
 
         # have the statuscontroller register for its own notifications
         self.statusController.registerForNotifications()
