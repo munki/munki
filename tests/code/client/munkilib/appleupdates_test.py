@@ -370,6 +370,9 @@ class TestAppleUpdates(mox.MoxTestBase):
         self._MockFoundationPlist()
 
         catalog = {}
+        
+        appleupdates.munkicommon.display_warning(
+            '"Products" not found in %s', self.au.filtered_catalog_path)
 
         appleupdates.FoundationPlist.readPlist(
             self.au.filtered_catalog_path).AndReturn(catalog)
