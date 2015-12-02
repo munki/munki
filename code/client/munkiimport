@@ -824,8 +824,6 @@ def main():
         parser.print_usage()
         exit(0)
 
-    if '--apple-update' in arguments:
-        APPLEMETADATA = True
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
     return_dict = makePkgInfo(
@@ -838,6 +836,8 @@ def main():
         cleanupAndExit(-1)
     installer_item = return_dict.get('installeritem')
     uninstaller_item = return_dict.get('uninstalleritem')
+    APPLEMETADATA = return_dict.get('installer_type') == 'apple_update_metadata'
+
     if not installer_item and not APPLEMETADATA:
         cleanupAndExit(-1)
 

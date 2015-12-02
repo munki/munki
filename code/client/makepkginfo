@@ -780,6 +780,8 @@ def main():
             return_dict['uninstalleritem'] = options.uninstalleritem
         if arguments:
             return_dict['installeritem'] = arguments[0]
+        if options.apple_update:
+            return_dict['installer_type'] = 'apple_update_metadata'
         print >> sys.stdout, FoundationPlist.writePlistToString(return_dict)
         exit(0)
 
