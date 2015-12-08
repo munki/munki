@@ -243,7 +243,10 @@ def convertIconToPNG(app_name, destination_path, desired_size):
             os.path.join(app_path, 'Contents/Info.plist'))
     except FoundationPlist.FoundationPlistException:
         info = {}
-    icon_filename = info.get('CFBundleIconFile', app_name)
+    try:
+        icon_filename = info.get('CFBundleIconFile', app_name)
+    except AttributeError:
+        return False
     icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
     if not os.path.splitext(icon_path)[1]:
         # no file extension, so add '.icns'
