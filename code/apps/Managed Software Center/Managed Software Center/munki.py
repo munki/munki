@@ -132,12 +132,14 @@ def readSelfServiceManifest():
 
 def writeSelfServiceManifest(optional_install_choices):
     '''Write out our self-serve manifest
-    so managedsoftwareupdate can use it'''
+    so managedsoftwareupdate can use it. Returns True on success,
+    False otherwise.'''
     usermanifest = WRITEABLE_SELF_SERVICE_MANIFEST_PATH
     try:
         FoundationPlist.writePlist(optional_install_choices, usermanifest)
+        return True
     except FoundationPlist.FoundationPlistException:
-        pass
+        return False
 
 
 def userSelfServiceChoicesChanged():

@@ -360,6 +360,11 @@ def filtered_html(text, filter_images=False):
         return text.replace('\n', '<br>\n')
 
 
+class SelfServiceError(Exception):
+    '''General error class for SelfService exceptions'''
+    pass
+
+
 class SelfService(object):
     '''An object to wrap interactions with the SelfServiceManifest'''
     def __init__(self):
@@ -401,7 +406,10 @@ class SelfService(object):
         current_choices = {}
         current_choices['managed_installs'] = list(self._installs)
         current_choices['managed_uninstalls'] = list(self._uninstalls)
-        munki.writeSelfServiceManifest(current_choices)
+        if not munki.writeSelfServiceManifest(current_choices):
+            raise SelfServiceError(
+                'Could not save self-service choices to %s'
+                % munki.WRITEABLE_SELF_SERVICE_MANIFEST_PATH)
 
 
 def subscribe(item):

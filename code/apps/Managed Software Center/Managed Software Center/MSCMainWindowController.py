@@ -821,6 +821,32 @@ class MSCMainWindowController(NSWindowController):
         scriptObject.callWebScriptMethod_withArguments_(
             'fadeOutAndRemove', args)
 
+    def update_status_for_item(self, item):
+        '''Attempts to update an item's status; displays an error dialog
+        if SelfServeManifest is not writable.
+        Returns a boolean to indicate success'''
+        try:
+            item.update_status()
+            return True
+        except MunkiItems.SelfServiceError, err:
+            msclog.debug_log(str(err))
+            alertTitle = NSLocalizedString(
+                u"System configuration problem", 
+                u"System configuration problem alert title")
+            alertDetail = NSLocalizedString(
+                u"A systems configuration issue is preventing Managed Software "
+                "Center from operating correctly. The reported issue is: ",
+                u"System configuration problem alert detail")
+            alertDetail = alertDetail + "\n" + str(err)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                alertTitle,
+                NSLocalizedString(u"OK", u"OK button title"),
+                nil,
+                nil,
+                u"%@", alertDetail)
+            result = alert.runModal()
+            return False
+
     def updateOptionalInstallButtonFinishAction_(self, item_name):
         '''Perform the required action when a user clicks
         the cancel or add button in the updates list'''
@@ -842,7 +868,9 @@ class MSCMainWindowController(NSWindowController):
 
         previous_status = item['status']
         # update item status
-        item.update_status()
+        if not self.update_status_for_item(item):
+            # there was a problem, can't continue
+            return
 
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
@@ -939,7 +967,9 @@ class MSCMainWindowController(NSWindowController):
             msclog.debug_log('Unexpected error finding HTML elements')
             return
         prior_status = item['status']
-        item.update_status()
+        if not self.update_status_for_item(item):
+            # there was a problem, can't continue
+            return
 
         self.displayUpdateCount()
         if item['status'] == 'not-installed':
@@ -1083,7 +1113,10 @@ class MSCMainWindowController(NSWindowController):
             return
 
         prior_status = item['status']
-        item.update_status()
+        if not self.update_status_for_item(item):
+            # there was a problem, can't continue
+            return
+
         self.displayUpdateCount()
         self.updateDOMforOptionalItem(item)
 
