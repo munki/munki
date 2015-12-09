@@ -2536,7 +2536,7 @@ def cleanUpTmpDir():
 
 
 def listdir(path):
-    """OSX HFS+ string encoding safe listdir().
+    """OS X HFS+ string encoding safe listdir().
 
     Args:
         path: path to list contents of
@@ -2545,7 +2545,7 @@ def listdir(path):
     """
     # if os.listdir() is supplied a unicode object for the path,
     # it will return unicode filenames instead of their raw fs-dependent
-    # version, which is decomposed utf-8 on OSX.
+    # version, which is decomposed utf-8 on OS X.
     #
     # we use this to our advantage here and have Python do the decoding
     # work for us, instead of decoding each item in the output list.
