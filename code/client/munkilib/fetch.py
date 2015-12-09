@@ -25,6 +25,7 @@ Created by Greg Neagle on 2011-09-29.
 import calendar
 import errno
 import os
+import sys
 import re
 import shutil
 import subprocess
@@ -39,12 +40,22 @@ import munkicommon
 from gurl import Gurl
 
 from Foundation import NSHTTPURLResponse
+import FoundationPlist
 
 
 # XATTR name storing the ETAG of the file when downloaded via http(s).
 XATTR_ETAG = 'com.googlecode.munki.etag'
 # XATTR name storing the sha256 of the file after original download by munki.
 XATTR_SHA = 'com.googlecode.munki.sha256'
+
+# default value for User-Agent header
+machine = munkicommon.getMachineFacts()
+darwin_version = os.uname()[2]
+python_version = "%d.%d.%d" % sys.version_info[:3]
+cfnetwork_version = FoundationPlist.readPlist("/System/Library/Frameworks/CFNetwork.framework/Resources/Info.plist")['CFBundleShortVersionString']
+DEFAULT_USER_AGENT = "Python/%s CFNetwork/%s managedsoftwareupdate/%s Darwin/%s (%s) (%s)" % (
+                      python_version, cfnetwork_version, machine['munki_version'],
+                      darwin_version, machine['arch'], machine['machine_model'])
 
 
 class GurlError(Exception):
@@ -92,10 +103,13 @@ def writeCachedChecksum(file_path, fhash=None):
 
 def header_dict_from_list(array):
     """Given a list of strings in http header format, return a dict.
-    If array is None, return None"""
-    if array is None:
-        return array
+    A User-Agent header is added if none is present in the list.
+    If array is None, returns a dict with only the User-Agent header."""
     header_dict = {}
+    header_dict["User-Agent"] = DEFAULT_USER_AGENT
+
+    if array is None:
+        return header_dict
     for item in array:
         (key, sep, value) = item.partition(':')
         if sep and value:
