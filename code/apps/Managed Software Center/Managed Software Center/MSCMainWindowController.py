@@ -222,6 +222,7 @@ class MSCMainWindowController(NSWindowController):
             alertMessageText = NSLocalizedString(
                 u"Update check failed", u"Update Check Failed title")
             if tasktype == "installwithnologout":
+                msclog.log("MSC", "cant_update", "Install session failed")
                 alertMessageText = NSLocalizedString(
                     u"Install session failed", u"Install Session Failed title")
 
@@ -751,6 +752,7 @@ class MSCMainWindowController(NSWindowController):
         clicks the Install button in the Updates view'''
         if self._update_in_progress:
             # this is now a stop/cancel button
+            msclog.log('user', 'cancel_updates')
             NSApp.delegate().statusController.disableStopButton()
             NSApp.delegate().statusController._status_stopBtnState = 1
             self.stop_requested = True
@@ -763,6 +765,7 @@ class MSCMainWindowController(NSWindowController):
 
         elif self.getUpdateCount() == 0:
             # no updates, this button must say "Check Again"
+            msclog.log('user', 'refresh_clicked')
             self.checkForUpdates()
         else:
             # must say "Update"
@@ -871,6 +874,8 @@ class MSCMainWindowController(NSWindowController):
         if not self.update_status_for_item(item):
             # there was a problem, can't continue
             return
+
+        msclog.log('user', 'optional_install_' + item['status'], item_name)
 
         # do we need to add a new node to the other list?
         if item.get('needs_update'):
@@ -1035,6 +1040,7 @@ class MSCMainWindowController(NSWindowController):
             msclog.debug_log('Can\'t find item: %s' % item_name)
             return
 
+        showAlert = True
         if item['status'] == 'not-installed' and item.get('preinstall_alert'):
             self.displayPreInstallUninstallAlert_Action_Item_(
                 item['preinstall_alert'],
@@ -1050,6 +1056,9 @@ class MSCMainWindowController(NSWindowController):
                 self.actionButtonPerformAction_, item_name)
         else:
             self.actionButtonPerformAction_(item_name)
+            showAlert = False
+        if showAlert:
+            msclog.log("user", "show_alert")
 
     def displayPreInstallUninstallAlert_Action_Item_(
             self, alert_dict, action_selector, item_name):
@@ -1093,9 +1102,9 @@ class MSCMainWindowController(NSWindowController):
         '''Called when alert invoked by actionButtonClicked_ ends'''
         alert.window().orderOut_(self)
         if returncode == NSAlertDefaultReturn:
-            msclog.log("user", "alert canceled")
+            msclog.log("user", "alert_canceled")
         else:
-            msclog.log("user", "alert accepted")
+            msclog.log("user", "alert_accepted")
             selector = self.alert_context_info.get('selector')
             item_name = self.alert_context_info.get('item_name')
             if selector and item_name:
@@ -1116,6 +1125,7 @@ class MSCMainWindowController(NSWindowController):
         if not self.update_status_for_item(item):
             # there was a problem, can't continue
             return
+        msclog.log('user', 'action_button_' + item['status'], item_name)
 
         self.displayUpdateCount()
         self.updateDOMforOptionalItem(item)
