@@ -207,6 +207,7 @@ class MSCStatusController(NSObject):
 
     def doRestartAlert(self):
         '''Display a restart alert -- some item just installed or removed requires a restart'''
+        msclog.log("MSC", "restart_required")
         self._status_restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             NSLocalizedString(u"Restart Required", u"Restart Required title"),
@@ -224,6 +225,7 @@ class MSCStatusController(NSObject):
     def restartAlertDidEnd_returnCode_contextInfo_(
                                         self, alert, returncode, contextinfo):
         '''Called when restartAlert ends'''
+        msclog.log("MSC", "restart_confirmed")
         self._status_restartAlertDismissed = 1
         munki.restartNow()
 
