@@ -138,7 +138,7 @@ class Gurl(NSObject):
         self.download_only_if_changed = options.get(
             'download_only_if_changed', False)
         self.cache_data = options.get('cache_data')
-        self.connection_timeout = options.get('connection_timeout', 10)
+        self.connection_timeout = options.get('connection_timeout')
 
         self.log = options.get('logging_function', NSLog)
 

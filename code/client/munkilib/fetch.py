@@ -156,7 +156,8 @@ def get_url(url, destinationpath,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
-               'logging_function': munkicommon.display_debug2}
+               'logging_function': munkicommon.display_debug2,
+               'connection_timeout': munkicommon.pref('HTTPConnectionTimeoutInterval')}
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
