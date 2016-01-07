@@ -885,8 +885,8 @@ def handleSubcommand(args):
 	# check if any arguments are passed.  
 	# if not, list subcommands.
     if len(args) < 1:
-		help(args)
-		return 2
+        help(args)
+        return 2
 
     # strip leading hyphens and
     # replace embedded hyphens with underscores
