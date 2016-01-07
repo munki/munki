@@ -12,7 +12,7 @@ Unit tests for appleupdates.
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -370,6 +370,9 @@ class TestAppleUpdates(mox.MoxTestBase):
         self._MockFoundationPlist()
 
         catalog = {}
+        
+        appleupdates.munkicommon.display_warning(
+            '"Products" not found in %s', self.au.filtered_catalog_path)
 
         appleupdates.FoundationPlist.readPlist(
             self.au.filtered_catalog_path).AndReturn(catalog)

@@ -7,7 +7,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an 'AS IS' BASIS,
@@ -749,6 +749,10 @@ def currentGUIusers():
             parts = line.split()
             gui_users.append(parts[0])
 
+    # 10.11 sometimes has a phantom '_mbsetupuser' user. Filter it out.
+    users_to_ignore = ['_mbsetupuser']
+    gui_users = [user for user in gui_users if user not in users_to_ignore]
+
     return gui_users
 
 
@@ -1208,7 +1212,8 @@ def pref(pref_name):
         'SuppressUserNotification': False,
         'SuppressAutoInstall': False,
         'SuppressStopButtonOnInstall': False,
-        'PackageVerificationMode': 'hash'
+        'PackageVerificationMode': 'hash',
+        'FollowHTTPRedirects': 'none',
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:
@@ -2531,7 +2536,7 @@ def cleanUpTmpDir():
 
 
 def listdir(path):
-    """OSX HFS+ string encoding safe listdir().
+    """OS X HFS+ string encoding safe listdir().
 
     Args:
         path: path to list contents of
@@ -2540,14 +2545,14 @@ def listdir(path):
     """
     # if os.listdir() is supplied a unicode object for the path,
     # it will return unicode filenames instead of their raw fs-dependent
-    # version, which is decomposed utf-8 on OSX.
+    # version, which is decomposed utf-8 on OS X.
     #
     # we use this to our advantage here and have Python do the decoding
     # work for us, instead of decoding each item in the output list.
     #
     # references:
-    # http://docs.python.org/howto/unicode.html#unicode-filenames
-    # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
+    # https://docs.python.org/howto/unicode.html#unicode-filenames
+    # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
     if type(path) is str:

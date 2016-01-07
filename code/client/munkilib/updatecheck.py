@@ -7,7 +7,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an 'AS IS' BASIS,
@@ -800,7 +800,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     location = item_pl.get(download_item_key)
     if not location:
         raise fetch.MunkiDownloadError(
-            "No %s in item info.", download_item_key)
+            "No %s in item info." % download_item_key)
 
     # allow pkginfo preferences to override system munki preferences
     downloadbaseurl = item_pl.get('PackageCompleteURL') or \
@@ -833,7 +833,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
         if not enoughDiskSpace(item_pl, installinfo['managed_installs'],
                                uninstalling=uninstalling):
             raise fetch.MunkiDownloadError(
-                'Insufficient disk space to download and install %s', pkgname)
+                'Insufficient disk space to download and install %s' % pkgname)
         else:
             munkicommon.display_detail(
                 'Downloading %s from %s', pkgname, location)
@@ -2640,7 +2640,7 @@ def cleanUpManifests():
 
             if name in exceptions:
                 continue
-                
+
             abs_path = os.path.join(dirpath, name)
             rel_path = abs_path[len(manifest_dir):].lstrip("/")
 
@@ -3037,6 +3037,46 @@ def check(client_id='', localmanifestpath=None):
         # verify available license seats for optional installs
         if installinfo.get('optional_installs'):
             updateAvailableLicenseSeats(installinfo)
+
+        # process LocalOnlyManifest installs
+        localonlymanifestname = munkicommon.pref('LocalOnlyManifest')
+        if localonlymanifestname:
+            localonlymanifest = os.path.join(
+                ManagedInstallDir, 'manifests', localonlymanifestname)
+
+            # if the manifest already exists, the name is being reused
+            if localonlymanifestname in MANIFESTS:
+                munkicommon.display_error(
+                    "LocalOnlyManifest %s has the same name as an existing " \
+                     "manifest, skipping...", localonlymanifestname
+                )
+            else:
+                MANIFESTS[localonlymanifestname] = localonlymanifest
+                if os.path.exists(localonlymanifest):
+                    # use catalogs from main manifest for local only manifest
+                    cataloglist = getManifestValueForKey(
+                        mainmanifestpath, 'catalogs')
+                    munkicommon.display_detail(
+                        '**Processing local-only choices**'
+                    )
+
+                    localonlyinstalls = getManifestValueForKey(
+                        localonlymanifest, 'managed_installs') or []
+                    for item in localonlyinstalls:
+                        dummy_result = processInstall(
+                            item,
+                            cataloglist,
+                            installinfo
+                        )
+
+                    localonlyuninstalls = getManifestValueForKey(
+                        localonlymanifest, 'managed_uninstalls') or []
+                    for item in localonlyuninstalls:
+                        dummy_result = processRemoval(
+                            item,
+                            cataloglist,
+                            installinfo
+                        )
 
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'

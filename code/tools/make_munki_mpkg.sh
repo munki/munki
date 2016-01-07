@@ -90,7 +90,7 @@ WHICH_GIT_RESULT="$?"
 if [ "$WHICH_GIT_RESULT" != "0" ]; then
     echo "Could not find git in command path. Maybe it's not installed?" 1>&2
     echo "You can get a Git package here:" 1>&2
-    echo "    http://code.google.com/p/git-osx-installer/downloads/list"
+    echo "    https://git-scm.com/download/mac"
     exit 1
 fi
 if [ ! -x "/usr/bin/pkgbuild" ]; then
@@ -485,7 +485,7 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='system.env.OS_INSTALL == 1 || system.compareVersions(my.target.receiptForIdentifier("$PKGID.launchd").version, "$LAUNCHDVERSION") != 0'>
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='my.choice.packageUpgradeAction != "installed"'>
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $CONFCHOICE

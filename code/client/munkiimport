@@ -7,7 +7,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an 'AS IS' BASIS,
@@ -741,7 +741,7 @@ def main():
 
     usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
-       Installer item can be a pkg, mpkg, dmg, or app.
+       Installer item can be a pkg, mpkg, dmg, mobileconfig, or app.
        Bundle-style pkgs and apps are wrapped in a dmg file before upload.
 
        Example:
@@ -824,8 +824,6 @@ def main():
         parser.print_usage()
         exit(0)
 
-    if '--apple-update' in arguments:
-        APPLEMETADATA = True
     # Verify that arguments, presumed to be for
     # 'makepkginfo' are valid and return installer_item
     return_dict = makePkgInfo(
@@ -838,6 +836,8 @@ def main():
         cleanupAndExit(-1)
     installer_item = return_dict.get('installeritem')
     uninstaller_item = return_dict.get('uninstalleritem')
+    APPLEMETADATA = return_dict.get('installer_type') == 'apple_update_metadata'
+
     if not installer_item and not APPLEMETADATA:
         cleanupAndExit(-1)
 
@@ -1026,7 +1026,9 @@ def main():
             options.subdirectory = promptForSubdirectory(
                 options.subdirectory)
 
-        if not iconExistsInRepo(pkginfo) and not options.icon_path:
+        if (not iconExistsInRepo(pkginfo) and not options.icon_path
+                and not APPLEMETADATA
+                and not pkginfo.get('installer_type') == 'profile'):
             print 'No existing product icon found.'
             answer = raw_input('Attempt to create a product icon? [y/n] ')
             if answer.lower().startswith('y'):

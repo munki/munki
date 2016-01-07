@@ -37,7 +37,7 @@ function fadeOutAndRemove(item_name) {
     update_table_row.classList.add('deleted');
     update_table_row.addEventListener('webkitAnimationEnd',
         function() {
-            window.AppController.updateOptionalInstallButtonClicked_(item_name)
+            window.AppController.updateOptionalInstallButtonFinishAction_(item_name)
         });
 }
 

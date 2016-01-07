@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,14 +21,14 @@ This script will recursively update the '(un)installer_item_hash' key in all
 pkginfo plists in the pkgsinfo directory of a Munki repo with a SHA-256 hash of
 the corresponding package.
 
-This script will run from Mac OSX or Linux alike, and it is safe to run more
-than once on any pkginfo plist(s). However, it is recommended that you backup
-your plists before running this script!
+This script will run from OS X or Linux alike, and it is safe to run more than
+once on any pkginfo plist(s). However, it is recommended that you backup your
+plists before running this script!
 
 Dependencies:
 - Linux: Python2.6 or higher, or 2.4/2.5 with python-plistlib manually
-         installed: http://docs.python.org/library/plistlib.html
-- Mac OSX: Python2.4 or higher.
+         installed: https://docs.python.org/library/plistlib.html
+- OS X: Python2.4 or higher.
 
 Created on 2010-09-02.
 """

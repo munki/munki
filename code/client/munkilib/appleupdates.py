@@ -12,7 +12,7 @@ Utilities for dealing with Apple Software Update.
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -330,6 +330,8 @@ class AppleUpdates(object):
         of these files."""
         catalog = FoundationPlist.readPlist(self.filtered_catalog_path)
         if not 'Products' in catalog:
+            munkicommon.display_warning(
+                '"Products" not found in %s', self.filtered_catalog_path)
             return
 
         for product_key in catalog['Products'].keys():
@@ -578,7 +580,7 @@ class AppleUpdates(object):
             retcode = self._LeopardDownloadAvailableUpdates(catalog_url)
         elif os_version_tuple >= (10, 11):
             # 10.11 seems not to like file:// URLs
-            catalog_url = self._GetAppleCatalogURL()
+            catalog_url = self._ElCapitanGetCatalogURL()
             retcode = self._RunSoftwareUpdate(
                 ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
         else:
@@ -612,7 +614,7 @@ class AppleUpdates(object):
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
             # 10.11 does not appear to like file:// URLs
-            catalog_url = self._GetAppleCatalogURL()
+            catalog_url = self._ElCapitanGetCatalogURL()
         else:
             # use our locally-cached Apple catalog
             catalog_url = 'file://localhost' + urllib2.quote(catalog_path)
@@ -670,6 +672,15 @@ class AppleUpdates(object):
         f = _open(local_apple_sus_catalog, 'wb')
         f.write(contents)
         f.close()
+
+    def _ElCapitanGetCatalogURL(self):
+        """Returns SoftwareUpdateServerURL set in Munki's preferences or None.
+        Works around an issue with catalog changes causing cached downloads to
+        be deleted."""
+        munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
+        if munkisuscatalog:
+            return munkisuscatalog
+        return None
 
     def _GetAppleCatalogURL(self):
         """Returns the catalog URL of the Apple SU catalog for the current Mac.
@@ -1126,7 +1137,7 @@ class AppleUpdates(object):
         self._LeopardSetupSoftwareUpdateCheck()
         # switch to our local filtered sucatalog
         # Using the NSDefaults Argument Domain described here:
-        # http://developer.apple.com/library/mac/#documentation/
+        # https://developer.apple.com/library/mac/#documentation/
         #        Cocoa/Conceptual/UserDefaults/Concepts/DefaultsDomains.html
         cmd = [softwareupdatecheck, '-CatalogURL', catalog_url]
         try:
@@ -1432,8 +1443,8 @@ class AppleUpdates(object):
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
             su_options.append('--no-scan')
-            # 10.11 seems not like file:// URLs
-            catalog_url = self._GetAppleCatalogURL()
+            # 10.11 seems not to like file:// URLs
+            catalog_url = self._ElCapitanGetCatalogURL()
 
         retcode = self._RunSoftwareUpdate(
             su_options, mode='install', catalog_url=catalog_url,
