@@ -882,6 +882,12 @@ def setUpTabCompleter():
 
 def handleSubcommand(args):
     '''Does all our subcommands'''
+	# check if any arguments are passed.  
+	# if not, list subcommands.
+    if len(args) < 1:
+		help(args)
+		return 2
+
     # strip leading hyphens and
     # replace embedded hyphens with underscores
     # so '--add-pkg' becomes 'add_pkg'
