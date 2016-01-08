@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      https://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -126,9 +126,13 @@ def alertUserOfForcedLogout(info=None):
 def main():
     '''Check for logged-in users and upcoming forced installs;
     notify the user if needed; sleep a minute and do it again.'''
+    if munkicommon.pref('LogToSyslog'):
+        munkicommon.configure_syslog()
+
     log('launched')
     sent_notifications = []
     logout_time_override = None
+
     # datetime of now plus largest MANDATORY_NOTIFICATIONS value (with padding).
     minimum_notifications_logout_time = NSDate.date().addTimeInterval_(
         60 * max(MANDATORY_NOTIFICATIONS) + 30)
