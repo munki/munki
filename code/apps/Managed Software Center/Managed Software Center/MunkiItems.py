@@ -243,26 +243,33 @@ def convertIconToPNG(app_name, destination_path, desired_size):
             os.path.join(app_path, 'Contents/Info.plist'))
     except FoundationPlist.FoundationPlistException:
         info = {}
-    icon_filename = info.get('CFBundleIconFile', app_name)
-    icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
-    if not os.path.splitext(icon_path)[1]:
-        # no file extension, so add '.icns'
-        icon_path += u'.icns'
-    if os.path.exists(icon_path):
-        image_data = NSData.dataWithContentsOfFile_(icon_path)
-        bitmap_reps = NSBitmapImageRep.imageRepsWithData_(image_data)
-        chosen_rep = None
-        for bitmap_rep in bitmap_reps:
-            if not chosen_rep:
-                chosen_rep = bitmap_rep
-            elif (bitmap_rep.pixelsHigh() >= desired_size
-                  and bitmap_rep.pixelsHigh() < chosen_rep.pixelsHigh()):
-                chosen_rep = bitmap_rep
-        if chosen_rep:
-            png_data = chosen_rep.representationUsingType_properties_(
-                NSPNGFileType, None)
-            png_data.writeToFile_atomically_(destination_path, False)
-            return True
+    try:
+        try:
+            icon_filename = info.get('CFBundleIconFile', app_name)
+        except AttributeError:
+            icon_filename = app_name
+        icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
+        if not os.path.splitext(icon_path)[1]:
+            # no file extension, so add '.icns'
+            icon_path += u'.icns'
+        if os.path.exists(icon_path):
+            image_data = NSData.dataWithContentsOfFile_(icon_path)
+            bitmap_reps = NSBitmapImageRep.imageRepsWithData_(image_data)
+            chosen_rep = None
+            for bitmap_rep in bitmap_reps:
+                if not chosen_rep:
+                    chosen_rep = bitmap_rep
+                elif (bitmap_rep.pixelsHigh() >= desired_size
+                      and bitmap_rep.pixelsHigh() < chosen_rep.pixelsHigh()):
+                    chosen_rep = bitmap_rep
+            if chosen_rep:
+                png_data = chosen_rep.representationUsingType_properties_(
+                    NSPNGFileType, None)
+                png_data.writeToFile_atomically_(destination_path, False)
+                return True
+    except Exception:
+        return False
+
     return False
 
 
