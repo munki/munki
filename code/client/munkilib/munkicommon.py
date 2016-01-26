@@ -2617,7 +2617,9 @@ def writefile(stringdata, path):
     Returns the path on success, empty string on failure.'''
     try:
         fileobject = open(path, mode='w', buffering=1)
-        print >> fileobject, stringdata.encode('UTF-8')
+        # write line-by-line to ensure proper UNIX line-endings
+        for line in stringdata.splitlines():
+            print >> fileobject, line.encode('UTF-8')
         fileobject.close()
         return path
     except (OSError, IOError):
