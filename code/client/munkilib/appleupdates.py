@@ -1660,7 +1660,7 @@ class AppleUpdates(object):
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         for item in apple_updates:
             if (item.get('unattended_install') or
-                    (munkicommon.pref('AutomaticAppleUpdates') and
+                    (munkicommon.pref('UnattendedAppleUpdates') and
                         item.get('RestartAction', 'None') is 'None' and
                         os_version_tuple >= (10, 10))):
                 if munkicommon.blockingApplicationsRunning(item):
