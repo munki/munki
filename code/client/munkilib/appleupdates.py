@@ -175,7 +175,7 @@ class AppleUpdates(object):
                              % time.strftime('%Y.%m.%d.%H.%M.%S')))
                 os.rename(self.cache_dir, new_name)
             os.symlink(real_cache_dir, self.cache_dir)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             # error in setting up the cache directories
             raise Error('Could not configure cache directory: %s' % err)
 
@@ -253,10 +253,12 @@ class AppleUpdates(object):
             if rewrite_pkg_urls and 'URL' in package:
                 package['URL'] = self.RewriteURL(package['URL'])
             if 'MetadataURL' in package:
-                package['MetadataURL'] = self.RewriteURL(package['MetadataURL'])
+                package['MetadataURL'] = self.RewriteURL(
+                    package['MetadataURL'])
         distributions = product['Distributions']
         for dist_lang in distributions.keys():
-            distributions[dist_lang] = self.RewriteURL(distributions[dist_lang])
+            distributions[dist_lang] = self.RewriteURL(
+                distributions[dist_lang])
 
     def RewriteCatalogURLs(self, catalog, rewrite_pkg_urls=False):
         """Rewrites URLs in a catalog to point to our local replica.
@@ -291,12 +293,12 @@ class AppleUpdates(object):
         if not os.path.exists(local_dir_path):
             try:
                 os.makedirs(local_dir_path)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
         try:
             self.GetSoftwareUpdateResource(
                 full_url, local_file_path, resume=True)
-        except fetch.MunkiDownloadError, err:
+        except fetch.MunkiDownloadError as err:
             raise ReplicationError(err)
         return local_file_path
 
@@ -353,7 +355,7 @@ class AppleUpdates(object):
                         product_key)
                     self.RetrieveURLToCacheDir(
                         package['MetadataURL'], copy_only_if_missing=True)
-                #if 'URL' in package:
+                # if 'URL' in package:
                 #    munkicommon.display_status_minor(
                 #        'Caching package for product ID %s',
                 #        product_key)
@@ -382,7 +384,7 @@ class AppleUpdates(object):
         if not os.path.exists(self.local_catalog_dir):
             try:
                 os.makedirs(self.local_catalog_dir)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
 
         # rewrite metadata URLs to point to local caches.
@@ -470,11 +472,10 @@ class AppleUpdates(object):
                 html = readmes[0].firstChild.data
                 html_data = buffer(html.encode('utf-8'))
                 attributed_string, attributes = NSAttributedString.alloc(
-                    ).initWithHTML_documentAttributes_(html_data, None)
+                ).initWithHTML_documentAttributes_(html_data, None)
                 firmware_alert_text = attributed_string.string()
             return firmware_alert_text
         return ''
-
 
     def GetBlockingApps(self, product_key):
         '''Given a product key, finds the cached softwareupdate dist file,
@@ -653,7 +654,7 @@ class AppleUpdates(object):
         if not os.path.exists(self.local_catalog_dir):
             try:
                 os.makedirs(self.local_catalog_dir)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
 
         local_apple_sus_catalog = os.path.join(
@@ -719,13 +720,13 @@ class AppleUpdates(object):
         """
         try:
             catalog_url = self._GetAppleCatalogURL()
-        except CatalogNotFoundError, err:
+        except CatalogNotFoundError as err:
             munkicommon.display_error(str(err))
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
                 os.makedirs(self.temp_cache_dir)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
         msg = 'Checking Apple Software Update catalog...'
         self._ResetMunkiStatusAndDisplayMessage(msg)
@@ -803,8 +804,9 @@ class AppleUpdates(object):
             self.CacheAppleCatalog()
         except CatalogNotFoundError:
             return False
-        except (ReplicationError, fetch.MunkiDownloadError), err:
-            munkicommon.display_warning('Could not download Apple SUS catalog:')
+        except (ReplicationError, fetch.MunkiDownloadError) as err:
+            munkicommon.display_warning(
+                'Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', str(err))
             return False
 
@@ -830,7 +832,7 @@ class AppleUpdates(object):
         self._WriteFilteredCatalog(product_ids, self.filtered_catalog_path)
         try:
             self.CacheUpdateMetadata()
-        except ReplicationError, err:
+        except ReplicationError as err:
             munkicommon.display_warning(
                 'Could not replicate software update metadata:')
             munkicommon.display_warning('\t%s', str(err))
@@ -1003,7 +1005,7 @@ class AppleUpdates(object):
         software_update_key_list = CFPreferencesCopyKeyList(
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost) or []
-        if not self.ORIGINAL_CATALOG_URL_KEY in software_update_key_list:
+        if self.ORIGINAL_CATALOG_URL_KEY not in software_update_key_list:
             # store the original CatalogURL
             original_catalog_url = self._GetCatalogURL()
             if not original_catalog_url:
@@ -1043,7 +1045,7 @@ class AppleUpdates(object):
         software_update_key_list = CFPreferencesCopyKeyList(
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
             kCFPreferencesAnyUser, kCFPreferencesCurrentHost) or []
-        if not self.ORIGINAL_CATALOG_URL_KEY in software_update_key_list:
+        if self.ORIGINAL_CATALOG_URL_KEY not in software_update_key_list:
             # do nothing
             return
         original_catalog_url = CFPreferencesCopyValue(
@@ -1127,7 +1129,7 @@ class AppleUpdates(object):
             # set mode of Software Update.app executable so it won't launch
             # yes, this is a hack.  So sue me.
             os.chmod(softwareupdateappbin, 0)
-        except OSError, err:
+        except OSError as err:
             munkicommon.display_warning(
                 'Error with os.stat(Softare Update.app): %s', str(err))
             munkicommon.display_warning('Skipping Apple SUS check.')
@@ -1146,7 +1148,7 @@ class AppleUpdates(object):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
-        except OSError, err:
+        except OSError as err:
             munkicommon.display_warning('Error with Popen(%s): %s', cmd, err)
             munkicommon.display_warning('Skipping Apple SUS check.')
             # safely revert the chmod from above.
@@ -1160,7 +1162,7 @@ class AppleUpdates(object):
         while True:
             output = proc.stdout.readline().decode('UTF-8')
             if munkicommon.stopRequested():
-                os.kill(proc.pid, 15) #15 is SIGTERM
+                os.kill(proc.pid, 15)  # 15 is SIGTERM
                 break
             if not output and (proc.poll() != None):
                 break
@@ -1210,7 +1212,7 @@ class AppleUpdates(object):
         Returns:
           Integer softwareupdate exit code.
         """
-        if results == None:
+        if results is None:
             # we're not interested in the results,
             # but need to create a temporary dict anyway
             results = {}
@@ -1222,7 +1224,9 @@ class AppleUpdates(object):
         # Try to find our ptyexec tool
         # first look in the parent directory of this file's directory
         # (../)
-        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        parent_dir = os.path.dirname(
+            os.path.dirname(
+                os.path.abspath(__file__)))
         ptyexec_path = os.path.join(parent_dir, 'ptyexec')
         if not os.path.exists(ptyexec_path):
             # try absolute path in munki's normal install dir
@@ -1254,7 +1258,7 @@ class AppleUpdates(object):
         try:
             job = launchd.Job(cmd)
             job.start()
-        except launchd.LaunchdJobException, err:
+        except launchd.LaunchdJobException as err:
             munkicommon.display_warning(
                 'Error with launchd job (%s): %s', cmd, str(err))
             munkicommon.display_warning('Skipping softwareupdate run.')
@@ -1368,7 +1372,8 @@ class AppleUpdates(object):
         retcode = job.returncode()
         if retcode == 0:
             # get SoftwareUpdate's LastResultCode
-            last_result_code = self.GetSoftwareUpdatePref('LastResultCode') or 0
+            last_result_code = self.GetSoftwareUpdatePref(
+                'LastResultCode') or 0
             if last_result_code > 2:
                 retcode = last_result_code
 
@@ -1403,7 +1408,7 @@ class AppleUpdates(object):
             # ensure that we don't restart for unattended installations
             restartneeded = False
             if not unattended_install_items:
-                return False # didn't find any unattended installs
+                return False  # didn't find any unattended installs
         else:
             msg = 'Installing available Apple Software Updates...'
             restartneeded = self.IsRestartNeeded()
@@ -1418,7 +1423,7 @@ class AppleUpdates(object):
             return False  # didn't do anything, so no restart needed
 
         installlist = self.GetSoftwareUpdateInfo()
-        installresults = {'installed':[], 'download':[]}
+        installresults = {'installed': [], 'download': []}
 
         catalog_url = 'file://localhost' + urllib2.quote(
             self.local_catalog_path)
@@ -1537,7 +1542,8 @@ class AppleUpdates(object):
                 'LastAppleSoftwareUpdateCheck')
             if last_su_check_string:
                 try:
-                    last_su_check = NSDate.dateWithString_(last_su_check_string)
+                    last_su_check = NSDate.dateWithString_(
+                        last_su_check_string)
                     # dateWithString_ returns None if invalid date string.
                     if not last_su_check:
                         raise ValueError
@@ -1591,12 +1597,12 @@ class AppleUpdates(object):
         # Mapping of supported RestartActions to
         # equal or greater auxiliary actions
         RestartActions = {
-            'RequireRestart'  : ['RequireRestart', 'RecommendRestart'],
+            'RequireRestart': ['RequireRestart', 'RecommendRestart'],
             'RecommendRestart': ['RequireRestart', 'RecommendRestart'],
-            'RequireLogout'   : ['RequireRestart', 'RecommendRestart',
-                                 'RequireLogout'],
-            'None'            : ['RequireRestart', 'RecommendRestart',
-                                 'RequireLogout']
+            'RequireLogout': ['RequireRestart', 'RecommendRestart',
+                              'RequireLogout'],
+            'None': ['RequireRestart', 'RecommendRestart',
+                     'RequireLogout']
         }
 
         for key in metadata:
@@ -1651,8 +1657,12 @@ class AppleUpdates(object):
                 'Error reading: %s', self.apple_updates_plist)
             return item_list, product_ids
         apple_updates = pl_dict.get('AppleUpdates', [])
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         for item in apple_updates:
-            if item.get('unattended_install'):
+            if (item.get('unattended_install') or
+                    (munkicommon.pref('UnattendedAppleUpdates') and
+                     item.get('RestartAction', 'None') is 'None' and
+                     os_version_tuple >= (10, 10))):
                 if munkicommon.blockingApplicationsRunning(item):
                     munkicommon.display_detail(
                         'Skipping unattended install of %s because '
@@ -1669,8 +1679,8 @@ class AppleUpdates(object):
         return item_list, product_ids
 
 
-
-# Make the new appleupdates module easily dropped in with exposed funcs for now.
+# Make the new appleupdates module easily dropped in with exposed funcs
+# for now.
 
 apple_updates_object = None
 
