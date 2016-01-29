@@ -175,7 +175,7 @@ class AppleUpdates(object):
                              % time.strftime('%Y.%m.%d.%H.%M.%S')))
                 os.rename(self.cache_dir, new_name)
             os.symlink(real_cache_dir, self.cache_dir)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             # error in setting up the cache directories
             raise Error('Could not configure cache directory: %s' % err)
 
@@ -293,12 +293,12 @@ class AppleUpdates(object):
         if not os.path.exists(local_dir_path):
             try:
                 os.makedirs(local_dir_path)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
         try:
             self.GetSoftwareUpdateResource(
                 full_url, local_file_path, resume=True)
-        except fetch.MunkiDownloadError, err:
+        except fetch.MunkiDownloadError as err:
             raise ReplicationError(err)
         return local_file_path
 
@@ -384,7 +384,7 @@ class AppleUpdates(object):
         if not os.path.exists(self.local_catalog_dir):
             try:
                 os.makedirs(self.local_catalog_dir)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
 
         # rewrite metadata URLs to point to local caches.
@@ -654,7 +654,7 @@ class AppleUpdates(object):
         if not os.path.exists(self.local_catalog_dir):
             try:
                 os.makedirs(self.local_catalog_dir)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
 
         local_apple_sus_catalog = os.path.join(
@@ -720,13 +720,13 @@ class AppleUpdates(object):
         """
         try:
             catalog_url = self._GetAppleCatalogURL()
-        except CatalogNotFoundError, err:
+        except CatalogNotFoundError as err:
             munkicommon.display_error(str(err))
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
                 os.makedirs(self.temp_cache_dir)
-            except OSError, oserr:
+            except OSError as oserr:
                 raise ReplicationError(oserr)
         msg = 'Checking Apple Software Update catalog...'
         self._ResetMunkiStatusAndDisplayMessage(msg)
@@ -804,7 +804,7 @@ class AppleUpdates(object):
             self.CacheAppleCatalog()
         except CatalogNotFoundError:
             return False
-        except (ReplicationError, fetch.MunkiDownloadError), err:
+        except (ReplicationError, fetch.MunkiDownloadError) as err:
             munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', str(err))
@@ -832,7 +832,7 @@ class AppleUpdates(object):
         self._WriteFilteredCatalog(product_ids, self.filtered_catalog_path)
         try:
             self.CacheUpdateMetadata()
-        except ReplicationError, err:
+        except ReplicationError as err:
             munkicommon.display_warning(
                 'Could not replicate software update metadata:')
             munkicommon.display_warning('\t%s', str(err))
@@ -1129,7 +1129,7 @@ class AppleUpdates(object):
             # set mode of Software Update.app executable so it won't launch
             # yes, this is a hack.  So sue me.
             os.chmod(softwareupdateappbin, 0)
-        except OSError, err:
+        except OSError as err:
             munkicommon.display_warning(
                 'Error with os.stat(Softare Update.app): %s', str(err))
             munkicommon.display_warning('Skipping Apple SUS check.')
@@ -1148,7 +1148,7 @@ class AppleUpdates(object):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
-        except OSError, err:
+        except OSError as err:
             munkicommon.display_warning('Error with Popen(%s): %s', cmd, err)
             munkicommon.display_warning('Skipping Apple SUS check.')
             # safely revert the chmod from above.
@@ -1258,7 +1258,7 @@ class AppleUpdates(object):
         try:
             job = launchd.Job(cmd)
             job.start()
-        except launchd.LaunchdJobException, err:
+        except launchd.LaunchdJobException as err:
             munkicommon.display_warning(
                 'Error with launchd job (%s): %s', cmd, str(err))
             munkicommon.display_warning('Skipping softwareupdate run.')
