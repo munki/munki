@@ -1214,6 +1214,7 @@ def pref(pref_name):
         'SuppressStopButtonOnInstall': False,
         'PackageVerificationMode': 'hash',
         'FollowHTTPRedirects': 'none',
+        'AutomaticAppleUpdates': False,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value == None:

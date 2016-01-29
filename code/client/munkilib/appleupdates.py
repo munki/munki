@@ -1651,8 +1651,12 @@ class AppleUpdates(object):
                 'Error reading: %s', self.apple_updates_plist)
             return item_list, product_ids
         apple_updates = pl_dict.get('AppleUpdates', [])
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         for item in apple_updates:
-            if item.get('unattended_install'):
+            if (item.get('unattended_install') or
+                (munkicommon.pref('AutomaticAppleUpdates') and
+                item.get('RestartAction', 'None') = 'None' and 
+                os_version_tuple >= (10, 10))):
                 if munkicommon.blockingApplicationsRunning(item):
                     munkicommon.display_detail(
                         'Skipping unattended install of %s because '
