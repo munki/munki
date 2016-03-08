@@ -465,7 +465,7 @@ def main():
         help=('Path to an optional installcheck script to be '
               'run to determine if item should be installed. '
               'An exit code of 0 indicates installation should occur. '
-              'Takes precendence over installs items and receipts.')
+              'Takes precedence over installs items and receipts.')
         )
     script_options.add_option(
         '--uninstallcheck_script', '--uninstallcheck-script',
@@ -473,7 +473,7 @@ def main():
         help=('Path to an optional uninstallcheck script to be '
               'run to determine if item should be uninstalled. '
               'An exit code of 0 indicates uninstallation should occur. '
-              'Takes precendence over installs items and receipts.')
+              'Takes precedence over installs items and receipts.')
         )
     script_options.add_option(
         '--preinstall_script', '--preinstall-script',
