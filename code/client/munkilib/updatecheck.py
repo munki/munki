@@ -1467,7 +1467,7 @@ def lookForUpdates(itemname, cataloglist):
     update_list = []
     for catalogname in cataloglist:
         if not catalogname in CATALOG.keys():
-            # in case the list refers to a non-existant catalog
+            # in case the list refers to a non-existent catalog
             continue
 
         updaters = CATALOG[catalogname]['updaters']
@@ -1925,7 +1925,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
                     iteminfo[key] = item_pl[key]
 
             if not 'apple_item' in iteminfo:
-                # admin did not explictly mark this item; let's determine if
+                # admin did not explicitly mark this item; let's determine if
                 # it's from Apple
                 if isAppleItem(item_pl):
                     iteminfo['apple_item'] = True
@@ -2368,7 +2368,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             iteminfo[key] = uninstall_item[key]
 
     if not 'apple_item' in iteminfo:
-        # admin did not explictly mark this item; let's determine if
+        # admin did not explicitly mark this item; let's determine if
         # it's from Apple
         if isAppleItem(item_pl):
             iteminfo['apple_item'] = True
@@ -2890,7 +2890,7 @@ def download_icons(item_list):
 
 def download_client_resources():
     """Download client customization resources (if any)."""
-    # Munki's preferences can specify an explict name
+    # Munki's preferences can specify an explicit name
     # under ClientResourcesFilename
     # if that doesn't exist, use the primary manifest name as the
     # filename. If that fails, try site_default.zip

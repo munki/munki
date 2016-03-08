@@ -1610,7 +1610,7 @@ class AppleUpdates(object):
             if key in metadata_to_copy and metadata[key]:
                 if key == 'RestartAction':
                     # Ensure that a heavier weighted 'RestartAction' is not
-                    # overriden by one supplied in metadata
+                    # overridden by one supplied in metadata
                     if metadata[key] not in RestartActions.get(
                             item.get(key, 'None')):
                         munkicommon.display_debug2(
