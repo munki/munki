@@ -335,7 +335,7 @@ def ImportBom(bompath, curs):
     package database into our internal package database.
     """
     # If we completely trusted the accuracy of Apple's database, we wouldn't
-    # need the bom files, but in my enviroment at least, the bom files are
+    # need the bom files, but in my environment at least, the bom files are
     # a better indicator of what flat packages have actually been installed
     # on the current machine.
     # We still need to consult Apple's package database

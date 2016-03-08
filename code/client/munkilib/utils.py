@@ -21,7 +21,7 @@ Created by Justin McWilliams on 2010-10-26.
 
 Common utility functions used throughout Munki.
 
-Note: this module should be 100% free of ObjC-dependant Python imports.
+Note: this module should be 100% free of ObjC-dependent Python imports.
 """
 
 
