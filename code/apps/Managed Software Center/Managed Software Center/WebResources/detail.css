@@ -63,7 +63,6 @@ font-size: 12px;
 line-height: 16px
 }
 body.product .sidebar .app-info .content {
-padding: 0 10px;
 font-size: 11px;
 color: #000
 }
@@ -72,7 +71,7 @@ margin-bottom: 5px
 }
 body.product .sidebar .app-info li .label,
 body.product .sidebar .app-info p span.label {
-font-weight: bold;
+font-weight: normal;
 color: #787878
 }
 body.product .sidebar .more-by {
@@ -85,7 +84,6 @@ body.product .sidebar .more-by div.lockup {
 display: -webkit-box;
 padding: 7px 10px;
 border-width: 0 0 1px 0;
-background-image: -webkit-gradient(linear,left top,left bottom,from(#fff),to( #f9f9f9));
 height: 55px
 }
 body.product .sidebar .more-by div.lockup:last-child {
