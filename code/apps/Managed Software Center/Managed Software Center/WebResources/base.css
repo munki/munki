@@ -532,7 +532,7 @@ body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
 }
 
 div.lockup-container, div.container, div.titled-container {
-    -webkit-border-radius: 5px;
+    /*-webkit-border-radius: 5px;*/
 }
 
 div.lockup-container .title, div.titled-container .title {
