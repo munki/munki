@@ -547,7 +547,7 @@ div.lockup-container .title h2, div.titled-container .title h2 {
     line-height: 32px
 }
 
-div.lockup-container .title, div.titled-container .title, div.titled-box h2 {;
+div.lockup-container .title, div.titled-container .title, div.titled-box h2 {
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;
 }
