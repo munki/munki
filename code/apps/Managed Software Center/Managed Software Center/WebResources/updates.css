@@ -59,7 +59,11 @@ div.installations th {
 }
 
 #update-count-string {
-    margin-left: -10px
+    /*margin-left: -10px*/
+}
+
+#update-progress-spinner {
+    margin-right: -10px
 }
 
 div.installations th:first-child {
