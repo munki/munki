@@ -710,6 +710,7 @@ def main():
             if options.manualcheck:
                 # record our result
                 recordUpdateCheckResult(-1)
+            if options.munkistatusoutput:
                 # connect to socket and quit
                 munkistatus.activate()
                 munkistatus.quit()
