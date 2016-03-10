@@ -22,6 +22,9 @@
 .main>div:not(:last-of-type) {
     margin-bottom: 20px
 }
+div.status-results {
+    border-bottom: 1px solid #d9d9d9
+}
 div.installations {
     margin: 14px 0;
     position: relative
@@ -133,7 +136,7 @@ div.installations th:last-child {
     -webkit-box-shadow: none
 }
 #other-updates #os-updates,#os-and-app-updates #os-updates {
-    border-bottom: 1px solid #d9d9d9
+    /*border-bottom: 1px solid #d9d9d9*/
 }
 #other-updates #os-updatesth:last-child,#os-and-app-updates #os-updates th:last-child {
     width: 100%;
@@ -157,12 +160,12 @@ div.installations th:last-child {
 div.purchases .installation td {
     height: 41px
 }
-div.purchases .installation:last-child td:first-child {
+/*div.purchases .installation:last-child td:first-child {
     -webkit-border-bottom-left-radius: 5px
 }
 div.purchases .installation:last-child td:last-child {
     -webkit-border-bottom-right-radius: 5px
-}
+}*/
 div.purchases .installation td:first-child {
     width: 225px
 }
