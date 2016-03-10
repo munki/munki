@@ -1132,7 +1132,7 @@ div.stage>img {
     position: absolute;
     height: 200px;
     left: 0;
-    background-color: #000;
+    /*background-color: #000;*/
     text-align: left;
     overflow: hidden;
     -webkit-transition: opacity 1s ease-in-out;
