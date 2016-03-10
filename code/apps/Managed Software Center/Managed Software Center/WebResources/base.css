@@ -1270,8 +1270,8 @@ div.lockup li.preparing-removal span.progress-spinner,
 div.lockup li.installing span.progress-spinner,
 div.lockup li.removing span.progress-spinner {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 20px;
+    right: 20px;
 }
 
 div.lockup li {
