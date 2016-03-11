@@ -43,8 +43,8 @@ margin-bottom: 12px;
 font-family: Helvetica;
 font-size: 24px;
 line-height: 22px;
-font-weight: bold;
-color: #6d83a2;
+/*font-weight: bold;*/
+/*color: #6d83a2;*/
 text-shadow: rgba(255,255,255,1) 0 1px 0
 }
 body.product .product-detail .product-info .title a {
