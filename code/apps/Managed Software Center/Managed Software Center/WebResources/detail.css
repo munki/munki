@@ -113,7 +113,7 @@ overflow: hidden
 body.product .sidebar .more-by div.lockup li.name {
 margin-bottom: 1px;
 font-size: 11px;
-font-weight: bold
+/*font-weight: bold*/
 }
 body.product .sidebar .more-by div.lockup li.genre {
 color: #6c6c6c;
