@@ -66,7 +66,9 @@ div.installations th {
 }
 
 #updates-progress-spinner {
-    margin-right: -10px
+    margin-right: 4px;
+    position: relative;
+    left: 0px;
 }
 
 div.installations th:first-child {
