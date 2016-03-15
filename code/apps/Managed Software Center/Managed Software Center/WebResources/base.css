@@ -49,7 +49,7 @@ option {
 }
 
 body, button, input {
-    font-family: "Helvetica", "Arial";
+    font-family: "Helvetica Neue", "Helvetica", "Arial";
     font-smooth: always;
     -webkit-font-smoothing: antialiased
 }
@@ -224,7 +224,7 @@ html, body {
     -webkit-background-size: 36px 635px;
     background-repeat: repeat-x;
     background-color: white;
-    font-family: Helvetica, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
     font-size: 11px
 }
 
@@ -284,7 +284,7 @@ div.columns {
     -webkit-font-smoothing: subpixel-antialiased;
     background-color: #002354;
     color: transparent;
-    font-family: Helvetica;
+    font-family: "Helvetica Neue", Helvetica;
     font-size: 24px;
     font-weight: normal;
     line-height: 26px;
@@ -447,7 +447,7 @@ div.titled-box {
 }
 
 div.titled-box h2 {
-    font: normal 14px 'Helvetica';
+    font: normal 14px "Helvetica Neue", 'Helvetica';
     color: #53565e;
     line-height: 24px;
     overflow: hidden;
@@ -456,7 +456,7 @@ div.titled-box h2 {
 }
 
 div.titled-box h2 a {
-    font: normal 12px 'Helvetica';
+    font: normal 12px "Helvetica Neue", 'Helvetica';
     color: #53565e;
     line-height: 24px
 }
@@ -542,7 +542,7 @@ div.lockup-container .title, div.titled-container .title {
 
 div.lockup-container .title h2, div.titled-container .title h2 {
     display: inline-block;
-    font: normal 14px 'Helvetica';
+    font: normal 14px "Helvetica Neue", 'Helvetica';
     color: #53565e;
     line-height: 32px
 }
@@ -565,7 +565,7 @@ div.titled-box h2 {
 
 div.lockup-container .title h1 {
     display: inline-block;
-    font: normal 14px Helvetica;
+    font: normal 14px "Helvetica Neue", Helvetica;
     color: #53565e;
     line-height: 32px
 }
