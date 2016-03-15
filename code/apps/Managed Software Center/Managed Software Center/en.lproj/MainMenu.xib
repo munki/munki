@@ -337,7 +337,7 @@
                             </view>
                             <animations/>
                             <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </box>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="E1A9A599-F94D-4780-9330-F2B0F75FA3BA" label="" paletteLabel="Search" tag="-1" id="fbJ-cF-weR">
@@ -369,7 +369,7 @@
                             </view>
                             <animations/>
                             <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </box>
                     </toolbarItem>
                 </allowedToolbarItems>
