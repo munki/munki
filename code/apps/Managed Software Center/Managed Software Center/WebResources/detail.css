@@ -40,11 +40,11 @@ body.product .product-detail .product-info {
 }
 body.product .product-detail .product-info .title h1 {
 margin-bottom: 12px;
-font-family: Helvetica;
+font-family: "Helvetica Neue", Helvetica;
 font-size: 24px;
 line-height: 22px;
-font-weight: bold;
-color: #6d83a2;
+/*font-weight: bold;*/
+/*color: #6d83a2;*/
 text-shadow: rgba(255,255,255,1) 0 1px 0
 }
 body.product .product-detail .product-info .title a {
@@ -52,7 +52,7 @@ color: currentcolor
 }
 body.product .product-detail .product-info .product-review h4 {
 margin-bottom: 4px;
-font-family: Helvetica;
+font-family: "Helvetica Neue", Helvetica;
 font-size: 16px;
 font-weight: bold;
 color: #6d83a2;
@@ -63,7 +63,6 @@ font-size: 12px;
 line-height: 16px
 }
 body.product .sidebar .app-info .content {
-padding: 0 10px;
 font-size: 11px;
 color: #000
 }
@@ -72,7 +71,7 @@ margin-bottom: 5px
 }
 body.product .sidebar .app-info li .label,
 body.product .sidebar .app-info p span.label {
-font-weight: bold;
+font-weight: normal;
 color: #787878
 }
 body.product .sidebar .more-by {
@@ -85,7 +84,6 @@ body.product .sidebar .more-by div.lockup {
 display: -webkit-box;
 padding: 7px 10px;
 border-width: 0 0 1px 0;
-background-image: -webkit-gradient(linear,left top,left bottom,from(#fff),to( #f9f9f9));
 height: 55px
 }
 body.product .sidebar .more-by div.lockup:last-child {
@@ -115,7 +113,7 @@ overflow: hidden
 body.product .sidebar .more-by div.lockup li.name {
 margin-bottom: 1px;
 font-size: 11px;
-font-weight: bold
+/*font-weight: bold*/
 }
 body.product .sidebar .more-by div.lockup li.genre {
 color: #6c6c6c;
