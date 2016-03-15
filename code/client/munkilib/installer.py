@@ -467,7 +467,7 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
         # all tests passed, OK to copy
         munkicommon.display_status_minor(
             "Copying %s to %s" % (source_itemname, full_destpath))
-        retcode = subprocess.call(["/bin/cp", "-pR",
+        retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
                                    source_itempath, full_destpath])
         if retcode:
             munkicommon.display_error(
@@ -505,20 +505,6 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             munkicommon.display_error(
                 "Error setting mode for %s" % (full_destpath))
             return retcode
-
-        # remove com.apple.quarantine attribute from copied item
-        cmd = ["/usr/bin/xattr", full_destpath]
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (out, dummy_err) = proc.communicate()
-        if out:
-            xattrs = str(out).splitlines()
-            if "com.apple.quarantine" in xattrs:
-                dummy_result = subprocess.call(
-                    ["/usr/bin/xattr", "-d", "com.apple.quarantine",
-                     full_destpath])
 
     # all items copied successfully!
     return 0
