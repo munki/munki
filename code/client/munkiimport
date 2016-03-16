@@ -731,10 +731,21 @@ def configure():
 def init_repo(path):
     """Initializes a directory with the repo subdirs"""
     path = os.path.abspath(path)
+
     if not os.path.exists(path):
-        os.mkdir(path)
+        try:
+            os.mkdir(path)
+        except OSError as e:
+            print('Failed to initialize repo at %s (%s)' % (path, e))
+            return
+
     for d in REPO_DIRS:
-        os.mkdir(os.path.join(path, d))
+        full_path = os.path.join(path, d)
+        try:
+            os.mkdir(full_path)
+        except OSError as e:
+            print('Failed to create %s directory (%s)' % (d, e))
+            return
 
     pref('repo_path', path)
 
