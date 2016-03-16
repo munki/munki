@@ -107,7 +107,7 @@ def repoAvailable():
         mountRepoCLI()
     if not os.path.exists(REPO_PATH):
         return False
-    for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
+    for subdir in REPO_DIRS:
         if not os.path.exists(os.path.join(REPO_PATH, subdir)):
             print >> sys.stderr, "%s is missing %s" % (REPO_PATH, subdir)
             return False
@@ -691,12 +691,17 @@ def cleanupAndExit(exitcode):
     exit(exitcode or result)
 
 
-def pref(prefname):
-    """Returns a preference for prefname"""
+def pref(prefname, value=None):
+    """Returns or sets preference for prefname"""
     try:
         _prefs = FoundationPlist.readPlist(PREFSPATH)
     except FoundationPlist.NSPropertyListSerializationException:
         return None
+
+    if value:
+        _prefs[prefname] = value
+        return FoundationPlist.writePlist(_prefs, PREFSPATH)
+
     if prefname in _prefs:
         return _prefs[prefname]
     else:
@@ -723,6 +728,17 @@ def configure():
         print >> sys.stderr, 'Could not save configuration to %s' % PREFSPATH
 
 
+def init_repo(path):
+    """Initializes a directory with the repo subdirs"""
+    path = os.path.abspath(path)
+    if not os.path.exists(path):
+        os.mkdir(path)
+    for d in REPO_DIRS:
+        os.mkdir(os.path.join(path, d))
+
+    pref('repo_path', path)
+
+
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
 PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
                                             PREFSNAME))
@@ -732,6 +748,7 @@ WE_MOUNTED_THE_REPO = False
 VERBOSE = False
 REPO_PATH = ""
 REPO_URL = ""
+REPO_DIRS = ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']
 
 def main():
     """Main routine"""
@@ -760,6 +777,8 @@ def main():
 
     parser = PassThroughOptionParser(usage=usage, epilog=epilog)
 
+    parser.add_option('--init', action='store_true',
+                      help='Initialize a munki repository.')
     parser.add_option('--configure', action='store_true',
                       help='Configure munkiimport with details about your '
                            'munki repo, preferred editor, and the like. Any '
@@ -798,6 +817,10 @@ def main():
 
     if options.configure:
         configure()
+        exit(0)
+
+    if options.init:
+        init_repo(arguments[0].strip())
         exit(0)
 
     NOINTERACTIVE = options.nointeractive
