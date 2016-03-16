@@ -982,9 +982,9 @@ div.msc-button-inner.install-updates:not(.installed-not-removable):hover {
 
 div.progress-spinner {
     background: url(progress-spinner.png) 0 0 no-repeat;
-    -webkit-background-size: 21px 20px;
+    -webkit-background-size: 20px 20px;
     opacity: 1;
-    width: 21px;
+    width: 20px;
     height: 20px;
     -webkit-animation-name: 'generic-loading-spinner-animation';
     -webkit-animation-iteration-count: infinite;
@@ -1255,9 +1255,9 @@ div.lockup li.removing span.progress-spinner {
     visibility: visible !important;
     float: right;
     background: url(progress-spinner.png) 0 0 no-repeat;
-    -webkit-background-size: 21px 20px;
+    -webkit-background-size: 20px 20px;
     opacity: 1;
-    width: 21px;
+    width: 20px;
     height: 20px;
     -webkit-animation-name: 'generic-loading-spinner-animation';
     -webkit-animation-iteration-count: infinite;
