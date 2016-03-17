@@ -66,7 +66,7 @@ def raw_input_with_default(prompt='', default=''):
         # no default value, just call raw_input
         result = raw_input(prompt + ": ").decode('UTF-8')
 
-    return result.strip()
+    return result.rstrip()
 
 
 def makeDMG(pkgpath):
