@@ -737,7 +737,7 @@ def init_repo(path):
             os.mkdir(path)
         except OSError as e:
             print('Failed to initialize repo at %s (%s)' % (path, e))
-            return
+            return False
 
     for d in REPO_DIRS:
         full_path = os.path.join(path, d)
@@ -745,9 +745,10 @@ def init_repo(path):
             os.mkdir(full_path)
         except OSError as e:
             print('Failed to create %s directory (%s)' % (d, e))
-            return
+            return False
 
     pref('repo_path', path)
+    return True
 
 
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
@@ -831,8 +832,13 @@ def main():
         exit(0)
 
     if options.init:
-        init_repo(arguments[0].strip())
-        exit(0)
+        path = arguments[0].rstrip()
+        if init_repo(path):
+            print('Repo initialized at path %s' % path)
+            exit(0)
+
+        print >> sys.stderr, ('Failed to initialize repo at path %s' % path)
+        exit(-1)
 
     NOINTERACTIVE = options.nointeractive
     VERBOSE = options.verbose
