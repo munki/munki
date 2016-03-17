@@ -120,33 +120,38 @@ cd "$MUNKIROOT"
 GITREV=`git log -n1 --format="%H" -- code/client`
 GITREVINDEX=`git rev-list --count $GITREV`
 SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
 # get a psuedo-svn revision number for the apps pkg
 APPSGITREV=`git log -n1 --format="%H" -- code/apps`
 GITREVINDEX=`git rev-list --count $APPSGITREV`
 APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
+    MPKGSVNREV=$APPSSVNREV
+fi
 # get base apps version from MSC.app
 APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Managed Software Center-Info" CFBundleShortVersionString`
 # append the APPSSVNREV
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
-# get a psuedo-svn revision number for the metapackage
-MPKGGITREV=`git log -n1 --format="%H"`
-GITREVINDEX=`git rev-list --count $MPKGGITREV`
-MPKGSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
-MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
-
 # get a pseudo-svn revision number for the launchd pkg
 LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd`
 GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
+    MPKGSVNREV=$LAUNCHDSVNREV
+fi
 # Get launchd version if different
 LAUNCHDVERSION=$MUNKIVERS
 if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
     LAUNCHDVERSION=`defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString`
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
+
+# get a psuedo-svn revision number for the metapackage
+MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
+
 
 MPKG="$OUTPUTDIR/munkitools-$MPKGVERSION.pkg"
 
