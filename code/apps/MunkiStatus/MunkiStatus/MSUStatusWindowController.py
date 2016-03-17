@@ -156,7 +156,13 @@ class MSUStatusWindowController(NSObject):
             if consoleuser == None or consoleuser == u"loginwindow":
                 # needed so the window can show over the loginwindow
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
-                self.window.setLevel_(NSScreenSaverWindowLevel - 1)
+                # Check if we're to appear above screen saver or Policy Banner
+                if munki.pref('ShowProgressWindowOverScreenSaver'):
+                    # Always appear above screen saver or Policy Banner window
+                    self.window.setLevel_(NSScreenSaverWindowLevel + 1)
+                else:
+                    # Default behavior, normal window order
+                    self.window.setLevel_(NSScreenSaverWindowLevel - 1)
             self.window.center()
             self.messageFld.setStringValue_(
                 NSLocalizedString(u"Starting…", None))
