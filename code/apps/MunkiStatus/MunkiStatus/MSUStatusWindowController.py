@@ -20,14 +20,11 @@
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
-from sys import path
 
 import os
+import glob
 import munki
 import FoundationPlist
-
-path.append('/usr/local/munki/munkilib')
-from munkicommon import pref
 
 # pylint: disable=wildcard-import
 # pylint: disable=unused-wildcard-import
@@ -41,6 +38,10 @@ from AppKit import *
 # pylint: disable=invalid-name
 
 debug = False
+havePolicyBanner = False
+
+if len(glob.glob('/Library/Security/PolicyBanner*')) > 0:
+    havePolicyBanner = True
 
 def getLoginwindowPicture():
     '''Returns the image behind the loginwindow (in < 10.7)'''
@@ -161,7 +162,7 @@ class MSUStatusWindowController(NSObject):
                 # needed so the window can show over the loginwindow
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
                 # Check if we're to appear above screen saver or Policy Banner
-                if pref('ShowProgressWindowOverScreenSaver'):
+                if havePolicyBanner:
                     # Always appear above screen saver or Policy Banner window
                     self.window.setLevel_(NSScreenSaverWindowLevel + 1)
                 else:
