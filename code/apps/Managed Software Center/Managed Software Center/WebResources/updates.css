@@ -22,6 +22,9 @@
 .main>div:not(:last-of-type) {
     margin-bottom: 20px
 }
+div.status-results {
+    border-bottom: 1px solid #d9d9d9
+}
 div.installations {
     margin: 14px 0;
     position: relative
@@ -41,19 +44,15 @@ div.installations table:not(.no-header):before {
 }
 div.installations thead {
     border-radius: 5px 5px 0 0;
-    padding: 0 0 0 10px;
     height: 32px;
     border-bottom: 1px solid #d7d7d7;
-    text-shadow: 0 1px 0 #fff;
-    background: -webkit-gradient(linear,left bottom,left top,from( #e3e3e3),color-stop(0.49, #ededed),color-stop(0.5, #f4f4f4),to(#fff))
 }
 div.installations th {
     color: #53565e;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: normal;
     height: 32px;
     line-height: 14px;
-    padding: 0 10px;
     text-align: left
 }
 #updates div.installations th {
@@ -63,7 +62,13 @@ div.installations th {
 }
 
 #update-count-string {
-    margin-left: -10px
+    /*margin-left: -10px*/
+}
+
+#updates-progress-spinner {
+    margin-right: 4px;
+    position: relative;
+    left: 0px;
 }
 
 div.installations th:first-child {
@@ -72,9 +77,6 @@ div.installations th:first-child {
 div.installations th:last-child {
     -webkit-border-top-right-radius: 5px
 }
-div.installations tbody tr:nth-of-type(even) {
-    background: -webkit-gradient(linear,left top,left bottom,from( #f3f3f3),to( #eaeaea))
-}
 .installation td {
     border-top: 1px solid #fff;
     border-bottom: 1px solid #d9d9d9;
@@ -82,6 +84,9 @@ div.installations tbody tr:nth-of-type(even) {
 }
 .installation td,.installation td a {
     color: #494949
+}
+.installation td.install-info-cell,.installation td.install-info-cell a, li.install-info-cell {
+    color: rgb(121,121,121)
 }
 .installation:first-child td {
     border-top: transparent
@@ -100,7 +105,7 @@ div.installations tbody tr:nth-of-type(even) {
 .installation h2 {
     color: #565656;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: normal;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 300px
@@ -133,7 +138,7 @@ div.installations tbody tr:nth-of-type(even) {
     -webkit-box-shadow: none
 }
 #other-updates #os-updates,#os-and-app-updates #os-updates {
-    border-bottom: 1px solid #d9d9d9
+    /*border-bottom: 1px solid #d9d9d9*/
 }
 #other-updates #os-updatesth:last-child,#os-and-app-updates #os-updates th:last-child {
     width: 100%;
@@ -148,29 +153,21 @@ div.installations tbody tr:nth-of-type(even) {
     top: 6px;
     left: 0
 }
-#os-and-app-updates #os-updates:not(.hidden)+#app-updates tbody tr:nth-of-type(even) {
-    background: 0
-}
-#os-and-app-updates #os-updates:not(.hidden)+#app-updates tbody tr:nth-of-type(odd) {
-    background: -webkit-gradient(linear,left top,left bottom,from( #f3f3f3),to( #eaeaea))
-}
+
 @-webkit-keyframes fade-out-and-remove {
     0% {opacity: 1}
     100% {opacity: 0}
 }
 
-#purchases {
-    text-shadow:#fff 0 1px 0
-}
 div.purchases .installation td {
     height: 41px
 }
-div.purchases .installation:last-child td:first-child {
+/*div.purchases .installation:last-child td:first-child {
     -webkit-border-bottom-left-radius: 5px
 }
 div.purchases .installation:last-child td:last-child {
     -webkit-border-bottom-right-radius: 5px
-}
+}*/
 div.purchases .installation td:first-child {
     width: 225px
 }
@@ -238,9 +235,8 @@ div.purchases .installation td.status span.preparing-removal
 }
 #updates #header h1 {
     font-size: 15px;
-    font-weight: bold;
+    font-weight: normal;
     color: #929292;
-    text-shadow: 0 1px 0 #fff;
     text-align: center
 }
 div.updates table {
@@ -385,13 +381,12 @@ div.os-updates.expanded tbody tr:nth-child(n+3):before {
     top: 0;
     right: 100px;
     left: 240px;
-    background: -webkit-linear-gradient(left,rgba(0,0,0,.04) 0,rgba(0,0,0,.16) 20%,rgba(0,0,0,.16) 80%,rgba(0,0,0,.04) 100%)
 }
 div.os-updates.expanded tbody tr.sosumi:before {
     display: none
 }
 .activity-indicator {
-    font: bold 20px Helvetica
+    font: normal 20px "Helvetica Neue", Helvetica
 }
 #updates #header .scan-progress {
     padding: 0 0 1px 13px

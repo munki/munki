@@ -49,7 +49,7 @@ option {
 }
 
 body, button, input {
-    font-family: "Helvetica", "Arial";
+    font-family: "Helvetica Neue", "Helvetica", "Arial";
     font-smooth: always;
     -webkit-font-smoothing: antialiased
 }
@@ -223,8 +223,8 @@ a {
 html, body {
     -webkit-background-size: 36px 635px;
     background-repeat: repeat-x;
-    background-color: #f5f6f7;
-    font-family: "Lucida Grande", Helvetica, sans-serif;
+    background-color: white;
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
     font-size: 11px
 }
 
@@ -276,7 +276,7 @@ div.columns {
 
 .sidebar {
     width: 200px;
-    margin-left: 15px
+    margin-left: 26px;
 }
 
 .sidebar h1, .main>h1 {
@@ -284,15 +284,14 @@ div.columns {
     -webkit-font-smoothing: subpixel-antialiased;
     background-color: #002354;
     color: transparent;
-    font-family: Helvetica;
+    font-family: "Helvetica Neue", Helvetica;
     font-size: 24px;
-    font-weight: bold;
+    font-weight: normal;
     line-height: 26px;
     margin-bottom: 5px;
     overflow: visible;
     position: relative;
-    text-shadow: rgba(255, 255, 255, .496094) 0 1px 2px;
-    top: -5px
+    top: -5px;
 }
 
 footer {
@@ -309,7 +308,7 @@ footer {
 }
 
 footer div.bottom-links {
-    margin: 0 35px 0 0;
+    margin: 0 0 0 0;
     border-top: 1px solid #d3d7db;
     position: relative
 }
@@ -324,7 +323,6 @@ footer div.bottom-links * {
     color: #4f5f6e;
     font-size: 10px;
     font-weight: normal;
-    text-shadow: #fff 0 1px 0
 }
 
 footer div.bottom-links>span {
@@ -333,7 +331,7 @@ footer div.bottom-links>span {
 
 footer div.bottom-links li a {
     color: #576982;
-    font-weight: bold
+    font-weight: normal
 }
 
 footer div.bottom-links>ul>li:not(:last-child):after {
@@ -396,14 +394,14 @@ div.select {
 div.select select {
     background: -webkit-gradient(linear, left top, left bottom, from( #fff), to( #eaeaea));
     font-size: 11px;
-    font-weight: bold;
-    color: #626262;
+    font-weight: normal;
+    /*color: #626262;*/
     outline: 0;
     line-height: 15px;
     margin: 0;
     padding: 0 25px 1px 5px;
     border: 0;
-    text-shadow: #fff 0 1px 0;
+    /*text-shadow: #fff 0 1px 0;*/
     -webkit-appearance: none;
     -webkit-box-shadow: rgba(0, 0, 0, .35) 0 1px 2px, rgba(0, 0, 0, .8) 0 0 1px;
     box-shadow: rgba(0, 0, 0, .35) 0 1px 2px, rgba(0, 0, 0, .2) 0 0 1px;
@@ -443,19 +441,14 @@ div.select:after {
 }
 
 div.titled-box {
-    background-color: #fff;
     margin-bottom: 15px;
     padding-bottom: 10px;
     -webkit-border-radius: 5px;
-    -webkit-box-shadow: rgba(0, 0, 0, .45) 0 1px 3px, rgba(0, 0, 0, .8) 0 0 1px;
-    box-shadow: rgba(0, 0, 0, .45) 0 1px 4px, rgba(0, 0, 0, .2) 0 0 1px;
-    -webkit-background-clip: padding
 }
 
 div.titled-box h2 {
-    font: bold 13px 'Lucida Grande';
+    font: normal 14px "Helvetica Neue", 'Helvetica';
     color: #53565e;
-    padding: 0 10px;
     line-height: 24px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -463,9 +456,9 @@ div.titled-box h2 {
 }
 
 div.titled-box h2 a {
-    font: bold 12px 'Lucida Grande';
+    font: normal 12px "Helvetica Neue", 'Helvetica';
     color: #53565e;
-    line-height: 25px
+    line-height: 24px
 }
 
 div.titled-box>div.content {
@@ -477,11 +470,11 @@ div.titled-box.quick-links>div.content {
 }
 
 div.titled-box h2, div.titled-box hr {
-    border-width: 0 0 3px 0;
+    border: none;
 }
 
 div.titled-box hr {
-    margin: 8px 0
+    margin: 28px 0
 }
 
 div.titled-box li.popup {
@@ -507,7 +500,7 @@ div.titled-box li.link {
     padding: 0 11px;
     height: 19px;
     line-height: 16px;
-    font-weight: bold;
+    font-weight: normal;
     border-color: transparent;
     border-width: 1px 0;
     border-style: solid
@@ -523,7 +516,7 @@ div.titled-box li.link.selected {
 div.titled-box li.link a {
     display: block;
     font-size: 11px;
-    font-weight: bold;
+    font-weight: normal;
     color: #222;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -539,32 +532,24 @@ body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
 }
 
 div.lockup-container, div.container, div.titled-container {
-    background-color: #fff;
-    -webkit-border-radius: 5px;
-    -webkit-box-shadow: rgba(0, 0, 0, .45) 0 1px 3px, rgba(0, 0, 0, .8) 0 0 1px;
-    box-shadow: rgba(0, 0, 0, .45) 0 1px 4px, rgba(0, 0, 0, .2) 0 0 1px;
-    -webkit-background-clip: padding
+    /*-webkit-border-radius: 5px;*/
 }
 
 div.lockup-container .title, div.titled-container .title {
-    padding: 0 10px;
     height: 32px;
     border-bottom: 1px solid #d7d7d7
 }
 
 div.lockup-container .title h2, div.titled-container .title h2 {
     display: inline-block;
-    font: bold 14px 'Lucida Grande';
+    font: normal 14px "Helvetica Neue", 'Helvetica';
     color: #53565e;
-    padding: 0 10px 0 0;
     line-height: 32px
 }
 
 div.lockup-container .title, div.titled-container .title, div.titled-box h2 {
-    text-shadow: 0 1px 0 #fff;
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;
-    background: -webkit-gradient(linear, left bottom, left top, from( #e3e3e3), color-stop(0.49, #ededed), color-stop(0.5, #f4f4f4), to(#fff))
 }
 
 div.titled-box h2 {
@@ -572,14 +557,16 @@ div.titled-box h2 {
     border-bottom: 1px solid #cacaca;
     border-width: 0 0 1px !important;
     margin-bottom: 6px;
-    -webkit-border-image: none
+    margin-top: 10px;
+    -webkit-border-image: none;
+    font-size: 13px;
+    line-height: 22px
 }
 
 div.lockup-container .title h1 {
     display: inline-block;
-    font: bold 14px Lucida Grande;
+    font: normal 14px "Helvetica Neue", Helvetica;
     color: #53565e;
-    padding: 0 10px 0 0;
     line-height: 32px
 }
 
@@ -591,7 +578,7 @@ div.lockup-container .title h1 a {
 div.lockup-container .title span {
     color: #53565e;
     font-size: 10px;
-    font-weight: bold
+    font-weight: normal
 }
 
 div.lockup-container .content-and-controls, div.titled-container .content-and-controls {
@@ -604,7 +591,6 @@ div.lockup-container .content-and-controls:before, div.titled-container .content
     position: absolute;
     width: 100%;
     top: -1px;
-    border-width: 0 0 3px 0;
 }
 
 div.lockup-container .content-and-controls:after, div.titled-container .content-and-controls:before {
@@ -623,9 +609,6 @@ div.lockup-container div.lockup {
     float: left;
     width: 33.3%;
     height: 98px;
-    border-right: 1px solid #d9d9d9;
-    border-bottom: 1px solid #d9d9d9;
-    border-left: 1px solid #fff
 }
 
 div.lockup-container div.lockup div.artwork {
@@ -673,18 +656,6 @@ div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(3n+2) {
     width: 33.4%
 }
 
-div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+1),
-div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+2),
-div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+3) {
-    background: #fff
-}
-
-div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+4),
-div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+5),
-div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(6n+6) {
-    background: -webkit-gradient(linear, left top, left bottom, from( #f3f3f3), to( #eaeaea))
-}
-
 div.lockup-container[data-columns-current="3"] div.lockup:nth-of-type(3n+1) {
     border-left: 0
 }
@@ -693,41 +664,14 @@ div.lockup-container:not(.shelf)[data-columns-current="3"] div.lockup:nth-of-typ
     display: table-cell;
     /*float: none;*/
     /*height: auto;*/
-    border-right: 0;
 }
 
 div.lockup-container[data-columns-current="3"] div.lockup:nth-last-of-type(3) {
     -webkit-border-bottom-left-radius: 5px
 }
 
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+1),
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+2),
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+3),
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+4) {
-    background: #fff
-}
-
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+5),
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+6),
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+7),
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(8n+8) {
-    background: -webkit-gradient(linear, left top, left bottom, from( #f3f3f3), to( #eaeaea))
-}
-
 div.lockup-container[data-columns-current="4"] div.lockup, div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(3n+2) {
     width: 25%
-}
-
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(3n+1) {
-    border-left: 1px solid #fff
-}
-
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(3n) {
-    border-right: 1px solid #d9d9d9
-}
-
-div.lockup-container[data-columns-current="4"] div.lockup:nth-of-type(4n+1) {
-    border-left: 0
 }
 
 div.lockup-container:not(.shelf)[data-columns-current="4"] div.lockup:nth-of-type(4n) {
@@ -749,41 +693,10 @@ div.lockup-container[data-columns-current="5"] div.lockup, div.lockup-container[
     width: 20%
 }
 
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+1),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+2),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+3),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+4),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+5) {
-    background: #fff
-}
-
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+6),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+7),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+8),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+9),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(10n+10) {
-    background: -webkit-gradient(linear, left top, left bottom, from( #f3f3f3), to( #eaeaea))
-}
-
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(3n+1),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(4n+1) {
-    border-left: 1px solid #fff
-}
-
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(3n),
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(4n) {
-    border-right: 1px solid #d9d9d9
-}
-
-div.lockup-container[data-columns-current="5"] div.lockup:nth-of-type(5n+1) {
-    border-left: 0
-}
-
 div.lockup-container:not(.shelf)[data-columns-current="5"] div.lockup:nth-of-type(5n) {
     display: table-cell;
     /*float: none;
     height: auto;*/
-    border-right: 0
 }
 
 div.lockup-container[data-columns-current="5"] div.lockup:nth-last-of-type(5) {
@@ -817,7 +730,6 @@ div.lockup ul li {
 
 div.lockup li.name {
     color: #000;
-    font-weight: bold;
     max-width: 190px
 }
 
@@ -839,8 +751,7 @@ div.lockup-container div.lockup ul li {
 
 div.lockup-container div.lockup.category ul {
     margin-top: 6px;
-    font-weight: bold;
-    text-shadow: 0 1px 0 #fff
+    font-weight: normal;
 }
 
 div.lockup-container div.lockup.category li.genre a {
@@ -853,13 +764,13 @@ div.msc-button.small {
 
 div.msc-button-inner {
     height: 13px;
-    -webkit-border-radius: 10px;
-    background: -webkit-gradient(linear, 0% 0, 0% 100%, from( #A8AAAF), color-stop(0.05, #A6A8AE), color-stop(0.5, #A1A3A9), color-stop(0.96, #9C9EA4), to( #989DA3));
+    -webkit-border-radius: 3px;
+    background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
     border: 1px solid rgba(136, 136, 138, .746094);
     text-transform: uppercase;
     /*text-shadow: rgba(0, 0, 0, .5) 0 -1px 0;*/
     color: #fff;
-    font: normal normal bold 9px/11px 'Lucida Grande';
+    font: normal normal bold 9px/12px 'Helvetica';
     padding-left: 10px;
     padding-right: 10px;
 }
@@ -878,7 +789,7 @@ div.msc-button-inner.removing {
 }
 
 div.msc-button-inner:not(.installed-not-removable):hover {
-    background: -webkit-gradient(linear, left top, left bottom, from( #85868d), color-stop(0.05, #84858c), color-stop(0.5, #888188), color-stop(0.96, #7b7c83), to( #7a7bb2))
+    background: -webkit-gradient(linear, left top, left bottom, from( #85868d), to( #7a7bb2))
 }
 
 div.msc-button button {
@@ -901,11 +812,10 @@ div.msc-button-inner.large {
     font-size: 13px;
     font-family: "Helvetica";
     text-transform: capitalize;
-    line-height: 24px;
-    border: 0;
+    line-height: 21px;
+    border: 1px solid rgb(42, 73, 118);
     color: #fff;
-    text-shadow: rgba(0, 0, 0, .5) 0 -1px 0;
-    background: -webkit-gradient(linear, left top, left bottom, from( #367FD4), color-stop(0.50, #2255A0), color-stop(0.49, #2B68B6), to( #234F92));
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
     border-color: #1F4A7A;
     -webkit-border-radius: 5px;
 }
@@ -925,7 +835,7 @@ div.msc-button-inner.large.removing {
 }
 
 div.msc-button-inner.large:not(.installed-not-removable):hover {
-    background: -webkit-gradient(linear, left top, left bottom, from( #0067B8), color-stop(0.49, #00509A), color-stop(0.50, #003E85), to( #003777))
+    background: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777))
 }
 
 div.msc-button.install-updates {
@@ -1072,9 +982,9 @@ div.msc-button-inner.install-updates:not(.installed-not-removable):hover {
 
 div.progress-spinner {
     background: url(progress-spinner.png) 0 0 no-repeat;
-    -webkit-background-size: 21px 20px;
+    -webkit-background-size: 20px 20px;
     opacity: 1;
-    width: 21px;
+    width: 20px;
     height: 20px;
     -webkit-animation-name: 'generic-loading-spinner-animation';
     -webkit-animation-iteration-count: infinite;
@@ -1202,7 +1112,6 @@ div.showcase {
     overflow: hidden;
     -webkit-transition: opacity .25s;
     -webkit-border-bottom-right-radius: 8px;
-    -webkit-box-shadow: 0 1px 3px #999;
     position: relative;
     left: 0;
     margin-right: 0;
@@ -1223,7 +1132,7 @@ div.stage>img {
     position: absolute;
     height: 200px;
     left: 0;
-    background-color: #000;
+    /*background-color: #000;*/
     text-align: left;
     overflow: hidden;
     -webkit-transition: opacity 1s ease-in-out;
@@ -1346,9 +1255,9 @@ div.lockup li.removing span.progress-spinner {
     visibility: visible !important;
     float: right;
     background: url(progress-spinner.png) 0 0 no-repeat;
-    -webkit-background-size: 21px 20px;
+    -webkit-background-size: 20px 20px;
     opacity: 1;
-    width: 21px;
+    width: 20px;
     height: 20px;
     -webkit-animation-name: 'generic-loading-spinner-animation';
     -webkit-animation-iteration-count: infinite;
@@ -1361,8 +1270,8 @@ div.lockup li.preparing-removal span.progress-spinner,
 div.lockup li.installing span.progress-spinner,
 div.lockup li.removing span.progress-spinner {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 20px;
+    right: 20px;
 }
 
 div.lockup li {
