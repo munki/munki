@@ -2901,8 +2901,7 @@ def download_client_resources():
             resources_name += '.zip'
         filenames.append(resources_name)
     else:
-        filenames.append(munkicommon.report['ManifestName'] + '.zip')
-    filenames.append('site_default.zip')
+        filenames.append('site_default.zip')
 
     resource_base_url = (
         munkicommon.pref('ClientResourceURL') or
