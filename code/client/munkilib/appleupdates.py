@@ -721,7 +721,7 @@ class AppleUpdates(object):
         try:
             catalog_url = self._GetAppleCatalogURL()
         except CatalogNotFoundError as err:
-            munkicommon.display_error(str(err))
+            munkicommon.display_error(err)
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
@@ -807,7 +807,7 @@ class AppleUpdates(object):
         except (ReplicationError, fetch.MunkiDownloadError) as err:
             munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
-            munkicommon.display_warning('\t%s', str(err))
+            munkicommon.display_warning('\t%s', err)
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):
@@ -835,7 +835,7 @@ class AppleUpdates(object):
         except ReplicationError as err:
             munkicommon.display_warning(
                 'Could not replicate software update metadata:')
-            munkicommon.display_warning('\t%s', str(err))
+            munkicommon.display_warning('\t%s', err)
             return False
         if munkicommon.stopRequested():
             return False
@@ -1131,7 +1131,7 @@ class AppleUpdates(object):
             os.chmod(softwareupdateappbin, 0)
         except OSError as err:
             munkicommon.display_warning(
-                'Error with os.stat(Softare Update.app): %s', str(err))
+                'Error with os.stat(Softare Update.app): %s', err)
             munkicommon.display_warning('Skipping Apple SUS check.')
             return -2
 
@@ -1253,14 +1253,14 @@ class AppleUpdates(object):
 
         cmd.extend(options_list)
 
-        munkicommon.display_debug1('softwareupdate cmd: %s', str(cmd))
+        munkicommon.display_debug1('softwareupdate cmd: %s', cmd)
 
         try:
             job = launchd.Job(cmd)
             job.start()
         except launchd.LaunchdJobException as err:
             munkicommon.display_warning(
-                'Error with launchd job (%s): %s', cmd, str(err))
+                'Error with launchd job (%s): %s', cmd, err)
             munkicommon.display_warning('Skipping softwareupdate run.')
             return -3
 
