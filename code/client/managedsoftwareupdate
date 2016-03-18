@@ -202,7 +202,7 @@ def runScript(script, display_name, runtype):
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, err:
-        munkicommon.display_warning(str(err))
+        munkicommon.display_warning(err)
     return result
 
 
