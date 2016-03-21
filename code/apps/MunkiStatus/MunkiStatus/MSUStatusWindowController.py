@@ -22,6 +22,8 @@ from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
 
 import os
+from platform import release
+
 import munki
 import FoundationPlist
 
@@ -86,6 +88,7 @@ class MSUStatusWindowController(NSObject):
     timeout_counter = 0
     saw_process = False
     managedsoftwareupdate_pid = None
+    window_level = NSScreenSaverWindowLevel - 1
 
     @IBAction
     def stopBtnClicked_(self, sender):
@@ -131,6 +134,9 @@ class MSUStatusWindowController(NSObject):
         # set self.receiving_notifications to False so our process monitoring
         # thread will exit
         self.receiving_notifications = False
+    
+    def windowDidResignMain_(self, notification):
+        self.window.orderFrontRegardless()
 
     def managedsoftwareupdateStarted_(self, notification):
         '''Called when we get a
@@ -145,9 +151,27 @@ class MSUStatusWindowController(NSObject):
         com.googlecode.munki.managedsoftwareupdate.ended notification'''
         NSLog('managedsoftwareupdate pid %s ended'
               % notification.userInfo().get('pid'))
+    
+    def setWindowLevel(self):
+        '''Sets our NSWindowLevel. Works around issues with the loginwindow
+        PolicyBanner in 10.11+ Some code based on earlier work by Pepijn
+        Bruienne'''
+        # Get our Darwin major version
+        clientOS = release().split('.')[0]
+        havePolicyBanner = False
+        for test_file in ['/Library/Security/PolicyBanner.txt',
+                          '/Library/Security/PolicyBanner.rtf',
+                          '/Library/Security/PolicyBanner.rtfd']:
+            if os.path.exists(test_file):
+                havePolicyBanner = True
+                break
+        # bump our NSWindowLevel if we have a PolicyBanner in ElCap+
+        if havePolicyBanner and clientOS >= 15:
+            self.window_level = NSScreenSaverWindowLevel
 
     def initStatusSession(self):
         '''Initialize our status session'''
+        self.setWindowLevel()
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
             self.displayBackdropWindow()
@@ -156,7 +180,7 @@ class MSUStatusWindowController(NSObject):
             if consoleuser == None or consoleuser == u"loginwindow":
                 # needed so the window can show over the loginwindow
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
-                self.window.setLevel_(NSScreenSaverWindowLevel - 1)
+                self.window.setLevel_(self.window_level)
             self.window.center()
             self.messageFld.setStringValue_(
                 NSLocalizedString(u"Starting…", None))
@@ -235,7 +259,7 @@ class MSUStatusWindowController(NSObject):
         '''Draw a window that covers the login UI'''
         if self.backdropWindow:
             self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
-            self.backdropWindow.setLevel_(NSStatusWindowLevel)
+            self.backdropWindow.setLevel_(self.window_level)
             screenRect = NSScreen.mainScreen().frame()
             self.backdropWindow.setFrame_display_(screenRect, True)
 
@@ -258,12 +282,24 @@ class MSUStatusWindowController(NSObject):
                 self.backdropWindow.setAlphaValue_(0.0)
                 self.backdropWindow.orderFrontRegardless()
                 self.backdropWindow.animator().setAlphaValue_(1.0)
+            
+            # preserve the relative ordering of the backdrop window and the status window
+            # IOW, clicking the backdrop window will not bring it in front of the status window
+            self.backdropWindow.addChildWindow_ordered_(self.window, NSWindowAbove)
+
 
     def updateStatus_(self, notification):
         '''Called when we get a
         com.googlecode.munki.managedsoftwareupdate.statusUpdate notification;
         update our status display with information from the notification'''
 
+        if self.window_level == NSScreenSaverWindowLevel:
+            # we're at the loginwindow, there is a PolicyBanner, and we're running
+            # under 10.11+. Make sure we're in the front.
+            if not NSApp.isActive():
+                NSApp.activateIgnoringOtherApps_(YES)
+                self.window.orderFrontRegardless()
+                
         self.got_status_update = True
         info = notification.userInfo()
         # explictly get keys from info object; PyObjC in Mountain Lion
@@ -288,6 +324,7 @@ class MSUStatusWindowController(NSObject):
 
         command = info.get('command')
         if command == 'activate':
+            NSApp.activateIgnoringOtherApps_(YES)
             self.window.orderFrontRegardless()
         elif command == 'showRestartAlert':
             # clean up timer
