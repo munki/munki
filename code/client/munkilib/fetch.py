@@ -32,6 +32,7 @@ import urlparse
 import xattr
 
 #our libs
+import middleware
 import keychain
 import munkicommon
 from gurl import Gurl
@@ -157,6 +158,8 @@ def get_url(url, destinationpath,
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
                'logging_function': munkicommon.display_debug2}
+    # Modify options when using middleware
+    options = middleware.process_request_options(options)
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
