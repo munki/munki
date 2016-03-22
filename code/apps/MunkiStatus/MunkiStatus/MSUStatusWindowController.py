@@ -20,8 +20,10 @@
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
+from platform import release
 
 import os
+import glob
 import munki
 import FoundationPlist
 
@@ -37,6 +39,19 @@ from AppKit import *
 # pylint: disable=invalid-name
 
 debug = False
+havePolicyBanner = False
+
+# Check whether a PolicyBanner[.txt|.rtf|.rtfd] file or directory is present
+if len(glob.glob('/Library/Security/PolicyBanner*')) > 0:
+    havePolicyBanner = True
+
+# Get our Darwin major version
+clientOS = release().split('.')[0]
+
+# List containing Darwin versions that display PolicyBanner over the
+#   Munki Status window at the login window.
+#   Currently set to Darwin version 15.x (OS X 10.11)
+affectedOSVersions = ['15']
 
 def getLoginwindowPicture():
     '''Returns the image behind the loginwindow (in < 10.7)'''
@@ -156,7 +171,14 @@ class MSUStatusWindowController(NSObject):
             if consoleuser == None or consoleuser == u"loginwindow":
                 # needed so the window can show over the loginwindow
                 self.window.setCanBecomeVisibleWithoutLogin_(True)
-                self.window.setLevel_(NSScreenSaverWindowLevel - 1)
+                # Check if we're to appear above screen saver or Policy Banner
+                #   and our Darwin major version is in the list
+                if havePolicyBanner and clientOS in affectedOSVersions:
+                    # Always appear above screen saver or Policy Banner window
+                    self.window.setLevel_(NSScreenSaverWindowLevel + 1)
+                else:
+                    # Default behavior, normal window order
+                    self.window.setLevel_(NSScreenSaverWindowLevel - 1)
             self.window.center()
             self.messageFld.setStringValue_(
                 NSLocalizedString(u"Starting…", None))
