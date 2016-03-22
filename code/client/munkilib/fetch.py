@@ -32,7 +32,6 @@ import urlparse
 import xattr
 
 #our libs
-import middleware
 import keychain
 import munkicommon
 from gurl import Gurl
@@ -122,6 +121,22 @@ def header_dict_from_list(array):
     return header_dict
 
 
+def process_request_options(options):
+    """Checks munki folder for a file that starts with middleware.
+    If the file exists options dict is changed."""
+    import sys
+    munkidir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    for name in os.listdir(munkidir):
+        if name.startswith('middleware'):
+            middleware_file = os.path.splitext(name)[0]
+    if middleware_file:
+        globals()['middleware'] = __import__(middleware_file,
+                                             fromlist=[middleware_file])
+        # middleware module must have this fuction
+        options = middleware.process_request_options(options)
+    return options
+
+
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
             resume=False, follow_redirects=False):
@@ -159,7 +174,7 @@ def get_url(url, destinationpath,
                'cache_data': cache_data,
                'logging_function': munkicommon.display_debug2}
     # Modify options when using middleware
-    options = middleware.process_request_options(options)
+    options = process_request_options(options)
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
