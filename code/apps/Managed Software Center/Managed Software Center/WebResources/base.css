@@ -517,7 +517,7 @@ div.titled-box li.link a {
     display: block;
     font-size: 11px;
     font-weight: normal;
-    color: #4f5459;
+    color: #222;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap
