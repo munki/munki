@@ -126,6 +126,7 @@ def process_request_options(options):
     If the file exists options dict is changed."""
     import sys
     munkidir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    middleware_file = ''
     for name in os.listdir(munkidir):
         if name.startswith('middleware'):
             middleware_file = os.path.splitext(name)[0]
