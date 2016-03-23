@@ -22,7 +22,6 @@ from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
 
 import os
-from platform import release
 
 import munki
 import FoundationPlist
@@ -157,16 +156,16 @@ class MSUStatusWindowController(NSObject):
         PolicyBanner in 10.11+ Some code based on earlier work by Pepijn
         Bruienne'''
         # Get our Darwin major version
-        clientOS = release().split('.')[0]
-        havePolicyBanner = False
+        darwin_vers = int(os.uname()[2].split('.')[0])
+        have_policy_banner = False
         for test_file in ['/Library/Security/PolicyBanner.txt',
                           '/Library/Security/PolicyBanner.rtf',
                           '/Library/Security/PolicyBanner.rtfd']:
             if os.path.exists(test_file):
-                havePolicyBanner = True
+                have_policy_banner = True
                 break
         # bump our NSWindowLevel if we have a PolicyBanner in ElCap+
-        if havePolicyBanner and clientOS >= 15:
+        if have_policy_banner and darwin_vers > 14:
             self.window_level = NSScreenSaverWindowLevel
 
     def initStatusSession(self):
@@ -255,6 +254,18 @@ class MSUStatusWindowController(NSObject):
             self.timer.invalidate()
             self.timer = None
 
+    def configureAndDisplayBackdropWindow_(self, window):
+        '''Sets all our configuration options for our masking windows'''
+        window.setCanBecomeVisibleWithoutLogin_(True)
+        window.setLevel_(self.window_level)
+        translucentColor = NSColor.blackColor().colorWithAlphaComponent_(0.35)
+        window.setBackgroundColor_(translucentColor)
+        window.setOpaque_(False)
+        window.setIgnoresMouseEvents_(False)
+        window.setAlphaValue_(0.0)
+        window.orderFrontRegardless()
+        window.animator().setAlphaValue_(1.0)
+
     def displayBackdropWindow(self):
         '''Draw a window that covers the login UI'''
         if self.backdropWindow:
@@ -271,18 +282,23 @@ class MSUStatusWindowController(NSObject):
                     self.backdropWindow.orderFrontRegardless()
             else:
                 # Lion+
-                # draw a transparent/translucent window to prevent interaction
+                # draw transparent/translucent windows to prevent interaction
                 # with the login UI
                 self.backdropImageFld.setHidden_(True)
-                translucentColor = NSColor.blackColor(
-                    ).colorWithAlphaComponent_(0.35)
-                self.backdropWindow.setBackgroundColor_(translucentColor)
-                self.backdropWindow.setOpaque_(False)
-                self.backdropWindow.setIgnoresMouseEvents_(False)
-                self.backdropWindow.setAlphaValue_(0.0)
-                self.backdropWindow.orderFrontRegardless()
-                self.backdropWindow.animator().setAlphaValue_(1.0)
-            
+                self.configureAndDisplayBackdropWindow_(self.backdropWindow)
+                # are there any other screens?
+                for screen in NSScreen.screens():
+                    if screen != NSScreen.mainScreen():
+                        # create another masking window for this secondary screen
+                        window_rect = screen.frame()
+                        window_rect.origin = NSPoint(0.0, 0.0)
+                        child_window = NSWindow.alloc(
+                            ).initWithContentRect_styleMask_backing_defer_screen_(
+                                window_rect,
+                                NSBorderlessWindowMask, NSBackingStoreBuffered, NO, screen)
+                        self.configureAndDisplayBackdropWindow_(child_window)
+                        self.backdropWindow.addChildWindow_ordered_(child_window, NSWindowAbove)
+
             # preserve the relative ordering of the backdrop window and the status window
             # IOW, clicking the backdrop window will not bring it in front of the status window
             self.backdropWindow.addChildWindow_ordered_(self.window, NSWindowAbove)
@@ -296,9 +312,8 @@ class MSUStatusWindowController(NSObject):
         if self.window_level == NSScreenSaverWindowLevel:
             # we're at the loginwindow, there is a PolicyBanner, and we're running
             # under 10.11+. Make sure we're in the front.
-            if not NSApp.isActive():
-                NSApp.activateIgnoringOtherApps_(YES)
-                self.window.orderFrontRegardless()
+            NSApp.activateIgnoringOtherApps_(YES)
+            self.window.orderFrontRegardless()
                 
         self.got_status_update = True
         info = notification.userInfo()
