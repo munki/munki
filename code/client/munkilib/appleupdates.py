@@ -505,16 +505,14 @@ class AppleUpdates(object):
         for app_id in set(must_close_app_ids):
             dummy_resultcode, dummy_fileref, nsurl = LSFindApplicationForInfo(
                 0, app_id, None, None, None)
-            fileurl = str(nsurl)
-            if fileurl.startswith('file://localhost'):
-                fileurl = fileurl[len('file://localhost'):]
-                pathname = urllib2.unquote(fileurl).rstrip('/')
+            if nsurl:
+                pathname = nsurl.fileSystemRepresentation()
                 dirname = os.path.dirname(pathname)
                 executable = munkicommon.getAppBundleExecutable(pathname)
                 if executable:
                     # path to executable should be location agnostic
                     executable = executable[len(dirname + '/'):]
-                    blocking_apps.append(executable or pathname)
+                blocking_apps.append(executable or pathname)
 
         return blocking_apps
 
