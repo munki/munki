@@ -133,9 +133,6 @@ class MSUStatusWindowController(NSObject):
         # set self.receiving_notifications to False so our process monitoring
         # thread will exit
         self.receiving_notifications = False
-    
-    def windowDidResignMain_(self, notification):
-        self.window.orderFrontRegardless()
 
     def managedsoftwareupdateStarted_(self, notification):
         '''Called when we get a
