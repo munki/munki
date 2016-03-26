@@ -122,11 +122,12 @@ def header_dict_from_list(array):
 
 
 def process_request_options(options):
-    """Checks munki folder for a file that starts with middleware.
-    If the file exists options dict is changed."""
-    import sys
-    munkidir = os.path.realpath(os.path.dirname(sys.argv[0]))
-    middleware_file = ''
+    """Checks munki folder for a python file that starts with
+    middleware. If the file exists, the module is loaded and passed
+    the request options dict. Changes can then made to the options
+    dict before being returned"""
+    munkidir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    middleware_file = None
     for name in os.listdir(munkidir):
         if name.startswith('middleware'):
             middleware_file = os.path.splitext(name)[0]
