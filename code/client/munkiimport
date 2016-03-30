@@ -978,20 +978,31 @@ def main():
                         pkginfo[key] = matchingpkginfo[key]
 
         # now let user do some basic editing
-        editfields = (('Item name', 'name'),
-                      ('Display name', 'display_name'),
-                      ('Description', 'description'),
-                      ('Version', 'version'),
-                      ('Category', 'category'),
-                      ('Developer', 'developer'),
+        editfields = (('Item name', 'name', 'str'),
+                      ('Display name', 'display_name', 'str'),
+                      ('Description', 'description', 'str'),
+                      ('Version', 'version', 'str'),
+                      ('Category', 'category', 'str'),
+                      ('Developer', 'developer', 'str'),
+                      ('Unattended install', 'unattended_install', 'bool'),
+                      ('Unattended uninstall', 'unattended_uninstall', 'bool'),
                      )
-        for (name, key) in editfields:
-            prompt = '%15s' % name
-            default = pkginfo.get(key, '').encode('UTF-8')
+        for (name, key, kind) in editfields:
+            prompt = '%20s' % name
+            if kind == 'bool':
+                default = str(pkginfo.get(key, False))
+            else:
+                default = pkginfo.get(key, '').encode('UTF-8')
             pkginfo[key] = raw_input_with_default(prompt, default)
+            if kind == 'bool':
+                value = pkginfo[key].lower().strip()
+                if value.startswith(('y', 't')):
+                    pkginfo[key] = True
+                else:
+                    pkginfo[key] = False
 
         # special handling for catalogs array
-        prompt = '%15s' % 'Catalogs'
+        prompt = '%20s' % 'Catalogs'
         default = ', '.join(pkginfo['catalogs'])
         newvalue = raw_input_with_default(prompt, default)
         pkginfo['catalogs'] = [item.strip()
@@ -1006,9 +1017,12 @@ def main():
         #TO-DO: provide a way to add 'installs' items right here
 
         print
-        for (name, key) in editfields:
-            print '%15s: %s' % (name, pkginfo.get(key, '').encode('UTF-8'))
-        print '%15s: %s' % (
+        for (name, key, kind) in editfields:
+            if kind == 'bool':
+                print '%20s: %s' % (name, pkginfo.get(key, False))
+            else:
+                print '%20s: %s' % (name, pkginfo.get(key, '').encode('UTF-8'))
+        print '%20s: %s' % (
             'Catalogs', ', '.join(pkginfo['catalogs']).encode('UTF-8'))
         print
         answer = raw_input('Import this item? [y/n] ')
