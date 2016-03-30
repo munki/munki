@@ -1253,7 +1253,7 @@ def installedState(item_pl):
                     foundnewer = True
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(unicode(errmsg))
                 # return 1 so we're marked as not needing to be installed
                 return 1
 
@@ -1271,7 +1271,7 @@ def installedState(item_pl):
                     foundnewer = True
             except munkicommon.Error, errmsg:
                 # some problem with the receipts data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(unicode(errmsg))
                 # return 1 so we're marked as not needing to be installed
                 return 1
 
@@ -1327,7 +1327,7 @@ def someVersionInstalled(item_pl):
                     return False
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(unicode(errmsg))
                 return False
 
     # if there is no 'installs' key, then we'll use receipt info
@@ -1341,7 +1341,7 @@ def someVersionInstalled(item_pl):
                     return False
             except munkicommon.Error, errmsg:
                 # some problem with the installs data
-                munkicommon.display_error(errmsg)
+                munkicommon.display_error(unicode(errmsg))
                 return False
 
     # if we got this far, we passed all the tests, so the item
@@ -2470,7 +2470,8 @@ def getManifestData(manifestpath):
             try:
                 os.unlink(manifestpath)
             except OSError, err:
-                munkicommon.display_error('Failed to delete plist: %s', err)
+                munkicommon.display_error(
+                    'Failed to delete plist: %s', unicode(err))
         else:
             munkicommon.display_error('plist does not exist.')
     return plist
@@ -2485,7 +2486,8 @@ def getManifestValueForKey(manifestpath, keyname):
         munkicommon.display_error(
             'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
-        munkicommon.display_error('Manifest is likely corrupt: %s', err)
+        munkicommon.display_error(
+            'Manifest is likely corrupt: %s', unicode(err))
         return None
 
 

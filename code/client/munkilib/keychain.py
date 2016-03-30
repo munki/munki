@@ -483,7 +483,7 @@ def debug_output():
             munkicommon.display_debug1(
                 security('show-keychain-info', keychainfile))
     except SecurityError, err:
-        munkicommon.display_error(err)
+        munkicommon.display_error(unicode(err))
 
 
 class SecurityError(Exception):

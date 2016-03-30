@@ -719,7 +719,7 @@ class AppleUpdates(object):
         try:
             catalog_url = self._GetAppleCatalogURL()
         except CatalogNotFoundError as err:
-            munkicommon.display_error(err)
+            munkicommon.display_error(unicode(err))
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
@@ -805,7 +805,7 @@ class AppleUpdates(object):
         except (ReplicationError, fetch.MunkiDownloadError) as err:
             munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
-            munkicommon.display_warning('\t%s', err)
+            munkicommon.display_warning('\t%s', unicode(err))
             return False
 
         if not force_check and not self._IsForceCheckNeccessary(before_hash):
@@ -833,7 +833,7 @@ class AppleUpdates(object):
         except ReplicationError as err:
             munkicommon.display_warning(
                 'Could not replicate software update metadata:')
-            munkicommon.display_warning('\t%s', err)
+            munkicommon.display_warning('\t%s', unicode(err))
             return False
         if munkicommon.stopRequested():
             return False
@@ -1129,7 +1129,7 @@ class AppleUpdates(object):
             os.chmod(softwareupdateappbin, 0)
         except OSError as err:
             munkicommon.display_warning(
-                'Error with os.stat(Softare Update.app): %s', err)
+                'Error with os.stat(Softare Update.app): %s', unicode(err))
             munkicommon.display_warning('Skipping Apple SUS check.')
             return -2
 
@@ -1147,7 +1147,8 @@ class AppleUpdates(object):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
         except OSError as err:
-            munkicommon.display_warning('Error with Popen(%s): %s', cmd, err)
+            munkicommon.display_warning(
+                'Error with Popen(%s): %s', cmd, unicode(err))
             munkicommon.display_warning('Skipping Apple SUS check.')
             # safely revert the chmod from above.
             try:
