@@ -276,13 +276,19 @@ class MyOptParseError(Exception):
 
 
 class MyOptionParser(optparse.OptionParser):
-    '''Custom option parser that overrides the error handler'''
+    '''Custom option parser that overrides the error handler and
+    the exit handler so printing help doesn't exit the interactive
+    psuedo-shell'''
     def error(self, msg):
         """error(msg : string)
 
         """
         self.print_usage(sys.stderr)
         raise MyOptParseError('option error: %s' % msg)
+
+    def exit(self, status=0, msg=None):
+        if msg:
+            sys.stderr.write(msg)
 
 
 def version(args):
@@ -882,11 +888,11 @@ def setUpTabCompleter():
 
 def handleSubcommand(args):
     '''Does all our subcommands'''
-	# check if any arguments are passed.  
-	# if not, list subcommands.
+    # check if any arguments are passed.  
+    # if not, list subcommands.
     if len(args) < 1:
-	help(args)
-	return 2
+        help(args)
+        return 2
 
     # strip leading hyphens and
     # replace embedded hyphens with underscores
