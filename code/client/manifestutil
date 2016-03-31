@@ -275,6 +275,12 @@ class MyOptParseError(Exception):
     pass
 
 
+class MyOptParseExit(Exception):
+    '''Raised when optparse calls self.exit() so we can handle it instead
+    of exiting'''
+    pass
+
+
 class MyOptionParser(optparse.OptionParser):
     '''Custom option parser that overrides the error handler and
     the exit handler so printing help doesn't exit the interactive
@@ -289,6 +295,7 @@ class MyOptionParser(optparse.OptionParser):
     def exit(self, status=0, msg=None):
         if msg:
             sys.stderr.write(msg)
+        raise MyOptParseExit
 
 
 def version(args):
@@ -914,6 +921,8 @@ def handleSubcommand(args):
         # for a function with a name matching the subcommand
         subcommand_function = globals()[subcommand]
         return subcommand_function(args[1:])
+    except MyOptParseExit:
+        return 0
     except (TypeError, KeyError):
         print >> sys.stderr, 'Unknown subcommand: %s' % subcommand
         help(args)
