@@ -20,25 +20,19 @@ manifestutil
 Created by Greg Neagle on 2011-03-04.
 """
 
+import ctypes
 import fnmatch
+import optparse
+import os
+import plistlib
+import readline
 import shlex
 import subprocess
 import sys
-import optparse
-import os
-import readline
+import thread
+import time
 
-#try:
-#    from munkilib import FoundationPlist as plistlib
-#except ImportError:
-#    try:
-#        import FoundationPlist as plistlib
-#    except ImportError:
-#        # maybe we're not on an OS X machine...
-#        print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
-#                              "using plistlib instead.")
-#        import plistlib
-import plistlib
+from ctypes.util import find_library
 
 try:
     from munkilib.munkicommon import get_version
@@ -47,6 +41,32 @@ except ImportError:
     def get_version():
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
+
+LIBEDIT_DYLIB = find_library('libedit')
+LIBEDIT = ctypes.cdll.LoadLibrary(LIBEDIT_DYLIB)
+
+
+def raw_input_with_default(prompt, default_text):
+    '''A nasty, nasty hack to get around Python readline limitations under
+    OS X. Gives us editable default text for munkiimport choices'''
+
+    def insert_default_text(prompt, text):
+        '''Helper function'''
+        time.sleep(0.01)
+        LIBEDIT.rl_set_prompt(prompt)
+        readline.insert_text(text)
+        LIBEDIT.rl_forced_update_display()
+
+    if 'libedit' in readline.__doc__:
+        # readline module was compiled against libedit
+        thread.start_new_thread(insert_default_text, (prompt, default_text))
+        return raw_input()
+    else:
+        readline.set_startup_hook(lambda: readline.insert_text(default_text))
+        try:
+            return raw_input(prompt)
+        finally:
+            readline.set_startup_hook()
 
 
 def getInstallerItemNames(cataloglist):
@@ -842,7 +862,8 @@ def configure(args):
         ('repo_url',
          'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
 
-        newvalue = raw_input('%15s [%s]: ' % (prompt, pref(key)))
+        #newvalue = raw_input('%15s [%s]: ' % (prompt, pref(key)))
+        newvalue = raw_input_with_default('%15s: ' % prompt, pref(key)) 
         _prefs[key] = newvalue or pref(key) or ''
 
     try:
@@ -887,7 +908,8 @@ def tab_completer(text, state):
 def setUpTabCompleter():
     '''Starts our tab-completer when running interactively'''
     readline.set_completer(tab_completer)
-    if sys.platform == 'darwin':
+    if 'libedit' in readline.__doc__:
+        # readline module was compiled against libedit
         readline.parse_and_bind ("bind ^I rl_complete")
     else:
         readline.parse_and_bind("tab: complete")
