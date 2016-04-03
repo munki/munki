@@ -55,18 +55,18 @@ def raw_input_with_default(prompt, default_text):
     def insert_default_text(prompt, text):
         '''Helper function'''
         time.sleep(0.01)
-        LIBEDIT.rl_set_prompt(prompt)
-        readline.insert_text(text)
+        LIBEDIT.rl_set_prompt(prompt.encode(sys.stdout.encoding))
+        readline.insert_text(text.encode(sys.stdout.encoding))
         LIBEDIT.rl_forced_update_display()
 
     if 'libedit' in readline.__doc__:
         # readline module was compiled against libedit
         thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return raw_input().decode('UTF-8')
+        return raw_input().decode(sys.stdin.encoding)
     else:
         readline.set_startup_hook(lambda: readline.insert_text(default_text))
         try:
-            return raw_input(prompt).decode('UTF-8')
+            return raw_input(prompt).decode(sys.stdin.encoding)
         finally:
             readline.set_startup_hook()
 
