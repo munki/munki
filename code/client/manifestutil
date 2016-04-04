@@ -43,9 +43,11 @@ except ImportError:
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
 
-
-LIBEDIT_DYLIB = find_library('libedit')
-LIBEDIT = ctypes.cdll.LoadLibrary(LIBEDIT_DYLIB)
+if 'libedit' in readline.__doc__:
+    # readline module was compiled against libedit
+    LIBEDIT = ctypes.cdll.LoadLibrary(find_library('libedit'))
+else:
+    LIBEDIT = None
 
 
 def raw_input_with_default(prompt, default_text):
@@ -59,7 +61,7 @@ def raw_input_with_default(prompt, default_text):
         readline.insert_text(text.encode(sys.stdout.encoding))
         LIBEDIT.rl_forced_update_display()
 
-    if 'libedit' in readline.__doc__:
+    if 'LIBEDIT':
         # readline module was compiled against libedit
         thread.start_new_thread(insert_default_text, (prompt, default_text))
         return raw_input().decode(sys.stdin.encoding)
@@ -908,7 +910,7 @@ def tab_completer(text, state):
 def set_up_tab_completer():
     '''Starts our tab-completer when running interactively'''
     readline.set_completer(tab_completer)
-    if 'libedit' in readline.__doc__:
+    if LIBEDIT:
         # readline module was compiled against libedit
         readline.parse_and_bind("bind ^I rl_complete")
     else:

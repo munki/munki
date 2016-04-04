@@ -37,9 +37,11 @@ from munkilib import iconutils
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 
-
-LIBEDIT_DYLIB = find_library('libedit')
-LIBEDIT = ctypes.cdll.LoadLibrary(LIBEDIT_DYLIB)
+if 'libedit' in readline.__doc__:
+    # readline module was compiled against libedit
+    LIBEDIT = ctypes.cdll.LoadLibrary(find_library('libedit'))
+else:
+    LIBEDIT = None
 
 
 def raw_input_with_default(prompt, default_text):
@@ -54,7 +56,7 @@ def raw_input_with_default(prompt, default_text):
         LIBEDIT.rl_forced_update_display()
 
     readline.clear_history()
-    if 'libedit' in readline.__doc__:
+    if LIBEDIT:
         # readline module was compiled against libedit
         thread.start_new_thread(insert_default_text, (prompt, default_text))
         return raw_input().decode(sys.stdin.encoding)
