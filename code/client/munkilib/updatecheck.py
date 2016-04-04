@@ -2850,13 +2850,13 @@ def download_icons(item_list):
         else:
             xattr_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
-        if not os.path.exists(icon_subdir):
+        if not os.path.isdir(icon_subdir):
             try:
                 os.makedirs(icon_subdir, 0755)
             except OSError, err:
                 munkicommon.display_error(
                     'Could not create %s' % icon_subdir)
-                continue
+                return
         if pkginfo_icon_hash != xattr_hash:
             item_name = item.get('display_name') or item['name']
             message = 'Getting icon %s for %s...' % (icon_name, item_name)
@@ -2915,7 +2915,7 @@ def download_client_resources():
     munkicommon.display_debug2(
         'Client resources base URL is: %s', resource_base_url)
     # make sure local resource directory exists
-    if not os.path.exists(resource_dir):
+    if not os.path.isdir(resource_dir):
         try:
             os.makedirs(resource_dir, 0755)
         except OSError, err:
