@@ -1563,7 +1563,8 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     if someVersionInstalled(item_pl):
         # add to the list of processed managed_updates
         installinfo['managed_updates'].append(manifestitemname)
-        dummy_result = processInstall(manifestitem, cataloglist, installinfo)
+        dummy_result = processInstall(manifestitem, cataloglist, installinfo,
+                                      is_managed_update=True)
     else:
         munkicommon.display_debug1(
             '%s does not appear to be installed, so no managed updates...',
@@ -1724,7 +1725,8 @@ def updateAvailableLicenseSeats(installinfo):
             item['licensed_seats_available'] = seats_available
 
 
-def processInstall(manifestitem, cataloglist, installinfo):
+def processInstall(manifestitem, cataloglist, installinfo,
+                   is_managed_update=False):
     """Processes a manifest item for install. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Installation detail is added to
@@ -1763,7 +1765,7 @@ def processInstall(manifestitem, cataloglist, installinfo):
             'No pkginfo found in catalogs: %s ',
             manifestitem, ', '.join(cataloglist))
         return False
-    elif manifestitemname in installinfo['managed_updates']:
+    elif is_managed_update:
         # we're processing this as a managed update, so don't
         # add it to the processed_installs list
         pass
@@ -1811,7 +1813,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 '%s-%s requires %s. Getting info on %s...'
                 % (item_pl.get('name', manifestitemname),
                    item_pl.get('version', ''), item, item))
-            success = processInstall(item, cataloglist, installinfo)
+            success = processInstall(item, cataloglist, installinfo,
+                                     is_managed_update=is_managed_update)
             if not success:
                 dependenciesMet = False
 
@@ -1958,7 +1961,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
                 # call processInstall recursively so we get the
                 # latest version and dependencies
                 dummy_result = processInstall(
-                    update_item, cataloglist, installinfo)
+                    update_item, cataloglist, installinfo,
+                    is_managed_update=is_managed_update)
             return True
         except fetch.PackageVerificationError:
             munkicommon.display_warning(
@@ -2025,7 +2029,8 @@ def processInstall(manifestitem, cataloglist, installinfo):
             # call processInstall recursively so we get updates
             # and any dependencies
             dummy_result = processInstall(
-                update_item, cataloglist, installinfo)
+                update_item, cataloglist, installinfo,
+                is_managed_update=is_managed_update)
 
         return True
 
@@ -2630,8 +2635,8 @@ def getmanifest(partialurl, suppress_errors=False):
 
 def cleanUpManifests():
     """Removes any manifest files that are no longer in use by this client"""
-    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
-                               'manifests')
+    manifest_dir = os.path.join(
+        munkicommon.pref('ManagedInstallDir'), 'manifests')
 
     exceptions = [
         "SelfServeManifest"
@@ -2649,7 +2654,8 @@ def cleanUpManifests():
             if rel_path not in MANIFESTS.keys():
                 os.unlink(abs_path)
 
-        # Try and remove the directory (rmdir will fail if directory is not empty)
+        # Try to remove the directory
+        # (rmdir will fail if directory is not empty)
         try:
             if dirpath != manifest_dir:
                 os.rmdir(dirpath)
