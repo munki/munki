@@ -519,7 +519,15 @@ def validateDateFormat(datetime_string):
 
 def log(msg, logname=''):
     """Generic logging function."""
-    logging.info(msg)  # noop unless configure_syslog() is called first.
+    if len(msg) > 1000:
+        # See http://bugs.python.org/issue11907 and RFC-3164
+        # break up huge msg into chunks and send 1000 characters at a time
+        msg_buffer = msg
+        while msg_buffer:
+            logging.info(msg_buffer[:1000])
+            msg_buffer = msg_buffer[1000:]
+    else:
+        logging.info(msg)  # noop unless configure_syslog() is called first.
 
     # date/time format string
     formatstr = '%b %d %Y %H:%M:%S %z'
