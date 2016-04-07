@@ -391,22 +391,6 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
         raise RepoCopyError(errmsg)
     return pkginfo_path
 
-
-def open_pkginfo_in_editor(pkginfo_path):
-    """Opens pkginfo list in the user's chosen editor."""
-    editor = pref('editor')
-    if editor:
-        if editor.endswith('.app'):
-            cmd = ['/usr/bin/open', '-a', editor, pkginfo_path]
-        else:
-            cmd = [editor, pkginfo_path]
-        try:
-            dummy_returncode = subprocess.check_call(cmd)
-        except (OSError, subprocess.CalledProcessError), err:
-            print >> sys.stderr, (
-                'Problem running editor %s: %s.' % (editor, err))
-
-
 def prompt_for_subdirectory(subdirectory):
     """Prompts the user for a subdirectory for the pkg and pkginfo"""
     while True:
@@ -1119,8 +1103,6 @@ def main():
         cleanup_and_exit(-1)
 
     if not options.nointeractive:
-        # open the pkginfo file in the user's editor
-        open_pkginfo_in_editor(pkginfo_path)
         answer = raw_input('Rebuild catalogs? [y/n] ')
         if answer.lower().startswith('y'):
             try:
