@@ -505,8 +505,8 @@ class AppleUpdates(object):
         for app_id in set(must_close_app_ids):
             dummy_resultcode, dummy_fileref, nsurl = LSFindApplicationForInfo(
                 0, app_id, None, None, None)
-            if nsurl:
-                pathname = nsurl.fileSystemRepresentation()
+            if nsurl and nsurl.isFileURL():
+                pathname = nsurl.path()
                 dirname = os.path.dirname(pathname)
                 executable = munkicommon.getAppBundleExecutable(pathname)
                 if executable:
