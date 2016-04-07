@@ -1931,8 +1931,9 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 # admin did not explicitly mark this item; let's determine if
                 # it's from Apple
                 if isAppleItem(item_pl):
-                    munkicommon.log("Marking %s as apple_item - this may affect \
-                                     Apple SUS behavior" % iteminfo['name'])
+                    munkicommon.log(
+                        'Marking %s as apple_item - this will block '
+                        'Apple SUS updates' % iteminfo['name'])
                     iteminfo['apple_item'] = True
 
             installinfo['managed_installs'].append(iteminfo)
