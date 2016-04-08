@@ -59,6 +59,17 @@ darwin_version = os.uname()[2]
 DEFAULT_USER_AGENT = "managedsoftwareupdate/%s Darwin/%s" % (
     machine['munki_version'], darwin_version)
 
+# Check munki folder for a python file that starts with
+# middleware. If the file exists, the module is loaded.
+MUNKIDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+MIDDLEWARE_FILE = None
+for name in os.listdir(MUNKIDIR):
+    if name.startswith('middleware'):
+        MIDDLEWARE_FILE = os.path.splitext(name)[0]
+if MIDDLEWARE_FILE:
+    globals()['middleware'] = __import__(MIDDLEWARE_FILE,
+                                         fromlist=[MIDDLEWARE_FILE])
+
 
 class GurlError(Exception):
     """General exception for gurl errors"""
@@ -122,18 +133,9 @@ def header_dict_from_list(array):
 
 
 def process_request_options(options):
-    """Checks munki folder for a python file that starts with
-    middleware. If the file exists, the module is loaded and passed
-    the request options dict. Changes can then made to the options
-    dict before being returned"""
-    munkidir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    middleware_file = None
-    for name in os.listdir(munkidir):
-        if name.startswith('middleware'):
-            middleware_file = os.path.splitext(name)[0]
-    if middleware_file:
-        globals()['middleware'] = __import__(middleware_file,
-                                             fromlist=[middleware_file])
+    """Passed request options dict. Options are changed when using
+    middleware and left alone when not."""
+    if MIDDLEWARE_FILE:
         # middleware module must have this fuction
         options = middleware.process_request_options(options)
     return options
