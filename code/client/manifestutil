@@ -61,7 +61,9 @@ def raw_input_with_default(prompt, default_text):
         readline.insert_text(text.encode(sys.stdout.encoding))
         LIBEDIT.rl_forced_update_display()
 
-    if 'LIBEDIT':
+    if not default_text:
+        return raw_input().decode(sys.stdin.encoding)
+    elif 'LIBEDIT':
         # readline module was compiled against libedit
         thread.start_new_thread(insert_default_text, (prompt, default_text))
         return raw_input().decode(sys.stdin.encoding)
