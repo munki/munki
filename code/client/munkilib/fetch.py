@@ -132,15 +132,6 @@ def header_dict_from_list(array):
     return header_dict
 
 
-def process_request_options(options):
-    """Passed request options dict. Options are changed when using
-    middleware and left alone when not."""
-    if MIDDLEWARE_FILE:
-        # middleware module must have this fuction
-        options = middleware.process_request_options(options)
-    return options
-
-
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
             resume=False, follow_redirects=False):
@@ -178,7 +169,9 @@ def get_url(url, destinationpath,
                'cache_data': cache_data,
                'logging_function': munkicommon.display_debug2}
     # Modify options when using middleware
-    options = process_request_options(options)
+    if MIDDLEWARE_FILE:
+        # middleware module must have this fuction
+        options = middleware.process_request_options(options)
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
