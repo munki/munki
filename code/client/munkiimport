@@ -1127,7 +1127,7 @@ def main():
         if not pref('prompt_to_open_editor') == 'no':
             open_pkginfo_in_editor(pkginfo_path)
         else:
-            print 'Not opening pkgingo, prompt_to_open_editor is set to "no"'
+            print 'Not opening pkginfo, prompt_to_open_editor is set to "no"'
         answer = raw_input('Rebuild catalogs? [y/n] ')
         if answer.lower().startswith('y'):
             try:
