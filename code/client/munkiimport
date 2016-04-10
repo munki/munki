@@ -722,6 +722,8 @@ def configure():
             ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
             ('editor',
              'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
+            ('prompt_to_open_editor',
+             'prompt to open pkginfo after import (yes or no)'),
             ('default_catalog', 'Default catalog to use (example: testing)')]:
 
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
@@ -1122,7 +1124,10 @@ def main():
 
     if not options.nointeractive:
         # open the pkginfo file in the user's editor
-        open_pkginfo_in_editor(pkginfo_path)
+        if not pref('prompt_to_open_editor') == 'no':
+            open_pkginfo_in_editor(pkginfo_path)
+        else:
+            print 'Not opening pkginfo, prompt_to_open_editor is set to "no"'
         answer = raw_input('Rebuild catalogs? [y/n] ')
         if answer.lower().startswith('y'):
             try:
