@@ -721,7 +721,8 @@ def configure():
              'Repo fileshare URL (example: afp://munki.example.com/repo)'),
             ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
             ('editor',
-             'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
+             'pkginfo editor (examples: /usr/bin/vi or TextMate.app; '
+             'leave empty to not open an editor after import)'),
             ('default_catalog', 'Default catalog to use (example: testing)')]:
 
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
