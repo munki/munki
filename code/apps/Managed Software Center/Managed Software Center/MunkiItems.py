@@ -900,7 +900,7 @@ class OptionalItem(GenericItem):
             else: # not in managed_uninstalls
                 if not self.get('needs_update'):
                     if (self.get('uninstallable')
-                            and self.get('uninstall_method'):
+                            and self.get('uninstall_method')):
                         status = u'installed'
                     else: # not uninstallable
                         status = u'installed-not-removable'
