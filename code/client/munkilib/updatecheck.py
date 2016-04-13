@@ -1629,7 +1629,7 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     iteminfo['licensed_seat_info_available'] = item_pl.get(
         'licensed_seat_info_available', False)
     iteminfo['uninstallable'] = (
-        item_pl.get('uninstallable')
+        item_pl.get('uninstallable', False)
         and (item_pl.get('uninstall_method', '') != ''))
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
