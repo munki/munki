@@ -76,7 +76,7 @@ def import_middleware():
                 munkicommon.display_debug1(
                     'Loading middleware module %s' % filename)
                 if callable(getattr(_tmp, required_function_name)):
-                    globals()['middleware'] = __import__(name, fromlist=[name])
+                    globals()['middleware'] = _tmp
                     return name
                 else:
                     munkicommon.display_warning(
