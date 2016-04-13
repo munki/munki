@@ -59,6 +59,17 @@ darwin_version = os.uname()[2]
 DEFAULT_USER_AGENT = "managedsoftwareupdate/%s Darwin/%s" % (
     machine['munki_version'], darwin_version)
 
+# Check munki folder for a python file that starts with
+# middleware. If the file exists, the module is loaded.
+MUNKIDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+MIDDLEWARE_FILE = None
+for name in os.listdir(MUNKIDIR):
+    if name.startswith('middleware'):
+        MIDDLEWARE_FILE = os.path.splitext(name)[0]
+if MIDDLEWARE_FILE:
+    globals()['middleware'] = __import__(MIDDLEWARE_FILE,
+                                         fromlist=[MIDDLEWARE_FILE])
+
 
 class GurlError(Exception):
     """General exception for gurl errors"""
@@ -157,6 +168,10 @@ def get_url(url, destinationpath,
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
                'logging_function': munkicommon.display_debug2}
+    # Modify options when using middleware
+    if MIDDLEWARE_FILE:
+        # middleware module must have this fuction
+        options = middleware.process_request_options(options)
     munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
