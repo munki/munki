@@ -62,12 +62,13 @@ DEFAULT_USER_AGENT = "managedsoftwareupdate/%s Darwin/%s" % (
 
 
 def import_middleware():
-    # Check munki folder for a python file that starts with
-    # middleware. If the file exists, the module is loaded.
+    '''Check munki folder for a python file that starts with 'middleware'.
+    If the file exists and has a callable 'process_request_options' attribute,
+    the module is loaded under the 'middleware' name'''
     required_function_name = 'process_request_options'
     munki_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     for filename in os.listdir(munki_dir):
-        if (filename.startswith('middleware') 
+        if (filename.startswith('middleware')
                 and os.path.splitext(filename)[1] == '.py'):
             name = os.path.splitext(filename)[0]
             filepath = os.path.join(munki_dir, filename)
@@ -77,19 +78,21 @@ def import_middleware():
                     munkicommon.display_debug1(
                         'Loading middleware module %s' % filename)
                     globals()['middleware'] = _tmp
-                    return name
+                    return
                 else:
                     munkicommon.display_warning(
-                        '%s attribute in %s is not callable.' 
+                        '%s attribute in %s is not callable.'
                         % (required_function_name, filepath))
                     munkicommon.display_warning('Ignoring %s' % filepath)
             else:
                 munkicommon.display_warning(
-                    '%s does not have a %s function' 
+                    '%s does not have a %s function'
                     % (filepath, required_function_name))
                 munkicommon.display_warning('Ignoring %s' % filepath)
-    return None
-MIDDLEWARE = import_middleware()
+    return
+
+middleware = None
+import_middleware()
 
 
 class GurlError(Exception):
@@ -191,10 +194,10 @@ def get_url(url, destinationpath,
                'logging_function': munkicommon.display_debug2}
     munkicommon.display_debug2('Options: %s' % options)
 
-    # Allow middleare to modify options
-    if MIDDLEWARE:
+    # Allow middleware to modify options
+    if middleware:
         munkicommon.display_debug2('Processing options through middleware')
-        # middleware module must have process_request_options function 
+        # middleware module must have process_request_options function
         # and must return usable options
         options = middleware.process_request_options(options)
         munkicommon.display_debug2('Options: %s' % options)
