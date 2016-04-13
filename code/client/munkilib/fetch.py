@@ -24,6 +24,7 @@ Created by Greg Neagle on 2011-09-29.
 #standard libs
 import calendar
 import errno
+import imp
 import os
 import shutil
 import time
@@ -59,16 +60,36 @@ darwin_version = os.uname()[2]
 DEFAULT_USER_AGENT = "managedsoftwareupdate/%s Darwin/%s" % (
     machine['munki_version'], darwin_version)
 
-# Check munki folder for a python file that starts with
-# middleware. If the file exists, the module is loaded.
-MUNKIDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-MIDDLEWARE_FILE = None
-for name in os.listdir(MUNKIDIR):
-    if name.startswith('middleware'):
-        MIDDLEWARE_FILE = os.path.splitext(name)[0]
-if MIDDLEWARE_FILE:
-    globals()['middleware'] = __import__(MIDDLEWARE_FILE,
-                                         fromlist=[MIDDLEWARE_FILE])
+
+def import_middleware():
+    # Check munki folder for a python file that starts with
+    # middleware. If the file exists, the module is loaded.
+    required_function_name = 'process_request_options'
+    munki_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    for filename in os.listdir(munki_dir):
+        if (filename.startswith('middleware') 
+                and os.path.splitext(filename)[1] == '.py'):
+            name = os.path.splitext(filename)[0]
+            filepath = os.path.join(munki_dir, filename)
+            _tmp = imp.load_source(name, filepath)
+            if hasattr(_tmp, required_function_name):
+                munkicommon.display_debug1(
+                    'Loading middleware module %s' % filename)
+                if callable(getattr(_tmp, required_function_name)):
+                    globals()['middleware'] = __import__(name, fromlist=[name])
+                    return name
+                else:
+                    munkicommon.display_warning(
+                        '%s attribute in %s is not callable.' 
+                        % (required_function_name, filepath))
+                    munkicommon.display_warning('Ignoring %s' % filepath)
+            else:
+                munkicommon.display_warning(
+                    '%s does not have a %s function' 
+                    % (filepath, required_function_name))
+                munkicommon.display_warning('Ignoring %s' % filepath)
+    return None
+MIDDLEWARE = import_middleware()
 
 
 class GurlError(Exception):
@@ -168,11 +189,15 @@ def get_url(url, destinationpath,
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
                'logging_function': munkicommon.display_debug2}
-    # Modify options when using middleware
-    if MIDDLEWARE_FILE:
-        # middleware module must have this fuction
-        options = middleware.process_request_options(options)
     munkicommon.display_debug2('Options: %s' % options)
+
+    # Allow middleare to modify options
+    if MIDDLEWARE:
+        munkicommon.display_debug2('Processing options through middleware')
+        # middleware module must have process_request_options function 
+        # and must return usable options
+        options = middleware.process_request_options(options)
+        munkicommon.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
     stored_percent_complete = -1
