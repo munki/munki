@@ -73,9 +73,9 @@ def import_middleware():
             filepath = os.path.join(munki_dir, filename)
             _tmp = imp.load_source(name, filepath)
             if hasattr(_tmp, required_function_name):
-                munkicommon.display_debug1(
-                    'Loading middleware module %s' % filename)
                 if callable(getattr(_tmp, required_function_name)):
+                    munkicommon.display_debug1(
+                        'Loading middleware module %s' % filename)
                     globals()['middleware'] = _tmp
                     return name
                 else:
