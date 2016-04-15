@@ -435,7 +435,7 @@ def notifyUserOfUpdates(force=False):
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         f = open(launchfile, 'w')
         f.close()
-        time.sleep(0.5)
+        time.sleep(5)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
