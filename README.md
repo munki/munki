@@ -21,7 +21,7 @@ Check out the Wiki for some notes and documentation, and browse and/or check out
 
 ####Get help
 
-The wiki is an in-depth resource: https://github.com/munki/munki/wiki
+The wiki is an in-depth resource: https://github.com/munki/munki/wiki  
 Frequently Asked Questions are here: https://github.com/munki/munki/wiki/FAQ
 
 If you have additional questions, or need even more help getting started, post a question to [munki-discuss](https://groups.google.com/group/munki-discuss). Please don't post support questions as comments on wiki documentation pages, or as GitHub code issues.
