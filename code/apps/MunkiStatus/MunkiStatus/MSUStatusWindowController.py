@@ -70,6 +70,7 @@ class MSUStatusWindowController(NSObject):
     # pylint: disable=no-init
 
     window = IBOutlet()
+    logWindow = IBOutlet()
     messageFld = IBOutlet()
     detailFld = IBOutlet()
     progressIndicator = IBOutlet()
@@ -310,7 +311,8 @@ class MSUStatusWindowController(NSObject):
             # we're at the loginwindow, there is a PolicyBanner, and we're running
             # under 10.11+. Make sure we're in the front.
             NSApp.activateIgnoringOtherApps_(YES)
-            self.window.orderFrontRegardless()
+            if not self.logWindow.visible():
+                self.window.orderFrontRegardless()
                 
         self.got_status_update = True
         info = notification.userInfo()

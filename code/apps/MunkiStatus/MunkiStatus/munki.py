@@ -23,9 +23,29 @@
 import os
 import stat
 import subprocess
+
+from Foundation import CFPreferencesCopyAppValue
 from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
+
+BUNDLE_ID = u'ManagedInstalls'
+
+def pref(pref_name):
+    """Return a preference. Since this uses CFPreferencesCopyAppValue,
+        Preferences can be defined several places. Precedence is:
+        - MCX
+        - ~/Library/Preferences/ManagedInstalls.plist
+        - /Library/Preferences/ManagedInstalls.plist
+        - default_prefs defined here.
+        """
+    default_prefs = {
+        'LogFile': '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log'
+    }
+    pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
+    if pref_value == None:
+        pref_value = default_prefs.get(pref_name)
+    return pref_value
 
 def call(cmd):
     '''Convenience function; works around an issue with subprocess.call

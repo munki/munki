@@ -26,6 +26,7 @@ from PyObjCTools import AppHelper
 # import modules containing classes required to start application and load MainMenu.nib
 import MSUAppDelegate
 import MSUStatusWindowController
+import MSULogWindowController
 
 # get more debugging info on exceptions
 objc.setVerbose(1)

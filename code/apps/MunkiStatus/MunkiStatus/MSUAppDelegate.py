@@ -46,6 +46,7 @@ class MSUAppDelegate(NSObject):
     # pylint: disable=unused-argument
 
     statusWindowController = IBOutlet()
+    logWindowController = IBOutlet()
 
     def applicationWillFinishLaunching_(self, sender):
         '''NSApplicationDelegate method
