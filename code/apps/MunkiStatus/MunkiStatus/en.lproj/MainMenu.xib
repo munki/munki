@@ -263,7 +263,7 @@
                             <rect key="frame" x="1" y="1" width="512" height="447"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" typeSelect="NO" id="YcU-fs-F3z">
+                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="YcU-fs-F3z">
                                     <rect key="frame" x="0.0" y="0.0" width="512" height="447"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -288,7 +288,7 @@
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
                                             </tableHeaderCell>
-                                            <textFieldCell key="dataCell" lineBreakMode="charWrapping" allowsUndo="NO" alignment="left" title="Text Cell" id="8Nl-My-27d">
+                                            <textFieldCell key="dataCell" lineBreakMode="charWrapping" selectable="YES" allowsUndo="NO" alignment="left" title="Text Cell" id="8Nl-My-27d">
                                                 <font key="font" metaFont="fixedUser" size="11"/>
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -332,6 +332,9 @@
                     </pathControl>
                 </subviews>
             </view>
+            <connections>
+                <outlet property="delegate" destination="2ep-ou-xmD" id="FgY-Kk-GWr"/>
+            </connections>
             <point key="canvasLocation" x="114" y="398"/>
         </window>
     </objects>
