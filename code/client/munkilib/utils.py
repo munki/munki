@@ -129,8 +129,9 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-        except OSError:
-            raise RunExternalScriptError('%s can not be interpreted' % script)
+        except (OSError, IOError), err:
+            raise RunExternalScriptError(
+                'Error %s when attempting to run %s' % (unicode(err), script))
         if proc:
             (stdout, stderr) = proc.communicate()
             return proc.returncode, stdout.decode('UTF-8', 'replace'), \
