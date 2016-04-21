@@ -157,7 +157,7 @@ class MSULogWindowController(NSObject):
     @IBAction
     def showLogWindow_(self, notification):
         '''Show the log window.'''
-        
+
         if self.window.isVisible():
             # It's already open, just move it to front
             self.window.makeKeyAndOrderFront_(self)

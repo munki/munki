@@ -149,7 +149,7 @@ class MSUStatusWindowController(NSObject):
         com.googlecode.munki.managedsoftwareupdate.ended notification'''
         NSLog('managedsoftwareupdate pid %s ended'
               % notification.userInfo().get('pid'))
-    
+
     def haveElCapPolicyBanner(self):
         '''Returns True if we are running El Cap or later and there is
         a loginwindow PolicyBanner in place'''
@@ -204,10 +204,9 @@ class MSUStatusWindowController(NSObject):
         # process failure
         self.timeout_counter = 6
         self.saw_process = False
-        # pylint: disable=line-too-long
-        self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-            5.0, self, self.checkProcess, None, YES)
-        # pylint: enable=line-too-long
+        self.timer = (NSTimer.
+            scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+                5.0, self, self.checkProcess, None, YES))
 
     def checkProcess(self):
         '''Monitors managedsoftwareupdate process for failure to start
@@ -218,10 +217,10 @@ class MSUStatusWindowController(NSObject):
         UNEXPECTEDLY_QUIT = -1
 
         NSLog('checkProcess timer fired')
-        
+
         if self.window_level == NSScreenSaverWindowLevel:
-            # we're at the loginwindow, there is a PolicyBanner, and we're running
-            # under 10.11+. Make sure we're in the front.
+            # we're at the loginwindow, there is a PolicyBanner, and we're
+            # running under 10.11+. Make sure we're in the front.
             NSApp.activateIgnoringOtherApps_(YES)
             if not self.logWindow.isVisible():
                 self.window.makeKeyAndOrderFront_(self)
@@ -313,12 +312,15 @@ class MSUStatusWindowController(NSObject):
                             NO, screen)
                     self.configureAndDisplayBackdropWindow_(child_window)
                     if self.haveElCapPolicyBanner():
-                        self.backdropWindow.addChildWindow_ordered_(child_window, NSWindowAbove)
+                        self.backdropWindow.addChildWindow_ordered_(
+                            child_window, NSWindowAbove)
 
         if self.haveElCapPolicyBanner():
-            # preserve the relative ordering of the backdrop window and the status window
-            # IOW, clicking the backdrop window will not bring it in front of the status window
-            self.backdropWindow.addChildWindow_ordered_(self.window, NSWindowAbove)
+            # preserve the relative ordering of the backdrop window and the
+            # status window IOW, clicking the backdrop window will not bring it
+            # in front of the status window
+            self.backdropWindow.addChildWindow_ordered_(
+                self.window, NSWindowAbove)
 
 
     def updateStatus_(self, notification):
@@ -327,8 +329,8 @@ class MSUStatusWindowController(NSObject):
         update our status display with information from the notification'''
 
         if self.window_level == NSScreenSaverWindowLevel:
-            # we're at the loginwindow, there is a PolicyBanner, and we're running
-            # under 10.11+. Make sure we're in the front.
+            # we're at the loginwindow, there is a PolicyBanner, and we're
+            # running under 10.11+. Make sure we're in the front.
             NSApp.activateIgnoringOtherApps_(YES)
             if not self.logWindow.isVisible():
                 self.window.makeKeyAndOrderFront_(self)
