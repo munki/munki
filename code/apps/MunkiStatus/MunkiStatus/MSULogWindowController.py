@@ -157,6 +157,11 @@ class MSULogWindowController(NSObject):
     @IBAction
     def showLogWindow_(self, notification):
         '''Show the log window.'''
+        
+        if self.window.isVisible():
+            # It's already open, just move it to front
+            self.window.makeKeyAndOrderFront_(self)
+            return
 
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
