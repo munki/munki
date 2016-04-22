@@ -37,6 +37,7 @@ import fetch
 import keychain
 import munkicommon
 import munkistatus
+import powermgr
 import profiles
 import FoundationPlist
 
@@ -840,6 +841,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
+    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
     try:
         return getResourceIfChangedAtomically(pkgurl, destinationpath,
                                               resume=True,
@@ -848,6 +850,8 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
                                               verify=True)
     except fetch.MunkiDownloadError:
         raise
+    finally:
+      powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
