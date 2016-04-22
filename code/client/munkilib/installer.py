@@ -1005,7 +1005,7 @@ def processRemovals(removallist, only_unattended=False):
                         munkicommon.display_error(message)
                     else:
                         munkicommon.log(
-                            "Uninstall of %s was successful.", display_name)
+                            "Uninstall of %s was successful." % display_name)
 
             elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
