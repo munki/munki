@@ -42,6 +42,9 @@ from removepackages import removepackages
 # pylint: disable=E0611
 from Foundation import NSDate
 
+# lots of camelCase names       
+# pylint: disable=C0103
+
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
 # calls installWithInfo()
