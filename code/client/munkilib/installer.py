@@ -31,6 +31,7 @@ import adobeutils
 import launchd
 import munkicommon
 import munkistatus
+import powermgr
 import profiles
 import updatecheck
 import FoundationPlist
@@ -40,41 +41,10 @@ from removepackages import removepackages
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSDate
-# stuff for IOKit/PowerManager, courtesy Michael Lynn, pudquick@github
-from ctypes import c_uint32, cdll, c_void_p, POINTER, byref
-from CoreFoundation import CFStringCreateWithCString
-from CoreFoundation import kCFStringEncodingASCII
-from objc import pyobjc_id
 # pylint: enable=E0611
 
 # lots of camelCase names
 # pylint: disable=C0103
-
-libIOKit = cdll.LoadLibrary('/System/Library/Frameworks/IOKit.framework/IOKit')
-libIOKit.IOPMAssertionCreateWithName.argtypes = [
-    c_void_p, c_uint32, c_void_p, POINTER(c_uint32)]
-libIOKit.IOPMAssertionRelease.argtypes = [c_uint32]
-
-def CFSTR(py_string):
-    '''Returns a CFString given a Python string'''
-    return CFStringCreateWithCString(None, py_string, kCFStringEncodingASCII)
-
-def raw_ptr(pyobjc_string):
-    '''Returns a pointer to a CFString'''
-    return pyobjc_id(pyobjc_string.nsstring())
-
-def IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
-    '''Creaes a PowerManager assertion'''
-    assertID = c_uint32(0)
-    p_assert_name = raw_ptr(CFSTR(assert_name))
-    p_assert_msg = raw_ptr(CFSTR(assert_msg))
-    errcode = libIOKit.IOPMAssertionCreateWithName(
-        p_assert_name, assert_level, p_assert_msg, byref(assertID))
-    return (errcode, assertID)
-
-IOPMAssertionRelease = libIOKit.IOPMAssertionRelease
-# end IOKit/PowerManager bindings
-
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -1172,21 +1142,6 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 
-def assertNoIdleSleep():
-    """Uses IOKit functions to prevent idle sleep"""
-    # based on code by Michael Lynn, pudquick@github
-
-    kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
-    kIOPMAssertionLevelOn = 255
-    reason = "Munki is installing software"
-
-    dummy_errcode, assertID = IOPMAssertionCreateWithName(
-        kIOPMAssertionTypeNoIdleSleep,
-        kIOPMAssertionLevelOn,
-        reason)
-    return assertID
-
-
 def run(only_unattended=False):
     """Runs the install/removal session.
 
@@ -1194,7 +1149,7 @@ def run(only_unattended=False):
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
     # hold onto the assertionID so we can release it later
-    no_idle_sleep_assertion_id = assertNoIdleSleep()
+    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
 
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
@@ -1314,7 +1269,6 @@ def run(only_unattended=False):
 
     munkicommon.savereport()
 
-    # release our Power Manager assertion
-    dummy_errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
+    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
 
     return removals_need_restart or installs_need_restart
