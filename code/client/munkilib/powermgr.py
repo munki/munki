@@ -19,6 +19,7 @@ powermgr.py
 munki module to toggle IOKit/PowerManager idle sleep assertions.
 """
 
+# pylint: disable=E0611
 # stuff for IOKit/PowerManager, courtesy Michael Lynn, pudquick@github
 from ctypes import c_uint32, cdll, c_void_p, POINTER, byref
 from CoreFoundation import CFStringCreateWithCString
