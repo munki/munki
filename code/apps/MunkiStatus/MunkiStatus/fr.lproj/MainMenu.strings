@@ -77,6 +77,9 @@
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoom";
 
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
+"1B8-Pq-rf7.title" = "Afficher l’historique";
+
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
 "1Nd-E7-vfR.title" = "Centre de gestion des logiciels";
 
