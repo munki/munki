@@ -1774,6 +1774,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
     else:
         # we found it, so add it to our list of procssed installs
         # so we don't process it again in the future
+        munkicommon.display_debug2('Adding %s to list of processed installs'
+                                   % manifestitemname)
         installinfo['processed_installs'].append(manifestitemname)
 
     if isItemInInstallInfo(item_pl, installinfo['managed_installs'],
