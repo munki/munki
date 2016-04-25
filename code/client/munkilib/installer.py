@@ -43,7 +43,7 @@ from removepackages import removepackages
 from Foundation import NSDate
 # pylint: enable=E0611
 
-# lots of camelCase names       
+# lots of camelCase names
 # pylint: disable=C0103
 
 # initialize our report fields
