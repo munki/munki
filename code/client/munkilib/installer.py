@@ -41,6 +41,7 @@ from removepackages import removepackages
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSDate
+# pylint: enable=E0611
 
 # lots of camelCase names       
 # pylint: disable=C0103
