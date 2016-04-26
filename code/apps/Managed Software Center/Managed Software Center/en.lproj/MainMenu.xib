@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="15D21" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="7706"/>
+        <development version="6300" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10116"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="10116"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -182,6 +183,12 @@
                                     <action selector="toggleFullScreen:" target="-1" id="3pL-iV-Ndq"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="lBR-K5-svb"/>
+                            <menuItem title="Show Log" keyEquivalent="l" id="vPs-dO-LDa">
+                                <connections>
+                                    <action selector="showLogWindow:" target="a6z-Lq-EqL" id="sqE-gM-htm"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
@@ -211,13 +218,11 @@
                     <webView id="S5Y-lq-2nB">
                         <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <animations/>
                         <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
                             <nil key="identifier"/>
                         </webPreferences>
                     </webView>
                 </subviews>
-                <animations/>
             </view>
             <toolbar key="toolbar" implicitIdentifier="1393D938-3469-4EFC-8191-CC1B9C26850B" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconAndLabel" sizeMode="regular" id="c5f-Iv-Tk6">
                 <allowedToolbarItems>
@@ -230,7 +235,6 @@
                         <button key="view" id="CPR-oF-gUx" customClass="MSCToolbarButton">
                             <rect key="frame" x="3" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <animations/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="smallSystem"/>
@@ -245,9 +249,8 @@
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
                         <button key="view" id="YGi-pE-3SV" customClass="MSCToolbarButton">
-                            <rect key="frame" x="8" y="14" width="48" height="30"/>
+                            <rect key="frame" x="9" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <animations/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
@@ -264,7 +267,6 @@
                         <button key="view" id="eek-hQ-v8t" customClass="MSCToolbarButton">
                             <rect key="frame" x="4" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <animations/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
@@ -279,9 +281,8 @@
                         <size key="minSize" width="48" height="30"/>
                         <size key="maxSize" width="48" height="30"/>
                         <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
-                            <rect key="frame" x="1" y="14" width="48" height="30"/>
+                            <rect key="frame" x="2" y="14" width="48" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <animations/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="updatesTemplate" imagePosition="overlaps" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
@@ -296,9 +297,8 @@
                         <size key="minSize" width="4" height="30"/>
                         <size key="maxSize" width="4" height="31"/>
                         <customView key="view" id="Mui-Sc-36b">
-                            <rect key="frame" x="38" y="14" width="4" height="30"/>
+                            <rect key="frame" x="39" y="14" width="4" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <animations/>
                         </customView>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="DF488649-5B94-417F-B23E-C646362F6FCA" label="" paletteLabel="Navigation" tag="-1" id="CEb-sx-e3H">
@@ -315,12 +315,10 @@
                                     <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="mXP-yD-2El">
                                         <rect key="frame" x="62" y="3" width="16" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <animations/>
                                     </progressIndicator>
                                     <segmentedControl verticalHuggingPriority="750" id="jcc-R8-zGb">
                                         <rect key="frame" x="1" y="-1" width="53" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <animations/>
                                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="texturedRounded" trackingMode="momentary" id="ZsM-fh-8z5">
                                             <font key="font" metaFont="system"/>
                                             <segments>
@@ -333,9 +331,7 @@
                                         </connections>
                                     </segmentedControl>
                                 </subviews>
-                                <animations/>
                             </view>
-                            <animations/>
                             <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                             <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </box>
@@ -354,7 +350,6 @@
                                     <searchField wantsLayer="YES" verticalHuggingPriority="750" id="gLI-O8-siB">
                                         <rect key="frame" x="0.0" y="1" width="150" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <animations/>
                                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="Rxm-nO-bmO">
                                             <font key="font" metaFont="system"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -365,9 +360,7 @@
                                         </connections>
                                     </searchField>
                                 </subviews>
-                                <animations/>
                             </view>
-                            <animations/>
                             <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                             <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </box>
@@ -423,7 +416,105 @@
                 <outlet property="windowMenuSeperatorItem" destination="92" id="eCt-83-MtH"/>
             </connections>
         </customObject>
+        <customObject id="a6z-Lq-EqL" customClass="MSCLogWindowController">
+            <connections>
+                <outlet property="logView" destination="UAy-M3-yRr" id="cvs-RK-Mg2"/>
+                <outlet property="pathControl" destination="WBU-xF-NX3" id="90X-cm-AqK"/>
+                <outlet property="searchField" destination="N3t-et-cTX" id="4hW-Ue-VWp"/>
+                <outlet property="window" destination="X5I-7f-aJs" id="2H4-ci-ApV"/>
+            </connections>
+        </customObject>
         <userDefaultsController representsSharedInstance="YES" id="602"/>
+        <window title="Log" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="X5I-7f-aJs" userLabel="Log Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
+            <rect key="contentRect" x="636" y="390" width="512" height="480"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <value key="minSize" type="size" width="512" height="360"/>
+            <view key="contentView" id="dBq-Rn-ing">
+                <rect key="frame" x="0.0" y="0.0" width="512" height="480"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <scrollView autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="Kh7-rR-yrV">
+                        <rect key="frame" x="-1" y="-1" width="514" height="449"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" id="rwq-IA-IvG">
+                            <rect key="frame" x="1" y="1" width="512" height="447"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="UAy-M3-yRr">
+                                    <rect key="frame" x="0.0" y="0.0" width="512" height="17"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                    <tableColumns>
+                                        <tableColumn identifier="spacer" editable="NO" width="10" minWidth="8" maxWidth="3.4028234663852886e+38" id="BrL-gn-tp4">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" placeholderString="" id="a1e-6Q-iNS">
+                                                <font key="font" metaFont="fixedUser" size="11"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                        <tableColumn identifier="data" editable="NO" width="502" minWidth="40" maxWidth="2560" id="LA1-bD-SzC">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="charWrapping" selectable="YES" allowsUndo="NO" alignment="left" title="Text Cell" id="Rl8-0j-Dpu">
+                                                <font key="font" metaFont="fixedUser" size="11"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                    </tableColumns>
+                                </tableView>
+                            </subviews>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="jbz-w3-Ald">
+                            <rect key="frame" x="1" y="427" width="630" height="16"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="050-d8-vNg">
+                            <rect key="frame" x="-100" y="-100" width="15" height="303"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="N3t-et-cTX">
+                        <rect key="frame" x="301" y="452" width="200" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Nc2-ny-iaV">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </searchFieldCell>
+                        <connections>
+                            <action selector="searchFilterChanged:" target="a6z-Lq-EqL" id="bVX-7y-fs3"/>
+                        </connections>
+                    </searchField>
+                    <pathControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" id="WBU-xF-NX3">
+                        <rect key="frame" x="4" y="452" width="278" height="22"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <pathCell key="cell" selectable="YES" refusesFirstResponder="YES" alignment="left" id="gwm-XM-tLs">
+                            <font key="font" metaFont="system"/>
+                            <url key="url" string="file://localhost/Applications/"/>
+                            <color key="backgroundColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </pathCell>
+                    </pathControl>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="a6z-Lq-EqL" id="BQa-PG-rdk"/>
+            </connections>
+            <point key="canvasLocation" x="68" y="887"/>
+        </window>
     </objects>
     <resources>
         <image name="AllItemsTemplate" width="28" height="26"/>
@@ -431,6 +522,6 @@
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>
         <image name="toolbarCategoriesTemplate" width="25" height="24"/>
-        <image name="updatesTemplate" width="22.079999923706055" height="22.079999923706055"/>
+        <image name="updatesTemplate" width="24" height="24"/>
     </resources>
 </document>

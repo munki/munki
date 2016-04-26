@@ -16,6 +16,7 @@ from PyObjCTools import AppHelper
 import MSCAppDelegate
 import MSCMainWindowController
 import MSCStatusController
+import MSCLogWindowController
 import MSCToolbar
 
 # get more debugging info on exceptions
