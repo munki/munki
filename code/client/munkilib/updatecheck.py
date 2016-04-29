@@ -1978,6 +1978,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
             installinfo['managed_installs'].append(iteminfo)
+            if manifestitemname in installinfo['processed_installs']:
+                installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.GurlDownloadError, errmsg:
             munkicommon.display_warning(
@@ -1985,6 +1987,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = 'Download failed (%s)' % errmsg
             installinfo['managed_installs'].append(iteminfo)
+            if manifestitemname in installinfo['processed_installs']:
+                installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.MunkiDownloadError, errmsg:
             munkicommon.display_warning(
@@ -1992,6 +1996,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
             installinfo['managed_installs'].append(iteminfo)
+            if manifestitemname in installinfo['processed_installs']:
+                installinfo['processed_installs'].remove(manifestitemname)
             return False
     else:
         iteminfo['installed'] = True
