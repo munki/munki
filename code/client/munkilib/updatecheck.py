@@ -2587,7 +2587,7 @@ def getmanifest(partialurl, suppress_errors=False):
             partialurl.startswith('https://') or
             partialurl.startswith('file:/')):
         # then it's really a request for the client's primary manifest
-        manifestdisplayname = os.path.basename(partialurl)
+        manifestdisplayname = os.path.basename(partialurl.encode('UTF-8'))
         manifesturl = partialurl
         partialurl = 'client_manifest'
         manifestname = 'client_manifest.plist'
@@ -2595,7 +2595,8 @@ def getmanifest(partialurl, suppress_errors=False):
         # request for nested manifest
         manifestdisplayname = partialurl
         manifestname = partialurl
-        manifesturl = manifestbaseurl + urllib2.quote(partialurl)
+        manifesturl = (
+            manifestbaseurl + urllib2.quote(partialurl.encode('UTF-8')))
 
     if manifestname in MANIFESTS:
         return MANIFESTS[manifestname]
