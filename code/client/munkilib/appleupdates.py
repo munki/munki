@@ -1240,7 +1240,9 @@ class AppleUpdates(object):
         cmd.append('/usr/sbin/softwareupdate')
 
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
-        if os_version_tuple > (10, 5):
+        if os_version_tuple > (10, 10):
+            cmd.append('-vv')
+        elif os_version_tuple > (10, 5):
             cmd.append('-v')
 
         if catalog_url:
