@@ -48,23 +48,25 @@ else:
 def raw_input_with_default(prompt, default_text):
     '''A nasty, nasty hack to get around Python readline limitations under
     OS X. Gives us editable default text for munkiimport choices'''
-
+    
     def insert_default_text(prompt, text):
         '''Helper function'''
         time.sleep(0.01)
-        LIBEDIT.rl_set_prompt(prompt.encode(sys.stdout.encoding))
-        readline.insert_text(text.encode(sys.stdout.encoding))
+        LIBEDIT.rl_set_prompt(prompt)
+        readline.insert_text(text)
         LIBEDIT.rl_forced_update_display()
 
     readline.clear_history()
-    if LIBEDIT:
+    if not default_text:
+        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+    elif LIBEDIT:
         # readline module was compiled against libedit
         thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return raw_input().decode(sys.stdin.encoding)
+        return unicode(raw_input(), encoding=sys.stdin.encoding)
     else:
         readline.set_startup_hook(lambda: readline.insert_text(default_text))
         try:
-            return raw_input(prompt).decode(sys.stdin.encoding)
+            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
         finally:
             readline.set_startup_hook()
 
@@ -686,7 +688,8 @@ def configure():
              'Repo fileshare URL (example: afp://munki.example.com/repo)'),
             ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
             ('editor',
-             'pkginfo editor (examples: /usr/bin/vi or TextMate.app)'),
+             'pkginfo editor (examples: /usr/bin/vi or TextMate.app; '
+             'leave empty to not open an editor after import)'),
             ('default_catalog', 'Default catalog to use (example: testing)')]:
 
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))

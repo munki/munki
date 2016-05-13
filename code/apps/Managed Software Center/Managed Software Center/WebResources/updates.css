@@ -386,7 +386,7 @@ div.os-updates.expanded tbody tr.sosumi:before {
     display: none
 }
 .activity-indicator {
-    font: normal 20px "Helvetica Neue", Helvetica
+    font: normal 20px -apple-system, "Helvetica Neue", Helvetica
 }
 #updates #header .scan-progress {
     padding: 0 0 1px 13px

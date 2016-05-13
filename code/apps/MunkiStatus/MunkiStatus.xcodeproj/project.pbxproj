@@ -10,7 +10,6 @@
 		C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE21913F6D6003DD155 /* Localizable.strings */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
 		C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */; };
-		C046261B1A00015600AF1E48 /* MunkiStatus-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C09004FB16CDD84E00BE34CE /* MunkiStatus-Info.plist */; };
 		C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE01913F6D6003DD155 /* MainMenu.strings */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
@@ -23,6 +22,7 @@
 		C094B6D61891826700E06897 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D31891826700E06897 /* BorderlessWindow.m */; };
 		C094B6D71891826700E06897 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D51891826700E06897 /* ScaledImageView.m */; };
 		C0AE8658186D2DF900C87AE7 /* MunkiStatus.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */; };
+		C0D67B581CC55BFD009E8C2F /* MSULogWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -92,6 +92,7 @@
 		C094B6D41891826700E06897 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C094B6D51891826700E06897 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
 		C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
+		C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSULogWindowController.py; sourceTree = "<group>"; };
 		E65810B31993C96E00E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E65810B51993C97500E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		E65810B61993C97C00E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -171,6 +172,7 @@
 				C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */,
 				C090050916CDD84E00BE34CE /* MainMenu.xib */,
 				C09004FA16CDD84E00BE34CE /* Supporting Files */,
+				C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */,
 			);
 			path = MunkiStatus;
 			sourceTree = "<group>";
@@ -290,7 +292,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09004FE16CDD84E00BE34CE /* InfoPlist.strings in Resources */,
-				C046261B1A00015600AF1E48 /* MunkiStatus-Info.plist in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */,
@@ -300,6 +301,7 @@
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
 				C0AE8658186D2DF900C87AE7 /* MunkiStatus.icns in Resources */,
+				C0D67B581CC55BFD009E8C2F /* MSULogWindowController.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

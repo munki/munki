@@ -1628,7 +1628,9 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
         iteminfo['needs_update'] = (installedState(item_pl) == 0)
     iteminfo['licensed_seat_info_available'] = item_pl.get(
         'licensed_seat_info_available', False)
-    iteminfo['uninstallable'] = item_pl.get('uninstallable', False)
+    iteminfo['uninstallable'] = (
+        item_pl.get('uninstallable', False)
+        and (item_pl.get('uninstall_method', '') != ''))
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
@@ -1772,6 +1774,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
     else:
         # we found it, so add it to our list of procssed installs
         # so we don't process it again in the future
+        munkicommon.display_debug2('Adding %s to list of processed installs'
+                                   % manifestitemname)
         installinfo['processed_installs'].append(manifestitemname)
 
     if isItemInInstallInfo(item_pl, installinfo['managed_installs'],
@@ -1931,6 +1935,9 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 # admin did not explicitly mark this item; let's determine if
                 # it's from Apple
                 if isAppleItem(item_pl):
+                    munkicommon.log(
+                        'Marking %s as apple_item - this will block '
+                        'Apple SUS updates' % iteminfo['name'])
                     iteminfo['apple_item'] = True
 
             installinfo['managed_installs'].append(iteminfo)
@@ -1971,6 +1978,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
             installinfo['managed_installs'].append(iteminfo)
+            if manifestitemname in installinfo['processed_installs']:
+                installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.GurlDownloadError, errmsg:
             munkicommon.display_warning(
@@ -1978,6 +1987,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = 'Download failed (%s)' % errmsg
             installinfo['managed_installs'].append(iteminfo)
+            if manifestitemname in installinfo['processed_installs']:
+                installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.MunkiDownloadError, errmsg:
             munkicommon.display_warning(
@@ -1985,6 +1996,8 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
             installinfo['managed_installs'].append(iteminfo)
+            if manifestitemname in installinfo['processed_installs']:
+                installinfo['processed_installs'].remove(manifestitemname)
             return False
     else:
         iteminfo['installed'] = True
@@ -2574,7 +2587,7 @@ def getmanifest(partialurl, suppress_errors=False):
             partialurl.startswith('https://') or
             partialurl.startswith('file:/')):
         # then it's really a request for the client's primary manifest
-        manifestdisplayname = os.path.basename(partialurl)
+        manifestdisplayname = os.path.basename(partialurl.encode('UTF-8'))
         manifesturl = partialurl
         partialurl = 'client_manifest'
         manifestname = 'client_manifest.plist'
@@ -2582,7 +2595,8 @@ def getmanifest(partialurl, suppress_errors=False):
         # request for nested manifest
         manifestdisplayname = partialurl
         manifestname = partialurl
-        manifesturl = manifestbaseurl + urllib2.quote(partialurl)
+        manifesturl = (
+            manifestbaseurl + urllib2.quote(partialurl.encode('UTF-8')))
 
     if manifestname in MANIFESTS:
         return MANIFESTS[manifestname]

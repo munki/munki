@@ -123,13 +123,19 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
         cmd = [script]
         if script_args:
             cmd.extend(script_args)
-        proc = subprocess.Popen(cmd, shell=False,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (stdout, stderr) = proc.communicate()
-        return proc.returncode, stdout.decode('UTF-8', 'replace'), \
-                                stderr.decode('UTF-8', 'replace')
+        proc = None
+        try:
+            proc = subprocess.Popen(cmd, shell=False,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+        except (OSError, IOError), err:
+            raise RunExternalScriptError(
+                'Error %s when attempting to run %s' % (unicode(err), script))
+        if proc:
+            (stdout, stderr) = proc.communicate()
+            return proc.returncode, stdout.decode('UTF-8', 'replace'), \
+                                    stderr.decode('UTF-8', 'replace')
     else:
         raise RunExternalScriptError('%s not executable' % script)
 

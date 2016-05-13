@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10116"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -122,6 +122,12 @@
                                     <action selector="performZoom:" target="-1" id="240"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Wf0-EL-aNa"/>
+                            <menuItem title="Show Log" keyEquivalent="l" id="1B8-Pq-rf7">
+                                <connections>
+                                    <action selector="showLogWindow:" target="2ep-ou-xmD" id="91u-X0-9md"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
@@ -140,6 +146,7 @@
         </menu>
         <customObject id="373" userLabel="MSUAppDelegate" customClass="MSUAppDelegate">
             <connections>
+                <outlet property="logWindowController" destination="2ep-ou-xmD" id="3US-AY-I9H"/>
                 <outlet property="statusWindowController" destination="I9V-I1-u8s" id="GJ8-cn-O6v"/>
             </connections>
         </customObject>
@@ -149,10 +156,19 @@
                 <outlet property="backdropWindow" destination="VCy-58-vwp" id="FI2-0s-zHg"/>
                 <outlet property="detailFld" destination="Xa0-XA-1hm" id="ffw-hJ-LcP"/>
                 <outlet property="imageFld" destination="aZW-jZ-KiY" id="MKX-b8-T7K"/>
+                <outlet property="logWindow" destination="LgH-P6-zEw" id="psa-Jx-p9K"/>
                 <outlet property="messageFld" destination="aUN-kO-8dF" id="nB6-fN-F3i"/>
                 <outlet property="progressIndicator" destination="yFK-Ya-d24" id="vCk-kB-lLo"/>
                 <outlet property="stopBtn" destination="rxM-GK-Unu" id="ogB-ah-l40"/>
                 <outlet property="window" destination="1Nd-E7-vfR" id="nMB-as-gvt"/>
+            </connections>
+        </customObject>
+        <customObject id="2ep-ou-xmD" customClass="MSULogWindowController">
+            <connections>
+                <outlet property="logView" destination="YcU-fs-F3z" id="BDP-0f-Yab"/>
+                <outlet property="pathControl" destination="M6b-hp-fwf" id="UhS-g1-OVj"/>
+                <outlet property="searchField" destination="43A-RJ-9xo" id="ERQ-GP-P0k"/>
+                <outlet property="window" destination="LgH-P6-zEw" id="tzw-ed-aBF"/>
             </connections>
         </customObject>
         <customObject id="420" customClass="NSFontManager"/>
@@ -171,7 +187,6 @@
                     <button verticalHuggingPriority="750" id="rxM-GK-Unu">
                         <rect key="frame" x="389" y="13" width="131" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <animations/>
                         <buttonCell key="cell" type="push" title="Stop" bezelStyle="rounded" alignment="center" refusesFirstResponder="YES" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="M20-JG-Pmr">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -185,12 +200,10 @@
                     <progressIndicator verticalHuggingPriority="750" minValue="20" maxValue="100" doubleValue="20" bezeled="NO" indeterminate="YES" style="bar" id="yFK-Ya-d24">
                         <rect key="frame" x="99" y="61" width="415" height="20"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <animations/>
                     </progressIndicator>
                     <textField verticalHuggingPriority="750" id="aUN-kO-8dF">
                         <rect key="frame" x="98" y="86" width="412" height="17"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="eWh-Ya-joW">
                             <font key="font" metaFont="systemBold"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -200,7 +213,6 @@
                     <textField verticalHuggingPriority="750" id="Xa0-XA-1hm">
                         <rect key="frame" x="98" y="43" width="417" height="14"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="b6Q-ET-o8V">
                             <font key="font" metaFont="smallSystem"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -210,15 +222,14 @@
                     <imageView id="aZW-jZ-KiY">
                         <rect key="frame" x="20" y="39" width="64" height="64"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="MunkiStatus" id="FGG-pb-xd8"/>
                     </imageView>
                 </subviews>
-                <animations/>
             </view>
             <connections>
                 <outlet property="delegate" destination="I9V-I1-u8s" id="1bd-RW-Bhf"/>
             </connections>
+            <point key="canvasLocation" x="-486" y="451.5"/>
         </window>
         <window title="BackdropWindow" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hasShadow="NO" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="VCy-58-vwp" userLabel="BackdropWindow" customClass="BorderlessWindow">
             <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
@@ -231,12 +242,100 @@
                     <imageView id="csw-Cd-idG" customClass="ScaledImageView">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="230"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <animations/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="wah-iR-ZTT"/>
                     </imageView>
                 </subviews>
-                <animations/>
             </view>
+        </window>
+        <window title="Log" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="LgH-P6-zEw" userLabel="Log Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
+            <rect key="contentRect" x="636" y="390" width="512" height="480"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <value key="minSize" type="size" width="512" height="360"/>
+            <view key="contentView" id="V0z-aa-fWm">
+                <rect key="frame" x="0.0" y="0.0" width="512" height="480"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <scrollView autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="GSP-c9-k1b">
+                        <rect key="frame" x="-1" y="-1" width="514" height="449"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" id="MTK-yi-vFK">
+                            <rect key="frame" x="1" y="1" width="512" height="447"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="YcU-fs-F3z">
+                                    <rect key="frame" x="0.0" y="0.0" width="514" height="17"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                    <tableColumns>
+                                        <tableColumn identifier="spacer" editable="NO" width="10" minWidth="8" maxWidth="3.4028234663852886e+38" id="tsJ-4j-iZA">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" placeholderString="" id="nGI-3K-7Wv">
+                                                <font key="font" metaFont="fixedUser" size="11"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                        <tableColumn identifier="data" editable="NO" width="502" minWidth="40" maxWidth="2560" id="UYm-QX-K69">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="charWrapping" selectable="YES" allowsUndo="NO" alignment="left" title="Text Cell" id="8Nl-My-27d">
+                                                <font key="font" metaFont="fixedUser" size="11"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                    </tableColumns>
+                                </tableView>
+                            </subviews>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="I4n-9v-poQ">
+                            <rect key="frame" x="1" y="427" width="630" height="16"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="Z2r-Od-tTj">
+                            <rect key="frame" x="-100" y="-100" width="15" height="303"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="43A-RJ-9xo">
+                        <rect key="frame" x="301" y="452" width="200" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="tIL-Oa-wuU">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </searchFieldCell>
+                        <connections>
+                            <action selector="searchFilterChanged:" target="2ep-ou-xmD" id="bxe-I5-Bq0"/>
+                        </connections>
+                    </searchField>
+                    <pathControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" id="M6b-hp-fwf">
+                        <rect key="frame" x="4" y="452" width="278" height="22"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <pathCell key="cell" selectable="YES" refusesFirstResponder="YES" alignment="left" id="RHv-ZI-67x">
+                            <font key="font" metaFont="system"/>
+                            <url key="url" string="file://localhost/Applications/"/>
+                            <color key="backgroundColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </pathCell>
+                    </pathControl>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="2ep-ou-xmD" id="FgY-Kk-GWr"/>
+            </connections>
+            <point key="canvasLocation" x="114" y="398"/>
         </window>
     </objects>
     <resources>

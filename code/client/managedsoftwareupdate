@@ -435,7 +435,7 @@ def notifyUserOfUpdates(force=False):
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         f = open(launchfile, 'w')
         f.close()
-        time.sleep(0.5)
+        time.sleep(5)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
@@ -739,7 +739,8 @@ def main():
     updatecheckresult = None
     if not skip_munki_check:
         try:
-            updatecheckresult = updatecheck.check(client_id=options.id)
+            updatecheckresult = updatecheck.check(
+                client_id=options.id.decode('UTF-8'))
         except:
             munkicommon.display_error('Unexpected error in updatecheck:')
             munkicommon.log(traceback.format_exc())

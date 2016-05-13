@@ -70,6 +70,7 @@ class MSUStatusWindowController(NSObject):
     # pylint: disable=no-init
 
     window = IBOutlet()
+    logWindow = IBOutlet()
     messageFld = IBOutlet()
     detailFld = IBOutlet()
     progressIndicator = IBOutlet()
@@ -88,6 +89,7 @@ class MSUStatusWindowController(NSObject):
     saw_process = False
     managedsoftwareupdate_pid = None
     window_level = NSScreenSaverWindowLevel - 1
+
 
     @IBAction
     def stopBtnClicked_(self, sender):
@@ -147,22 +149,27 @@ class MSUStatusWindowController(NSObject):
         com.googlecode.munki.managedsoftwareupdate.ended notification'''
         NSLog('managedsoftwareupdate pid %s ended'
               % notification.userInfo().get('pid'))
-    
+
+    def haveElCapPolicyBanner(self):
+        '''Returns True if we are running El Cap or later and there is
+        a loginwindow PolicyBanner in place'''
+        # Get our Darwin major version
+        darwin_vers = int(os.uname()[2].split('.')[0])
+        if darwin_vers > 14:
+            for test_file in ['/Library/Security/PolicyBanner.txt',
+                              '/Library/Security/PolicyBanner.rtf',
+                              '/Library/Security/PolicyBanner.rtfd']:
+                if os.path.exists(test_file):
+                    return True
+        return False
+
     def setWindowLevel(self):
         '''Sets our NSWindowLevel. Works around issues with the loginwindow
         PolicyBanner in 10.11+ Some code based on earlier work by Pepijn
         Bruienne'''
-        # Get our Darwin major version
-        darwin_vers = int(os.uname()[2].split('.')[0])
-        have_policy_banner = False
-        for test_file in ['/Library/Security/PolicyBanner.txt',
-                          '/Library/Security/PolicyBanner.rtf',
-                          '/Library/Security/PolicyBanner.rtfd']:
-            if os.path.exists(test_file):
-                have_policy_banner = True
-                break
         # bump our NSWindowLevel if we have a PolicyBanner in ElCap+
-        if have_policy_banner and darwin_vers > 14:
+        if self.haveElCapPolicyBanner():
+            NSLog('El Capitan+ loginwindow PolicyBanner found')
             self.window_level = NSScreenSaverWindowLevel
 
     def initStatusSession(self):
@@ -171,38 +178,35 @@ class MSUStatusWindowController(NSObject):
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
             self.displayBackdropWindow()
+            # needed so the window can show over the loginwindow
+            self.window.setCanBecomeVisibleWithoutLogin_(True)
+            self.window.setLevel_(self.window_level)
 
-        if self.window:
-            if consoleuser == None or consoleuser == u"loginwindow":
-                # needed so the window can show over the loginwindow
-                self.window.setCanBecomeVisibleWithoutLogin_(True)
-                self.window.setLevel_(self.window_level)
-            self.window.center()
-            self.messageFld.setStringValue_(
-                NSLocalizedString(u"Starting…", None))
-            self.detailFld.setStringValue_(u"")
-            self.stopBtn.setHidden_(False)
-            self.stopBtn.setEnabled_(True)
-            self.stopBtnState = 0
-            if self.imageFld:
-                theImage = NSImage.imageNamed_("MunkiStatus")
-                self.imageFld.setImage_(theImage)
-            if self.progressIndicator:
-                self.progressIndicator.setMinValue_(0.0)
-                self.progressIndicator.setMaxValue_(100.0)
-                self.progressIndicator.setIndeterminate_(True)
-                self.progressIndicator.setUsesThreadedAnimation_(True)
-                self.progressIndicator.startAnimation_(self)
-            self.window.orderFrontRegardless()
-            self.registerForNotifications()
-            # start our process monitor timer so we can be notified about
-            # process failure
-            self.timeout_counter = 6
-            self.saw_process = False
-            # pylint: disable=line-too-long
-            self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-                5.0, self, self.checkProcess, None, YES)
-            # pylint: enable=line-too-long
+        self.window.center()
+        self.messageFld.setStringValue_(
+            NSLocalizedString(u"Starting…", None))
+        self.detailFld.setStringValue_(u"")
+        self.stopBtn.setHidden_(False)
+        self.stopBtn.setEnabled_(True)
+        self.stopBtnState = 0
+        if self.imageFld:
+            theImage = NSImage.imageNamed_("MunkiStatus")
+            self.imageFld.setImage_(theImage)
+        if self.progressIndicator:
+            self.progressIndicator.setMinValue_(0.0)
+            self.progressIndicator.setMaxValue_(100.0)
+            self.progressIndicator.setIndeterminate_(True)
+            self.progressIndicator.setUsesThreadedAnimation_(True)
+            self.progressIndicator.startAnimation_(self)
+        self.window.orderFrontRegardless()
+        self.registerForNotifications()
+        # start our process monitor timer so we can be notified about
+        # process failure
+        self.timeout_counter = 6
+        self.saw_process = False
+        self.timer = (NSTimer.
+            scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+                5.0, self, self.checkProcess, None, YES))
 
     def checkProcess(self):
         '''Monitors managedsoftwareupdate process for failure to start
@@ -213,6 +217,13 @@ class MSUStatusWindowController(NSObject):
         UNEXPECTEDLY_QUIT = -1
 
         NSLog('checkProcess timer fired')
+
+        if self.window_level == NSScreenSaverWindowLevel:
+            # we're at the loginwindow, there is a PolicyBanner, and we're
+            # running under 10.11+. Make sure we're in the front.
+            NSApp.activateIgnoringOtherApps_(YES)
+            if not self.logWindow.isVisible():
+                self.window.makeKeyAndOrderFront_(self)
 
         if self.got_status_update:
             # we got a status update since we last checked; no need to
@@ -254,7 +265,10 @@ class MSUStatusWindowController(NSObject):
     def configureAndDisplayBackdropWindow_(self, window):
         '''Sets all our configuration options for our masking windows'''
         window.setCanBecomeVisibleWithoutLogin_(True)
-        window.setLevel_(self.window_level)
+        if self.haveElCapPolicyBanner():
+            self.backdropWindow.setLevel_(self.window_level)
+        else:
+            self.backdropWindow.setLevel_(self.window_level - 1)
         translucentColor = NSColor.blackColor().colorWithAlphaComponent_(0.35)
         window.setBackgroundColor_(translucentColor)
         window.setOpaque_(False)
@@ -265,40 +279,48 @@ class MSUStatusWindowController(NSObject):
 
     def displayBackdropWindow(self):
         '''Draw a window that covers the login UI'''
-        if self.backdropWindow:
-            self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
+        self.backdropWindow.setCanBecomeVisibleWithoutLogin_(True)
+        if self.haveElCapPolicyBanner():
             self.backdropWindow.setLevel_(self.window_level)
-            screenRect = NSScreen.mainScreen().frame()
-            self.backdropWindow.setFrame_display_(screenRect, True)
+        else:
+            self.backdropWindow.setLevel_(self.window_level - 1)
+        screenRect = NSScreen.mainScreen().frame()
+        self.backdropWindow.setFrame_display_(screenRect, True)
 
-            darwin_vers = int(os.uname()[2].split('.')[0])
-            if darwin_vers < 11:
-                if self.backdropImageFld:
-                    bgImage = getLoginwindowPicture()
-                    self.backdropImageFld.setImage_(bgImage)
-                    self.backdropWindow.orderFrontRegardless()
-            else:
-                # Lion+
-                # draw transparent/translucent windows to prevent interaction
-                # with the login UI
-                self.backdropImageFld.setHidden_(True)
-                self.configureAndDisplayBackdropWindow_(self.backdropWindow)
-                # are there any other screens?
-                for screen in NSScreen.screens():
-                    if screen != NSScreen.mainScreen():
-                        # create another masking window for this secondary screen
-                        window_rect = screen.frame()
-                        window_rect.origin = NSPoint(0.0, 0.0)
-                        child_window = NSWindow.alloc(
-                            ).initWithContentRect_styleMask_backing_defer_screen_(
-                                window_rect,
-                                NSBorderlessWindowMask, NSBackingStoreBuffered, NO, screen)
-                        self.configureAndDisplayBackdropWindow_(child_window)
-                        self.backdropWindow.addChildWindow_ordered_(child_window, NSWindowAbove)
+        darwin_vers = int(os.uname()[2].split('.')[0])
+        if darwin_vers < 11:
+            if self.backdropImageFld:
+                bgImage = getLoginwindowPicture()
+                self.backdropImageFld.setImage_(bgImage)
+                self.backdropWindow.orderFrontRegardless()
+        else:
+            # Lion+
+            # draw transparent/translucent windows to prevent interaction
+            # with the login UI
+            self.backdropImageFld.setHidden_(True)
+            self.configureAndDisplayBackdropWindow_(self.backdropWindow)
+            # are there any other screens?
+            for screen in NSScreen.screens():
+                if screen != NSScreen.mainScreen():
+                    # create another masking window for this secondary screen
+                    window_rect = screen.frame()
+                    window_rect.origin = NSPoint(0.0, 0.0)
+                    child_window = NSWindow.alloc(
+                        ).initWithContentRect_styleMask_backing_defer_screen_(
+                            window_rect,
+                            NSBorderlessWindowMask, NSBackingStoreBuffered,
+                            NO, screen)
+                    self.configureAndDisplayBackdropWindow_(child_window)
+                    if self.haveElCapPolicyBanner():
+                        self.backdropWindow.addChildWindow_ordered_(
+                            child_window, NSWindowAbove)
 
-            # preserve the relative ordering of the backdrop window and the status window
-            # IOW, clicking the backdrop window will not bring it in front of the status window
-            self.backdropWindow.addChildWindow_ordered_(self.window, NSWindowAbove)
+        if self.haveElCapPolicyBanner():
+            # preserve the relative ordering of the backdrop window and the
+            # status window IOW, clicking the backdrop window will not bring it
+            # in front of the status window
+            self.backdropWindow.addChildWindow_ordered_(
+                self.window, NSWindowAbove)
 
 
     def updateStatus_(self, notification):
@@ -307,11 +329,12 @@ class MSUStatusWindowController(NSObject):
         update our status display with information from the notification'''
 
         if self.window_level == NSScreenSaverWindowLevel:
-            # we're at the loginwindow, there is a PolicyBanner, and we're running
-            # under 10.11+. Make sure we're in the front.
+            # we're at the loginwindow, there is a PolicyBanner, and we're
+            # running under 10.11+. Make sure we're in the front.
             NSApp.activateIgnoringOtherApps_(YES)
-            self.window.orderFrontRegardless()
-                
+            if not self.logWindow.isVisible():
+                self.window.makeKeyAndOrderFront_(self)
+
         self.got_status_update = True
         info = notification.userInfo()
         # explictly get keys from info object; PyObjC in Mountain Lion

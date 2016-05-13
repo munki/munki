@@ -64,6 +64,9 @@
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoomen";
 
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
+"1B8-Pq-rf7.title" = "Protokoll einblenden";
+
 /* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
 "24.title" = "Fenster";
 

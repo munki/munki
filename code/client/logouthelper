@@ -100,13 +100,12 @@ def alertUserOfForcedLogout(info=None):
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         f = open(launchfile, 'w')
         f.close()
-        time.sleep(0.5)
-        if os.path.exists(launchfile):
-            os.unlink(launchfile)
         # now wait a bit for it to launch before proceeding
         # because if we don't, sending the logoutwarn notification
         # may fall on deaf ears.
-        time.sleep(4)
+        time.sleep(5)
+        if os.path.exists(launchfile):
+            os.unlink(launchfile)
 
     # if set, convert Python dictionary to NSDictionary.
     if info is not None:
