@@ -354,6 +354,7 @@ def analyzeInstalledPkgs():
     #    FoundationPlist.writePlist(CATALOG, catalogdbpath)
     #except FoundationPlist.NSPropertyListWriteException:
     #    pass
+    return PKGDATA
 
 
 def getAppBundleID(path):
