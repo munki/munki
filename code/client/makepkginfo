@@ -327,6 +327,13 @@ def getiteminfo(itempath):
                 infodict[key] = plist[key]
         if 'LSMinimumSystemVersion' in plist:
             infodict['minosversion'] = plist['LSMinimumSystemVersion']
+        elif 'LSMinimumSystemVersionByArchitecture' in plist:
+            # just grab the highest version if more than one is listed
+            versions = [item[1] for item in
+                        plist['LSMinimumSystemVersionByArchitecture'].items()]
+            highest_version = str(max([munkicommon.MunkiLooseVersion(version)
+                                       for version in versions]))
+            infodict['minosversion'] = highest_version
         elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
             infodict['minosversion'] = \
                 plist['SystemVersionCheck:MinimumSystemVersion']
