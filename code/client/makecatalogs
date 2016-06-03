@@ -121,7 +121,6 @@ def makecatalogs(repo, options):
 
         # Walk through the icon files
         for dirpath, dirnames, filenames in repo.walk(iconspath):
-            print "dirpath '%s' dirs %s files %s" % (dirpath, dirnames, filenames) # DeBuG
             for dirname in dirnames:
                 # don't recurse into directories that start
                 # with a period.
@@ -187,7 +186,6 @@ def makecatalogs(repo, options):
                 handle = repo.open(filepath, 'r')
                 if handle:
                     pkginfo = plistlib.readPlist(handle.local_path)
-                    repo.close(handle)
             except IOError, inst:
                 errors.append("IO error for %s: %s" % (filepath, inst))
                 exit_code = -1
@@ -354,7 +352,6 @@ def makecatalogs(repo, options):
             handle = repo.open(catalogpath, 'w')
             if handle:
                 plistlib.writePlist(catalogs[key], handle.local_path)
-                repo.close(handle)
                 print "Created catalog %s..." % (catalogpath)
         else:
             print_err_utf8(

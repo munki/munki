@@ -81,28 +81,33 @@ class CommandRepo:
 
     def open(self, repo_path, mode='r'):
         class RepoFile:
-            def __init__(self, path, mode):
+            repo = None
+            repo_path = None
+            repo_mode = None
+            local_path = None
+
+            def __init__(self, repo, repo_path, mode):
+                self.repo = repo
+                self.repo_path = repo_path
+                self.repo_mode = mode
                 self.file = tempfile.NamedTemporaryFile(dir=munkicommon.tmpdir(), mode=mode,
-                        delete=False)
+                        delete=False, suffix=os.path.splitext(repo_path)[1])
+                self.local_path = self.file.name
+                if mode[0] == 'r':
+                    returncode = self.repo.get(self.repo_path, self.local_path)
+                    if returncode != 0:
+                        raise IOError
+
+            def __del__(self):
+                if self.repo_mode != 'r':
+                    self.repo.put(self.local_path, self.repo_path)
+                os.remove(self.local_path)
+                return self
 
             def read(self):
                 return self.file.read()
 
-        handle = RepoFile(repo_path, mode)
-        handle.repo_path = repo_path
-        handle.repo_mode = mode
-        handle.local_path = handle.file.name
-        if mode[0] == 'r':
-            returncode = self.get(repo_path, handle.local_path)
-            if returncode != 0:
-                raise IOError
-        return handle
-
-    def close(self, handle):
-        if handle.repo_mode != 'r':
-            return self.put(handle.local_path, handle.repo_path)
-        else:
-            return 0
+        return RepoFile(self, repo_path, mode)
 
     def mount(self):
         return 0

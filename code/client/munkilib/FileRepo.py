@@ -56,21 +56,17 @@ class FileRepo:
 
     def open(self, path, mode='r'):
         class RepoFile:
-            def __init__(self, path, mode):
-                self.file = open(path, mode)
+            def __init__(self, repo, repo_path, mode):
+                self.repo = repo
+                self.repo_path = repo_path
+                self.repo_mode = mode
+                self.file = open(self.repo_path, mode)
+                self.local_path = self.repo_path
 
             def read(self):
                 return self.file.read()
 
-        repo_path = os.path.join(self.path, path)
-        handle = RepoFile(repo_path, mode)
-        handle.repo_path = repo_path
-        handle.local_path = repo_path
-        handle.repo_mode = mode
-        return handle
-
-    def close(self, handle):
-        return 0
+        return RepoFile(self, os.path.join(self.path, path), mode)
 
     def mount(self):
         if os.path.exists(self.path):
@@ -102,5 +98,4 @@ class FileRepo:
     def walk(self, path, **kwargs):
         for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.path, path), **kwargs):
             dirpath = dirpath[len(self.path) + 1:]
-            print "walk: dirpath '%s' dirs %s files %s" % (dirpath, dirnames, filenames) # DeBuG
             yield (dirpath, dirnames, filenames)
