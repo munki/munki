@@ -36,6 +36,7 @@ from optparse import OptionParser, BadOptionError, AmbiguousOptionError
 from munkilib import iconutils
 from munkilib import munkicommon
 from munkilib import FoundationPlist
+from munkilib import Repo
 
 if 'libedit' in readline.__doc__:
     # readline module was compiled against libedit
@@ -119,56 +120,6 @@ def make_dmg(pkgpath):
         return diskimagepath
 
 
-def repo_available():
-    """Checks the repo path for proper directory structure.
-    If the directories look wrong we probably don't have a
-    valid repo path. Returns True if things look OK."""
-    if not REPO_PATH:
-        print >> sys.stderr, 'No repo path specified.'
-        return False
-    if not os.path.exists(REPO_PATH):
-        mount_repo_cli()
-    if not os.path.exists(REPO_PATH):
-        return False
-    for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
-        if not os.path.exists(os.path.join(REPO_PATH, subdir)):
-            print >> sys.stderr, "%s is missing %s" % (REPO_PATH, subdir)
-            return False
-    # if we get this far, the repo path looks OK
-    return True
-
-
-def mount_repo_cli():
-    """Attempts to connect to the repo fileshare"""
-    global WE_MOUNTED_THE_REPO
-    if os.path.exists(REPO_PATH):
-        return
-    os.mkdir(REPO_PATH)
-    print 'Attempting to mount fileshare %s:' % REPO_URL
-    if REPO_URL.startswith('afp:'):
-        cmd = ['/sbin/mount_afp', '-i', REPO_URL, REPO_PATH]
-    elif REPO_URL.startswith('smb:'):
-        cmd = ['/sbin/mount_smbfs', REPO_URL[4:], REPO_PATH]
-    elif REPO_URL.startswith('nfs://'):
-        cmd = ['/sbin/mount_nfs', REPO_URL[6:], REPO_PATH]
-    else:
-        print >> sys.stderr, 'Unsupported filesystem URL!'
-        return
-    retcode = subprocess.call(cmd)
-    if retcode:
-        os.rmdir(REPO_PATH)
-    else:
-        WE_MOUNTED_THE_REPO = True
-
-
-def unmount_repo_cli():
-    """Attempts to unmount the repo fileshare"""
-    if not os.path.exists(REPO_PATH):
-        return
-    cmd = ['/sbin/umount', REPO_PATH]
-    return subprocess.call(cmd)
-
-
 class RepoCopyError(Exception):
     """Error copying installer item to repo"""
     pass
@@ -180,51 +131,47 @@ def copy_item_to_repo(itempath, vers, subdirectory=''):
     Renames the item if an item already exists with that name.
     Returns the relative path to the item."""
 
-    if not os.path.exists(REPO_PATH):
-        raise RepoCopyError('Could not connect to munki repo.')
-
-    destination_path = os.path.join(REPO_PATH, 'pkgs', subdirectory)
-    if not os.path.exists(destination_path):
+    destination_path = repo.join('pkgs', subdirectory)
+    if not repo.exists(destination_path):
         try:
-            os.makedirs(destination_path)
+            repo.makedirs(destination_path)
         except OSError, errmsg:
             raise RepoCopyError('Could not create %s: %s'
                                 % (destination_path, errmsg))
 
-    item_name = os.path.basename(itempath)
-    destination_path_name = os.path.join(destination_path, item_name)
+    item_name = repo.basename(itempath)
+    destination_path_name = repo.join(destination_path, item_name)
 
     if itempath == destination_path_name:
         # we've been asked to 'import' a repo item.
         # just return the relative path
-        return os.path.join(subdirectory, item_name)
+        return repo.join(subdirectory, item_name)
 
     if vers:
-        name, ext = os.path.splitext(item_name)
+        name, ext = repo.splitext(item_name)
         if not name.endswith(vers):
             # add the version number to the end of the filename
             item_name = '%s-%s%s' % (name, vers, ext)
-            destination_path_name = os.path.join(destination_path, item_name)
+            destination_path_name = repo.join(destination_path, item_name)
 
     index = 0
-    name, ext = os.path.splitext(item_name)
-    while os.path.exists(destination_path_name):
+    name, ext = repo.splitext(item_name)
+    while repo.exists(destination_path_name):
         print 'File %s already exists...' % destination_path_name
         # try appending numbers until we have a unique name
         index += 1
         item_name = '%s__%s%s' % (name, index, ext)
-        destination_path_name = os.path.join(destination_path, item_name)
+        destination_path_name = repo.join(destination_path, item_name)
 
-    print 'Copying %s to %s...' % (os.path.basename(itempath),
+    print 'Copying %s to %s...' % (repo.basename(itempath),
                                    destination_path_name)
 
-    cmd = ['/bin/cp', itempath, destination_path_name]
-    retcode = subprocess.call(cmd)
+    retcode = repo.put(itempath, destination_path_name)
     if retcode:
         raise RepoCopyError('Unable to copy %s to %s'
                             % (itempath, destination_path_name))
     else:
-        return os.path.join(subdirectory, item_name)
+        return repo.join(subdirectory, item_name)
 
 
 def get_icon_path(pkginfo):
@@ -232,13 +179,13 @@ def get_icon_path(pkginfo):
     icon_name = pkginfo.get('icon_name') or pkginfo['name']
     if not os.path.splitext(icon_name)[1]:
         icon_name += u'.png'
-    return os.path.join(REPO_PATH, u'icons', icon_name)
+    return repo.join(u'icons', icon_name)
 
 
 def icon_exists_in_repo(pkginfo):
     """Returns True if there is an icon for this item in the repo"""
     icon_path = get_icon_path(pkginfo)
-    if os.path.exists(icon_path):
+    if repo.exists(icon_path):
         return True
     return False
 
@@ -246,8 +193,10 @@ def icon_exists_in_repo(pkginfo):
 def add_icon_hash_to_pkginfo(pkginfo):
     """Adds the icon hash tp pkginfo if the icon exists in repo"""
     icon_path = get_icon_path(pkginfo)
-    if os.path.isfile(icon_path):
-        pkginfo['icon_hash'] = munkicommon.getsha256hash(icon_path)
+    handle = repo.open(icon_path, 'r')
+    if handle and os.path.isfile(handle.local_path):
+        pkginfo['icon_hash'] = munkicommon.getsha256hash(handle.local_path)
+        repo.close(handle)
 
 
 def generate_png_from_copy_from_dmg_item(dmg_path, pkginfo):
@@ -313,10 +262,10 @@ def generate_pngs_from_installer_pkg(item_path, pkginfo):
 
 def convert_and_install_icon(pkginfo, icon_path, index=None):
     '''Convert icon file to png and save to repo icon path'''
-    destination_path = os.path.join(REPO_PATH, 'icons')
-    if not os.path.exists(destination_path):
+    destination_path = 'icons'
+    if not repo.exists(destination_path):
         try:
-            os.makedirs(destination_path)
+            repo.makedirs(destination_path)
         except OSError, errmsg:
             print >> sys.stderr, ('Could not create %s: %s' %
                                   (destination_path, errmsg))
@@ -326,37 +275,41 @@ def convert_and_install_icon(pkginfo, icon_path, index=None):
     else:
         destination_name = pkginfo['name']
 
-    png_path = os.path.join(
-        destination_path, destination_name + u'.png')
-    result = iconutils.convertIconToPNG(icon_path, png_path)
+    png_name = destination_name + u'.png'
+    png_path = repo.join(destination_path, png_name)
+    png_tmp = os.path.join(munkicommon.tmpdir(), png_name)
+    result = iconutils.convertIconToPNG(icon_path, png_tmp)
     if result:
-        print 'Created icon: %s' % png_path
+        result = repo.put(png_tmp, png_path)
+        if result == 0:
+            print 'Created icon: %s' % png_path
+        else:
+            print >> sys.stderr, u'Error uploading icon to %s.' % png_path
     else:
         print >> sys.stderr, u'Error converting %s to png.' % icon_path
 
 
 def copy_icon_to_repo(iconpath):
     """Saves a product icon to the repo"""
-    destination_path = os.path.join(REPO_PATH, 'icons')
-    if not os.path.exists(destination_path):
+    destination_path = 'icons'
+    if not repo.exists(destination_path):
         try:
-            os.makedirs(destination_path)
+            repo.makedirs(destination_path)
         except OSError, errmsg:
             raise RepoCopyError('Could not create %s: %s'
                                 % (destination_path, errmsg))
     icon_name = os.path.basename(iconpath)
-    destination_path_name = os.path.join(destination_path, icon_name)
+    destination_path_name = repo.join(destination_path, icon_name)
 
-    if os.path.exists(destination_path_name):
+    if repo.exists(destination_path_name):
         # remove any existing icon in the repo
         try:
-            os.unlink(destination_path_name)
+            repo.unlink(destination_path_name)
         except OSError, errmsg:
             raise RepoCopyError('Could not remove existing %s'
                                 % (destination_path_name))
     print 'Copying %s to %s...' % (icon_name, destination_path_name)
-    cmd = ['/bin/cp', iconpath, destination_path_name]
-    retcode = subprocess.call(cmd)
+    retcode = repo.put(iconpath, destination_path_name)
     if retcode:
         raise RepoCopyError('Unable to copy %s to %s'
                             % (iconpath, destination_path_name))
@@ -366,8 +319,8 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
     """Saves pkginfo to munki_repo_path/pkgsinfo/subdirectory"""
     # less error checking because we copy the installer_item
     # first and bail if it fails...
-    destination_path = os.path.join(REPO_PATH, 'pkgsinfo', subdirectory)
-    if not os.path.exists(destination_path):
+    destination_path = repo.join('pkgsinfo', subdirectory)
+    if not repo.exists(destination_path):
         try:
             os.makedirs(destination_path)
         except OSError, errmsg:
@@ -378,19 +331,23 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
         pkginfo_ext = '.' + pkginfo_ext
     pkginfo_name = '%s-%s%s' % (pkginfo['name'], pkginfo['version'],
                                 pkginfo_ext)
-    pkginfo_path = os.path.join(destination_path, pkginfo_name)
+    pkginfo_path = repo.join(destination_path, pkginfo_name)
     index = 0
-    while os.path.exists(pkginfo_path):
+    while repo.exists(pkginfo_path):
         index += 1
         pkginfo_name = '%s-%s__%s%s' % (pkginfo['name'], pkginfo['version'],
                                         index, pkginfo_ext)
-        pkginfo_path = os.path.join(destination_path, pkginfo_name)
+        pkginfo_path = repo.join(destination_path, pkginfo_name)
 
     print 'Saving pkginfo to %s...' % pkginfo_path
+    handle = repo.open(pkginfo_path, 'w')
     try:
-        FoundationPlist.writePlist(pkginfo, pkginfo_path)
+        FoundationPlist.writePlist(pkginfo, handle.local_path)
     except FoundationPlist.NSPropertyListWriteException, errmsg:
         raise RepoCopyError(errmsg)
+    retcode = repo.close(handle)
+    if retcode != 0:
+        raise RepoCopyError("could not copy pkginfo to repo at " + pkginfo_path)
     return pkginfo_path
 
 
@@ -415,13 +372,13 @@ def prompt_for_subdirectory(subdirectory):
         newdir = raw_input(
             'Upload item to subdirectory path [%s]: ' % subdirectory)
         if newdir:
-            if not repo_available():
+            if not repo.available():
                 raise RepoCopyError('Could not connect to munki repo.')
             if APPLEMETADATA:
-                destination_path = os.path.join(REPO_PATH, 'pkgsinfo', newdir)
+                destination_path = repo.join('pkgsinfo', newdir)
             else:
-                destination_path = os.path.join(REPO_PATH, 'pkgs', newdir)
-            if not os.path.exists(destination_path):
+                destination_path = repo.join('pkgs', newdir)
+            if not repo.exists(destination_path):
                 answer = raw_input('Path %s doesn\'t exist. Create it? [y/n] '
                                    % destination_path)
                 if answer.lower().startswith('y'):
@@ -441,11 +398,15 @@ class CatalogDBException(Exception):
 def make_catalog_db():
     """Returns a dict we can use like a database"""
 
-    all_items_path = os.path.join(REPO_PATH, 'catalogs', 'all')
-    if not os.path.exists(all_items_path):
-        raise CatalogDBException
+    all_items_path = repo.join('catalogs', 'all')
+
     try:
-        catalogitems = FoundationPlist.readPlist(all_items_path)
+        handle = repo.open(all_items_path, 'r')
+    except IOError:
+        raise CatalogDBException
+
+    try:
+        catalogitems = FoundationPlist.readPlist(handle.local_path)
     except FoundationPlist.NSPropertyListSerializationException:
         raise CatalogDBException
 
@@ -522,6 +483,8 @@ def make_catalog_db():
             if not vers in profile_table[item['PayloadIdentifier']]:
                 profile_table[item['PayloadIdentifier']][vers] = []
             profile_table[item['PayloadIdentifier']][vers].append(itemindex)
+
+    repo.close(handle)
 
     pkgdb = {}
     pkgdb['hashes'] = hash_table
@@ -664,12 +627,16 @@ def make_catalogs():
     if not os.path.exists(makecatalogs_path):
         # didn't find it; assume the default install path
         makecatalogs_path = '/usr/local/munki/makecatalogs'
-    if not repo_available():
+    if not repo.available():
         raise RepoCopyError('Could not connect to munki repo.')
     if not VERBOSE:
         print 'Rebuilding catalogs at %s...' % REPO_PATH
-    proc = subprocess.Popen([makecatalogs_path, REPO_PATH],
-                            bufsize=-1, stdout=subprocess.PIPE,
+    cmd = [makecatalogs_path]
+    if REPO_URL:
+        cmd.append('--repo-url')
+        cmd.append(REPO_URL)
+    cmd.append(REPO_PATH)
+    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
         output = proc.stdout.readline()
@@ -687,13 +654,13 @@ def make_catalogs():
 def cleanup_and_exit(exitcode):
     """Unmounts the repo if we mounted it, then exits"""
     result = 0
-    if WE_MOUNTED_THE_REPO:
+    if repo.mounted:
         if not NOINTERACTIVE:
             answer = raw_input('Unmount the repo fileshare? [y/n] ')
             if answer.lower().startswith('y'):
-                result = unmount_repo_cli()
+                result = repo.unmount()
         else:
-            result = unmount_repo_cli()
+            result = repo.unmount()
     # clean up tmpdir
     munkicommon.cleanUpTmpDir()
 
@@ -738,10 +705,10 @@ PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
                                             PREFSNAME))
 APPLEMETADATA = False
 NOINTERACTIVE = False
-WE_MOUNTED_THE_REPO = False
 VERBOSE = False
 REPO_PATH = ""
 REPO_URL = ""
+repo = None
 
 def main():
     """Main routine"""
@@ -750,6 +717,7 @@ def main():
     global VERBOSE
     global REPO_PATH
     global REPO_URL
+    global repo
 
     usage = """usage: %prog [options] /path/to/installer_item
        Imports an installer item into a munki repo.
@@ -882,7 +850,8 @@ def main():
                               'tool, or provide with --repo-path')
         exit(-1)
 
-    if not repo_available():
+    repo = Repo.Open(REPO_PATH, REPO_URL)
+    if not repo.available():
         print >> sys.stderr, ('Could not connect to munki repo. Check the '
                               'configuration and try again.')
         exit(-1)
@@ -1042,7 +1011,7 @@ def main():
             cleanup_and_exit(0)
 
         if options.subdirectory == '':
-            pkgs_path = os.path.join(REPO_PATH, 'pkgs')
+            pkgs_path = repo.join('pkgs')
             if not APPLEMETADATA and installer_item.startswith(pkgs_path):
                 # the installer item is already in the repo.
                 # use its relative path as the subdirectory
