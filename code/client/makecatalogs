@@ -391,7 +391,7 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    parser.add_option('--repo_url', '--repo-url', default='',
+    parser.add_option('--repo_url', '--repo-url', default=pref('repo_url'),
                       help='Optional repo fileshare URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
