@@ -344,6 +344,9 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
         FoundationPlist.writePlist(pkginfo, handle.local_path)
     except FoundationPlist.NSPropertyListWriteException, errmsg:
         raise RepoCopyError(errmsg)
+    retcode = repo.close(handle)
+    if retcode != 0:
+        raise RepoCopyError("could not copy pkginfo to repo at " + pkginfo_path)
     return pkginfo_path
 
 
@@ -479,6 +482,8 @@ def make_catalog_db():
             if not vers in profile_table[item['PayloadIdentifier']]:
                 profile_table[item['PayloadIdentifier']][vers] = []
             profile_table[item['PayloadIdentifier']][vers].append(itemindex)
+
+    repo.close(handle)
 
     pkgdb = {}
     pkgdb['hashes'] = hash_table
