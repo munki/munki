@@ -666,7 +666,7 @@ class AppleUpdates(object):
                     return dist_path
                 # look for it in the cache
                 if url.startswith('file://localhost'):
-                    url = fileurl[len('file://localhost'):]
+                    fileurl = url[len('file://localhost'):]
                     return urllib2.unquote(fileurl)
                 else:
                     # we haven't downloaded this yet
