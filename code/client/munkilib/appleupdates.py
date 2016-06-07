@@ -202,6 +202,7 @@ class AppleUpdates(object):
 
     def getRestartAction(self, restart_action_list):
         """Returns the highest-weighted restart action of those in the list"""
+        # pylint: disable=no-self-use
         restart_actions = [
             'None', 'RequireLogout', 'RecommendRestart', 'RequireRestart']
         highest_action_index = 0
@@ -219,7 +220,7 @@ class AppleUpdates(object):
         text to display to the user, otherwise returns an empty
         string. If we cannot read a custom firmware readme to use as
         the alert, return "_DEFAULT_FIRMWARE_ALERT_TEXT_" '''
-
+        # pylint: disable=no-self-use
         type_is_firmware = False
         options = dom.getElementsByTagName('options')
         for option in options:
@@ -263,6 +264,7 @@ class AppleUpdates(object):
         should be skipped by the parser unless within a value.
 
         '''
+        # pylint: disable=no-self-use
         parsed_data = {}
         REGEX = (r"""^\s*"""
                  r"""(?P<key_quote>['"]?)(?P<key>[^'"]+)(?P=key_quote)"""
@@ -438,6 +440,7 @@ class AppleUpdates(object):
         Args:
           message: str message to display to the user and log.
         """
+        # pylint: disable=no-self-use
         munkicommon.display_status_major(message)
 
     def _GetURLPath(self, full_url):
@@ -448,6 +451,7 @@ class AppleUpdates(object):
         Returns:
           The str path of the URL.
         """
+        # pylint: disable=no-self-use
         return urlparse.urlsplit(full_url)[2]  # (schema, netloc, path, ...)
 
     def RewriteURL(self, full_url):
@@ -539,6 +543,7 @@ class AppleUpdates(object):
           Boolean. True if a new download was required, False if the item was
           already in the local cache.
         """
+        # pylint: disable=no-self-use
         machine = munkicommon.getMachineFacts()
         darwin_version = os.uname()[2]
         # Set the User-Agent header to match that used by Apple's
@@ -625,6 +630,7 @@ class AppleUpdates(object):
     def _GetPreferredLocalization(self, list_of_localizations):
         '''Picks the best localization from a list of available
         localizations.'''
+        # pylint: disable=no-self-use
         localization_preferences = (
             munkicommon.pref('AppleSoftwareUpdateLanguages') or ['English'])
         preferred_langs = (
@@ -643,9 +649,14 @@ class AppleUpdates(object):
         # in the list of available languages
         return list_of_localizations[0]
 
-    def GetDistributionForProductKey(self, product_key, sucatalog):
+    def GetDistributionForProductKey(
+            self, product_key, sucatalog, language=None):
         '''Returns the path to a distibution file from /Library/Updates
-        or the local cache for the given product_key.'''
+        or the local cache for the given product_key. If language is
+        defined it will try to retrieve that specific language, otherwise
+        it will use the available languages and the value of the
+        AppleSoftwareUpdateLanguages preference to return the "best"
+        language of those available.'''
         try:
             catalog = FoundationPlist.readPlist(sucatalog)
         except FoundationPlist.NSPropertyListSerializationException:
@@ -655,8 +666,11 @@ class AppleUpdates(object):
             distributions = product.get('Distributions', {})
             if distributions:
                 available_languages = distributions.keys()
-                preferred_language = self._GetPreferredLocalization(
-                    available_languages)
+                if language:
+                    preferred_language = language
+                else:
+                    preferred_language = self._GetPreferredLocalization(
+                        available_languages)
                 url = distributions[preferred_language]
                 # do we already have it in /Library/Updates?
                 filename = os.path.basename(self._GetURLPath(url))
@@ -667,15 +681,16 @@ class AppleUpdates(object):
                 # look for it in the cache
                 if url.startswith('file://localhost'):
                     fileurl = url[len('file://localhost'):]
-                    return urllib2.unquote(fileurl)
-                else:
-                    # we haven't downloaded this yet
-                    try:
-                        return self.RetrieveURLToCacheDir(
-                            url, copy_only_if_missing=True)
-                    except ReplicationError, err:
-                        munkicommon.display_error(
-                            'Could not retrieve %s: %s', url, err)
+                    dist_path = urllib2.unquote(fileurl)
+                    if os.path.exists(dist_path):
+                        return dist_path
+                # we haven't downloaded this yet
+                try:
+                    return self.RetrieveURLToCacheDir(
+                        url, copy_only_if_missing=True)
+                except ReplicationError, err:
+                    munkicommon.display_error(
+                        'Could not retrieve %s: %s', url, err)
         return None
 
     def _WriteFilteredCatalog(self, product_ids, catalog_path):
@@ -746,6 +761,7 @@ class AppleUpdates(object):
         Returns:
           A list of string Apple update products ids.
         """
+        # pylint: disable=no-self-use
         if not os.path.exists(INDEX_PLIST):
             return []
 
@@ -792,6 +808,7 @@ class AppleUpdates(object):
         """Returns SoftwareUpdateServerURL set in Munki's preferences or None.
         Works around an issue with catalog changes causing cached downloads to
         be deleted."""
+        # pylint: disable=no-self-use
         munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
         if munkisuscatalog:
             return munkisuscatalog
@@ -859,6 +876,7 @@ class AppleUpdates(object):
 
         Returns:
           Boolean. False if the checksums match, True if they differ."""
+        # pylint: disable=no-self-use
         cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
                r'com\.apple\.*']
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
@@ -1005,7 +1023,7 @@ class AppleUpdates(object):
         update_versions = {}
         product_keys = []
         apple_updates = []
-        
+
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = self.GetSoftwareUpdatePref(
             'RecommendedUpdates')
@@ -1048,18 +1066,36 @@ class AppleUpdates(object):
                 # use the cached Apple catalog
                 sucatalog = self.extracted_catalog_path
             for product_key in product_keys:
-                dist_file = self.GetDistributionForProductKey(
+                localized_dist = self.GetDistributionForProductKey(
                     product_key, sucatalog)
-                if dist_file:
-                    su_info = self.parseSUdist(dist_file)
-                    su_info['productKey'] = product_key
-                    if product_key in update_display_names:
-                        su_info['apple_product_name'] = (
-                            update_display_names[product_key])
-                    if product_key in update_versions:
-                        su_info['version_to_install'] = (
-                            update_versions[product_key])
-                    apple_updates.append(su_info)
+                if not localized_dist:
+                    munkicommon.display_warning(
+                        'No dist file for product %s', product_key)
+                    continue
+                if (not recommended_updates and
+                        not localized_dist.endswith('English.dist')):
+                    # we need the English versions of some of the data
+                    # see (https://groups.google.com/d/msg/munki-dev/
+                    # _5HdMyy3kKU/YFxqslayDQAJ)
+                    english_dist = self.GetDistributionForProductKey(
+                        product_key, sucatalog, 'English')
+                    if english_dist:
+                        english_su_info = self.parseSUdist(english_dist)
+                su_info = self.parseSUdist(localized_dist)
+                su_info['productKey'] = product_key
+                if product_key in update_display_names:
+                    su_info['apple_product_name'] = (
+                        update_display_names[product_key])
+                elif english_su_info:
+                    su_info['apple_product_name'] = (
+                        english_su_info['apple_product_name'])
+                if product_key in update_versions:
+                    su_info['version_to_install'] = (
+                        update_versions[product_key])
+                elif english_su_info:
+                    su_info['version_to_install'] = (
+                        english_su_info['version_to_install'])
+                apple_updates.append(su_info)
 
         return apple_updates
 
@@ -1134,11 +1170,13 @@ class AppleUpdates(object):
         Args:
           pref_name: str preference name to get.
         """
+        # pylint: disable=no-self-use
         return CFPreferencesCopyAppValue(
             pref_name, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
     def _GetCatalogURL(self):
         """Returns Software Update's CatalogURL"""
+        # pylint: disable=no-self-use
         return CFPreferencesCopyValue(
             'CatalogURL',
             APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
@@ -1237,6 +1275,7 @@ class AppleUpdates(object):
     def CatalogURLisManaged(self):
         """Returns True if Software Update's CatalogURL is managed
         via MCX or Profiles"""
+        # pylint: disable=no-self-use
         return CFPreferencesAppValueIsForced(
             'CatalogURL', APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
@@ -1281,12 +1320,9 @@ class AppleUpdates(object):
             # this is not preferred because it uses way too much CPU
             # checking stdin for input that will never come...
             cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
-        cmd.append('/usr/sbin/softwareupdate')
+        cmd.extend(['/usr/sbin/softwareupdate', '-v'])
 
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
-        if os_version_tuple > (10, 5):
-            cmd.append('-v')
-
         if catalog_url:
             # OS version-specific stuff to use a specific CatalogURL
             if os_version_tuple < (10, 9):
@@ -1625,6 +1661,7 @@ class AppleUpdates(object):
         """Applies metadata to Apple update item restricted
         to keys contained in 'metadata_to_copy'.
         """
+        # pylint: disable=no-self-use
         metadata_to_copy = ['blocking_applications',
                             'description',
                             'display_name',
