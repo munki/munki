@@ -629,7 +629,7 @@ class AppleUpdates(object):
 
     def _GetPreferredLocalization(self, list_of_localizations):
         '''Picks the best localization from a list of available
-        localizations.'''
+        localizations. Returns a single language/localization name.'''
         # pylint: disable=no-self-use
         localization_preferences = (
             munkicommon.pref('AppleSoftwareUpdateLanguages') or ['English'])
@@ -742,14 +742,21 @@ class AppleUpdates(object):
         if os.path.exists(INDEX_PLIST):
             # try to remove old/stale /Library/Updates/index.plist
             # in some older versions of OS X this can hang around
-            # and not be cleaned up when /usr/sbin/softwareupdate
+            # and is not always cleaned up when /usr/sbin/softwareupdate
             # finds no updates
             try:
                 os.unlink(INDEX_PLIST)
             except OSError:
                 pass
 
-        retcode = self._RunSoftwareUpdate(['-d', '-a'], stop_allowed=True)
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
+        if os_version_tuple >= (10, 11):
+            catalog_url = self._ElCapitanGetCatalogURL()
+        else:
+            catalog_url = self._GetAppleCatalogURL()
+
+        retcode = self._RunSoftwareUpdate(
+            ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
         if retcode:  # there was an error
             munkicommon.display_error('softwareupdate error: %s', retcode)
             return False
