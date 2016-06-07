@@ -225,12 +225,16 @@ def bestVersionMatch(vers_num, item_dict):
     return None
 
 
-# global pkgdata
-PKGDATA = {}
+# global pkgdata cache
+PKGDATA = None
 def analyzeInstalledPkgs():
     """Analyzed installed packages in an attempt to determine what is
        installed."""
-    #global PKGDATA
+    global PKGDATA
+    # if we've populated the cache, just return it
+    if PKGDATA is not None:
+        return PKGDATA
+    PKGDATA = {}
     itemname_to_pkgid = {}
     pkgid_to_itemname = {}
     for catalogname in CATALOG.keys():
@@ -350,6 +354,7 @@ def analyzeInstalledPkgs():
     #    FoundationPlist.writePlist(CATALOG, catalogdbpath)
     #except FoundationPlist.NSPropertyListWriteException:
     #    pass
+    return PKGDATA
 
 
 def getAppBundleID(path):
@@ -1418,10 +1423,8 @@ def evidenceThisIsInstalled(item_pl):
             return True
     if item_pl.get('receipts'):
         munkicommon.display_debug2("Checking receipts...")
-        if PKGDATA == {}:
-            # build our database of installed packages
-            analyzeInstalledPkgs()
-        if item_pl['name'] in PKGDATA['installed_names']:
+        pkgdata = analyzeInstalledPkgs()
+        if item_pl['name'] in pkgdata['installed_names']:
             return True
         else:
             munkicommon.display_debug2("Installed receipts don't match.")
@@ -2175,8 +2178,9 @@ def processManifestForKey(manifest, manifest_key, installinfo,
 def getReceiptsToRemove(item):
     """Returns a list of receipts to remove for item"""
     name = item['name']
-    if name in PKGDATA['receipts_for_name']:
-        return PKGDATA['receipts_for_name'][name]
+    pkgdata = analyzeInstalledPkgs()
+    if name in pkgdata['receipts_for_name']:
+        return pkgdata['receipts_for_name'][name]
     return []
 
 
@@ -2398,12 +2402,13 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             munkicommon.display_debug1('Considering %s for removal...', pkg)
             # find pkg in PKGDATA['pkg_references'] and remove the reference
             # so we only remove packages if we're the last reference to it
-            if pkg in PKGDATA['pkg_references']:
+            pkgdata = analyzeInstalledPkgs()
+            if pkg in pkgdata['pkg_references']:
                 munkicommon.display_debug1('%s references are: %s', pkg,
-                                           PKGDATA['pkg_references'][pkg])
-                if iteminfo['name'] in PKGDATA['pkg_references'][pkg]:
-                    PKGDATA['pkg_references'][pkg].remove(iteminfo['name'])
-                    if len(PKGDATA['pkg_references'][pkg]) == 0:
+                                           pkgdata['pkg_references'][pkg])
+                if iteminfo['name'] in pkgdata['pkg_references'][pkg]:
+                    pkgdata['pkg_references'][pkg].remove(iteminfo['name'])
+                    if len(pkgdata['pkg_references'][pkg]) == 0:
                         munkicommon.display_debug1(
                             'Adding %s to removal list.', pkg)
                         packagesToReallyRemove.append(pkg)

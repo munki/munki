@@ -109,7 +109,7 @@ def make_dmg(pkgpath):
         output = proc.stdout.readline()
         if not output and (proc.poll() != None):
             break
-        print output.rstrip('\n').encode(sys.stdout.encoding)
+        print output.rstrip('\n').encode('UTF-8')
         sys.stdout.flush()
     retcode = proc.poll()
     if retcode:
@@ -642,7 +642,7 @@ def make_catalogs():
         if not output and (proc.poll() != None):
             break
         if VERBOSE:
-            print output.rstrip('\n').encode(sys.stdout.encoding)
+            print output.rstrip('\n').encode('UTF-8')
 
     errors = proc.stderr.read()
     if errors:
@@ -925,7 +925,7 @@ def main():
             for (name, key) in fields:
                 print '%21s: %s' % (
                     name, matchingpkginfo.get(key, '').encode(
-                        sys.stdout.encoding))
+                        'UTF-8'))
             print
             if exactmatch:
                 answer = raw_input('Import this item anyway? [y/n] ')
@@ -973,7 +973,7 @@ def main():
             if kind == 'bool':
                 default = str(pkginfo.get(key, False))
             else:
-                default = pkginfo.get(key, '').encode(sys.stdout.encoding)
+                default = pkginfo.get(key, '').encode('UTF-8')
             pkginfo[key] = raw_input_with_default(prompt, default)
             if kind == 'bool':
                 value = pkginfo[key].lower().strip()

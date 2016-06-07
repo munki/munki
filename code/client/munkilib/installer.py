@@ -34,6 +34,7 @@ import munkistatus
 import powermgr
 import profiles
 import updatecheck
+import xattr
 import FoundationPlist
 from removepackages import removepackages
 
@@ -443,6 +444,16 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             munkicommon.display_error(
                 "Error copying %s to %s" % (source_itempath, full_destpath))
             return retcode
+
+        # remove com.apple.quarantine xattr since `man ditto` lies and doesn't
+        # seem to actually always remove it
+        try:
+            if "com.apple.quarantine" in xattr.xattr(full_destpath).list():
+                xattr.xattr(full_destpath).remove("com.apple.quarantine")
+        except BaseException as err:
+            munkicommon.display_warning(
+                "Error removing com.apple.quarantine from %s: %s",
+                full_destpath, err)
 
         # set owner
         user = item.get('user', 'root')
