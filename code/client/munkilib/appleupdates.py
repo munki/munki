@@ -21,6 +21,7 @@ Utilities for dealing with Apple Software Update.
 # limitations under the License.
 
 
+import glob
 import gzip
 import hashlib
 import os
@@ -119,7 +120,6 @@ class Error(Exception):
     """Class for domain specific exceptions."""
 
 
-# TODO(unassigned): Break this out into different exceptions; it's used widely.
 class ReplicationError(Error):
     """A custom error when replication fails."""
 
@@ -292,7 +292,6 @@ class AppleUpdates(object):
         '''Parses a softwareupdate dist file, looking for information of
         interest. Returns a dictionary containing the info we discovered in a
         Munki-friendly format.'''
-
         try:
             dom = minidom.parse(filename)
         except expat.ExpatError:
@@ -346,9 +345,12 @@ class AppleUpdates(object):
                                 # this pkg_id was not in our choice list
                                 continue
                             if pkg.firstChild:
-                                pkg_name = pkg.firstChild.wholeText
-                                if pkg_name:
-                                    pkgs[pkg_id]['name'] = pkg_name
+                                try:
+                                    pkg_name = pkg.firstChild.wholeText
+                                    if pkg_name:
+                                        pkgs[pkg_id]['name'] = pkg_name
+                                except AttributeError:
+                                    pass
                             if 'onConclusion' in pkg.attributes.keys():
                                 pkgs[pkg_id]['RestartAction'] = (
                                     pkg.attributes['onConclusion'].value)
@@ -370,8 +372,11 @@ class AppleUpdates(object):
             if string_elements:
                 strings = string_elements[0]
                 if strings.firstChild:
-                    text = strings.firstChild.wholeText
-                    cdata = self.parse_cdata(text)
+                    try:
+                        text = strings.firstChild.wholeText
+                        cdata = self.parse_cdata(text)
+                    except AttributeError:
+                        cdata = {}
 
         # get blocking_applications, if any.
         # First, find all the must-close items.
@@ -983,39 +988,40 @@ class AppleUpdates(object):
             munkicommon.set_pref('LastAppleSoftwareUpdateCheck', NSDate.date())
             return False  # Download error, allow check again soon.
 
+    def UpdateDownloaded(self, product_key):
+        """Verifies that a given update appears to be downloaded.
+        Returns a boolean."""
+        # pylint: disable=no-self-use
+        product_dir = os.path.join('/Library/Updates', product_key)
+        if not os.path.isdir(product_dir):
+            munkicommon.log(
+                'Apple Update product directory %s is missing'
+                % product_key)
+            return False
+        else:
+            pkgs = glob.glob(os.path.join(product_dir, '*.pkg'))
+            if not pkgs:
+                munkicommon.log(
+                    'Apple Update product directory %s contains no pkgs'
+                    % product_key)
+                return False
+        return True
+
     def AvailableUpdatesAreDownloaded(self):
         """Verifies that applicable/available updates have been downloaded.
 
         Returns:
-          Boolean. False if one or more product directories are missing, True
-          otherwise (including when there are no available updates).
+          Boolean. False if a product directory are missing,
+                   True otherwise (including when there are no available
+                                   updates).
         """
         apple_updates = self.GetSoftwareUpdateInfo()
         if not apple_updates:
             return True
 
-        try:
-            download_index = FoundationPlist.readPlist(INDEX_PLIST)
-            downloaded = download_index.get('ProductPaths', {})
-        except FoundationPlist.FoundationPlistException:
-            munkicommon.log(
-                'Apple downloaded update index is invalid: %s' % INDEX_PLIST)
-            return False
-
         for update in apple_updates:
-            product_id = update.get('productKey')
-            if product_id:
-                product_dir_exists = os.path.isdir(os.path.join(
-                    '/Library/Updates', downloaded.get(product_id, '')))
-                name = update['name']
-                if product_id not in downloaded:
-                    munkicommon.log(
-                        'Apple Update product is not downloaded: %s' % name)
-                    return False
-                elif not product_dir_exists:
-                    munkicommon.log(
-                        'Apple Update product directory is missing: %s' % name)
-                    return False
+            if not self.UpdateDownloaded(update.get('productKey')):
+                return False
         return True
 
     def GetSoftwareUpdateInfo(self):
@@ -1029,6 +1035,7 @@ class AppleUpdates(object):
         update_display_names = {}
         update_versions = {}
         product_keys = []
+        english_su_info = {}
         apple_updates = []
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
@@ -1073,6 +1080,11 @@ class AppleUpdates(object):
                 # use the cached Apple catalog
                 sucatalog = self.extracted_catalog_path
             for product_key in product_keys:
+                if not self.UpdateDownloaded(product_key):
+                    munkicommon.display_warning(
+                        'Product %s does not appear to be downloaded',
+                        product_key)
+                    continue
                 localized_dist = self.GetDistributionForProductKey(
                     product_key, sucatalog)
                 if not localized_dist:
@@ -1534,7 +1546,8 @@ class AppleUpdates(object):
         if not 'InstallResults' in munkicommon.report:
             munkicommon.report['InstallResults'] = []
 
-        munkicommon.display_debug1('Raw install results: %s', installresults)
+        munkicommon.display_debug1(
+            'Raw Apple Update install results: %s', installresults)
         for item in installlist:
             rep = {}
             rep['name'] = item.get('apple_product_name')
@@ -1561,8 +1574,12 @@ class AppleUpdates(object):
                 rep['status'] = -2
                 install_status = 'FAILED for unknown reason'
                 munkicommon.display_warning(
-                    'Apple update %s, %s failed to install. No record of '
-                    'success or failure.', rep['name'], rep['productKey'])
+                    'Apple update %s, %s may have failed to install. No record '
+                    'of success or failure.', rep['name'], rep['productKey'])
+                if installresults['installed']:
+                    munkicommon.display_warning(
+                        'softwareupdate recorded these installations: %s',
+                        installresults['installed'])
 
             munkicommon.report['InstallResults'].append(rep)
             log_msg = message % (rep['name'], rep['version'], install_status)
