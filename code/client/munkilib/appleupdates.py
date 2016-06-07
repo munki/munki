@@ -407,8 +407,8 @@ class AppleUpdates(object):
         # assemble!
         info = {}
         info['name'] = su_choice.get('suDisabledGroupID', '')
-        info['apple_product_name'] = info['name']
         info['display_name'] = su_choice.get('title', '')
+        info['apple_product_name'] = info['display_name']
         info['version_to_install'] = su_choice.get('versStr', '')
         info['description'] = su_choice.get('description', '')
         for key in info.keys():
@@ -753,7 +753,8 @@ class AppleUpdates(object):
             product_index = FoundationPlist.readPlist(INDEX_PLIST)
             products = product_index.get('ProductPaths', {})
             return products.keys()
-        except Exception, err:
+        except (FoundationPlist.FoundationPlistException,
+                KeyError, AttributeError), err:
             munkicommon.display_error(
                 "Error processing %s: %s", INDEX_PLIST, err)
             return []
@@ -1000,31 +1001,44 @@ class AppleUpdates(object):
         Returns:
           List of dictionary update data.
         """
+        update_display_names = {}
+        update_versions = {}
         product_keys = []
         apple_updates = []
-        # first try to get the applicable/recommended updates from index.plist
-        if os.path.exists(INDEX_PLIST):
-            updates_dir = '/Library/Updates'
-
-            try:
-                product_index = FoundationPlist.readPlist(INDEX_PLIST)
-                products = product_index.get('ProductPaths', {})
-                product_keys = products.keys()
-            except (FoundationPlist.FoundationPlistException,
-                    AttributeError, TypeError), err:
-                munkicommon.display_error(
-                    "Error parsing %s: %s", INDEX_PLIST, err)
-
-        if not product_keys:
-            # try to get the list from com.apple.SoftwareUpdate preferences
-            recommended_updates = self.GetSoftwareUpdatePref(
-                'RecommendedUpdates')
-            if recommended_updates:
+        
+        # first, try to get the list from com.apple.SoftwareUpdate preferences
+        recommended_updates = self.GetSoftwareUpdatePref(
+            'RecommendedUpdates')
+        if recommended_updates:
+            for item in recommended_updates:
                 try:
-                    product_keys = [item['Product Key']
-                                    for item in recommended_updates]
+                    update_display_names[item['Product Key']] = (
+                        item['Display Name'])
                 except (TypeError, AttributeError, KeyError):
                     pass
+                try:
+                    update_versions[item['Product Key']] = (
+                        item['Display Version'])
+                except (TypeError, AttributeError, KeyError):
+                    pass
+            try:
+                product_keys = [item['Product Key']
+                                for item in recommended_updates]
+            except (TypeError, AttributeError, KeyError):
+                pass
+
+        if not product_keys:
+            # next, try to get the applicable/recommended updates from
+            # /Library/Updates/index.plist
+            if os.path.exists(INDEX_PLIST):
+                try:
+                    product_index = FoundationPlist.readPlist(INDEX_PLIST)
+                    products = product_index.get('ProductPaths', {})
+                    product_keys = products.keys()
+                except (FoundationPlist.FoundationPlistException,
+                        AttributeError, TypeError), err:
+                    munkicommon.display_error(
+                        "Error parsing %s: %s", INDEX_PLIST, err)
 
         if product_keys:
             os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
@@ -1039,6 +1053,12 @@ class AppleUpdates(object):
                 if dist_file:
                     su_info = self.parseSUdist(dist_file)
                     su_info['productKey'] = product_key
+                    if product_key in update_display_names:
+                        su_info['apple_product_name'] = (
+                            update_display_names[product_key])
+                    if product_key in update_versions:
+                        su_info['version_to_install'] = (
+                            update_versions[product_key])
                     apple_updates.append(su_info)
 
         return apple_updates
