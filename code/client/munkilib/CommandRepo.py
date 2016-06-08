@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/usr/bin/python
 # encoding: utf-8
 #
@@ -23,8 +22,6 @@ Created by Centrify Corporation 2016-06-02.
 
 Implementation for accessing a repo via an external command.
 """
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
 
 from collections import namedtuple
 from collections import OrderedDict
@@ -36,25 +33,16 @@ import tempfile
 import subprocess
 
 class CommandRepo:
-<<<<<<< HEAD
     '''Repo implementation that runs an external command to access the repo.'''
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
     def __init__(self, command, url):
         self.command = [command, url]
 
     def popen(self, *args, **kwargs):
-<<<<<<< HEAD
         '''Open a pipe to the external command.'''
         return subprocess.Popen(self.command + list(filter(None, args)), bufsize=-1, **kwargs)
 
     def run(self, *args, **kwargs):
         '''Run the external command and return its exit status.'''
-=======
-        return subprocess.Popen(self.command + list(filter(None, args)), bufsize=-1, **kwargs)
-
-    def run(self, *args, **kwargs):
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         class Result:
             pass
 
@@ -65,7 +53,6 @@ class CommandRepo:
         result.returncode = proc.returncode
         return result
 
-<<<<<<< HEAD
     def exists(self, path=None):
         '''Returns true if the specified path exists in the repo'''
         result = self.run('exists', path)
@@ -152,30 +139,20 @@ class CommandRepo:
             return None
 
     def remove(self, path):
-<<<<<<< HEAD
         '''Removes a file from the repo.'''
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         result = self.run('remove', path)
         return result.returncode
 
     def unlink(self, path):
-<<<<<<< HEAD
         '''Removes a file from the repo.'''
         return self.remove(path)
 
     def get(self, src, dest):
         '''Copies a file from the repo to a local file.'''
-=======
-        return self.remove(path)
-
-    def get(self, src, dest):
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         result = self.run('get', src, dest)
         return result.returncode
 
     def put(self, src, dest):
-<<<<<<< HEAD
         '''Copies a local file to the repo.'''
         result = self.run('put', src, dest)
         return result.returncode
@@ -214,21 +191,10 @@ class CommandRepo:
                     self.repo.put(self.local_path, self.repo_path)
                 os.remove(self.local_path)
                 return self
-=======
-        result = self.run('put', src, dest)
-        return result.returncode
-
-    def open(self, repo_path, mode='r'):
-        class RepoFile:
-            def __init__(self, path, mode):
-                self.file = tempfile.NamedTemporaryFile(dir=munkicommon.tmpdir(), mode=mode,
-                        delete=False)
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
 
             def read(self):
                 return self.file.read()
 
-<<<<<<< HEAD
         return RepoFile(self, repo_path, mode)
 
     def mount(self):
@@ -242,31 +208,6 @@ class CommandRepo:
     def walk(self, path, **kwargs):
         '''Walks a path in the repo, returning all files and subdirectories.
         Only a subset of the features of os.walk() are supported.'''
-=======
-        handle = RepoFile(repo_path, mode)
-        handle.repo_path = repo_path
-        handle.repo_mode = mode
-        handle.local_path = handle.file.name
-        if mode[0] == 'r':
-            returncode = self.get(repo_path, handle.local_path)
-            if returncode != 0:
-                raise IOError
-        return handle
-
-    def close(self, handle):
-        if handle.repo_mode != 'r':
-            return self.put(handle.local_path, handle.repo_path)
-        else:
-            return 0
-
-    def mount(self):
-        return 0
-
-    def unmount(self):
-        return 0
-
-    def walk(self, path, **kwargs):
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         match = re.compile(r'(?:\./)*(.*)/([^/\n]*)\n*')
         proc = self.popen('walk', path, stdout=subprocess.PIPE)
         dirs = OrderedDict()
@@ -294,7 +235,6 @@ class CommandRepo:
                     filenames.append(base)
             yield (dirpath, dirnames, filenames)
 
-<<<<<<< HEAD
     def glob(self, path, *args):
         '''Expands a set of glob patterns within a repo path.'''
         matches = []
@@ -306,6 +246,3 @@ class CommandRepo:
             matches.append(line)
 
         return matches
-
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92

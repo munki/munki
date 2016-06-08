@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # encoding: utf-8
-<<<<<<< HEAD
 #
 # Copyright 2016 Centrify Corporation.
 #
@@ -23,8 +22,6 @@ Created by Centrify Corporation 2016-06-02.
 
 Interface for accessing a repo.
 """
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
 
 import re
 import sys

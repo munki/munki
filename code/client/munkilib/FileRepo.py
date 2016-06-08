@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/usr/bin/python
 # encoding: utf-8
 #
@@ -24,8 +23,6 @@ Created by Centrify Corporation 2016-06-02.
 Implementation for accessing a repo via direct file access, including
 a remote repo mounted via AFP, SMB, or NFS.
 """
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
 
 from collections import namedtuple
 from munkicommon import listdir
@@ -34,25 +31,18 @@ import sys
 import subprocess
 
 class FileRepo:
-<<<<<<< HEAD
     '''Repo implementation that access a local or locally-mounted repo.'''
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
     def __init__(self, path, url):
         self.path = path
         self.url = url
 
     def exists(self, subdir = None):
-<<<<<<< HEAD
         '''Returns true if the specified path exists in the repo'''
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         full_path = self.path
         if subdir:
             full_path = os.path.join(full_path, subdir)
         return os.path.exists(full_path)
 
-<<<<<<< HEAD
     def isdir(self, path):
         '''Returns true if the specified path exists in the repo
         and is a directory.'''
@@ -101,44 +91,10 @@ class FileRepo:
 
     def get(self, src, dest):
         '''Copies a file from the repo to a local file.'''
-=======
-    def isfile(self, path):
-        return os.path.isfile(os.path.join(self.path, path))
-
-    def join(self, *args):
-        return os.path.join(*args)
-
-    def dirname(self, path):
-        return os.path.dirname(path)
-
-    def basename(self, path):
-        return os.path.basename(path)
-
-    def splitext(self, path):
-        return os.path.splitext(path)
-
-    def mkdir(self, path):
-        return os.mkdir(os.path.join(self.path, path))
-
-    def makedirs(self, path):
-        return os.makedirs(os.path.join(self.path, path))
-
-    def listdir(self, path):
-        return listdir(os.path.join(self.path, path))
-
-    def remove(self, path):
-        return os.remove(os.path.join(self.path, path))
-
-    def unlink(self, path):
-        return os.unlink(os.path.join(self.path, path))
-
-    def get(self, src, dest):
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         cmd = ['/bin/cp', os.path.join(self.path, src), dest]
         return subprocess.call(cmd)
 
     def put(self, src, dest):
-<<<<<<< HEAD
         '''Copies a local file to the repo.'''
         cmd = ['/bin/cp', src, os.path.join(self.path, dest)]
         return subprocess.call(cmd)
@@ -161,37 +117,14 @@ class FileRepo:
                 self.repo_mode = mode
                 self.file = open(self.repo_path, mode)
                 self.local_path = self.repo_path
-=======
-        cmd = ['/bin/cp', src, os.path.join(self.path, dest)]
-        return subprocess.call(cmd)
-
-    def open(self, path, mode='r'):
-        class RepoFile:
-            def __init__(self, path, mode):
-                self.file = open(path, mode)
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
 
             def read(self):
                 return self.file.read()
 
-<<<<<<< HEAD
         return RepoFile(self, os.path.join(self.path, path), mode)
 
     def mount(self):
         '''Mounts the repo locally.'''
-=======
-        repo_path = os.path.join(self.path, path)
-        handle = RepoFile(repo_path, mode)
-        handle.repo_path = repo_path
-        handle.local_path = repo_path
-        handle.repo_mode = mode
-        return handle
-
-    def close(self, handle):
-        return 0
-
-    def mount(self):
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         if os.path.exists(self.path):
             return
         os.mkdir(self.path)
@@ -211,10 +144,7 @@ class FileRepo:
         return retcode
 
     def unmount(self):
-<<<<<<< HEAD
         '''Unmounts the repo.'''
-=======
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         retcode = 0
         if os.path.exists(self.path):
             cmd = ['/sbin/umount', self.path]
@@ -223,7 +153,6 @@ class FileRepo:
         return retcode
 
     def walk(self, path, **kwargs):
-<<<<<<< HEAD
         '''Walks a path in the repo, returning all files and subdirectories.
         Only a subset of the features of os.walk() are supported.'''
         for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.path, path), **kwargs):
@@ -238,9 +167,3 @@ class FileRepo:
         for arg in args:
             pkgs += glob.glob(arg)
         os.chdir(original_dir)
-=======
-        for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.path, path), **kwargs):
-            dirpath = dirpath[len(self.path) + 1:]
-            print "walk: dirpath '%s' dirs %s files %s" % (dirpath, dirnames, filenames) # DeBuG
-            yield (dirpath, dirnames, filenames)
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
