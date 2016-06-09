@@ -339,14 +339,11 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
         pkginfo_path = repo.join(destination_path, pkginfo_name)
 
     print 'Saving pkginfo to %s...' % pkginfo_path
-    handle = repo.open(pkginfo_path, 'w')
     try:
+        handle = repo.open(pkginfo_path, 'w')
         FoundationPlist.writePlist(pkginfo, handle.local_path)
     except FoundationPlist.NSPropertyListWriteException, errmsg:
         raise RepoCopyError(errmsg)
-    retcode = repo.close(handle)
-    if retcode != 0:
-        raise RepoCopyError("could not copy pkginfo to repo at " + pkginfo_path)
     return pkginfo_path
 
 
@@ -398,6 +395,7 @@ def make_catalog_db():
     """Returns a dict we can use like a database"""
 
     all_items_path = repo.join('catalogs', 'all')
+    handle = None
 
     try:
         handle = repo.open(all_items_path, 'r')
@@ -482,8 +480,6 @@ def make_catalog_db():
             if not vers in profile_table[item['PayloadIdentifier']]:
                 profile_table[item['PayloadIdentifier']][vers] = []
             profile_table[item['PayloadIdentifier']][vers].append(itemindex)
-
-    repo.close(handle)
 
     pkgdb = {}
     pkgdb['hashes'] = hash_table
