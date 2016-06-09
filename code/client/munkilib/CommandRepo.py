@@ -98,33 +98,6 @@ class CommandRepo:
 
     def listdir(self, path):
         '''Lists the contents of a repo directory.'''
-=======
-    def exists(self, subdir = None):
-        result = self.run('exists', subdir)
-        return result.returncode == 0
-
-    def isfile(self, subdir = None):
-        result = self.run('isfile', subdir)
-        return result.returncode == 0
-
-    def join(self, *args):
-        return os.path.join(*args)
-
-    def dirname(self, path):
-        return os.path.dirname(path)
-
-    def basename(self, path):
-        return os.path.basename(path)
-
-    def splitext(self, path):
-        return os.path.splitext(path)
-
-    def makedirs(self, path):
-        result = self.run('makedirs', path)
-        return result.returncode
-
-    def listdir(self, path):
->>>>>>> 851ea6703c8409c6727c01b9dc625f9433df4a92
         proc = self.popen('listdir', path, stdout=subprocess.PIPE)
         if proc:
             files = []
