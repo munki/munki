@@ -1339,7 +1339,7 @@ class AppleUpdates(object):
             # this is not preferred because it uses way too much CPU
             # checking stdin for input that will never come...
             cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
-        cmd.extend(['/usr/sbin/softwareupdate', '-v'])
+        cmd.extend(['/usr/sbin/softwareupdate', '--verbose'])
 
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if catalog_url:
