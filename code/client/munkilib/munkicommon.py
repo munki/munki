@@ -2770,6 +2770,63 @@ def blockingApplicationsRunning(pkginfoitem):
         return True
     return False
 
+def supports_auth_restart():
+    """Check if the the machine supports and authorized
+    restart, returns True or False accordingly"""
+    cmd = ['/usr/bin/fdesetup', 'supportsauthrestart']
+    if subprocess.check_output(cmd).strip() == 'true':
+        return True
+    else:
+        return False
+
+def get_auth_restart_key():
+    """Returns recovery key as a string... If we failed
+    to get the proper information, returns an empty string"""
+    # checks to see if recovery key preference is set
+    recoverykeyplist = pref('RecoveryKeyFile')
+    if not recoverykeyplist:
+        display_warning(
+            "RecoveryKeyFile preference is not set")
+        return ''
+    display_debug1(
+        'RecoveryKeyFile preference is set to {0}...'.format(recoverykeyplist))
+    # try to get the recovery key from the defined location
+    try:
+        keyplist = FoundationPlist.readPlist(recoverykeyplist)
+        recovery_key = keyplist['RecoveryKey'].strip()
+        return recovery_key
+    except FoundationPlist.NSPropertyListSerializationException:
+        display_error(
+            'We had trouble getting info from {0}...'.format(recoverykeyplist))
+        return ''
+    except KeyError:
+        display_error(
+        'Problem with Key: RecoveryKey in {0}...'.format(recoverykeyplist))
+        return ''
+
+def perform_auth_restart():
+    """When called this will perform an authorized restart. Before trying
+    to perform an authorized restart it checks to see if the machine supports
+    the feature. If supported it will then look for the defined plist containing
+    a key called RecoveryKey. It will use that value to perform the restart"""
+    display_debug1('Checking if machine supports Authorized Restarts...')
+    if not supports_auth_restart():
+        display_warning("Machine doesn't support Authorized Restarts...")
+        return ''
+    display_debug1('Machine Supports Authorized Restarts...')
+    recovery_key = get_auth_restart_key()
+    if not recovery_key:
+        return ''
+    key = { 'Password': recovery_key }
+    inputplist = FoundationPlist.writePlistToString(key)
+    log('Atempting an Authorized Restart Now...')
+    cmd = subprocess.Popen(
+        ['/usr/bin/fdesetup','authrestart','-inputplist'],
+    stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = cmd.communicate(input=inputplist)
+    if err:
+        display_error(err)
+
 
 # module globals
 #debug = False
