@@ -279,6 +279,17 @@ def doRestart():
     if not consoleuser or consoleuser == u'loginwindow':
         # no-one is logged in or we're at the loginwindow
         time.sleep(5)
+        #check to see if we should perform an AuthRestart
+        if (munkicommon.pref('PerformAuthRestarts')
+                and munkicommon.pref('RecoveryKeyFile')):
+            munkicommon.log('Starting Authorized Restart...')
+            # try to perform an auth restart
+            munkicommon.perform_auth_restart()
+            time.sleep(2)
+            # if we got to here then the auth restart failed notify that it did
+            # then perform a normal restart
+            munkicommon.display_warning(
+                'Authorized Restart Failed... Performing normal restart')
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:
