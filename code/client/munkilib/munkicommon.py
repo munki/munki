@@ -2772,8 +2772,11 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 def supports_auth_restart():
-    """Check if the the machine supports and authorized
-    restart, returns True or False accordingly"""
+    """Check if the machine supports an authorized
+    restart, returns True or False accordingly
+    NOTE: This does not check to see if FileVault is
+    enabled as it may return true on a machine with
+    FileVault disabled."""
     cmd = ['/usr/bin/fdesetup', 'supportsauthrestart']
     if subprocess.check_output(cmd).strip() == 'true':
         return True
@@ -2820,7 +2823,7 @@ def perform_auth_restart():
         return ''
     key = { 'Password': recovery_key }
     inputplist = FoundationPlist.writePlistToString(key)
-    log('Atempting an Authorized Restart Now...')
+    log('Attempting an Authorized Restart Now...')
     cmd = subprocess.Popen(
         ['/usr/bin/fdesetup','authrestart','-inputplist'],
     stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
