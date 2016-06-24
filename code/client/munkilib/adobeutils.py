@@ -1284,7 +1284,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 product_saps = [
                     prod['SAPCode'] for
                     prod in option_xml_info['products']
-                    if prod['MediaType'] == 'Product'
+                    if prod.get('MediaType') == 'Product'
                 ]
                 for app_info in [app for app in hd_app_infos
                                  if app['SAPCode'] in product_saps]:
