@@ -1251,17 +1251,6 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 mediasignature = cataloginfo['adobe_install_info'].get(
                     "media_signature")
                 mediasignatures = [mediasignature]
-            if mediasignatures:
-                # make a default <key>installs</key> array
-                uninstalldir = "/Library/Application Support/Adobe/Uninstall"
-                installs = []
-                for mediasignature in mediasignatures:
-                    signaturefile = mediasignature + ".db"
-                    filepath = os.path.join(uninstalldir, signaturefile)
-                    installitem = {}
-                    installitem['path'] = filepath
-                    installitem['type'] = 'file'
-                    installs.append(installitem)
 
             # Determine whether we have HD media as well in this installer
             hd_metadata_dirs = [
@@ -1275,12 +1264,29 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                     os.path.join(dirpath, 'HD'), sap_code)
                 hd_app_infos.append(hd_app_info)
 
-            # Make custom installs items for HD installers, but using only HDMedias
+            # installs keys will be populated if we have either RIBS
+            # or HD installers, which may be mixed together in one
+            # CCP package
+            if mediasignatures or hd_app_infos:
+                installs = []
+
+            # media signatures are used for RIBS (CS5 to CC mid-2015)
+            if mediasignatures:
+                # make a default <key>installs</key> array
+                uninstalldir = "/Library/Application Support/Adobe/Uninstall"
+                for mediasignature in mediasignatures:
+                    signaturefile = mediasignature + ".db"
+                    filepath = os.path.join(uninstalldir, signaturefile)
+                    installitem = {}
+                    installitem['path'] = filepath
+                    installitem['type'] = 'file'
+                    installs.append(installitem)
+
+            # Custom installs items for HD installers seem to need only HDMedias
             # from optionXML.xml with a MediaType of 'Product' and their
             # 'core' packages (e.g. language packs are 'non-core')
             if hd_app_infos:
                 uninstalldir = '/Library/Application Support/Adobe/Installers/uninstallXml'
-                installs = []
                 product_saps = [
                     prod['SAPCode'] for
                     prod in option_xml_info['products']
