@@ -2772,15 +2772,33 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 def supports_auth_restart():
-    """Check if the machine supports an authorized
-    restart, returns True or False accordingly
-    NOTE: This does not check to see if FileVault is
-    enabled as it may return true on a machine with
-    FileVault disabled."""
-    cmd = ['/usr/bin/fdesetup', 'supportsauthrestart']
-    if subprocess.check_output(cmd).strip() == 'true':
+    """Check if FileVault is enabled then checks
+    if an Authorized Restart is supported, returns True
+    or False accordingly.
+    """
+    display_debug1('Checking if FileVault is Enabled...')
+    active_cmd = ['/usr/bin/fdesetup','isactive']
+    try:
+        is_active = subprocess.check_output(active_cmd).strip()
+    except subprocess.CalledProcessError:
+        display_warning('FileVault appears to be Disabled...')
+        return False
+    display_debug1(
+        'Checking if FileVault can perform an Authorized Restart...')
+    support_cmd = ['/usr/bin/fdesetup', 'supportsauthrestart']
+    try:
+        is_supported = subprocess.check_output(support_cmd).strip()
+    except subprocess.CalledProcessError:
+        display_warning(
+            'FileVault appears to not support an Authorized Restart...')
+        return False
+    if is_active == 'true' and is_supported == 'true':
+        display_debug1(
+            'FileVault is on and Supports an AuthResrtart...')
         return True
     else:
+        display_warning(
+            'FileVault is Disabled or does not support an Authorized Restart')
         return False
 
 def get_auth_restart_key():
@@ -2813,7 +2831,8 @@ def perform_auth_restart():
     to perform an authorized restart it checks to see if the machine supports
     the feature. If supported it will then look for the defined plist containing
     a key called RecoveryKey. It will use that value to perform the restart"""
-    display_debug1('Checking if machine supports Authorized Restarts...')
+    display_debug1(
+        'Checking if Performing an Authorized Restart is fully supported...')
     if not supports_auth_restart():
         display_warning("Machine doesn't support Authorized Restarts...")
         return ''

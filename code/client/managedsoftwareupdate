@@ -285,7 +285,7 @@ def doRestart():
             munkicommon.log('Starting Authorized Restart...')
             # try to perform an auth restart
             munkicommon.perform_auth_restart()
-            time.sleep(2)
+            time.sleep(5) # give it some time to perform the authrestart
             # if we got to here then the auth restart failed, notify that it did
             # then perform a normal restart
             munkicommon.display_warning(
