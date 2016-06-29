@@ -1295,7 +1295,9 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 for app_info in [app for app in hd_app_infos
                                  if app['SAPCode'] in product_saps]:
                     for pkg in app_info['Packages']:
-                        if pkg['Type'] == 'core':
+                        # Don't assume 'Type' key always exists. At least the 'AdobeIllustrator20-Settings'
+                        # package doesn't have this key set.
+                        if pkg.get('Type') == 'core':
                             uninstall_file_name = '_'.join([
                                 app_info['SAPCode'],
                                 app_info['BaseVersion'].replace('.', '_'),
