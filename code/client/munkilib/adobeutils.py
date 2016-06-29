@@ -481,8 +481,8 @@ def getHDInstallerInfo(hd_payload_root, sap_code):
 
     # Copy some useful top-level keys, useful later for:
     # - BaseVersion: base product version string used in uninstall XML location
-    # - Name: display_name pkginfo key (not currently used)
-    # - ProductVersion: version pkginfo key (not currently used) and uninstall XML location
+    # - Name: display_name pkginfo key
+    # - ProductVersion: version pkginfo key and uninstall XML location
     # - SAPCode: an uninstallXml for an installs item if it's a 'core' Type
     for key in ['BaseVersion', 'Name', 'ProductVersion', 'SAPCode']:
         hd_app_info[key] = json_info[key]
@@ -1292,8 +1292,18 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                     prod in option_xml_info['products']
                     if prod.get('MediaType') == 'Product'
                 ]
-                for app_info in [app for app in hd_app_infos
-                                 if app['SAPCode'] in product_saps]:
+
+                product_app_infos = [app for app in hd_app_infos
+                                     if app['SAPCode'] in product_saps]
+                # if we had only a single HD and no legacy apps, set a sane
+                # version and display_name derived from the app's metadata
+                if (len(product_app_infos) == 1) and not mediasignatures:
+                    cataloginfo.update({
+                        'display_name': product_app_infos[0]['Name'],
+                        'version': product_app_infos[0]['ProductVersion'],
+                        })
+
+                for app_info in product_app_infos:
                     for pkg in app_info['Packages']:
                         # Don't assume 'Type' key always exists. At least the 'AdobeIllustrator20-Settings'
                         # package doesn't have this key set.
@@ -1310,9 +1320,6 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                             installs.append(installitem)
 
             cataloginfo['installs'] = installs
-
-            # TODO: if we only had one installs item (and thus only one 'Product'
-            #       media), set the display_name and version appropriately
 
             return cataloginfo
 
