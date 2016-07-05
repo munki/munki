@@ -2355,8 +2355,8 @@ def get_hardware_info():
         return {}
 
 
-def get_ipv4_addresses():
-    '''Uses system profiler to get active IPv4 addresses for this machine'''
+def get_ip_addresses(version):
+    '''Uses system profiler to get active IP addresses for this machine'''
     ip_addresses = []
     cmd = ['/usr/sbin/system_profiler', 'SPNetworkDataType', '-xml']
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
@@ -2375,9 +2375,9 @@ def get_ipv4_addresses():
 
     for item in items:
         try:
-            ip_addresses.extend(item['IPv4']['Addresses'])
+            ip_addresses.extend(item[version]['Addresses'])
         except KeyError:
-            # 'IPv4" or 'Addresses' is empty, so we ignore
+            # 'IPv4", 'IPv6' or 'Addresses' is empty, so we ignore
             # this item
             pass
     return ip_addresses
@@ -2409,7 +2409,8 @@ def getMachineFacts():
         hardware_info = get_hardware_info()
         MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
         MACHINE['munki_version'] = get_version()
-        MACHINE['ipv4_address'] = get_ipv4_addresses()
+        MACHINE['ipv4_address'] = get_ip_addresses('IPv4')
+        MACHINE['ipv6_address'] = get_ip_addresses('IPv6')
         MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
 
         if MACHINE['arch'] == 'x86_64':
