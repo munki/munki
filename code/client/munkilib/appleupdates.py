@@ -1105,6 +1105,8 @@ class AppleUpdates(object):
                         english_su_info = self.parseSUdist(english_dist)
                 su_info = self.parseSUdist(localized_dist)
                 su_info['productKey'] = product_key
+                if su_info['name'] == '':
+                    su_info['name'] = product_key
                 if product_key in update_display_names:
                     su_info['apple_product_name'] = (
                         update_display_names[product_key])
