@@ -1839,6 +1839,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
         iteminfo['installed'] = False
         iteminfo['note'] = ('Can\'t install %s because could not resolve all '
                             'dependencies.' % iteminfo['display_name'])
+        iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
         installinfo['managed_installs'].append(iteminfo)
         return False
 
@@ -1980,6 +1981,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 manifestitem)
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
@@ -1989,6 +1991,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = 'Download failed (%s)' % errmsg
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
@@ -1998,6 +2001,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
