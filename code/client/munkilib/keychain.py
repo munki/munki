@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2014 Greg Neagle.
+# Copyright 2014-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -483,7 +483,7 @@ def debug_output():
             munkicommon.display_debug1(
                 security('show-keychain-info', keychainfile))
     except SecurityError, err:
-        munkicommon.display_error(str(err))
+        munkicommon.display_error(unicode(err))
 
 
 class SecurityError(Exception):

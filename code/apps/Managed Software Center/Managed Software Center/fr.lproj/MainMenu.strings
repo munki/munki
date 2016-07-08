@@ -146,5 +146,8 @@
 /* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
 "tv9-wZ-XWN.title" = "Mises à jour";
 
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "vPs-dO-LDa"; */
+"vPs-dO-LDa.title" = "Afficher l’historique";
+
 /* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
 "z4Z-vu-XGX.title" = "Suivant";

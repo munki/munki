@@ -2,7 +2,7 @@
 #  main.py
 #  MunkiStatus
 #
-#  Copyright 2013-2014 Greg Neagle.
+#  Copyright 2013-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ from PyObjCTools import AppHelper
 # import modules containing classes required to start application and load MainMenu.nib
 import MSUAppDelegate
 import MSUStatusWindowController
+import MSULogWindowController
 
 # get more debugging info on exceptions
 objc.setVerbose(1)

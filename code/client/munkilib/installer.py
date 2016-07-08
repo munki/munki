@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,8 +31,10 @@ import adobeutils
 import launchd
 import munkicommon
 import munkistatus
+import powermgr
 import profiles
 import updatecheck
+import xattr
 import FoundationPlist
 from removepackages import removepackages
 
@@ -40,41 +42,10 @@ from removepackages import removepackages
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSDate
-# stuff for IOKit/PowerManager, courtesy Michael Lynn, pudquick@github
-from ctypes import c_uint32, cdll, c_void_p, POINTER, byref
-from CoreFoundation import CFStringCreateWithCString
-from CoreFoundation import kCFStringEncodingASCII
-from objc import pyobjc_id
 # pylint: enable=E0611
 
 # lots of camelCase names
 # pylint: disable=C0103
-
-libIOKit = cdll.LoadLibrary('/System/Library/Frameworks/IOKit.framework/IOKit')
-libIOKit.IOPMAssertionCreateWithName.argtypes = [
-    c_void_p, c_uint32, c_void_p, POINTER(c_uint32)]
-libIOKit.IOPMAssertionRelease.argtypes = [c_uint32]
-
-def CFSTR(py_string):
-    '''Returns a CFString given a Python string'''
-    return CFStringCreateWithCString(None, py_string, kCFStringEncodingASCII)
-
-def raw_ptr(pyobjc_string):
-    '''Returns a pointer to a CFString'''
-    return pyobjc_id(pyobjc_string.nsstring())
-
-def IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
-    '''Creaes a PowerManager assertion'''
-    assertID = c_uint32(0)
-    p_assert_name = raw_ptr(CFSTR(assert_name))
-    p_assert_msg = raw_ptr(CFSTR(assert_msg))
-    errcode = libIOKit.IOPMAssertionCreateWithName(
-        p_assert_name, assert_level, p_assert_msg, byref(assertID))
-    return (errcode, assertID)
-
-IOPMAssertionRelease = libIOKit.IOPMAssertionRelease
-# end IOKit/PowerManager bindings
-
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -467,12 +438,22 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
         # all tests passed, OK to copy
         munkicommon.display_status_minor(
             "Copying %s to %s" % (source_itemname, full_destpath))
-        retcode = subprocess.call(["/bin/cp", "-pR",
+        retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
                                    source_itempath, full_destpath])
         if retcode:
             munkicommon.display_error(
                 "Error copying %s to %s" % (source_itempath, full_destpath))
             return retcode
+
+        # remove com.apple.quarantine xattr since `man ditto` lies and doesn't
+        # seem to actually always remove it
+        try:
+            if "com.apple.quarantine" in xattr.xattr(full_destpath).list():
+                xattr.xattr(full_destpath).remove("com.apple.quarantine")
+        except BaseException as err:
+            munkicommon.display_warning(
+                "Error removing com.apple.quarantine from %s: %s",
+                full_destpath, err)
 
         # set owner
         user = item.get('user', 'root')
@@ -505,20 +486,6 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             munkicommon.display_error(
                 "Error setting mode for %s" % (full_destpath))
             return retcode
-
-        # remove com.apple.quarantine attribute from copied item
-        cmd = ["/usr/bin/xattr", full_destpath]
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (out, dummy_err) = proc.communicate()
-        if out:
-            xattrs = str(out).splitlines()
-            if "com.apple.quarantine" in xattrs:
-                dummy_result = subprocess.call(
-                    ["/usr/bin/xattr", "-d", "com.apple.quarantine",
-                     full_destpath])
 
     # all items copied successfully!
     return 0
@@ -1019,7 +986,7 @@ def processRemovals(removallist, only_unattended=False):
                         munkicommon.display_error(message)
                     else:
                         munkicommon.log(
-                            "Uninstall of %s was successful.", display_name)
+                            "Uninstall of %s was successful." % display_name)
 
             elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
@@ -1186,21 +1153,6 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 
-def assertNoIdleSleep():
-    """Uses IOKit functions to prevent idle sleep"""
-    # based on code by Michael Lynn, pudquick@github
-
-    kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
-    kIOPMAssertionLevelOn = 255
-    reason = "Munki is installing software"
-
-    dummy_errcode, assertID = IOPMAssertionCreateWithName(
-        kIOPMAssertionTypeNoIdleSleep,
-        kIOPMAssertionLevelOn,
-        reason)
-    return assertID
-
-
 def run(only_unattended=False):
     """Runs the install/removal session.
 
@@ -1208,7 +1160,7 @@ def run(only_unattended=False):
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
     # hold onto the assertionID so we can release it later
-    no_idle_sleep_assertion_id = assertNoIdleSleep()
+    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
 
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
@@ -1328,7 +1280,6 @@ def run(only_unattended=False):
 
     munkicommon.savereport()
 
-    # release our Power Manager assertion
-    dummy_errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
+    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
 
     return removals_need_restart or installs_need_restart

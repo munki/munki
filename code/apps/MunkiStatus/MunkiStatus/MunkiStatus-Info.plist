@@ -29,7 +29,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>${MACOSX_DEPLOYMENT_TARGET}</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2014 The Munki Project https://github.com/munki/munki</string>
+	<string>Copyright © 2016 The Munki Project https://github.com/munki/munki</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

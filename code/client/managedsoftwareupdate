@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -202,7 +202,7 @@ def runScript(script, display_name, runtype):
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError, err:
-        munkicommon.display_warning(str(err))
+        munkicommon.display_warning(unicode(err))
     return result
 
 
@@ -435,7 +435,7 @@ def notifyUserOfUpdates(force=False):
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         f = open(launchfile, 'w')
         f.close()
-        time.sleep(0.5)
+        time.sleep(5)
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
@@ -634,7 +634,7 @@ def main():
     munkicommon.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print 'Managed Software Update Tool'
-        print 'Copyright 2010-2014 The Munki Project'
+        print 'Copyright 2010-2016 The Munki Project'
         print 'https://github.com/munki/munki\n'
 
     munkicommon.display_status_major('Starting...')
@@ -710,6 +710,7 @@ def main():
             if options.manualcheck:
                 # record our result
                 recordUpdateCheckResult(-1)
+            if options.munkistatusoutput:
                 # connect to socket and quit
                 munkistatus.activate()
                 munkistatus.quit()
@@ -738,7 +739,8 @@ def main():
     updatecheckresult = None
     if not skip_munki_check:
         try:
-            updatecheckresult = updatecheck.check(client_id=options.id)
+            updatecheckresult = updatecheck.check(
+                client_id=options.id.decode('UTF-8'))
         except:
             munkicommon.display_error('Unexpected error in updatecheck:')
             munkicommon.log(traceback.format_exc())
@@ -919,16 +921,19 @@ def main():
                 # so we need to check InstallInfo.plist and
                 # AppleUpdates.plist again
                 updatesavailable = munkiUpdatesAvailable()
-                try:
-                    appleupdatesavailable = \
-                        appleupdates.appleSoftwareUpdatesAvailable(
-                            suppresscheck=True, client_id=options.id)
-                except:
-                    munkicommon.display_error(
-                        'Unexpected error in appleupdates:')
-                    munkicommon.log(traceback.format_exc())
-                    munkicommon.savereport()
-                    raise
+                if appleupdatesavailable:
+                    # there were Apple updates available, but we might have
+                    # installed some unattended
+                    try:
+                        appleupdatesavailable = (
+                            appleupdates.appleSoftwareUpdatesAvailable(
+                                suppresscheck=True, client_id=options.id))
+                    except:
+                        munkicommon.display_error(
+                            'Unexpected error in appleupdates:')
+                        munkicommon.log(traceback.format_exc())
+                        munkicommon.savereport()
+                        raise
                 if appleupdatesavailable or updatesavailable:
                     # set a flag to notify the user of available updates
                     # after we conclude this run.

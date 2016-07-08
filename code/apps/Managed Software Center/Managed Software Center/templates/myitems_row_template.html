@@ -7,12 +7,12 @@
     </a>
     <ul class="list info">
         <li><h2><a title="${display_name_escaped}" href="${detail_link}">${display_name_escaped}</a></h2></li>
-        <li>${developer_escaped}</li>
+        <li class="install-info-cell">${developer_escaped}</li>
     </ul>
   </td>
-  <td>${version_to_install}</td>
-  <td>${size}</td>
-  <td class="status">
+  <td class="install-info-cell">${version_to_install}</td>
+  <td class="install-info-cell">${size}</td>
+  <td class="status install-info-cell">
       <span class="${status}" id="${name_escaped}_status_text">
           ${status_text}
           <a class="follow" href="updates.html">
