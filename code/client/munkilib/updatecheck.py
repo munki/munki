@@ -885,7 +885,7 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
 def nameAndVersion(aString):
     """Splits a string into the name and version number.
 
-    Name and version must be seperated with a hyphen ('-')
+    Name and version must be separated with a hyphen ('-')
     or double hyphen ('--').
     'TextWrangler-2.3b1' becomes ('TextWrangler', '2.3b1')
     'AdobePhotoshopCS3--11.2.1' becomes ('AdobePhotoshopCS3', '11.2.1')
