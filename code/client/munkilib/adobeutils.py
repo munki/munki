@@ -1264,11 +1264,12 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                     os.path.join(dirpath, 'HD'), sap_code)
                 hd_app_infos.append(hd_app_info)
 
-            # installs keys will be populated if we have either RIBS
+            # 'installs' array will be populated if we have either RIBS
             # or HD installers, which may be mixed together in one
-            # CCP package
-            if mediasignatures or hd_app_infos:
-                installs = []
+            # CCP package.
+            # Acrobat Pro DC doesn't currently generate any useful installs
+            # info if it's part of a CCP package.
+            installs = []
 
             # media signatures are used for RIBS (CS5 to CC mid-2015)
             if mediasignatures:
@@ -1319,7 +1320,8 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                             installitem['type'] = 'file'
                             installs.append(installitem)
 
-            cataloginfo['installs'] = installs
+            if installs:
+                cataloginfo['installs'] = installs
 
             return cataloginfo
 
