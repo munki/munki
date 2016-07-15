@@ -967,9 +967,10 @@ def main():
             answer = raw_input('Use existing item as a template? [y/n] ')
             if answer.lower().startswith('y'):
                 pkginfo['name'] = matchingpkginfo['name']
-                pkginfo['display_name'] = pkginfo.get('display_name') or \
-                    matchingpkginfo.get('display_name',
-                                        matchingpkginfo['name'])
+                pkginfo['display_name'] = (
+                    matchingpkginfo.get('display_name') or
+                    pkginfo.get('display_name') or
+                    matchingpkginfo['name'])
                 pkginfo['description'] = pkginfo.get('description') or \
                     matchingpkginfo.get('description', '')
                 if (options.subdirectory == '' and
