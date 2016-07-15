@@ -60,6 +60,7 @@ from Foundation import CFPreferencesCopyKeyList
 from Foundation import CFPreferencesSetValue
 from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentUser
+from Foundation import kCFPreferencesAnyHost
 from Foundation import kCFPreferencesCurrentHost
 
 from SystemConfiguration import SCDynamicStoreCopyConsoleUser
@@ -1116,7 +1117,8 @@ def isApplication(pathname):
 class Preferences(object):
     """Class which directly reads/writes Apple CF preferences."""
 
-    def __init__(self, bundle_id, user=kCFPreferencesAnyUser):
+    def __init__(self, bundle_id,
+                 user=kCFPreferencesAnyUser, host=kCFPreferencesCurrentHost):
         """Init.
 
         Args:
@@ -1126,10 +1128,10 @@ class Preferences(object):
             bundle_id = bundle_id[:-6]
         self.bundle_id = bundle_id
         self.user = user
+        self.host = host
 
     def __iter__(self):
-        keys = CFPreferencesCopyKeyList(
-            self.bundle_id, self.user, kCFPreferencesCurrentHost)
+        keys = CFPreferencesCopyKeyList(self.bundle_id, self.user, self.host)
         if keys is not None:
             for i in keys:
                 yield i
@@ -1143,8 +1145,7 @@ class Preferences(object):
 
     def __setitem__(self, pref_name, pref_value):
         CFPreferencesSetValue(
-            pref_name, pref_value, self.bundle_id, self.user,
-            kCFPreferencesCurrentHost)
+            pref_name, pref_value, self.bundle_id, self.user, self.host)
         CFPreferencesAppSynchronize(self.bundle_id)
 
     def __delitem__(self, pref_name):
@@ -1164,13 +1165,17 @@ class Preferences(object):
 class ManagedInstallsPreferences(Preferences):
     """Preferences which read from /L/P/ManagedInstalls."""
     def __init__(self):
-        Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
+        Preferences.__init__(self, 'ManagedInstalls',
+                             user=kCFPreferencesAnyUser,
+                             host=kCFPreferencesCurrentHost)
 
 
 class SecureManagedInstallsPreferences(Preferences):
     """Preferences which read from /private/var/root/L/P/ManagedInstalls."""
     def __init__(self):
-        Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
+        Preferences.__init__(self, 'ManagedInstalls',
+                             user=kCFPreferencesCurrentUser,
+                             host=kCFPreferencesAnyHost)
 
 
 def reload_prefs():
