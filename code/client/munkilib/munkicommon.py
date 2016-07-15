@@ -1245,48 +1245,21 @@ def pref(pref_name):
 # Apple package utilities
 #####################################################
 
-def getInstallerPkgInfo(filename):
-    """Uses Apple's installer tool to get basic info
-    about an installer item."""
+def getPkgRestartInfo(filename):
+    """Uses Apple's installer tool to get RestartAction
+    from an installer item."""
     installerinfo = {}
-    proc = subprocess.Popen(['/usr/sbin/installer', '-pkginfo', '-verbose',
-                             '-plist', '-pkg', filename],
-                            bufsize=1, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
-
-    if out:
-        # discard any lines at the beginning that aren't part of the plist
-        lines = str(out).splitlines()
-        plist = ''
-        for index in range(len(lines)):
-            try:
-                plist = FoundationPlist.readPlistFromString(
-                    '\n'.join(lines[index:]))
-            except FoundationPlist.NSPropertyListSerializationException:
-                pass
-            if plist:
-                break
-        if plist:
-            if 'Size' in plist:
-                installerinfo['installed_size'] = int(plist['Size'])
-            installerinfo['description'] = plist.get('Description', '')
-            if plist.get('Will Restart') == 'YES':
-                installerinfo['RestartAction'] = 'RequireRestart'
-            if 'Title' in plist:
-                installerinfo['display_name'] = plist['Title']
-
     proc = subprocess.Popen(['/usr/sbin/installer',
                              '-query', 'RestartAction',
                              '-pkg', filename],
-                            bufsize=1,
+                            bufsize=-1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode:
         display_error("installer -query failed: %s %s" %
                       (out.decode('UTF-8'), err.decode('UTF-8')))
-        return None
+        return {}
 
     if out:
         restartAction = str(out).rstrip('\n')
@@ -1932,8 +1905,8 @@ def getPackageMetaData(pkgitem):
     if not hasValidInstallerItemExt(pkgitem):
         return {}
 
-    # first get the data /usr/sbin/installer will give us
-    installerinfo = getInstallerPkgInfo(pkgitem)
+    # first query /usr/sbin/installer for restartAction
+    installerinfo = getPkgRestartInfo(pkgitem)
     # now look for receipt/subpkg info
     receiptinfo = getReceiptInfo(pkgitem)
 
