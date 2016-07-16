@@ -43,6 +43,92 @@ except ImportError:
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
 
+try:
+    # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+    # No name 'Foo' in module 'Bar' warnings. Disable them.
+    # pylint: disable=E0611
+    from Foundation import CFPreferencesAppSynchronize
+    from Foundation import CFPreferencesCopyAppValue
+    from Foundation import CFPreferencesSetAppValue
+    # pylint: enable=E0611
+
+    BUNDLE_ID = 'com.googlecode.munki.munkiimport'
+    def pref(prefname):
+        """Return a preference. Since this uses CFPreferencesCopyAppValue,
+        Preferences can be defined several places. Precedence is:
+            - MCX/Configuration Profile
+            - ~/Library/Preferences/ByHost/
+                com.googlecode.munki.munkiimport.XX.plist
+            - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
+            - /Library/Preferences/com.googlecode.munki.munkiimport.plist
+        """
+        return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
+
+
+    def configure(args):
+        """Configures manifestutil for use"""
+        _prefs = {}
+        if len(args):
+            print >> sys.stderr, 'Usage: configure'
+            return 22 # Invalid argument
+        for (key, prompt) in [
+                ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+                ('repo_url',
+                 'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
+
+            newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
+            _prefs[key] = newvalue or pref(key) or ''
+
+        for key, value in _prefs.items():
+            try:
+                CFPreferencesSetAppValue(key, value, BUNDLE_ID)
+            except BaseException:
+                print >> sys.stderr, 'Could not save configuration!'
+            finally:
+                CFPreferencesAppSynchronize(BUNDLE_ID)
+
+except ImportError:
+    # Foundation isn't available
+    PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
+    PREFSPATH = os.path.expanduser(
+        os.path.join('~/Library/Preferences', PREFSNAME))
+    _PREFS = {}
+    def pref(prefname):
+        """Returns a preference for prefname"""
+        global _PREFS
+        if not _PREFS:
+            try:
+                _PREFS = plistlib.readPlist(PREFSPATH)
+            except (IOError, OSError, ExpatError):
+                pass
+        if prefname in _PREFS:
+            return _PREFS[prefname]
+        else:
+            return None
+
+
+    def configure(args):
+        """Configures manifestutil for use"""
+        if len(args):
+            print >> sys.stderr, 'Usage: configure'
+            return 22 # Invalid argument
+        for (key, prompt) in [
+                ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+                ('repo_url',
+                 'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
+
+            newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
+            _PREFS[key] = newvalue or pref(key) or ''
+
+        try:
+            plistlib.writePlist(_PREFS, PREFSPATH)
+            return 0
+        except (IOError, OSError, ExpatError):
+            print >> sys.stderr, (
+                'Could not save configuration to %s' % PREFSPATH)
+            return 1 # Operation not permitted
+
+
 if 'libedit' in readline.__doc__:
     # readline module was compiled against libedit
     LIBEDIT = ctypes.cdll.LoadLibrary(find_library('libedit'))
@@ -270,21 +356,6 @@ def cleanup_and_exit(exitcode):
         if answer.lower().startswith('y'):
             result = unmount_repo_cli()
     exit(exitcode or result)
-
-
-_PREFS = {}
-def pref(prefname):
-    """Returns a preference for prefname"""
-    global _PREFS
-    if not _PREFS:
-        try:
-            _PREFS = plistlib.readPlist(PREFSPATH)
-        except (IOError, OSError, ExpatError):
-            pass
-    if prefname in _PREFS:
-        return _PREFS[prefname]
-    else:
-        return None
 
 
 def update_cached_manifest_list():
@@ -858,27 +929,6 @@ def show_help():
     return 0
 
 
-def configure(args):
-    """Configures manifestutil for use"""
-    if len(args):
-        print >> sys.stderr, 'Usage: configure'
-        return 22 # Invalid argument
-    for (key, prompt) in [
-            ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-            ('repo_url',
-             'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
-
-        newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
-        _PREFS[key] = newvalue or pref(key) or ''
-
-    try:
-        plistlib.writePlist(_PREFS, PREFSPATH)
-        return 0
-    except (IOError, OSError, ExpatError):
-        print >> sys.stderr, 'Could not save configuration to %s' % PREFSPATH
-        return 1 # Operation not permitted
-
-
 def tab_completer(text, state):
     '''Called by the readline lib to calculate possible completions'''
     array_to_match = None
@@ -956,9 +1006,6 @@ def handle_subcommand(args):
         return 2
 
 
-PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
-                                            PREFSNAME))
 WE_MOUNTED_THE_REPO = False
 INTERACTIVE_MODE = False
 CMD_ARG_DICT = {}
