@@ -238,8 +238,8 @@ class AppleUpdates(object):
             if len(readmes):
                 html = readmes[0].firstChild.data
                 html_data = buffer(html.encode('utf-8'))
-                attributed_string, attributes = NSAttributedString.alloc(
-                ).initWithHTML_documentAttributes_(html_data, None)
+                attributed_string, _ = NSAttributedString.alloc(
+                    ).initWithHTML_documentAttributes_(html_data, None)
                 firmware_alert_text = attributed_string.string()
             return firmware_alert_text
         return ''
@@ -759,7 +759,7 @@ class AppleUpdates(object):
 
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
-            catalog_url = self._ElCapitanGetCatalogURL()
+            catalog_url = None
         else:
             catalog_url = self._GetAppleCatalogURL()
 
@@ -818,16 +818,6 @@ class AppleUpdates(object):
         f = _open(local_apple_sus_catalog, 'wb')
         f.write(contents)
         f.close()
-
-    def _ElCapitanGetCatalogURL(self):
-        """Returns SoftwareUpdateServerURL set in Munki's preferences or None.
-        Works around an issue with catalog changes causing cached downloads to
-        be deleted."""
-        # pylint: disable=no-self-use
-        munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
-        if munkisuscatalog:
-            return munkisuscatalog
-        return None
 
     def _GetAppleCatalogURL(self):
         """Returns the catalog URL of the Apple SU catalog for the current Mac.
@@ -1534,7 +1524,7 @@ class AppleUpdates(object):
             # 10.11 seems not to like file:// URLs, and we don't really need
             # to switch to a local file URL anyway since we now have the
             # --no-scan option
-            catalog_url = self._ElCapitanGetCatalogURL()
+            catalog_url = None
         else:
             # use our filtered local catalog
             if not os.path.exists(self.local_catalog_path):
@@ -1816,29 +1806,19 @@ def installAppleUpdates(only_unattended=False):
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
                                   client_id='', forcecatalogrefresh=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
+    appleUpdatesObject = getAppleUpdatesInstance()
     os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
     munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
-    appleUpdatesObject = getAppleUpdatesInstance()
-    if appleUpdatesObject.CatalogURLisManaged():
-        if os_version_tuple >= (10, 11):
-            if munkisuscatalog:
-                munkicommon.display_warning(
-                    "softwareupdate's CatalogURL is managed via MCX or "
-                    "profiles. Custom softwareupate catalog %s will be "
-                    "ignored." % munkisuscatalog)
-        else:
+    if os_version_tuple >= (10, 11):
+        if munkisuscatalog:
             munkicommon.display_warning(
-                "Cannot efficiently manage Apple Software updates because "
-                "softwareupdate's CatalogURL is managed via MCX or profiles. "
-                "You may see unexpected or undesirable results.")
-    else:
-        if os_version_tuple >= (10, 11) and munkisuscatalog:
-            munkicommon.display_warning(
-                "Setting SoftwareUpdateServerURL in Munki's preferences under "
-                "OS X 10.11 and later may result in poor performance of "
-                "Apple Software Updates via Munki. It is recommended to "
-                "remove this setting and use com.apple.SoftwareUpdate's "
-                'settings for CatalogURL.')
+                "Custom softwareupate catalog %s in Munki's preferences will "
+                "be ignored." % munkisuscatalog)
+    elif appleUpdatesObject.CatalogURLisManaged():
+        munkicommon.display_warning(
+            "Cannot efficiently manage Apple Software updates because "
+            "softwareupdate's CatalogURL is managed via MCX or profiles. "
+            "You may see unexpected or undesirable results.")
     appleUpdatesObject.client_id = client_id
     appleUpdatesObject.force_catalog_refresh = forcecatalogrefresh
 
