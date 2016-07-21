@@ -1625,7 +1625,7 @@ def getOnePackageInfo(pkgpath):
                 pkginfo['name'] = plist['CFBundleName']
 
             if 'IFPkgFlagInstalledSize' in plist:
-                pkginfo['installed_size'] = plist['IFPkgFlagInstalledSize']
+                pkginfo['installed_size'] = int(plist['IFPkgFlagInstalledSize'])
 
             pkginfo['version'] = getBundleVersion(pkgpath)
         except (AttributeError,
