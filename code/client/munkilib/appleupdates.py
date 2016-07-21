@@ -148,7 +148,7 @@ class AppleUpdates(object):
         # fix things if somehow we died last time before resetting the
         # original CatalogURL
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
-        if os_version_tuple >= (10, 9):
+        if os_version_tuple in [(10, 9), (10, 10)]:
             self._ResetOriginalCatalogURL()
 
         real_cache_dir = os.path.join(self._managed_install_dir, 'swupd')
@@ -1341,7 +1341,7 @@ class AppleUpdates(object):
             # OS version-specific stuff to use a specific CatalogURL
             if os_version_tuple < (10, 9):
                 cmd.extend(['--CatalogURL', catalog_url])
-            else:
+            elif os_version_tuple in [(10, 9), (10, 10)]:
                 self._SetCustomCatalogURL(catalog_url)
 
         cmd.extend(options_list)
@@ -1448,7 +1448,7 @@ class AppleUpdates(object):
 
         if catalog_url:
             # reset CatalogURL if needed
-            if os_version_tuple >= (10, 9):
+            if os_version_tuple in [(10, 9), (10, 10)]:
                 self._ResetOriginalCatalogURL()
 
         retcode = job.returncode()
