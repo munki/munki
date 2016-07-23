@@ -197,12 +197,13 @@ def findBundleReceiptFromID(pkgid):
     if not pkgid:
         return ''
     receiptsdir = "/Library/Receipts"
-    for item in munkicommon.listdir(receiptsdir):
-        itempath = os.path.join(receiptsdir, item)
-        if item.endswith('.pkg') and os.path.isdir(itempath):
-            info = munkicommon.getOnePackageInfo(itempath)
-            if info.get('packageid') == pkgid:
-                return itempath
+    if os.path.isdir(receiptsdir):
+        for item in munkicommon.listdir(receiptsdir):
+            itempath = os.path.join(receiptsdir, item)
+            if item.endswith('.pkg') and os.path.isdir(itempath):
+                info = munkicommon.getOnePackageInfo(itempath)
+                if info.get('packageid') == pkgid:
+                    return itempath
 
     #if we get here, not found
     return ''
