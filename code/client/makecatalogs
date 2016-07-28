@@ -32,6 +32,14 @@ import os
 import optparse
 import hashlib
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import CFPreferencesAppSynchronize
+from Foundation import CFPreferencesCopyAppValue
+from Foundation import CFPreferencesSetAppValue
+# pylint: enable=E0611
+
 try:
     from munkilib import FoundationPlist as plistlib
     LOCAL_PREFS_SUPPORT = True
@@ -361,18 +369,16 @@ def makecatalogs(repopath, options):
     exit(exit_code)
 
 
+BUNDLE_ID = 'com.googlecode.munki.munkiimport'
 def pref(prefname):
-    """Returns a preference for prefname"""
-    if not LOCAL_PREFS_SUPPORT:
-        return None
-    try:
-        _prefs = plistlib.readPlist(PREFSPATH)
-    except BaseException:
-        return None
-    if prefname in _prefs:
-        return _prefs[prefname]
-    else:
-        return None
+    """Return a preference. Since this uses CFPreferencesCopyAppValue,
+    Preferences can be defined several places. Precedence is:
+        - MCX/Configuration Profile
+        - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XX.plist
+        - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
+        - /Library/Preferences/com.googlecode.munki.munkiimport.plist
+    """
+    return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
 
 
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
