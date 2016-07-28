@@ -371,19 +371,6 @@ def makecatalogs(repopath, options):
     exit(exit_code)
 
 
-def pref(prefname):
-    """Returns a preference for prefname"""
-    if not LOCAL_PREFS_SUPPORT:
-        return None
-    try:
-        _prefs = plistlib.readPlist(PREFSPATH)
-    except BaseException:
-        return None
-    if prefname in _prefs:
-        return _prefs[prefname]
-    else:
-        return None
-
 BUNDLE_ID = 'com.googlecode.munki.munkiimport'
 
 
