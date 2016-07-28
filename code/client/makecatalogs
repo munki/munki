@@ -93,6 +93,7 @@ def print_utf8(text):
     '''Print Unicode text as UTF-8'''
     print text.encode('UTF-8')
 
+
 def print_err_utf8(text):
     '''Print Unicode text to stderr as UTF-8'''
     print >> sys.stderr, text.encode('UTF-8')
@@ -146,7 +147,8 @@ def makecatalogs(repopath, options):
                 try:
                     print_utf8("Hashing %s..." % (iconpath))
                     icons[iconpath] = (
-                        hashlib.sha256(open(filepath, 'rb').read()).hexdigest())
+                        hashlib.sha256(open(filepath, 'rb').read()).hexdigest()
+                        )
                 except IOError, inst:
                     errors.append("IO error for %s: %s" % (filepath, inst))
                     exit_code = -1
@@ -175,7 +177,8 @@ def makecatalogs(repopath, options):
     catalogs['all'] = []
 
     # Walk through the pkginfo files
-    for dirpath, dirnames, filenames in os.walk(pkgsinfopath, followlinks=True):
+    for dirpath, dirnames, filenames in os.walk(pkgsinfopath,
+                                                followlinks=True):
         for dirname in dirnames:
             # don't recurse into directories that start
             # with a period.
@@ -233,7 +236,7 @@ def makecatalogs(repopath, options):
                     pkginfo['icon_hash'] = iconhash
                     iconhash = None
 
-            #simple sanity checking
+            # simple sanity checking
             do_pkg_check = True
             installer_type = pkginfo.get('installer_type')
             if installer_type in ['nopkg', 'apple_update_metadata']:
@@ -242,7 +245,6 @@ def makecatalogs(repopath, options):
                 do_pkg_check = False
             if pkginfo.get('PackageURL'):
                 do_pkg_check = False
-
 
             if do_pkg_check:
                 if not 'installer_item_location' in pkginfo:
@@ -277,7 +279,7 @@ def makecatalogs(repopath, options):
                         exit_code = -1
                         continue
 
-            #uninstaller sanity checking
+            # uninstaller sanity checking
             uninstaller_type = pkginfo.get('uninstall_method')
             if uninstaller_type in ['AdobeCCPUninstaller']:
                 # uninstaller_item_location is required
@@ -369,21 +371,51 @@ def makecatalogs(repopath, options):
     exit(exit_code)
 
 
-BUNDLE_ID = 'com.googlecode.munki.munkiimport'
 def pref(prefname):
-    """Return a preference. Since this uses CFPreferencesCopyAppValue,
-    Preferences can be defined several places. Precedence is:
+    """Returns a preference for prefname"""
+    if not LOCAL_PREFS_SUPPORT:
+        return None
+    try:
+        _prefs = plistlib.readPlist(PREFSPATH)
+    except BaseException:
+        return None
+    if prefname in _prefs:
+        return _prefs[prefname]
+    else:
+        return None
+
+BUNDLE_ID = 'com.googlecode.munki.munkiimport'
+
+
+def pref(prefname):
+    if sys.platform == "darwin":
+        """Return a preference. Since this uses CFPreferencesCopyAppValue,
+        Preferences can be defined several places. Precedence is:
         - MCX/Configuration Profile
         - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XX.plist
         - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
         - /Library/Preferences/com.googlecode.munki.munkiimport.plist
-    """
-    return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
+        """
+        return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
+    else:
+        """Returns a preference for prefname"""
+        if not LOCAL_PREFS_SUPPORT:
+            return None
+        try:
+            _prefs = plistlib.readPlist(PREFSPATH)
+        except BaseException:
+            return None
+        if prefname in _prefs:
+            return _prefs[prefname]
+        else:
+            return None
 
 
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
 PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
                                             PREFSNAME))
+
+
 def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root]"
@@ -421,4 +453,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
