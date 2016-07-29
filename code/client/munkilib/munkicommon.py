@@ -1128,6 +1128,9 @@ class Preferences(object):
         self.user = user
 
     def __iter__(self):
+        """Iterator for keys in the specific 'level' of preferences; this
+        will fail to iterate all available keys for the preferences domain
+        since OS X reads from multiple 'levels' and composites them."""
         keys = CFPreferencesCopyKeyList(
             self.bundle_id, self.user, kCFPreferencesCurrentHost)
         if keys is not None:
@@ -1135,22 +1138,30 @@ class Preferences(object):
                 yield i
 
     def __contains__(self, pref_name):
+        """Since this uses CFPreferencesCopyAppValue, it will find a preference
+        regardless of the 'level' at which it is stored"""
         pref_value = CFPreferencesCopyAppValue(pref_name, self.bundle_id)
         return pref_value is not None
 
     def __getitem__(self, pref_name):
+        """Get a preference value. Normal OS X preference search path applies"""
         return CFPreferencesCopyAppValue(pref_name, self.bundle_id)
 
     def __setitem__(self, pref_name, pref_value):
+        """Sets a preference. if the user is kCFPreferencesCurrentUser, the
+        preference actually gets written at the 'ByHost' level due to the use
+        of kCFPreferencesCurrentHost"""
         CFPreferencesSetValue(
             pref_name, pref_value, self.bundle_id, self.user,
             kCFPreferencesCurrentHost)
         CFPreferencesAppSynchronize(self.bundle_id)
 
     def __delitem__(self, pref_name):
+        """Delete a preference"""
         self.__setitem__(pref_name, None)
 
     def __repr__(self):
+        """Return a text representation of the class"""
         return '<%s %s>' % (self.__class__.__name__, self.bundle_id)
 
     def get(self, pref_name, default=None):
@@ -1162,13 +1173,27 @@ class Preferences(object):
 
 
 class ManagedInstallsPreferences(Preferences):
-    """Preferences which read from /L/P/ManagedInstalls."""
+    """Preferences which are read using 'normal' OS X preferences precedence:
+        Managed Preferences (MCX or Configuration Profile)
+        ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
+        ~/Library/Preferences/ManagedInstalls.plist
+        /Library/Preferences/ManagedInstalls.plist
+    Preferences are written to
+        /Library/Preferences/ManagedInstalls.plist
+    Since this code is usually run as root, ~ is root's home dir"""
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
 
 
 class SecureManagedInstallsPreferences(Preferences):
-    """Preferences which read from /private/var/root/L/P/ManagedInstalls."""
+    """Preferences which are read using 'normal' OS X preferences precedence:
+        Managed Preferences (MCX or Configuration Profile)
+        ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
+        ~/Library/Preferences/ManagedInstalls.plist
+        /Library/Preferences/ManagedInstalls.plist
+    Preferences are written to
+        ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
+    Since this code is usually run as root, ~ is root's home dir"""
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
 
@@ -1225,7 +1250,7 @@ def pref(pref_name):
         'UnattendedAppleUpdates': False,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
-    if pref_value == None:
+    if pref_value is None:
         pref_value = default_prefs.get(pref_name)
         # we're using a default value. We'll write it out to
         # /Library/Preferences/<BUNDLE_ID>.plist for admin
@@ -1301,7 +1326,7 @@ class MunkiLooseVersion(version.LooseVersion):
 
 def padVersionString(versString, tupleCount):
     """Normalize the format of a version string"""
-    if versString == None:
+    if versString is None:
         versString = '0'
     components = str(versString).split('.')
     if len(components) > tupleCount:
@@ -1447,7 +1472,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                         pkginfo['installed_size'] = int(
                             payloads[0].attributes[
                                 'installKBytes'].value.encode('UTF-8'))
-                    if not pkginfo in info:
+                    if pkginfo not in info:
                         info.append(pkginfo)
                 # if there isn't a payload, no receipt is left by a flat
                 # pkg, so don't add this to the info array
@@ -2328,8 +2353,9 @@ def get_hardware_info():
         return {}
 
 
-def get_ip_addresses(version):
-    '''Uses system profiler to get active IP addresses for this machine'''
+def get_ip_addresses(kind):
+    '''Uses system profiler to get active IP addresses for this machine
+    kind must be one of 'IPv4' or 'IPv6' '''
     ip_addresses = []
     cmd = ['/usr/sbin/system_profiler', 'SPNetworkDataType', '-xml']
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
@@ -2348,7 +2374,7 @@ def get_ip_addresses(version):
 
     for item in items:
         try:
-            ip_addresses.extend(item[version]['Addresses'])
+            ip_addresses.extend(item[kind]['Addresses'])
         except KeyError:
             # 'IPv4", 'IPv6' or 'Addresses' is empty, so we ignore
             # this item
