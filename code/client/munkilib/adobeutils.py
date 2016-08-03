@@ -21,7 +21,7 @@ using the CS3/CS4/CS5 Deployment Toolkits.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#import sys
+# import sys
 import json
 import os
 import re
@@ -471,6 +471,7 @@ def parseOptionXML(option_xml_file):
                     info['products'].append(product)
 
     return info
+
 
 def getHDInstallerInfo(hd_payload_root, sap_code):
     '''Attempts to extract some information from a HyperDrive payload
@@ -1302,7 +1303,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                     cataloginfo.update({
                         'display_name': product_app_infos[0]['Name'],
                         'version': product_app_infos[0]['ProductVersion'],
-                        })
+                    })
 
                 for app_info in product_app_infos:
                     for pkg in app_info['Packages']:
