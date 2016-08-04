@@ -458,8 +458,9 @@ def parseOptionXML(option_xml_file):
                     product = {}
                     product['hd_installer'] = True
                     # productVersion is the 'full' version number
-                    # prodVersion may be just the major/minor
-                    # baseVersion may be the lowest version for this standalone product/channel/LEID
+                    # prodVersion seems to be the "customer-facing" version for this update
+                    # baseVersion is the first/base version for this standalone product/channel/LEID,
+                    #   not really needed here so we don't copy it
                     for elem in [
                             'mediaLEID',
                             'prodVersion',
@@ -481,11 +482,10 @@ def getHDInstallerInfo(hd_payload_root, sap_code):
     json_info = json.loads(open(app_json_path, 'r').read())
 
     # Copy some useful top-level keys, useful later for:
-    # - BaseVersion: base product version string used in uninstall XML location
     # - Name: display_name pkginfo key
     # - ProductVersion: version pkginfo key and uninstall XML location
     # - SAPCode: an uninstallXml for an installs item if it's a 'core' Type
-    for key in ['BaseVersion', 'Name', 'ProductVersion', 'SAPCode']:
+    for key in ['Name', 'ProductVersion', 'SAPCode']:
         hd_app_info[key] = json_info[key]
     hd_app_info['SAPCode'] = json_info['SAPCode']
 
@@ -1310,9 +1310,15 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                         # Don't assume 'Type' key always exists. At least the 'AdobeIllustrator20-Settings'
                         # package doesn't have this key set.
                         if pkg.get('Type') == 'core':
+                            # We can't use 'ProductVersion' from Application.json for the part following
+                            # the SAP code, because it's usually too specific and won't match the "short"
+                            # product version. We can take 'prodVersion' from the optionXML.xml instead.
+                            pkg_prod_vers = [prod['prodVersion']
+                                             for prod in option_xml_info['products']
+                                             if prod['SAPCode'] == app_info['SAPCode']][0]
                             uninstall_file_name = '_'.join([
                                 app_info['SAPCode'],
-                                app_info['BaseVersion'].replace('.', '_'),
+                                pkg_prod_vers.replace('.', '_'),
                                 pkg['PackageName'],
                                 pkg['PackageVersion']]) + '.pimx'
                             filepath = os.path.join(uninstalldir, uninstall_file_name)
