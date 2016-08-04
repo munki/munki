@@ -764,8 +764,8 @@ def installWithInfo(
                 elif (munkicommon.hasValidPackageExt(itempath) or
                       itempath.endswith(".dist")):
                     (retcode, needtorestart) = install(
-                        itempath, choicesXMLfile, suppressBundleRelocation,
-                        installer_environment)
+                        itempath, display_name, choicesXMLfile,
+                        suppressBundleRelocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
