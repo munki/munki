@@ -250,10 +250,10 @@ class Gurl(NSObject):
                 NSURLSessionConfiguration.defaultSessionConfiguration()
 
             # (optional) set connections to ignore system proxies
-            if self.ignore_system_proxy == True:
-              configuration.setConnectionProxyDictionary_(
-                  { kCFNetworkProxiesHTTPEnable: False,
-                    kCFNetworkProxiesHTTPSEnable: False })
+            if self.ignore_system_proxy is True:
+                configuration.setConnectionProxyDictionary_(
+                    {kCFNetworkProxiesHTTPEnable: False,
+                     kCFNetworkProxiesHTTPSEnable: False})
 
             # set minumum supported TLS protocol (defaults to TLS1)
             configuration.setTLSMinimumSupportedProtocol_(
@@ -477,7 +477,7 @@ class Gurl(NSObject):
     def handleRedirect_newRequest_withCompletionHandler_(
             self, response, request, completionHandler):
         '''Handle the redirect request'''
-        if response == None:
+        if response is None:
             # the request has changed the NSURLRequest in order to standardize
             # its format, for example, changing a request for
             # http://www.apple.com to http://www.apple.com/. This occurs because
@@ -504,7 +504,7 @@ class Gurl(NSObject):
         newParsedURL = urlparse(newURL)
         # This code was largely based on the work of Andreas Fuchs
         # (https://github.com/munki/munki/pull/465)
-        if self.follow_redirects == True or self.follow_redirects == 'all':
+        if self.follow_redirects is True or self.follow_redirects == 'all':
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             if completionHandler:
