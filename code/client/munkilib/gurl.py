@@ -33,6 +33,9 @@ from objc import super
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
+
+from CFNetwork import kCFNetworkProxiesHTTPSEnable, kCFNetworkProxiesHTTPEnable
+
 from Foundation import NSBundle, \
                        NSRunLoop, NSDate, \
                        NSObject, NSURL, NSURLConnection, \
@@ -176,6 +179,7 @@ class Gurl(NSObject):
             return
 
         self.follow_redirects = options.get('follow_redirects', False)
+        self.ignore_system_proxy = options.get('ignore_system_proxy', False)
         self.destination_path = options.get('file')
         self.can_resume = options.get('can_resume', False)
         self.url = options.get('url')
@@ -244,6 +248,13 @@ class Gurl(NSObject):
         if NSURLSESSION_AVAILABLE:
             configuration = \
                 NSURLSessionConfiguration.defaultSessionConfiguration()
+
+            # (optional) set connections to ignore system proxies
+            if self.ignore_system_proxy == True:
+              configuration.setConnectionProxyDictionary_(
+                  { kCFNetworkProxiesHTTPEnable: False,
+                    kCFNetworkProxiesHTTPSEnable: False })
+
             # set minumum supported TLS protocol (defaults to TLS1)
             configuration.setTLSMinimumSupportedProtocol_(
                 self.minimum_tls_protocol)

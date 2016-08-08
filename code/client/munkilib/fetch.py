@@ -184,9 +184,12 @@ def get_url(url, destinationpath,
         cache_data = gurl_obj.get_stored_headers()
         del gurl_obj
 
+    ignore_system_proxy = munkicommon.pref('IgnoreSystemProxies')
+
     options = {'url': url,
                'file': tempdownloadpath,
                'follow_redirects': follow_redirects,
+               'ignore_system_proxy': ignore_system_proxy,
                'can_resume': resume,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
