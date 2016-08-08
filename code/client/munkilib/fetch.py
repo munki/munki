@@ -338,7 +338,7 @@ def getResourceIfChangedAtomically(url,
         munkicommon.log('Cached payload does not match hash in catalog, '
                         'will check if changed and redownload: %s'
                         % destinationpath)
-        #continue with normal if-modified-since/etag update methods.
+        # continue with normal if-modified-since/etag update methods.
 
     if follow_redirects is not True:
         # If we haven't explicitly said to follow redirect,
