@@ -36,17 +36,16 @@ from objc import super
 
 from CFNetwork import kCFNetworkProxiesHTTPSEnable, kCFNetworkProxiesHTTPEnable
 
-from Foundation import NSBundle, \
-                       NSRunLoop, NSDate, \
-                       NSObject, NSURL, NSURLConnection, \
-                       NSMutableURLRequest, \
-                       NSURLRequestReloadIgnoringLocalCacheData, \
-                       NSURLResponseUnknownLength, \
-                       NSLog, \
-                       NSURLCredential, NSURLCredentialPersistenceNone, \
-                       NSPropertyListSerialization, \
-                       NSPropertyListMutableContainersAndLeaves, \
-                       NSPropertyListXMLFormat_v1_0
+from Foundation import (NSBundle, NSRunLoop, NSDate,
+                        NSObject, NSURL, NSURLConnection,
+                        NSMutableURLRequest,
+                        NSURLRequestReloadIgnoringLocalCacheData,
+                        NSURLResponseUnknownLength,
+                        NSLog,
+                        NSURLCredential, NSURLCredentialPersistenceNone,
+                        NSPropertyListSerialization,
+                        NSPropertyListMutableContainersAndLeaves,
+                        NSPropertyListXMLFormat_v1_0)
 
 try:
     from Foundation import NSURLSession, NSURLSessionConfiguration
@@ -249,7 +248,7 @@ class Gurl(NSObject):
             configuration = \
                 NSURLSessionConfiguration.defaultSessionConfiguration()
 
-            # (optional) set connections to ignore system proxies
+            # optional: ignore system http/https proxies (10.9+ only)
             if self.ignore_system_proxy is True:
                 configuration.setConnectionProxyDictionary_(
                     {kCFNetworkProxiesHTTPEnable: False,
