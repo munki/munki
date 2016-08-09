@@ -1315,7 +1315,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                             # product version. We can take 'prodVersion' from the optionXML.xml instead.
                             pkg_prod_vers = [prod['prodVersion']
                                              for prod in option_xml_info['products']
-                                             if prod['SAPCode'] == app_info['SAPCode']][0]
+                                             if prod.get('SAPCode') == app_info['SAPCode']][0]
                             uninstall_file_name = '_'.join([
                                 app_info['SAPCode'],
                                 pkg_prod_vers.replace('.', '_'),
