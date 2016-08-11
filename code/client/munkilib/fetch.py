@@ -99,21 +99,26 @@ class GurlError(Exception):
     """General exception for gurl errors"""
     pass
 
+
 class HTTPError(Exception):
     """General exception for http/https errors"""
     pass
+
 
 class MunkiDownloadError(Exception):
     """Base exception for download errors"""
     pass
 
+
 class GurlDownloadError(MunkiDownloadError):
     """Gurl failed to download the item"""
     pass
 
+
 class FileCopyError(MunkiDownloadError):
     """Download failed because of file copy errors."""
     pass
+
 
 class PackageVerificationError(MunkiDownloadError):
     """Package failed verification"""
@@ -184,9 +189,13 @@ def get_url(url, destinationpath,
         cache_data = gurl_obj.get_stored_headers()
         del gurl_obj
 
+    # only works with NSURLSession (10.9 and newer)
+    ignore_system_proxy = munkicommon.pref('IgnoreSystemProxies')
+
     options = {'url': url,
                'file': tempdownloadpath,
                'follow_redirects': follow_redirects,
+               'ignore_system_proxy': ignore_system_proxy,
                'can_resume': resume,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
@@ -236,13 +245,13 @@ def get_url(url, destinationpath,
         # safely kill the connection then re-raise
         connection.cancel()
         raise
-    except Exception, err: # too general, I know
+    except Exception, err:  # too general, I know
         # Let us out! ... Safely! Unexpectedly quit dialogs are annoying...
         connection.cancel()
         # Re-raise the error as a GurlError
         raise GurlError(-1, str(err))
 
-    if connection.error != None:
+    if connection.error is not None:
         # Gurl returned an error
         munkicommon.display_detail(
             'Download error %s: %s', connection.error.code(),
@@ -257,7 +266,7 @@ def get_url(url, destinationpath,
         raise GurlError(connection.error.code(),
                         connection.error.localizedDescription())
 
-    if connection.response != None:
+    if connection.response is not None:
         munkicommon.display_debug1('Status: %s', connection.status)
         munkicommon.display_debug1('Headers: %s', connection.headers)
     if connection.redirection != []:
@@ -285,6 +294,7 @@ def get_url(url, destinationpath,
                 pass
         raise HTTPError(connection.status,
                         connection.headers.get('http_result_description', ''))
+
 
 def getResourceIfChangedAtomically(url,
                                    destinationpath,
@@ -328,9 +338,9 @@ def getResourceIfChangedAtomically(url,
         munkicommon.log('Cached payload does not match hash in catalog, '
                         'will check if changed and redownload: %s'
                         % destinationpath)
-        #continue with normal if-modified-since/etag update methods.
+        # continue with normal if-modified-since/etag update methods.
 
-    if follow_redirects != True:
+    if follow_redirects is not True:
         # If we haven't explicitly said to follow redirect,
         # the preference decides
         follow_redirects = munkicommon.pref('FollowHTTPRedirects')
@@ -552,4 +562,3 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
             'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
 
     return (False, chash)
-
