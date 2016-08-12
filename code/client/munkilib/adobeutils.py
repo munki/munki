@@ -487,7 +487,9 @@ def getHDInstallerInfo(hd_payload_root, sap_code):
     # - Name: display_name pkginfo key
     # - ProductVersion: version pkginfo key and uninstall XML location
     # - SAPCode: an uninstallXml for an installs item if it's a 'core' Type
-    for key in ['Name', 'ProductVersion', 'SAPCode']:
+    # - BaseVersion and version: not currently used but may be useful once
+    #   there are more HD installers in the future
+    for key in ['BaseVersion', 'Name', 'ProductVersion', 'SAPCode', 'version']:
         hd_app_info[key] = json_info[key]
     hd_app_info['SAPCode'] = json_info['SAPCode']
 
