@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2011-2016 Greg Neagle.
+# Copyright 2011-2014 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,20 +20,25 @@ manifestutil
 Created by Greg Neagle on 2011-03-04.
 """
 
-import ctypes
 import fnmatch
-import optparse
-import os
-import plistlib
-import readline
 import shlex
 import subprocess
 import sys
-import thread
-import time
+import optparse
+import os
+import readline
 
-from ctypes.util import find_library
-from xml.parsers.expat import ExpatError
+#try:
+#    from munkilib import FoundationPlist as plistlib
+#except ImportError:
+#    try:
+#        import FoundationPlist as plistlib
+#    except ImportError:
+#        # maybe we're not on an OS X machine...
+#        print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
+#                              "using plistlib instead.")
+#        import plistlib
+import plistlib
 
 try:
     from munkilib.munkicommon import get_version
@@ -43,126 +48,8 @@ except ImportError:
         '''Placeholder if munkilib is not available'''
         return 'UNKNOWN'
 
-try:
-    # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-    # No name 'Foo' in module 'Bar' warnings. Disable them.
-    # pylint: disable=E0611
-    from Foundation import CFPreferencesAppSynchronize
-    from Foundation import CFPreferencesCopyAppValue
-    from Foundation import CFPreferencesSetAppValue
-    # pylint: enable=E0611
 
-    BUNDLE_ID = 'com.googlecode.munki.munkiimport'
-    def pref(prefname):
-        """Return a preference. Since this uses CFPreferencesCopyAppValue,
-        Preferences can be defined several places. Precedence is:
-            - MCX/Configuration Profile
-            - ~/Library/Preferences/ByHost/
-                com.googlecode.munki.munkiimport.XX.plist
-            - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
-            - /Library/Preferences/com.googlecode.munki.munkiimport.plist
-        """
-        return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
-
-
-    def configure(args):
-        """Configures manifestutil for use"""
-        _prefs = {}
-        if len(args):
-            print >> sys.stderr, 'Usage: configure'
-            return 22 # Invalid argument
-        for (key, prompt) in [
-                ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-                ('repo_url',
-                 'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
-
-            newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
-            _prefs[key] = newvalue or pref(key) or ''
-
-        for key, value in _prefs.items():
-            try:
-                CFPreferencesSetAppValue(key, value, BUNDLE_ID)
-            except BaseException:
-                print >> sys.stderr, 'Could not save configuration!'
-            finally:
-                CFPreferencesAppSynchronize(BUNDLE_ID)
-
-except ImportError:
-    # Foundation isn't available
-    PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-    PREFSPATH = os.path.expanduser(
-        os.path.join('~/Library/Preferences', PREFSNAME))
-    _PREFS = {}
-    def pref(prefname):
-        """Returns a preference for prefname"""
-        global _PREFS
-        if not _PREFS:
-            try:
-                _PREFS = plistlib.readPlist(PREFSPATH)
-            except (IOError, OSError, ExpatError):
-                pass
-        if prefname in _PREFS:
-            return _PREFS[prefname]
-        else:
-            return None
-
-
-    def configure(args):
-        """Configures manifestutil for use"""
-        if len(args):
-            print >> sys.stderr, 'Usage: configure'
-            return 22 # Invalid argument
-        for (key, prompt) in [
-                ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-                ('repo_url',
-                 'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
-
-            newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
-            _PREFS[key] = newvalue or pref(key) or ''
-
-        try:
-            plistlib.writePlist(_PREFS, PREFSPATH)
-            return 0
-        except (IOError, OSError, ExpatError):
-            print >> sys.stderr, (
-                'Could not save configuration to %s' % PREFSPATH)
-            return 1 # Operation not permitted
-
-
-if 'libedit' in readline.__doc__:
-    # readline module was compiled against libedit
-    LIBEDIT = ctypes.cdll.LoadLibrary(find_library('libedit'))
-else:
-    LIBEDIT = None
-
-
-def raw_input_with_default(prompt, default_text):
-    '''A nasty, nasty hack to get around Python readline limitations under
-    OS X. Gives us editable default text for munkiimport choices'''
-
-    def insert_default_text(prompt, text):
-        '''Helper function'''
-        time.sleep(0.01)
-        LIBEDIT.rl_set_prompt(prompt)
-        readline.insert_text(text)
-        LIBEDIT.rl_forced_update_display()
-
-    readline.clear_history()
-    if not default_text:
-        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
-    elif LIBEDIT:
-        # readline module was compiled against libedit
-        thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return unicode(raw_input(), encoding=sys.stdin.encoding)
-    else:
-        readline.set_startup_hook(lambda: readline.insert_text(default_text))
-        try:
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
-        finally:
-            readline.set_startup_hook()
-
-
-def get_installer_item_names(cataloglist):
+def getInstallerItemNames(cataloglist):
     '''Returns a list of unique installer item (pkg) names
     from the given list of catalogs'''
     item_list = []
@@ -172,20 +59,20 @@ def get_installer_item_names(cataloglist):
             try:
                 catalog = plistlib.readPlist(
                     os.path.join(catalogs_path, filename))
-            except (IOError, OSError, ExpatError):
+            except Exception:
                 # skip items that aren't valid plists
                 # or that we can't read
                 pass
             else:
                 item_list.extend([item['name']
-                                  for item in catalog
-                                  if not item.get('update_for')])
+                             for item in catalog
+                             if not item.get('update_for')])
     item_list = list(set(item_list))
     item_list.sort()
     return item_list
 
 
-def get_manifest_names():
+def getManifestNames():
     '''Returns a list of available manifests'''
     manifests_path = os.path.join(pref('repo_path'), 'manifests')
     manifests = []
@@ -205,7 +92,7 @@ def get_manifest_names():
     return manifests
 
 
-def get_catalogs():
+def getCatalogs():
     '''Returns a list of available catalogs'''
     catalogs_path = os.path.join(pref('repo_path'), 'catalogs')
     catalogs = []
@@ -214,8 +101,9 @@ def get_catalogs():
             # don't process these
             continue
         try:
-            _ = plistlib.readPlist(os.path.join(catalogs_path, name))
-        except (IOError, OSError, ExpatError):
+            catalog = plistlib.readPlist(
+                os.path.join(catalogs_path, name))
+        except Exception:
             # skip items that aren't valid plists
             pass
         else:
@@ -224,7 +112,7 @@ def get_catalogs():
     return catalogs
 
 
-def get_manifest_pkg_sections():
+def getManifestPkgSections():
     '''Returns a list of manifest sections that can contain pkg names'''
     return ['managed_installs',
             'managed_uninstalls',
@@ -240,7 +128,9 @@ def printplistitem(label, value, indent=0):
     elif type(value) == list or type(value).__name__ == 'NSCFArray':
         if label:
             print indentspace*indent, '%s:' % label
+        index = 0
         for item in value:
+            index += 1
             printplistitem('', item, indent+1)
     elif type(value) == dict or type(value).__name__ == 'NSCFDictionary':
         if label:
@@ -262,23 +152,23 @@ def printplist(plistdict):
         printplistitem(key, plistdict[key])
 
 
-def get_manifest(manifest_name):
+def getManifest(manifest_name):
     '''Gets the contents of a manifest'''
     manifest_path = os.path.join(
         pref('repo_path'), 'manifests', manifest_name)
     if os.path.exists(manifest_path):
         try:
             return plistlib.readPlist(manifest_path)
-        except (IOError, OSError, ExpatError):
-            print >> sys.stderr, (
-                'Could not read manifest %s' % manifest_name)
+        except Exception, errmsg:
+            print >> sys.stderr, \
+                'Could not read manifest %s' % manifest_name
             return None
     else:
-        print >> sys.stderr, 'Manifest %s doesn\'t exist!' % manifest_name
-        return None
+           print >> sys.stderr, 'Manifest %s doesn\'t exist!' % manifest_name
+           return None
 
 
-def save_manifest(manifest_dict, manifest_name, overwrite_existing=False):
+def saveManifest(manifest_dict, manifest_name, overwrite_existing=False):
     '''Saves a manifest to disk'''
     manifest_path = os.path.join(
         pref('repo_path'), 'manifests', manifest_name)
@@ -289,12 +179,12 @@ def save_manifest(manifest_dict, manifest_name, overwrite_existing=False):
     try:
         plistlib.writePlist(manifest_dict, manifest_path)
         return True
-    except (IOError, OSError, ExpatError), err:
-        print >> sys.stderr, 'Saving %s failed: %s' % (manifest_name, err)
+    except Exception, errmsg:
+        print >> sys.stderr, 'Saving %s failed: %s' % (manifest_name, errmsg)
         return False
 
 
-def repo_available():
+def repoAvailable():
     """Checks the repo path for proper directory structure.
     If the directories look wrong we probably don't have a
     valid repo path. Returns True if things look OK."""
@@ -303,7 +193,7 @@ def repo_available():
         print >> sys.stderr, 'No repo path specified.'
         return False
     if not os.path.exists(repo_path):
-        mount_repo_cli()
+        mountRepoCLI()
     if not os.path.exists(repo_path):
         return False
     for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
@@ -314,7 +204,7 @@ def repo_available():
     return True
 
 
-def mount_repo_cli():
+def mountRepoCLI():
     """Attempts to connect to the repo fileshare"""
     global WE_MOUNTED_THE_REPO
     repo_path = pref('repo_path')
@@ -339,7 +229,7 @@ def mount_repo_cli():
         WE_MOUNTED_THE_REPO = True
 
 
-def unmount_repo_cli():
+def unmountRepoCLI():
     """Attempts to unmount the repo fileshare"""
     repo_path = pref('repo_path')
     if not os.path.exists(repo_path):
@@ -348,20 +238,34 @@ def unmount_repo_cli():
     return subprocess.call(cmd)
 
 
-def cleanup_and_exit(exitcode):
-    """Give the user the chance to unmount the repo when we exit"""
+def cleanupAndExit(exitcode):
     result = 0
     if WE_MOUNTED_THE_REPO:
         answer = raw_input('Unmount the repo fileshare? [y/n] ')
         if answer.lower().startswith('y'):
-            result = unmount_repo_cli()
+            result = unmountRepoCLI()
     exit(exitcode or result)
 
 
-def update_cached_manifest_list():
+_prefs = {}
+def pref(prefname):
+    """Returns a preference for prefname"""
+    global _prefs
+    if not _prefs:
+        try:
+            _prefs = plistlib.readPlist(PREFSPATH)
+        except Exception:
+            pass
+    if prefname in _prefs:
+        return _prefs[prefname]
+    else:
+        return None
+
+
+def updateCachedManifestList():
     '''Updates our cached list of available manifests so our completer
     will return all the available manifests.'''
-    CMD_ARG_DICT['manifests'] = get_manifest_names()
+    CMD_ARG_DICT['manifests'] = getManifestNames()
 
 
 ##### subcommand functions #####
@@ -371,27 +275,14 @@ class MyOptParseError(Exception):
     pass
 
 
-class MyOptParseExit(Exception):
-    '''Raised when optparse calls self.exit() so we can handle it instead
-    of exiting'''
-    pass
-
-
 class MyOptionParser(optparse.OptionParser):
-    '''Custom option parser that overrides the error handler and
-    the exit handler so printing help doesn't exit the interactive
-    psuedo-shell'''
+    '''Custom option parser that overrides the error handler'''
     def error(self, msg):
         """error(msg : string)
 
         """
         self.print_usage(sys.stderr)
         raise MyOptParseError('option error: %s' % msg)
-
-    def exit(self, status=0, msg=None):
-        if msg:
-            sys.stderr.write(msg)
-        raise MyOptParseExit
 
 
 def version(args):
@@ -405,43 +296,43 @@ def version(args):
 
 def list_catalogs(args):
     '''Prints the names of the available catalogs'''
-    parser = MyOptionParser()
-    parser.set_usage('''list-catalogs
+    p = MyOptionParser()
+    p.set_usage('''list-catalogs
        Prints the names of the available catalogs''')
     try:
-        _, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
 
     if len(arguments) != 0:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 22 # Invalid argument
-    for item in get_catalogs():
+    for item in getCatalogs():
         print item
     return 0
 
 
 def list_catalog_items(args):
     '''Lists items in the given catalogs'''
-    parser = MyOptionParser()
-    parser.set_usage('''list-catalog-items CATALOG_NAME [CATALOG_NAME ...]
+    p = MyOptionParser()
+    p.set_usage('''list-catalog-items CATALOG_NAME [CATALOG_NAME ...]
        Lists items in the given catalogs''')
     try:
-        _, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
 
     if len(arguments) == 0:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 1 # Operation not permitted
-    available_catalogs = get_catalogs()
+    available_catalogs = getCatalogs()
     for catalog in arguments:
         if catalog not in available_catalogs:
             print >> sys.stderr, '%s: no such catalog!' % catalog
             return 2 # No such file or directory
-    for pkg in get_installer_item_names(arguments):
+    for pkg in getInstallerItemNames(arguments):
         print pkg
     return 0
 
@@ -449,11 +340,11 @@ def list_catalog_items(args):
 def list_manifests(args):
     '''Prints names of available manifests, filtering on arg[0]
     similar to Unix file globbing'''
-    parser = MyOptionParser()
-    parser.set_usage('''list-manifests [FILE_NAME_MATCH_STRING]
+    p = MyOptionParser()
+    p.set_usage('''list-manifests [FILE_NAME_MATCH_STRING]
        Prints names of available manifests.''')
     try:
-        _, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -463,9 +354,9 @@ def list_manifests(args):
     elif len(arguments) == 0:
         list_filter = '*'
     else:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
-    for item in get_manifest_names():
+    for item in getManifestNames():
         if fnmatch.fnmatch(item, list_filter):
             print item
     return 0
@@ -474,16 +365,15 @@ def list_manifests(args):
 def find(args):
     '''Find text in manifests, optionally searching just a specific manifest
     section specified by keyname'''
-    parser = MyOptionParser()
-    parser.set_usage('''find FIND_TEXT [--section SECTION_NAME]
+    p = MyOptionParser()
+    p.set_usage('''find FIND_TEXT [--section SECTION_NAME]
        Find text in manifests, optionally searching a specific manifest
        section''')
-    parser.add_option('--section',
-                      metavar='SECTION_NAME',
-                      help=('(Optional) Section of the manifest to search for '
-                            'FIND_TEXT'))
+    p.add_option('--section',
+        metavar='SECTION_NAME',
+        help='(Optional) Section of the manifest to search for FIND_TEXT')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -491,18 +381,18 @@ def find(args):
         options.section = arguments[1]
         del arguments[1]
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     findtext = arguments[0]
     keyname = options.section
 
     manifests_path = os.path.join(pref('repo_path'), 'manifests')
     count = 0
-    for name in get_manifest_names():
+    for name in getManifestNames():
         pathname = os.path.join(manifests_path, name)
         try:
             manifest = plistlib.readPlist(pathname)
-        except (IOError, OSError, ExpatError):
+        except Exception:
             print >> sys.stderr, 'Error reading %s' % pathname
             continue
         if keyname:
@@ -514,7 +404,7 @@ def find(args):
                             if findtext.upper() in item.upper():
                                 print '%s: %s' % (name, item)
                                 count += 1
-                        except AttributeError:
+                        except AttributeError, err:
                             pass
                 elif findtext.upper() in value.upper():
                     print '%s: %s' % (name, value)
@@ -528,7 +418,7 @@ def find(args):
                             if findtext.upper() in item.upper():
                                 print '%s (%s): %s' % (name, key, item)
                                 count += 1
-                        except AttributeError:
+                        except AttributeError, err:
                             pass
                 elif findtext.upper() in value.upper():
                     print '%s (%s): %s' % (name, key, value)
@@ -540,19 +430,19 @@ def find(args):
 
 def display_manifest(args):
     '''Prints contents of a given manifest'''
-    parser = MyOptionParser()
-    parser.set_usage('''display-manifest MANIFESTNAME
+    p = MyOptionParser()
+    p.set_usage('''display-manifest MANIFESTNAME
        Prints the contents of the specified manifest''')
     try:
-        _, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     manifestname = arguments[0]
-    manifest = get_manifest(manifestname)
+    manifest = getManifest(manifestname)
     if manifest:
         printplist(manifest)
         return 0
@@ -562,24 +452,24 @@ def display_manifest(args):
 
 def new_manifest(args):
     '''Creates a new, empty manifest'''
-    parser = MyOptionParser()
-    parser.set_usage('''new-manifest MANIFESTNAME
+    p = MyOptionParser()
+    p.set_usage('''new-manifest MANIFESTNAME
        Creates a new empty manifest''')
     try:
-        _, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
-    manifest_name = arguments[0]
+    manifest_name  = arguments[0]
     manifest = {'catalogs': [],
                 'included_manifests': [],
                 'managed_installs': [],
                 'managed_uninstalls': []}
-    if save_manifest(manifest, manifest_name):
-        update_cached_manifest_list()
+    if saveManifest(manifest, manifest_name):
+        updateCachedManifestList()
         return 0
     else:
         return 1 # Operation not permitted
@@ -587,45 +477,67 @@ def new_manifest(args):
 
 def copy_manifest(args):
     '''Copies one manifest to another'''
-    parser = MyOptionParser()
-    parser.set_usage(
+    p = MyOptionParser()
+    p.set_usage(
         '''copy-manifest SOURCE_MANIFEST DESTINATION_MANIFEST
        Copies the contents of one manifest to another''')
     try:
-        _, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     if len(arguments) != 2:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     source_manifest = arguments[0]
     dest_manifest = arguments[1]
-    manifest = get_manifest(source_manifest)
-    if manifest and save_manifest(manifest, dest_manifest):
-        update_cached_manifest_list()
+    manifest = getManifest(source_manifest)
+    if manifest and saveManifest(manifest, dest_manifest):
+        updateCachedManifestList()
         return 0
     else:
         return 1 # Operation not permitted
 
+def rename_manifest(args):
+    '''Renames a manifest'''
+    p = MyOptionParser()
+    p.set_usage(
+        '''rename-manifest SOURCE_MANIFEST DESTINATION_MANIFEST
+       Renames the manifest to another''')
+    try:
+        options, arguments = p.parse_args(args)
+    except MyOptParseError, errmsg:
+        print >> sys.stderr, str(errmsg)
+        return 22 # Invalid argument
+    if len(arguments) != 2:
+        p.print_usage(sys.stderr)
+        return 7 # Argument list too long
+    source_manifest = arguments[0]
+    dest_manifest = arguments[1]
+    manifest = getManifest(source_manifest)
+    if manifest and os.rename(manifest, dest_manifest):
+        updateCachedManifestList()
+        return 0
+    else:
+        return 1 # Operation not permitted
 
 def add_pkg(args):
     '''Adds a package to a manifest.'''
-    parser = MyOptionParser()
-    parser.set_usage(
+    p = MyOptionParser()
+    p.set_usage(
         '''add-pkg PKGNAME --manifest MANIFESTNAME [--section SECTIONNAME]
        Adds a package to a manifest. Package is added to managed_installs
        unless a different manifest section is specified with the
        --section option''')
-    parser.add_option('--manifest',
-                      metavar='MANIFESTNAME',
-                      help='name of manifest on which to operate')
-    parser.add_option('--section', default='managed_installs',
-                      metavar='SECTIONNAME',
-                      help=('manifest section to which to add the package. '
-                            'Defaults to managed_installs.'))
+    p.add_option('--manifest',
+                  metavar='MANIFESTNAME',
+                  help='''name of manifest on which to operate''')
+    p.add_option('--section', default='managed_installs',
+                 metavar='SECTIONNAME',
+                 help='''manifest section to which to add the package.
+                 Defaults to managed_installs.''')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -634,35 +546,35 @@ def add_pkg(args):
             options.manifest = arguments[1]
             del arguments[1]
         else:
-            parser.print_usage(sys.stderr)
+            p.print_usage(sys.stderr)
             return 7 # Argument list too long
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     pkgname = arguments[0]
 
-    manifest = get_manifest(options.manifest)
+    manifest = getManifest(options.manifest)
     if not manifest:
         return 2 # No such file or directory
-    for section in get_manifest_pkg_sections():
+    for section in getManifestPkgSections():
         if pkgname in manifest.get(section, []):
             print >> sys.stderr, (
                 'Package %s is already in section %s of manifest %s.'
-                % (pkgname, section, options.manifest))
+                 % (pkgname, section, options.manifest))
             return 1 # Operation not permitted
 
     manifest_catalogs = manifest.get('catalogs', [])
-    available_pkgnames = get_installer_item_names(manifest_catalogs)
+    available_pkgnames = getInstallerItemNames(manifest_catalogs)
     if pkgname not in available_pkgnames:
         print >> sys.stderr, (
             'WARNING: Package %s is not available in catalogs %s '
             'of manifest %s.'
-            % (pkgname, manifest_catalogs, options.manifest))
+             % (pkgname, manifest_catalogs, options.manifest))
     if not options.section in manifest:
         manifest[options.section] = [pkgname]
     else:
         manifest[options.section].append(pkgname)
-    if save_manifest(manifest, options.manifest, overwrite_existing=True):
+    if saveManifest(manifest, options.manifest, overwrite_existing=True):
         print ('Added %s to section %s of manifest %s.'
                % (pkgname, options.section, options.manifest))
         return 0
@@ -672,21 +584,21 @@ def add_pkg(args):
 
 def remove_pkg(args):
     '''Removes a package from a manifest.'''
-    parser = MyOptionParser()
-    parser.set_usage(
+    p = MyOptionParser()
+    p.set_usage(
         '''remove-pkg PKGNAME --manifest MANIFESTNAME [--section SECTIONNAME]
        Removes a package from a manifest. Package is removed from
        managed_installs unless a different manifest section is specified with
        the --section option''')
-    parser.add_option('--manifest',
-                      metavar='MANIFESTNAME',
-                      help='''name of manifest on which to operate''')
-    parser.add_option('--section', default='managed_installs',
-                      metavar='SECTIONNAME',
-                      help=('manifest section from which to remove the '
-                            'package. Defaults to managed_installs.'))
+    p.add_option('--manifest',
+                 metavar='MANIFESTNAME',
+                 help='''name of manifest on which to operate''')
+    p.add_option('--section', default='managed_installs',
+                 metavar='SECTIONNAME',
+                 help='''manifest section from which to remove the package.
+                 Defaults to managed_installs.''')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -695,30 +607,30 @@ def remove_pkg(args):
             options.manifest = arguments[1]
             del arguments[1]
         else:
-            parser.print_usage(sys.stderr)
+            p.print_usage(sys.stderr)
             return 7 # Argument list too long
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     pkgname = arguments[0]
 
-    manifest = get_manifest(options.manifest)
+    manifest = getManifest(options.manifest)
     if not manifest:
         return 2 # No such file or directory
     if not options.section in manifest:
         print >> sys.stderr, ('Section %s is not in manifest %s.'
-                              % (options.section, manifest))
+                               % (options.section, manifest))
         return 1 # Operation not permitted
     if pkgname not in manifest[options.section]:
         print >> sys.stderr, ('Package %s is not in section %s '
                               'of manifest %s.'
-                              % (pkgname, options.section, options.manifest))
+                               % (pkgname, options.section, options.manifest))
         return 1 # Operation not permitted
     else:
         manifest[options.section].remove(pkgname)
-        if save_manifest(manifest, options.manifest, overwrite_existing=True):
+        if saveManifest(manifest, options.manifest, overwrite_existing=True):
             print ('Removed %s from section %s of manifest %s.'
-                   % (pkgname, options.section, options.manifest))
+                    % (pkgname, options.section, options.manifest))
             return 0
         else:
             return 1 # Operation not permitted
@@ -726,14 +638,14 @@ def remove_pkg(args):
 
 def add_catalog(args):
     '''Adds a catalog to a manifest.'''
-    parser = MyOptionParser()
-    parser.set_usage('''add-catalog CATALOGNAME --manifest MANIFESTNAME
+    p = MyOptionParser()
+    p.set_usage('''add-catalog CATALOGNAME --manifest MANIFESTNAME
        Adds a catalog to a manifest''')
-    parser.add_option('--manifest',
-                      metavar='MANIFESTNAME',
-                      help='name of manifest on which to operate')
+    p.add_option('--manifest',
+                 metavar='MANIFESTNAME',
+                 help='''name of manifest on which to operate''')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -742,19 +654,19 @@ def add_catalog(args):
             options.manifest = arguments[1]
             del arguments[1]
         else:
-            parser.print_usage(sys.stderr)
+            p.print_usage(sys.stderr)
             return 7 # Argument list too long
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     catalogname = arguments[0]
 
-    available_catalogs = get_catalogs()
+    available_catalogs = getCatalogs()
     if catalogname not in available_catalogs:
         print >> sys.stderr, 'Unknown catalog name: %s.' % catalogname
         return 2 # no such file or directory
 
-    manifest = get_manifest(options.manifest)
+    manifest = getManifest(options.manifest)
     if not manifest:
         return 2 # no such file or directory
     if not 'catalogs' in manifest:
@@ -762,15 +674,15 @@ def add_catalog(args):
     if catalogname in manifest['catalogs']:
         print >> sys.stderr, (
             'Catalog %s is already in manifest %s.'
-            % (catalogname, options.manifest))
+             % (catalogname, options.manifest))
         return 1 # Operation not permitted
     else:
         # put it at the front of the catalog list as that is usually
         # what is wanted...
         manifest['catalogs'].insert(0, catalogname)
-        if save_manifest(manifest, options.manifest, overwrite_existing=True):
+        if saveManifest(manifest, options.manifest, overwrite_existing=True):
             print ('Added %s to catalogs of manifest %s.'
-                   % (catalogname, options.manifest))
+                    % (catalogname, options.manifest))
             return 0
         else:
             return 1 # Operation not permitted
@@ -778,14 +690,14 @@ def add_catalog(args):
 
 def remove_catalog(args):
     '''Removes a catalog from a manifest.'''
-    parser = MyOptionParser()
-    parser.set_usage('''remove-catalog CATALOGNAME --manifest MANIFESTNAME
+    p = MyOptionParser()
+    p.set_usage('''remove-catalog CATALOGNAME --manifest MANIFESTNAME
        Removes a catalog from a manifest''')
-    parser.add_option('--manifest',
-                      metavar='MANIFESTNAME',
-                      help='name of manifest on which to operate')
+    p.add_option('--manifest',
+                 metavar='MANIFESTNAME',
+                 help='''name of manifest on which to operate''')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -794,26 +706,26 @@ def remove_catalog(args):
             options.manifest = arguments[1]
             del arguments[1]
         else:
-            parser.print_usage(sys.stderr)
+            p.print_usage(sys.stderr)
             return 7 # Argument list too long
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     catalogname = arguments[0]
 
-    manifest = get_manifest(options.manifest)
+    manifest = getManifest(options.manifest)
     if not manifest:
         return 2 # no such file or directory
     if catalogname not in manifest.get('catalogs', []):
         print >> sys.stderr, (
             'Catalog %s is not in manifest %s.'
-            % (catalogname, options.manifest))
+             % (catalogname, options.manifest))
         return 1 # Operation not permitted
     else:
         manifest['catalogs'].remove(catalogname)
-        if save_manifest(manifest, options.manifest, overwrite_existing=True):
+        if saveManifest(manifest, options.manifest, overwrite_existing=True):
             print ('Removed %s from catalogs of manifest %s.'
-                   % (catalogname, options.manifest))
+                    % (catalogname, options.manifest))
             return 0
         else:
             return 1 # Operation not permitted
@@ -821,15 +733,15 @@ def remove_catalog(args):
 
 def add_included_manifest(args):
     '''Adds an included manifest to a manifest.'''
-    parser = MyOptionParser()
-    parser.set_usage(
+    p = MyOptionParser()
+    p.set_usage(
         '''add-included-manifest MANIFEST_TO_INCLUDE --manifest TARGET_MANIFEST
        Adds a manifest to the included_manifests of the TARGET_MANIFEST''')
-    parser.add_option('--manifest',
-                      metavar='TARGET_MANIFEST',
-                      help='name of manifest on which to operate')
+    p.add_option('--manifest',
+                 metavar='TARGET_MANIFEST',
+                 help='''name of manifest on which to operate''')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -838,24 +750,24 @@ def add_included_manifest(args):
             options.manifest = arguments[1]
             del arguments[1]
         else:
-            parser.print_usage(sys.stderr)
+            p.print_usage(sys.stderr)
             return 7 # Argument list too long
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     manifest_to_include = arguments[0]
 
-    available_manifests = get_manifest_names()
+    available_manifests = getManifestNames()
     if manifest_to_include not in available_manifests:
         print >> sys.stderr, ('Unknown manifest name: %s.'
-                              % manifest_to_include)
+                                % manifest_to_include)
         return 2 # no such file or directory
     if manifest_to_include == options.manifest:
         print >> sys.stderr, ('Can\'t include %s in itself!.'
-                              % manifest_to_include)
+                                % manifest_to_include)
         return 1 # Operation not permitted
 
-    manifest = get_manifest(options.manifest)
+    manifest = getManifest(options.manifest)
     if not manifest:
         return 2 # no such file or directory
     if not 'included_manifests' in manifest:
@@ -863,13 +775,13 @@ def add_included_manifest(args):
     if manifest_to_include in manifest['included_manifests']:
         print >> sys.stderr, (
             'Manifest %s is already included in manifest %s.'
-            % (manifest_to_include, options.manifest))
+             % (manifest_to_include, options.manifest))
         return 1 # Operation not permitted
     else:
         manifest['included_manifests'].append(manifest_to_include)
-        if save_manifest(manifest, options.manifest, overwrite_existing=True):
+        if saveManifest(manifest, options.manifest, overwrite_existing=True):
             print ('Added %s to included_manifests of manifest %s.'
-                   % (manifest_to_include, options.manifest))
+                    % (manifest_to_include, options.manifest))
             return 0
         else:
             return 1 # Operation not permitted
@@ -877,15 +789,15 @@ def add_included_manifest(args):
 
 def remove_included_manifest(args):
     '''Removes an included manifest from a manifest.'''
-    parser = MyOptionParser()
-    parser.set_usage(
+    p = MyOptionParser()
+    p.set_usage(
         '''remove-included_manifest INCLUDED_MANIFEST --manifest TARGET_MANIFEST
        Removes a manifest from the included_manifests of TARGET_MANIFEST''')
-    parser.add_option('--manifest',
-                      metavar='TARGET_MANIFEST',
-                      help='name of manifest on which to operate')
+    p.add_option('--manifest',
+                 metavar='TARGET_MANIFEST',
+                 help='''name of manifest on which to operate''')
     try:
-        options, arguments = parser.parse_args(args)
+        options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
@@ -894,32 +806,32 @@ def remove_included_manifest(args):
             options.manifest = arguments[1]
             del arguments[1]
         else:
-            parser.print_usage(sys.stderr)
+            p.print_usage(sys.stderr)
             return 7 # Argument list too long
     if len(arguments) != 1:
-        parser.print_usage(sys.stderr)
+        p.print_usage(sys.stderr)
         return 7 # Argument list too long
     included_manifest = arguments[0]
 
-    manifest = get_manifest(options.manifest)
+    manifest = getManifest(options.manifest)
     if not manifest:
         return 2 # no such file or directory
     if included_manifest not in manifest.get('included_manifests', []):
         print >> sys.stderr, (
             'Manifest %s is not included in manifest %s.'
-            % (included_manifest, options.manifest))
+             % (included_manifest, options.manifest))
         return 1 # Operation not permitted
     else:
         manifest['included_manifests'].remove(included_manifest)
-        if save_manifest(manifest, options.manifest, overwrite_existing=True):
+        if saveManifest(manifest, options.manifest, overwrite_existing=True):
             print ('Removed %s from included_manifests of manifest %s.'
-                   % (included_manifest, options.manifest))
+                    % (included_manifest, options.manifest))
             return 0
         else:
             return 1 # Operation not permitted
 
 
-def show_help():
+def help(args):
     '''Prints available subcommands'''
     print "Available sub-commands:"
     subcommands = CMD_ARG_DICT['cmds'].keys()
@@ -927,6 +839,27 @@ def show_help():
     for item in subcommands:
         print '\t%s' % item
     return 0
+
+
+def configure(args):
+    """Configures manifestutil for use"""
+    if len(args):
+        print >> sys.stderr, 'Usage: configure'
+        return 22 # Invalid argument
+    for (key, prompt) in [
+        ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+        ('repo_url',
+         'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
+
+        newvalue = raw_input('%15s [%s]: ' % (prompt, pref(key)))
+        _prefs[key] = newvalue or pref(key) or ''
+
+    try:
+        plistlib.writePlist(_prefs, PREFSPATH)
+        return 0
+    except Exception:
+        print >> sys.stderr, 'Could not save configuration to %s' % PREFSPATH
+        return 1 # Operation not permitted
 
 
 def tab_completer(text, state):
@@ -950,33 +883,32 @@ def tab_completer(text, state):
                 match_list = CMD_ARG_DICT[array_to_match]
             else:
                 array_to_match = 'options'
-                match_list = CMD_ARG_DICT.get('options', {}).keys()
+                match_list = CMD_ARG_DICT.get('options',{}).keys()
 
     matches = [item for item in match_list
-               if item.upper().startswith(text.upper())]
+                   if item.upper().startswith(text.upper())]
     try:
         return matches[state]
     except IndexError:
         return None
 
 
-def set_up_tab_completer():
+def setUpTabCompleter():
     '''Starts our tab-completer when running interactively'''
     readline.set_completer(tab_completer)
-    if LIBEDIT:
-        # readline module was compiled against libedit
-        readline.parse_and_bind("bind ^I rl_complete")
+    if sys.platform == 'darwin':
+        readline.parse_and_bind ("bind ^I rl_complete")
     else:
         readline.parse_and_bind("tab: complete")
 
 
-def handle_subcommand(args):
+def handleSubcommand(args):
     '''Does all our subcommands'''
-    # check if any arguments are passed.
-    # if not, list subcommands.
+	# check if any arguments are passed.  
+	# if not, list subcommands.
     if len(args) < 1:
-        show_help()
-        return 2
+	help(args)
+	return 2
 
     # strip leading hyphens and
     # replace embedded hyphens with underscores
@@ -986,11 +918,11 @@ def handle_subcommand(args):
 
     # special case the exit command
     if subcommand == 'exit':
-        cleanup_and_exit(0)
+       cleanupAndExit(0)
 
     if (subcommand not in ['version', 'configure', 'help']
-            and '-h' not in args and '--help' not in args):
-        if not repo_available():
+        and '-h' not in args and '--help' not in args):
+        if not repoAvailable():
             exit(-1)
 
     try:
@@ -998,21 +930,22 @@ def handle_subcommand(args):
         # for a function with a name matching the subcommand
         subcommand_function = globals()[subcommand]
         return subcommand_function(args[1:])
-    except MyOptParseExit:
-        return 0
     except (TypeError, KeyError):
         print >> sys.stderr, 'Unknown subcommand: %s' % subcommand
-        show_help()
+        help(args)
         return 2
 
 
+PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
+PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
+                                            PREFSNAME))
 WE_MOUNTED_THE_REPO = False
 INTERACTIVE_MODE = False
 CMD_ARG_DICT = {}
 
 def main():
-    '''Our main routine'''
     global INTERACTIVE_MODE
+    global CMD_ARG_DICT
 
     cmds = {'add-pkg':                  'pkgs',
             'add-catalog':              'catalogs',
@@ -1027,36 +960,37 @@ def main():
             'find':                     'default',
             'new-manifest':             'default',
             'copy-manifest':            'manifests',
+            'rename-manifest':          'manifests',
             'exit':                     'default',
             'help':                     'default',
             'configure':                'default',
             'version':                  'default'
-           }
+            }
     CMD_ARG_DICT['cmds'] = cmds
 
     if len(sys.argv) > 1:
         # some commands or options were passed at the command line
         cmd = sys.argv[1].lstrip('-')
-        retcode = handle_subcommand(sys.argv[1:])
-        cleanup_and_exit(retcode)
+        retcode = handleSubcommand(sys.argv[1:])
+        cleanupAndExit(retcode)
     else:
         # if we get here, no options or commands,
         # so let's enter interactive mode
         INTERACTIVE_MODE = True
         # must have an available repo for interfactive mode
-        if not repo_available():
+        if not repoAvailable():
             exit(-1)
         # build the rest of our dict to enable tab completion
         CMD_ARG_DICT['options'] = {'--manifest': 'manifests',
                                    '--section':  'sections'}
 
         CMD_ARG_DICT['default'] = []
-        CMD_ARG_DICT['sections'] = get_manifest_pkg_sections()
-        CMD_ARG_DICT['manifests'] = get_manifest_names()
-        CMD_ARG_DICT['catalogs'] = get_catalogs()
-        CMD_ARG_DICT['pkgs'] = get_installer_item_names(get_catalogs())
+        CMD_ARG_DICT['sections'] = getManifestPkgSections()
+        CMD_ARG_DICT['manifests'] = getManifestNames()
+        CMD_ARG_DICT['catalogs'] = getCatalogs()
+        CMD_ARG_DICT['pkgs'] = getInstallerItemNames(getCatalogs())
 
-        set_up_tab_completer()
+        setUpTabCompleter()
         print 'Entering interactive mode... (type "help" for commands)'
         while 1:
             try:
@@ -1064,9 +998,9 @@ def main():
             except (KeyboardInterrupt, EOFError):
                 # React to Control-C and Control-D
                 print # so we finish off the raw_input line
-                cleanup_and_exit(0)
+                cleanupAndExit(0)
             args = shlex.split(cmd)
-            handle_subcommand(args)
+            handleSubcommand(args)
 
 if __name__ == '__main__':
     main()
