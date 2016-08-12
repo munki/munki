@@ -33,17 +33,19 @@ from objc import super
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
-from Foundation import NSBundle, \
-                       NSRunLoop, NSDate, \
-                       NSObject, NSURL, NSURLConnection, \
-                       NSMutableURLRequest, \
-                       NSURLRequestReloadIgnoringLocalCacheData, \
-                       NSURLResponseUnknownLength, \
-                       NSLog, \
-                       NSURLCredential, NSURLCredentialPersistenceNone, \
-                       NSPropertyListSerialization, \
-                       NSPropertyListMutableContainersAndLeaves, \
-                       NSPropertyListXMLFormat_v1_0
+
+from CFNetwork import kCFNetworkProxiesHTTPSEnable, kCFNetworkProxiesHTTPEnable
+
+from Foundation import (NSBundle, NSRunLoop, NSDate,
+                        NSObject, NSURL, NSURLConnection,
+                        NSMutableURLRequest,
+                        NSURLRequestReloadIgnoringLocalCacheData,
+                        NSURLResponseUnknownLength,
+                        NSLog,
+                        NSURLCredential, NSURLCredentialPersistenceNone,
+                        NSPropertyListSerialization,
+                        NSPropertyListMutableContainersAndLeaves,
+                        NSPropertyListXMLFormat_v1_0)
 
 try:
     from Foundation import NSURLSession, NSURLSessionConfiguration
@@ -176,6 +178,7 @@ class Gurl(NSObject):
             return
 
         self.follow_redirects = options.get('follow_redirects', False)
+        self.ignore_system_proxy = options.get('ignore_system_proxy', False)
         self.destination_path = options.get('file')
         self.can_resume = options.get('can_resume', False)
         self.url = options.get('url')
@@ -244,6 +247,13 @@ class Gurl(NSObject):
         if NSURLSESSION_AVAILABLE:
             configuration = \
                 NSURLSessionConfiguration.defaultSessionConfiguration()
+
+            # optional: ignore system http/https proxies (10.9+ only)
+            if self.ignore_system_proxy is True:
+                configuration.setConnectionProxyDictionary_(
+                    {kCFNetworkProxiesHTTPEnable: False,
+                     kCFNetworkProxiesHTTPSEnable: False})
+
             # set minumum supported TLS protocol (defaults to TLS1)
             configuration.setTLSMinimumSupportedProtocol_(
                 self.minimum_tls_protocol)
@@ -466,7 +476,7 @@ class Gurl(NSObject):
     def handleRedirect_newRequest_withCompletionHandler_(
             self, response, request, completionHandler):
         '''Handle the redirect request'''
-        if response == None:
+        if response is None:
             # the request has changed the NSURLRequest in order to standardize
             # its format, for example, changing a request for
             # http://www.apple.com to http://www.apple.com/. This occurs because
@@ -493,7 +503,7 @@ class Gurl(NSObject):
         newParsedURL = urlparse(newURL)
         # This code was largely based on the work of Andreas Fuchs
         # (https://github.com/munki/munki/pull/465)
-        if self.follow_redirects == True or self.follow_redirects == 'all':
+        if self.follow_redirects is True or self.follow_redirects == 'all':
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
             if completionHandler:
