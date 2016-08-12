@@ -1313,11 +1313,15 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                         # package doesn't have this key set.
                         if pkg.get('Type') == 'core':
                             # We can't use 'ProductVersion' from Application.json for the part following
-                            # the SAP code, because it's usually too specific and won't match the "short"
+                            # the SAPCode, because it's usually too specific and won't match the "short"
                             # product version. We can take 'prodVersion' from the optionXML.xml instead.
+                            # We filter out any non-HD installers to avoid matching up the wrong versions
+                            # for packages that may contain multiple different major versions of a given
+                            # SAPCode
                             pkg_prod_vers = [prod['prodVersion']
                                              for prod in option_xml_info['products']
-                                             if prod['SAPCode'] == app_info['SAPCode']][0]
+                                             if prod.get('hd_installer') and \
+                                                prod['SAPCode'] == app_info['SAPCode']][0]
                             uninstall_file_name = '_'.join([
                                 app_info['SAPCode'],
                                 pkg_prod_vers.replace('.', '_'),
