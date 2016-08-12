@@ -425,7 +425,8 @@ def parseOptionXML(option_xml_file):
 
         # CS5 to CC 2015.0-2015.2 releases use RIBS, and we retrieve a
         # display name, version and 'mediaSignature' for building installs
-        # items
+        # items. SAPCode is also stored so that we can later search by this
+        # key across both RIBS and HyperDrive installer metadata.
         medias_elements = installinfo[0].getElementsByTagName('Medias')
         if medias_elements:
             media_elements = medias_elements[0].getElementsByTagName('Media')
@@ -435,6 +436,7 @@ def parseOptionXML(option_xml_file):
                     product['prodName'] = getXMLtextElement(media, 'prodName')
                     product['prodVersion'] = getXMLtextElement(
                         media, 'prodVersion')
+                    product['SAPCode'] = getXMLtextElement(media, 'SAPCode')
                     setup_elements = media.getElementsByTagName('Setup')
                     if setup_elements:
                         mediaSignatureElements = setup_elements[
