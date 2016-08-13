@@ -293,6 +293,22 @@ def save_manifest(manifest_dict, manifest_name, overwrite_existing=False):
         print >> sys.stderr, 'Saving %s failed: %s' % (manifest_name, err)
         return False
 
+def manifest_rename(source_manifest_name, dest_manifest_name, overwrite_existing=False):
+    '''Renames an existing manifest'''
+    source_manifest_path = os.path.join(
+        pref('repo_path'), 'manifests', source_manifest_name)
+    dest_manifest_path = os.path.join(
+        pref('repo_path'), 'manifests', dest_manifest_name)
+    if not overwrite_existing:
+        if os.path.exists(dest_manifest_path):
+            print >> sys.stderr, '%s already exists!' % dest_manifest_name
+            return False
+    try:
+        os.rename(source_manifest_path, dest_manifest_path)
+        return True
+    except (IOError, OSError, ExpatError), err:
+        print >> sys.stderr, 'Renaming %s to %s failed: %s' % (source_manifest_name, dest_manifest_name, err)
+        return False
 
 def repo_available():
     """Checks the repo path for proper directory structure.
@@ -603,6 +619,31 @@ def copy_manifest(args):
     dest_manifest = arguments[1]
     manifest = get_manifest(source_manifest)
     if manifest and save_manifest(manifest, dest_manifest):
+        update_cached_manifest_list()
+        return 0
+    else:
+        return 1 # Operation not permitted
+
+
+def rename_manifest(args):
+    '''Renames a manifest'''
+    parser = MyOptionParser()
+    parser.set_usage(
+        '''rename-manifest SOURCE_MANIFEST DESTINATION_MANIFEST
+       Renames the manifest''')
+    try:
+        _, arguments = parser.parse_args(args)
+    except MyOptParseError, errmsg:
+        print >> sys.stderr, str(errmsg)
+        return 22 # Invalid argument
+    if len(arguments) != 2:
+        parser.print_usage(sys.stderr)
+        return 7 # Argument list too long
+    source_manifest = arguments[0]
+    dest_manifest = arguments[1]
+    if manifest_rename(source_manifest, dest_manifest):
+        print ('Renamed manifest %s to %s.'
+               % (source_manifest, dest_manifest))
         update_cached_manifest_list()
         return 0
     else:
@@ -1027,6 +1068,7 @@ def main():
             'find':                     'default',
             'new-manifest':             'default',
             'copy-manifest':            'manifests',
+            'rename-manifest':          'manifests',
             'exit':                     'default',
             'help':                     'default',
             'configure':                'default',
