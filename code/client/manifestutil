@@ -183,6 +183,23 @@ def saveManifest(manifest_dict, manifest_name, overwrite_existing=False):
         print >> sys.stderr, 'Saving %s failed: %s' % (manifest_name, errmsg)
         return False
 
+def renameManifest(source_manifest_name, dest_manifest_name, overwrite_existing=False):
+    '''Renames an existing manifest'''
+    source_manifest_path = os.path.join(
+        pref('repo_path'), 'manifests', source_manifest_name)
+    dest_manifest_path = os.path.join(
+        pref('repo_path'), 'manifests', dest_manifest_name)
+    if not overwrite_existing:
+        if os.path.exists(dest_manifest_path):
+            print >> sys.stderr, '%s already exists!' % dest_manifest_name
+            return False
+    try:
+        os.rename(source_manifest_path, dest_manifest_path)
+        return True
+    except Exception, errmsg:
+        print >> sys.stderr, 'Renaming %s to %s failed: %s' % (source_manifest_name, dest_manifest_name, errmsg)
+        return False
+
 
 def repoAvailable():
     """Checks the repo path for proper directory structure.
@@ -498,12 +515,13 @@ def copy_manifest(args):
     else:
         return 1 # Operation not permitted
 
+
 def rename_manifest(args):
     '''Renames a manifest'''
     p = MyOptionParser()
     p.set_usage(
         '''rename-manifest SOURCE_MANIFEST DESTINATION_MANIFEST
-       Renames the manifest to another''')
+       Renames the manifest''')
     try:
         options, arguments = p.parse_args(args)
     except MyOptParseError, errmsg:
@@ -514,12 +532,14 @@ def rename_manifest(args):
         return 7 # Argument list too long
     source_manifest = arguments[0]
     dest_manifest = arguments[1]
-    manifest = getManifest(source_manifest)
-    if manifest and os.rename(manifest, dest_manifest):
+    if renameManifest(source_manifest, dest_manifest):
+        print ('Renamed manifest %s to %s.'
+               % (source_manifest, dest_manifest))
         updateCachedManifestList()
         return 0
     else:
         return 1 # Operation not permitted
+
 
 def add_pkg(args):
     '''Adds a package to a manifest.'''
@@ -928,8 +948,8 @@ def handleSubcommand(args):
     try:
         # find function to call by looking in the global name table
         # for a function with a name matching the subcommand
-        subcommand_function = globals()[subcommand]
-        return subcommand_function(args[1:])
+    	subcommand_function = globals()[subcommand]
+    	return subcommand_function(args[1:])
     except (TypeError, KeyError):
         print >> sys.stderr, 'Unknown subcommand: %s' % subcommand
         help(args)
