@@ -453,8 +453,6 @@ def main():
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
-    parser.add_option('--dry-run', action='store_true',
-                      help='Print what would be done, but make no changes.')
     parser.add_option('--keep', '-k', default=2,
                       help='Keep this many versions of a specific variation. '
                            'Defaults to 2.')
