@@ -19,7 +19,7 @@ repoclean
 
 Created by Greg Neagle on 2016-06-22.
 
-Further description to be written
+A tool to remove older, unused software items from a Munki repo.
 
 """
 
@@ -460,7 +460,7 @@ def main():
                       help='Show all items even if none will be deleted.')
     parser.add_option('--delete-items-in-no-manifests', action='store_true',
                       help='Also delete items that are not referenced in any '
-                           'manifests.')
+                           'manifests. Not yet implemented.')
     
     options, arguments = parser.parse_args()
 
