@@ -768,6 +768,12 @@ class AppleUpdates(object):
         if retcode:  # there was an error
             munkicommon.display_error('softwareupdate error: %s', retcode)
             return False
+        last_session_successful = self.GetSoftwareUpdatePref(
+            'LastSessionSuccessful')
+        if last_session_successful is False:
+            munkicommon.display_error(
+                'softwareupdate reported an unsuccessful download session.')
+            return False
         return True
 
     def GetAvailableUpdateProductIDs(self):
@@ -1617,6 +1623,7 @@ class AppleUpdates(object):
         Returns:
           Integer. Count of available Apple updates.
         """
+        success = True
         if suppress_check:
             # typically because we're doing a logout install; if
             # there are no waiting Apple Updates we shouldn't
@@ -1625,7 +1632,7 @@ class AppleUpdates(object):
         elif force_check:
             # typically because user initiated the check from
             # Managed Software Update.app
-            dummy_success = self.CheckForSoftwareUpdates(force_check=True)
+            success = self.CheckForSoftwareUpdates(force_check=True)
         else:
             # have we checked recently?  Don't want to check with
             # Apple Software Update server too frequently
@@ -1646,11 +1653,14 @@ class AppleUpdates(object):
                 except (ValueError, TypeError):
                     pass
             if now.timeIntervalSinceDate_(next_su_check) >= 0:
-                dummy_success = self.CheckForSoftwareUpdates(force_check=True)
+                success = self.CheckForSoftwareUpdates(force_check=True)
             else:
-                dummy_success = self.CheckForSoftwareUpdates(force_check=False)
-        # always update or remove AppleUpdates.plist
-        count = self.WriteAppleUpdatesFile()
+                success = self.CheckForSoftwareUpdates(force_check=False)
+        if success:
+            count = self.WriteAppleUpdatesFile()
+        else:
+            count = 0
+            self.ClearAppleUpdateInfo()
         if munkicommon.stopRequested():
             return 0
         return count
