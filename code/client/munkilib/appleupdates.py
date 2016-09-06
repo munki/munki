@@ -768,6 +768,8 @@ class AppleUpdates(object):
         if retcode:  # there was an error
             munkicommon.display_error('softwareupdate error: %s', retcode)
             return False
+        # not sure all older OS X versions set LastSessionSuccessful, so
+        # react only if it's explicitly set to False
         last_session_successful = self.GetSoftwareUpdatePref(
             'LastSessionSuccessful')
         if last_session_successful is False:
@@ -783,7 +785,17 @@ class AppleUpdates(object):
           A list of string Apple update products ids.
         """
         # pylint: disable=no-self-use
+        
+        # first, try to get the list from com.apple.SoftwareUpdate preferences
+        recommended_updates = self.GetSoftwareUpdatePref(
+            'RecommendedUpdates')
+        if recommended_updates:
+            return [item['Product Key'] for item in recommended_updates
+                    if 'Product Key' in item]
+
+        # not in com.apple.SoftwareUpdate preferences, try index.plist
         if not os.path.exists(INDEX_PLIST):
+            munkicommon.display_debug1('%s does not exist.' % INDEX_PLIST)
             return []
 
         try:
@@ -938,7 +950,7 @@ class AppleUpdates(object):
           force_check: Boolean. If True, forces a check, otherwise only checks
               if the last check is deemed outdated.
         Returns:
-          Boolean. True if there are new updates, False otherwise.
+          Boolean. True if there are updates, False otherwise.
         """
         before_hash = munkicommon.getsha256hash(
             self.apple_download_catalog_path)
@@ -984,8 +996,11 @@ class AppleUpdates(object):
                     return False
             return True
         else:
-            munkicommon.set_pref('LastAppleSoftwareUpdateCheck', NSDate.date())
-            return False  # Download error, allow check again soon.
+            # Download error, allow check again soon.
+            munkicommon.display_error(
+                'Could not download all available Apple updates.')
+            munkicommon.set_pref('LastAppleSoftwareUpdateCheck', None)
+            return False
 
     def UpdateDownloaded(self, product_key):
         """Verifies that a given update appears to be downloaded.
@@ -1024,7 +1039,8 @@ class AppleUpdates(object):
         return True
 
     def GetSoftwareUpdateInfo(self):
-        """Uses /Library/Updates/index.plist to generate the AppleUpdates.plist,
+        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist or
+        /Library/Updates/index.plist to generate the AppleUpdates.plist,
         which records available updates in the format that
         Managed Software Update.app expects.
 
@@ -1656,11 +1672,13 @@ class AppleUpdates(object):
                 success = self.CheckForSoftwareUpdates(force_check=True)
             else:
                 success = self.CheckForSoftwareUpdates(force_check=False)
+        munkicommon.display_debug1(
+            'CheckForSoftwareUpdates result: %s' % success)
         if success:
             count = self.WriteAppleUpdatesFile()
         else:
-            count = 0
             self.ClearAppleUpdateInfo()
+            return 0
         if munkicommon.stopRequested():
             return 0
         return count
