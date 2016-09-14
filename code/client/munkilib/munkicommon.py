@@ -555,7 +555,15 @@ def configure_syslog():
         logger.removeHandler(handler)
     logger.setLevel(logging.DEBUG)
 
-    syslog = logging.handlers.SysLogHandler('/var/run/syslog')
+    # If /System/Library/LaunchDaemons/com.apple.syslogd.plist is restarted
+    # then /var/run/syslog stops listening.  If we fail to catch this then
+    # Munki completely errors.
+    try:
+        syslog = logging.handlers.SysLogHandler('/var/run/syslog')
+    except:
+        log('LogToSyslog is enabled but socket connection failed.')
+        return
+
     syslog.setFormatter(logging.Formatter('munki: %(message)s'))
     syslog.setLevel(logging.INFO)
     logger.addHandler(syslog)
