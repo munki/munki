@@ -89,8 +89,8 @@ def removeBundleRelocationInfo(pkgpath):
                 pass
 
 
-def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
-            environment=None):
+def install(pkgpath, display_name=None, choicesXMLpath=None,
+            suppressBundleRelocation=False, environment=None):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
@@ -108,21 +108,14 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     if suppressBundleRelocation:
         removeBundleRelocationInfo(pkgpath)
 
-    packagename = ''
-    restartaction = 'None'
-    pkginfo = munkicommon.getInstallerPkgInfo(pkgpath)
-    if pkginfo:
-        packagename = pkginfo.get('display_name')
-        restartaction = pkginfo.get('RestartAction', 'None')
-    if not packagename:
-        packagename = os.path.basename(pkgpath)
-    #munkicommon.display_status_major("Installing %s..." % packagename)
-    munkicommon.log("Installing %s from %s" % (packagename,
-                                               os.path.basename(pkgpath)))
+    packagename = os.path.basename(pkgpath)
+    if not display_name:
+        display_name = packagename
+    munkicommon.log("Installing %s from %s" % (display_name, packagename))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
@@ -130,7 +123,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     if restartaction == "RequireRestart" or \
        restartaction == "RecommendRestart":
         munkicommon.display_status_minor(
-            '%s requires a restart after installation.' % packagename)
+            '%s requires a restart after installation.' % display_name)
         restartneeded = True
 
     # get the OS version; we need it later when processing installer's output,
@@ -255,8 +248,8 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     return (retcode, restartneeded)
 
 
-def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
-               environment=None):
+def installall(dirpath, display_name=None, choicesXMLpath=None,
+               suppressBundleRelocation=False, environment=None):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -282,7 +275,7 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                (retcode, needsrestart) = installall(mountpoint,
+                (retcode, needsrestart) = installall(mountpoint, display_name,
                                                      choicesXMLpath,
                                                      suppressBundleRelocation,
                                                      environment)
@@ -297,7 +290,8 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
 
         if munkicommon.hasValidInstallerItemExt(item):
             (retcode, needsrestart) = install(
-                itempath, choicesXMLpath, suppressBundleRelocation, environment)
+                itempath, display_name,
+                choicesXMLpath, suppressBundleRelocation, environment)
             if needsrestart:
                 restartflag = True
             if retcode:
@@ -753,15 +747,14 @@ def installWithInfo(
                             mountpoints[0], item['package_path'])
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = install(
-                                fullpkgpath, choicesXMLfile,
-                                suppressBundleRelocation,
-                                installer_environment)
+                                fullpkgpath, display_name, choicesXMLfile,
+                                suppressBundleRelocation, installer_environment)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = installall(
-                            mountpoints[0], choicesXMLfile,
+                            mountpoints[0], display_name, choicesXMLfile,
                             suppressBundleRelocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
@@ -771,8 +764,8 @@ def installWithInfo(
                 elif (munkicommon.hasValidPackageExt(itempath) or
                       itempath.endswith(".dist")):
                     (retcode, needtorestart) = install(
-                        itempath, choicesXMLfile, suppressBundleRelocation,
-                        installer_environment)
+                        itempath, display_name, choicesXMLfile,
+                        suppressBundleRelocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):

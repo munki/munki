@@ -934,16 +934,19 @@ def main():
                 # so we need to check InstallInfo.plist and
                 # AppleUpdates.plist again
                 updatesavailable = munkiUpdatesAvailable()
-                try:
-                    appleupdatesavailable = \
-                        appleupdates.appleSoftwareUpdatesAvailable(
-                            suppresscheck=True, client_id=options.id)
-                except:
-                    munkicommon.display_error(
-                        'Unexpected error in appleupdates:')
-                    munkicommon.log(traceback.format_exc())
-                    munkicommon.savereport()
-                    raise
+                if appleupdatesavailable:
+                    # there were Apple updates available, but we might have
+                    # installed some unattended
+                    try:
+                        appleupdatesavailable = (
+                            appleupdates.appleSoftwareUpdatesAvailable(
+                                suppresscheck=True, client_id=options.id))
+                    except:
+                        munkicommon.display_error(
+                            'Unexpected error in appleupdates:')
+                        munkicommon.log(traceback.format_exc())
+                        munkicommon.savereport()
+                        raise
                 if appleupdatesavailable or updatesavailable:
                     # set a flag to notify the user of available updates
                     # after we conclude this run.

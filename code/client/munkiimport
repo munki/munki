@@ -37,6 +37,15 @@ from munkilib import iconutils
 from munkilib import munkicommon
 from munkilib import FoundationPlist
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import CFPreferencesAppSynchronize
+from Foundation import CFPreferencesCopyAppValue
+from Foundation import CFPreferencesSetAppValue
+# pylint: enable=E0611
+
+
 if 'libedit' in readline.__doc__:
     # readline module was compiled against libedit
     LIBEDIT = ctypes.cdll.LoadLibrary(find_library('libedit'))
@@ -47,7 +56,7 @@ else:
 def raw_input_with_default(prompt, default_text):
     '''A nasty, nasty hack to get around Python readline limitations under
     OS X. Gives us editable default text for munkiimport choices'''
-    
+
     def insert_default_text(prompt, text):
         '''Helper function'''
         time.sleep(0.01)
@@ -700,16 +709,16 @@ def cleanup_and_exit(exitcode):
     exit(exitcode or result)
 
 
+BUNDLE_ID = 'com.googlecode.munki.munkiimport'
 def pref(prefname):
-    """Returns a preference for prefname"""
-    try:
-        _prefs = FoundationPlist.readPlist(PREFSPATH)
-    except FoundationPlist.NSPropertyListSerializationException:
-        return None
-    if prefname in _prefs:
-        return _prefs[prefname]
-    else:
-        return None
+    """Return a preference. Since this uses CFPreferencesCopyAppValue,
+    Preferences can be defined several places. Precedence is:
+        - MCX/Configuration Profile
+        - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XX.plist
+        - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
+        - /Library/Preferences/com.googlecode.munki.munkiimport.plist
+    """
+    return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
 
 
 def configure():
@@ -727,10 +736,13 @@ def configure():
 
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
 
-    try:
-        FoundationPlist.writePlist(_prefs, PREFSPATH)
-    except FoundationPlist.NSPropertyListWriteException:
-        print >> sys.stderr, 'Could not save configuration to %s' % PREFSPATH
+    for key, value in _prefs.items():
+        try:
+            CFPreferencesSetAppValue(key, value, BUNDLE_ID)
+        except BaseException:
+            print >> sys.stderr, 'Could not save configuration!'
+        finally:
+            CFPreferencesAppSynchronize(BUNDLE_ID)
 
 
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
@@ -967,9 +979,10 @@ def main():
             answer = raw_input('Use existing item as a template? [y/n] ')
             if answer.lower().startswith('y'):
                 pkginfo['name'] = matchingpkginfo['name']
-                pkginfo['display_name'] = pkginfo.get('display_name') or \
-                    matchingpkginfo.get('display_name',
-                                        matchingpkginfo['name'])
+                pkginfo['display_name'] = (
+                    matchingpkginfo.get('display_name') or
+                    pkginfo.get('display_name') or
+                    matchingpkginfo['name'])
                 pkginfo['description'] = pkginfo.get('description') or \
                     matchingpkginfo.get('description', '')
                 if (options.subdirectory == '' and

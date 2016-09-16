@@ -885,7 +885,7 @@ def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
 def nameAndVersion(aString):
     """Splits a string into the name and version number.
 
-    Name and version must be seperated with a hyphen ('-')
+    Name and version must be separated with a hyphen ('-')
     or double hyphen ('--').
     'TextWrangler-2.3b1' becomes ('TextWrangler', '2.3b1')
     'AdobePhotoshopCS3--11.2.1' becomes ('AdobePhotoshopCS3', '11.2.1')
@@ -1839,6 +1839,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
         iteminfo['installed'] = False
         iteminfo['note'] = ('Can\'t install %s because could not resolve all '
                             'dependencies.' % iteminfo['display_name'])
+        iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
         installinfo['managed_installs'].append(iteminfo)
         return False
 
@@ -1980,6 +1981,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 manifestitem)
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
@@ -1989,6 +1991,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = 'Download failed (%s)' % errmsg
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
@@ -1998,6 +2001,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
