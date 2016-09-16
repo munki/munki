@@ -2777,28 +2777,40 @@ def supports_auth_restart():
     or False accordingly.
     """
     display_debug1('Checking if FileVault is Enabled...')
-    active_cmd = ['/usr/bin/fdesetup','isactive']
+    active_cmd = ['/usr/bin/fdesetup', 'isactive']
     try:
-        is_active = subprocess.check_output(active_cmd).strip()
-    except subprocess.CalledProcessError:
-        display_warning('FileVault appears to be Disabled...')
+        is_active = subprocess.check_output(
+            active_cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as exc:
+        if exc.output and 'false' in exc.output:
+            display_warning('FileVault appears to be Disabled...')
+            return False
+        if not exc.output:
+            display_warning(
+            'Encountered problem determining FileVault Status...')
+            return False
+        display_warning(exc.output)
         return False
     display_debug1(
-        'Checking if FileVault can perform an Authorized Restart...')
+        'Checking if FileVault can perform an AuthRestart...')
     support_cmd = ['/usr/bin/fdesetup', 'supportsauthrestart']
     try:
-        is_supported = subprocess.check_output(support_cmd).strip()
-    except subprocess.CalledProcessError:
-        display_warning(
-            'FileVault appears to not support an Authorized Restart...')
+        is_supported = subprocess.check_output(
+            support_cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as exc:
+        if not exc.output:
+            display_warning(
+                'Encountered problem determining AuthRestart Status...')
+            return False
+        display_warning(exc.output)
         return False
-    if is_active == 'true' and is_supported == 'true':
+    if 'true' in is_active and 'true' in is_supported:
         display_debug1(
-            'FileVault is on and Supports an AuthResrtart...')
+            'FileVault is on and Supports an AuthRestart...')
         return True
     else:
         display_warning(
-            'FileVault is Disabled or does not support an Authorized Restart')
+            'FileVault is Disabled or does not support an AuthRestart...')
         return False
 
 def get_auth_restart_key():
@@ -2844,7 +2856,7 @@ def perform_auth_restart():
     inputplist = FoundationPlist.writePlistToString(key)
     log('Attempting an Authorized Restart Now...')
     cmd = subprocess.Popen(
-        ['/usr/bin/fdesetup','authrestart','-inputplist'],
+        ['/usr/bin/fdesetup', 'authrestart', '-inputplist'],
     stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = cmd.communicate(input=inputplist)
     if err:

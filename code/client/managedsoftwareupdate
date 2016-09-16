@@ -280,9 +280,11 @@ def doRestart():
         # no-one is logged in or we're at the loginwindow
         time.sleep(5)
         #check to see if we should perform an AuthRestart
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if (munkicommon.pref('PerformAuthRestarts')
-                and munkicommon.pref('RecoveryKeyFile')):
-            munkicommon.log('Starting Authorized Restart...')
+                and munkicommon.pref('RecoveryKeyFile')
+                and os_version_tuple >= (10, 8)):
+            munkicommon.log('Attempting Authorized Restart...')
             # try to perform an auth restart
             munkicommon.perform_auth_restart()
             time.sleep(5) # give it some time to perform the authrestart
