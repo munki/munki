@@ -30,8 +30,14 @@ from munkilib import munkicommon
 from munkilib import FoundationPlist
 from munkilib import iconutils
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import CFPreferencesCopyAppValue
+# pylint: enable=E0611
 
 def generate_png_from_copy_from_dmg_item(install_item, repo_path):
+    '''Generate a PNG from a disk image containing an application'''
     dmgpath = os.path.join(
         repo_path, 'pkgs', install_item['installer_item_location'])
     mountpoints = munkicommon.mountdmg(dmgpath)
@@ -58,6 +64,7 @@ def generate_png_from_copy_from_dmg_item(install_item, repo_path):
 
 
 def generate_pngs_from_installer_pkg(install_item, repo_path):
+    '''Generate PNGS from applications inside a pkg'''
     icon_paths = []
     mountpoint = None
     pkg_path = None
@@ -108,7 +115,7 @@ def generate_pngs_from_installer_pkg(install_item, repo_path):
         print_utf8(u'\tNo application icons found.')
 
 
-def findItemsToCheck(repo_path, itemlist=None):
+def find_items_to_check(repo_path, itemlist=None):
     '''Builds a list of items to check; only the latest version
     of an item is retained. If itemlist is given, include items
     only on that list.'''
@@ -131,7 +138,8 @@ def findItemsToCheck(repo_path, itemlist=None):
 
 
 def generate_pngs_from_munki_items(repo_path, force=False, itemlist=None):
-    itemlist = findItemsToCheck(repo_path, itemlist=itemlist)
+    '''Generate PNGs from either pkgs or disk images containing applications'''
+    itemlist = find_items_to_check(repo_path, itemlist=itemlist)
     icons_dir = os.path.join(repo_path, u'icons')
     if not os.path.exists(icons_dir):
         os.mkdir(icons_dir)
@@ -164,31 +172,29 @@ def print_err_utf8(text):
     print >> sys.stderr, text.encode('UTF-8')
 
 
+BUNDLE_ID = 'com.googlecode.munki.munkiimport'
 def pref(prefname):
-    """Returns a preference for prefname"""
-    try:
-        _prefs = FoundationPlist.readPlist(PREFSPATH)
-    except Exception:
-        return None
-    if prefname in _prefs:
-        return _prefs[prefname]
-    else:
-        return None
+    """Return a preference. Since this uses CFPreferencesCopyAppValue,
+    Preferences can be defined several places. Precedence is:
+        - MCX/Configuration Profile
+        - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XX.plist
+        - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
+        - /Library/Preferences/com.googlecode.munki.munkiimport.plist
+    """
+    return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
 
-
-PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-PREFSPATH = os.path.expanduser(os.path.join(u'~/Library/Preferences',
-                                            PREFSNAME))
 def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root]"
-    p = OptionParser(usage=usage)
-    p.add_option('--force', '-f', action='store_true', dest='force',
+    parser = OptionParser(usage=usage)
+    parser.add_option(
+        '--force', '-f', action='store_true', dest='force',
         help='Create pngs even if there is an existing icon in the repo.')
-    p.add_option('--item', '-i', action='append', type='string', dest='items',
+    parser.add_option(
+        '--item', '-i', action='append', type='string', dest='items',
         help='Only run for given pkginfo item name(s).')
-    p.set_defaults(force=False)
-    options, arguments = p.parse_args()
+    parser.set_defaults(force=False)
+    options, arguments = parser.parse_args()
 
     # Make sure we have a path to work with
     repo_path = None
@@ -209,7 +215,7 @@ def main():
 
     # generate icons!
     generate_pngs_from_munki_items(repo_path, force=options.force,
-        itemlist=options.items)
+                                   itemlist=options.items)
 
     # clean up
     munkicommon.cleanUpTmpDir()

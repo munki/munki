@@ -280,16 +280,21 @@ def doRestart():
         # no-one is logged in or we're at the loginwindow
         time.sleep(5)
         #check to see if we should perform an AuthRestart
+        os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if (munkicommon.pref('PerformAuthRestarts')
-                and munkicommon.pref('RecoveryKeyFile')):
-            munkicommon.log('Starting Authorized Restart...')
+                and munkicommon.pref('RecoveryKeyFile')
+                and os_version_tuple >= (10, 8)):
+            munkicommon.display_debug1('Configured to perform AuthRestarts...')
             # try to perform an auth restart
-            munkicommon.perform_auth_restart()
-            time.sleep(2)
-            # if we got to here then the auth restart failed, notify that it did
-            # then perform a normal restart
-            munkicommon.display_warning(
-                'Authorized Restart Failed. Performing normal restart...')
+            if not munkicommon.perform_auth_restart():
+                # if we got to here then the auth restart failed''
+                # notify that it did then perform a normal restart
+                munkicommon.display_warning(
+                    'Authorized Restart Failed. Performing normal restart...')
+            else:
+                # we should be performing the auth restart now give it time to
+                # complete
+                time.sleep(10)
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:
@@ -932,16 +937,19 @@ def main():
                 # so we need to check InstallInfo.plist and
                 # AppleUpdates.plist again
                 updatesavailable = munkiUpdatesAvailable()
-                try:
-                    appleupdatesavailable = \
-                        appleupdates.appleSoftwareUpdatesAvailable(
-                            suppresscheck=True, client_id=options.id)
-                except:
-                    munkicommon.display_error(
-                        'Unexpected error in appleupdates:')
-                    munkicommon.log(traceback.format_exc())
-                    munkicommon.savereport()
-                    raise
+                if appleupdatesavailable:
+                    # there were Apple updates available, but we might have
+                    # installed some unattended
+                    try:
+                        appleupdatesavailable = (
+                            appleupdates.appleSoftwareUpdatesAvailable(
+                                suppresscheck=True, client_id=options.id))
+                    except:
+                        munkicommon.display_error(
+                            'Unexpected error in appleupdates:')
+                        munkicommon.log(traceback.format_exc())
+                        munkicommon.savereport()
+                        raise
                 if appleupdatesavailable or updatesavailable:
                     # set a flag to notify the user of available updates
                     # after we conclude this run.

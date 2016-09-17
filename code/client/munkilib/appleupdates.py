@@ -148,7 +148,7 @@ class AppleUpdates(object):
         # fix things if somehow we died last time before resetting the
         # original CatalogURL
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
-        if os_version_tuple >= (10, 9):
+        if os_version_tuple in [(10, 9), (10, 10)]:
             self._ResetOriginalCatalogURL()
 
         real_cache_dir = os.path.join(self._managed_install_dir, 'swupd')
@@ -238,8 +238,8 @@ class AppleUpdates(object):
             if len(readmes):
                 html = readmes[0].firstChild.data
                 html_data = buffer(html.encode('utf-8'))
-                attributed_string, attributes = NSAttributedString.alloc(
-                ).initWithHTML_documentAttributes_(html_data, None)
+                attributed_string, _ = NSAttributedString.alloc(
+                    ).initWithHTML_documentAttributes_(html_data, None)
                 firmware_alert_text = attributed_string.string()
             return firmware_alert_text
         return ''
@@ -759,7 +759,7 @@ class AppleUpdates(object):
 
         os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
-            catalog_url = self._ElCapitanGetCatalogURL()
+            catalog_url = None
         else:
             catalog_url = self._GetAppleCatalogURL()
 
@@ -767,6 +767,14 @@ class AppleUpdates(object):
             ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
         if retcode:  # there was an error
             munkicommon.display_error('softwareupdate error: %s', retcode)
+            return False
+        # not sure all older OS X versions set LastSessionSuccessful, so
+        # react only if it's explicitly set to False
+        last_session_successful = self.GetSoftwareUpdatePref(
+            'LastSessionSuccessful')
+        if last_session_successful is False:
+            munkicommon.display_error(
+                'softwareupdate reported an unsuccessful download session.')
             return False
         return True
 
@@ -777,7 +785,17 @@ class AppleUpdates(object):
           A list of string Apple update products ids.
         """
         # pylint: disable=no-self-use
+        
+        # first, try to get the list from com.apple.SoftwareUpdate preferences
+        recommended_updates = self.GetSoftwareUpdatePref(
+            'RecommendedUpdates')
+        if recommended_updates:
+            return [item['Product Key'] for item in recommended_updates
+                    if 'Product Key' in item]
+
+        # not in com.apple.SoftwareUpdate preferences, try index.plist
         if not os.path.exists(INDEX_PLIST):
+            munkicommon.display_debug1('%s does not exist.' % INDEX_PLIST)
             return []
 
         try:
@@ -818,16 +836,6 @@ class AppleUpdates(object):
         f = _open(local_apple_sus_catalog, 'wb')
         f.write(contents)
         f.close()
-
-    def _ElCapitanGetCatalogURL(self):
-        """Returns SoftwareUpdateServerURL set in Munki's preferences or None.
-        Works around an issue with catalog changes causing cached downloads to
-        be deleted."""
-        # pylint: disable=no-self-use
-        munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
-        if munkisuscatalog:
-            return munkisuscatalog
-        return None
 
     def _GetAppleCatalogURL(self):
         """Returns the catalog URL of the Apple SU catalog for the current Mac.
@@ -942,7 +950,7 @@ class AppleUpdates(object):
           force_check: Boolean. If True, forces a check, otherwise only checks
               if the last check is deemed outdated.
         Returns:
-          Boolean. True if there are new updates, False otherwise.
+          Boolean. True if there are updates, False otherwise.
         """
         before_hash = munkicommon.getsha256hash(
             self.apple_download_catalog_path)
@@ -988,8 +996,11 @@ class AppleUpdates(object):
                     return False
             return True
         else:
-            munkicommon.set_pref('LastAppleSoftwareUpdateCheck', NSDate.date())
-            return False  # Download error, allow check again soon.
+            # Download error, allow check again soon.
+            munkicommon.display_error(
+                'Could not download all available Apple updates.')
+            munkicommon.set_pref('LastAppleSoftwareUpdateCheck', None)
+            return False
 
     def UpdateDownloaded(self, product_key):
         """Verifies that a given update appears to be downloaded.
@@ -1028,7 +1039,8 @@ class AppleUpdates(object):
         return True
 
     def GetSoftwareUpdateInfo(self):
-        """Uses /Library/Updates/index.plist to generate the AppleUpdates.plist,
+        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist or
+        /Library/Updates/index.plist to generate the AppleUpdates.plist,
         which records available updates in the format that
         Managed Software Update.app expects.
 
@@ -1105,6 +1117,8 @@ class AppleUpdates(object):
                         english_su_info = self.parseSUdist(english_dist)
                 su_info = self.parseSUdist(localized_dist)
                 su_info['productKey'] = product_key
+                if su_info['name'] == '':
+                    su_info['name'] = product_key
                 if product_key in update_display_names:
                     su_info['apple_product_name'] = (
                         update_display_names[product_key])
@@ -1349,7 +1363,7 @@ class AppleUpdates(object):
             # OS version-specific stuff to use a specific CatalogURL
             if os_version_tuple < (10, 9):
                 cmd.extend(['--CatalogURL', catalog_url])
-            else:
+            elif os_version_tuple in [(10, 9), (10, 10)]:
                 self._SetCustomCatalogURL(catalog_url)
 
         cmd.extend(options_list)
@@ -1456,7 +1470,7 @@ class AppleUpdates(object):
 
         if catalog_url:
             # reset CatalogURL if needed
-            if os_version_tuple >= (10, 9):
+            if os_version_tuple in [(10, 9), (10, 10)]:
                 self._ResetOriginalCatalogURL()
 
         retcode = job.returncode()
@@ -1532,7 +1546,7 @@ class AppleUpdates(object):
             # 10.11 seems not to like file:// URLs, and we don't really need
             # to switch to a local file URL anyway since we now have the
             # --no-scan option
-            catalog_url = self._ElCapitanGetCatalogURL()
+            catalog_url = None
         else:
             # use our filtered local catalog
             if not os.path.exists(self.local_catalog_path):
@@ -1625,6 +1639,7 @@ class AppleUpdates(object):
         Returns:
           Integer. Count of available Apple updates.
         """
+        success = True
         if suppress_check:
             # typically because we're doing a logout install; if
             # there are no waiting Apple Updates we shouldn't
@@ -1633,7 +1648,7 @@ class AppleUpdates(object):
         elif force_check:
             # typically because user initiated the check from
             # Managed Software Update.app
-            dummy_success = self.CheckForSoftwareUpdates(force_check=True)
+            success = self.CheckForSoftwareUpdates(force_check=True)
         else:
             # have we checked recently?  Don't want to check with
             # Apple Software Update server too frequently
@@ -1654,11 +1669,16 @@ class AppleUpdates(object):
                 except (ValueError, TypeError):
                     pass
             if now.timeIntervalSinceDate_(next_su_check) >= 0:
-                dummy_success = self.CheckForSoftwareUpdates(force_check=True)
+                success = self.CheckForSoftwareUpdates(force_check=True)
             else:
-                dummy_success = self.CheckForSoftwareUpdates(force_check=False)
-        # always update or remove AppleUpdates.plist
-        count = self.WriteAppleUpdatesFile()
+                success = self.CheckForSoftwareUpdates(force_check=False)
+        munkicommon.display_debug1(
+            'CheckForSoftwareUpdates result: %s' % success)
+        if success:
+            count = self.WriteAppleUpdatesFile()
+        else:
+            self.ClearAppleUpdateInfo()
+            return 0
         if munkicommon.stopRequested():
             return 0
         return count
@@ -1814,29 +1834,19 @@ def installAppleUpdates(only_unattended=False):
 def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
                                   client_id='', forcecatalogrefresh=False):
     """Method for drop-in appleupdates replacement; see primary method docs."""
+    appleUpdatesObject = getAppleUpdatesInstance()
     os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
     munkisuscatalog = munkicommon.pref('SoftwareUpdateServerURL')
-    appleUpdatesObject = getAppleUpdatesInstance()
-    if appleUpdatesObject.CatalogURLisManaged():
-        if os_version_tuple >= (10, 11):
-            if munkisuscatalog:
-                munkicommon.display_warning(
-                    "softwareupdate's CatalogURL is managed via MCX or "
-                    "profiles. Custom softwareupate catalog %s will be "
-                    "ignored." % munkisuscatalog)
-        else:
+    if os_version_tuple >= (10, 11):
+        if munkisuscatalog:
             munkicommon.display_warning(
-                "Cannot efficiently manage Apple Software updates because "
-                "softwareupdate's CatalogURL is managed via MCX or profiles. "
-                "You may see unexpected or undesirable results.")
-    else:
-        if os_version_tuple >= (10, 11) and munkisuscatalog:
-            munkicommon.display_warning(
-                "Setting SoftwareUpdateServerURL in Munki's preferences under "
-                "OS X 10.11 and later may result in poor performance of "
-                "Apple Software Updates via Munki. It is recommended to "
-                "remove this setting and use com.apple.SoftwareUpdate's "
-                'settings for CatalogURL.')
+                "Custom softwareupate catalog %s in Munki's preferences will "
+                "be ignored." % munkisuscatalog)
+    elif appleUpdatesObject.CatalogURLisManaged():
+        munkicommon.display_warning(
+            "Cannot efficiently manage Apple Software updates because "
+            "softwareupdate's CatalogURL is managed via MCX or profiles. "
+            "You may see unexpected or undesirable results.")
     appleUpdatesObject.client_id = client_id
     appleUpdatesObject.force_catalog_refresh = forcecatalogrefresh
 
