@@ -284,14 +284,17 @@ def doRestart():
         if (munkicommon.pref('PerformAuthRestarts')
                 and munkicommon.pref('RecoveryKeyFile')
                 and os_version_tuple >= (10, 8)):
-            munkicommon.log('Attempting Authorized Restart...')
+            munkicommon.display_debug1('Configured to perform AuthRestarts...')
             # try to perform an auth restart
-            munkicommon.perform_auth_restart()
-            time.sleep(5) # give it some time to perform the authrestart
-            # if we got to here then the auth restart failed, notify that it did
-            # then perform a normal restart
-            munkicommon.display_warning(
-                'Authorized Restart Failed. Performing normal restart...')
+            if not munkicommon.perform_auth_restart():
+                # if we got to here then the auth restart failed''
+                # notify that it did then perform a normal restart
+                munkicommon.display_warning(
+                    'Authorized Restart Failed. Performing normal restart...')
+            else:
+                # we should be performing the auth restart now give it time to
+                # complete
+                time.sleep(10)
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
     else:
         if munkicommon.munkistatusoutput:

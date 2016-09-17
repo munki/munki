@@ -2814,7 +2814,7 @@ def supports_auth_restart():
         return False
     if 'true' in is_active and 'true' in is_supported:
         display_debug1(
-            'FileVault is on and Supports an AuthRestart...')
+            'FileVault is On and Supports an AuthRestart...')
         return True
     else:
         display_warning(
@@ -2855,11 +2855,11 @@ def perform_auth_restart():
         'Checking if Performing an Authorized Restart is fully supported...')
     if not supports_auth_restart():
         display_warning("Machine doesn't support Authorized Restarts...")
-        return ''
+        return False
     display_debug1('Machine Supports Authorized Restarts...')
     recovery_key = get_auth_restart_key()
     if not recovery_key:
-        return ''
+        return False
     key = { 'Password': recovery_key }
     inputplist = FoundationPlist.writePlistToString(key)
     log('Attempting an Authorized Restart Now...')
@@ -2867,9 +2867,14 @@ def perform_auth_restart():
         ['/usr/bin/fdesetup', 'authrestart', '-inputplist'],
     stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = cmd.communicate(input=inputplist)
+    os_version_tuple = getOsVersion(as_tuple=True)
+    if os_version_tuple >= (10, 12) and 'System is being restarted' in err:
+        return True
     if err:
         display_error(err)
-
+        return False
+    else:
+        return True
 
 # module globals
 #debug = False
