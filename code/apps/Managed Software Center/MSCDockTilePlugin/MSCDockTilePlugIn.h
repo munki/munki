@@ -1,6 +1,6 @@
 /*
 
-   File: DockTilePlugIn.h
+   File: MSCDockTilePlugIn.h
  
    Copyright 2015-2016 Greg Neagle.
    Liberally adapted from Apple sample code:
@@ -22,7 +22,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface DockTilePlugIn : NSObject <NSDockTilePlugIn> {
+@interface MSCDockTilePlugIn : NSObject <NSDockTilePlugIn> {
     id updateObserver;
 }
 
