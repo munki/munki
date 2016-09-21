@@ -21,6 +21,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2016 The Munki Project. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
-	<string>DockTile</string>
+	<string>MSCDockTilePlugin</string>
 </dict>
 </plist>
