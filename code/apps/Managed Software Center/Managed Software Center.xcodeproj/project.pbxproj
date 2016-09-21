@@ -34,7 +34,7 @@
 		C0B9E8B219AB8E5500DB7247 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
 		C0B9E8B619AF7E9E00DB7247 /* Managed Software Center 10_6.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0B9E8B519AF7E9E00DB7247 /* Managed Software Center 10_6.icns */; };
 		C0E098BC1857A3C80045DEEB /* msclib.py in Resources */ = {isa = PBXBuildFile; fileRef = C0E098BB1857A3C80045DEEB /* msclib.py */; };
-		C0EF96BA1ADDB9B2002C02FF /* DockTilePlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = C0EF96B91ADDB9B2002C02FF /* DockTilePlugIn.m */; };
+		C0EF96BA1ADDB9B2002C02FF /* MSCDockTilePlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */; };
 		C0EF96BD1ADDBD88002C02FF /* MSCDockTilePlugin.docktileplugin in Copy Files */ = {isa = PBXBuildFile; fileRef = C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0F1586D187D256200052F9A /* MyStuffTemplate.png */; };
 /* End PBXBuildFile section */
@@ -147,8 +147,8 @@
 		C0E098BB1857A3C80045DEEB /* msclib.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msclib.py; sourceTree = "<group>"; };
 		C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MSCDockTilePlugin.docktileplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0EF96B41ADDB90B002C02FF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C0EF96B81ADDB9B2002C02FF /* DockTilePlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DockTilePlugIn.h; sourceTree = "<group>"; };
-		C0EF96B91ADDB9B2002C02FF /* DockTilePlugIn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DockTilePlugIn.m; sourceTree = "<group>"; };
+		C0EF96B81ADDB9B2002C02FF /* MSCDockTilePlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSCDockTilePlugIn.h; sourceTree = "<group>"; };
+		C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSCDockTilePlugIn.m; sourceTree = "<group>"; };
 		C0F1586D187D256200052F9A /* MyStuffTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MyStuffTemplate.png; sourceTree = "<group>"; };
 		E62967521993D4A400ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_GB; path = en_GB.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		E62967541993D4AF00ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -275,8 +275,8 @@
 		C0EF96B21ADDB90B002C02FF /* MSCDockTilePlugin */ = {
 			isa = PBXGroup;
 			children = (
-				C0EF96B81ADDB9B2002C02FF /* DockTilePlugIn.h */,
-				C0EF96B91ADDB9B2002C02FF /* DockTilePlugIn.m */,
+				C0EF96B81ADDB9B2002C02FF /* MSCDockTilePlugIn.h */,
+				C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */,
 				C0EF96B31ADDB90B002C02FF /* Supporting Files */,
 			);
 			path = MSCDockTilePlugin;
@@ -495,7 +495,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0EF96BA1ADDB9B2002C02FF /* DockTilePlugIn.m in Sources */,
+				C0EF96BA1ADDB9B2002C02FF /* MSCDockTilePlugIn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

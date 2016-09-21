@@ -1,6 +1,6 @@
 /*
 
-   File: DockTilePlugIn.m
+   File: MSCDockTilePlugIn.m
  
    Copyright 2015-2016 Greg Neagle.
    Liberally adapted from Apple sample code:
@@ -20,9 +20,9 @@
 
 */
 
-#import "DockTilePlugIn.h"
+#import "MSCDockTilePlugIn.h"
 
-@implementation DockTilePlugIn
+@implementation MSCDockTilePlugIn
 
 @synthesize updateObserver;
 
