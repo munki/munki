@@ -640,7 +640,7 @@ class AppleUpdates(object):
         localizations. Returns a single language/localization name.'''
         # pylint: disable=no-self-use
         localization_preferences = (
-            munkicommon.pref('AppleSoftwareUpdateLanguages') or ['English'])
+            munkicommon.getAppleLanguages() or ['English'])
         preferred_langs = (
             NSBundle.preferredLocalizationsFromArray_forPreferences_(
                 list_of_localizations, localization_preferences))

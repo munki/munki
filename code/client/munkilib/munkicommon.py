@@ -41,6 +41,7 @@ import tempfile
 import time
 import urllib2
 import warnings
+import pwd
 from distutils import version
 from types import StringType
 from xml.dom import minidom
@@ -842,6 +843,15 @@ def getFirstPlist(textString):
     return (textString[plist_start_index:plist_end_index],
             textString[plist_end_index:])
 
+def getAppleLanguages():
+    user = getconsoleuser()
+    userHome = pwd.getpwnam(user).pw_dir
+    try:
+        globalPreferences = FoundationPlist.readPlist(userHome + "/Library/Preferences/.GlobalPreferences.plist")
+        lang = globalPreferences.get("AppleLanguages")
+    except FoundationPlist.NSPropertyListSerializationException:
+        lang = ["en"]
+    return lang
 
 # dmg helpers
 
