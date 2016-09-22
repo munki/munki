@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -197,12 +197,13 @@ def findBundleReceiptFromID(pkgid):
     if not pkgid:
         return ''
     receiptsdir = "/Library/Receipts"
-    for item in munkicommon.listdir(receiptsdir):
-        itempath = os.path.join(receiptsdir, item)
-        if item.endswith('.pkg') and os.path.isdir(itempath):
-            info = munkicommon.getOnePackageInfo(itempath)
-            if info.get('packageid') == pkgid:
-                return itempath
+    if os.path.isdir(receiptsdir):
+        for item in munkicommon.listdir(receiptsdir):
+            itempath = os.path.join(receiptsdir, item)
+            if item.endswith('.pkg') and os.path.isdir(itempath):
+                info = munkicommon.getOnePackageInfo(itempath)
+                if info.get('packageid') == pkgid:
+                    return itempath
 
     #if we get here, not found
     return ''
@@ -335,7 +336,7 @@ def ImportBom(bompath, curs):
     package database into our internal package database.
     """
     # If we completely trusted the accuracy of Apple's database, we wouldn't
-    # need the bom files, but in my enviroment at least, the bom files are
+    # need the bom files, but in my environment at least, the bom files are
     # a better indicator of what flat packages have actually been installed
     # on the current machine.
     # We still need to consult Apple's package database

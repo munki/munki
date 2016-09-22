@@ -3,13 +3,13 @@
 # MSCBadgedTemplateImage.py
 # Managed Software Center
 #
-# Copyright 2014 Greg Neagle.
+# Copyright 2014-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,8 +68,8 @@ class MSCBadgedTemplateImage(NSImage):
                                       badgeOutlineWidth, badgeOutlineHeight)
                                       
         # shift the rects around to look better. These are magic numbers.
-        badgeStringRect = NSOffsetRect(badgeStringRect, -4.75, -1)
-        badgeOutlineRect = NSOffsetRect(badgeOutlineRect, -1, -4)
+        badgeStringRect = NSOffsetRect(badgeStringRect, -4.75, -2)
+        badgeOutlineRect = NSOffsetRect(badgeOutlineRect, -1, -5)
         
         # our erase rect needs to be a little bigger than the badge itself
         badgeEraseRect = NSInsetRect(badgeOutlineRect, -1.5, -1.5)

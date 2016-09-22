@@ -111,6 +111,7 @@ class AlertController(NSObject):
 
     def alertToExtraUpdates(self):
         '''Notify user of additional pending updates'''
+        msclog.log("user", "extra_updates_pending")
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             NSLocalizedString(
                 u"Additional Pending Updates",
@@ -200,6 +201,7 @@ class AlertController(NSObject):
 
     def installSessionErrorAlert(self):
         '''Something has gone wrong and we can't trigger an install at logout'''
+        msclog.log("user", "install_session_failed")
         alertMessageText = NSLocalizedString(
             u"Install session failed", u"Install Session Failed title")
         detailText = NSLocalizedString(
@@ -399,4 +401,3 @@ class AlertController(NSObject):
             if buttonPressed == NSAlertAlternateReturn:
                 return True
         return False
-

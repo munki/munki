@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2010-2013 Google Inc. All Rights Reserved.
+# Copyright 2010-2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an 'AS IS' BASIS,
@@ -21,7 +21,7 @@ Created by Justin McWilliams on 2010-10-26.
 
 Common utility functions used throughout Munki.
 
-Note: this module should be 100% free of ObjC-dependant Python imports.
+Note: this module should be 100% free of ObjC-dependent Python imports.
 """
 
 
@@ -123,13 +123,19 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
         cmd = [script]
         if script_args:
             cmd.extend(script_args)
-        proc = subprocess.Popen(cmd, shell=False,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (stdout, stderr) = proc.communicate()
-        return proc.returncode, stdout.decode('UTF-8', 'replace'), \
-                                stderr.decode('UTF-8', 'replace')
+        proc = None
+        try:
+            proc = subprocess.Popen(cmd, shell=False,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+        except (OSError, IOError), err:
+            raise RunExternalScriptError(
+                'Error %s when attempting to run %s' % (unicode(err), script))
+        if proc:
+            (stdout, stderr) = proc.communicate()
+            return proc.returncode, stdout.decode('UTF-8', 'replace'), \
+                                    stderr.decode('UTF-8', 'replace')
     else:
         raise RunExternalScriptError('%s not executable' % script)
 

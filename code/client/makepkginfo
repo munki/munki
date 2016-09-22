@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2008-2014 Greg Neagle.
+# Copyright 2008-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -327,6 +327,13 @@ def getiteminfo(itempath):
                 infodict[key] = plist[key]
         if 'LSMinimumSystemVersion' in plist:
             infodict['minosversion'] = plist['LSMinimumSystemVersion']
+        elif 'LSMinimumSystemVersionByArchitecture' in plist:
+            # just grab the highest version if more than one is listed
+            versions = [item[1] for item in
+                        plist['LSMinimumSystemVersionByArchitecture'].items()]
+            highest_version = str(max([munkicommon.MunkiLooseVersion(version)
+                                       for version in versions]))
+            infodict['minosversion'] = highest_version
         elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
             infodict['minosversion'] = \
                 plist['SystemVersionCheck:MinimumSystemVersion']
@@ -465,7 +472,7 @@ def main():
         help=('Path to an optional installcheck script to be '
               'run to determine if item should be installed. '
               'An exit code of 0 indicates installation should occur. '
-              'Takes precendence over installs items and receipts.')
+              'Takes precedence over installs items and receipts.')
         )
     script_options.add_option(
         '--uninstallcheck_script', '--uninstallcheck-script',
@@ -473,7 +480,7 @@ def main():
         help=('Path to an optional uninstallcheck script to be '
               'run to determine if item should be uninstalled. '
               'An exit code of 0 indicates uninstallation should occur. '
-              'Takes precendence over installs items and receipts.')
+              'Takes precedence over installs items and receipts.')
         )
     script_options.add_option(
         '--preinstall_script', '--preinstall-script',
@@ -780,6 +787,8 @@ def main():
             return_dict['uninstalleritem'] = options.uninstalleritem
         if arguments:
             return_dict['installeritem'] = arguments[0]
+        if options.apple_update:
+            return_dict['installer_type'] = 'apple_update_metadata'
         print >> sys.stdout, FoundationPlist.writePlistToString(return_dict)
         exit(0)
 

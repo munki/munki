@@ -3,13 +3,13 @@
 #  MSCAppDelegate.py
 #  Managed Software Center
 #
-#  Copyright 2013-2014 Greg Neagle.
+#  Copyright 2013-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,6 +45,8 @@ class MSCAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
+        # setup client logging
+        msclog.setup_logging()
         
         # userInfo dict can be nil, seems to be with 10.6
         if sender.userInfo():
@@ -75,9 +77,6 @@ class MSCAppDelegate(NSObject):
         # for NSUserNotificationCenter notifications
         if os.uname()[2].split('.')[0] > '11':
             NSUserNotificationCenter.defaultUserNotificationCenter().setDelegate_(self)
-
-        # setup client logging
-        msclog.setup_logging()
 
         # have the statuscontroller register for its own notifications
         self.statusController.registerForNotifications()

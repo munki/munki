@@ -7,13 +7,13 @@ Utilities to enable munki to install/uninstall Adobe CS3/CS4/CS5 products
 using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,8 @@ using the CS3/CS4/CS5 Deployment Toolkits.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#import sys
+# import sys
+import json
 import os
 import re
 import subprocess
@@ -421,6 +422,11 @@ def parseOptionXML(option_xml_file):
         info['package_name'] = getXMLtextElement(installinfo[0], 'PackageName')
         info['package_id'] = getXMLtextElement(installinfo[0], 'PackageID')
         info['products'] = []
+
+        # CS5 to CC 2015.0-2015.2 releases use RIBS, and we retrieve a
+        # display name, version and 'mediaSignature' for building installs
+        # items. SAPCode is also stored so that we can later search by this
+        # key across both RIBS and HyperDrive installer metadata.
         medias_elements = installinfo[0].getElementsByTagName('Medias')
         if medias_elements:
             media_elements = medias_elements[0].getElementsByTagName('Media')
@@ -430,6 +436,7 @@ def parseOptionXML(option_xml_file):
                     product['prodName'] = getXMLtextElement(media, 'prodName')
                     product['prodVersion'] = getXMLtextElement(
                         media, 'prodVersion')
+                    product['SAPCode'] = getXMLtextElement(media, 'SAPCode')
                     setup_elements = media.getElementsByTagName('Setup')
                     if setup_elements:
                         mediaSignatureElements = setup_elements[
@@ -441,7 +448,55 @@ def parseOptionXML(option_xml_file):
                                 product['mediaSignature'] += node.nodeValue
                     info['products'].append(product)
 
+        # HD (HyperDrive) media for new mid-June 2016 products. We need the
+        # SAP codes, versions, and which ones are MediaType 'Product'. Support
+        # payloads seem to all be 'STI', and are listed as STIDependencies under
+        # the main product.
+        hd_medias_elements = installinfo[0].getElementsByTagName('HDMedias')
+        if hd_medias_elements:
+            hd_media_elements = hd_medias_elements[0].getElementsByTagName('HDMedia')
+            if hd_media_elements:
+                for hd_media in hd_media_elements:
+                    product = {}
+                    product['hd_installer'] = True
+                    # productVersion is the 'full' version number
+                    # prodVersion seems to be the "customer-facing" version for this update
+                    # baseVersion is the first/base version for this standalone product/channel/LEID,
+                    #   not really needed here so we don't copy it
+                    for elem in [
+                            'mediaLEID',
+                            'prodVersion',
+                            'productVersion',
+                            'SAPCode',
+                            'MediaType',
+                            'TargetFolderName']:
+                        product[elem] = getXMLtextElement(hd_media, elem)
+                    info['products'].append(product)
+
     return info
+
+
+def getHDInstallerInfo(hd_payload_root, sap_code):
+    '''Attempts to extract some information from a HyperDrive payload
+    application.json file and return a reduced set in a dict'''
+    hd_app_info = {}
+    app_json_path = os.path.join(hd_payload_root, sap_code, 'Application.json')
+    json_info = json.loads(open(app_json_path, 'r').read())
+
+    # Copy some useful top-level keys, useful later for:
+    # - Name: display_name pkginfo key
+    # - ProductVersion: version pkginfo key and uninstall XML location
+    # - SAPCode: an uninstallXml for an installs item if it's a 'core' Type
+    # - BaseVersion and version: not currently used but may be useful once
+    #   there are more HD installers in the future
+    for key in ['BaseVersion', 'Name', 'ProductVersion', 'SAPCode', 'version']:
+        hd_app_info[key] = json_info[key]
+    hd_app_info['SAPCode'] = json_info['SAPCode']
+
+    # Adobe puts an array of dicts in a dict with one key called 'Package'
+    pkgs = [pkg for pkg in json_info['Packages']['Package']]
+    hd_app_info['Packages'] = pkgs
+    return hd_app_info
 
 
 def countPayloads(dirpath):
@@ -1201,10 +1256,30 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 mediasignature = cataloginfo['adobe_install_info'].get(
                     "media_signature")
                 mediasignatures = [mediasignature]
+
+            # Determine whether we have HD media as well in this installer
+            hd_metadata_dirs = [
+                product['TargetFolderName']
+                for product in option_xml_info['products']
+                if product.get('hd_installer')]
+
+            hd_app_infos = []
+            for sap_code in hd_metadata_dirs:
+                hd_app_info = getHDInstallerInfo(
+                    os.path.join(dirpath, 'HD'), sap_code)
+                hd_app_infos.append(hd_app_info)
+
+            # 'installs' array will be populated if we have either RIBS
+            # or HD installers, which may be mixed together in one
+            # CCP package.
+            # Acrobat Pro DC doesn't currently generate any useful installs
+            # info if it's part of a CCP package.
+            installs = []
+
+            # media signatures are used for RIBS (CS5 to CC mid-2015)
             if mediasignatures:
                 # make a default <key>installs</key> array
                 uninstalldir = "/Library/Application Support/Adobe/Uninstall"
-                installs = []
                 for mediasignature in mediasignatures:
                     signaturefile = mediasignature + ".db"
                     filepath = os.path.join(uninstalldir, signaturefile)
@@ -1212,6 +1287,55 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                     installitem['path'] = filepath
                     installitem['type'] = 'file'
                     installs.append(installitem)
+
+            # Custom installs items for HD installers seem to need only HDMedias
+            # from optionXML.xml with a MediaType of 'Product' and their
+            # 'core' packages (e.g. language packs are 'non-core')
+            if hd_app_infos:
+                uninstalldir = '/Library/Application Support/Adobe/Installers/uninstallXml'
+                product_saps = [
+                    prod['SAPCode'] for
+                    prod in option_xml_info['products']
+                    if prod.get('MediaType') == 'Product'
+                ]
+
+                product_app_infos = [app for app in hd_app_infos
+                                     if app['SAPCode'] in product_saps]
+                # if we had only a single HD and no legacy apps, set a sane
+                # version and display_name derived from the app's metadata
+                if (len(product_app_infos) == 1) and not mediasignatures:
+                    cataloginfo.update({
+                        'display_name': product_app_infos[0]['Name'],
+                        'version': product_app_infos[0]['ProductVersion'],
+                    })
+
+                for app_info in product_app_infos:
+                    for pkg in app_info['Packages']:
+                        # Don't assume 'Type' key always exists. At least the 'AdobeIllustrator20-Settings'
+                        # package doesn't have this key set.
+                        if pkg.get('Type') == 'core':
+                            # We can't use 'ProductVersion' from Application.json for the part following
+                            # the SAPCode, because it's usually too specific and won't match the "short"
+                            # product version. We can take 'prodVersion' from the optionXML.xml instead.
+                            # We filter out any non-HD installers to avoid matching up the wrong versions
+                            # for packages that may contain multiple different major versions of a given
+                            # SAPCode
+                            pkg_prod_vers = [prod['prodVersion']
+                                             for prod in option_xml_info['products']
+                                             if prod.get('hd_installer') and
+                                             prod['SAPCode'] == app_info['SAPCode']][0]
+                            uninstall_file_name = '_'.join([
+                                app_info['SAPCode'],
+                                pkg_prod_vers.replace('.', '_'),
+                                pkg['PackageName'],
+                                pkg['PackageVersion']]) + '.pimx'
+                            filepath = os.path.join(uninstalldir, uninstall_file_name)
+                            installitem = {}
+                            installitem['path'] = filepath
+                            installitem['type'] = 'file'
+                            installs.append(installitem)
+
+            if installs:
                 cataloginfo['installs'] = installs
 
             return cataloginfo

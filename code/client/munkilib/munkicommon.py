@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an 'AS IS' BASIS,
@@ -519,7 +519,15 @@ def validateDateFormat(datetime_string):
 
 def log(msg, logname=''):
     """Generic logging function."""
-    logging.info(msg)  # noop unless configure_syslog() is called first.
+    if len(msg) > 1000:
+        # See http://bugs.python.org/issue11907 and RFC-3164
+        # break up huge msg into chunks and send 1000 characters at a time
+        msg_buffer = msg
+        while msg_buffer:
+            logging.info(msg_buffer[:1000])
+            msg_buffer = msg_buffer[1000:]
+    else:
+        logging.info(msg)  # noop unless configure_syslog() is called first.
 
     # date/time format string
     formatstr = '%b %d %Y %H:%M:%S %z'
@@ -547,7 +555,15 @@ def configure_syslog():
         logger.removeHandler(handler)
     logger.setLevel(logging.DEBUG)
 
-    syslog = logging.handlers.SysLogHandler('/var/run/syslog')
+    # If /System/Library/LaunchDaemons/com.apple.syslogd.plist is restarted
+    # then /var/run/syslog stops listening.  If we fail to catch this then
+    # Munki completely errors.
+    try:
+        syslog = logging.handlers.SysLogHandler('/var/run/syslog')
+    except:
+        log('LogToSyslog is enabled but socket connection failed.')
+        return
+
     syslog.setFormatter(logging.Formatter('munki: %(message)s'))
     syslog.setLevel(logging.INFO)
     logger.addHandler(syslog)
@@ -1120,6 +1136,9 @@ class Preferences(object):
         self.user = user
 
     def __iter__(self):
+        """Iterator for keys in the specific 'level' of preferences; this
+        will fail to iterate all available keys for the preferences domain
+        since OS X reads from multiple 'levels' and composites them."""
         keys = CFPreferencesCopyKeyList(
             self.bundle_id, self.user, kCFPreferencesCurrentHost)
         if keys is not None:
@@ -1127,22 +1146,30 @@ class Preferences(object):
                 yield i
 
     def __contains__(self, pref_name):
+        """Since this uses CFPreferencesCopyAppValue, it will find a preference
+        regardless of the 'level' at which it is stored"""
         pref_value = CFPreferencesCopyAppValue(pref_name, self.bundle_id)
         return pref_value is not None
 
     def __getitem__(self, pref_name):
+        """Get a preference value. Normal OS X preference search path applies"""
         return CFPreferencesCopyAppValue(pref_name, self.bundle_id)
 
     def __setitem__(self, pref_name, pref_value):
+        """Sets a preference. if the user is kCFPreferencesCurrentUser, the
+        preference actually gets written at the 'ByHost' level due to the use
+        of kCFPreferencesCurrentHost"""
         CFPreferencesSetValue(
             pref_name, pref_value, self.bundle_id, self.user,
             kCFPreferencesCurrentHost)
         CFPreferencesAppSynchronize(self.bundle_id)
 
     def __delitem__(self, pref_name):
+        """Delete a preference"""
         self.__setitem__(pref_name, None)
 
     def __repr__(self):
+        """Return a text representation of the class"""
         return '<%s %s>' % (self.__class__.__name__, self.bundle_id)
 
     def get(self, pref_name, default=None):
@@ -1154,13 +1181,27 @@ class Preferences(object):
 
 
 class ManagedInstallsPreferences(Preferences):
-    """Preferences which read from /L/P/ManagedInstalls."""
+    """Preferences which are read using 'normal' OS X preferences precedence:
+        Managed Preferences (MCX or Configuration Profile)
+        ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
+        ~/Library/Preferences/ManagedInstalls.plist
+        /Library/Preferences/ManagedInstalls.plist
+    Preferences are written to
+        /Library/Preferences/ManagedInstalls.plist
+    Since this code is usually run as root, ~ is root's home dir"""
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
 
 
 class SecureManagedInstallsPreferences(Preferences):
-    """Preferences which read from /private/var/root/L/P/ManagedInstalls."""
+    """Preferences which are read using 'normal' OS X preferences precedence:
+        Managed Preferences (MCX or Configuration Profile)
+        ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
+        ~/Library/Preferences/ManagedInstalls.plist
+        /Library/Preferences/ManagedInstalls.plist
+    Preferences are written to
+        ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
+    Since this code is usually run as root, ~ is root's home dir"""
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
 
@@ -1214,9 +1255,10 @@ def pref(pref_name):
         'SuppressStopButtonOnInstall': False,
         'PackageVerificationMode': 'hash',
         'FollowHTTPRedirects': 'none',
+        'UnattendedAppleUpdates': False,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
-    if pref_value == None:
+    if pref_value is None:
         pref_value = default_prefs.get(pref_name)
         # we're using a default value. We'll write it out to
         # /Library/Preferences/<BUNDLE_ID>.plist for admin
@@ -1231,48 +1273,21 @@ def pref(pref_name):
 # Apple package utilities
 #####################################################
 
-def getInstallerPkgInfo(filename):
-    """Uses Apple's installer tool to get basic info
-    about an installer item."""
+def getPkgRestartInfo(filename):
+    """Uses Apple's installer tool to get RestartAction
+    from an installer item."""
     installerinfo = {}
-    proc = subprocess.Popen(['/usr/sbin/installer', '-pkginfo', '-verbose',
-                             '-plist', '-pkg', filename],
-                            bufsize=1, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
-
-    if out:
-        # discard any lines at the beginning that aren't part of the plist
-        lines = str(out).splitlines()
-        plist = ''
-        for index in range(len(lines)):
-            try:
-                plist = FoundationPlist.readPlistFromString(
-                    '\n'.join(lines[index:]))
-            except FoundationPlist.NSPropertyListSerializationException:
-                pass
-            if plist:
-                break
-        if plist:
-            if 'Size' in plist:
-                installerinfo['installed_size'] = int(plist['Size'])
-            installerinfo['description'] = plist.get('Description', '')
-            if plist.get('Will Restart') == 'YES':
-                installerinfo['RestartAction'] = 'RequireRestart'
-            if 'Title' in plist:
-                installerinfo['display_name'] = plist['Title']
-
     proc = subprocess.Popen(['/usr/sbin/installer',
                              '-query', 'RestartAction',
                              '-pkg', filename],
-                            bufsize=1,
+                            bufsize=-1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode:
         display_error("installer -query failed: %s %s" %
                       (out.decode('UTF-8'), err.decode('UTF-8')))
-        return None
+        return {}
 
     if out:
         restartAction = str(out).rstrip('\n')
@@ -1319,7 +1334,7 @@ class MunkiLooseVersion(version.LooseVersion):
 
 def padVersionString(versString, tupleCount):
     """Normalize the format of a version string"""
-    if versString == None:
+    if versString is None:
         versString = '0'
     components = str(versString).split('.')
     if len(components) > tupleCount:
@@ -1465,7 +1480,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                         pkginfo['installed_size'] = int(
                             payloads[0].attributes[
                                 'installKBytes'].value.encode('UTF-8'))
-                    if not pkginfo in info:
+                    if pkginfo not in info:
                         info.append(pkginfo)
                 # if there isn't a payload, no receipt is left by a flat
                 # pkg, so don't add this to the info array
@@ -1638,7 +1653,7 @@ def getOnePackageInfo(pkgpath):
                 pkginfo['name'] = plist['CFBundleName']
 
             if 'IFPkgFlagInstalledSize' in plist:
-                pkginfo['installed_size'] = plist['IFPkgFlagInstalledSize']
+                pkginfo['installed_size'] = int(plist['IFPkgFlagInstalledSize'])
 
             pkginfo['version'] = getBundleVersion(pkgpath)
         except (AttributeError,
@@ -1918,8 +1933,8 @@ def getPackageMetaData(pkgitem):
     if not hasValidInstallerItemExt(pkgitem):
         return {}
 
-    # first get the data /usr/sbin/installer will give us
-    installerinfo = getInstallerPkgInfo(pkgitem)
+    # first query /usr/sbin/installer for restartAction
+    installerinfo = getPkgRestartInfo(pkgitem)
     # now look for receipt/subpkg info
     receiptinfo = getReceiptInfo(pkgitem)
 
@@ -2346,8 +2361,9 @@ def get_hardware_info():
         return {}
 
 
-def get_ipv4_addresses():
-    '''Uses system profiler to get active IPv4 addresses for this machine'''
+def get_ip_addresses(kind):
+    '''Uses system profiler to get active IP addresses for this machine
+    kind must be one of 'IPv4' or 'IPv6' '''
     ip_addresses = []
     cmd = ['/usr/sbin/system_profiler', 'SPNetworkDataType', '-xml']
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
@@ -2366,9 +2382,9 @@ def get_ipv4_addresses():
 
     for item in items:
         try:
-            ip_addresses.extend(item['IPv4']['Addresses'])
+            ip_addresses.extend(item[kind]['Addresses'])
         except KeyError:
-            # 'IPv4" or 'Addresses' is empty, so we ignore
+            # 'IPv4", 'IPv6' or 'Addresses' is empty, so we ignore
             # this item
             pass
     return ip_addresses
@@ -2400,7 +2416,8 @@ def getMachineFacts():
         hardware_info = get_hardware_info()
         MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
         MACHINE['munki_version'] = get_version()
-        MACHINE['ipv4_address'] = get_ipv4_addresses()
+        MACHINE['ipv4_address'] = get_ip_addresses('IPv4')
+        MACHINE['ipv6_address'] = get_ip_addresses('IPv6')
         MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
 
         if MACHINE['arch'] == 'x86_64':
@@ -2536,7 +2553,7 @@ def cleanUpTmpDir():
 
 
 def listdir(path):
-    """OSX HFS+ string encoding safe listdir().
+    """OS X HFS+ string encoding safe listdir().
 
     Args:
         path: path to list contents of
@@ -2545,14 +2562,14 @@ def listdir(path):
     """
     # if os.listdir() is supplied a unicode object for the path,
     # it will return unicode filenames instead of their raw fs-dependent
-    # version, which is decomposed utf-8 on OSX.
+    # version, which is decomposed utf-8 on OS X.
     #
     # we use this to our advantage here and have Python do the decoding
     # work for us, instead of decoding each item in the output list.
     #
     # references:
-    # http://docs.python.org/howto/unicode.html#unicode-filenames
-    # http://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
+    # https://docs.python.org/howto/unicode.html#unicode-filenames
+    # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
     if type(path) is str:
@@ -2617,7 +2634,9 @@ def writefile(stringdata, path):
     Returns the path on success, empty string on failure.'''
     try:
         fileobject = open(path, mode='w', buffering=1)
-        print >> fileobject, stringdata.encode('UTF-8')
+        # write line-by-line to ensure proper UNIX line-endings
+        for line in stringdata.splitlines():
+            print >> fileobject, line.encode('UTF-8')
         fileobject.close()
         return path
     except (OSError, IOError):

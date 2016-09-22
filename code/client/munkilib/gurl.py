@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an 'AS IS' BASIS,
@@ -18,6 +18,7 @@
 gurl.py
 
 Created by Greg Neagle on 2013-11-21.
+Modified in Feb 2016 to add support for NSURLSession.
 
 curl replacement using NSURLConnection and friends
 """
@@ -32,28 +33,76 @@ from objc import super
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
-from Foundation import NSBundle
-from Foundation import NSRunLoop, NSDate
-from Foundation import NSObject, NSURL, NSURLConnection
-from Foundation import NSMutableURLRequest
-from Foundation import NSURLRequestReloadIgnoringLocalCacheData
-from Foundation import NSURLResponseUnknownLength
-from Foundation import NSLog
-from Foundation import NSURLCredential, NSURLCredentialPersistenceNone
-from Foundation import NSPropertyListSerialization
-from Foundation import NSPropertyListMutableContainersAndLeaves
-from Foundation import NSPropertyListXMLFormat_v1_0
-# pylint: enable=E0611
+
+from CFNetwork import kCFNetworkProxiesHTTPSEnable, kCFNetworkProxiesHTTPEnable
+
+from Foundation import (NSBundle, NSRunLoop, NSDate,
+                        NSObject, NSURL, NSURLConnection,
+                        NSMutableURLRequest,
+                        NSURLRequestReloadIgnoringLocalCacheData,
+                        NSURLResponseUnknownLength,
+                        NSLog,
+                        NSURLCredential, NSURLCredentialPersistenceNone,
+                        NSPropertyListSerialization,
+                        NSPropertyListMutableContainersAndLeaves,
+                        NSPropertyListXMLFormat_v1_0)
+
+try:
+    from Foundation import NSURLSession, NSURLSessionConfiguration
+    NSURLSESSION_AVAILABLE = True
+except ImportError:
+    NSURLSESSION_AVAILABLE = False
 
 # Disable PyLint complaining about 'invalid' names
 # pylint: disable=C0103
 
+if NSURLSESSION_AVAILABLE:
+    # NSURLSessionAuthChallengeDisposition enum constants
+    NSURLSessionAuthChallengeUseCredential = 0
+    NSURLSessionAuthChallengePerformDefaultHandling = 1
+    NSURLSessionAuthChallengeCancelAuthenticationChallenge = 2
+    NSURLSessionAuthChallengeRejectProtectionSpace = 3
+
+    # NSURLSessionResponseDisposition enum constants
+    NSURLSessionResponseCancel = 0
+    NSURLSessionResponseAllow = 1
+    NSURLSessionResponseBecomeDownload = 2
+
+    # TLS/SSLProtocol enum constants
+    kSSLProtocolUnknown = 0
+    kSSLProtocol3 = 2
+    kTLSProtocol1 = 4
+    kTLSProtocol11 = 7
+    kTLSProtocol12 = 8
+    kDTLSProtocol1 = 9
+
+    # define a helper function for block callbacks
+    import ctypes
+    import objc
+    _objc_so = ctypes.cdll.LoadLibrary(
+        os.path.join(objc.__path__[0], '_objc.so'))
+    PyObjCMethodSignature_WithMetaData = (
+        _objc_so.PyObjCMethodSignature_WithMetaData)
+    PyObjCMethodSignature_WithMetaData.restype = ctypes.py_object
+
+    def objc_method_signature(signature_str):
+        '''Return a PyObjCMethodSignature given a call signature in string
+        format'''
+        return PyObjCMethodSignature_WithMetaData(
+            ctypes.create_string_buffer(signature_str), None, False)
+
+# pylint: enable=E0611
 
 # disturbing hack warning!
 # this works around an issue with App Transport Security on 10.11
 bundle = NSBundle.mainBundle()
 info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
 info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
+
+
+def NSLogWrapper(message):
+    '''A wrapper function for NSLog to prevent format string errors'''
+    NSLog('%@', message)
 
 
 ssl_error_codes = {
@@ -111,7 +160,7 @@ ssl_error_codes = {
 
 class Gurl(NSObject):
     '''A class for getting content from a URL
-       using NSURLConnection and friends'''
+       using NSURLConnection/NSURLSession and friends'''
 
     # since we inherit from NSObject, PyLint issues a few bogus warnings
     # pylint: disable=W0232,E1002
@@ -129,6 +178,7 @@ class Gurl(NSObject):
             return
 
         self.follow_redirects = options.get('follow_redirects', False)
+        self.ignore_system_proxy = options.get('ignore_system_proxy', False)
         self.destination_path = options.get('file')
         self.can_resume = options.get('can_resume', False)
         self.url = options.get('url')
@@ -138,9 +188,12 @@ class Gurl(NSObject):
         self.download_only_if_changed = options.get(
             'download_only_if_changed', False)
         self.cache_data = options.get('cache_data')
-        self.connection_timeout = options.get('connection_timeout', 10)
+        self.connection_timeout = options.get('connection_timeout', 60)
+        if NSURLSESSION_AVAILABLE:
+            self.minimum_tls_protocol = options.get(
+                'minimum_tls_protocol', kTLSProtocol1)
 
-        self.log = options.get('logging_function', NSLog)
+        self.log = options.get('logging_function', NSLogWrapper)
 
         self.resume = False
         self.response = None
@@ -155,6 +208,8 @@ class Gurl(NSObject):
         self.expectedLength = -1
         self.percentComplete = 0
         self.connection = None
+        self.session = None
+        self.task = None
         return self
 
     def start(self):
@@ -189,18 +244,41 @@ class Gurl(NSObject):
             if 'etag' in stored_data:
                 request.setValue_forHTTPHeaderField_(
                     stored_data['etag'], 'if-none-match')
-        self.connection = NSURLConnection.alloc().initWithRequest_delegate_(
-            request, self)
+        if NSURLSESSION_AVAILABLE:
+            configuration = \
+                NSURLSessionConfiguration.defaultSessionConfiguration()
+
+            # optional: ignore system http/https proxies (10.9+ only)
+            if self.ignore_system_proxy is True:
+                configuration.setConnectionProxyDictionary_(
+                    {kCFNetworkProxiesHTTPEnable: False,
+                     kCFNetworkProxiesHTTPSEnable: False})
+
+            # set minumum supported TLS protocol (defaults to TLS1)
+            configuration.setTLSMinimumSupportedProtocol_(
+                self.minimum_tls_protocol)
+
+            self.session = \
+                NSURLSession.sessionWithConfiguration_delegate_delegateQueue_(
+                    configuration, self, None)
+            self.task = self.session.dataTaskWithRequest_(request)
+            self.task.resume()
+        else:
+            self.connection = NSURLConnection.alloc().initWithRequest_delegate_(
+                request, self)
 
     def cancel(self):
         '''Cancel the connection'''
         if self.connection:
-            self.connection.cancel()
+            if NSURLSESSION_AVAILABLE:
+                self.session.invalidateAndCancel()
+            else:
+                self.connection.cancel()
             self.done = True
 
     def isDone(self):
         '''Check if the connection request is complete. As a side effect,
-        allow the delegates to work my letting the run loop run for a bit'''
+        allow the delegates to work by letting the run loop run for a bit'''
         if self.done:
             return self.done
         # let the delegates do their thing
@@ -255,13 +333,8 @@ class Gurl(NSObject):
             new_dict[key.lower()] = value
         return new_dict
 
-    def connection_didFailWithError_(self, connection, error):
-        '''NSURLConnection delegate method
-        Sent when a connection fails to load its request successfully.'''
-
-        # we don't actually use the connection argument, so
-        # pylint: disable=W0613
-
+    def recordError_(self, error):
+        '''Record any error info from completed connection/session'''
         self.error = error
         # If this was an SSL error, try to extract the SSL error code.
         if 'NSUnderlyingError' in error.userInfo():
@@ -270,13 +343,40 @@ class Gurl(NSObject):
             if ssl_code:
                 self.SSLerror = (ssl_code, ssl_error_codes.get(
                     ssl_code, 'Unknown SSL error'))
+
+    def removeExpectedSizeFromStoredHeaders(self):
+        '''If a successful transfer, clear the expected size so we
+        don\'t attempt to resume the download next time'''
+        if str(self.status).startswith('2'):
+            # remove the expected-size from the stored headers
+            headers = self.get_stored_headers()
+            if 'expected-length' in headers:
+                del headers['expected-length']
+                self.store_headers(headers)
+
+    def URLSession_task_didCompleteWithError_(self, session, task, error):
+        '''NSURLSessionTaskDelegate method.'''
+        # we don't actually use the session or task arguments, so
+        # pylint: disable=W0613
+        if self.destination and self.destination_path:
+            self.destination.close()
+            self.removeExpectedSizeFromStoredHeaders()
+        if error:
+            self.recordError_(error)
+        self.done = True
+
+    def connection_didFailWithError_(self, connection, error):
+        '''NSURLConnectionDelegate method
+        Sent when a connection fails to load its request successfully.'''
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+        self.recordError_(error)
         self.done = True
         if self.destination and self.destination_path:
             self.destination.close()
-            # delete it? Might not want to...
 
     def connectionDidFinishLoading_(self, connection):
-        '''NSURLConnectionDataDelegat delegate method
+        '''NSURLConnectionDataDelegate method
         Sent when a connection has finished loading successfully.'''
 
         # we don't actually use the connection argument, so
@@ -285,18 +385,11 @@ class Gurl(NSObject):
         self.done = True
         if self.destination and self.destination_path:
             self.destination.close()
-        if str(self.status).startswith('2'):
-            # remove the expected-size from the stored headers
-            headers = self.get_stored_headers()
-            if 'expected-length' in headers:
-                del headers['expected-length']
-                self.store_headers(headers)
+            self.removeExpectedSizeFromStoredHeaders()
 
-    def connection_didReceiveResponse_(self, connection, response):
-        '''NSURLConnectionDataDelegate delegate method
-        Sent when the connection has received sufficient data to construct the
-        URL response for its request.'''
-
+    def handleResponse_withCompletionHandler_(
+            self, response, completionHandler):
+        '''Handle the response to the connection'''
         self.response = response
         self.bytesReceived = 0
         self.percentComplete = -1
@@ -330,7 +423,12 @@ class Gurl(NSObject):
                     # we have a partial for
                     self.log(
                         'Can\'t resume download; file on server has changed.')
-                    connection.cancel()
+                    if completionHandler:
+                        # tell the session task to cancel
+                        completionHandler(NSURLSessionResponseCancel)
+                    else:
+                        # cancel the connection
+                        self.connection.cancel()
                     self.log('Removing %s' % self.destination_path)
                     os.unlink(self.destination_path)
                     # restart and attempt to download the entire file
@@ -355,83 +453,107 @@ class Gurl(NSObject):
                 # the downloadand for future checking if the file on the server
                 # has changed
                 self.store_headers(download_data)
+        if completionHandler:
+            # tell the session task to continue
+            completionHandler(NSURLSessionResponseAllow)
 
-    def connection_willSendRequest_redirectResponse_(
-            self, connection, request, response):
+    def URLSession_dataTask_didReceiveResponse_completionHandler_(
+            self, session, task, response, completionHandler):
+        '''NSURLSessionDataDelegate method'''
+        # we don't actually use the session or task arguments, so
+        # pylint: disable=W0613
+        completionHandler.__block_signature__ = objc_method_signature('v@i')
+        self.handleResponse_withCompletionHandler_(response, completionHandler)
+
+    def connection_didReceiveResponse_(self, connection, response):
         '''NSURLConnectionDataDelegate delegate method
-        Sent when the connection determines that it must change URLs in order to
-        continue loading a request.'''
-
+        Sent when the connection has received sufficient data to construct the
+        URL response for its request.'''
         # we don't actually use the connection argument, so
         # pylint: disable=W0613
+        self.handleResponse_withCompletionHandler_(response, None)
 
-        if response == None:
-            # This isn't a real redirect, this is without talking to a server.
-            # Pass it back as-is
-            return request
-        # But if we're here, it appears to be a real redirect attempt
+    def handleRedirect_newRequest_withCompletionHandler_(
+            self, response, request, completionHandler):
+        '''Handle the redirect request'''
+        if response is None:
+            # the request has changed the NSURLRequest in order to standardize
+            # its format, for example, changing a request for
+            # http://www.apple.com to http://www.apple.com/. This occurs because
+            # the standardized, or canonical, version of the request is used for
+            # cache management. Pass the request back as-is
+            # (it appears that at some point Apple also defined a redirect like
+            # http://developer.apple.com to https://developer.apple.com to be
+            # 'merely' a change in the canonical URL.)
+            # Further -- it appears that this delegate method isn't called at
+            # all in this scenario, unlike NSConnectionDelegate method
+            # connection:willSendRequest:redirectResponse:
+            # we'll leave this here anyway in case we're wrong about that
+            if completionHandler:
+                completionHandler(request)
+                return
+            else:
+                return request
+        # If we get here, it appears to be a real redirect attempt
         # Annoyingly, we apparently can't get access to the headers from the
         # site that told us to redirect. All we know is that we were told
         # to redirect and where the new location is.
         newURL = request.URL().absoluteString()
         self.redirection.append([newURL, dict(response.allHeaderFields())])
         newParsedURL = urlparse(newURL)
-        if self.follow_redirects == True or self.follow_redirects == 'all':
+        # This code was largely based on the work of Andreas Fuchs
+        # (https://github.com/munki/munki/pull/465)
+        if self.follow_redirects is True or self.follow_redirects == 'all':
             # Allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
-            return request
-        elif self.follow_redirects == 'https' and newParsedURL.scheme == 'https':
+            if completionHandler:
+                completionHandler(request)
+                return
+            else:
+                return request
+        elif (self.follow_redirects == 'https'
+              and newParsedURL.scheme == 'https'):
             # Once again, allow the redirect
             self.log('Allowing redirect to: %s' % newURL)
-            return request
+            if completionHandler:
+                completionHandler(request)
+                return
+            else:
+                return request
         else:
             # If we're down here either the preference was set to 'none',
             # the url we're forwarding on to isn't https or follow_redirects
             # was explicitly set to False
             self.log('Denying redirect to: %s' % newURL)
-            return None
+            if completionHandler:
+                completionHandler(None)
+                return
+            else:
+                return None
 
-    def connection_willSendRequestForAuthenticationChallenge_(
-            self, connection, challenge):
-        '''NSURLConnection delegate method
-        Tells the delegate that the connection will send a request for an
-        authentication challenge.
-        New in 10.7.'''
+    def URLSession_task_willPerformHTTPRedirection_newRequest_completionHandler_(
+            self, session, task, response, request, completionHandler):
+        '''NSURLSessionTaskDelegate method'''
+        # we don't actually use the session or task arguments, so
+        # pylint: disable=W0613
+        self.log(
+            'URLSession_task_willPerformHTTPRedirection_newRequest_'
+            'completionHandler_')
+        completionHandler.__block_signature__ = objc_method_signature('v@@')
+        self.handleRedirect_newRequest_withCompletionHandler_(
+            response, request, completionHandler)
+
+    def connection_willSendRequest_redirectResponse_(
+            self, connection, request, response):
+        '''NSURLConnectionDataDelegate method
+        Sent when the connection determines that it must change URLs in order to
+        continue loading a request.'''
 
         # we don't actually use the connection argument, so
         # pylint: disable=W0613
-
-        self.log('connection_willSendRequestForAuthenticationChallenge_')
-        protectionSpace = challenge.protectionSpace()
-        host = protectionSpace.host()
-        realm = protectionSpace.realm()
-        authenticationMethod = protectionSpace.authenticationMethod()
-        self.log(
-            'Authentication challenge for Host: %s Realm: %s AuthMethod: %s'
-            % (host, realm, authenticationMethod))
-        if challenge.previousFailureCount() > 0:
-            # we have the wrong credentials. just fail
-            self.log('Previous authentication attempt failed.')
-            challenge.sender().cancelAuthenticationChallenge_(challenge)
-        if self.username and self.password and authenticationMethod in [
-                'NSURLAuthenticationMethodDefault',
-                'NSURLAuthenticationMethodHTTPBasic',
-                'NSURLAuthenticationMethodHTTPDigest']:
-            self.log('Will attempt to authenticate.')
-            self.log('Username: %s Password: %s'
-                     % (self.username, ('*' * len(self.password or ''))))
-            credential = (
-                NSURLCredential.credentialWithUser_password_persistence_(
-                    self.username, self.password,
-                    NSURLCredentialPersistenceNone))
-            challenge.sender().useCredential_forAuthenticationChallenge_(
-                credential, challenge)
-        else:
-            # fall back to system-provided default behavior
-            self.log('Allowing OS to handle authentication request')
-            challenge.sender(
-                ).performDefaultHandlingForAuthenticationChallenge_(
-                    challenge)
+        self.log('connection_willSendRequest_redirectResponse_')
+        return self.handleRedirect_newRequest_withCompletionHandler_(
+            response, request, None)
 
     def connection_canAuthenticateAgainstProtectionSpace_(
             self, connection, protectionSpace):
@@ -462,17 +584,9 @@ class Gurl(NSObject):
         self.log('Allowing OS to handle authentication request')
         return False
 
-    def connection_didReceiveAuthenticationChallenge_(
-            self, connection, challenge):
-        '''NSURLConnection delegate method
-        Sent when a connection must authenticate a challenge in order to
-        download its request.
-        Deprecated in 10.10'''
-
-        # we don't actually use the connection argument, so
-        # pylint: disable=W0613
-
-        self.log('connection_didReceiveAuthenticationChallenge_')
+    def handleChallenge_withCompletionHandler_(
+            self, challenge, completionHandler):
+        '''Handle an authentication challenge'''
         protectionSpace = challenge.protectionSpace()
         host = protectionSpace.host()
         realm = protectionSpace.realm()
@@ -483,7 +597,12 @@ class Gurl(NSObject):
         if challenge.previousFailureCount() > 0:
             # we have the wrong credentials. just fail
             self.log('Previous authentication attempt failed.')
-            challenge.sender().cancelAuthenticationChallenge_(challenge)
+            if completionHandler:
+                completionHandler(
+                    NSURLSessionAuthChallengeCancelAuthenticationChallenge,
+                    None)
+            else:
+                challenge.sender().cancelAuthenticationChallenge_(challenge)
         if self.username and self.password and authenticationMethod in [
                 'NSURLAuthenticationMethodDefault',
                 'NSURLAuthenticationMethodHTTPBasic',
@@ -495,22 +614,65 @@ class Gurl(NSObject):
                 NSURLCredential.credentialWithUser_password_persistence_(
                     self.username, self.password,
                     NSURLCredentialPersistenceNone))
-            challenge.sender().useCredential_forAuthenticationChallenge_(
-                credential, challenge)
+            if completionHandler:
+                completionHandler(
+                    NSURLSessionAuthChallengeUseCredential, credential)
+            else:
+                challenge.sender().useCredential_forAuthenticationChallenge_(
+                    credential, challenge)
         else:
             # fall back to system-provided default behavior
-            self.log('Continuing without credential.')
-            challenge.sender(
-                ).continueWithoutCredentialForAuthenticationChallenge_(
-                    challenge)
+            self.log('Allowing OS to handle authentication request')
+            if completionHandler:
+                completionHandler(
+                    NSURLSessionAuthChallengePerformDefaultHandling, None)
+            else:
+                if (challenge.sender().respondsToSelector_(
+                        'performDefaultHandlingForAuthenticationChallenge:')):
+                    self.log('Allowing OS to handle authentication request')
+                    challenge.sender(
+                        ).performDefaultHandlingForAuthenticationChallenge_(
+                            challenge)
+                else:
+                    # Mac OS X 10.6 doesn't support
+                    # performDefaultHandlingForAuthenticationChallenge:
+                    self.log('Continuing without credential.')
+                    challenge.sender(
+                        ).continueWithoutCredentialForAuthenticationChallenge_(
+                            challenge)
 
-    def connection_didReceiveData_(self, connection, data):
-        '''NSURLConnectionDataDelegate method
-        Sent as a connection loads data incrementally'''
-
+    def connection_willSendRequestForAuthenticationChallenge_(
+            self, connection, challenge):
+        '''NSURLConnection delegate method
+        Tells the delegate that the connection will send a request for an
+        authentication challenge. New in 10.7.'''
         # we don't actually use the connection argument, so
         # pylint: disable=W0613
+        self.log('connection_willSendRequestForAuthenticationChallenge_')
+        self.handleChallenge_withCompletionHandler_(challenge, None)
 
+    def URLSession_task_didReceiveChallenge_completionHandler_(
+            self, session, task, challenge, completionHandler):
+        '''NSURLSessionTaskDelegate method'''
+        # we don't actually use the session or task arguments, so
+        # pylint: disable=W0613
+        completionHandler.__block_signature__ = objc_method_signature('v@i@')
+        self.log('URLSession_task_didReceiveChallenge_completionHandler_')
+        self.handleChallenge_withCompletionHandler_(
+            challenge, completionHandler)
+
+    def connection_didReceiveAuthenticationChallenge_(
+            self, connection, challenge):
+        '''NSURLConnection delegate method
+        Sent when a connection must authenticate a challenge in order to
+        download its request. Deprecated in 10.10'''
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+        self.log('connection_didReceiveAuthenticationChallenge_')
+        self.handleChallenge_withCompletionHandler_(challenge, None)
+
+    def handleReceivedData_(self, data):
+        '''Handle received data'''
         if self.destination:
             self.destination.write(str(data))
         else:
@@ -519,3 +681,16 @@ class Gurl(NSObject):
         if self.expectedLength != NSURLResponseUnknownLength:
             self.percentComplete = int(
                 float(self.bytesReceived)/float(self.expectedLength) * 100.0)
+
+    def URLSession_dataTask_didReceiveData_(self, session, task, data):
+        '''NSURLSessionDataDelegate method'''
+        # we don't actually use the session or task arguments, so
+        # pylint: disable=W0613
+        self.handleReceivedData_(data)
+
+    def connection_didReceiveData_(self, connection, data):
+        '''NSURLConnectionDataDelegate method
+        Sent as a connection loads data incrementally'''
+        # we don't actually use the connection argument, so
+        # pylint: disable=W0613
+        self.handleReceivedData_(data)

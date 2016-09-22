@@ -5,13 +5,13 @@
 #
 #  Created by Greg Neagle on 2/21/14.
 #
-# Copyright 2014 Greg Neagle.
+# Copyright 2014-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,17 +20,22 @@
 # limitations under the License.
 
 import os
-import sys
+#import sys
 import msclib
 import munki
 
 from operator import itemgetter
 from HTMLParser import HTMLParser, HTMLParseError
 
+# Disable PyLint complaining about wildcard imports and unused symbols
+# pylint: disable=W0401,W0614
 from Foundation import *
 from AppKit import *
 
 import FoundationPlist
+
+# Disable PyLint complaining about 'invalid' camelCase names
+# pylint: disable=C0103
 
 user_install_selections = set()
 user_removal_selections = set()
@@ -41,9 +46,10 @@ _cache = {}
 
 def quote(a_string):
     '''Replacement for urllib.quote that handles Unicode strings'''
-    return str(NSString.stringWithString_(
-                   a_string).stringByAddingPercentEscapesUsingEncoding_(
-                       NSUTF8StringEncoding))
+    return str(
+        NSString.stringWithString_(
+            a_string).stringByAddingPercentEscapesUsingEncoding_(
+                NSUTF8StringEncoding))
 
 
 def reset():
@@ -68,15 +74,17 @@ def getOptionalInstallItems():
     if munki.pref('AppleSoftwareUpdatesOnly'):
         return []
     if not 'optional_install_items' in _cache:
-        _cache['optional_install_items'] = [OptionalItem(item)
-                                   for item in getInstallInfo().get('optional_installs', [])]
+        _cache['optional_install_items'] = [
+            OptionalItem(item)
+            for item in getInstallInfo().get('optional_installs', [])]
     return _cache['optional_install_items']
 
 
 def updateCheckNeeded():
-    '''Returns True if any item in optional installs list has 'updatecheck_needed' == True'''
+    '''Returns True if any item in optional installs list has
+    'updatecheck_needed' == True'''
     return len([item for item in getOptionalInstallItems()
-            if item.get('updatecheck_needed')]) != 0
+                if item.get('updatecheck_needed')]) != 0
 
 
 def optionalItemForName_(item_name):
@@ -94,7 +102,8 @@ def getOptionalWillBeInstalledItems():
 
 def getOptionalWillBeRemovedItems():
     return [item for item in getOptionalInstallItems()
-            if item['status'] in ['removal-requested', 'will-be-removed', 'removal-error']]
+            if item['status'] in ['removal-requested', 'will-be-removed',
+                                  'removal-error']]
 
 
 def getUpdateList():
@@ -136,7 +145,7 @@ def _build_update_list():
     update_list = [UpdateItem(item) for item in update_items]
     # sort it and return it
     return sorted(update_list, key=itemgetter(
-                    'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
+        'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
 
 
 def updatesRequireLogout():
@@ -183,7 +192,8 @@ def getEffectiveUpdateList():
     # could have their installation state changed; so filter those out
     optional_installs = getOptionalWillBeInstalledItems()
     optional_removals = getOptionalWillBeRemovedItems()
-    optional_item_names = [item['name'] for item in optional_installs + optional_removals]
+    optional_item_names = [item['name']
+                           for item in optional_installs + optional_removals]
 
     mandatory_updates = [item for item in getUpdateList()
                          if item['name'] not in optional_item_names]
@@ -206,13 +216,14 @@ def getMyItemsList():
 
 
 def dependentItems(this_name):
-    '''Returns the names of any selected optional items that require this optional item'''
+    '''Returns the names of any selected optional items that require this
+    optional item'''
     if not 'optional_installs_with_dependencies' in _cache:
         self_service_installs = SelfService().installs()
         optional_installs = getInstallInfo().get('optional_installs', [])
-        _cache['optional_installs_with_dependencies'] = [item for item in optional_installs
-                                                         if item['name'] in self_service_installs
-                                                         and 'requires' in item]
+        _cache['optional_installs_with_dependencies'] = [
+            item for item in optional_installs
+            if item['name'] in self_service_installs and 'requires' in item]
     dependent_items = []
     for item in _cache['optional_installs_with_dependencies']:
         if this_name in item['requires']:
@@ -221,35 +232,44 @@ def dependentItems(this_name):
 
 
 def convertIconToPNG(app_name, destination_path, desired_size):
-    '''Converts an application icns file to a png file, choosing the representation
-        closest to (but >= than if possible) the desired_size. Returns True if
-        successful, False otherwise'''
+    '''Converts an application icns file to a png file, choosing the
+    representation closest to (but >= than if possible) the desired_size.
+    Returns True if successful, False otherwise'''
     app_path = os.path.join('/Applications', app_name + '.app')
     if not os.path.exists(app_path):
         return False
     try:
-        info = FoundationPlist.readPlist(os.path.join(app_path, 'Contents/Info.plist'))
-    except (FoundationPlist.FoundationPlistException):
+        info = FoundationPlist.readPlist(
+            os.path.join(app_path, 'Contents/Info.plist'))
+    except FoundationPlist.FoundationPlistException:
         info = {}
-    icon_filename = info.get('CFBundleIconFile', app_name)
-    icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
-    if not os.path.splitext(icon_path)[1]:
-        # no file extension, so add '.icns'
-        icon_path += u'.icns'
-    if os.path.exists(icon_path):
-        image_data = NSData.dataWithContentsOfFile_(icon_path)
-        bitmap_reps = NSBitmapImageRep.imageRepsWithData_(image_data)
-        chosen_rep = None
-        for bitmap_rep in bitmap_reps:
-            if not chosen_rep:
-                chosen_rep = bitmap_rep
-            elif (bitmap_rep.pixelsHigh() >= desired_size
-                  and bitmap_rep.pixelsHigh() < chosen_rep.pixelsHigh()):
-                chosen_rep = bitmap_rep
-        if chosen_rep:
-            png_data = chosen_rep.representationUsingType_properties_(NSPNGFileType, None)
-            png_data.writeToFile_atomically_(destination_path, False)
-            return True
+    try:
+        try:
+            icon_filename = info.get('CFBundleIconFile', app_name)
+        except AttributeError:
+            icon_filename = app_name
+        icon_path = os.path.join(app_path, 'Contents/Resources', icon_filename)
+        if not os.path.splitext(icon_path)[1]:
+            # no file extension, so add '.icns'
+            icon_path += u'.icns'
+        if os.path.exists(icon_path):
+            image_data = NSData.dataWithContentsOfFile_(icon_path)
+            bitmap_reps = NSBitmapImageRep.imageRepsWithData_(image_data)
+            chosen_rep = None
+            for bitmap_rep in bitmap_reps:
+                if not chosen_rep:
+                    chosen_rep = bitmap_rep
+                elif (bitmap_rep.pixelsHigh() >= desired_size
+                      and bitmap_rep.pixelsHigh() < chosen_rep.pixelsHigh()):
+                    chosen_rep = bitmap_rep
+            if chosen_rep:
+                png_data = chosen_rep.representationUsingType_properties_(
+                    NSPNGFileType, None)
+                png_data.writeToFile_atomically_(destination_path, False)
+                return True
+    except Exception:
+        return False
+
     return False
 
 
@@ -260,29 +280,29 @@ class MSCHTMLFilter(HTMLParser):
         # ignore everything inside one of these tags
         self.ignore_elements = ['script', 'style', 'head', 'table', 'form']
         # preserve these tags
-        self.preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub', 'sup', 'ins',
-                              'del', 'mark', 'span', 'br', 'img']
+        self.preserve_tags = ['a', 'b', 'i', 'strong', 'em', 'small', 'sub',
+                              'sup', 'ins', 'del', 'mark', 'span', 'br', 'img']
         # transform these tags
-        self.transform_starttags = { 'ul': '<br>',
-                                     'ol': '<br>',
-                                     'li': '&nbsp;&nbsp;&bull; ',
-                                     'h1': '<strong>',
-                                     'h2': '<strong>',
-                                     'h3': '<strong>',
-                                     'h4': '<strong>',
-                                     'h5': '<strong>',
-                                     'h6': '<strong>',
-                                     'p': ''}
-        self.transform_endtags =   { 'ul': '<br>',
-                                     'ol': '<br>',
-                                     'li': '<br>',
-                                     'h1': '</strong><br>',
-                                     'h2': '</strong><br>',
-                                     'h3': '</strong><br>',
-                                     'h4': '</strong><br>',
-                                     'h5': '</strong><br>',
-                                     'h6': '</strong><br>',
-                                     'p': '<br>'}
+        self.transform_starttags = {'ul': '<br>',
+                                    'ol': '<br>',
+                                    'li': '&nbsp;&nbsp;&bull; ',
+                                    'h1': '<strong>',
+                                    'h2': '<strong>',
+                                    'h3': '<strong>',
+                                    'h4': '<strong>',
+                                    'h5': '<strong>',
+                                    'h6': '<strong>',
+                                    'p': ''}
+        self.transform_endtags = {'ul': '<br>',
+                                  'ol': '<br>',
+                                  'li': '<br>',
+                                  'h1': '</strong><br>',
+                                  'h2': '</strong><br>',
+                                  'h3': '</strong><br>',
+                                  'h4': '</strong><br>',
+                                  'h5': '</strong><br>',
+                                  'h6': '</strong><br>',
+                                  'p': '<br>'}
         # track the currently-ignored element if any
         self.current_ignore_element = None
         # track the number of tags we found
@@ -322,9 +342,10 @@ class MSCHTMLFilter(HTMLParser):
             self.filtered_html += u'&%s;' % name
 
     def handle_charref(self, name):
+        self.entity_count += 1
         if not self.current_ignore_element:
-            # just pass on unmodified
-            self.filtered_html += name
+            # add the char reference as-is
+            self.filtered_html += u'&#%s;' % name
 
 
 def filtered_html(text, filter_images=False):
@@ -344,6 +365,11 @@ def filtered_html(text, filter_images=False):
         text = text.replace('<', '&lt;')
         text = text.replace('>', '&gt;')
         return text.replace('\n', '<br>\n')
+
+
+class SelfServiceError(Exception):
+    '''General error class for SelfService exceptions'''
+    pass
 
 
 class SelfService(object):
@@ -387,7 +413,10 @@ class SelfService(object):
         current_choices = {}
         current_choices['managed_installs'] = list(self._installs)
         current_choices['managed_uninstalls'] = list(self._uninstalls)
-        munki.writeSelfServiceManifest(current_choices)
+        if not munki.writeSelfServiceManifest(current_choices):
+            raise SelfServiceError(
+                'Could not save self-service choices to %s'
+                % munki.WRITEABLE_SELF_SERVICE_MANIFEST_PATH)
 
 
 def subscribe(item):
@@ -426,10 +455,10 @@ class GenericItem(dict):
         if self.get('description'):
             try:
                 self['raw_description'] = filtered_html(self['description'])
-            except HTMLParseError, err:
+            except HTMLParseError:
                 self['raw_description'] = (
                     'Invalid HTML in description for %s' % self['display_name'])
-            del(self['description'])
+            del self['description']
         if not 'raw_description' in self:
             self['raw_description'] = u''
         self['icon'] = self.getIcon()
@@ -442,12 +471,14 @@ class GenericItem(dict):
             self['restart_sort'] = 0
             self['restart_action_text'] = NSLocalizedString(
                 u"Restart Required", u"Restart Required title")
-            self['restart_action_text'] += u'<div class="restart-needed-icon"></div>'
+            self['restart_action_text'] += (
+                u'<div class="restart-needed-icon"></div>')
         elif self['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
             self['restart_sort'] = 1
             self['restart_action_text'] = NSLocalizedString(
                 u"Logout Required", u"Logout Required title")
-            self['restart_action_text'] += u'<div class="logout-needed-icon"></div>'
+            self['restart_action_text'] += (
+                u'<div class="logout-needed-icon"></div>')
 
         # sort bigger installs to the top
         if self.get('installed_size'):
@@ -478,7 +509,7 @@ class GenericItem(dict):
 
     def description(self):
         return self['raw_description']
-    
+
     def description_without_images(self):
         return filtered_html(self.description(), filter_images=True)
 
@@ -506,15 +537,15 @@ class GenericItem(dict):
                 if install_item.get('CFBundleIdentifier'):
                     parts = install_item['CFBundleIdentifier'].split('.')
                     if (len(parts) > 1
-                        and parts[0] in ['com', 'org', 'net', 'edu']):
+                            and parts[0] in ['com', 'org', 'net', 'edu']):
                         return parts[1].title()
         return ''
 
     def getIcon(self):
         '''Return name/relative path of image file to use for the icon'''
         # first look for downloaded icons
-        icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png', '.psd',
-                           '.tga', '.tif', '.tiff', '.yuv']
+        icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png',
+                           '.psd', '.tga', '.tif', '.tiff', '.yuv']
         icon_name = self.get('icon_name') or self['name']
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
@@ -530,20 +561,22 @@ class GenericItem(dict):
                 if not os.path.splitext(icon_name)[1] in icon_known_exts:
                     icon_name += '.png'
                 icon_path = os.path.join(msclib.html_dir(), icon_name)
-                if os.path.exists(icon_path) or convertIconToPNG(name, icon_path, 350):
+                if (os.path.exists(icon_path)
+                        or convertIconToPNG(name, icon_path, 350)):
                     return quote(icon_name)
-        else:
-            # use the Generic package icon
-            return 'static/Generic.png'
+
+        # use the Generic package icon
+        return 'static/Generic.png'
 
     def unavailable_reason_text(self):
         '''There are several reasons an item might be unavailable for install.
            Return the relevent reason'''
         if ('licensed_seats_available' in self
-            and not self['licensed_seats_available']):
+                and not self['licensed_seats_available']):
             return NSLocalizedString(u"No licenses available",
                                      u"No Licenses Available display text")
-        if self.get('note') == 'Insufficient disk space to download and install.':
+        if (self.get('note') ==
+                'Insufficient disk space to download and install.'):
             return NSLocalizedString(u"Not enough disk space",
                                      u"Not Enough Disk Space display text")
         # return generic reason
@@ -554,7 +587,7 @@ class GenericItem(dict):
         '''Return localized status display text'''
         if self['status'] == 'unavailable':
             return self.unavailable_reason_text()
-        map = {
+        text_map = {
             'install-error':
                 NSLocalizedString(u"Installation Error",
                                   u"Install Error status text"),
@@ -610,11 +643,11 @@ class GenericItem(dict):
                 NSLocalizedString(u"Unavailable",
                                   u"Unavailable status text"),
         }
-        return map.get(self['status'], self['status'])
+        return text_map.get(self['status'], self['status'])
 
     def short_action_text(self):
         '''Return localized 'short' action text for button'''
-        map = {
+        text_map = {
             'install-error':
                 NSLocalizedString(u"Cancel",
                                   u"Cancel button title/short action text"),
@@ -670,11 +703,11 @@ class GenericItem(dict):
                 NSLocalizedString(u"Unavailable",
                                   u"Unavailable status text"),
         }
-        return map.get(self['status'], self['status'])
+        return text_map.get(self['status'], self['status'])
 
     def long_action_text(self):
         '''Return localized 'long' action text for button'''
-        map = {
+        text_map = {
             'install-error':
                 NSLocalizedString(u"Cancel install",
                                   u"Cancel Install long action text"),
@@ -730,11 +763,11 @@ class GenericItem(dict):
                 NSLocalizedString(u"Currently Unavailable",
                                   u"Unavailable long action text"),
         }
-        return map.get(self['status'], self['status'])
+        return text_map.get(self['status'], self['status'])
 
     def myitem_action_text(self):
         '''Return localized 'My Items' action text for button'''
-        map = {
+        text_map = {
             'install-error':
                 NSLocalizedString(u"Cancel install",
                                   u"Cancel Install long action text"),
@@ -784,7 +817,7 @@ class GenericItem(dict):
                 NSLocalizedString(u"Required",
                                   u"Install Required action text"),
         }
-        return map.get(self['status'], self['status'])
+        return text_map.get(self['status'], self['status'])
 
     def version_label(self):
         '''Text for the version label'''
@@ -807,7 +840,8 @@ class GenericItem(dict):
             return self.get('version_to_install', '')
 
     def developer_sort(self):
-        '''returns sort priority based on developer and install/removal status'''
+        '''returns sort priority based on developer and install/removal
+        status'''
         if self['status'] != 'will-be-removed' and self['developer'] == 'Apple':
             return 0
         return 1
@@ -824,9 +858,8 @@ class OptionalItem(GenericItem):
         InstallInfo.plist optional_installs array'''
         super(OptionalItem, self).__init__(*arg, **kw)
         if 'category' not in self:
-            self['category'] = NSLocalizedString(
-                                        u"Uncategorized",
-                                        u"No Category name")
+            self['category'] = NSLocalizedString(u"Uncategorized",
+                                                 u"No Category name")
         if self['developer']:
             self['category_and_developer'] = u'%s - %s' % (
                 self['category'], self['developer'])
@@ -896,7 +929,7 @@ class OptionalItem(GenericItem):
                 # for now we prevent install this way
                 status = u'unavailable'
             elif ('licensed_seats_available' in self
-                    and not self['licensed_seats_available']):
+                  and not self['licensed_seats_available']):
                 status = u'unavailable'
             elif self['dependent_items']:
                 status = u'must-be-installed'
@@ -913,8 +946,10 @@ class OptionalItem(GenericItem):
         '''Checks InstallInfo's problem_items for any notes for self that might
         give feedback why this item can't be downloaded or installed'''
         problem_items = getInstallInfo().get('problem_items', [])
-        # check problem items for any whose name matches the name of the current item
-        matches = [item for item in problem_items if item['name'] == self['name']]
+        # check problem items for any whose name matches the name of
+        # the current item
+        matches = [item for item in problem_items
+                   if item['name'] == self['name']]
         if len(matches):
             return matches[0].get('note', '')
 
@@ -925,22 +960,27 @@ class OptionalItem(GenericItem):
         if self.get('install_error'):
             warning_text = NSLocalizedString(
                 u"An installation attempt failed. "
-                 "Installation will be attempted again.\n"
-                 "If this situation continues, contact your systems administrator.",
+                "Installation will be attempted again.\n"
+                "If this situation continues, contact your systems "
+                "administrator.",
                 u"Install Error message")
-            start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
+            start_text += ('<span class="warning">%s</span><br/><br/>'
+                           % filtered_html(warning_text))
         if self.get('removal_error'):
             warning_text = NSLocalizedString(
                 u"A removal attempt failed. "
-                 "Removal will be attempted again.\n"
-                 "If this situation continues, contact your systems administrator.",
+                "Removal will be attempted again.\n"
+                "If this situation continues, contact your systems"
+                "administrator.",
                 u"Removal Error message")
-            start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
+            start_text += ('<span class="warning">%s</span><br/><br/>'
+                           % filtered_html(warning_text))
         if self.get('note'):
             # some other note. Probably won't be localized, but we can try
             warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
                 self['note'], self['note'], None)
-            start_text += '<span class="warning">%s</span><br/><br/>' % filtered_html(warning_text)
+            start_text += ('<span class="warning">%s</span><br/><br/>'
+                           % filtered_html(warning_text))
         if self.get('dependent_items'):
             start_text += self.dependency_description()
 
@@ -971,7 +1011,10 @@ class OptionalItem(GenericItem):
             else:
                 # item is simply installed
                 self['status'] = u'installed'
-            unmanage(self)
+            if self.get('was_self_service_install'):
+                subscribe(self)
+            else:
+                unmanage(self)
             if original_status == 'removal-requested':
                 self['updatecheck_needed'] = False
         elif self['status'] in ['will-be-installed', 'install-requested',
@@ -991,6 +1034,8 @@ class OptionalItem(GenericItem):
         elif self['status'] == 'installed':
             # mark for removal
             self['status'] = u'removal-requested'
+            if self['name'] in SelfService().installs():
+                self['was_self_service_install'] = True
             unsubscribe(self)
 
 
@@ -999,18 +1044,19 @@ class UpdateItem(GenericItem):
 
     def __init__(self, *arg, **kw):
         super(UpdateItem, self).__init__(*arg, **kw)
-        identifier = self.get('name', '') + '--version-' + self.get('version_to_install', '')
+        identifier = (self.get('name', '') + '--version-'
+                      + self.get('version_to_install', ''))
         self['detail_link'] = 'updatedetail-%s.html' % quote(identifier)
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
                 self['type'] = NSLocalizedString(
-                                u"Critical Update", u"Critical Update type")
+                    u"Critical Update", u"Critical Update type")
                 self['due_date_sort'] = force_install_after_date
 
         if not 'type' in self:
-             self['type'] = NSLocalizedString(u"Managed Update",
-                                              u"Managed Update type")
+            self['type'] = NSLocalizedString(u"Managed Update",
+                                             u"Managed Update type")
         self['hide_cancel_button'] = u'hidden'
         self['dependent_items'] = dependentItems(self['name'])
 
@@ -1023,7 +1069,7 @@ class UpdateItem(GenericItem):
                 # insert installation deadline into description
                 try:
                     local_date = munki.discardTimeZoneFromDate(
-                                                force_install_after_date)
+                        force_install_after_date)
                 except munki.BadDateError:
                     # some issue with the stored date
                     pass

@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2014 Greg Neagle.
+# Copyright 2009-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,8 +31,10 @@ import adobeutils
 import launchd
 import munkicommon
 import munkistatus
+import powermgr
 import profiles
 import updatecheck
+import xattr
 import FoundationPlist
 from removepackages import removepackages
 
@@ -40,41 +42,10 @@ from removepackages import removepackages
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSDate
-# stuff for IOKit/PowerManager, courtesy Michael Lynn, pudquick@github
-from ctypes import c_uint32, cdll, c_void_p, POINTER, byref
-from CoreFoundation import CFStringCreateWithCString
-from CoreFoundation import kCFStringEncodingASCII
-from objc import pyobjc_id
 # pylint: enable=E0611
 
 # lots of camelCase names
 # pylint: disable=C0103
-
-libIOKit = cdll.LoadLibrary('/System/Library/Frameworks/IOKit.framework/IOKit')
-libIOKit.IOPMAssertionCreateWithName.argtypes = [
-    c_void_p, c_uint32, c_void_p, POINTER(c_uint32)]
-libIOKit.IOPMAssertionRelease.argtypes = [c_uint32]
-
-def CFSTR(py_string):
-    '''Returns a CFString given a Python string'''
-    return CFStringCreateWithCString(None, py_string, kCFStringEncodingASCII)
-
-def raw_ptr(pyobjc_string):
-    '''Returns a pointer to a CFString'''
-    return pyobjc_id(pyobjc_string.nsstring())
-
-def IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
-    '''Creaes a PowerManager assertion'''
-    assertID = c_uint32(0)
-    p_assert_name = raw_ptr(CFSTR(assert_name))
-    p_assert_msg = raw_ptr(CFSTR(assert_msg))
-    errcode = libIOKit.IOPMAssertionCreateWithName(
-        p_assert_name, assert_level, p_assert_msg, byref(assertID))
-    return (errcode, assertID)
-
-IOPMAssertionRelease = libIOKit.IOPMAssertionRelease
-# end IOKit/PowerManager bindings
-
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -118,8 +89,8 @@ def removeBundleRelocationInfo(pkgpath):
                 pass
 
 
-def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
-            environment=None):
+def install(pkgpath, display_name=None, choicesXMLpath=None,
+            suppressBundleRelocation=False, environment=None):
     """
     Uses the apple installer to install the package or metapackage
     at pkgpath. Prints status messages to STDOUT.
@@ -137,21 +108,14 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     if suppressBundleRelocation:
         removeBundleRelocationInfo(pkgpath)
 
-    packagename = ''
-    restartaction = 'None'
-    pkginfo = munkicommon.getInstallerPkgInfo(pkgpath)
-    if pkginfo:
-        packagename = pkginfo.get('display_name')
-        restartaction = pkginfo.get('RestartAction', 'None')
-    if not packagename:
-        packagename = os.path.basename(pkgpath)
-    #munkicommon.display_status_major("Installing %s..." % packagename)
-    munkicommon.log("Installing %s from %s" % (packagename,
-                                               os.path.basename(pkgpath)))
+    packagename = os.path.basename(pkgpath)
+    if not display_name:
+        display_name = packagename
+    munkicommon.log("Installing %s from %s" % (display_name, packagename))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
     if choicesXMLpath:
         cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
@@ -159,7 +123,7 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     if restartaction == "RequireRestart" or \
        restartaction == "RecommendRestart":
         munkicommon.display_status_minor(
-            '%s requires a restart after installation.' % packagename)
+            '%s requires a restart after installation.' % display_name)
         restartneeded = True
 
     # get the OS version; we need it later when processing installer's output,
@@ -284,8 +248,8 @@ def install(pkgpath, choicesXMLpath=None, suppressBundleRelocation=False,
     return (retcode, restartneeded)
 
 
-def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
-               environment=None):
+def installall(dirpath, display_name=None, choicesXMLpath=None,
+               suppressBundleRelocation=False, environment=None):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -311,7 +275,7 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                (retcode, needsrestart) = installall(mountpoint,
+                (retcode, needsrestart) = installall(mountpoint, display_name,
                                                      choicesXMLpath,
                                                      suppressBundleRelocation,
                                                      environment)
@@ -326,7 +290,8 @@ def installall(dirpath, choicesXMLpath=None, suppressBundleRelocation=False,
 
         if munkicommon.hasValidInstallerItemExt(item):
             (retcode, needsrestart) = install(
-                itempath, choicesXMLpath, suppressBundleRelocation, environment)
+                itempath, display_name,
+                choicesXMLpath, suppressBundleRelocation, environment)
             if needsrestart:
                 restartflag = True
             if retcode:
@@ -467,12 +432,22 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
         # all tests passed, OK to copy
         munkicommon.display_status_minor(
             "Copying %s to %s" % (source_itemname, full_destpath))
-        retcode = subprocess.call(["/bin/cp", "-pR",
+        retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
                                    source_itempath, full_destpath])
         if retcode:
             munkicommon.display_error(
                 "Error copying %s to %s" % (source_itempath, full_destpath))
             return retcode
+
+        # remove com.apple.quarantine xattr since `man ditto` lies and doesn't
+        # seem to actually always remove it
+        try:
+            if "com.apple.quarantine" in xattr.xattr(full_destpath).list():
+                xattr.xattr(full_destpath).remove("com.apple.quarantine")
+        except BaseException as err:
+            munkicommon.display_warning(
+                "Error removing com.apple.quarantine from %s: %s",
+                full_destpath, err)
 
         # set owner
         user = item.get('user', 'root')
@@ -505,20 +480,6 @@ def copyItemsFromMountpoint(mountpoint, itemlist):
             munkicommon.display_error(
                 "Error setting mode for %s" % (full_destpath))
             return retcode
-
-        # remove com.apple.quarantine attribute from copied item
-        cmd = ["/usr/bin/xattr", full_destpath]
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        (out, dummy_err) = proc.communicate()
-        if out:
-            xattrs = str(out).splitlines()
-            if "com.apple.quarantine" in xattrs:
-                dummy_result = subprocess.call(
-                    ["/usr/bin/xattr", "-d", "com.apple.quarantine",
-                     full_destpath])
 
     # all items copied successfully!
     return 0
@@ -786,15 +747,14 @@ def installWithInfo(
                             mountpoints[0], item['package_path'])
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = install(
-                                fullpkgpath, choicesXMLfile,
-                                suppressBundleRelocation,
-                                installer_environment)
+                                fullpkgpath, display_name, choicesXMLfile,
+                                suppressBundleRelocation, installer_environment)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = installall(
-                            mountpoints[0], choicesXMLfile,
+                            mountpoints[0], display_name, choicesXMLfile,
                             suppressBundleRelocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
@@ -804,8 +764,8 @@ def installWithInfo(
                 elif (munkicommon.hasValidPackageExt(itempath) or
                       itempath.endswith(".dist")):
                     (retcode, needtorestart) = install(
-                        itempath, choicesXMLfile, suppressBundleRelocation,
-                        installer_environment)
+                        itempath, display_name, choicesXMLfile,
+                        suppressBundleRelocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
@@ -1019,7 +979,7 @@ def processRemovals(removallist, only_unattended=False):
                         munkicommon.display_error(message)
                     else:
                         munkicommon.log(
-                            "Uninstall of %s was successful.", display_name)
+                            "Uninstall of %s was successful." % display_name)
 
             elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.doAdobeRemoval(item)
@@ -1186,21 +1146,6 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 
-def assertNoIdleSleep():
-    """Uses IOKit functions to prevent idle sleep"""
-    # based on code by Michael Lynn, pudquick@github
-
-    kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
-    kIOPMAssertionLevelOn = 255
-    reason = "Munki is installing software"
-
-    dummy_errcode, assertID = IOPMAssertionCreateWithName(
-        kIOPMAssertionTypeNoIdleSleep,
-        kIOPMAssertionLevelOn,
-        reason)
-    return assertID
-
-
 def run(only_unattended=False):
     """Runs the install/removal session.
 
@@ -1208,7 +1153,7 @@ def run(only_unattended=False):
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
     # hold onto the assertionID so we can release it later
-    no_idle_sleep_assertion_id = assertNoIdleSleep()
+    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
 
     managedinstallbase = munkicommon.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
@@ -1328,7 +1273,6 @@ def run(only_unattended=False):
 
     munkicommon.savereport()
 
-    # release our Power Manager assertion
-    dummy_errcode = IOPMAssertionRelease(no_idle_sleep_assertion_id)
+    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
 
     return removals_need_restart or installs_need_restart

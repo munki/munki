@@ -4,13 +4,13 @@
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 2/11/10.
-#  Copyright 2010-2014 Greg Neagle.
+#  Copyright 2010-2016 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -132,12 +132,14 @@ def readSelfServiceManifest():
 
 def writeSelfServiceManifest(optional_install_choices):
     '''Write out our self-serve manifest
-    so managedsoftwareupdate can use it'''
+    so managedsoftwareupdate can use it. Returns True on success,
+    False otherwise.'''
     usermanifest = WRITEABLE_SELF_SERVICE_MANIFEST_PATH
     try:
         FoundationPlist.writePlist(optional_install_choices, usermanifest)
+        return True
     except FoundationPlist.FoundationPlistException:
-        pass
+        return False
 
 
 def userSelfServiceChoicesChanged():

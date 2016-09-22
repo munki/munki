@@ -90,7 +90,7 @@ WHICH_GIT_RESULT="$?"
 if [ "$WHICH_GIT_RESULT" != "0" ]; then
     echo "Could not find git in command path. Maybe it's not installed?" 1>&2
     echo "You can get a Git package here:" 1>&2
-    echo "    http://code.google.com/p/git-osx-installer/downloads/list"
+    echo "    https://git-scm.com/download/mac"
     exit 1
 fi
 if [ ! -x "/usr/bin/pkgbuild" ]; then
@@ -120,33 +120,38 @@ cd "$MUNKIROOT"
 GITREV=`git log -n1 --format="%H" -- code/client`
 GITREVINDEX=`git rev-list --count $GITREV`
 SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
 # get a psuedo-svn revision number for the apps pkg
 APPSGITREV=`git log -n1 --format="%H" -- code/apps`
 GITREVINDEX=`git rev-list --count $APPSGITREV`
 APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
+    MPKGSVNREV=$APPSSVNREV
+fi
 # get base apps version from MSC.app
 APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Managed Software Center-Info" CFBundleShortVersionString`
 # append the APPSSVNREV
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
-# get a psuedo-svn revision number for the metapackage
-MPKGGITREV=`git log -n1 --format="%H"`
-GITREVINDEX=`git rev-list --count $MPKGGITREV`
-MPKGSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
-MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
-
 # get a pseudo-svn revision number for the launchd pkg
 LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd`
 GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
+    MPKGSVNREV=$LAUNCHDSVNREV
+fi
 # Get launchd version if different
 LAUNCHDVERSION=$MUNKIVERS
 if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
     LAUNCHDVERSION=`defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString`
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
+
+# get a psuedo-svn revision number for the metapackage
+MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
+
 
 MPKG="$OUTPUTDIR/munkitools-$MPKGVERSION.pkg"
 
@@ -339,7 +344,7 @@ mkdir -p "$ADMINROOT/usr/local/munki"
 chmod -R 755 "$ADMINROOT/usr"
 # Copy command line admin utilities.
 # edit this if list of tools changes!
-for TOOL in makecatalogs makepkginfo manifestutil munkiimport
+for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$ADMINROOT/usr/local/munki/" 2>&1
 done
@@ -485,7 +490,7 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='system.env.OS_INSTALL == 1 || system.compareVersions(my.target.receiptForIdentifier("$PKGID.launchd").version, "$LAUNCHDVERSION") != 0'>
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='my.choice.packageUpgradeAction != "installed"'>
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $CONFCHOICE

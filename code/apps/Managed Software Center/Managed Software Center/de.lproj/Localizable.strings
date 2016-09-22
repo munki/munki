@@ -275,7 +275,7 @@
 "Restart Required" = "Neustart erforderlich";
 
 /* managedsoftwareupdate message */
-"Retrieving list of software for this machine..." = "Hole Liste von Software für diesen Computer...";
+"Retrieving list of software for this machine..." = "Hole Liste der Software für diesen Computer...";
 
 /* managedsoftwareupdate message */
 "Running Adobe Patch Installer" = "Starte Adobe Patch Installer";
@@ -326,7 +326,7 @@
 "There are no items in this category." = "Es gibt keine Objekte in dieser Kategorie.";
 
 /* Other Users Logged In detail */
-"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Es sind andere Benutzer angemeldet\nEin Update könnte zu Datenverlust führen.\n\nBitte probieren Sie es, wenn die anderen abgemeldet sind, noch einmal.";
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Es sind andere Benutzer angemeldet\nEin Update könnte zu Datenverlust führen.\n\nBitte probieren Sie es noch einmal, sobald die anderen abgemeldet sind.";
 
 /* Pending Updates alert detail text */
 "There are pending updates for this computer." = "Für diesen Computer gibt es anstehende Updates.";
