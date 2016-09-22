@@ -844,13 +844,20 @@ def getFirstPlist(textString):
             textString[plist_end_index:])
 
 def getAppleLanguages():
+    """Gets languages from current user as list"""
+    lang = ["en"]
     user = getconsoleuser()
-    userHome = pwd.getpwnam(user).pw_dir
-    try:
-        globalPreferences = FoundationPlist.readPlist(userHome + "/Library/Preferences/.GlobalPreferences.plist")
-        lang = globalPreferences.get("AppleLanguages")
-    except FoundationPlist.NSPropertyListSerializationException:
-        lang = ["en"]
+    if user:
+        try:
+            userHome = pwd.getpwnam(user).pw_dir
+            globalPreferencesPath = os.path.join(userHome, 'Library/Preferences/.GlobalPreferences.plist')
+            globalPreferences = FoundationPlist.readPlist(globalPreferencesPath)
+            lang = globalPreferences.get("AppleLanguages")
+        except KeyError:
+            #user has no homedir
+            pass
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
     return lang
 
 # dmg helpers
@@ -1305,7 +1312,6 @@ def getPkgRestartInfo(filename):
             installerinfo['RestartAction'] = restartAction
 
     return installerinfo
-
 
 class MunkiLooseVersion(version.LooseVersion):
     '''Subclass version.LooseVersion to compare things like
