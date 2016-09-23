@@ -41,6 +41,38 @@ import utils
 # pylint: disable=C0103
 
 
+def getPDAppLogPath():
+    '''Returns path to active PDApp.log'''
+    # with CCP HD installs the useful info is recorded to the PDApp.log
+    # in the current GUI user's ~/Library/Logs directory, or in root's
+    # Library/Logs if we're at the loginwindow.
+    user = munkicommon.getconsoleuser()
+    if not user or user == u'loginwindow':
+        user = 'root'
+    return os.path.expanduser('~%s/Library/Logs/PDApp.log' % user)
+
+
+def rotatePDAppLog():
+    '''Since CCP HD installers now dump all the interesting progress info into
+    the PDApp.log, before we start installing or uninstalling, we need to rotate
+    out any existing PDApp.log so we can more easily find the stuff relevant to
+    the current install/uninstall session.'''
+    timestamp_string = time.strftime('%Y-%m-%d %H-%M-%S', time.localtime())
+    pdapplog_path = getPDAppLogPath()
+    if os.path.exists(pdapplog_path):
+        logdir = os.path.dirname(pdapplog_path)
+        newlogname = os.path.join(logdir, 'PDApp %s.log' % timestamp_string)
+        index = 1
+        while os.path.exists(newlogname):
+            alternate_string = '%s_%s' % (timestamp_string, str(index))
+            index += 1
+            newlogname = os.path.join(logdir, 'PDApp %s.log' % alternate_string)
+        try:
+            os.rename(pdapplog_path, newlogname)
+        except OSError, err:
+            munkicommon.log('Could not rotate PDApp.log: %s', unicode(err))
+
+
 class AdobeInstallProgressMonitor(object):
     """A class to monitor installs/removals of Adobe products.
     Finds the currently active installation log and scrapes data out of it.
@@ -57,8 +89,12 @@ class AdobeInstallProgressMonitor(object):
     def get_current_log(self):
         '''Returns the current Adobe install log'''
 
+        # with CCP HD installs the useful info is recorded to the PDApp.log
+        pdapp_log_path = getPDAppLogPath()
+
         logpath = '/Library/Logs/Adobe/Installers'
         # find the most recently-modified log file
+        recent_adobe_log = None
         proc = subprocess.Popen(['/bin/ls', '-t1', logpath],
                                 bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
@@ -66,19 +102,33 @@ class AdobeInstallProgressMonitor(object):
         if output:
             firstitem = str(output).splitlines()[0]
             if firstitem.endswith(".log"):
-                # return path of most recently modified log file
-                return os.path.join(logpath, firstitem)
-
+                # store path of most recently modified log file
+                recent_adobe_log = os.path.join(logpath, firstitem)
+        # if PDApp.log is newer, return that, otherwise, return newest
+        # log file in /Library/Logs/Adobe/Installers
+        if recent_adobe_log and os.path.exists(recent_adobe_log):
+            if (not os.path.exists(pdapp_log_path) or
+                    (os.path.getmtime(pdapp_log_path) <
+                     os.path.getmtime(recent_adobe_log))):
+                return recent_adobe_log
+        if os.path.exists(pdapp_log_path):
+            return pdapp_log_path
         return None
 
     def info(self):
-        '''Returns the number of completed Adobe payloads,
-        and the AdobeCode of the most recently completed payload.'''
+        '''Returns the number of completed Adobe payloads/packages,
+        and the AdobeCode or package name of the most recently completed
+        payload/package.'''
         last_adobecode = ""
 
         logfile = self.get_current_log()
         if logfile:
-            if self.kind in ['CS6', 'CS5']:
+            if logfile.endswith('PDApp.log'):
+                if self.operation == 'install':
+                    regex = r'Completed \'INSTALL\' task for Package '
+                else:
+                    regex = r'Completed \'UN-qqINSTALL\' task for Package '
+            elif self.kind in ['CS6', 'CS5']:
                 regex = r'END TIMER :: \[Payload Operation :\{'
             elif self.kind in ['CS3', 'CS4']:
                 if self.operation == 'install':
@@ -100,7 +150,7 @@ class AdobeInstallProgressMonitor(object):
                 lines = str(output).splitlines()
                 completed_payloads = len(lines)
 
-                if (not logfile in self.payload_count
+                if (logfile not in self.payload_count
                         or completed_payloads > self.payload_count[logfile]):
                     # record number of completed payloads
                     self.payload_count[logfile] = completed_payloads
@@ -109,12 +159,21 @@ class AdobeInstallProgressMonitor(object):
                     # completed payload.
                     # this isn't 100% accurate, but it's mostly for show
                     # anyway...
-                    regex = re.compile(r'[^{]*(\{[A-Fa-f0-9-]+\})')
+                    if logfile.endswith('PDApp.log'):
+                        regex = re.compile(r'\(Name: (.+) Version: (.+)\)')
+                    else:
+                        regex = re.compile(r'[^{]*(\{[A-Fa-f0-9-]+\})')
                     lines.reverse()
                     for line in lines:
-                        m = regex.match(line)
+                        if logfile.endswith('PDApp.log'):
+                            m = regex.search(line)
+                        else:
+                            m = regex.match(line)
                         try:
-                            last_adobecode = m.group(1)
+                            if logfile.endswith('PDApp.log'):
+                                last_adobecode = m.group(1) + '-' + m.group(2)
+                            else:
+                                last_adobecode = m.group(1)
                             break
                         except (IndexError, AttributeError):
                             pass
@@ -336,9 +395,9 @@ def getAdobeSetupInfo(installroot):
             info['display_name'] = payloads[0]['display_name']
             info['version'] = payloads[0]['version']
         else:
-            if not 'display_name' in info:
+            if 'display_name' not in info:
                 info['display_name'] = "ADMIN: choose from payloads"
-            if not 'version' in info:
+            if 'version' not in info:
                 info['version'] = "ADMIN please set me"
         info['payloads'] = payloads
         installed_size = 0
@@ -454,14 +513,17 @@ def parseOptionXML(option_xml_file):
         # the main product.
         hd_medias_elements = installinfo[0].getElementsByTagName('HDMedias')
         if hd_medias_elements:
-            hd_media_elements = hd_medias_elements[0].getElementsByTagName('HDMedia')
+            hd_media_elements = hd_medias_elements[0].getElementsByTagName(
+                'HDMedia')
             if hd_media_elements:
                 for hd_media in hd_media_elements:
                     product = {}
                     product['hd_installer'] = True
                     # productVersion is the 'full' version number
-                    # prodVersion seems to be the "customer-facing" version for this update
-                    # baseVersion is the first/base version for this standalone product/channel/LEID,
+                    # prodVersion seems to be the "customer-facing" version for
+                    # this update
+                    # baseVersion is the first/base version for this standalone
+                    # product/channel/LEID,
                     #   not really needed here so we don't copy it
                     for elem in [
                             'mediaLEID',
@@ -500,14 +562,22 @@ def getHDInstallerInfo(hd_payload_root, sap_code):
 
 
 def countPayloads(dirpath):
-    '''Attempts to count the payloads in the Adobe installation item'''
+    '''Attempts to count the payloads in the Adobe installation item.
+       Used for rough percent-done progress feedback.'''
     count = 0
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, dummy_dirs, files) in os.walk(dirpath):
         if path.endswith("/payloads"):
+            # RIBS-style installers
             for subitem in munkicommon.listdir(path):
                 subitempath = os.path.join(path, subitem)
                 if os.path.isdir(subitempath):
                     count = count + 1
+        elif "/HD/" in path and "Application.json" in files:
+            # we're inside an HD installer directory. The payloads/packages
+            # are .zip files
+            zip_file_count = len(
+                [item for item in files if item.endswith(".zip")])
+            count = count + zip_file_count
     return count
 
 
@@ -625,21 +695,19 @@ def runAdobeInstallTool(
 
     old_payload_completed_count = 0
     payloadname = ""
-    while proc.poll() == None:
+    while proc.poll() is None:
         time.sleep(1)
         (payload_completed_count, adobe_code) = progress_monitor.info()
         if payload_completed_count > old_payload_completed_count:
             old_payload_completed_count = payload_completed_count
+            payloadname = adobe_code
             if adobe_code and payloads:
+                # look up a payload name from the AdobeCode
                 matched_payloads = [payload for payload in payloads
                                     if payload.get('AdobeCode') == adobe_code]
                 if matched_payloads:
                     payloadname = matched_payloads[0].get('display_name')
-                else:
-                    payloadname = adobe_code
-                payloadinfo = " - " + payloadname
-            else:
-                payloadinfo = ""
+            payloadinfo = " - %s" % payloadname
             if number_of_payloads:
                 munkicommon.display_status_minor(
                     'Completed payload %s of %s%s' %
@@ -863,8 +931,11 @@ def runAdobeCCPpkgScript(dmgpath, payloads=None, operation='install'):
     pkg_dir = os.path.dirname(os.path.dirname(basepath))
     cmd.extend([preinstall_script, pkg_dir, '/', '/'])
 
+    rotatePDAppLog()
     if operation == 'install':
         munkicommon.display_status_minor('Starting Adobe installer...')
+    elif operation == 'uninstall':
+        munkicommon.display_status_minor('Starting Adobe uninstaller...')
     retcode = runAdobeInstallTool(
         cmd, number_of_payloads, killAdobeAIR=True, payloads=payloads,
         kind='CS6', operation=operation)
@@ -1161,7 +1232,7 @@ def updateAcrobatPro(dmgpath):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        while proc.poll() == None:
+        while proc.poll() is None:
             time.sleep(1)
 
         # run of patch tool completed
@@ -1292,7 +1363,12 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             # from optionXML.xml with a MediaType of 'Product' and their
             # 'core' packages (e.g. language packs are 'non-core')
             if hd_app_infos:
-                uninstalldir = '/Library/Application Support/Adobe/Installers/uninstallXml'
+                if 'payloads' not in cataloginfo:
+                    cataloginfo['payloads'] = []
+                cataloginfo['payloads'].extend(hd_app_infos)
+                uninstalldir = (
+                    '/Library/Application Support/Adobe/Installers/uninstallXml'
+                )
                 product_saps = [
                     prod['SAPCode'] for
                     prod in option_xml_info['products']
@@ -1311,25 +1387,32 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
 
                 for app_info in product_app_infos:
                     for pkg in app_info['Packages']:
-                        # Don't assume 'Type' key always exists. At least the 'AdobeIllustrator20-Settings'
+                        # Don't assume 'Type' key always exists. At least the
+                        #'AdobeIllustrator20-Settings'
                         # package doesn't have this key set.
                         if pkg.get('Type') == 'core':
-                            # We can't use 'ProductVersion' from Application.json for the part following
-                            # the SAPCode, because it's usually too specific and won't match the "short"
-                            # product version. We can take 'prodVersion' from the optionXML.xml instead.
-                            # We filter out any non-HD installers to avoid matching up the wrong versions
-                            # for packages that may contain multiple different major versions of a given
-                            # SAPCode
-                            pkg_prod_vers = [prod['prodVersion']
-                                             for prod in option_xml_info['products']
-                                             if prod.get('hd_installer') and
-                                             prod['SAPCode'] == app_info['SAPCode']][0]
+                            # We can't use 'ProductVersion' from
+                            # Application.json for the part following the
+                            # SAPCode, because it's usually too specific and
+                            # won't match the "short" product version.
+                            # We can take 'prodVersion' from the optionXML.xml
+                            # instead.
+                            # We filter out any non-HD installers to avoid
+                            # matching up the wrong versions for packages that
+                            # may contain multiple different major versions of
+                            # a given SAPCode
+                            pkg_prod_vers = [
+                                prod['prodVersion']
+                                for prod in option_xml_info['products']
+                                if prod.get('hd_installer') and
+                                prod['SAPCode'] == app_info['SAPCode']][0]
                             uninstall_file_name = '_'.join([
                                 app_info['SAPCode'],
                                 pkg_prod_vers.replace('.', '_'),
                                 pkg['PackageName'],
                                 pkg['PackageVersion']]) + '.pimx'
-                            filepath = os.path.join(uninstalldir, uninstall_file_name)
+                            filepath = os.path.join(
+                                uninstalldir, uninstall_file_name)
                             installitem = {}
                             installitem['path'] = filepath
                             installitem['type'] = 'file'
@@ -1584,4 +1667,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
