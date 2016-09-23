@@ -127,7 +127,7 @@ class AdobeInstallProgressMonitor(object):
                 if self.operation == 'install':
                     regex = r'Completed \'INSTALL\' task for Package '
                 else:
-                    regex = r'Completed \'UN-qqINSTALL\' task for Package '
+                    regex = r'Completed \'UN-INSTALL\' task for Package '
             elif self.kind in ['CS6', 'CS5']:
                 regex = r'END TIMER :: \[Payload Operation :\{'
             elif self.kind in ['CS3', 'CS4']:
