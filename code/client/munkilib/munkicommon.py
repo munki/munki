@@ -41,6 +41,7 @@ import tempfile
 import time
 import urllib2
 import warnings
+import pwd
 from distutils import version
 from types import StringType
 from xml.dom import minidom
@@ -842,6 +843,22 @@ def getFirstPlist(textString):
     return (textString[plist_start_index:plist_end_index],
             textString[plist_end_index:])
 
+def getAppleLanguages():
+    """Gets languages from current user as list"""
+    lang = ["en"]
+    user = getconsoleuser()
+    if user:
+        try:
+            userHome = pwd.getpwnam(user).pw_dir
+            globalPreferencesPath = os.path.join(userHome, 'Library/Preferences/.GlobalPreferences.plist')
+            globalPreferences = FoundationPlist.readPlist(globalPreferencesPath)
+            lang = globalPreferences.get("AppleLanguages")
+        except KeyError:
+            #user has no homedir
+            pass
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return lang
 
 # dmg helpers
 
@@ -1295,7 +1312,6 @@ def getPkgRestartInfo(filename):
             installerinfo['RestartAction'] = restartAction
 
     return installerinfo
-
 
 class MunkiLooseVersion(version.LooseVersion):
     '''Subclass version.LooseVersion to compare things like

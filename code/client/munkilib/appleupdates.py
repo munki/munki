@@ -640,7 +640,7 @@ class AppleUpdates(object):
         localizations. Returns a single language/localization name.'''
         # pylint: disable=no-self-use
         localization_preferences = (
-            munkicommon.pref('AppleSoftwareUpdateLanguages') or ['English'])
+            munkicommon.pref('AppleSoftwareUpdateLanguages') or munkicommon.getAppleLanguages() or ['English'])
         preferred_langs = (
             NSBundle.preferredLocalizationsFromArray_forPreferences_(
                 list_of_localizations, localization_preferences))
@@ -785,7 +785,7 @@ class AppleUpdates(object):
           A list of string Apple update products ids.
         """
         # pylint: disable=no-self-use
-        
+
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = self.GetSoftwareUpdatePref(
             'RecommendedUpdates')
