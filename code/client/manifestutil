@@ -576,9 +576,9 @@ def display_manifest(args):
         return 2 # No such file or directory
 
 
-def display_included_manifests(args):
+def expand_included_manifests(args):
     parser = MyOptionParser()
-    parser.set_usage('''display-included-manifest MANIFESTNAME
+    parser.set_usage('''expand-included-manifest MANIFESTNAME
         Prints included manifests in the specified manifest''')
     try:
         _, arguments = parser.parse_args(args)
@@ -1086,24 +1086,25 @@ def main():
     '''Our main routine'''
     global INTERACTIVE_MODE
 
-    cmds = {'add-pkg':                  'pkgs',
-            'add-catalog':              'catalogs',
-            'add-included-manifest':    'manifests',
-            'remove-pkg':               'pkgs',
-            'remove-catalog':           'catalogs',
-            'remove-included-manifest': 'manifests',
-            'list-manifests':           'manifests',
-            'list-catalogs':            'default',
-            'list-catalog-items':       'catalogs',
-            'display-manifest':         'manifests',
-            'find':                     'default',
-            'new-manifest':             'default',
-            'copy-manifest':            'manifests',
-            'rename-manifest':          'manifests',
-            'exit':                     'default',
-            'help':                     'default',
-            'configure':                'default',
-            'version':                  'default'
+    cmds = {'add-pkg':                   'pkgs',
+            'add-catalog':               'catalogs',
+            'add-included-manifest':     'manifests',
+            'remove-pkg':                'pkgs',
+            'remove-catalog':            'catalogs',
+            'remove-included-manifest':  'manifests',
+            'list-manifests':            'manifests',
+            'list-catalogs':             'default',
+            'list-catalog-items':        'catalogs',
+            'display-manifest':          'manifests',
+            'expand-included-manifests': 'manifests',
+            'find':                      'default',
+            'new-manifest':              'default',
+            'copy-manifest':             'manifests',
+            'rename-manifest':           'manifests',
+            'exit':                      'default',
+            'help':                      'default',
+            'configure':                 'default',
+            'version':                   'default'
            }
     CMD_ARG_DICT['cmds'] = cmds
 
