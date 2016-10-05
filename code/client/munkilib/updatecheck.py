@@ -1990,7 +1990,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
             munkicommon.display_warning(
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
-            iteminfo['note'] = 'Download failed (%s)' % errmsg
+            iteminfo['note'] = u'Download failed (%s)' % errmsg
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             installinfo['managed_installs'].append(iteminfo)
             if manifestitemname in installinfo['processed_installs']:
