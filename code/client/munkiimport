@@ -32,10 +32,10 @@ import sys
 import time
 import thread
 
-import objc
-
 from ctypes.util import find_library
 from optparse import OptionParser, BadOptionError, AmbiguousOptionError
+
+import objc
 
 from munkilib import iconutils
 from munkilib import munkicommon
@@ -50,17 +50,18 @@ from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesSetAppValue
 # pylint: enable=E0611
 
+
 # NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
 # work here: https://gist.github.com/pudquick/1362a8908be01e23041d
-
-class attrdict(dict): 
-    __getattr__ = dict.__getitem__
-    __setattr__ = dict.__setitem__
-
 try:
-    NetFS = attrdict()
-    # Can cheat and provide 'None' for the identifier, it'll just use frameworkPath
-    # instead
+    class Attrdict(dict):
+        '''Custom dict class'''
+        __getattr__ = dict.__getitem__
+        __setattr__ = dict.__setitem__
+
+    NetFS = Attrdict()
+    # Can cheat and provide 'None' for the identifier, it'll just use
+    # frameworkPath instead
     # scan_classes=False means only add the contents of this Framework
     NetFS_bundle = objc.initFrameworkWrapper(
         'NetFS', frameworkIdentifier=None,
@@ -92,7 +93,7 @@ def mount_share(share_url):
     '''Mounts a share at /Volumes, returns the mount point or raises an error'''
     sh_url = CFURLCreateWithString(None, share_url, None)
     # Set UI to reduced interaction
-    open_options  = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+    open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
     # Allow mounting sub-directories of root shares
     mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
     # Mount!
@@ -115,7 +116,7 @@ def mount_share_with_credentials(share_url, username, password):
     Include username and password as parameters, not in the share_path URL'''
     sh_url = CFURLCreateWithString(None, share_url, None)
     # Set UI to reduced interaction
-    open_options  = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+    open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
     # Allow mounting sub-directories of root shares
     mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
     # Mount!
@@ -149,7 +150,7 @@ else:
 
 def raw_input_with_default(prompt, default_text):
     '''Get input from user with a prompt and a suggested default value'''
-    
+
     # 10.6's libedit doesn't have the rl_set_prompt function, so we fall back
     # to the previous behavior
     if munkicommon.getOsVersion() == '10.6':
@@ -266,7 +267,7 @@ def mount_repo_cli():
         except ShareMountException, err:
             print >> sys.stderr, err
         else:
-             WE_MOUNTED_THE_REPO = True
+            WE_MOUNTED_THE_REPO = True
     else:
         # do it the old way
         os.mkdir(REPO_PATH)
@@ -1084,8 +1085,7 @@ def main():
                       ('Installer item path', 'installer_item_location'))
             for (name, key) in fields:
                 print '%21s: %s' % (
-                    name, matchingpkginfo.get(key, '').encode(
-                        'UTF-8'))
+                    name, matchingpkginfo.get(key, '').encode('UTF-8'))
             print
             if exactmatch:
                 answer = raw_input('Import this item anyway? [y/n] ')
@@ -1138,10 +1138,8 @@ def main():
             pkginfo[key] = raw_input_with_default(prompt, default)
             if kind == 'bool':
                 value = pkginfo[key].lower().strip()
-                if value.startswith(('y', 't')):
-                    pkginfo[key] = True
-                else:
-                    pkginfo[key] = False
+                # set key to True/False
+                pkginfo[key] = value.startswith(('y', 't'))
 
         # special handling for catalogs array
         prompt = '%20s: ' % 'Catalogs'
@@ -1266,4 +1264,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
