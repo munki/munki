@@ -34,7 +34,6 @@ from objc import super
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 
-from CFNetwork import kCFNetworkProxiesHTTPSEnable, kCFNetworkProxiesHTTPEnable
 
 from Foundation import (NSBundle, NSRunLoop, NSDate,
                         NSObject, NSURL, NSURLConnection,
@@ -49,6 +48,8 @@ from Foundation import (NSBundle, NSRunLoop, NSDate,
 
 try:
     from Foundation import NSURLSession, NSURLSessionConfiguration
+    from CFNetwork import (kCFNetworkProxiesHTTPSEnable,
+                           kCFNetworkProxiesHTTPEnable)
     NSURLSESSION_AVAILABLE = True
 except ImportError:
     NSURLSESSION_AVAILABLE = False
