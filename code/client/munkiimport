@@ -57,21 +57,25 @@ class attrdict(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
 
-NetFS = attrdict()
-# Can cheat and provide 'None' for the identifier, it'll just use frameworkPath
-# instead
-# scan_classes=False means only add the contents of this Framework
-NetFS_bundle = objc.initFrameworkWrapper(
-    'NetFS', frameworkIdentifier=None,
-    frameworkPath=objc.pathForFramework('NetFS.framework'),
-    globals=NetFS, scan_classes=False)
+try:
+    NetFS = attrdict()
+    # Can cheat and provide 'None' for the identifier, it'll just use frameworkPath
+    # instead
+    # scan_classes=False means only add the contents of this Framework
+    NetFS_bundle = objc.initFrameworkWrapper(
+        'NetFS', frameworkIdentifier=None,
+        frameworkPath=objc.pathForFramework('NetFS.framework'),
+        globals=NetFS, scan_classes=False)
 
-# https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/
-# ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
-# Fix NetFSMountURLSync signature
-del NetFS['NetFSMountURLSync']
-objc.loadBundleFunctions(
-    NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
+    # https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/
+    # ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
+    # Fix NetFSMountURLSync signature
+    del NetFS['NetFSMountURLSync']
+    objc.loadBundleFunctions(
+        NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
+    NETFS_AVAILABLE = True
+except ImportError:
+    NETFS_AVAILABLE = False
 
 
 class ShareMountException(Exception):
@@ -243,12 +247,31 @@ def mount_repo_cli():
     if os.path.exists(REPO_PATH):
         return
     print 'Attempting to mount fileshare %s:' % REPO_URL
-    try:
-        mount_share_url(REPO_URL)
-    except ShareMountException, err:
-        print >> sys.stderr, err
+    if NETFS_AVAILABLE:
+        # mount the share using the NetFS API
+        try:
+            mount_share_url(REPO_URL)
+        except ShareMountException, err:
+            print >> sys.stderr, err
+        else:
+             WE_MOUNTED_THE_REPO = True
     else:
-         WE_MOUNTED_THE_REPO = True
+        # do it the old way
+        os.mkdir(REPO_PATH)
+        if REPO_URL.startswith('afp:'):
+            cmd = ['/sbin/mount_afp', '-i', REPO_URL, REPO_PATH]
+        elif REPO_URL.startswith('smb:'):
+            cmd = ['/sbin/mount_smbfs', REPO_URL[4:], REPO_PATH]
+        elif REPO_URL.startswith('nfs://'):
+            cmd = ['/sbin/mount_nfs', REPO_URL[6:], REPO_PATH]
+        else:
+            print >> sys.stderr, 'Unsupported filesystem URL!'
+            return
+        retcode = subprocess.call(cmd)
+        if retcode:
+            os.rmdir(REPO_PATH)
+        else:
+            WE_MOUNTED_THE_REPO = True
 
 
 def unmount_repo_cli():
