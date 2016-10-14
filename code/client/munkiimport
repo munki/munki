@@ -74,9 +74,9 @@ try:
     del NetFS['NetFSMountURLSync']
     objc.loadBundleFunctions(
         NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
-    NETFS_AVAILABLE = True
-except ImportError:
-    NETFS_AVAILABLE = False
+    NETFSMOUNTURLSYNC_AVAILABLE = True
+except ImportError, KeyError:
+    NETFSMOUNTURLSYNC_AVAILABLE = False
 
 
 class ShareMountException(Exception):
@@ -260,7 +260,7 @@ def mount_repo_cli():
     if os.path.exists(REPO_PATH):
         return
     print 'Attempting to mount fileshare %s:' % REPO_URL
-    if NETFS_AVAILABLE:
+    if NETFSMOUNTURLSYNC_AVAILABLE:
         # mount the share using the NetFS API
         try:
             mount_share_url(REPO_URL)
