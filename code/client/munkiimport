@@ -75,7 +75,7 @@ try:
     objc.loadBundleFunctions(
         NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
     NETFSMOUNTURLSYNC_AVAILABLE = True
-except ImportError, KeyError:
+except (ImportError, KeyError):
     NETFSMOUNTURLSYNC_AVAILABLE = False
 
 
