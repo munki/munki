@@ -132,7 +132,7 @@ def makecatalogs(repopath, options):
 
                 filepath = os.path.join(dirpath, filename)
 
-                iconpath = filepath.rsplit(iconspath + '/', 1)[1]
+                iconpath = filepath.rsplit(iconspath + os.path.sep, 1)[1]
 
                 # Try to read the icon file
                 try:
