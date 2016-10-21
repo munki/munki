@@ -687,6 +687,37 @@ def display_manifest(args):
         return 2 # No such file or directory
 
 
+def expand_included_manifests(args):
+    parser = MyOptionParser()
+    parser.set_usage('''expand-included-manifest MANIFESTNAME
+        Prints included manifests in the specified manifest''')
+    try:
+        _, arguments = parser.parse_args(args)
+    except MyOptParseError, errmsg:
+        print >> sys.stderr, str(errmsg)
+        return 22 # Invalid argument
+    if len(arguments) != 1:
+        parser.print_usage(sys.stderr)
+        return 7 # Argument list too long
+    manifestname = arguments[0]
+    manifest = get_manifest(manifestname)
+    if manifest:
+        print 'Manifest: %s' % manifestname
+        manifest_recurser(manifest)
+    else:
+        return 2 # No such file or directory
+
+
+def manifest_recurser(manifest):
+    # No infinite loop checking! Be wary!
+    printplist(manifest)
+    if 'included_manifests' in manifest:
+        for item in manifest['included_manifests']:
+            manifest = get_manifest(item)
+            print '\nManifest %s' % item
+            manifest_recurser(manifest)
+
+
 def new_manifest(args):
     '''Creates a new, empty manifest'''
     parser = MyOptionParser()
@@ -1166,24 +1197,25 @@ def main():
     '''Our main routine'''
     global INTERACTIVE_MODE
 
-    cmds = {'add-pkg':                  'pkgs',
-            'add-catalog':              'catalogs',
-            'add-included-manifest':    'manifests',
-            'remove-pkg':               'pkgs',
-            'remove-catalog':           'catalogs',
-            'remove-included-manifest': 'manifests',
-            'list-manifests':           'manifests',
-            'list-catalogs':            'default',
-            'list-catalog-items':       'catalogs',
-            'display-manifest':         'manifests',
-            'find':                     'default',
-            'new-manifest':             'default',
-            'copy-manifest':            'manifests',
-            'rename-manifest':          'manifests',
-            'exit':                     'default',
-            'help':                     'default',
-            'configure':                'default',
-            'version':                  'default'
+    cmds = {'add-pkg':                   'pkgs',
+            'add-catalog':               'catalogs',
+            'add-included-manifest':     'manifests',
+            'remove-pkg':                'pkgs',
+            'remove-catalog':            'catalogs',
+            'remove-included-manifest':  'manifests',
+            'list-manifests':            'manifests',
+            'list-catalogs':             'default',
+            'list-catalog-items':        'catalogs',
+            'display-manifest':          'manifests',
+            'expand-included-manifests': 'manifests',
+            'find':                      'default',
+            'new-manifest':              'default',
+            'copy-manifest':             'manifests',
+            'rename-manifest':           'manifests',
+            'exit':                      'default',
+            'help':                      'default',
+            'configure':                 'default',
+            'version':                   'default'
            }
     CMD_ARG_DICT['cmds'] = cmds
 
