@@ -449,12 +449,12 @@ def mount_repo_cli():
             WE_MOUNTED_THE_REPO = True
     else:
         # do it the old way
-        os.mkdir(REPO_PATH)
-        if REPO_URL.startswith('afp:'):
+        os.mkdir(repo_path)
+        if repo_url.startswith('afp:'):
             cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
-        elif REPO_URL.startswith('smb:'):
+        elif repo_url.startswith('smb:'):
             cmd = ['/sbin/mount_smbfs', repo_url[4:], repo_path]
-        elif REPO_URL.startswith('nfs://'):
+        elif repo_url.startswith('nfs://'):
             cmd = ['/sbin/mount_nfs', repo_url[6:], repo_path]
         else:
             print >> sys.stderr, 'Unsupported filesystem URL!'
