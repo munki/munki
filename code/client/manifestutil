@@ -961,7 +961,7 @@ def remove_included_manifest(args):
 
 
 def refresh_cache(args):
-	'''Refreshes the repo data if changes were made while manifestutil was running. Updates manifests, sections, catalogs, and packages'''
+	'''Refreshes the repo data if changes were made while manifestutil was running. Updates manifests, catalogs, and packages.'''
 	parser = MyOptionParser()
 	parser.set_usage('''refresh-cache
 	   Refreshes the repo data''')
@@ -974,7 +974,6 @@ def refresh_cache(args):
 	if len(arguments) != 0:
 		parser.print_usage(sys.stderr)
 		return 22 # Invalid argument
-	CMD_ARG_DICT['sections'] = get_manifest_pkg_sections()
 	CMD_ARG_DICT['manifests'] = get_manifest_names()
 	CMD_ARG_DICT['catalogs'] = get_catalogs()
 	CMD_ARG_DICT['pkgs'] = get_installer_item_names(get_catalogs())
