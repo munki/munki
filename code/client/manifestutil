@@ -915,14 +915,6 @@ def add_included_manifest(args):
         else:
             return 1 # Operation not permitted
 
-def refresh_cache():
-    '''Refreshes the repo data and loads any changes that were made while manifestutil was running -- Updates manifests, sections, catalogs, and packages'''
-    CMD_ARG_DICT['sections'] = get_manifest_pkg_sections()
-    CMD_ARG_DICT['manifests'] = get_manifest_names()
-    CMD_ARG_DICT['catalogs'] = get_catalogs()
-    CMD_ARG_DICT['pkgs'] = get_installer_item_names(get_catalogs())
-    set_up_tab_completer()
-
 
 def remove_included_manifest(args):
     '''Removes an included manifest from a manifest.'''
@@ -966,6 +958,26 @@ def remove_included_manifest(args):
             return 0
         else:
             return 1 # Operation not permitted
+
+
+def refresh_cache(args):
+	'''Refreshes the repo data if changes were made while manifestutil was running. Updates manifests, sections, catalogs, and packages'''
+	parser = MyOptionParser()
+	parser.set_usage('''refresh-cache
+	   Refreshes the repo data''')
+	try:
+		_, arguments = parser.parse_args(args)
+	except MyOptParseError, errmsg:
+		print >> sys.stderr, str(errmsg)
+		return 22 # Invalid argument
+
+	if len(arguments) != 0:
+		parser.print_usage(sys.stderr)
+		return 22 # Invalid argument
+	CMD_ARG_DICT['sections'] = get_manifest_pkg_sections()
+	CMD_ARG_DICT['manifests'] = get_manifest_names()
+	CMD_ARG_DICT['catalogs'] = get_catalogs()
+	CMD_ARG_DICT['pkgs'] = get_installer_item_names(get_catalogs())
 
 
 def show_help():
@@ -1072,6 +1084,7 @@ def main():
             'list-manifests':           'manifests',
             'list-catalogs':            'default',
             'list-catalog-items':       'catalogs',
+            'refresh-cache':			'default',
             'display-manifest':         'manifests',
             'find':                     'default',
             'new-manifest':             'default',
@@ -1080,8 +1093,7 @@ def main():
             'exit':                     'default',
             'help':                     'default',
             'configure':                'default',
-            'version':                  'default',
-            'refresh-cache':            'default'
+            'version':                  'default'
            }
     CMD_ARG_DICT['cmds'] = cmds
 
