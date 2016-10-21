@@ -1083,7 +1083,7 @@ def main():
             'list-manifests':           'manifests',
             'list-catalogs':            'default',
             'list-catalog-items':       'catalogs',
-            'refresh-cache':			'default',
+            'refresh-cache':		'default',
             'display-manifest':         'manifests',
             'find':                     'default',
             'new-manifest':             'default',
