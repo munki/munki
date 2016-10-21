@@ -338,15 +338,17 @@ def printplistitem(label, value, indent=0):
     indentspace = '    '
     if type(value) == type(None):
         print indentspace*indent, '%s: !NONE!' % label
-    elif type(value) == list or type(value).__name__ == 'NSCFArray':
+    elif isinstance(value, list) or type(value).__name__ == 'NSCFArray':
         if label:
             print indentspace*indent, '%s:' % label
         for item in value:
             printplistitem('', item, indent+1)
-    elif type(value) == dict or type(value).__name__ == 'NSCFDictionary':
+    elif isinstance(value, dict) or type(value).__name__ == 'NSCFDictionary':
         if label:
             print indentspace*indent, '%s:' % label
-        for subkey in value.keys():
+        keys = list(value.keys())
+        keys.sort()
+        for subkey in keys:
             printplistitem(subkey, value[subkey], indent+1)
     else:
         if label:
@@ -702,20 +704,22 @@ def expand_included_manifests(args):
     manifestname = arguments[0]
     manifest = get_manifest(manifestname)
     if manifest:
-        print 'Manifest: %s' % manifestname
-        manifest_recurser(manifest)
+        printplist(manifest_recurser(manifest))
     else:
         return 2 # No such file or directory
 
 
 def manifest_recurser(manifest):
     # No infinite loop checking! Be wary!
-    printplist(manifest)
     if 'included_manifests' in manifest:
-        for item in manifest['included_manifests']:
-            manifest = get_manifest(item)
-            print '\nManifest %s' % item
-            manifest_recurser(manifest)
+        for (index, item) in enumerate(manifest['included_manifests']):
+            included_manifest = get_manifest(item)
+            if included_manifest:
+                included_manifest = manifest_recurser(included_manifest)
+            manifest['included_manifests'][index] = {
+                item: included_manifest
+            }
+    return manifest
 
 
 def new_manifest(args):
@@ -1199,13 +1203,14 @@ def handle_subcommand(args):
         # find function to call by looking in the global name table
         # for a function with a name matching the subcommand
         subcommand_function = globals()[subcommand]
-        return subcommand_function(args[1:])
     except MyOptParseExit:
         return 0
     except (TypeError, KeyError):
-        print >> sys.stderr, 'Unknown subcommand: %s' % subcommand
+        print >> sys.stderr, 'Unknown subcommand: %s' % args[0]
         show_help()
         return 2
+    else:
+        return subcommand_function(args[1:])
 
 
 WE_MOUNTED_THE_REPO = False
