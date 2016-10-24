@@ -32,8 +32,6 @@ import sys
 import thread
 import time
 
-import objc
-
 from ctypes.util import find_library
 from xml.parsers.expat import ExpatError
 
@@ -336,7 +334,7 @@ def get_manifest_pkg_sections():
 def printplistitem(label, value, indent=0):
     """Prints a plist item in an 'attractive' way"""
     indentspace = '    '
-    if type(value) == type(None):
+    if value is None:
         print indentspace*indent, '%s: !NONE!' % label
     elif isinstance(value, list) or type(value).__name__ == 'NSCFArray':
         if label:
@@ -396,7 +394,8 @@ def save_manifest(manifest_dict, manifest_name, overwrite_existing=False):
         print >> sys.stderr, 'Saving %s failed: %s' % (manifest_name, err)
         return False
 
-def manifest_rename(source_manifest_name, dest_manifest_name, overwrite_existing=False):
+def manifest_rename(source_manifest_name, dest_manifest_name,
+                    overwrite_existing=False):
     '''Renames an existing manifest'''
     source_manifest_path = os.path.join(
         pref('repo_path'), 'manifests', source_manifest_name)
@@ -410,7 +409,8 @@ def manifest_rename(source_manifest_name, dest_manifest_name, overwrite_existing
         os.rename(source_manifest_path, dest_manifest_path)
         return True
     except (IOError, OSError, ExpatError), err:
-        print >> sys.stderr, 'Renaming %s to %s failed: %s' % (source_manifest_name, dest_manifest_name, err)
+        print >> sys.stderr, 'Renaming %s to %s failed: %s' % (
+            source_manifest_name, dest_manifest_name, err)
         return False
 
 def repo_available():
@@ -690,6 +690,7 @@ def display_manifest(args):
 
 
 def expand_included_manifests(args):
+    '''Prints a manifest, expanding any included manifests.'''
     parser = MyOptionParser()
     parser.set_usage('''expand-included-manifest MANIFESTNAME
         Prints included manifests in the specified manifest''')
@@ -710,6 +711,7 @@ def expand_included_manifests(args):
 
 
 def manifest_recurser(manifest):
+    '''Recursive expansion of included manifests'''
     # No infinite loop checking! Be wary!
     if 'included_manifests' in manifest:
         for (index, item) in enumerate(manifest['included_manifests']):
@@ -1107,22 +1109,23 @@ def remove_included_manifest(args):
 
 
 def refresh_cache(args):
-	'''Refreshes the repo data if changes were made while manifestutil was running. Updates manifests, catalogs, and packages.'''
-	parser = MyOptionParser()
-	parser.set_usage('''refresh-cache
-	   Refreshes the repo data''')
-	try:
-		_, arguments = parser.parse_args(args)
-	except MyOptParseError, errmsg:
-		print >> sys.stderr, str(errmsg)
-		return 22 # Invalid argument
+    '''Refreshes the repo data if changes were made while manifestutil was
+    running. Updates manifests, catalogs, and packages.'''
+    parser = MyOptionParser()
+    parser.set_usage('''refresh-cache
+        Refreshes the repo data''')
+    try:
+        _, arguments = parser.parse_args(args)
+    except MyOptParseError, errmsg:
+        print >> sys.stderr, str(errmsg)
+        return 22 # Invalid argument
 
-	if len(arguments) != 0:
-		parser.print_usage(sys.stderr)
-		return 22 # Invalid argument
-	CMD_ARG_DICT['manifests'] = get_manifest_names()
-	CMD_ARG_DICT['catalogs'] = get_catalogs()
-	CMD_ARG_DICT['pkgs'] = get_installer_item_names(get_catalogs())
+    if len(arguments) != 0:
+        parser.print_usage(sys.stderr)
+        return 22 # Invalid argument
+    CMD_ARG_DICT['manifests'] = get_manifest_names()
+    CMD_ARG_DICT['catalogs'] = get_catalogs()
+    CMD_ARG_DICT['pkgs'] = get_installer_item_names(get_catalogs())
 
 
 def show_help():
@@ -1280,4 +1283,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
