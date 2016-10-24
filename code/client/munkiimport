@@ -242,7 +242,7 @@ def repo_available():
     if not REPO_PATH:
         print >> sys.stderr, 'No repo path specified.'
         return False
-    if not os.path.exists(REPO_PATH):
+    if not os.path.exists(REPO_PATH) and REPO_URL:
         mount_repo_cli()
     if not os.path.exists(REPO_PATH):
         return False
