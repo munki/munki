@@ -101,8 +101,12 @@ def mount_share(share_url):
         sh_url, None, None, None, open_options, mount_options, None)
     # Check if it worked
     if result != 0:
-        if result in (errno.ENOTSUP, errno.EAUTH):
-            # errno.ENOTSUP is returned if an afp share needs a login
+        if result in (-6600, errno.EINVAL, errno.ENOTSUP, errno.EAUTH):
+            # -6600 is kNetAuthErrorInternal in NetFS.h 10.9+
+            # errno.EINVAL is returned if an afp share needs a login in some
+            #               versions of OS X
+            # errno.ENOTSUP is returned if an afp share needs a login in some
+            #               versions of OS X
             # errno.EAUTH is returned if authentication fails (SMB for sure)
             raise ShareAuthenticationNeededException()
         raise ShareMountException('Error mounting url "%s": %s, error %s'
