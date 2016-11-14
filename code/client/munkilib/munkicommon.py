@@ -1321,13 +1321,23 @@ class MunkiLooseVersion(version.LooseVersion):
             cmp_list.append(0)
         return cmp_list
 
+    def _tag(self, version_list):
+        # attach a tag to each element so that strings are ordered before numbers
+        return [(0 if isinstance(e, StringType) else 1, e) for e in version_list]
+
+    def _normalize(self, version_list, max_length):
+        if semantic_version_ordering:
+            return self._tag(self._pad(version_list, max_length))
+        else:
+            return self._pad(version_list, max_length)
+
     def __cmp__(self, other):
         if isinstance(other, StringType):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
-        self_cmp_version = self._pad(self.version, max_length)
-        other_cmp_version = self._pad(other.version, max_length)
+        self_cmp_version = self._normalize(self.version, max_length)
+        other_cmp_version = self._normalize(other.version, max_length)
 
         return cmp(self_cmp_version, other_cmp_version)
 
@@ -2783,6 +2793,7 @@ def blockingApplicationsRunning(pkginfoitem):
 #debug = False
 verbose = 1
 munkistatusoutput = False
+semantic_version_ordering = False
 _TMPDIR = None
 report = {}
 

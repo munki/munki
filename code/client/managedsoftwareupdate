@@ -469,7 +469,7 @@ def main():
     p.add_option('--auto', '-a', action='store_true',
                  help='Used by launchd LaunchAgent for scheduled runs. '
                  'No user feedback or intervention. All other options '
-                 'ignored.')
+                 'ignored except --semanticversionordering.')
     p.add_option('--logoutinstall', '-l', action='store_true',
                  help='Used by launchd LaunchAgent when running at the '
                  'loginwindow.')
@@ -498,6 +498,9 @@ def main():
                  'packages.')
     p.add_option('--munkipkgsonly', action='store_true',
                  help='Only check/install Munki packages, skip Apple SUS.')
+    p.add_option('--semanticversionordering', action='store_true',
+                 help='Order prereleases before releases when sorting packages, '
+                 'e.g. 1.2b1 before 1.2.')
     p.add_option('--version', '-V', action='store_true',
                  help='Print the version of the munki tools and exit.')
 
@@ -612,6 +615,7 @@ def main():
     # set munkicommon globals
     munkicommon.munkistatusoutput = options.munkistatusoutput
     munkicommon.verbose = options.verbose
+    munkicommon.semantic_version_ordering = options.semanticversionordering
 
     # Set environment variable for verbosity
     os.environ['MUNKI_VERBOSITY_LEVEL'] = str(options.verbose)
