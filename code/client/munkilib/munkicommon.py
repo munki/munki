@@ -57,6 +57,7 @@ from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
 from Foundation import CFPreferencesAppSynchronize
 from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesCopyKeyList
+from Foundation import CFPreferencesCopyValue
 from Foundation import CFPreferencesSetValue
 from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentUser
@@ -1204,6 +1205,15 @@ class SecureManagedInstallsPreferences(Preferences):
     Since this code is usually run as root, ~ is root's home dir"""
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
+
+    def __contains__(self, pref_name):
+        pref_value = CFPreferencesCopyValue(pref_name, self.bundle_id,
+                                            self.user, self.host)
+        return pref_value is not None
+
+    def __getitem__(self, pref_name):
+        return CFPreferencesCopyValue(pref_name, self.bundle_id,
+                                      self.user, self.host)
 
 
 def reload_prefs():
