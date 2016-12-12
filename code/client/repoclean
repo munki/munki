@@ -334,13 +334,19 @@ def clean_repo(repopath, options):
                     manifest_items.add(name)
 
         metakey = ''
-        for key in ['name', 'catalogs', 'minimum_munki_version',
-                    'minimum_os_version', 'maximum_os_version',
-                    'supported_architectures', 'installable_condition']:
+        keys_to_hash = ['name', 'catalogs', 'minimum_munki_version',
+                        'minimum_os_version', 'maximum_os_version',
+                        'supported_architectures', 'installable_condition']
+        if pkginfo.get('uninstall_method') == 'removepackages':
+            keys_to_hash.append('receipts')
+        for key in keys_to_hash:
             if pkginfo.get(key):
                 value = pkginfo[key]
                 if key == 'catalogs':
                     value = ', '.join(value)
+                if key == 'receipts':
+                    value = ', '.join(
+                        [item.get('packageid', '') for item in value])
                 metakey += u"%s: %s\n" % (key, value)
         metakey = metakey.rstrip('\n')
         if metakey not in pkginfodb:
