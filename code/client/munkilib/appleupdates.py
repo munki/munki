@@ -744,7 +744,8 @@ class AppleUpdates(object):
         Returns:
           Boolean. True if successful, False otherwise.
         """
-        msg = 'Downloading available Apple Software Updates...'
+        #msg = 'Downloading available Apple Software Updates...'
+        msg = 'Checking for available Apple Software Updates...'
         self._ResetMunkiStatusAndDisplayMessage(msg)
 
         if os.path.exists(INDEX_PLIST):
