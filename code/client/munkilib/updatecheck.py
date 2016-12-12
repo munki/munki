@@ -2577,13 +2577,14 @@ class ManifestException(Exception):
 
 
 MANIFESTS = {}
-def getmanifest(partialurl, suppress_errors=False):
+def getmanifest(manifest_name, suppress_errors=False):
     """Gets a manifest from the server.
 
     Returns:
-      string local path to the downloaded manifest.
+      string local path to the downloaded manifest, or None
+    Raises:
+      ManifestException if the manifest is not a valid plist
     """
-    #global MANIFESTS
     manifestbaseurl = (munkicommon.pref('ManifestURL') or
                        munkicommon.pref('SoftwareRepoURL') + '/manifests/')
     if (not manifestbaseurl.endswith('?') and
@@ -2592,39 +2593,28 @@ def getmanifest(partialurl, suppress_errors=False):
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
 
-    if (partialurl.startswith('http://') or
-            partialurl.startswith('https://') or
-            partialurl.startswith('file:/')):
-        # then it's really a request for the client's primary manifest
-        manifestdisplayname = os.path.basename(partialurl.encode('UTF-8'))
-        manifesturl = partialurl
-        partialurl = 'client_manifest'
-        manifestname = 'client_manifest.plist'
-    else:
-        # request for nested manifest
-        manifestdisplayname = partialurl
-        manifestname = partialurl
-        manifesturl = (
-            manifestbaseurl + urllib2.quote(partialurl.encode('UTF-8')))
+    manifestdisplayname = manifest_name
+    manifesturl = (
+        manifestbaseurl + urllib2.quote(manifest_name.encode('UTF-8')))
 
-    if manifestname in MANIFESTS:
-        return MANIFESTS[manifestname]
+    if manifest_name in MANIFESTS:
+        return MANIFESTS[manifest_name]
 
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
-    manifestpath = os.path.join(manifest_dir, manifestname)
+    manifestpath = os.path.join(manifest_dir, manifest_name)
 
     # Create the folder the manifest shall be stored in
     destinationdir = os.path.dirname(manifestpath)
     try:
         os.makedirs(destinationdir)
-    except OSError as e:
+    except OSError, err:
         # OSError will be raised if destinationdir exists, ignore this case
         if not os.path.isdir(destinationdir):
             if not suppress_errors:
                 munkicommon.display_error(
                     'Could not create folder to store manifest %s: %s',
-                    manifestdisplayname, e
+                    manifestdisplayname, err
                 )
 
             return None
@@ -2653,8 +2643,9 @@ def getmanifest(partialurl, suppress_errors=False):
         raise ManifestException(errormsg)
     else:
         # plist is valid
-        MANIFESTS[manifestname] = manifestpath
+        MANIFESTS[manifest_name] = manifestpath
         return manifestpath
+
 
 def cleanUpManifests():
     """Removes any manifest files that are no longer in use by this client"""
@@ -2684,7 +2675,6 @@ def cleanUpManifests():
                 os.rmdir(dirpath)
         except OSError:
             pass
-
 
 
 def getPrimaryManifest(alternate_id):
@@ -2727,23 +2717,21 @@ def getPrimaryManifest(alternate_id):
             clientidentifier = urllib2.quote(hostname)
             munkicommon.display_detail(
                 'No client id specified. Requesting %s...', clientidentifier)
-            manifest = getmanifest(
-                manifesturl + clientidentifier, suppress_errors=True)
+            manifest = getmanifest(clientidentifier, suppress_errors=True)
             if not manifest:
                 # try the short hostname
                 clientidentifier = urllib2.quote(hostname.split('.')[0])
                 munkicommon.display_detail(
                     'Request failed. Trying %s...', clientidentifier)
-                manifest = getmanifest(
-                    manifesturl + clientidentifier, suppress_errors=True)
+                manifest = getmanifest(clientidentifier, suppress_errors=True)
             if not manifest:
                 # try the machine serial number
-                clientidentifier = MACHINE['serial_number']
+                clientidentifier = urllib2.quote(MACHINE['serial_number'])
                 if clientidentifier != 'UNKNOWN':
                     munkicommon.display_detail(
                         'Request failed. Trying %s...', clientidentifier)
                     manifest = getmanifest(
-                        manifesturl + clientidentifier, suppress_errors=True)
+                        clientidentifier, suppress_errors=True)
             if not manifest:
                 # last resort - try for the site_default manifest
                 clientidentifier = 'site_default'
@@ -2752,9 +2740,11 @@ def getPrimaryManifest(alternate_id):
 
         if not manifest:
             manifest = getmanifest(
-                manifesturl + urllib2.quote(clientidentifier.encode('UTF-8')))
+                urllib2.quote(clientidentifier.encode('UTF-8')))
         if manifest:
             # record this info for later
+            # primary manifest is tagged as "primary_manifest"
+            MANIFESTS['primary_manifest'] = manifest
             munkicommon.report['ManifestName'] = clientidentifier
             munkicommon.display_detail('Using manifest: %s', clientidentifier)
     except ManifestException:
@@ -3571,8 +3561,7 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
         # Use locally stored manifest
         manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                     'manifests')
-        manifestname = 'client_manifest.plist'
-        manifest = os.path.join(manifest_dir, manifestname)
+        manifest = os.path.join(manifest_dir, MANIFESTS['primary_manifest'])
 
     if manifest:
         manifestdata = getManifestData(manifest)
