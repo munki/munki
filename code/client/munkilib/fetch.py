@@ -167,7 +167,7 @@ def get_url(url, destinationpath,
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
-    Will raise CurlError if Gurl returns an error.
+    Will raise GurlError if Gurl returns an error.
     Will raise HTTPError if HTTP Result code is not 2xx or 304.
     If destinationpath already exists, you can set 'onlyifnewer' to true to
     indicate you only want to download the file only if it's newer on the
