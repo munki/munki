@@ -91,36 +91,47 @@ def import_middleware():
                 munkicommon.display_warning('Ignoring %s' % filepath)
     return
 
+
 middleware = None
 import_middleware()
 
 
-class GurlError(Exception):
+class Error(Exception):
+    """Base exception for fetch errors"""
+    pass
+
+
+class GurlError(Error):
     """General exception for gurl errors"""
     pass
 
 
-class HTTPError(Exception):
+class ConnectionError(GurlError):
+    """General exception for gurl connection errors"""
+    pass
+
+
+class HTTPError(GurlError):
     """General exception for http/https errors"""
     pass
 
 
-class MunkiDownloadError(Exception):
+class DownloadError(Error):
     """Base exception for download errors"""
     pass
 
 
-class GurlDownloadError(MunkiDownloadError):
+class GurlDownloadError(DownloadError):
     """Gurl failed to download the item"""
     pass
 
 
-class FileCopyError(MunkiDownloadError):
+class FileCopyError(DownloadError):
     """Download failed because of file copy errors."""
     pass
 
 
-class PackageVerificationError(MunkiDownloadError):
+class PackageVerificationError(DownloadError):
     """Package failed verification"""
     pass
 
@@ -167,8 +178,9 @@ def get_url(url, destinationpath,
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
-    Will raise GurlError if Gurl returns an error.
+    Will raise ConnectionError if Gurl has a connection error.
     Will raise HTTPError if HTTP Result code is not 2xx or 304.
+    Will raise GurlError if Gurl has some other error.
     If destinationpath already exists, you can set 'onlyifnewer' to true to
     indicate you only want to download the file only if it's newer on the
     server.
@@ -263,8 +275,8 @@ def get_url(url, destinationpath,
         munkicommon.display_detail('Headers: %s', connection.headers)
         if os.path.exists(tempdownloadpath) and not resume:
             os.remove(tempdownloadpath)
-        raise GurlError(connection.error.code(),
-                        connection.error.localizedDescription())
+        raise ConnectionError(connection.error.code(),
+                              connection.error.localizedDescription())
 
     if connection.response is not None:
         munkicommon.display_debug1('Status: %s', connection.status)
@@ -316,7 +328,7 @@ def getResourceIfChangedAtomically(url,
        Returns True if a new download was required; False if the
        item is already in the local cache.
 
-       Raises a MunkiDownloadError derived class if there is an error."""
+       Raises a FetchError derived exception if there is an error."""
 
     changed = False
 
@@ -354,7 +366,7 @@ def getResourceIfChangedAtomically(url,
     elif url_parse.scheme == 'file':
         changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
     else:
-        raise MunkiDownloadError(
+        raise FetchError(
             'Unsupported scheme for %s: %s' % (url, url_parse.scheme))
 
     if changed and verify:
@@ -456,6 +468,11 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
                          onlyifnewer=getonlyifnewer,
                          resume=resume,
                          follow_redirects=follow_redirects)
+
+    except ConnectionError:
+        # connection errors should be handled differently; don't re-raise
+        # them as GurlDownloadError
+        raise
 
     except GurlError, err:
         err = 'Error %s: %s' % tuple(err)
