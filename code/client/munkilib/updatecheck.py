@@ -198,6 +198,7 @@ def getInstalledPackages():
                                 munkicommon.MunkiLooseVersion(storedversion)):
                             INSTALLEDPKGS[pkgid] = thisversion
 
+    # debug code. left here for future debug use
     #ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     #receiptsdatapath = os.path.join(ManagedInstallDir, 'FoundReceipts.plist')
     #try:
@@ -804,7 +805,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     location = item_pl.get(download_item_key)
     if not location:
-        raise fetch.MunkiDownloadError(
+        raise fetch.DownloadError(
             "No %s in item info." % download_item_key)
 
     # allow pkginfo preferences to override system munki preferences
@@ -837,7 +838,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
         # check to see if there is enough free space to download and install
         if not enoughDiskSpace(item_pl, installinfo['managed_installs'],
                                uninstalling=uninstalling):
-            raise fetch.MunkiDownloadError(
+            raise fetch.DownloadError(
                 'Insufficient disk space to download and install %s' % pkgname)
         else:
             munkicommon.display_detail(
@@ -845,14 +846,11 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
-    try:
-        return getResourceIfChangedAtomically(pkgurl, destinationpath,
-                                              resume=True,
-                                              message=dl_message,
-                                              expected_hash=expected_hash,
-                                              verify=True)
-    except fetch.MunkiDownloadError:
-        raise
+    return getResourceIfChangedAtomically(pkgurl, destinationpath,
+                                          resume=True,
+                                          message=dl_message,
+                                          expected_hash=expected_hash,
+                                          verify=True)
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
@@ -1698,7 +1696,7 @@ def updateAvailableLicenseSeats(installinfo):
             munkicommon.display_debug1('Got: %s', license_data)
             license_dict = FoundationPlist.readPlistFromString(
                 license_data)
-        except (fetch.MunkiDownloadError, fetch.GurlDownloadError), err:
+        except fetch.Error, err:
             # problem fetching from URL
             munkicommon.display_error('Error from %s: %s', url, err)
         except FoundationPlist.FoundationPlistException:
@@ -1986,7 +1984,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
             return False
-        except fetch.GurlDownloadError, errmsg:
+        except (fetch.GurlError, fetch.GurlDownloadError), errmsg:
             munkicommon.display_warning(
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
@@ -1996,7 +1994,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
             if manifestitemname in installinfo['processed_installs']:
                 installinfo['processed_installs'].remove(manifestitemname)
             return False
-        except fetch.MunkiDownloadError, errmsg:
+        except fetch.Error, errmsg:
             munkicommon.display_warning(
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
@@ -2128,15 +2126,13 @@ def processManifestForKey(manifest, manifest_key, installinfo,
     nestedmanifests = manifestdata.get('included_manifests')
     if nestedmanifests:
         for item in nestedmanifests:
-            try:
-                nestedmanifestpath = getmanifest(item)
-            except ManifestException:
-                nestedmanifestpath = None
+            nestedmanifestpath = getmanifest(item)
+            if not nestedmanifestpath:
+                raise ManifestException
             if munkicommon.stopRequested():
                 return {}
-            if nestedmanifestpath:
-                processManifestForKey(nestedmanifestpath, manifest_key,
-                                      installinfo, cataloglist)
+            processManifestForKey(nestedmanifestpath, manifest_key,
+                                  installinfo, cataloglist)
 
     conditionalitems = manifestdata.get('conditional_items')
     if conditionalitems:
@@ -2449,7 +2445,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     'Can\'t uninstall %s because the integrity check '
                     'failed.', iteminfo['name'])
                 return False
-            except fetch.MunkiDownloadError, errmsg:
+            except fetch.Error, errmsg:
                 munkicommon.display_warning(
                     'Failed to download the uninstaller for %s because %s',
                     iteminfo['name'], errmsg)
@@ -2543,7 +2539,7 @@ def getCatalogs(cataloglist):
             try:
                 dummy_value = getResourceIfChangedAtomically(
                     catalogurl, catalogpath, message=message)
-            except fetch.MunkiDownloadError, err:
+            except fetch.Error, err:
                 munkicommon.display_error(
                     'Could not retrieve catalog %s from server: %s',
                     catalogname, err)
@@ -2571,8 +2567,22 @@ def cleanUpCatalogs():
 
 
 class ManifestException(Exception):
-    """Lets us raise an exception when we get an invalid
-    manifest."""
+    """Lets us raise an exception when we can't get a manifest."""
+    pass
+
+
+class ManifestInvalidException(ManifestException):
+    """Lets us raise an exception when we get an invalid manifest."""
+    pass
+
+
+class ManifestNotRetrievedException(ManifestException):
+    """Lets us raise an exception when manifest is not retrieved."""
+    pass
+
+
+class ManifestServerConnectionException(ManifestException):
+    """Exception for connection error."""
     pass
 
 
@@ -2583,7 +2593,8 @@ def getmanifest(manifest_name, suppress_errors=False):
     Returns:
       string local path to the downloaded manifest, or None
     Raises:
-      ManifestException if the manifest is not a valid plist
+      fetch.ConnectionError if we can't connect to the server
+      ManifestException if we can't get the manifest
     """
     manifestbaseurl = (munkicommon.pref('ManifestURL') or
                        munkicommon.pref('SoftwareRepoURL') + '/manifests/')
@@ -2616,19 +2627,20 @@ def getmanifest(manifest_name, suppress_errors=False):
                     'Could not create folder to store manifest %s: %s',
                     manifestdisplayname, err
                 )
-
-            return None
+            raise ManifestException(err)
 
     message = 'Retrieving list of software for this machine...'
     try:
         dummy_value = getResourceIfChangedAtomically(
             manifesturl, manifestpath, message=message)
-    except fetch.MunkiDownloadError, err:
+    except fetch.ConnectionError, err:
+        raise ManifestServerConnectionException(err)
+    except fetch.Error, err:
         if not suppress_errors:
             munkicommon.display_error(
                 'Could not retrieve manifest %s from the server: %s',
                 manifestdisplayname, err)
-        return None
+        raise ManifestNotRetrievedException(err)
 
     try:
         # read plist to see if it is valid
@@ -2640,7 +2652,7 @@ def getmanifest(manifest_name, suppress_errors=False):
             os.unlink(manifestpath)
         except (OSError, IOError):
             pass
-        raise ManifestException(errormsg)
+        raise ManifestInvalidException(errormsg)
     else:
         # plist is valid
         MANIFESTS[manifest_name] = manifestpath
@@ -2717,21 +2729,34 @@ def getPrimaryManifest(alternate_id):
             clientidentifier = urllib2.quote(hostname)
             munkicommon.display_detail(
                 'No client id specified. Requesting %s...', clientidentifier)
-            manifest = getmanifest(clientidentifier, suppress_errors=True)
+            try:
+                manifest = getmanifest(clientidentifier, suppress_errors=True)
+            except ManifestNotRetrievedException:
+                pass
+
             if not manifest:
                 # try the short hostname
                 clientidentifier = urllib2.quote(hostname.split('.')[0])
                 munkicommon.display_detail(
                     'Request failed. Trying %s...', clientidentifier)
-                manifest = getmanifest(clientidentifier, suppress_errors=True)
+                try:
+                    manifest = getmanifest(
+                        clientidentifier, suppress_errors=True)
+                except ManifestNotRetrievedException:
+                    pass
+
             if not manifest:
                 # try the machine serial number
                 clientidentifier = urllib2.quote(MACHINE['serial_number'])
                 if clientidentifier != 'UNKNOWN':
                     munkicommon.display_detail(
                         'Request failed. Trying %s...', clientidentifier)
-                    manifest = getmanifest(
-                        clientidentifier, suppress_errors=True)
+                    try:
+                        manifest = getmanifest(
+                            clientidentifier, suppress_errors=True)
+                    except ManifestNotRetrievedException:
+                        pass
+                    
             if not manifest:
                 # last resort - try for the site_default manifest
                 clientidentifier = 'site_default'
@@ -2749,17 +2774,18 @@ def getPrimaryManifest(alternate_id):
             munkicommon.display_detail('Using manifest: %s', clientidentifier)
     except ManifestException:
         # bad manifests throw an exception
-        pass
+        return ""
     return manifest
 
 
 def checkServer(url):
     """A function we can call to check to see if the server is
     available before we kick off a full run. This can be fooled by
-    ISPs that return results for non-existent web servers..."""
-    # rewritten 24 Jan 2013 to attempt to support IPv6
+    ISPs that return results for non-existent web servers...
+    Returns a tuple (error_code, error_description)"""
+    # rewritten 12 Dec 2016 to use gurl so we use system proxies, if any
 
-    # deconstruct URL so we can check availability
+    # deconstruct URL to get scheme
     url_parts = urlparse.urlsplit(url)
     if url_parts.scheme == 'http':
         default_port = 80
@@ -2771,55 +2797,21 @@ def checkServer(url):
         if os.path.exists(url_parts.path):
             return (0, 'OK')
         else:
-            return (-1, 'File %s does not exist' % url_parts.path)
+            return (-1, 'Path %s does not exist' % url_parts.path)
     else:
         return (-1, 'Unsupported URL scheme')
 
-    # get hostname and port
-    host = url_parts.hostname
-    if not host:
-        return (-1, 'Bad URL')
-    port = url_parts.port or default_port
-
-    # following code based on the IPv6-ready example code here
-    # http://docs.python.org/2/library/socket.html#example
-    s = None
-    socket_err = None
-    addr_info = []
+    # we have an HTTP or HTTPS URL
     try:
-        addr_info = socket.getaddrinfo(
-            host, port, socket.AF_UNSPEC, socket.SOCK_STREAM)
-    except socket.error, err:
-        socket_err = err
-    else:
-        for res in addr_info:
-            af, socktype, proto, dummy_canonname, sa = res
-            try:
-                s = socket.socket(af, socktype, proto)
-            except socket.error, err:
-                s = None
-                socket_err = err
-                continue
-            s.settimeout(5.0)
-            try:
-                s.connect(sa)
-                s.close()
-            except (socket.error, socket.timeout), err:
-                s = None
-                socket_err = err
-                continue
-            except BaseException, err:
-                s = None
-                socket_err = tuple(err)
-                continue
-            break
-    if s:
-        return (0, 'OK')
-    else:
-        if type(socket_err) == str:
-            return (-1, socket_err)
-        else:
-            return socket_err
+        # attempt to get something at the url
+        dummy_data = getDataFromURL(url)
+    except fetch.ConnectionError, err:
+        # err should contain a tuple with code and description
+        return (err[0], err[1])
+    except (fetch.GurlError, fetch.DownloadError):
+        # HTTP errors, etc are OK -- we just need to be able to connect
+        pass
+    return (0, 'OK')
 
 
 def getInstallerItemBasename(url):
@@ -2882,7 +2874,7 @@ def download_icons(item_list):
             try:
                 dummy_value = getResourceIfChangedAtomically(
                     icon_url, icon_path, message=message)
-            except fetch.MunkiDownloadError, err:
+            except fetch.Error, err:
                 munkicommon.display_debug1(
                     'Could not retrieve icon %s from the server: %s',
                     icon_name, err)
@@ -2951,7 +2943,7 @@ def download_client_resources():
                 resource_url, resource_archive_path, message=message)
             downloaded_resource_path = resource_archive_path
             break
-        except fetch.MunkiDownloadError, err:
+        except fetch.Error, err:
             munkicommon.display_debug1(
                 'Could not retrieve client resources with name %s: %s',
                 filename, err)
@@ -2963,6 +2955,11 @@ def download_client_resources():
             except (OSError, IOError), err:
                 munkicommon.display_error(
                     'Could not remove stale %s: %s', resource_archive_path, err)
+
+
+class UpdateCheckAbortedError(Exception):
+    '''Exception used to break out of checking for updates'''
+    pass
 
 
 MACHINE = {}
@@ -2999,7 +2996,12 @@ def check(client_id='', localmanifestpath=None):
 
     installinfo = {}
 
-    if mainmanifestpath:
+    try:
+        if not mainmanifestpath:
+            munkicommon.display_error(
+                'Could not retrieve managed install primary manifest.')
+            raise ManifestException
+
         # initialize our installinfo record
         installinfo['processed_installs'] = []
         installinfo['processed_uninstalls'] = []
@@ -3290,9 +3292,9 @@ def check(client_id='', localmanifestpath=None):
                     'Could not read InstallInfo.plist. Deleting...')
                 try:
                     os.unlink(installinfopath)
-                except OSError, e:
+                except OSError, err:
                     munkicommon.display_error(
-                        'Failed to delete InstallInfo.plist: %s', str(e))
+                        'Failed to delete InstallInfo.plist: %s', str(err))
             if oldinstallinfo == installinfo:
                 installinfochanged = False
                 munkicommon.display_detail('No change in InstallInfo.')
@@ -3301,11 +3303,9 @@ def check(client_id='', localmanifestpath=None):
             FoundationPlist.writePlist(installinfo,
                                        os.path.join(ManagedInstallDir,
                                                     'InstallInfo.plist'))
-    else:
-        # couldn't get a primary manifest. Check to see if we have a valid
+    except (ManifestException, UpdateCheckAbortedError):
+        # Update check aborted. Check to see if we have a valid
         # install/remove list from an earlier run.
-        munkicommon.display_error(
-            'Could not retrieve managed install primary manifest.')
         installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
         if os.path.exists(installinfopath):
             try:
@@ -3554,11 +3554,13 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
         MACHINE = munkicommon.getMachineFacts()
 
     cataloglist = []
-    if force_refresh:
+    if force_refresh or 'primary_manifest' not in MANIFESTS:
         # Fetch manifest from repo
         manifest = getPrimaryManifest(client_id)
+        # set force_refresh = True so we'll also download any missing catalogs
+        force_refresh = True
     else:
-        # Use locally stored manifest
+        # Use cached manifest if available
         manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                     'manifests')
         manifest = os.path.join(manifest_dir, MANIFESTS['primary_manifest'])
@@ -3567,7 +3569,11 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
         manifestdata = getManifestData(manifest)
         cataloglist = manifestdata.get('catalogs')
         if cataloglist and force_refresh:
-            getCatalogs(cataloglist)
+            try:
+                # download catalogs since we might not have them
+                getCatalogs(cataloglist)
+            except CatalogException:
+                pass
     return cataloglist
 
 
