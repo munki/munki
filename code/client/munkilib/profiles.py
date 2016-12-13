@@ -26,21 +26,24 @@ import tempfile
 import FoundationPlist
 import munkicommon
 
+
 def profiles_supported():
     '''Returns True if config profiles are supported on this OS'''
     darwin_vers = int(os.uname()[2].split('.')[0])
     return (darwin_vers > 10)
 
 
-CONFIG_PROFILE_INFO = None
 def config_profile_info(ignore_cache=False):
     '''Returns a dictionary representing the output of `profiles -C -o`'''
-    global CONFIG_PROFILE_INFO
+    if not hasattr(config_profile_info, 'cache'):
+        # a place to cache our return value so we don't have to
+        # call /usr/bin/profiles again
+        config_profile_info.cache = None
     if not profiles_supported():
-        CONFIG_PROFILE_INFO = {}
-        return CONFIG_PROFILE_INFO
-    if not ignore_cache and CONFIG_PROFILE_INFO is not None:
-        return CONFIG_PROFILE_INFO
+        config_profile_info.cache = {}
+        return config_profile_info.cache
+    if not ignore_cache and config_profile_info.cache is not None:
+        return config_profile_info.cache
     output_plist = os.path.join(
         tempfile.mkdtemp(dir=munkicommon.tmpdir()), 'profiles')
     cmd = ['/usr/bin/profiles', '-C', '-o', output_plist]
@@ -50,21 +53,21 @@ def config_profile_info(ignore_cache=False):
     if proc.returncode != 0:
         munkicommon.display_error(
             'Could not obtain configuration profile info: %s' % proc.stderr)
-        CONFIG_PROFILE_INFO = {}
+        config_profile_info.cache = {}
     else:
         try:
-            CONFIG_PROFILE_INFO = FoundationPlist.readPlist(
+            config_profile_info.cache = FoundationPlist.readPlist(
                 output_plist + '.plist')
         except BaseException, err:
             munkicommon.display_error(
                 'Could not read configuration profile info: %s' % err)
-            CONFIG_PROFILE_INFO = {}
+            config_profile_info.cache = {}
         finally:
             try:
                 os.unlink(output_plist + '.plist')
             except BaseException:
                 pass
-        return CONFIG_PROFILE_INFO
+        return config_profile_info.cache
 
 
 def profile_info_for_installed_identifier(identifier, ignore_cache=False):
