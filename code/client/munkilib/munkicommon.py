@@ -118,6 +118,20 @@ class TimeoutError(Error):
     """Timeout limit exceeded since last I/O."""
 
 
+class memoize(dict):
+    '''Class to cache the return values of an expensive function.
+    This version supports only functions with non-keyword arguments'''
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args):
+        return self[args]
+
+    def __missing__(self, key):
+        result = self[key] = self.func(*key)
+        return result
+
+
 def getOsVersion(only_major_minor=True, as_tuple=False):
     """Returns an OS version.
 
@@ -2406,78 +2420,76 @@ def getIntel64Support():
     else:
         return False
 
-MACHINE = {}
+@memoize
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
     installer is applicable to this OS or hardware"""
-    if not MACHINE:
-        MACHINE['hostname'] = os.uname()[1]
-        MACHINE['arch'] = os.uname()[4]
-        MACHINE['os_vers'] = getOsVersion(only_major_minor=False)
-        hardware_info = get_hardware_info()
-        MACHINE['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
-        MACHINE['munki_version'] = get_version()
-        MACHINE['ipv4_address'] = get_ip_addresses('IPv4')
-        MACHINE['ipv6_address'] = get_ip_addresses('IPv6')
-        MACHINE['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
+    machine = dict()
+    machine['hostname'] = os.uname()[1]
+    machine['arch'] = os.uname()[4]
+    machine['os_vers'] = getOsVersion(only_major_minor=False)
+    hardware_info = get_hardware_info()
+    machine['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
+    machine['munki_version'] = get_version()
+    machine['ipv4_address'] = get_ip_addresses('IPv4')
+    machine['ipv6_address'] = get_ip_addresses('IPv6')
+    machine['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
 
-        if MACHINE['arch'] == 'x86_64':
-            MACHINE['x86_64_capable'] = True
-        elif MACHINE['arch'] == 'i386':
-            MACHINE['x86_64_capable'] = getIntel64Support()
-    return MACHINE
+    if machine['arch'] == 'x86_64':
+        machine['x86_64_capable'] = True
+    elif machine['arch'] == 'i386':
+        machine['x86_64_capable'] = getIntel64Support()
+    return machine
 
 
-CONDITIONS = {}
+@memoize
 def getConditions():
     """Fetches key/value pairs from condition scripts
     which can be placed into /usr/local/munki/conditions"""
-    global CONDITIONS
-    if not CONDITIONS:
-        # define path to conditions directory which would contain
-        # admin created scripts
-        scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
-        conditionalscriptdir = os.path.join(scriptdir, "conditions")
-        # define path to ConditionalItems.plist
-        conditionalitemspath = os.path.join(
-            pref('ManagedInstallDir'), 'ConditionalItems.plist')
-        try:
-            # delete CondtionalItems.plist so that we're starting fresh
-            os.unlink(conditionalitemspath)
-        except (OSError, IOError):
-            pass
-        if os.path.exists(conditionalscriptdir):
-            from munkilib import utils
-            for conditionalscript in listdir(conditionalscriptdir):
-                if conditionalscript.startswith('.'):
-                    # skip files that start with a period
-                    continue
-                conditionalscriptpath = os.path.join(
-                    conditionalscriptdir, conditionalscript)
-                if os.path.isdir(conditionalscriptpath):
-                    # skip directories in conditions directory
-                    continue
-                try:
-                    # attempt to execute condition script
-                    dummy_result, dummy_stdout, dummy_stderr = (
-                        utils.runExternalScript(conditionalscriptpath))
-                except utils.ScriptNotFoundError:
-                    pass  # script is not required, so pass
-                except utils.RunExternalScriptError, err:
-                    print >> sys.stderr, unicode(err)
-        else:
-            # /usr/local/munki/conditions does not exist
-            pass
-        if (os.path.exists(conditionalitemspath) and
-                validPlist(conditionalitemspath)):
-            # import conditions into CONDITIONS dict
-            CONDITIONS = FoundationPlist.readPlist(conditionalitemspath)
-            os.unlink(conditionalitemspath)
-        else:
-            # either ConditionalItems.plist does not exist
-            # or does not pass validation
-            CONDITIONS = {}
-    return CONDITIONS
+    # define path to conditions directory which would contain
+    # admin created scripts
+    scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    conditionalscriptdir = os.path.join(scriptdir, "conditions")
+    # define path to ConditionalItems.plist
+    conditionalitemspath = os.path.join(
+        pref('ManagedInstallDir'), 'ConditionalItems.plist')
+    try:
+        # delete CondtionalItems.plist so that we're starting fresh
+        os.unlink(conditionalitemspath)
+    except (OSError, IOError):
+        pass
+    if os.path.exists(conditionalscriptdir):
+        from munkilib import utils
+        for conditionalscript in listdir(conditionalscriptdir):
+            if conditionalscript.startswith('.'):
+                # skip files that start with a period
+                continue
+            conditionalscriptpath = os.path.join(
+                conditionalscriptdir, conditionalscript)
+            if os.path.isdir(conditionalscriptpath):
+                # skip directories in conditions directory
+                continue
+            try:
+                # attempt to execute condition script
+                dummy_result, dummy_stdout, dummy_stderr = (
+                    utils.runExternalScript(conditionalscriptpath))
+            except utils.ScriptNotFoundError:
+                pass  # script is not required, so pass
+            except utils.RunExternalScriptError, err:
+                print >> sys.stderr, unicode(err)
+    else:
+        # /usr/local/munki/conditions does not exist
+        pass
+    if (os.path.exists(conditionalitemspath) and
+            validPlist(conditionalitemspath)):
+        # import conditions into conditions dict
+        conditions = FoundationPlist.readPlist(conditionalitemspath)
+        os.unlink(conditionalitemspath)
+    else:
+        # either ConditionalItems.plist does not exist
+        # or does not pass validation
+        conditions = {}
+    return conditions
 
 
 def isAppRunning(appname):
