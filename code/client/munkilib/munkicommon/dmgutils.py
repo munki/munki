@@ -24,10 +24,13 @@ Utilities for working with disk images.
 
 import os
 import subprocess
-import sys
 
 from .. import FoundationPlist
 from .output import display_detail, display_error, display_warning
+
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
+
 
 # this function isn't specifically a dmg function, but is used by the other
 # dmg functions
@@ -63,8 +66,8 @@ def DMGisWritable(dmgpath):
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        print >> sys.stderr, (
-            u'hdiutil error %s with image %s.' % (err, dmgpath))
+        display_error(
+            u'hdiutil error %s with image %s.', err, dmgpath)
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
         try:
@@ -86,8 +89,8 @@ def DMGhasSLA(dmgpath):
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        print >> sys.stderr, (
-            u'hdiutil error %s with image %s.' % (err, dmgpath))
+        display_error(
+            u'hdiutil error %s with image %s.', err, dmgpath)
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
         try:
@@ -112,7 +115,7 @@ def hdiutilInfo():
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        print >> sys.stderr, u'hdiutil info error: %s' % err
+        display_error(u'hdiutil info error: %s', err)
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
         try:
