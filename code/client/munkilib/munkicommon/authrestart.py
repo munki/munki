@@ -36,18 +36,18 @@ def supports_auth_restart():
     if an Authorized Restart is supported, returns True
     or False accordingly.
     """
-    display.display_debug1('Checking if FileVault is Enabled...')
+    display.display_debug1('Checking if FileVault is enabled...')
     active_cmd = ['/usr/bin/fdesetup', 'isactive']
     try:
         is_active = subprocess.check_output(
             active_cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as exc:
         if exc.output and 'false' in exc.output:
-            display.display_warning('FileVault appears to be Disabled...')
+            display.display_warning('FileVault appears to be disabled...')
             return False
         if not exc.output:
             display.display_warning(
-                'Encountered problem determining FileVault Status...')
+                'Encountered problem determining FileVault status...')
             return False
         display.display_warning(exc.output)
         return False
@@ -66,11 +66,11 @@ def supports_auth_restart():
         return False
     if 'true' in is_active and 'true' in is_supported:
         display.display_debug1(
-            'FileVault is On and Supports an AuthRestart...')
+            'FileVault is on and supports an AuthRestart...')
         return True
     else:
         display.display_warning(
-            'FileVault is Disabled or does not support an AuthRestart...')
+            'FileVault is disabled or does not support an AuthRestart...')
         return False
 
 
@@ -84,7 +84,7 @@ def get_auth_restart_key():
             "RecoveryKeyFile preference is not set")
         return ''
     display.display_debug1(
-        'RecoveryKeyFile preference is set to {0}...'.format(recoverykeyplist))
+        'RecoveryKeyFile preference is set to %s...', recoverykeyplist)
     # try to get the recovery key from the defined location
     try:
         keyplist = FoundationPlist.readPlist(recoverykeyplist)
@@ -92,11 +92,11 @@ def get_auth_restart_key():
         return recovery_key
     except FoundationPlist.NSPropertyListSerializationException:
         display.display_error(
-            'We had trouble getting info from {0}...'.format(recoverykeyplist))
+            'We had trouble getting info from %s...', recoverykeyplist)
         return ''
     except KeyError:
         display.display_error(
-            'Problem with Key: RecoveryKey in {0}...'.format(recoverykeyplist))
+            'Problem with key: RecoveryKey in %s...', recoverykeyplist)
         return ''
 
 
@@ -108,7 +108,8 @@ def perform_auth_restart():
     display.display_debug1(
         'Checking if performing an Auth Restart is fully supported...')
     if not supports_auth_restart():
-        display.display_warning("Machine doesn't support Authorized Restarts...")
+        display.display_warning(
+            "Machine doesn't support Authorized Restarts...")
         return False
     display.display_debug1('Machine supports Authorized Restarts...')
     recovery_key = get_auth_restart_key()
