@@ -54,6 +54,7 @@ from .. import FoundationPlist
 from .authrestart import *
 from .dmgutils import *
 from .prefs import *
+from .osutils import *
 from .output import *
 # pylint: enable=unused-wildcard-import
 
@@ -124,22 +125,6 @@ class memoize(dict):
     def __missing__(self, key):
         result = self[key] = self.func(*key)
         return result
-
-
-def getOsVersion(only_major_minor=True, as_tuple=False):
-    """Returns an OS version.
-
-    Args:
-      only_major_minor: Boolean. If True, only include major/minor versions.
-      as_tuple: Boolean. If True, return a tuple of ints, otherwise a string.
-    """
-    os_version_tuple = platform.mac_ver()[0].split('.')
-    if only_major_minor:
-        os_version_tuple = os_version_tuple[0:2]
-    if as_tuple:
-        return tuple(map(int, os_version_tuple))
-    else:
-        return '.'.join(os_version_tuple)
 
 
 def set_file_nonblock(f, non_blocking=True):
@@ -300,9 +285,6 @@ def saveappdata():
     except FoundationPlist.NSPropertyListSerializationException, err:
         display_warning(
             'Unable to save inventory report: %s' % err)
-
-
-
 
 
 # misc functions

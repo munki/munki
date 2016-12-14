@@ -25,7 +25,7 @@ Functions supporting FileVault authrestart.
 
 import subprocess
 
-from . import getOsVersion
+from .osutils import getOsVersion
 from .output import display_debug1, display_error, display_warning, log
 from .prefs import pref
 from .. import FoundationPlist
