@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-pkgutils
+pkgutils.py
 
 Created by Greg Neagle on 2016-12-14.
 
