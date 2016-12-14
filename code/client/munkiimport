@@ -811,8 +811,8 @@ def configure():
         if key == 'plugin':
             if not os.path.isdir("/usr/local/munki/munkilib/plugins"):
                 continue
-                if not os.listdir("/usr/local/munki/munkilib/plugins"):
-                    continue
+            if not os.listdir("/usr/local/munki/munkilib/plugins"):
+                continue
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
 
     for key, value in _prefs.items():

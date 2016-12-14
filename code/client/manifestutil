@@ -35,6 +35,9 @@ import time
 from ctypes.util import find_library
 from xml.parsers.expat import ExpatError
 
+from munkilib import munkicommon
+from munkilib import Repo
+
 try:
     from munkilib.munkicommon import get_version
 except ImportError:
@@ -269,12 +272,12 @@ def get_installer_item_names(cataloglist):
     '''Returns a list of unique installer item (pkg) names
     from the given list of catalogs'''
     item_list = []
-    catalogs_path = os.path.join(pref('repo_path'), 'catalogs')
-    for filename in os.listdir(catalogs_path):
+    catalogs_path = repo.join('catalogs')
+    for filename in repo.listdir(catalogs_path):
         if filename in cataloglist:
             try:
-                catalog = plistlib.readPlist(
-                    os.path.join(catalogs_path, filename))
+                handle = repo.open(repo.join(catalogs_path, filename), 'r')
+                catalog = plistlib.readPlist(handle.local_path)
             except (IOError, OSError, ExpatError):
                 # skip items that aren't valid plists
                 # or that we can't read
@@ -290,9 +293,9 @@ def get_installer_item_names(cataloglist):
 
 def get_manifest_names():
     '''Returns a list of available manifests'''
-    manifests_path = os.path.join(pref('repo_path'), 'manifests')
+    manifests_path = repo.join('manifests')
     manifests = []
-    for dirpath, dirnames, filenames in os.walk(manifests_path):
+    for dirpath, dirnames, filenames in repo.walk(manifests_path):
         for dirname in dirnames:
             # don't recurse into directories that start
             # with a period.
@@ -303,21 +306,22 @@ def get_manifest_names():
             if name.startswith("."):
                 # don't process these
                 continue
-            manifests.append(os.path.join(subdir, name).lstrip('/'))
+            manifests.append(repo.join(subdir, name).lstrip('/'))
     manifests.sort()
     return manifests
 
 
 def get_catalogs():
     '''Returns a list of available catalogs'''
-    catalogs_path = os.path.join(pref('repo_path'), 'catalogs')
+    catalogs_path = repo.join('catalogs')
     catalogs = []
-    for name in os.listdir(catalogs_path):
+    for name in repo.listdir(catalogs_path):
         if name.startswith(".") or name == 'all':
             # don't process these
             continue
         try:
-            _ = plistlib.readPlist(os.path.join(catalogs_path, name))
+            handle = repo.open(repo.join(catalogs_path, name), 'r')
+            _ = plistlib.readPlist(handle.local_path)
         except (IOError, OSError, ExpatError):
             # skip items that aren't valid plists
             pass
@@ -369,11 +373,11 @@ def printplist(plistdict):
 
 def get_manifest(manifest_name):
     '''Gets the contents of a manifest'''
-    manifest_path = os.path.join(
-        pref('repo_path'), 'manifests', manifest_name)
-    if os.path.exists(manifest_path):
+    manifest_path = repo.join('manifests', manifest_name)
+    if repo.exists(manifest_path):
         try:
-            return plistlib.readPlist(manifest_path)
+            handle = repo.open(manifest_path, 'r')
+            return plistlib.readPlist(handle.local_path)
         except (IOError, OSError, ExpatError):
             print >> sys.stderr, (
                 'Could not read manifest %s' % manifest_name)
@@ -385,14 +389,14 @@ def get_manifest(manifest_name):
 
 def save_manifest(manifest_dict, manifest_name, overwrite_existing=False):
     '''Saves a manifest to disk'''
-    manifest_path = os.path.join(
-        pref('repo_path'), 'manifests', manifest_name)
+    manifest_path = repo.join('manifests', manifest_name)
     if not overwrite_existing:
-        if os.path.exists(manifest_path):
+        if repo.exists(manifest_path):
             print >> sys.stderr, '%s already exists!' % manifest_name
             return False
     try:
-        plistlib.writePlist(manifest_dict, manifest_path)
+        handle = repo.open(manifest_path, 'w')
+        plistlib.writePlist(manifest_dict, handle.local_path)
         return True
     except (IOError, OSError, ExpatError), err:
         print >> sys.stderr, 'Saving %s failed: %s' % (manifest_name, err)
@@ -417,77 +421,14 @@ def manifest_rename(source_manifest_name, dest_manifest_name,
             source_manifest_name, dest_manifest_name, err)
         return False
 
-def repo_available():
-    """Checks the repo path for proper directory structure.
-    If the directories look wrong we probably don't have a
-    valid repo path. Returns True if things look OK."""
-    repo_path = pref('repo_path')
-    if not repo_path:
-        print >> sys.stderr, 'No repo path specified.'
-        return False
-    if not os.path.exists(repo_path) and pref('repo_url'):
-        mount_repo_cli()
-    if not os.path.exists(repo_path):
-        return False
-    for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
-        if not os.path.exists(os.path.join(repo_path, subdir)):
-            print >> sys.stderr, "%s is missing %s" % (repo_path, subdir)
-            return False
-    # if we get this far, the repo path looks OK
-    return True
-
-
-def mount_repo_cli():
-    """Attempts to connect to the repo fileshare"""
-    global WE_MOUNTED_THE_REPO
-    repo_path = pref('repo_path')
-    repo_url = pref('repo_url')
-    if os.path.exists(repo_path):
-        return
-    print 'Attempting to mount fileshare %s:' % repo_path
-    if NETFSMOUNTURLSYNC_AVAILABLE:
-        # mount the share using the NetFS API
-        try:
-            mount_share_url(repo_url)
-        except ShareMountException, err:
-            print >> sys.stderr, err
-        else:
-            WE_MOUNTED_THE_REPO = True
-    else:
-        # do it the old way
-        os.mkdir(repo_path)
-        if repo_url.startswith('afp:'):
-            cmd = ['/sbin/mount_afp', '-i', repo_url, repo_path]
-        elif repo_url.startswith('smb:'):
-            cmd = ['/sbin/mount_smbfs', repo_url[4:], repo_path]
-        elif repo_url.startswith('nfs://'):
-            cmd = ['/sbin/mount_nfs', repo_url[6:], repo_path]
-        else:
-            print >> sys.stderr, 'Unsupported filesystem URL!'
-            return
-        retcode = subprocess.call(cmd)
-        if retcode:
-            os.rmdir(repo_path)
-        else:
-            WE_MOUNTED_THE_REPO = True
-
-
-def unmount_repo_cli():
-    """Attempts to unmount the repo fileshare"""
-    repo_path = pref('repo_path')
-    if not os.path.exists(repo_path):
-        return
-    cmd = ['/sbin/umount', repo_path]
-    return subprocess.call(cmd)
-
-
 def cleanup_and_exit(exitcode):
     """Give the user the chance to unmount the repo when we exit"""
     result = 0
-    if WE_MOUNTED_THE_REPO:
+    if repo.mounted:
         answer = raw_input('Unmount the repo fileshare? [y/n] ')
         if answer.lower().startswith('y'):
-            result = unmount_repo_cli()
+            result = repo.unmount()
+    munkicommon.cleanUpTmpDir()
     exit(exitcode or result)
 
 
@@ -629,12 +570,13 @@ def find(args):
     findtext = arguments[0]
     keyname = options.section
 
-    manifests_path = os.path.join(pref('repo_path'), 'manifests')
+    manifests_path = repo.join('manifests')
     count = 0
     for name in get_manifest_names():
-        pathname = os.path.join(manifests_path, name)
+        pathname = repo.join(manifests_path, name)
         try:
-            manifest = plistlib.readPlist(pathname)
+            handle = repo.open(pathname, 'r')
+            manifest = plistlib.readPlist(handle.local_path)
         except (IOError, OSError, ExpatError):
             print >> sys.stderr, 'Error reading %s' % pathname
             continue
@@ -1184,6 +1126,8 @@ def set_up_tab_completer():
 
 
 def handle_subcommand(args):
+    global repo
+
     '''Does all our subcommands'''
     # check if any arguments are passed.
     # if not, list subcommands.
@@ -1203,8 +1147,10 @@ def handle_subcommand(args):
 
     if (subcommand not in ['version', 'configure', 'help']
             and '-h' not in args and '--help' not in args):
-        if not repo_available():
-            exit(-1)
+        if not repo:
+            repo = Repo.Open(pref('repo_path'), pref('repo_url'), pref('plugin'))
+            if not repo.available():
+                exit(-1)
 
     try:
         # find function to call by looking in the global name table
@@ -1223,10 +1169,12 @@ def handle_subcommand(args):
 WE_MOUNTED_THE_REPO = False
 INTERACTIVE_MODE = False
 CMD_ARG_DICT = {}
+repo = None
 
 def main():
     '''Our main routine'''
     global INTERACTIVE_MODE
+    global repo
 
     cmds = {'add-pkg':                   'pkgs',
             'add-catalog':               'catalogs',
@@ -1261,7 +1209,8 @@ def main():
         # so let's enter interactive mode
         INTERACTIVE_MODE = True
         # must have an available repo for interfactive mode
-        if not repo_available():
+        repo = Repo.Open(pref('repo_path'), pref('repo_url'), pref('plugin'))
+        if not repo.available():
             exit(-1)
         # build the rest of our dict to enable tab completion
         CMD_ARG_DICT['options'] = {'--manifest': 'manifests',

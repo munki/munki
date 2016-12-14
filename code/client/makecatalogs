@@ -31,6 +31,7 @@ import sys
 import os
 import optparse
 import hashlib
+from munkilib import Repo
 
 try:
     from munkilib import FoundationPlist as plistlib
@@ -90,7 +91,7 @@ def print_err_utf8(text):
     print >> sys.stderr, text.encode('UTF-8')
 
 
-def makecatalogs(repopath, options):
+def makecatalogs(repo, options):
     '''Assembles all pkginfo files into catalogs.
     Assumes a pkgsinfo directory under repopath.
     User calling this needs to be able to write to the repo/catalogs
@@ -101,15 +102,15 @@ def makecatalogs(repopath, options):
     exit_code = 0
 
     # Make sure the icons directory exists
-    iconspath = os.path.join(repopath, 'icons')
-    # make sure iconspath is Unicode so that os.walk later gives us
+    iconspath = repo.join('icons')
+    # make sure iconspath is Unicode so that repo.walk later gives us
     # Unicode names back.
     if type(iconspath) is str:
         iconspath = unicode(iconspath, 'utf-8')
     elif type(iconspath) is not unicode:
         iconspath = unicode(iconspath)
 
-    if not os.path.exists(iconspath):
+    if not repo.exists(iconspath):
         print_err_utf8("icons path %s doesn't exist, skipping hashing!"
                        % iconspath)
         iconhashing = False
@@ -119,7 +120,7 @@ def makecatalogs(repopath, options):
         iconhashing = True
 
         # Walk through the icon files
-        for dirpath, dirnames, filenames in os.walk(iconspath):
+        for dirpath, dirnames, filenames in repo.walk(iconspath):
             for dirname in dirnames:
                 # don't recurse into directories that start
                 # with a period.
@@ -130,7 +131,7 @@ def makecatalogs(repopath, options):
                     # skip files that start with a period as well
                     continue
 
-                filepath = os.path.join(dirpath, filename)
+                filepath = repo.join(dirpath, filename)
 
                 iconpath = filepath.rsplit(iconspath + os.path.sep, 1)[1]
 
@@ -138,7 +139,7 @@ def makecatalogs(repopath, options):
                 try:
                     print_utf8("Hashing %s..." % (iconpath))
                     icons[iconpath] = (
-                        hashlib.sha256(open(filepath, 'rb').read()).hexdigest())
+                        hashlib.sha256(repo.open(filepath, 'rb').read()).hexdigest())
                 except IOError, inst:
                     errors.append("IO error for %s: %s" % (filepath, inst))
                     exit_code = -1
@@ -150,15 +151,15 @@ def makecatalogs(repopath, options):
                     continue
 
     # Make sure the pkgsinfo directory exists
-    pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
-    # make sure pkgsinfopath is Unicode so that os.walk later gives us
+    pkgsinfopath = repo.join('pkgsinfo')
+    # make sure pkgsinfopath is Unicode so that repo.walk later gives us
     # Unicode names back.
     if type(pkgsinfopath) is str:
         pkgsinfopath = unicode(pkgsinfopath, 'utf-8')
     elif type(pkgsinfopath) is not unicode:
         pkgsinfopath = unicode(pkgsinfopath)
 
-    if not os.path.exists(pkgsinfopath):
+    if not repo.exists(pkgsinfopath):
         print_err_utf8("pkgsinfo path %s doesn't exist!" % pkgsinfopath)
         exit(-1)
 
@@ -167,7 +168,7 @@ def makecatalogs(repopath, options):
     catalogs['all'] = []
 
     # Walk through the pkginfo files
-    for dirpath, dirnames, filenames in os.walk(pkgsinfopath, followlinks=True):
+    for dirpath, dirnames, filenames in repo.walk(pkgsinfopath, followlinks=True):
         for dirname in dirnames:
             # don't recurse into directories that start
             # with a period.
@@ -178,11 +179,13 @@ def makecatalogs(repopath, options):
                 # skip files that start with a period as well
                 continue
 
-            filepath = os.path.join(dirpath, filename)
+            filepath = repo.join(dirpath, filename)
 
             # Try to read the pkginfo file
             try:
-                pkginfo = plistlib.readPlist(filepath)
+                handle = repo.open(filepath, 'r')
+                if handle:
+                    pkginfo = plistlib.readPlist(handle.local_path)
             except IOError, inst:
                 errors.append("IO error for %s: %s" % (filepath, inst))
                 exit_code = -1
@@ -249,8 +252,8 @@ def makecatalogs(repopath, options):
                 # Try to form a path and fail if the
                 # installer_item_location is not a valid type
                 try:
-                    installeritempath = os.path.join(
-                        repopath, "pkgs", pkginfo['installer_item_location'])
+                    installeritempath = repo.join(
+                        "pkgs", pkginfo['installer_item_location'])
                 except TypeError:
                     errors.append("WARNING: invalid installer_item_location "
                                   "in info file %s"
@@ -259,7 +262,7 @@ def makecatalogs(repopath, options):
                     continue
 
                 # Check if the installer item actually exists
-                if not os.path.exists(installeritempath):
+                if not repo.exists(installeritempath):
                     errors.append("WARNING: Info file %s refers to "
                                   "missing installer item: %s" %
                                   (filepath[len(pkgsinfopath)+1:],
@@ -285,8 +288,8 @@ def makecatalogs(repopath, options):
             # if an uninstaller_item_location is specified, sanity-check it
             if 'uninstaller_item_location' in pkginfo:
                 try:
-                    uninstalleritempath = os.path.join(
-                        repopath, "pkgs", pkginfo['uninstaller_item_location'])
+                    uninstalleritempath = repo.join(
+                        "pkgs", pkginfo['uninstaller_item_location'])
                 except TypeError:
                     errors.append("WARNING: invalid uninstaller_item_location "
                                   "in info file %s"
@@ -295,7 +298,7 @@ def makecatalogs(repopath, options):
                     continue
 
                 # Check if the uninstaller item actually exists
-                if not os.path.exists(uninstalleritempath):
+                if not repo.exists(uninstalleritempath):
                     errors.append("WARNING: Info file %s refers to "
                                   "missing uninstaller item: %s" %
                                   (filepath[len(pkgsinfopath)+1:],
@@ -325,9 +328,9 @@ def makecatalogs(repopath, options):
             print_err_utf8(error)
 
     # clear out old catalogs
-    catalogpath = os.path.join(repopath, "catalogs")
-    if not os.path.exists(catalogpath):
-        os.mkdir(catalogpath)
+    catalogpath = repo.join("catalogs")
+    if not repo.exists(catalogpath):
+        repo.mkdir(catalogpath)
     else:
         for item in listdir(catalogpath):
             itempath = os.path.join(catalogpath, item)
@@ -386,6 +389,12 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
+    parser.add_option('--repo_url', '--repo-url', '--plugin', default=pref('repo_url'),
+                      help='Optional repo fileshare URL that takes precedence '
+                           'over the default repo_url specified via '
+                           '--configure.')
+    parser.add_option('--plugin', '--plugin', default=pref('plugin'), 
+                      help='Specify a custom plugin to run for munkiimport Repo.')
     parser.set_defaults(force=False)
     options, arguments = parser.parse_args()
 
@@ -406,13 +415,13 @@ def main():
         repopath = arguments[0].rstrip("/")
 
     # Make sure the repo path exists
-    if not os.path.exists(repopath):
+    repo = Repo.Open(repopath, options.repo_url, options.plugin)
+    if not repo.exists():
         print_err_utf8("Repo root path %s doesn't exist!" % repopath)
         exit(-1)
 
     # Make the catalogs
-    makecatalogs(repopath, options)
+    makecatalogs(repo, options)
 
 if __name__ == '__main__':
     main()
-
