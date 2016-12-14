@@ -329,19 +329,21 @@ def makecatalogs(repo, options):
 
     # clear out old catalogs
     catalogpath = repo.join("catalogs")
+    print(repo)
+    print(catalogpath)
     if not repo.exists(catalogpath):
         repo.mkdir(catalogpath)
     else:
-        for item in listdir(catalogpath):
-            itempath = os.path.join(catalogpath, item)
-            if os.path.isfile(itempath):
-                os.remove(itempath)
+        for item in repo.listdir(catalogpath):
+            itempath = repo.join(catalogpath, item)
+            if repo.isfile(itempath):
+                repo.remove(itempath)
 
     # write the new catalogs
     print
     for key in catalogs.keys():
-        catalogpath = os.path.join(repopath, "catalogs", key)
-        if os.path.exists(catalogpath):
+        catalogpath = repo.join("catalogs", key)
+        if repo.exists(catalogpath):
             print_err_utf8(
                 "WARNING: catalog %s already exists at %s. "
                 "Perhaps this is a non-case sensitive filesystem and you "
@@ -349,8 +351,10 @@ def makecatalogs(repo, options):
                 % (key, catalogpath))
             exit_code = -1
         elif len(catalogs[key]) != 0:
-            plistlib.writePlist(catalogs[key], catalogpath)
-            print "Created catalog %s..." % (catalogpath)
+            handle = repo.open(catalogpath, 'w')
+            if handle:
+                plistlib.writePlist(catalogs[key], handle.local_path)
+                print "Created catalog %s..." % (catalogpath)
         else:
             print_err_utf8(
                 "WARNING: Did not create catalog %s "
@@ -389,7 +393,7 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    parser.add_option('--repo_url', '--repo-url', '--plugin', default=pref('repo_url'),
+    parser.add_option('--repo_url', '--repo-url', default=pref('repo_url'),
                       help='Optional repo fileshare URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
