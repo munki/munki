@@ -22,55 +22,27 @@ Created by Greg Neagle on 2008-11-18.
 Common functions used by the munki tools.
 """
 
-import ctypes
-import ctypes.util
-import fcntl
-import hashlib
 import os
-import logging
-import logging.handlers
-import platform
-import re
-import select
-import shutil
-import signal
-import struct
-import subprocess
-import sys
-import tempfile
-import time
-import urllib2
-import warnings
-from distutils import version
-from types import StringType
-from xml.dom import minidom
-
-from .. import munkistatus
-from .. import FoundationPlist
 
 # We wildcard-import from submodules for backwards compatibility; functions
 # that were previously available from this module
 # pylint: disable=wildcard-import
 from .authrestart import *
 from .constants import *
+from .display import *
 from .dmgutils import *
+from .hash import *
 from .info import *
+from .munkilog import *
 from .osutils import *
-from .output import *
 from .pkgutils import *
 from .prefs import *
 from .processes import *
+from .reports import *
+from .scriptutils import *
 # pylint: enable=wildcard-import
 
-import LaunchServices
-
-# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-# No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
-from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
-# pylint: enable=E0611
-
-# we use lots of camelCase-style names. Deal with it.
+# we use camelCase-style names. Deal with it.
 # pylint: disable=C0103
 
 
@@ -82,249 +54,22 @@ def stopRequested():
     global _stop_requested
     if _stop_requested:
         return True
-    STOP_REQUEST_FLAG = (
+    stop_request_flag = (
         '/private/tmp/'
         'com.googlecode.munki.managedsoftwareupdate.stop_requested')
     if munkistatusoutput:
-        if os.path.exists(STOP_REQUEST_FLAG):
+        if os.path.exists(stop_request_flag):
             # store this so it's persistent until this session is over
             _stop_requested = True
             log('### User stopped session ###')
             try:
-                os.unlink(STOP_REQUEST_FLAG)
+                os.unlink(stop_request_flag)
             except OSError, err:
                 display_error(
-                    'Could not remove %s: %s', STOP_REQUEST_FLAG, err)
+                    'Could not remove %s: %s', stop_request_flag, err)
             return True
     return False
 
 
-
-def gethash(filename, hash_function):
-    """
-    Calculates the hashvalue of the given file with the given hash_function.
-
-    Args:
-      filename: The file name to calculate the hash value of.
-      hash_function: The hash function object to use, which was instanciated
-          before calling this function, e.g. hashlib.md5().
-
-    Returns:
-      The hashvalue of the given file as hex string.
-    """
-    if not os.path.isfile(filename):
-        return 'NOT A FILE'
-
-    f = open(filename, 'rb')
-    while 1:
-        chunk = f.read(2**16)
-        if not chunk:
-            break
-        hash_function.update(chunk)
-    f.close()
-    return hash_function.hexdigest()
-
-
-def getmd5hash(filename):
-    """
-    Returns hex of MD5 checksum of a file
-    """
-    hash_function = hashlib.md5()
-    return gethash(filename, hash_function)
-
-
-def getsha256hash(filename):
-    """
-    Returns the SHA-256 hash value of a file as a hex string.
-    """
-    hash_function = hashlib.sha256()
-    return gethash(filename, hash_function)
-
-
-def isApplication(pathname):
-    """Returns true if path appears to be an OS X application"""
-    # No symlinks, please
-    if os.path.islink(pathname):
-        return False
-    if pathname.endswith('.app'):
-        return True
-    if os.path.isdir(pathname):
-        # look for app bundle structure
-        # use Info.plist to determine the name of the executable
-        infoplist = os.path.join(pathname, 'Contents', 'Info.plist')
-        if os.path.exists(infoplist):
-            plist = FoundationPlist.readPlist(infoplist)
-            if 'CFBundlePackageType' in plist:
-                if plist['CFBundlePackageType'] != 'APPL':
-                    return False
-            # get CFBundleExecutable,
-            # falling back to bundle name if it's missing
-            bundleexecutable = plist.get(
-                'CFBundleExecutable', os.path.basename(pathname))
-            bundleexecutablepath = os.path.join(
-                pathname, 'Contents', 'MacOS', bundleexecutable)
-            if os.path.exists(bundleexecutablepath):
-                return True
-    return False
-
-
-# utility functions for running scripts from pkginfo files
-# used by updatecheck.py and installer.py
-
-def writefile(stringdata, path):
-    '''Writes string data to path.
-    Returns the path on success, empty string on failure.'''
-    try:
-        fileobject = open(path, mode='w', buffering=1)
-        # write line-by-line to ensure proper UNIX line-endings
-        for line in stringdata.splitlines():
-            print >> fileobject, line.encode('UTF-8')
-        fileobject.close()
-        return path
-    except (OSError, IOError):
-        display_error("Couldn't write %s" % stringdata)
-        return ""
-
-
-def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
-    '''Runs a script embedded in the pkginfo.
-    Returns the result code.'''
-
-    # get the script text from the pkginfo
-    script_text = pkginfo_item.get(scriptname)
-    itemname = pkginfo_item.get('name')
-    if not script_text:
-        display_error(
-            'Missing script %s for %s' % (scriptname, itemname))
-        return -1
-
-    # write the script to a temp file
-    scriptpath = os.path.join(tmpdir(), scriptname)
-    if writefile(script_text, scriptpath):
-        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
-        retcode = subprocess.call(cmd)
-        if retcode:
-            display_error(
-                'Error setting script mode in %s for %s'
-                % (scriptname, itemname))
-            return -1
-    else:
-        display_error(
-            'Cannot write script %s for %s' % (scriptname, itemname))
-        return -1
-
-    # now run the script
-    return runScript(
-        itemname, scriptpath, scriptname, suppress_error=suppress_error)
-
-
-def runScript(itemname, path, scriptname, suppress_error=False):
-    '''Runs a script, Returns return code.'''
-    if suppress_error:
-        display_detail(
-            'Running %s for %s ' % (scriptname, itemname))
-    else:
-        display_status_minor(
-            'Running %s for %s ' % (scriptname, itemname))
-    if munkistatusoutput:
-        # set indeterminate progress bar
-        munkistatus.percent(-1)
-
-    scriptoutput = []
-    try:
-        proc = subprocess.Popen(path, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-    except OSError, e:
-        display_error(
-            'Error executing script %s: %s' % (scriptname, str(e)))
-        return -1
-
-    while True:
-        msg = proc.stdout.readline().decode('UTF-8')
-        if not msg and (proc.poll() != None):
-            break
-        # save all script output in case there is
-        # an error so we can dump it to the log
-        scriptoutput.append(msg)
-        msg = msg.rstrip("\n")
-        display_info(msg)
-
-    retcode = proc.poll()
-    if retcode and not suppress_error:
-        display_error(
-            'Running %s for %s failed.' % (scriptname, itemname))
-        display_error("-"*78)
-        for line in scriptoutput:
-            display_error("\t%s" % line.rstrip("\n"))
-        display_error("-"*78)
-    elif not suppress_error:
-        log('Running %s for %s was successful.' % (scriptname, itemname))
-
-    if munkistatusoutput:
-        # clear indeterminate progress bar
-        munkistatus.percent(0)
-
-    return retcode
-
-
-def forceLogoutNow():
-    """Force the logout of interactive GUI users and spawn MSU."""
-    try:
-        procs = findProcesses(exe=LOGINWINDOW)
-        users = {}
-        for pid in procs:
-            users[procs[pid]['user']] = pid
-
-        if 'root' in users:
-            del users['root']
-
-        # force MSU GUI to raise
-        f = open('/private/tmp/com.googlecode.munki.installatlogout', 'w')
-        f.close()
-
-        # kill loginwindows to cause logout of current users, whether
-        # active or switched away via fast user switching.
-        for user in users:
-            try:
-                os.kill(users[user], signal.SIGKILL)
-            except OSError:
-                pass
-
-    except BaseException, err:
-        display_error('Exception in forceLogoutNow(): %s' % str(err))
-
-
-def blockingApplicationsRunning(pkginfoitem):
-    """Returns true if any application in the blocking_applications list
-    is running or, if there is no blocking_applications list, if any
-    application in the installs list is running."""
-
-    if 'blocking_applications' in pkginfoitem:
-        appnames = pkginfoitem['blocking_applications']
-    else:
-        # if no blocking_applications specified, get appnames
-        # from 'installs' list if it exists
-        appnames = [os.path.basename(item.get('path'))
-                    for item in pkginfoitem.get('installs', [])
-                    if item['type'] == 'application']
-
-    display_debug1("Checking for %s" % appnames)
-    running_apps = [appname for appname in appnames
-                    if isAppRunning(appname)]
-    if running_apps:
-        display_detail(
-            "Blocking apps for %s are running:" % pkginfoitem['name'])
-        display_detail("    %s" % running_apps)
-        return True
-    return False
-
-
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
-
-
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'

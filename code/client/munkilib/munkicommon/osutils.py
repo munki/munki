@@ -35,7 +35,7 @@ import tempfile
 from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 # pylint: enable=E0611
 
-from .output import display_warning
+from . import display
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -72,7 +72,7 @@ def cleanUpTmpDir():
         try:
             shutil.rmtree(_TMPDIR)
         except (OSError, IOError), err:
-            display_warning(
+            display.display_warning(
                 'Unable to clean up temporary dir %s: %s', _TMPDIR, str(err))
         _TMPDIR = None
 
@@ -183,10 +183,5 @@ def osascript(osastring):
 _TMPDIR = None
 
 
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
-
-
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'

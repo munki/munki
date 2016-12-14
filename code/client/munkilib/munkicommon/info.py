@@ -37,10 +37,11 @@ import LaunchServices
 from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
 # pylint: enable=E0611
 
-from .osutils import getOsVersion, listdir
-from .output import display_debug1, display_error, display_warning, log
-from .pkgutils import getBundleVersion
-from .prefs import pref
+from . import display
+from . import munkilog
+from . import osutils
+from . import pkgutils
+from . import prefs
 from .. import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
@@ -241,7 +242,7 @@ def getFilesystems():
     # see man GETFSSTAT(2) for struct
     statfs_32_struct = '=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
     statfs_64_struct = '=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
-    os_version = getOsVersion(as_tuple=True)
+    os_version = osutils.getOsVersion(as_tuple=True)
     if os_version <= (10, 5):
         mode = 32
     else:
@@ -265,7 +266,7 @@ def getFilesystems():
         n = libc.getfsstat(ctypes.byref(buf), bufsize, MNT_NOWAIT)
 
     if n < 0:
-        display_debug1('getfsstat() returned errno %d' % n)
+        display.display_debug1('getfsstat() returned errno %d' % n)
         return {}
 
     ofs = 0
@@ -336,10 +337,12 @@ def isExcludedFilesystem(path, _retry=False):
             # perhaps the stat() on the path caused autofs to mount
             # the required filesystem and now it will be available.
             # try one more time to look for it after flushing the cache.
-            display_debug1('Trying isExcludedFilesystem again for %s' % path)
+            display.display_debug1(
+                'Trying isExcludedFilesystem again for %s' % path)
             return isExcludedFilesystem(path, True)
         else:
-            display_debug1('Could not match path %s to a filesystem' % path)
+            display.display_debug1(
+                'Could not match path %s to a filesystem' % path)
             return None
 
     exc_flags = ('read-only' in FILESYSTEMS[st.st_dev]['f_flags_set'] or
@@ -347,7 +350,7 @@ def isExcludedFilesystem(path, _retry=False):
     is_nfs = FILESYSTEMS[st.st_dev]['f_fstypename'] == 'nfs'
 
     if is_nfs or exc_flags:
-        display_debug1(
+        display.display_debug1(
             'Excluding %s (flags %s, nfs %s)' % (path, exc_flags, is_nfs))
 
     return is_nfs or exc_flags
@@ -377,7 +380,7 @@ def findAppsInDirs(dirlist):
     query.stopQuery()
 
     if runtime >= maxruntime:
-        display_warning(
+        display.display_warning(
             'Spotlight search for applications terminated due to excessive '
             'time. Possible causes: Spotlight indexing is turned off for a '
             'volume; Spotlight is reindexing a volume.')
@@ -399,7 +402,7 @@ def getSpotlightInstalledApplications():
     dirlist = []
     applist = []
 
-    for f in listdir(u'/'):
+    for f in osutils.listdir(u'/'):
         p = os.path.join(u'/', f)
         if os.path.isdir(p) and not os.path.islink(p) \
                             and not isExcludedFilesystem(p):
@@ -410,7 +413,7 @@ def getSpotlightInstalledApplications():
 
     # Future code changes may mean we wish to look for Applications
     # installed on any r/w local volume.
-    #for f in listdir(u'/Volumes'):
+    #for f in osutils.listdir(u'/Volumes'):
     #    p = os.path.join(u'/Volumes', f)
     #    if os.path.isdir(p) and not os.path.islink(p) \
     #                        and not isExcludedFilesystem(p):
@@ -445,76 +448,68 @@ def getLSInstalledApplications():
     return applist
 
 
-# we save SP_APPCACHE in a global to avoid querying system_profiler more than
-# once per session for application data, which can be slow
-SP_APPCACHE = None
+@Memoize
 def getSPApplicationData():
     '''Uses system profiler to get application info for this machine'''
-    global SP_APPCACHE
-    if SP_APPCACHE is None:
-        cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
-        # uses our internal Popen instead of subprocess's so we can timeout
-        proc = Popen(cmd, shell=False, bufsize=-1,
-                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE)
-        try:
-            output, dummy_error = proc.communicate(timeout=60)
-        except TimeoutError:
-            display_error(
-                'system_profiler hung; skipping SPApplicationsDataType query')
-            # return empty dict
-            SP_APPCACHE = {}
-            return SP_APPCACHE
-        try:
-            plist = FoundationPlist.readPlistFromString(output)
-            # system_profiler xml is an array
-            SP_APPCACHE = {}
-            for item in plist[0]['_items']:
-                SP_APPCACHE[item.get('path')] = item
-        except BaseException:
-            SP_APPCACHE = {}
-    return SP_APPCACHE
+    cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
+    # uses our internal Popen instead of subprocess's so we can timeout
+    proc = Popen(cmd, shell=False, bufsize=-1,
+                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                 stderr=subprocess.PIPE)
+    try:
+        output, dummy_error = proc.communicate(timeout=60)
+    except TimeoutError:
+        display.display_error(
+            'system_profiler hung; skipping SPApplicationsDataType query')
+        # return empty dict
+        return {}
+    try:
+        plist = FoundationPlist.readPlistFromString(output)
+        # system_profiler xml is an array
+        app_data = {}
+        for item in plist[0]['_items']:
+            app_data[item.get('path')] = item
+    except BaseException:
+        app_data = {}
+    return app_data
 
 
-# we save APPDATA in a global to avoid querying LaunchServices more than
-# once per session
-APPDATA = None
+@Memoize
 def getAppData():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
-    global APPDATA
-    if APPDATA is None:
-        APPDATA = []
-        display_debug1('Getting info on currently installed applications...')
-        applist = set(getLSInstalledApplications())
-        applist.update(getSpotlightInstalledApplications())
-        for pathname in applist:
-            iteminfo = {}
-            iteminfo['name'] = os.path.splitext(os.path.basename(pathname))[0]
-            iteminfo['path'] = pathname
-            plistpath = os.path.join(pathname, 'Contents', 'Info.plist')
-            if os.path.exists(plistpath):
-                try:
-                    plist = FoundationPlist.readPlist(plistpath)
-                    iteminfo['bundleid'] = plist.get('CFBundleIdentifier', '')
-                    if 'CFBundleName' in plist:
-                        iteminfo['name'] = plist['CFBundleName']
-                    iteminfo['version'] = getBundleVersion(pathname)
-                    APPDATA.append(iteminfo)
-                except BaseException:
-                    pass
-            else:
-                # possibly a non-bundle app. Use system_profiler data
-                # to get app name and version
-                sp_app_data = getSPApplicationData()
-                if pathname in sp_app_data:
-                    item = sp_app_data[pathname]
-                    iteminfo['bundleid'] = ''
-                    iteminfo['version'] = item.get('version') or '0.0.0.0.0'
-                    if item.get('_name'):
-                        iteminfo['name'] = item['_name']
-                    APPDATA.append(iteminfo)
-    return APPDATA
+    app_data = []
+    display.display_debug1(
+        'Getting info on currently installed applications...')
+    applist = set(getLSInstalledApplications())
+    applist.update(getSpotlightInstalledApplications())
+    for pathname in applist:
+        iteminfo = {}
+        iteminfo['name'] = os.path.splitext(os.path.basename(pathname))[0]
+        iteminfo['path'] = pathname
+        plistpath = os.path.join(pathname, 'Contents', 'Info.plist')
+        if os.path.exists(plistpath):
+            try:
+                plist = FoundationPlist.readPlist(plistpath)
+                iteminfo['bundleid'] = plist.get('CFBundleIdentifier', '')
+                if 'CFBundleName' in plist:
+                    iteminfo['name'] = plist['CFBundleName']
+                iteminfo['version'] = pkgutils.getBundleVersion(pathname)
+                app_data.append(iteminfo)
+            except BaseException:
+                pass
+        else:
+            # possibly a non-bundle app. Use system_profiler data
+            # to get app name and version
+            sp_app_data = getSPApplicationData()
+            if pathname in sp_app_data:
+                item = sp_app_data[pathname]
+                iteminfo['bundleid'] = ''
+                iteminfo['version'] = item.get('version') or '0.0.0.0.0'
+                if item.get('_name'):
+                    iteminfo['name'] = item['_name']
+                app_data.append(iteminfo)
+    return app_data
 
 
 def get_version():
@@ -598,7 +593,7 @@ def getIntel64Support():
     libc.sysctlbyname(
         "hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
 
-    return (buf.value == 1)
+    return buf.value == 1
 
 
 def getAvailableDiskSpace(volumepath='/'):
@@ -614,7 +609,7 @@ def getAvailableDiskSpace(volumepath='/'):
     try:
         st = os.statvfs(volumepath)
     except OSError, e:
-        display_error(
+        display.display_error(
             'Error getting disk space in %s: %s', volumepath, str(e))
         return 0
 
@@ -628,7 +623,7 @@ def getMachineFacts():
     machine = dict()
     machine['hostname'] = os.uname()[1]
     machine['arch'] = os.uname()[4]
-    machine['os_vers'] = getOsVersion(only_major_minor=False)
+    machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     hardware_info = get_hardware_info()
     machine['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
     machine['munki_version'] = get_version()
@@ -647,7 +642,7 @@ def validPlist(path):
     """Uses plutil to determine if path contains a valid plist.
     Returns True or False."""
     retcode = subprocess.call(['/usr/bin/plutil', '-lint', '-s', path])
-    return (retcode == 0)
+    return retcode == 0
 
 
 @Memoize
@@ -660,7 +655,7 @@ def getConditions():
     conditionalscriptdir = os.path.join(scriptdir, "conditions")
     # define path to ConditionalItems.plist
     conditionalitemspath = os.path.join(
-        pref('ManagedInstallDir'), 'ConditionalItems.plist')
+        prefs.pref('ManagedInstallDir'), 'ConditionalItems.plist')
     try:
         # delete CondtionalItems.plist so that we're starting fresh
         os.unlink(conditionalitemspath)
@@ -668,7 +663,7 @@ def getConditions():
         pass
     if os.path.exists(conditionalscriptdir):
         from munkilib import utils
-        for conditionalscript in listdir(conditionalscriptdir):
+        for conditionalscript in osutils.listdir(conditionalscriptdir):
             if conditionalscript.startswith('.'):
                 # skip files that start with a period
                 continue
@@ -704,7 +699,7 @@ def saveappdata():
     """Save installed application data"""
     # data from getAppData() is meant for use by updatecheck
     # we need to massage it a bit for more general usage
-    log('Saving application inventory...')
+    munkilog.log('Saving application inventory...')
     app_inventory = []
     for item in getAppData():
         inventory_item = {}
@@ -720,16 +715,11 @@ def saveappdata():
         FoundationPlist.writePlist(
             app_inventory,
             os.path.join(
-                pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
+                prefs.pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
     except FoundationPlist.NSPropertyListSerializationException, err:
-        display_warning(
+        display.display_warning(
             'Unable to save inventory report: %s' % err)
 
 
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
-
-
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'

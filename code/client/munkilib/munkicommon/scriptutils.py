@@ -1,0 +1,137 @@
+#!/usr/bin/python
+# encoding: utf-8
+#
+# Copyright 2009-2016 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+scriptutils.py
+
+Created by Greg Neagle on 2016-12-14.
+
+
+Functions to run scripts inside Munki
+"""
+
+import os
+import subprocess
+
+from . import osutils
+from . import output
+from .. import munkistatus
+
+
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
+
+
+def _writefile(stringdata, path):
+    '''Writes string data to path.
+    Returns the path on success, empty string on failure.'''
+    try:
+        fileobject = open(path, mode='w', buffering=1)
+        # write line-by-line to ensure proper UNIX line-endings
+        for line in stringdata.splitlines():
+            print >> fileobject, line.encode('UTF-8')
+        fileobject.close()
+        return path
+    except (OSError, IOError):
+        output.display_error("Couldn't write %s" % stringdata)
+        return ""
+
+
+def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
+    '''Runs a script embedded in the pkginfo.
+    Returns the result code.'''
+
+    # get the script text from the pkginfo
+    script_text = pkginfo_item.get(scriptname)
+    itemname = pkginfo_item.get('name')
+    if not script_text:
+        output.display_error(
+            'Missing script %s for %s' % (scriptname, itemname))
+        return -1
+
+    # write the script to a temp file
+    scriptpath = os.path.join(osutils.tmpdir(), scriptname)
+    if _writefile(script_text, scriptpath):
+        cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
+        retcode = subprocess.call(cmd)
+        if retcode:
+            output.display_error(
+                'Error setting script mode in %s for %s'
+                % (scriptname, itemname))
+            return -1
+    else:
+        output.display_error(
+            'Cannot write script %s for %s' % (scriptname, itemname))
+        return -1
+
+    # now run the script
+    return runScript(
+        itemname, scriptpath, scriptname, suppress_error=suppress_error)
+
+
+def runScript(itemname, path, scriptname, suppress_error=False):
+    '''Runs a script, Returns return code.'''
+    if suppress_error:
+        output.display_detail(
+            'Running %s for %s ' % (scriptname, itemname))
+    else:
+        output.display_status_minor(
+            'Running %s for %s ' % (scriptname, itemname))
+    if output.munkistatusoutput:
+        # set indeterminate progress bar
+        munkistatus.percent(-1)
+
+    scriptoutput = []
+    try:
+        proc = subprocess.Popen(path, shell=False, bufsize=1,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    except OSError, err:
+        output.display_error(
+            'Error executing script %s: %s' % (scriptname, str(err)))
+        return -1
+
+    while True:
+        msg = proc.stdout.readline().decode('UTF-8')
+        if not msg and (proc.poll() != None):
+            break
+        # save all script output in case there is
+        # an error so we can dump it to the log
+        scriptoutput.append(msg)
+        msg = msg.rstrip("\n")
+        output.display_info(msg)
+
+    retcode = proc.poll()
+    if retcode and not suppress_error:
+        output.display_error(
+            'Running %s for %s failed.' % (scriptname, itemname))
+        output.display_error("-"*78)
+        for line in scriptoutput:
+            output.display_error("\t%s" % line.rstrip("\n"))
+        output.display_error("-"*78)
+    elif not suppress_error:
+        output.log('Running %s for %s was successful.' % (scriptname, itemname))
+
+    if output.munkistatusoutput:
+        # clear indeterminate progress bar
+        munkistatus.percent(0)
+
+    return retcode
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

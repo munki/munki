@@ -190,10 +190,5 @@ def pref(pref_name):
     return pref_value
 
 
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
-
-
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'
