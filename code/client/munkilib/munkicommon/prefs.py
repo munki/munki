@@ -34,12 +34,11 @@ from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 # pylint: enable=E0611
 
+from .constants import BUNDLE_ID
+
 #####################################################
 # managed installs preferences/metadata
 #####################################################
-
-# our preferences "bundle_id"
-BUNDLE_ID = 'ManagedInstalls'
 
 class Preferences(object):
     """Class which directly reads/writes Apple CF preferences."""
