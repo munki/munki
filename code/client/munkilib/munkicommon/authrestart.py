@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-authrestart
+authrestart.py
 
 Created by Greg Neagle on 2016-12-14.
 Functions originally written by Wes Whetstone, Summer/Fall 2016
@@ -29,6 +29,7 @@ from .osutils import getOsVersion
 from .output import display_debug1, display_error, display_warning, log
 from .prefs import pref
 from .. import FoundationPlist
+
 
 def supports_auth_restart():
     """Check if FileVault is enabled then checks
