@@ -23,9 +23,12 @@ Created by Greg Neagle on 2016-12-14.
 Functions for finding, listing, etc processes
 """
 
+import os
+import signal
 import subprocess
 
-from .output import display_debug1, display_detail
+from .constants import LOGINWINDOW
+from . import display
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -64,7 +67,7 @@ def getRunningProcesses():
 def isAppRunning(appname):
     """Tries to determine if the application in appname is currently
     running"""
-    display_detail('Checking if %s is running...' % appname)
+    display.display_detail('Checking if %s is running...' % appname)
     proc_list = getRunningProcesses()
     matching_items = []
     if appname.startswith('/'):
@@ -86,11 +89,36 @@ def isAppRunning(appname):
 
     if matching_items:
         # it's running!
-        display_debug1('Matching process list: %s' % matching_items)
-        display_detail('%s is running!' % appname)
+        display.display_debug1('Matching process list: %s' % matching_items)
+        display.display_detail('%s is running!' % appname)
         return True
 
     # if we get here, we have no evidence that appname is running
+    return False
+
+
+def blockingApplicationsRunning(pkginfoitem):
+    """Returns true if any application in the blocking_applications list
+    is running or, if there is no blocking_applications list, if any
+    application in the installs list is running."""
+
+    if 'blocking_applications' in pkginfoitem:
+        appnames = pkginfoitem['blocking_applications']
+    else:
+        # if no blocking_applications specified, get appnames
+        # from 'installs' list if it exists
+        appnames = [os.path.basename(item.get('path'))
+                    for item in pkginfoitem.get('installs', [])
+                    if item['type'] == 'application']
+
+    display.display_debug1("Checking for %s" % appnames)
+    running_apps = [appname for appname in appnames
+                    if isAppRunning(appname)]
+    if running_apps:
+        display.display_detail(
+            "Blocking apps for %s are running:" % pkginfoitem['name'])
+        display.display_detail("    %s" % running_apps)
+        return True
     return False
 
 
@@ -111,7 +139,8 @@ def findProcesses(user=None, exe=None):
         list of pids, or {} if none
     """
     argv = ['/bin/ps', '-x', '-w', '-w', '-a', '-o', 'pid=,user=,comm=']
-    ps_proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    ps_proc = subprocess.Popen(
+        argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, dummy_stderr) = ps_proc.communicate()
 
     pids = {}
@@ -141,10 +170,32 @@ def findProcesses(user=None, exe=None):
     return pids
 
 
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
+def forceLogoutNow():
+    """Force the logout of interactive GUI users and spawn MSU."""
+    try:
+        procs = findProcesses(exe=LOGINWINDOW)
+        users = {}
+        for pid in procs:
+            users[procs[pid]['user']] = pid
+
+        if 'root' in users:
+            del users['root']
+
+        # force MSU GUI to raise
+        fileref = open('/private/tmp/com.googlecode.munki.installatlogout', 'w')
+        fileref.close()
+
+        # kill loginwindows to cause logout of current users, whether
+        # active or switched away via fast user switching.
+        for user in users:
+            try:
+                os.kill(users[user], signal.SIGKILL)
+            except OSError:
+                pass
+
+    except BaseException, err:
+        display.display_error('Exception in forceLogoutNow(): %s' % str(err))
 
 
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'

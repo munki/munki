@@ -33,8 +33,8 @@ from distutils import version
 from types import StringType
 from xml.dom import minidom
 
-from .osutils import listdir, tmpdir
-from .output import display_debug2, display_error, display_warning
+from . import osutils
+from . import display
 from .. import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
@@ -56,8 +56,7 @@ def getPkgRestartInfo(filename):
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode:
-        display_error("installer -query failed: %s %s" %
-                      (out.decode('UTF-8'), err.decode('UTF-8')))
+        display.display_error("installer -query failed: %s %s", out, err)
         return {}
 
     if out:
@@ -210,7 +209,7 @@ def getBundleVersion(bundlepath, key=None):
     infopath = os.path.join(
         bundlepath, 'Contents', 'Resources', 'English.lproj')
     if os.path.exists(infopath):
-        for item in listdir(infopath):
+        for item in osutils.osutils.listdir(infopath):
             if os.path.join(infopath, item).endswith('.info'):
                 infofile = os.path.join(infopath, item)
                 fileobj = open(infofile, mode='r')
@@ -316,7 +315,7 @@ def getFlatPackageInfo(pkgpath):
     # get the absolute path to the pkg because we need to do a chdir later
     abspkgpath = os.path.abspath(pkgpath)
     # make a tmp dir to expand the flat package into
-    pkgtmp = tempfile.mkdtemp(dir=tmpdir())
+    pkgtmp = tempfile.mkdtemp(dir=osutils.tmpdir())
     # record our current working dir
     cwd = os.getcwd()
     # change into our tmpdir so we can use xar to unarchive the flat package
@@ -340,8 +339,9 @@ def getFlatPackageInfo(pkgpath):
                     infoarray = parsePkgRefs(packageinfoabspath)
                     break
                 else:
-                    display_warning("An error occurred while extracting %s: %s"
-                                    % (toc_entry, err))
+                    display.display_warning(
+                        "An error occurred while extracting %s: %s",
+                        toc_entry, err)
             # If there are PackageInfo files elsewhere, gather them up
             elif toc_entry.endswith('.pkg/PackageInfo'):
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
@@ -351,8 +351,9 @@ def getFlatPackageInfo(pkgpath):
                         os.path.join(pkgtmp, toc_entry))
                     infoarray.extend(parsePkgRefs(packageinfoabspath))
                 else:
-                    display_warning("An error occurred while extracting %s: %s"
-                                    % (toc_entry, err))
+                    display.display_warning(
+                        "An error occurred while extracting %s: %s",
+                        toc_entry, err)
         if len(infoarray) == 0:
             for toc_entry in [item for item in toc
                               if item.startswith('Distribution')]:
@@ -366,13 +367,15 @@ def getFlatPackageInfo(pkgpath):
                                              path_to_pkg=pkgpath)
                     break
                 else:
-                    display_warning("An error occurred while extracting %s: %s"
-                                    % (toc_entry, err))
+                    display.display_warning(
+                        "An error occurred while extracting %s: %s",
+                        toc_entry, err)
 
         if len(infoarray) == 0:
-            display_warning('No valid Distribution or PackageInfo found.')
+            display.display_warning(
+                'No valid Distribution or PackageInfo found.')
     else:
-        display_warning(err)
+        display.display_warning(err)
 
     # change back to original working dir
     os.chdir(cwd)
@@ -384,12 +387,12 @@ def getBomList(pkgpath):
     '''Gets bom listing from pkgpath, which should be a path
     to a bundle-style package'''
     bompath = None
-    for item in listdir(os.path.join(pkgpath, 'Contents')):
+    for item in osutils.listdir(os.path.join(pkgpath, 'Contents')):
         if item.endswith('.bom'):
             bompath = os.path.join(pkgpath, 'Contents', item)
             break
     if not bompath:
-        for item in listdir(os.path.join(pkgpath, 'Contents', 'Resources')):
+        for item in osutils.listdir(os.path.join(pkgpath, 'Contents', 'Resources')):
             if item.endswith('.bom'):
                 bompath = os.path.join(pkgpath, 'Contents', 'Resources', item)
                 break
@@ -443,7 +446,7 @@ def getOnePackageInfo(pkgpath):
         infopath = os.path.join(
             pkgpath, 'Contents', 'Resources', 'English.lproj')
         if os.path.exists(infopath):
-            for item in listdir(infopath):
+            for item in osutils.listdir(infopath):
                 if os.path.join(infopath, item).endswith('.info'):
                     pkginfo['filename'] = os.path.basename(pkgpath)
                     pkginfo['packageid'] = os.path.basename(pkgpath)
@@ -478,7 +481,7 @@ def getBundlePackageInfo(pkgpath):
 
     bundlecontents = os.path.join(pkgpath, 'Contents')
     if os.path.exists(bundlecontents):
-        for item in listdir(bundlecontents):
+        for item in osutils.listdir(bundlecontents):
             if item.endswith('.dist'):
                 filename = os.path.join(bundlecontents, item)
                 # return info using the distribution file
@@ -500,7 +503,7 @@ def getBundlePackageInfo(pkgpath):
         for subdir in dirsToSearch:
             searchdir = os.path.join(pkgpath, subdir)
             if os.path.exists(searchdir):
-                for item in listdir(searchdir):
+                for item in osutils.listdir(searchdir):
                     itempath = os.path.join(searchdir, item)
                     if os.path.isdir(itempath):
                         if itempath.endswith('.pkg'):
@@ -519,7 +522,7 @@ def getReceiptInfo(pkgname):
     """Get receipt info from a package"""
     info = []
     if hasValidPackageExt(pkgname):
-        display_debug2('Examining %s' % pkgname)
+        display.display_debug2('Examining %s' % pkgname)
         if os.path.isfile(pkgname):       # new flat package
             info = getFlatPackageInfo(pkgname)
 
@@ -557,15 +560,15 @@ def getInstalledPackageVersion(pkgid):
             foundbundleid = plist.get('pkgid')
             foundvers = plist.get('pkg-version', '0.0.0.0.0')
             if pkgid == foundbundleid:
-                display_debug2('\tThis machine has %s, version %s',
-                               pkgid, foundvers)
+                display.display_debug2('\tThis machine has %s, version %s',
+                                       pkgid, foundvers)
                 return foundvers
 
     # If we got to this point, we haven't found the pkgid yet.
     # Check /Library/Receipts
     receiptsdir = '/Library/Receipts'
     if os.path.exists(receiptsdir):
-        installitems = listdir(receiptsdir)
+        installitems = osutils.listdir(receiptsdir)
         highestversion = '0'
         for item in installitems:
             if item.endswith('.pkg'):
@@ -580,13 +583,13 @@ def getInstalledPackageVersion(pkgid):
                             highestversion = foundvers
 
         if highestversion != '0':
-            display_debug2('\tThis machine has %s, version %s',
-                           pkgid, highestversion)
+            display.display_debug2('\tThis machine has %s, version %s',
+                                   pkgid, highestversion)
             return highestversion
 
 
     # This package does not appear to be currently installed
-    display_debug2('\tThis machine does not have %s' % pkgid)
+    display.display_debug2('\tThis machine does not have %s' % pkgid)
     return ""
 
 
@@ -756,11 +759,35 @@ def getPackageMetaData(pkgitem):
 
     return cataloginfo
 
-
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
+# This function doesn't really have anything to do with packages or receipts
+# but is used by makepkginfo, munkiimport, and installer.py, so it might as
+# well live here for now
+def isApplication(pathname):
+    """Returns true if path appears to be an OS X application"""
+    # No symlinks, please
+    if os.path.islink(pathname):
+        return False
+    if pathname.endswith('.app'):
+        return True
+    if os.path.isdir(pathname):
+        # look for app bundle structure
+        # use Info.plist to determine the name of the executable
+        infoplist = os.path.join(pathname, 'Contents', 'Info.plist')
+        if os.path.exists(infoplist):
+            plist = FoundationPlist.readPlist(infoplist)
+            if 'CFBundlePackageType' in plist:
+                if plist['CFBundlePackageType'] != 'APPL':
+                    return False
+            # get CFBundleExecutable,
+            # falling back to bundle name if it's missing
+            bundleexecutable = plist.get(
+                'CFBundleExecutable', os.path.basename(pathname))
+            bundleexecutablepath = os.path.join(
+                pathname, 'Contents', 'MacOS', bundleexecutable)
+            if os.path.exists(bundleexecutablepath):
+                return True
+    return False
 
 
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'

@@ -25,8 +25,9 @@ Utilities for working with disk images.
 import os
 import subprocess
 
+from . import display
 from .. import FoundationPlist
-from .output import display_detail, display_error, display_warning
+
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -66,7 +67,7 @@ def DMGisWritable(dmgpath):
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        display_error(
+        display.display_error(
             u'hdiutil error %s with image %s.', err, dmgpath)
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
@@ -89,7 +90,7 @@ def DMGhasSLA(dmgpath):
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        display_error(
+        display.display_error(
             u'hdiutil error %s with image %s.', err, dmgpath)
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
@@ -115,7 +116,7 @@ def hdiutilInfo():
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        display_error(u'hdiutil info error: %s', err)
+        display.display_error(u'hdiutil info error: %s', err)
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
         try:
@@ -217,7 +218,7 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
     stdin = ''
     if DMGhasSLA(dmgpath):
         stdin = 'Y\n'
-        display_detail(
+        display.display_detail(
             'NOTE: %s has embedded Software License Agreement' % dmgname)
     cmd = ['/usr/bin/hdiutil', 'attach', dmgpath,
            '-mountRandom', '/tmp', '-nobrowse', '-plist']
@@ -228,7 +229,7 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
                             stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     (out, err) = proc.communicate(stdin)
     if proc.returncode:
-        display_error(
+        display.display_error(
             'Error: "%s" while mounting %s.' % (err.rstrip(), dmgname))
     (pliststr, out) = getFirstPlist(out)
     if pliststr:
@@ -238,7 +239,7 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
                 if 'mount-point' in entity:
                     mountpoints.append(entity['mount-point'])
         except FoundationPlist.NSPropertyListSerializationException:
-            display_error(
+            display.display_error(
                 'Bad plist string returned when mounting diskimage %s:\n%s'
                 % (dmgname, pliststr))
     return mountpoints
@@ -254,20 +255,15 @@ def unmountdmg(mountpoint):
     (dummy_output, err) = proc.communicate()
     if proc.returncode:
         # ordinary unmount unsuccessful, try forcing
-        display_warning('Polite unmount failed: %s' % err)
-        display_warning('Attempting to force unmount %s' % mountpoint)
+        display.display_warning('Polite unmount failed: %s' % err)
+        display.display_warning('Attempting to force unmount %s' % mountpoint)
         cmd.append('-force')
         proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         (dummy_output, err) = proc.communicate()
         if proc.returncode:
-            display_warning('Failed to unmount %s: %s', mountpoint, err)
-
-
-def main():
-    """Placeholder"""
-    print 'This is a library of support tools for the Munki Suite.'
+            display.display_warning('Failed to unmount %s: %s', mountpoint, err)
 
 
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'
