@@ -1091,8 +1091,8 @@ def main():
         exit(-1)
 
     # set the munkicommon globals
-    munkicommon.munkistatusoutput = options.munkistatusoutput
-    munkicommon.verbose = options.verbose
+    munkicommon.display.munkistatusoutput = options.munkistatusoutput
+    munkicommon.display.verbose = options.verbose
 
     if options.munkistatusoutput:
         pkgcount = len(pkgnames)
