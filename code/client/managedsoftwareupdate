@@ -62,6 +62,7 @@ else:
     from munkilib import appleupdates
     from munkilib import FoundationPlist
     from munkilib import utils
+    from munkilib import authrestart
 
 
 def signal_handler(signum, dummy_frame):
@@ -286,7 +287,7 @@ def doRestart():
                 and os_version_tuple >= (10, 8)):
             munkicommon.display_debug1('Configured to perform AuthRestarts...')
             # try to perform an auth restart
-            if not munkicommon.perform_auth_restart():
+            if not authrestart.perform_auth_restart():
                 # if we got to here then the auth restart failed
                 # notify that it did then perform a normal restart
                 munkicommon.display_warning(

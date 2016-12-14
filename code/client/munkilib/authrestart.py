@@ -25,10 +25,11 @@ Functions supporting FileVault authrestart.
 
 import subprocess
 
-from . import display
-from . import osutils
-from . import prefs
-from .. import FoundationPlist
+from .munkicommon import display
+from .munkicommon import osutils
+from .munkicommon import prefs
+
+from . import FoundationPlist
 
 
 def supports_auth_restart():
