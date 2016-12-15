@@ -448,7 +448,7 @@ def notifyUserOfUpdates(force=False):
         munkicommon.log('LastNotifiedDate was %s' % lastNotifiedString)
 
         # notify user of available updates using LaunchAgent to start
-        # Managed Software Update.app in the user context.
+        # Managed Software Center.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
         f = open(launchfile, 'w')
         f.close()
@@ -491,7 +491,7 @@ def main():
                  help='Used by launchd LaunchAgent when running at the '
                  'loginwindow.')
     p.add_option('--installwithnologout', action='store_true',
-                 help='Used by Managed Software Update.app when user '
+                 help='Used by Managed Software Center.app when user '
                  'triggers an install without logging out.')
     p.add_option('--manualcheck', action='store_true',
                  help='Used by launchd LaunchAgent when checking manually.')
@@ -586,7 +586,7 @@ def main():
             exit(0)
 
     if options.installwithnologout:
-        # typically invoked by Managed Software Update.app
+        # typically invoked by Managed Software Center.app
         # by user who decides not to logout
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.managedinstall.launchd'
@@ -600,7 +600,7 @@ def main():
         options.installonly = True
 
     if options.manualcheck:
-        # triggered by Managed Software Update.app
+        # triggered by Managed Software Center.app
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.updatecheck.launchd'
         if os.path.exists(launchdtriggerfile):
@@ -665,7 +665,7 @@ def main():
         munkicommon.display_info(
             'managedsoftwareupdate run aborted by preflight script: %s'
             % result)
-        # record the check result for use by Managed Software Update.app
+        # record the check result for use by Managed Software Center.app
         # right now, we'll return the same code as if the munki server
         # was unavailable. We need to revisit this and define additional
         # update check results.
@@ -687,7 +687,7 @@ def main():
         # another instance of this script is running, so we should quit
         if options.manualcheck:
             # a manual update check was triggered
-            # (probably by Managed Software Update), but managedsoftwareupdate
+            # (probably by Managed Software Center), but managedsoftwareupdate
             # is already running. We should provide user feedback
             munkistatus.activate()
             munkistatus.message('Checking for available updates...')
