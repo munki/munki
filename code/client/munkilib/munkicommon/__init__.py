@@ -57,17 +57,16 @@ def stopRequested():
     stop_request_flag = (
         '/private/tmp/'
         'com.googlecode.munki.managedsoftwareupdate.stop_requested')
-    if munkistatusoutput:
-        if os.path.exists(stop_request_flag):
-            # store this so it's persistent until this session is over
-            _stop_requested = True
-            log('### User stopped session ###')
-            try:
-                os.unlink(stop_request_flag)
-            except OSError, err:
-                display_error(
-                    'Could not remove %s: %s', stop_request_flag, err)
-            return True
+    if os.path.exists(stop_request_flag):
+        # store this so it's persistent until this session is over
+        _stop_requested = True
+        display_info('### User stopped session ###')
+        try:
+            os.unlink(stop_request_flag)
+        except OSError, err:
+            display_error(
+                'Could not remove %s: %s', stop_request_flag, err)
+        return True
     return False
 
 

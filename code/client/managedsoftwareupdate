@@ -699,12 +699,12 @@ def main():
                 if munkicommon.stopRequested():
                     break
                 time.sleep(0.5)
-            # tell status app we're done sending status
-            munkistatus.quit()
         else:
             msg = 'Another instance of %s is running. Exiting.' % myname
             munkicommon.log(msg)
             print >> sys.stderr, msg
+        # tell status app we're done sending status
+        munkistatus.quit()
         munkicommon.cleanUpTmpDir()
         exit(0)
 
