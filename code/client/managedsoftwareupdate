@@ -670,10 +670,8 @@ def main():
         # was unavailable. We need to revisit this and define additional
         # update check results.
         recordUpdateCheckResult(-2)
-        if options.munkistatusoutput:
-            # connect to socket and quit
-            munkistatus.activate()
-            munkistatus.quit()
+        # tell status app we're done sending status
+        munkistatus.quit()
         munkicommon.cleanUpTmpDir()
         exit(result)
     # Force a prefs refresh, in case preflight modified the prefs file.
@@ -701,7 +699,7 @@ def main():
                 if munkicommon.stopRequested():
                     break
                 time.sleep(0.5)
-
+            # tell status app we're done sending status
             munkistatus.quit()
         else:
             msg = 'Another instance of %s is running. Exiting.' % myname
@@ -727,10 +725,6 @@ def main():
             if options.manualcheck:
                 # record our result
                 recordUpdateCheckResult(-1)
-            if options.munkistatusoutput:
-                # connect to socket and quit
-                munkistatus.activate()
-                munkistatus.quit()
             if not options.auto:
                 munkicommon.cleanUpTmpDir()
                 exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
@@ -1026,7 +1020,8 @@ def main():
         pass
     if mustrestart:
         doRestart()
-    elif munkicommon.munkistatusoutput:
+    else:
+        # tell status app we're done sending status
         munkistatus.quit()
 
     if runtype == 'checkandinstallatstartup' and not mustrestart:

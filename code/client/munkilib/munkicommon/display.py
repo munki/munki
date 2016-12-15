@@ -52,15 +52,14 @@ def display_percent_done(current, maximum):
     of Apple's tools (like softwareupdate), or tells
     MunkiStatus to display percent done via progress bar.
     """
-    if munkistatusoutput:
-        step = getsteps(21, maximum)
-        if current in step:
-            if current == maximum:
-                percentdone = 100
-            else:
-                percentdone = int(float(current)/float(maximum)*100)
-            munkistatus.percent(str(percentdone))
-    elif verbose > 0:
+    step = getsteps(21, maximum)
+    if current in step:
+        if current == maximum:
+            percentdone = 100
+        else:
+            percentdone = int(float(current)/float(maximum)*100)
+        munkistatus.percent(str(percentdone))
+    if verbose:
         step = getsteps(16, maximum)
         output = ''
         indicator = ['\t0', '.', '.', '20', '.', '.', '40', '.', '.',
@@ -119,11 +118,10 @@ def display_status_major(msg, *args):
     """
     msg = concat_message(msg, *args)
     munkilog.log(msg)
-    if munkistatusoutput:
-        munkistatus.message(msg)
-        munkistatus.detail('')
-        munkistatus.percent(-1)
-    elif verbose > 0:
+    munkistatus.message(msg)
+    munkistatus.detail('')
+    munkistatus.percent(-1)
+    if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
             print '%s' % msg.encode('UTF-8')
         else:
@@ -138,9 +136,8 @@ def display_status_minor(msg, *args):
     """
     msg = concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
-    if munkistatusoutput:
-        munkistatus.detail(msg)
-    elif verbose > 0:
+    munkistatus.detail(msg)
+    if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
             print '    %s' % msg.encode('UTF-8')
         else:
@@ -155,9 +152,7 @@ def display_info(msg, *args):
     """
     msg = concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
-    if munkistatusoutput:
-        pass
-    elif verbose > 0:
+    if verbose > 0:
         print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
 
@@ -170,9 +165,7 @@ def display_detail(msg, *args):
     stdout if verbose is set greater than 1
     """
     msg = concat_message(msg, *args)
-    if munkistatusoutput:
-        pass
-    elif verbose > 1:
+    if verbose > 1:
         print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
     if prefs.pref('LoggingLevel') > 0:
@@ -181,13 +174,10 @@ def display_detail(msg, *args):
 
 def display_debug1(msg, *args):
     """
-    Displays debug messages, formatting as needed
-    for verbose/non-verbose and munkistatus-style output.
+    Displays debug messages, formatting as needed.
     """
     msg = concat_message(msg, *args)
-    if munkistatusoutput:
-        pass
-    elif verbose > 2:
+    if verbose > 2:
         print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
     if prefs.pref('LoggingLevel') > 1:
@@ -196,13 +186,10 @@ def display_debug1(msg, *args):
 
 def display_debug2(msg, *args):
     """
-    Displays debug messages, formatting as needed
-    for verbose/non-verbose and munkistatus-style output.
+    Displays debug messages, formatting as needed.
     """
     msg = concat_message(msg, *args)
-    if munkistatusoutput:
-        pass
-    elif verbose > 3:
+    if verbose > 3:
         print '    %s' % msg.encode('UTF-8')
     if prefs.pref('LoggingLevel') > 2:
         munkilog.log('DEBUG2: %s' % msg)
