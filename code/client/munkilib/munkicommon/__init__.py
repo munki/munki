@@ -21,9 +21,6 @@ Created by Greg Neagle on 2008-11-18.
 
 Common functions used by the munki tools.
 """
-
-import os
-
 # We wildcard-import from submodules for backwards compatibility; functions
 # that were previously available from this module
 # pylint: disable=wildcard-import
@@ -41,34 +38,6 @@ from .processes import *
 from .reports import *
 from .scriptutils import *
 # pylint: enable=wildcard-import
-
-# we use camelCase-style names. Deal with it.
-# pylint: disable=C0103
-
-
-# misc functions
-
-_stop_requested = False
-def stopRequested():
-    """Allows user to cancel operations when GUI status is being used"""
-    global _stop_requested
-    if _stop_requested:
-        return True
-    stop_request_flag = (
-        '/private/tmp/'
-        'com.googlecode.munki.managedsoftwareupdate.stop_requested')
-    if os.path.exists(stop_request_flag):
-        # store this so it's persistent until this session is over
-        _stop_requested = True
-        display_info('### User stopped session ###')
-        try:
-            os.unlink(stop_request_flag)
-        except OSError, err:
-            display_error(
-                'Could not remove %s: %s', stop_request_flag, err)
-        return True
-    return False
-
 
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'

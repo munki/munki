@@ -197,5 +197,30 @@ def forceLogoutNow():
         display.display_error('Exception in forceLogoutNow(): %s' % str(err))
 
 
+# this function is maybe an odd fit for this module, but it's a way for the
+# Managed Software Center.app and MunkiStatus.app processes to tell the 
+# managedsoftwareupdate process to stop/cancel, so here it is!
+_stop_requested = False
+def stopRequested():
+    """Allows user to cancel operations when GUI status is being used"""
+    global _stop_requested
+    if _stop_requested:
+        return True
+    stop_request_flag = (
+        '/private/tmp/'
+        'com.googlecode.munki.managedsoftwareupdate.stop_requested')
+    if os.path.exists(stop_request_flag):
+        # store this so it's persistent until this session is over
+        _stop_requested = True
+        display_info('### User stopped session ###')
+        try:
+            os.unlink(stop_request_flag)
+        except OSError, err:
+            display_error(
+                'Could not remove %s: %s', stop_request_flag, err)
+        return True
+    return False
+
+
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'
