@@ -31,7 +31,7 @@ from . import reports
 from .. import munkistatus
 
 
-def getsteps(num_of_steps, limit):
+def _getsteps(num_of_steps, limit):
     """
     Helper function for display_percent_done
     """
@@ -52,7 +52,7 @@ def display_percent_done(current, maximum):
     of Apple's tools (like softwareupdate), or tells
     MunkiStatus to display percent done via progress bar.
     """
-    step = getsteps(21, maximum)
+    step = _getsteps(21, maximum)
     if current in step:
         if current == maximum:
             percentdone = 100
@@ -60,7 +60,7 @@ def display_percent_done(current, maximum):
             percentdone = int(float(current)/float(maximum)*100)
         munkistatus.percent(str(percentdone))
     if verbose:
-        step = getsteps(16, maximum)
+        step = _getsteps(16, maximum)
         output = ''
         indicator = ['\t0', '.', '.', '20', '.', '.', '40', '.', '.',
                      '60', '.', '.', '80', '.', '.', '100\n']
@@ -86,7 +86,7 @@ def str_to_ascii(a_string):
         return a_string.decode('ascii', 'ignore')
 
 
-def to_unicode(obj, encoding='UTF-8'):
+def _to_unicode(obj, encoding='UTF-8'):
     """Coerces basestring obj to unicode"""
     if isinstance(obj, basestring):
         if not isinstance(obj, unicode):
@@ -94,14 +94,14 @@ def to_unicode(obj, encoding='UTF-8'):
     return obj
 
 
-def concat_message(msg, *args):
+def _concat_message(msg, *args):
     """Concatenates a string with any additional arguments,
     making sure everything is unicode"""
     # coerce msg to unicode if it's not already
-    msg = to_unicode(msg)
+    msg = _to_unicode(msg)
     if args:
         # coerce all args to unicode as well
-        args = [to_unicode(arg) for arg in args]
+        args = [_to_unicode(arg) for arg in args]
         try:
             msg = msg % tuple(args)
         except TypeError, dummy_err:
@@ -116,7 +116,7 @@ def display_status_major(msg, *args):
     Displays major status messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     munkilog.log(msg)
     munkistatus.message(msg)
     munkistatus.detail('')
@@ -134,7 +134,7 @@ def display_status_minor(msg, *args):
     Displays minor status messages, formatting as needed
     for verbose/non-verbose and munkistatus-style output.
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
     munkistatus.detail(msg)
     if verbose:
@@ -150,7 +150,7 @@ def display_info(msg, *args):
     Displays info messages.
     Not displayed in MunkiStatus.
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
     if verbose > 0:
         print '    %s' % msg.encode('UTF-8')
@@ -164,7 +164,7 @@ def display_detail(msg, *args):
     These are usually logged only, but can be printed to
     stdout if verbose is set greater than 1
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     if verbose > 1:
         print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
@@ -176,7 +176,7 @@ def display_debug1(msg, *args):
     """
     Displays debug messages, formatting as needed.
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     if verbose > 2:
         print '    %s' % msg.encode('UTF-8')
         sys.stdout.flush()
@@ -188,7 +188,7 @@ def display_debug2(msg, *args):
     """
     Displays debug messages, formatting as needed.
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     if verbose > 3:
         print '    %s' % msg.encode('UTF-8')
     if prefs.pref('LoggingLevel') > 2:
@@ -199,7 +199,7 @@ def display_warning(msg, *args):
     """
     Prints warning msgs to stderr and the log
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     warning = 'WARNING: %s' % msg
     if verbose > 0:
         print >> sys.stderr, warning.encode('UTF-8')
@@ -216,7 +216,7 @@ def display_error(msg, *args):
     """
     Prints msg to stderr and the log
     """
-    msg = concat_message(msg, *args)
+    msg = _concat_message(msg, *args)
     errmsg = 'ERROR: %s' % msg
     if verbose > 0:
         print >> sys.stderr, errmsg.encode('UTF-8')
