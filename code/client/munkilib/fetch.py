@@ -21,7 +21,7 @@ Created by Greg Neagle on 2011-09-29.
 
 """
 
-#standard libs
+# standard libs
 import calendar
 import errno
 import imp
@@ -32,15 +32,17 @@ import urllib2
 import urlparse
 import xattr
 
-#our libs
-import keychain
-import munkicommon
-from gurl import Gurl
-
+# Cocoa libs via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSHTTPURLResponse
+# pylint: enable=E0611
+
+#our libs
+from .gurl import Gurl
+from . import keychain
+from . import munkicommon
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
@@ -607,3 +609,25 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
             'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
 
     return (False, chash)
+
+
+def getDataFromURL(url):
+    '''Returns data from url as string. We use the existing
+    munki_resource function so any custom
+    authentication/authorization headers are reused'''
+    urldata = os.path.join(munkicommon.tmpdir(), 'urldata')
+    if os.path.exists(urldata):
+        try:
+            os.unlink(urldata)
+        except (IOError, OSError), err:
+            munkicommon.display_warning('Error in getDataFromURL: %s', err)
+    dummy_result = munki_resource(url, urldata)
+    try:
+        fdesc = open(urldata)
+        data = fdesc.read()
+        fdesc.close()
+        os.unlink(urldata)
+        return data
+    except (IOError, OSError), err:
+        munkicommon.display_warning('Error in getDataFromURL: %s', err)
+        return ''
