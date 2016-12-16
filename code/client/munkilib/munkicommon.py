@@ -27,6 +27,7 @@ import ctypes.util
 import fcntl
 import hashlib
 import os
+import pwd
 import logging
 import logging.handlers
 import platform
@@ -2519,6 +2520,28 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
             'Missing script %s for %s' % (scriptname, itemname))
         return -1
 
+    # set up environment for script
+    env_vars = os.environ.copy()
+    # get info for root
+    userinfo = pwd.getpwuid(0)
+    env_vars['USER'] = userinfo.pw_name
+    env_vars['HOME'] = userinfo.pw_dir
+
+    environment = pkginfo_item.get('script_environment')
+
+    if environment:
+        # Munki admin has specified custom script environment
+        for key in environment.keys():
+            if key == 'USER' and environment[key] == 'CURRENT_CONSOLE_USER':
+                # current console user (if there is one) 'owns' /dev/console
+                userinfo = pwd.getpwuid(os.stat('/dev/console').st_uid)
+                env_vars['USER'] = userinfo.pw_name
+                env_vars['HOME'] = userinfo.pw_dir
+            else:
+                env_vars[key] = environment[key]
+        display_debug1(
+            'Using custom script environment variables: %s', env_vars)
+
     # write the script to a temp file
     scriptpath = os.path.join(tmpdir(), scriptname)
     if writefile(script_text, scriptpath):
@@ -2536,10 +2559,10 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
 
     # now run the script
     return runScript(
-        itemname, scriptpath, scriptname, suppress_error=suppress_error)
+        itemname, scriptpath, scriptname, suppress_error=suppress_error, environment_vars=env_vars)
 
 
-def runScript(itemname, path, scriptname, suppress_error=False):
+def runScript(itemname, path, scriptname, suppress_error=False, environment_vars=None):
     '''Runs a script, Returns return code.'''
     if suppress_error:
         display_detail(
@@ -2554,6 +2577,7 @@ def runScript(itemname, path, scriptname, suppress_error=False):
     scriptoutput = []
     try:
         proc = subprocess.Popen(path, shell=False, bufsize=1,
+                                env=environment_vars,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
