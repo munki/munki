@@ -25,7 +25,6 @@ Created by Greg Neagle on 2008-11-13.
 import datetime
 import os
 import subprocess
-import socket
 import urllib2
 import urlparse
 from urllib import quote_plus
@@ -845,11 +844,11 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
-    return getResourceIfChangedAtomically(pkgurl, destinationpath,
-                                          resume=True,
-                                          message=dl_message,
-                                          expected_hash=expected_hash,
-                                          verify=True)
+    return fetch.munki_resource(pkgurl, destinationpath,
+                                resume=True,
+                                message=dl_message,
+                                expected_hash=expected_hash,
+                                verify=True)
 
 
 def isItemInInstallInfo(manifestitem_pl, thelist, vers=''):
@@ -2536,7 +2535,7 @@ def getCatalogs(cataloglist):
             munkicommon.display_detail('Getting catalog %s...', catalogname)
             message = 'Retrieving catalog "%s"...' % catalogname
             try:
-                dummy_value = getResourceIfChangedAtomically(
+                dummy_value = fetch.munki_resource(
                     catalogurl, catalogpath, message=message)
             except fetch.Error, err:
                 munkicommon.display_error(
@@ -2630,7 +2629,7 @@ def getmanifest(manifest_name, suppress_errors=False):
 
     message = 'Retrieving list of software for this machine...'
     try:
-        dummy_value = getResourceIfChangedAtomically(
+        dummy_value = fetch.munki_resource(
             manifesturl, manifestpath, message=message)
     except fetch.ConnectionError, err:
         raise ManifestServerConnectionException(err)
@@ -2755,7 +2754,7 @@ def getPrimaryManifest(alternate_id):
                             clientidentifier, suppress_errors=True)
                     except ManifestNotRetrievedException:
                         pass
-                    
+
             if not manifest:
                 # last resort - try for the site_default manifest
                 clientidentifier = 'site_default'
@@ -2786,10 +2785,8 @@ def checkServer(url):
 
     # deconstruct URL to get scheme
     url_parts = urlparse.urlsplit(url)
-    if url_parts.scheme == 'http':
-        default_port = 80
-    elif url_parts.scheme == 'https':
-        default_port = 443
+    if url_parts.scheme in ('http', 'https'):
+        pass
     elif url_parts.scheme == 'file':
         if url_parts.hostname not in [None, '', 'localhost']:
             return (-1, 'Non-local hostnames not supported for file:// URLs')
@@ -2871,7 +2868,7 @@ def download_icons(item_list):
             item_name = item.get('display_name') or item['name']
             message = 'Getting icon %s for %s...' % (icon_name, item_name)
             try:
-                dummy_value = getResourceIfChangedAtomically(
+                dummy_value = fetch.munki_resource(
                     icon_url, icon_path, message=message)
             except fetch.Error, err:
                 munkicommon.display_debug1(
@@ -2938,7 +2935,7 @@ def download_client_resources():
     for filename in filenames:
         resource_url = resource_base_url + filename
         try:
-            dummy_value = getResourceIfChangedAtomically(
+            dummy_value = fetch.munki_resource(
                 resource_url, resource_archive_path, message=message)
             downloaded_resource_path = resource_archive_path
             break
@@ -2975,7 +2972,8 @@ def check(client_id='', localmanifestpath=None):
     global CONDITIONS
     CONDITIONS = munkicommon.getConditions()
 
-    keychain_obj = keychain.MunkiKeychain()
+    # initialize our Munki keychain if we are using custom certs or CAs
+    dummy_keychain_obj = keychain.MunkiKeychain()
 
     ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     if munkicommon.munkistatusoutput:
@@ -3498,7 +3496,7 @@ def getDataFromURL(url):
             os.unlink(urldata)
         except (IOError, OSError), err:
             munkicommon.display_warning('Error in getDataFromURL: %s', err)
-    dummy_result = getResourceIfChangedAtomically(url, urldata)
+    dummy_result = fetch.munki_resource(url, urldata)
     try:
         fdesc = open(urldata)
         data = fdesc.read()
@@ -3508,33 +3506,6 @@ def getDataFromURL(url):
     except (IOError, OSError), err:
         munkicommon.display_warning('Error in getDataFromURL: %s', err)
         return ''
-
-
-def getResourceIfChangedAtomically(
-        url, destinationpath, message=None, resume=False, expected_hash=None,
-        verify=False):
-
-    '''Gets a given URL from the Munki server.
-    Adds any additional headers to the request if present'''
-
-    # Add any additional headers specified in ManagedInstalls.plist.
-    # AdditionalHttpHeaders must be an array of strings with valid HTTP
-    # header format. For example:
-    # <key>AdditionalHttpHeaders</key>
-    # <array>
-    #   <string>Key-With-Optional-Dashes: Foo Value</string>
-    #   <string>another-custom-header: bar value</string>
-    # </array>
-    custom_headers = munkicommon.pref(
-        munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
-
-    return fetch.getResourceIfChangedAtomically(url,
-                                                destinationpath,
-                                                custom_headers=custom_headers,
-                                                expected_hash=expected_hash,
-                                                message=message,
-                                                resume=resume,
-                                                verify=verify)
 
 
 def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
@@ -3566,11 +3537,9 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
         manifestdata = getManifestData(manifest)
         cataloglist = manifestdata.get('catalogs')
         if cataloglist and force_refresh:
-            try:
-                # download catalogs since we might not have them
-                getCatalogs(cataloglist)
-            except CatalogException:
-                pass
+            # download catalogs since we might not have them
+            getCatalogs(cataloglist)
+
     return cataloglist
 
 

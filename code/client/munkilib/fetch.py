@@ -366,7 +366,7 @@ def getResourceIfChangedAtomically(url,
     elif url_parse.scheme == 'file':
         changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
     else:
-        raise FetchError(
+        raise Error(
             'Unsupported scheme for %s: %s' % (url, url_parse.scheme))
 
     if changed and verify:
@@ -383,6 +383,34 @@ def getResourceIfChangedAtomically(url,
             writeCachedChecksum(destinationpath, fhash=fhash)
 
     return changed
+
+
+def munki_resource(
+        url, destinationpath, message=None, resume=False, expected_hash=None,
+        verify=False):
+
+    '''The high-level function for getting resources from the Munki repo.
+    Gets a given URL from the Munki server.
+    Adds any additional headers to the request if present'''
+
+    # Add any additional headers specified in ManagedInstalls.plist.
+    # AdditionalHttpHeaders must be an array of strings with valid HTTP
+    # header format. For example:
+    # <key>AdditionalHttpHeaders</key>
+    # <array>
+    #   <string>Key-With-Optional-Dashes: Foo Value</string>
+    #   <string>another-custom-header: bar value</string>
+    # </array>
+    custom_headers = munkicommon.pref(
+        munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
+
+    return getResourceIfChangedAtomically(url,
+                                          destinationpath,
+                                          custom_headers=custom_headers,
+                                          expected_hash=expected_hash,
+                                          message=message,
+                                          resume=resume,
+                                          verify=verify)
 
 
 def getFileIfChangedAtomically(path, destinationpath):
@@ -474,12 +502,12 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
         # them as GurlDownloadError
         raise
 
-    except GurlError, err:
-        err = 'Error %s: %s' % tuple(err)
-        raise GurlDownloadError(err)
-
     except HTTPError, err:
         err = 'HTTP result %s: %s' % tuple(err)
+        raise GurlDownloadError(err)
+
+    except GurlError, err:
+        err = 'Error %s: %s' % tuple(err)
         raise GurlDownloadError(err)
 
     err = None
