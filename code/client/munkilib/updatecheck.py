@@ -28,12 +28,12 @@ import subprocess
 import urllib2
 import urlparse
 from urllib import quote_plus
-from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 # our libs
 import appleupdates
 import fetch
 import keychain
+import manifestutils
 import munkicommon
 import munkistatus
 import profiles
@@ -2106,7 +2106,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
         munkicommon.display_debug1(
             "** Processing manifest %s for %s" %
             (os.path.basename(manifest), manifest_key))
-        manifestdata = getManifestData(manifest)
+        manifestdata = manifestutils.get_manifest_data(manifest)
     else:
         manifestdata = manifest
         manifest = 'embedded manifest'
@@ -2124,7 +2124,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
     nestedmanifests = manifestdata.get('included_manifests')
     if nestedmanifests:
         for item in nestedmanifests:
-            nestedmanifestpath = getmanifest(item)
+            nestedmanifestpath = manifestutils.getmanifest(item)
             if not nestedmanifestpath:
                 raise ManifestException
             if munkicommon.stopRequested():
@@ -2480,38 +2480,6 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     return True
 
 
-def getManifestData(manifestpath):
-    '''Reads a manifest file, returns a dictionary-like object.'''
-    plist = {}
-    try:
-        plist = FoundationPlist.readPlist(manifestpath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        munkicommon.display_error('Could not read plist: %s', manifestpath)
-        if os.path.exists(manifestpath):
-            try:
-                os.unlink(manifestpath)
-            except OSError, err:
-                munkicommon.display_error(
-                    'Failed to delete plist: %s', unicode(err))
-        else:
-            munkicommon.display_error('plist does not exist.')
-    return plist
-
-
-def getManifestValueForKey(manifestpath, keyname):
-    """Returns a value for keyname in manifestpath"""
-    plist = getManifestData(manifestpath)
-    try:
-        return plist.get(keyname, None)
-    except AttributeError, err:
-        munkicommon.display_error(
-            'Failed to get manifest value for key: %s (%s)',
-            manifestpath, keyname)
-        munkicommon.display_error(
-            'Manifest is likely corrupt: %s', unicode(err))
-        return None
-
-
 # global to hold our catalog DBs
 CATALOG = {}
 def getCatalogs(cataloglist):
@@ -2562,218 +2530,6 @@ def cleanUpCatalogs():
     for item in os.listdir(catalog_dir):
         if item not in CATALOG.keys():
             os.unlink(os.path.join(catalog_dir, item))
-
-
-class ManifestException(Exception):
-    """Lets us raise an exception when we can't get a manifest."""
-    pass
-
-
-class ManifestInvalidException(ManifestException):
-    """Lets us raise an exception when we get an invalid manifest."""
-    pass
-
-
-class ManifestNotRetrievedException(ManifestException):
-    """Lets us raise an exception when manifest is not retrieved."""
-    pass
-
-
-class ManifestServerConnectionException(ManifestException):
-    """Exception for connection error."""
-    pass
-
-
-MANIFESTS = {}
-def getmanifest(manifest_name, suppress_errors=False):
-    """Gets a manifest from the server.
-
-    Returns:
-      string local path to the downloaded manifest, or None
-    Raises:
-      fetch.ConnectionError if we can't connect to the server
-      ManifestException if we can't get the manifest
-    """
-    manifestbaseurl = (munkicommon.pref('ManifestURL') or
-                       munkicommon.pref('SoftwareRepoURL') + '/manifests/')
-    if (not manifestbaseurl.endswith('?') and
-            not manifestbaseurl.endswith('/')):
-        manifestbaseurl = manifestbaseurl + '/'
-    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
-                                'manifests')
-
-    manifestdisplayname = manifest_name
-    manifesturl = (
-        manifestbaseurl + urllib2.quote(manifest_name.encode('UTF-8')))
-
-    if manifest_name in MANIFESTS:
-        return MANIFESTS[manifest_name]
-
-    munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
-    munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
-    manifestpath = os.path.join(manifest_dir, manifest_name)
-
-    # Create the folder the manifest shall be stored in
-    destinationdir = os.path.dirname(manifestpath)
-    try:
-        os.makedirs(destinationdir)
-    except OSError, err:
-        # OSError will be raised if destinationdir exists, ignore this case
-        if not os.path.isdir(destinationdir):
-            if not suppress_errors:
-                munkicommon.display_error(
-                    'Could not create folder to store manifest %s: %s',
-                    manifestdisplayname, err
-                )
-            raise ManifestException(err)
-
-    message = 'Retrieving list of software for this machine...'
-    try:
-        dummy_value = fetch.munki_resource(
-            manifesturl, manifestpath, message=message)
-    except fetch.ConnectionError, err:
-        raise ManifestServerConnectionException(err)
-    except fetch.Error, err:
-        if not suppress_errors:
-            munkicommon.display_error(
-                'Could not retrieve manifest %s from the server: %s',
-                manifestdisplayname, err)
-        raise ManifestNotRetrievedException(err)
-
-    try:
-        # read plist to see if it is valid
-        dummy_data = FoundationPlist.readPlist(manifestpath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        errormsg = 'manifest returned for %s is invalid.' % manifestdisplayname
-        munkicommon.display_error(errormsg)
-        try:
-            os.unlink(manifestpath)
-        except (OSError, IOError):
-            pass
-        raise ManifestInvalidException(errormsg)
-    else:
-        # plist is valid
-        MANIFESTS[manifest_name] = manifestpath
-        return manifestpath
-
-
-def cleanUpManifests():
-    """Removes any manifest files that are no longer in use by this client"""
-    manifest_dir = os.path.join(
-        munkicommon.pref('ManagedInstallDir'), 'manifests')
-
-    exceptions = [
-        "SelfServeManifest"
-    ]
-
-    for (dirpath, dirnames, filenames) in os.walk(manifest_dir, topdown=False):
-        for name in filenames:
-
-            if name in exceptions:
-                continue
-
-            abs_path = os.path.join(dirpath, name)
-            rel_path = abs_path[len(manifest_dir):].lstrip("/")
-
-            if rel_path not in MANIFESTS.keys():
-                os.unlink(abs_path)
-
-        # Try to remove the directory
-        # (rmdir will fail if directory is not empty)
-        try:
-            if dirpath != manifest_dir:
-                os.rmdir(dirpath)
-        except OSError:
-            pass
-
-
-def getPrimaryManifest(alternate_id):
-    """Gets the client manifest from the server."""
-    manifest = ""
-    manifesturl = munkicommon.pref('ManifestURL') or \
-                  munkicommon.pref('SoftwareRepoURL') + '/manifests/'
-    if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
-        manifesturl = manifesturl + '/'
-    munkicommon.display_debug2('Manifest base URL is: %s', manifesturl)
-
-    clientidentifier = alternate_id or munkicommon.pref('ClientIdentifier')
-
-    if not alternate_id and munkicommon.pref('UseClientCertificate') and \
-        munkicommon.pref('UseClientCertificateCNAsClientIdentifier'):
-        # we're to use the client cert CN as the clientidentifier
-        if munkicommon.pref('UseClientCertificate'):
-            # find the client cert
-            client_cert_path = munkicommon.pref('ClientCertificatePath')
-            if not client_cert_path:
-                ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
-                for name in ['cert.pem', 'client.pem', 'munki.pem']:
-                    client_cert_path = os.path.join(ManagedInstallDir,
-                                                    'certs', name)
-                    if os.path.exists(client_cert_path):
-                        break
-            if client_cert_path and os.path.exists(client_cert_path):
-                fileobj = open(client_cert_path)
-                data = fileobj.read()
-                fileobj.close()
-                x509 = load_certificate(FILETYPE_PEM, data)
-                clientidentifier = x509.get_subject().commonName
-
-    try:
-        if not clientidentifier:
-            # no client identifier specified, so use the hostname
-            hostname = os.uname()[1]
-            # there shouldn't be any characters in a hostname that need quoting,
-            # but see https://code.google.com/p/munki/issues/detail?id=276
-            clientidentifier = urllib2.quote(hostname)
-            munkicommon.display_detail(
-                'No client id specified. Requesting %s...', clientidentifier)
-            try:
-                manifest = getmanifest(clientidentifier, suppress_errors=True)
-            except ManifestNotRetrievedException:
-                pass
-
-            if not manifest:
-                # try the short hostname
-                clientidentifier = urllib2.quote(hostname.split('.')[0])
-                munkicommon.display_detail(
-                    'Request failed. Trying %s...', clientidentifier)
-                try:
-                    manifest = getmanifest(
-                        clientidentifier, suppress_errors=True)
-                except ManifestNotRetrievedException:
-                    pass
-
-            if not manifest:
-                # try the machine serial number
-                clientidentifier = urllib2.quote(MACHINE['serial_number'])
-                if clientidentifier != 'UNKNOWN':
-                    munkicommon.display_detail(
-                        'Request failed. Trying %s...', clientidentifier)
-                    try:
-                        manifest = getmanifest(
-                            clientidentifier, suppress_errors=True)
-                    except ManifestNotRetrievedException:
-                        pass
-
-            if not manifest:
-                # last resort - try for the site_default manifest
-                clientidentifier = 'site_default'
-                munkicommon.display_detail(
-                    'Request failed. Trying %s...', clientidentifier)
-
-        if not manifest:
-            manifest = getmanifest(
-                urllib2.quote(clientidentifier.encode('UTF-8')))
-        if manifest:
-            # record this info for later
-            # primary manifest is tagged as "primary_manifest"
-            MANIFESTS['primary_manifest'] = manifest
-            munkicommon.report['ManifestName'] = clientidentifier
-            munkicommon.display_detail('Using manifest: %s', clientidentifier)
-    except ManifestException:
-        # bad manifests throw an exception
-        return ""
-    return manifest
 
 
 def checkServer(url):
@@ -2982,20 +2738,21 @@ def check(client_id='', localmanifestpath=None):
     munkicommon.log('### Beginning managed software check ###')
     munkicommon.display_status_major('Checking for available updates...')
 
-    if localmanifestpath:
-        mainmanifestpath = localmanifestpath
-    else:
-        mainmanifestpath = getPrimaryManifest(client_id)
-    if munkicommon.stopRequested():
-        return 0
-
     installinfo = {}
 
     try:
-        if not mainmanifestpath:
-            munkicommon.display_error(
-                'Could not retrieve managed install primary manifest.')
-            raise ManifestException
+        if localmanifestpath:
+            mainmanifestpath = localmanifestpath
+        else:
+            try:
+                mainmanifestpath = manifestutils.get_primary_manifest(client_id)
+            except manifestutils.ManifestException:
+                munkicommon.display_error(
+                    'Could not retrieve managed install primary manifest.')
+                raise
+
+        if munkicommon.stopRequested():
+            return 0
 
         # initialize our installinfo record
         installinfo['processed_installs'] = []
@@ -3030,7 +2787,8 @@ def check(client_id='', localmanifestpath=None):
 
         # now check for implicit removals
         # use catalogs from main manifest
-        cataloglist = getManifestValueForKey(mainmanifestpath, 'catalogs')
+        cataloglist = manifestutils.get_manifest_value_for_key(
+            mainmanifestpath, 'catalogs')
         autoremovalitems = getAutoRemovalItems(installinfo, cataloglist)
         if autoremovalitems:
             munkicommon.display_detail('**Checking for implicit removals**')
@@ -3063,38 +2821,43 @@ def check(client_id='', localmanifestpath=None):
                 ManagedInstallDir, 'manifests', localonlymanifestname)
 
             # if the manifest already exists, the name is being reused
-            if localonlymanifestname in MANIFESTS:
+            if localonlymanifestname in manifestutils.MANIFESTS:
                 munkicommon.display_error(
-                    "LocalOnlyManifest %s has the same name as an existing " \
-                     "manifest, skipping...", localonlymanifestname
+                    "LocalOnlyManifest %s has the same name as an existing "
+                    "manifest, skipping...", localonlymanifestname
                 )
-            else:
-                MANIFESTS[localonlymanifestname] = localonlymanifest
-                if os.path.exists(localonlymanifest):
-                    # use catalogs from main manifest for local only manifest
-                    cataloglist = getManifestValueForKey(
-                        mainmanifestpath, 'catalogs')
-                    munkicommon.display_detail(
-                        '**Processing local-only choices**'
+            elif os.path.exists(localonlymanifest):
+                manifestutils.MANIFESTS[localonlymanifestname] = (
+                    localonlymanifest)
+                # use catalogs from main manifest for local only manifest
+                cataloglist = manifestutils.get_manifest_value_for_key(
+                    mainmanifestpath, 'catalogs')
+                munkicommon.display_detail(
+                    '**Processing local-only choices**'
+                )
+
+                localonlyinstalls = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'managed_installs') or []
+                for item in localonlyinstalls:
+                    dummy_result = processInstall(
+                        item,
+                        cataloglist,
+                        installinfo
                     )
 
-                    localonlyinstalls = getManifestValueForKey(
-                        localonlymanifest, 'managed_installs') or []
-                    for item in localonlyinstalls:
-                        dummy_result = processInstall(
-                            item,
-                            cataloglist,
-                            installinfo
-                        )
-
-                    localonlyuninstalls = getManifestValueForKey(
-                        localonlymanifest, 'managed_uninstalls') or []
-                    for item in localonlyuninstalls:
-                        dummy_result = processRemoval(
-                            item,
-                            cataloglist,
-                            installinfo
-                        )
+                localonlyuninstalls = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'managed_uninstalls') or []
+                for item in localonlyuninstalls:
+                    dummy_result = processRemoval(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+            else:
+                munkicommon.display_debug1(
+                    "LocalOnlyManifest %s is set but is not present. "
+                    "Skipping...", localonlymanifestname
+                )
 
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'
@@ -3123,11 +2886,11 @@ def check(client_id='', localmanifestpath=None):
 
         if os.path.exists(selfservemanifest):
             # use catalogs from main manifest for self-serve manifest
-            cataloglist = getManifestValueForKey(
+            cataloglist = manifestutils.get_manifest_value_for_key(
                 mainmanifestpath, 'catalogs')
             munkicommon.display_detail('**Processing self-serve choices**')
-            selfserveinstalls = getManifestValueForKey(selfservemanifest,
-                                                       'managed_installs')
+            selfserveinstalls = manifestutils.get_manifest_value_for_key(
+                selfservemanifest, 'managed_installs')
 
             # build list of items in the optional_installs list
             # that have not exceeded available seats
@@ -3146,7 +2909,7 @@ def check(client_id='', localmanifestpath=None):
                         item, cataloglist, installinfo)
 
             # we don't need to filter uninstalls
-            selfserveuninstalls = getManifestValueForKey(
+            selfserveuninstalls = manifestutils.get_manifest_value_for_key(
                 selfservemanifest, 'managed_uninstalls') or []
             for item in selfserveuninstalls:
                 dummy_result = processRemoval(item, cataloglist, installinfo)
@@ -3237,7 +3000,7 @@ def check(client_id='', localmanifestpath=None):
         cleanUpCatalogs()
 
         # clean up manifests directory
-        cleanUpManifests()
+        manifestutils.clean_up_manifests()
 
         # clean up cache dir
         # remove any item in the cache that isn't scheduled
@@ -3298,7 +3061,7 @@ def check(client_id='', localmanifestpath=None):
             FoundationPlist.writePlist(installinfo,
                                        os.path.join(ManagedInstallDir,
                                                     'InstallInfo.plist'))
-    except (ManifestException, UpdateCheckAbortedError):
+    except (manifestutils.ManifestException, UpdateCheckAbortedError):
         # Update check aborted. Check to see if we have a valid
         # install/remove list from an earlier run.
         installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
@@ -3522,19 +3285,20 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
         MACHINE = munkicommon.getMachineFacts()
 
     cataloglist = []
-    if force_refresh or 'primary_manifest' not in MANIFESTS:
+    if force_refresh or 'primary_manifest' not in manifestutils.MANIFESTS:
         # Fetch manifest from repo
-        manifest = getPrimaryManifest(client_id)
+        manifest = manifestutils.get_primary_manifest(client_id)
         # set force_refresh = True so we'll also download any missing catalogs
         force_refresh = True
     else:
         # Use cached manifest if available
         manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                     'manifests')
-        manifest = os.path.join(manifest_dir, MANIFESTS['primary_manifest'])
+        manifest = os.path.join(
+            manifest_dir, manifestutils.MANIFESTS['primary_manifest'])
 
     if manifest:
-        manifestdata = getManifestData(manifest)
+        manifestdata = manifestutils.get_manifest_data(manifest)
         cataloglist = manifestdata.get('catalogs')
         if cataloglist and force_refresh:
             # download catalogs since we might not have them
