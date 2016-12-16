@@ -37,47 +37,8 @@ import FoundationPlist
 
 # pylint: disable=invalid-name
 
-##################################################################
-# Schema of Leopard's /Library/Receipts/db/a.receiptsdb:
-#
-# CREATE TABLE acls (path_key INTEGER NOT NULL,
-#                    pkg_key INTEGER NOT NULL,
-#                    acl VARCHAR NOT NULL );
-# CREATE TABLE groups (group_key INTEGER PRIMARY KEY AUTOINCREMENT,
-#                      owner INTEGER NOT NULL, groupid VARCHAR NOT NULL);
-# CREATE TABLE oldpkgs (pkg_key INTEGER PRIMARY KEY,
-#                       tmestamp INTEGER NOT NULL,
-#                       owner INTEGER NOT NULL,
-#                       pkgid VARCHAR NOT NULL,
-#                       vers VARCHAR NOT NULL,
-#                       ppath VARCHAR NOT NULL,
-#                       replaces INTEGER,
-#                       replacedby INTEGER );
-# CREATE TABLE paths (path_key INTEGER PRIMARY KEY AUTOINCREMENT,
-#                     path VARCHAR NOT NULL UNIQUE );
-# CREATE TABLE pkgs (pkg_key INTEGER PRIMARY KEY AUTOINCREMENT,
-#                    timestamp INTEGER NOT NULL,
-#                    owner INTEGER NOT NULL,
-#                    pkgid VARCHAR NOT NULL,
-#                    vers VARCHAR NOT NULL,
-#                    ppath VARCHAR NOT NULL,
-#                    replaces INTEGER );
-# CREATE TABLE pkgs_groups (pkg_key INTEGER NOT NULL,
-#                           group_key INTEGER NOT NULL );
-# CREATE TABLE pkgs_paths (pkg_key INTEGER NOT NULL,
-#                          path_key INTEGER NOT NULL,
-#                          uid INTEGER,
-#                          gid INTEGER,
-#                          perms INTEGER );
-# CREATE TABLE sha1s (path_key INTEGER NOT NULL,
-#                     pkg_key INTEGER NOT NULL,
-#                     sha1 BLOB NOT NULL );
-# CREATE TABLE taints (pkg_key INTEGER NOT NULL,
-#                      taint VARCHAR NOT NULL);
 #################################################################
-#################################################################
-# our package db schema -- a subset of Apple's, but sufficient
-#                          for our needs:
+# our package db schema -- a subset of Apple's schema in Leopard
 #
 # CREATE TABLE paths (path_key INTEGER PRIMARY KEY AUTOINCREMENT,
 #                     path VARCHAR NOT NULL UNIQUE )
@@ -276,7 +237,7 @@ def ImportPackage(packagepath, curs):
     pkgkey = curs.lastrowid
 
     cmd = ["/usr/bin/lsbom", bompath]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -352,7 +313,7 @@ def ImportBom(bompath, curs):
 
     # try to get metadata from applepkgdb
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
-                            bufsize=1, stdout=subprocess.PIPE,
+                            bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (pliststr, dummy_err) = proc.communicate()
     if pliststr:
@@ -372,7 +333,7 @@ def ImportBom(bompath, curs):
     pkgkey = curs.lastrowid
 
     cmd = ["/usr/bin/lsbom", bompath]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -433,7 +394,7 @@ def ImportFromPkgutil(pkgname, curs):
 
     #get metadata from applepkgdb
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
-                            bufsize=1, stdout=subprocess.PIPE,
+                            bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (pliststr, dummy_err) = proc.communicate()
     if pliststr:
@@ -465,7 +426,7 @@ def ImportFromPkgutil(pkgname, curs):
     pkgkey = curs.lastrowid
 
     cmd = ["/usr/sbin/pkgutil", "--files", pkgid]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -547,20 +508,19 @@ def initDatabase(forcerebuild=False):
             if item.endswith(".bom"):
                 pkgcount += 1
 
-    if os_version >= (10, 6): # Snow Leopard or later
-        pkglist = []
-        cmd = ['/usr/sbin/pkgutil', '--pkgs']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        while True:
-            line = proc.stdout.readline()
-            if not line and (proc.poll() != None):
-                break
+    pkglist = []
+    cmd = ['/usr/sbin/pkgutil', '--pkgs']
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    while True:
+        line = proc.stdout.readline()
+        if not line and (proc.poll() != None):
+            break
 
-            pkglist.append(line.rstrip('\n'))
-            pkgcount += 1
+        pkglist.append(line.rstrip('\n'))
+        pkgcount += 1
 
     conn = sqlite3.connect(packagedb)
     conn.text_factory = str
@@ -603,19 +563,19 @@ def initDatabase(forcerebuild=False):
                 ImportBom(bompath, curs)
                 currentpkgindex += 1
                 munkicommon.display_percent_done(currentpkgindex, pkgcount)
-    if os_version >= (10, 6):  # Snow Leopard or later
-        for pkg in pkglist:
-            if munkicommon.stopRequested():
-                curs.close()
-                conn.close()
-                #our package db isn't valid, so we should delete it
-                os.remove(packagedb)
-                return False
 
-            munkicommon.display_detail("Importing %s...", pkg)
-            ImportFromPkgutil(pkg, curs)
-            currentpkgindex += 1
-            munkicommon.display_percent_done(currentpkgindex, pkgcount)
+    for pkg in pkglist:
+        if munkicommon.stopRequested():
+            curs.close()
+            conn.close()
+            #our package db isn't valid, so we should delete it
+            os.remove(packagedb)
+            return False
+
+        munkicommon.display_detail("Importing %s...", pkg)
+        ImportFromPkgutil(pkg, curs)
+        currentpkgindex += 1
+        munkicommon.display_percent_done(currentpkgindex, pkgcount)
 
     # in case we didn't quite get to 100% for some reason
     if currentpkgindex < pkgcount:
@@ -737,13 +697,6 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
     conn = sqlite3.connect(packagedb)
     curs = conn.cursor()
 
-    os_version = munkicommon.getOsVersion(as_tuple=True)
-
-    applepkgdb = '/Library/Receipts/db/a.receiptdb'
-    if not noupdateapplepkgdb and os_version <= (10, 5):
-        aconn = sqlite3.connect(applepkgdb)
-        acurs = aconn.cursor()
-
     munkicommon.display_percent_done(1, 4)
 
     for pkgkey in pkgkeylist:
@@ -779,58 +732,18 @@ def removeReceipts(pkgkeylist, noupdateapplepkgdb):
 
         # then remove pkg info from Apple's database unless option is passed
         if not noupdateapplepkgdb and pkgid:
-            if os_version <= (10, 5):
-                # Leopard
-                pkgid_t = (pkgid, )
-                row = acurs.execute(
-                    'SELECT pkg_key FROM pkgs where pkgid = ?',
-                    pkgid_t).fetchone()
-                if row:
-                    munkicommon.display_detail(
-                        "Removing package data from Apple package "+
-                        "database...")
-                    apple_pkg_key = row[0]
-                    pkgkey_t = (apple_pkg_key, )
-                    acurs.execute(
-                        'DELETE FROM pkgs where pkg_key = ?', pkgkey_t)
-                    acurs.execute(
-                        'DELETE FROM pkgs_paths where pkg_key = ?', pkgkey_t)
-                    acurs.execute(
-                        'DELETE FROM pkgs_groups where pkg_key = ?', pkgkey_t)
-                    acurs.execute(
-                        'DELETE FROM acls where pkg_key = ?', pkgkey_t)
-                    acurs.execute(
-                        'DELETE FROM taints where pkg_key = ?', pkgkey_t)
-                    acurs.execute(
-                        'DELETE FROM sha1s where pkg_key = ?', pkgkey_t)
-                    acurs.execute(
-                        'DELETE FROM oldpkgs where pkg_key = ?', pkgkey_t)
-            else:
-                # Snow Leopard or higher, must use pkgutil
-                cmd = ['/usr/sbin/pkgutil', '--forget', pkgid]
-                proc = subprocess.Popen(cmd, bufsize=1,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                (output, dummy_err) = proc.communicate()
-                if output:
-                    munkicommon.display_detail(
-                        str(output).decode('UTF-8').rstrip('\n'))
+            cmd = ['/usr/sbin/pkgutil', '--forget', pkgid]
+            proc = subprocess.Popen(cmd, bufsize=-1,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            (output, dummy_err) = proc.communicate()
+            if output:
+                munkicommon.display_detail(
+                    str(output).decode('UTF-8').rstrip('\n'))
 
     munkicommon.display_percent_done(2, 4)
 
     # now remove orphaned paths from paths table
-    # first, Apple's database if option is passed
-    if not noupdateapplepkgdb:
-        if os_version <= (10, 5):
-            munkicommon.display_detail(
-                "Removing unused paths from Apple package database...")
-            acurs.execute(
-                '''DELETE FROM paths where path_key not in
-                   (select distinct path_key from pkgs_paths)''')
-            aconn.commit()
-            acurs.close()
-            aconn.close()
-
     munkicommon.display_percent_done(3, 4)
 
     # we do our database last so its modtime is later than the modtime for the
@@ -976,14 +889,6 @@ def removeFilesystemItems(removalpaths, forcedeletebundles):
 
             else:
                 # not a directory, just unlink it
-                # I was using rm instead of Python because I don't trust
-                # handling of resource forks with Python
-                #retcode = subprocess.call(['/bin/rm', pathtoremove])
-                # but man that's slow.
-                # I think there's a lot of overhead with the
-                # subprocess call. I'm going to use os.remove.
-                # I hope I don't regret it.
-                retcode = ''
                 try:
                     os.remove(pathtoremove)
                 except (OSError, IOError), err:
@@ -1112,4 +1017,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
