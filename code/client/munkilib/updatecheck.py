@@ -53,7 +53,7 @@ from Foundation import NSDate, NSPredicate, NSTimeZone
 FORCE_INSTALL_WARNING_HOURS = 4
 
 
-class memoize(dict):
+class Memoize(dict):
     '''Class to cache the return values of an expensive function.
     This version supports only functions with non-keyword arguments'''
     def __init__(self, func):
@@ -165,7 +165,7 @@ def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
                         pkgid_to_itemname[pkgid][name].append(vers)
 
 
-@memoize
+@Memoize
 def getInstalledPackages():
     """Builds a dictionary of installed receipts and their version number"""
     installedpkgs = {}
@@ -232,7 +232,7 @@ def bestVersionMatch(vers_num, item_dict):
     return None
 
 
-@memoize
+@Memoize
 def analyzeInstalledPkgs():
     """Analyzed installed packages in an attempt to determine what is
        installed."""
@@ -2051,35 +2051,37 @@ def processInstall(manifestitem, cataloglist, installinfo,
         return True
 
 
-INFO_OBJECT = {}
-def makePredicateInfoObject():
-    '''Builds our info object used for predicate comparisons'''
-    if INFO_OBJECT:
-        return
-    for key in MACHINE.keys():
-        INFO_OBJECT[key] = MACHINE[key]
+@Memoize
+def predicateInfoObject():
+    '''Returns our info object used for predicate comparisons'''
+    info_object = {}
+    machine = munkicommon.getMachineFacts()
+    info_object.update(machine)
+    info_object.update(munkicommon.getConditions())
     # use our start time for "current" date (if we have it)
     # and add the timezone offset to it so we can compare
     # UTC dates as though they were local dates.
-    INFO_OBJECT['date'] = addTimeZoneOffsetToDate(
+    info_object['date'] = addTimeZoneOffsetToDate(
         NSDate.dateWithString_(
             munkicommon.report.get('StartTime', munkicommon.format_time())))
-    os_vers = MACHINE['os_vers']
+    os_vers = machine['os_vers']
     os_vers = os_vers + '.0.0'
-    INFO_OBJECT['os_vers_major'] = int(os_vers.split('.')[0])
-    INFO_OBJECT['os_vers_minor'] = int(os_vers.split('.')[1])
-    INFO_OBJECT['os_vers_patch'] = int(os_vers.split('.')[2])
-    if 'Book' in MACHINE.get('machine_model', ''):
-        INFO_OBJECT['machine_type'] = 'laptop'
+    info_object['os_vers_major'] = int(os_vers.split('.')[0])
+    info_object['os_vers_minor'] = int(os_vers.split('.')[1])
+    info_object['os_vers_patch'] = int(os_vers.split('.')[2])
+    if 'Book' in machine.get('machine_model', ''):
+        info_object['machine_type'] = 'laptop'
     else:
-        INFO_OBJECT['machine_type'] = 'desktop'
-    for key in CONDITIONS.keys():
-        INFO_OBJECT[key] = CONDITIONS[key]
+        info_object['machine_type'] = 'desktop'
+    return info_object
 
 
-def predicateEvaluatesAsTrue(predicate_string):
+def predicateEvaluatesAsTrue(predicate_string, additional_info=None):
     '''Evaluates predicate against our info object'''
     munkicommon.display_debug1('Evaluating predicate: %s', predicate_string)
+    info_object = predicateInfoObject()
+    if isinstance(additional_info, dict):
+        info_object.update(additional_info)
     try:
         p = NSPredicate.predicateWithFormat_(predicate_string)
     except BaseException, err:
@@ -2087,7 +2089,7 @@ def predicateEvaluatesAsTrue(predicate_string):
         # can't parse predicate, so return False
         return False
 
-    result = p.evaluateWithObject_(INFO_OBJECT)
+    result = p.evaluateWithObject_(info_object)
     munkicommon.display_debug1('Predicate %s is %s', predicate_string, result)
     return result
 
@@ -2150,8 +2152,8 @@ def processManifestForKey(manifest, manifest_key, installinfo,
                 munkicommon.display_warning(
                     'Conditional item is malformed: %s', item)
                 continue
-            INFO_OBJECT['catalogs'] = cataloglist
-            if predicateEvaluatesAsTrue(predicate):
+            if predicateEvaluatesAsTrue(
+                    predicate, additional_info={'catalogs': cataloglist}):
                 conditionalmanifest = item
                 processManifestForKey(conditionalmanifest, manifest_key,
                                       installinfo, cataloglist)
@@ -2762,9 +2764,8 @@ def check(client_id='', localmanifestpath=None):
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
 
-        # set up INFO_OBJECT for conditional item comparisons
-        makePredicateInfoObject()
-        munkicommon.report['Conditions'] = INFO_OBJECT
+        # record info object for conditional item comparisons
+        munkicommon.report['Conditions'] = predicateInfoObject()
 
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
