@@ -33,12 +33,28 @@ from distutils import version
 from types import StringType
 from xml.dom import minidom
 
-from . import osutils
 from . import display
+from . import dmgutils
+from . import osutils
 from .. import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
+
+
+class Memoize(dict):
+    '''Class to cache the return values of an expensive function.
+    This version supports only functions with non-keyword arguments'''
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args):
+        return self[args]
+
+    def __missing__(self, key):
+        result = self[key] = self.func(*key)
+        return result
+
 
 #####################################################
 # Apple package utilities
@@ -758,6 +774,56 @@ def getPackageMetaData(pkgitem):
         cataloginfo['minimum_os_version'] = "10.5.0"
 
     return cataloginfo
+
+
+@Memoize
+def getInstalledPackages():
+    """Builds a dictionary of installed receipts and their version number"""
+    installedpkgs = {}
+
+    # we use the --regexp option to pkgutil to get it to return receipt
+    # info for all installed packages.  Huge speed up.
+    proc = subprocess.Popen(['/usr/sbin/pkgutil', '--regexp',
+                             '--pkg-info-plist', '.*'], bufsize=8192,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, dummy_err) = proc.communicate()
+    while out:
+        (pliststr, out) = dmgutils.getFirstPlist(out)
+        if pliststr:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            if 'pkg-version' in plist and 'pkgid' in plist:
+                installedpkgs[plist['pkgid']] = (
+                    plist['pkg-version'] or '0.0.0.0.0')
+        else:
+            break
+
+    # Now check /Library/Receipts
+    receiptsdir = '/Library/Receipts'
+    if os.path.exists(receiptsdir):
+        installitems = osutils.listdir(receiptsdir)
+        for item in installitems:
+            if item.endswith('.pkg'):
+                pkginfo = getOnePackageInfo(
+                    os.path.join(receiptsdir, item))
+                pkgid = pkginfo.get('packageid')
+                thisversion = pkginfo.get('version')
+                if pkgid:
+                    if not pkgid in installedpkgs:
+                        installedpkgs[pkgid] = thisversion
+                    else:
+                        # pkgid is already in our list. There must be
+                        # multiple receipts with the same pkgid.
+                        # in this case, we want the highest version
+                        # number, since that's the one that's
+                        # installed, since presumably
+                        # the newer package replaced the older one
+                        storedversion = installedpkgs[pkgid]
+                        if (MunkiLooseVersion(thisversion) >
+                                MunkiLooseVersion(storedversion)):
+                            installedpkgs[pkgid] = thisversion
+    return installedpkgs
+
+
 
 # This function doesn't really have anything to do with packages or receipts
 # but is used by makepkginfo, munkiimport, and installer.py, so it might as

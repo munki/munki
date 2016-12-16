@@ -24,7 +24,6 @@ Created by Greg Neagle on 2008-11-13.
 # standard libs
 import datetime
 import os
-import subprocess
 import urllib2
 import urlparse
 from urllib import quote_plus
@@ -166,54 +165,6 @@ def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
                         pkgid_to_itemname[pkgid][name].append(vers)
 
 
-@Memoize
-def getInstalledPackages():
-    """Builds a dictionary of installed receipts and their version number"""
-    installedpkgs = {}
-
-    # we use the --regexp option to pkgutil to get it to return receipt
-    # info for all installed packages.  Huge speed up.
-    proc = subprocess.Popen(['/usr/sbin/pkgutil', '--regexp',
-                             '--pkg-info-plist', '.*'], bufsize=8192,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
-    while out:
-        (pliststr, out) = munkicommon.getFirstPlist(out)
-        if pliststr:
-            plist = FoundationPlist.readPlistFromString(pliststr)
-            if 'pkg-version' in plist and 'pkgid' in plist:
-                installedpkgs[plist['pkgid']] = (
-                    plist['pkg-version'] or '0.0.0.0.0')
-        else:
-            break
-
-    # Now check /Library/Receipts
-    receiptsdir = '/Library/Receipts'
-    if os.path.exists(receiptsdir):
-        installitems = munkicommon.listdir(receiptsdir)
-        for item in installitems:
-            if item.endswith('.pkg'):
-                pkginfo = munkicommon.getOnePackageInfo(
-                    os.path.join(receiptsdir, item))
-                pkgid = pkginfo.get('packageid')
-                thisversion = pkginfo.get('version')
-                if pkgid:
-                    if not pkgid in installedpkgs:
-                        installedpkgs[pkgid] = thisversion
-                    else:
-                        # pkgid is already in our list. There must be
-                        # multiple receipts with the same pkgid.
-                        # in this case, we want the highest version
-                        # number, since that's the one that's
-                        # installed, since presumably
-                        # the newer package replaced the older one
-                        storedversion = installedpkgs[pkgid]
-                        if (munkicommon.MunkiLooseVersion(thisversion) >
-                                munkicommon.MunkiLooseVersion(storedversion)):
-                            installedpkgs[pkgid] = thisversion
-    return installedpkgs
-
-
 def bestVersionMatch(vers_num, item_dict):
     '''Attempts to find the best match in item_dict for vers_num'''
     vers_tuple = vers_num.split('.')
@@ -246,7 +197,7 @@ def analyzeInstalledPkgs():
     # itemname_to_pkgid now contains all receipts (pkgids) we know about
     # from items in all available catalogs
 
-    installedpkgs = getInstalledPackages()
+    installedpkgs = munkicommon.getInstalledPackages()
 
     installed = []
     partiallyinstalled = []
@@ -691,7 +642,7 @@ def compareReceiptVersion(item):
             'Skipping %s because it is marked as optional',
             item.get('packageid', item.get('name')))
         return 1
-    installedpkgs = getInstalledPackages()
+    installedpkgs = munkicommon.getInstalledPackages()
     if 'packageid' in item and 'version' in item:
         pkgid = item['packageid']
         vers = item['version']
