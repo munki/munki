@@ -28,7 +28,6 @@ import os
 import time
 from munkilib import munkicommon
 from munkilib import FoundationPlist
-from munkilib import updatecheck
 from Foundation import NSDate
 from Foundation import NSDictionary
 from Foundation import NSDistributedNotificationCenter
@@ -75,7 +74,7 @@ def earliestForceInstallDate():
             force_install_date = install.get('force_install_after_date')
 
             if force_install_date:
-                force_install_date = updatecheck.subtractTimeZoneOffsetFromDate(
+                force_install_date = munkicommon.subtractTimeZoneOffsetFromDate(
                     force_install_date)
                 if not earliest_date or force_install_date < earliest_date:
                     earliest_date = force_install_date

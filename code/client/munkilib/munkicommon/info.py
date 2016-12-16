@@ -777,7 +777,7 @@ def predicateInfoObject():
     # UTC dates as though they were local dates.
     info_object['date'] = addTimeZoneOffsetToDate(
         NSDate.dateWithString_(
-            reports.report.get('StartTime', format_time())))
+            reports.report.get('StartTime', reports.format_time())))
     os_vers = machine['os_vers']
     os_vers = os_vers + '.0.0'
     info_object['os_vers_major'] = int(os_vers.split('.')[0])

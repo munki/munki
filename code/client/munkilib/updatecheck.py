@@ -29,6 +29,13 @@ import urllib2
 import urlparse
 from urllib import quote_plus
 
+# Apple's libs
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import NSDate
+# pylint: enable=E0611
+
 # our libs
 import appleupdates
 import fetch
@@ -39,12 +46,6 @@ import munkistatus
 import profiles
 import FoundationPlist
 
-# Apple's libs
-# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-# No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
-from Foundation import NSDate, NSPredicate, NSTimeZone
-# pylint: enable=E0611
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
@@ -1110,7 +1111,8 @@ def getItemDetail(name, cataloglist, vers=''):
 
                 if item.get('installable_condition'):
                     pkginfo_predicate = item['installable_condition']
-                    if not predicateEvaluatesAsTrue(pkginfo_predicate):
+                    if not munkicommon.predicateEvaluatesAsTrue(
+                            pkginfo_predicate):
                         reason = ('Rejected item %s, version %s '
                                   'with installable_condition: %s.'
                                   % (item['name'], item['version'],
@@ -2111,7 +2113,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
                 munkicommon.display_warning(
                     'Conditional item is malformed: %s', item)
                 continue
-            if predicateEvaluatesAsTrue(
+            if munkicommon.predicateEvaluatesAsTrue(
                     predicate, additional_info={'catalogs': cataloglist}):
                 conditionalmanifest = item
                 processManifestForKey(conditionalmanifest, manifest_key,
@@ -2717,7 +2719,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = []
 
         # record info object for conditional item comparisons
-        munkicommon.report['Conditions'] = predicateInfoObject()
+        munkicommon.report['Conditions'] = munkicommon.predicateInfoObject()
 
         munkicommon.display_detail('**Checking for installs**')
         processManifestForKey(mainmanifestpath, 'managed_installs',
@@ -3132,8 +3134,9 @@ def checkForceInstallPackages():
             force_install_after_date = install.get('force_install_after_date')
 
             if force_install_after_date:
-                force_install_after_date = subtractTimeZoneOffsetFromDate(
-                    force_install_after_date)
+                force_install_after_date = (
+                    munkicommon.subtractTimeZoneOffsetFromDate(
+                        force_install_after_date))
                 munkicommon.display_debug1(
                     'Forced install for %s at %s',
                     install['name'], force_install_after_date)
