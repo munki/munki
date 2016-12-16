@@ -69,7 +69,6 @@ def shouldRebuildDB(pkgdbpath):
     bomsdir = "/Library/Receipts/boms"
     sl_receiptsdir = "/private/var/db/receipts"
     installhistory = "/Library/Receipts/InstallHistory.plist"
-    applepkgdb = "/Library/Receipts/db/a.receiptdb"
 
     if not os.path.exists(pkgdbpath):
         return True
@@ -115,11 +114,6 @@ def shouldRebuildDB(pkgdbpath):
     if os.path.exists(installhistory):
         installhistory_modtime = os.stat(installhistory).st_mtime
         if packagedb_modtime < installhistory_modtime:
-            return True
-
-    if os.path.exists(applepkgdb):
-        applepkgdb_modtime = os.stat(applepkgdb).st_mtime
-        if packagedb_modtime < applepkgdb_modtime:
             return True
 
     # if we got this far, we don't need to update the db
@@ -311,7 +305,7 @@ def ImportBom(bompath, curs):
     vers = "1.0"
     ppath = ""
 
-    # try to get metadata from applepkgdb
+    # try to get metadata from pkginfo db
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
@@ -392,7 +386,7 @@ def ImportFromPkgutil(pkgname, curs):
     vers = "1.0"
     ppath = ""
 
-    #get metadata from applepkgdb
+    #get metadata from pkginfo db
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
