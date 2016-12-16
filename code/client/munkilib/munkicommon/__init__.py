@@ -24,7 +24,6 @@ Common functions used by the munki tools.
 # We wildcard-import from submodules for backwards compatibility; functions
 # that were previously available from this module
 # pylint: disable=wildcard-import
-from .authrestart import *
 from .constants import *
 from .display import *
 from .dmgutils import *

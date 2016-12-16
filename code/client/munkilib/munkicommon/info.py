@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Utilities that retrieve information from the current machine.
 """
+# standard libs
 import ctypes
 import ctypes.util
 import fcntl
@@ -30,18 +31,22 @@ import struct
 import subprocess
 import sys
 
+# Apple's libs
 import LaunchServices
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
-from Foundation import NSDate, NSMetadataQuery, NSPredicate, NSRunLoop
+from Foundation import NSMetadataQuery, NSPredicate, NSRunLoop
+from Foundation import NSDate, NSPredicate, NSTimeZone
 # pylint: enable=E0611
 
+# our libs
 from . import display
 from . import munkilog
 from . import osutils
 from . import pkgutils
 from . import prefs
+from . import reports
 from .. import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
@@ -719,6 +724,88 @@ def saveappdata():
     except FoundationPlist.NSPropertyListSerializationException, err:
         display.display_warning(
             'Unable to save inventory report: %s' % err)
+
+
+# conditional/predicate info functions
+def subtractTimeZoneOffsetFromDate(the_date):
+    """Input: NSDate object
+    Output: NSDate object with same date and time as the UTC.
+    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
+    '2011-06-20 12:00:00 -0700'.
+    In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
+    This allows a pkginfo item to reference a time in UTC that
+    gets translated to the same relative local time.
+    A force_install_after_date for '2011-06-20T12:00:00Z' will happen
+    after 2011-06-20 12:00:00 local time.
+    """
+    # find our time zone offset in seconds
+    tz = NSTimeZone.defaultTimeZone()
+    seconds_offset = tz.secondsFromGMTForDate_(the_date)
+    # return new NSDate minus local_offset
+    return NSDate.alloc(
+        ).initWithTimeInterval_sinceDate_(-seconds_offset, the_date)
+
+
+def addTimeZoneOffsetToDate(the_date):
+    """Input: NSDate object
+    Output: NSDate object with timezone difference added
+    to the date. This allows conditional_item conditions to
+    be written like so:
+
+    <Key>condition</key>
+    <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
+
+    with the intent being that the comparision is against local time.
+
+    """
+    # find our time zone offset in seconds
+    tz = NSTimeZone.defaultTimeZone()
+    seconds_offset = tz.secondsFromGMTForDate_(the_date)
+    # return new NSDate minus local_offset
+    return NSDate.alloc(
+        ).initWithTimeInterval_sinceDate_(seconds_offset, the_date)
+
+@Memoize
+def predicateInfoObject():
+    '''Returns our info object used for predicate comparisons'''
+    info_object = {}
+    machine = getMachineFacts()
+    info_object.update(machine)
+    info_object.update(getConditions())
+    # use our start time for "current" date (if we have it)
+    # and add the timezone offset to it so we can compare
+    # UTC dates as though they were local dates.
+    info_object['date'] = addTimeZoneOffsetToDate(
+        NSDate.dateWithString_(
+            reports.report.get('StartTime', format_time())))
+    os_vers = machine['os_vers']
+    os_vers = os_vers + '.0.0'
+    info_object['os_vers_major'] = int(os_vers.split('.')[0])
+    info_object['os_vers_minor'] = int(os_vers.split('.')[1])
+    info_object['os_vers_patch'] = int(os_vers.split('.')[2])
+    if 'Book' in machine.get('machine_model', ''):
+        info_object['machine_type'] = 'laptop'
+    else:
+        info_object['machine_type'] = 'desktop'
+    return info_object
+
+
+def predicateEvaluatesAsTrue(predicate_string, additional_info=None):
+    '''Evaluates predicate against our info object'''
+    display.display_debug1('Evaluating predicate: %s', predicate_string)
+    info_object = predicateInfoObject()
+    if isinstance(additional_info, dict):
+        info_object.update(additional_info)
+    try:
+        predicate = NSPredicate.predicateWithFormat_(predicate_string)
+    except BaseException, err:
+        display.display_warning('%s', err)
+        # can't parse predicate, so return False
+        return False
+
+    result = predicate.evaluateWithObject_(info_object)
+    display.display_debug1('Predicate %s is %s', predicate_string, result)
+    return result
 
 
 if __name__ == '__main__':
