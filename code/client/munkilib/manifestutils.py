@@ -31,6 +31,7 @@ from . import fetch
 from . import munkicommon
 from . import FoundationPlist
 
+PRIMARY_MANIFEST_TAG = '_primary_manifest_'
 
 class ManifestException(Exception):
     """Lets us raise an exception when we can't get a manifest."""
@@ -52,17 +53,27 @@ class ManifestServerConnectionException(ManifestException):
     pass
 
 
-def getmanifest(manifest_name, suppress_errors=False):
+def manifests():
+    '''Returns our internal _MANIFESTS dict'''
+    return _MANIFESTS
+
+
+def set_manifest(name, path):
+    '''Stores path under name in our internal _MANIFESTS dict'''
+    _MANIFESTS[name] = path
+
+
+def get_manifest(manifest_name, suppress_errors=False):
     """Gets a manifest from the server.
 
     Returns:
-      string local path to the downloaded manifest, or None
+      string local path to the downloaded manifest
     Raises:
       fetch.ConnectionError if we can't connect to the server
       ManifestException if we can't get the manifest
     """
-    if manifest_name in MANIFESTS:
-        return MANIFESTS[manifest_name]
+    if manifest_name in _MANIFESTS:
+        return _MANIFESTS[manifest_name]
 
     manifestbaseurl = (munkicommon.pref('ManifestURL') or
                        munkicommon.pref('SoftwareRepoURL') + '/manifests/')
@@ -120,12 +131,12 @@ def getmanifest(manifest_name, suppress_errors=False):
         raise ManifestInvalidException(errormsg)
     else:
         # plist is valid
-        MANIFESTS[manifest_name] = manifestpath
+        _MANIFESTS[manifest_name] = manifestpath
         return manifestpath
 
 
 def get_primary_manifest(alternate_id=''):
-    """Gets the client manifest from the server."""
+    """Gets the primary client manifest from the server."""
     manifest = ""
     manifesturl = (munkicommon.pref('ManifestURL') or
                    munkicommon.pref('SoftwareRepoURL') + '/manifests/')
@@ -155,7 +166,7 @@ def get_primary_manifest(alternate_id=''):
                 clientidentifier = x509.get_subject().commonName
 
     if clientidentifier:
-        manifest = getmanifest(
+        manifest = get_manifest(
             urllib2.quote(clientidentifier.encode('UTF-8')))
     else:
         # no client identifier specified, so use the hostname
@@ -166,7 +177,7 @@ def get_primary_manifest(alternate_id=''):
         munkicommon.display_detail(
             'No client id specified. Requesting %s...', clientidentifier)
         try:
-            manifest = getmanifest(clientidentifier, suppress_errors=True)
+            manifest = get_manifest(clientidentifier, suppress_errors=True)
         except ManifestNotRetrievedException:
             pass
 
@@ -176,7 +187,7 @@ def get_primary_manifest(alternate_id=''):
             munkicommon.display_detail(
                 'Request failed. Trying %s...', clientidentifier)
             try:
-                manifest = getmanifest(
+                manifest = get_manifest(
                     clientidentifier, suppress_errors=True)
             except ManifestNotRetrievedException:
                 pass
@@ -189,7 +200,7 @@ def get_primary_manifest(alternate_id=''):
                 munkicommon.display_detail(
                     'Request failed. Trying %s...', clientidentifier)
                 try:
-                    manifest = getmanifest(
+                    manifest = get_manifest(
                         clientidentifier, suppress_errors=True)
                 except ManifestNotRetrievedException:
                     pass
@@ -201,8 +212,8 @@ def get_primary_manifest(alternate_id=''):
                 'Request failed. Trying %s...', clientidentifier)
 
     # record this info for later
-    # primary manifest is tagged as "primary_manifest"
-    MANIFESTS['primary_manifest'] = manifest
+    # primary manifest is tagged as PRIMARY_MANIFEST_TAG
+    _MANIFESTS[PRIMARY_MANIFEST_TAG] = manifest
     munkicommon.report['ManifestName'] = clientidentifier
     munkicommon.display_detail('Using manifest: %s', clientidentifier)
     return manifest
@@ -226,7 +237,7 @@ def clean_up_manifests():
             abs_path = os.path.join(dirpath, name)
             rel_path = abs_path[len(manifest_dir):].lstrip("/")
 
-            if rel_path not in MANIFESTS.keys():
+            if rel_path not in _MANIFESTS:
                 os.unlink(abs_path)
 
         # Try to remove the directory
@@ -271,7 +282,7 @@ def get_manifest_value_for_key(manifestpath, keyname):
 
 
 # module globals
-MANIFESTS = {}
+_MANIFESTS = {}
 
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'

@@ -2124,7 +2124,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
     nestedmanifests = manifestdata.get('included_manifests')
     if nestedmanifests:
         for item in nestedmanifests:
-            nestedmanifestpath = manifestutils.getmanifest(item)
+            nestedmanifestpath = manifestutils.get_manifest(item)
             if not nestedmanifestpath:
                 raise ManifestException
             if munkicommon.stopRequested():
@@ -2821,14 +2821,14 @@ def check(client_id='', localmanifestpath=None):
                 ManagedInstallDir, 'manifests', localonlymanifestname)
 
             # if the manifest already exists, the name is being reused
-            if localonlymanifestname in manifestutils.MANIFESTS:
+            if localonlymanifestname in manifestutils.manifests():
                 munkicommon.display_error(
                     "LocalOnlyManifest %s has the same name as an existing "
                     "manifest, skipping...", localonlymanifestname
                 )
             elif os.path.exists(localonlymanifest):
-                manifestutils.MANIFESTS[localonlymanifestname] = (
-                    localonlymanifest)
+                manifestutils.set_manifest(
+                    localonlymanifestname, localonlymanifest)
                 # use catalogs from main manifest for local only manifest
                 cataloglist = manifestutils.get_manifest_value_for_key(
                     mainmanifestpath, 'catalogs')
@@ -3258,22 +3258,21 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
     Returns:
       cataloglist: list of catalogs from primary manifest
     """
-    global MACHINE
-    if not MACHINE:
-        MACHINE = munkicommon.getMachineFacts()
-
     cataloglist = []
-    if force_refresh or 'primary_manifest' not in manifestutils.MANIFESTS:
+    if (force_refresh or
+            manifestutils.PRIMARY_MANIFEST_TAG
+            not in manifestutils.manifests()):
         # Fetch manifest from repo
         manifest = manifestutils.get_primary_manifest(client_id)
         # set force_refresh = True so we'll also download any missing catalogs
         force_refresh = True
     else:
         # Use cached manifest if available
-        manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
-                                    'manifests')
+        manifest_dir = os.path.join(
+            munkicommon.pref('ManagedInstallDir'), 'manifests')
         manifest = os.path.join(
-            manifest_dir, manifestutils.MANIFESTS['primary_manifest'])
+            manifest_dir,
+            manifestutils.get_manifest(manifestutils.PRIMARY_MANIFEST_TAG))
 
     if manifest:
         manifestdata = manifestutils.get_manifest_data(manifest)
