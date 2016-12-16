@@ -59,22 +59,21 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
 
 def tmpdir():
     '''Returns a temporary directory for this session'''
-    global _TMPDIR
-    if not _TMPDIR:
-        _TMPDIR = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
-    return _TMPDIR
+    if not hasattr(tmpdir, 'cache'):
+        tmpdir.cache = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
+    return tmpdir.cache
 
 
 def cleanUpTmpDir():
     """Cleans up our temporary directory."""
-    global _TMPDIR
-    if _TMPDIR:
+    if hasattr(tmpdir, 'cache'):
         try:
-            shutil.rmtree(_TMPDIR)
+            shutil.rmtree(tmpdir.cache)
         except (OSError, IOError), err:
             display.display_warning(
-                'Unable to clean up temporary dir %s: %s', _TMPDIR, str(err))
-        _TMPDIR = None
+                'Unable to clean up temporary dir %s: %s',
+                tmpdir.cache, str(err))
+        del tmpdir.cache
 
 
 def listdir(path):
@@ -177,10 +176,6 @@ def osascript(osastring):
         print >> sys.stderr, 'Error: ', err
     if out:
         return str(out).decode('UTF-8').rstrip('\n')
-
-
-# module globals
-_TMPDIR = None
 
 
 if __name__ == '__main__':
