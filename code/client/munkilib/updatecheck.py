@@ -970,6 +970,8 @@ def getItemDetail(name, cataloglist, vers=''):
         return cmp(munkicommon.MunkiLooseVersion(b),
                    munkicommon.MunkiLooseVersion(a))
 
+    machine = munkicommon.getMachineFacts()
+
     if vers == 'apple_update_metadata':
         vers = 'latest'
     else:
@@ -1018,8 +1020,8 @@ def getItemDetail(name, cataloglist, vers=''):
                         'with minimum Munki version required %s',
                         item['name'], item['version'], min_munki_vers)
                     munkicommon.display_debug1(
-                        'Our Munki version is %s', MACHINE['munki_version'])
-                    if (munkicommon.MunkiLooseVersion(MACHINE['munki_version'])
+                        'Our Munki version is %s', machine['munki_version'])
+                    if (munkicommon.MunkiLooseVersion(machine['munki_version'])
                             < munkicommon.MunkiLooseVersion(min_munki_vers)):
                         # skip this one, go to the next
                         reason = ('Rejected item %s, version %s '
@@ -1027,7 +1029,7 @@ def getItemDetail(name, cataloglist, vers=''):
                                   'Our Munki version is %s.'
                                   % (item['name'], item['version'],
                                      item['minimum_munki_version'],
-                                     MACHINE['munki_version']))
+                                     machine['munki_version']))
                         rejected_items.append(reason)
                         continue
 
@@ -1039,8 +1041,8 @@ def getItemDetail(name, cataloglist, vers=''):
                         'with minimum os version required %s',
                         item['name'], item['version'], min_os_vers)
                     munkicommon.display_debug1(
-                        'Our OS version is %s', MACHINE['os_vers'])
-                    if (munkicommon.MunkiLooseVersion(MACHINE['os_vers']) <
+                        'Our OS version is %s', machine['os_vers'])
+                    if (munkicommon.MunkiLooseVersion(machine['os_vers']) <
                             munkicommon.MunkiLooseVersion(min_os_vers)):
                         # skip this one, go to the next
                         reason = ('Rejected item %s, version %s '
@@ -1048,7 +1050,7 @@ def getItemDetail(name, cataloglist, vers=''):
                                   "Our OS version is %s."
                                   % (item['name'], item['version'],
                                      item['minimum_os_version'],
-                                     MACHINE['os_vers']))
+                                     machine['os_vers']))
                         rejected_items.append(reason)
                         continue
 
@@ -1059,8 +1061,8 @@ def getItemDetail(name, cataloglist, vers=''):
                         'with maximum os version supported %s',
                         item['name'], item['version'], max_os_vers)
                     munkicommon.display_debug1(
-                        'Our OS version is %s', MACHINE['os_vers'])
-                    if (munkicommon.MunkiLooseVersion(MACHINE['os_vers']) >
+                        'Our OS version is %s', machine['os_vers'])
+                    if (munkicommon.MunkiLooseVersion(machine['os_vers']) >
                             munkicommon.MunkiLooseVersion(max_os_vers)):
                         # skip this one, go to the next
                         reason = ('Rejected item %s, version %s '
@@ -1068,7 +1070,7 @@ def getItemDetail(name, cataloglist, vers=''):
                                   'Our OS version is %s.'
                                   % (item['name'], item['version'],
                                      item['maximum_os_version'],
-                                     MACHINE['os_vers']))
+                                     machine['os_vers']))
                         rejected_items.append(reason)
                         continue
 
@@ -1080,9 +1082,9 @@ def getItemDetail(name, cataloglist, vers=''):
                         item['name'], item['version'],
                         item['supported_architectures'])
                     munkicommon.display_debug1(
-                        'Our architecture is %s', MACHINE['arch'])
+                        'Our architecture is %s', machine['arch'])
                     for arch in item['supported_architectures']:
-                        if arch == MACHINE['arch']:
+                        if arch == machine['arch']:
                             # we found a supported architecture that matches
                             # this machine, so we can use it
                             supported_arch_found = True
@@ -1090,8 +1092,8 @@ def getItemDetail(name, cataloglist, vers=''):
                     if (not supported_arch_found and
                             len(item['supported_architectures']) == 1 and
                             item['supported_architectures'][0] == 'x86_64' and
-                            MACHINE['arch'] == 'i386' and
-                            MACHINE['x86_64_capable'] == True):
+                            machine['arch'] == 'i386' and
+                            machine['x86_64_capable'] == True):
                         supported_arch_found = True
 
                     if not supported_arch_found:
@@ -1102,7 +1104,7 @@ def getItemDetail(name, cataloglist, vers=''):
                                   'Our architecture is %s.'
                                   % (item['name'], item['version'],
                                      item['supported_architectures'],
-                                     MACHINE['arch']))
+                                     machine['arch']))
                         rejected_items.append(reason)
                         continue
 
@@ -2716,19 +2718,12 @@ class UpdateCheckAbortedError(Exception):
     pass
 
 
-MACHINE = {}
-CONDITIONS = {}
 def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
 
-    global MACHINE
-    MACHINE = munkicommon.getMachineFacts()
-    munkicommon.report['MachineInfo'] = MACHINE
-
-    global CONDITIONS
-    CONDITIONS = munkicommon.getConditions()
+    munkicommon.report['MachineInfo'] = munkicommon.getMachineFacts()
 
     # initialize our Munki keychain if we are using custom certs or CAs
     dummy_keychain_obj = keychain.MunkiKeychain()
