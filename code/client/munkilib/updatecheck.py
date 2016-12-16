@@ -1690,7 +1690,7 @@ def updateAvailableLicenseSeats(installinfo):
 
         munkicommon.display_debug1('Fetching licensed seat data from %s', url)
         try:
-            license_data = getDataFromURL(url)
+            license_data = fetch.getDataFromURL(url)
             munkicommon.display_debug1('Got: %s', license_data)
             license_dict = FoundationPlist.readPlistFromString(
                 license_data)
@@ -2556,7 +2556,7 @@ def checkServer(url):
     # we have an HTTP or HTTPS URL
     try:
         # attempt to get something at the url
-        dummy_data = getDataFromURL(url)
+        dummy_data = fetch.getDataFromURL(url)
     except fetch.ConnectionError, err:
         # err should contain a tuple with code and description
         return (err[0], err[1])
@@ -3247,28 +3247,6 @@ def checkForceInstallPackages():
             FoundationPlist.writePlist(installinfo, installinfopath)
 
     return result
-
-
-def getDataFromURL(url):
-    '''Returns data from url as string. We use the existing
-    getResourceIfChangedAtomically function so any custom
-    authentication/authorization headers are reused'''
-    urldata = os.path.join(munkicommon.tmpdir(), 'urldata')
-    if os.path.exists(urldata):
-        try:
-            os.unlink(urldata)
-        except (IOError, OSError), err:
-            munkicommon.display_warning('Error in getDataFromURL: %s', err)
-    dummy_result = fetch.munki_resource(url, urldata)
-    try:
-        fdesc = open(urldata)
-        data = fdesc.read()
-        fdesc.close()
-        os.unlink(urldata)
-        return data
-    except (IOError, OSError), err:
-        munkicommon.display_warning('Error in getDataFromURL: %s', err)
-        return ''
 
 
 def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
