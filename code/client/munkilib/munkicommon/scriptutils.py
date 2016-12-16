@@ -27,7 +27,7 @@ import os
 import subprocess
 
 from . import osutils
-from . import output
+from . import display
 from .. import munkistatus
 
 
@@ -46,7 +46,7 @@ def _writefile(stringdata, path):
         fileobject.close()
         return path
     except (OSError, IOError):
-        output.display_error("Couldn't write %s" % stringdata)
+        display.display_error("Couldn't write %s" % stringdata)
         return ""
 
 
@@ -58,7 +58,7 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
     script_text = pkginfo_item.get(scriptname)
     itemname = pkginfo_item.get('name')
     if not script_text:
-        output.display_error(
+        display.display_error(
             'Missing script %s for %s' % (scriptname, itemname))
         return -1
 
@@ -68,12 +68,12 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
         cmd = ['/bin/chmod', '-R', 'o+x', scriptpath]
         retcode = subprocess.call(cmd)
         if retcode:
-            output.display_error(
+            display.display_error(
                 'Error setting script mode in %s for %s'
                 % (scriptname, itemname))
             return -1
     else:
-        output.display_error(
+        display.display_error(
             'Cannot write script %s for %s' % (scriptname, itemname))
         return -1
 
@@ -85,12 +85,12 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
 def runScript(itemname, path, scriptname, suppress_error=False):
     '''Runs a script, Returns return code.'''
     if suppress_error:
-        output.display_detail(
+        display.display_detail(
             'Running %s for %s ' % (scriptname, itemname))
     else:
-        output.display_status_minor(
+        display.display_status_minor(
             'Running %s for %s ' % (scriptname, itemname))
-    if output.munkistatusoutput:
+    if display.munkistatusoutput:
         # set indeterminate progress bar
         munkistatus.percent(-1)
 
@@ -101,7 +101,7 @@ def runScript(itemname, path, scriptname, suppress_error=False):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
     except OSError, err:
-        output.display_error(
+        display.display_error(
             'Error executing script %s: %s' % (scriptname, str(err)))
         return -1
 
@@ -113,20 +113,20 @@ def runScript(itemname, path, scriptname, suppress_error=False):
         # an error so we can dump it to the log
         scriptoutput.append(msg)
         msg = msg.rstrip("\n")
-        output.display_info(msg)
+        display.display_info(msg)
 
     retcode = proc.poll()
     if retcode and not suppress_error:
-        output.display_error(
+        display.display_error(
             'Running %s for %s failed.' % (scriptname, itemname))
-        output.display_error("-"*78)
+        display.display_error("-"*78)
         for line in scriptoutput:
-            output.display_error("\t%s" % line.rstrip("\n"))
-        output.display_error("-"*78)
+            display.display_error("\t%s" % line.rstrip("\n"))
+        display.display_error("-"*78)
     elif not suppress_error:
-        output.log('Running %s for %s was successful.' % (scriptname, itemname))
+        munkilog.log('Running %s for %s was successful.' % (scriptname, itemname))
 
-    if output.munkistatusoutput:
+    if display.munkistatusoutput:
         # clear indeterminate progress bar
         munkistatus.percent(0)
 

@@ -2053,49 +2053,6 @@ def processInstall(manifestitem, cataloglist, installinfo,
         return True
 
 
-@Memoize
-def predicateInfoObject():
-    '''Returns our info object used for predicate comparisons'''
-    info_object = {}
-    machine = munkicommon.getMachineFacts()
-    info_object.update(machine)
-    info_object.update(munkicommon.getConditions())
-    # use our start time for "current" date (if we have it)
-    # and add the timezone offset to it so we can compare
-    # UTC dates as though they were local dates.
-    info_object['date'] = addTimeZoneOffsetToDate(
-        NSDate.dateWithString_(
-            munkicommon.report.get('StartTime', munkicommon.format_time())))
-    os_vers = machine['os_vers']
-    os_vers = os_vers + '.0.0'
-    info_object['os_vers_major'] = int(os_vers.split('.')[0])
-    info_object['os_vers_minor'] = int(os_vers.split('.')[1])
-    info_object['os_vers_patch'] = int(os_vers.split('.')[2])
-    if 'Book' in machine.get('machine_model', ''):
-        info_object['machine_type'] = 'laptop'
-    else:
-        info_object['machine_type'] = 'desktop'
-    return info_object
-
-
-def predicateEvaluatesAsTrue(predicate_string, additional_info=None):
-    '''Evaluates predicate against our info object'''
-    munkicommon.display_debug1('Evaluating predicate: %s', predicate_string)
-    info_object = predicateInfoObject()
-    if isinstance(additional_info, dict):
-        info_object.update(additional_info)
-    try:
-        p = NSPredicate.predicateWithFormat_(predicate_string)
-    except BaseException, err:
-        munkicommon.display_warning('%s', err)
-        # can't parse predicate, so return False
-        return False
-
-    result = p.evaluateWithObject_(info_object)
-    munkicommon.display_debug1('Predicate %s is %s', predicate_string, result)
-    return result
-
-
 def processManifestForKey(manifest, manifest_key, installinfo,
                           parentcatalogs=None):
     """Processes keys in manifests to build the lists of items to install and
@@ -3130,45 +3087,6 @@ def displayUpdateInfo():
     if installcount == 0 and removalcount == 0:
         munkicommon.display_info(
             'No changes to managed software are available.')
-
-
-def subtractTimeZoneOffsetFromDate(the_date):
-    """Input: NSDate object
-    Output: NSDate object with same date and time as the UTC.
-    In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
-    '2011-06-20 12:00:00 -0700'.
-    In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
-    This allows a pkginfo item to reference a time in UTC that
-    gets translated to the same relative local time.
-    A force_install_after_date for '2011-06-20T12:00:00Z' will happen
-    after 2011-06-20 12:00:00 local time.
-    """
-    # find our time zone offset in seconds
-    tz = NSTimeZone.defaultTimeZone()
-    seconds_offset = tz.secondsFromGMTForDate_(the_date)
-    # return new NSDate minus local_offset
-    return NSDate.alloc(
-        ).initWithTimeInterval_sinceDate_(-seconds_offset, the_date)
-
-
-def addTimeZoneOffsetToDate(the_date):
-    """Input: NSDate object
-    Output: NSDate object with timezone difference added
-    to the date. This allows conditional_item conditions to
-    be written like so:
-
-    <Key>condition</key>
-    <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
-
-    with the intent being that the comparision is against local time.
-
-    """
-    # find our time zone offset in seconds
-    tz = NSTimeZone.defaultTimeZone()
-    seconds_offset = tz.secondsFromGMTForDate_(the_date)
-    # return new NSDate minus local_offset
-    return NSDate.alloc(
-        ).initWithTimeInterval_sinceDate_(seconds_offset, the_date)
 
 
 def checkForceInstallPackages():
