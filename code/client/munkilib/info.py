@@ -47,7 +47,7 @@ from . import osutils
 from . import pkgutils
 from . import prefs
 from . import reports
-from .. import FoundationPlist
+from . import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103

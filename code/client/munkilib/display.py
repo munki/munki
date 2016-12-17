@@ -28,7 +28,7 @@ import warnings
 from . import munkilog
 from . import prefs
 from . import reports
-from .. import munkistatus
+from . import munkistatus
 
 
 def _getsteps(num_of_steps, limit):

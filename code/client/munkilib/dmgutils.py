@@ -26,7 +26,7 @@ import os
 import subprocess
 
 from . import display
-from .. import FoundationPlist
+from . import FoundationPlist
 
 
 # we use lots of camelCase-style names. Deal with it.

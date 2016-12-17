@@ -36,7 +36,7 @@ from xml.dom import minidom
 from . import display
 from . import dmgutils
 from . import osutils
-from .. import FoundationPlist
+from . import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
