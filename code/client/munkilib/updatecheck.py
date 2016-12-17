@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-updatecheck
+updatecheck.py
 
 Created by Greg Neagle on 2008-11-13.
 
@@ -191,7 +191,7 @@ def analyzeInstalledPkgs():
     pkgdata = {}
     itemname_to_pkgid = {}
     pkgid_to_itemname = {}
-    for catalogname in CATALOG.keys():
+    for catalogname in CATALOG:
         catalogitems = CATALOG[catalogname]['items']
         addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname)
     # itemname_to_pkgid now contains all receipts (pkgids) we know about
@@ -202,7 +202,7 @@ def analyzeInstalledPkgs():
     installed = []
     partiallyinstalled = []
     installedpkgsmatchedtoname = {}
-    for name in itemname_to_pkgid.keys():
+    for name in itemname_to_pkgid:
         # name is a Munki install item name
         somepkgsfound = False
         allpkgsfound = True
@@ -900,7 +900,7 @@ def trimVersionString(version_string):
       10.0.0-abc1 -> 10.0.0-abc1
       10.0.0-abc1.0 -> 10.0.0-abc1
     """
-    if version_string == None or version_string == '':
+    if version_string is None or version_string == '':
         return ''
     version_parts = version_string.split('.')
     # strip off all trailing 0's in the version, while over 2 parts.
@@ -1045,7 +1045,7 @@ def getItemDetail(name, cataloglist, vers=''):
                             len(item['supported_architectures']) == 1 and
                             item['supported_architectures'][0] == 'x86_64' and
                             machine['arch'] == 'i386' and
-                            machine['x86_64_capable'] == True):
+                            machine['x86_64_capable'] is True):
                         supported_arch_found = True
 
                     if not supported_arch_found:
@@ -1267,10 +1267,7 @@ def someVersionInstalled(item_pl):
 
     if item_pl.get('installer_type') == 'profile':
         identifier = item_pl.get('PayloadIdentifier')
-        if profiles.profile_is_installed(identifier):
-            return True
-        else:
-            return False
+        return profiles.profile_is_installed(identifier)
 
     # does 'installs' exist and is it non-empty?
     if item_pl.get('installs'):
@@ -1348,10 +1345,7 @@ def evidenceThisIsInstalled(item_pl):
 
     if item_pl.get('installer_type') == 'profile':
         identifier = item_pl.get('PayloadIdentifier')
-        if profiles.profile_is_installed(identifier):
-            return True
-        else:
-            return False
+        return profiles.profile_is_installed(identifier)
 
     foundallinstallitems = False
     if ('installs' in item_pl and
@@ -1420,7 +1414,7 @@ def lookForUpdates(itemname, cataloglist):
     # get a list of catalog items that are updates for other items
     update_list = []
     for catalogname in cataloglist:
-        if not catalogname in CATALOG.keys():
+        if catalogname not in CATALOG:
             # in case the list refers to a non-existent catalog
             continue
 
@@ -1886,7 +1880,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
 
-            if not 'apple_item' in iteminfo:
+            if 'apple_item' not in iteminfo:
                 # admin did not explicitly mark this item; let's determine if
                 # it's from Apple
                 if isAppleItem(item_pl):
@@ -2040,7 +2034,7 @@ def processManifestForKey(manifest, manifest_key, installinfo,
         for item in nestedmanifests:
             nestedmanifestpath = manifestutils.get_manifest(item)
             if not nestedmanifestpath:
-                raise ManifestException
+                raise manifestutils.ManifestException
             if munkicommon.stopRequested():
                 return {}
             processManifestForKey(nestedmanifestpath, manifest_key,
@@ -2301,7 +2295,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
 
-    if not 'apple_item' in iteminfo:
+    if 'apple_item' not in iteminfo:
         # admin did not explicitly mark this item; let's determine if
         # it's from Apple
         if isAppleItem(item_pl):
@@ -2673,8 +2667,8 @@ def check(client_id='', localmanifestpath=None):
         munkicommon.report['Conditions'] = munkicommon.predicateInfoObject()
 
         munkicommon.display_detail('**Checking for installs**')
-        processManifestForKey(mainmanifestpath, 'managed_installs',
-                              installinfo)
+        processManifestForKey(
+            mainmanifestpath, 'managed_installs', installinfo)
         if munkicommon.stopRequested():
             return 0
 
@@ -2686,8 +2680,8 @@ def check(client_id='', localmanifestpath=None):
 
         # now generate a list of items to be uninstalled
         munkicommon.display_detail('**Checking for removals**')
-        processManifestForKey(mainmanifestpath, 'managed_uninstalls',
-                              installinfo)
+        processManifestForKey(
+            mainmanifestpath, 'managed_uninstalls', installinfo)
         if munkicommon.stopRequested():
             return 0
 
@@ -2705,14 +2699,14 @@ def check(client_id='', localmanifestpath=None):
 
         # look for additional updates
         munkicommon.display_detail('**Checking for managed updates**')
-        processManifestForKey(mainmanifestpath, 'managed_updates',
-                              installinfo)
+        processManifestForKey(
+            mainmanifestpath, 'managed_updates', installinfo)
         if munkicommon.stopRequested():
             return 0
 
         # build list of optional installs
-        processManifestForKey(mainmanifestpath, 'optional_installs',
-                              installinfo)
+        processManifestForKey(
+            mainmanifestpath, 'optional_installs', installinfo)
         if munkicommon.stopRequested():
             return 0
 
@@ -2838,13 +2832,13 @@ def check(client_id='', localmanifestpath=None):
         # not installed, but no installer item
         problem_items = [item
                          for item in installinfo['managed_installs']
-                         if item.get('installed') == False and
+                         if item.get('installed') is False and
                          not item.get('installer_item')]
         # filter removals to get items already removed
         # (or never installed)
         removed_items = [item.get('name', '')
                          for item in installinfo['removals']
-                         if item.get('installed') == False]
+                         if item.get('installed') is False]
 
         if os.path.exists(selfservemanifest):
             # for any item in the managed_uninstalls in the self-serve
@@ -2964,9 +2958,10 @@ def check(client_id='', localmanifestpath=None):
                 munkicommon.display_detail('No change in InstallInfo.')
 
         if installinfochanged:
-            FoundationPlist.writePlist(installinfo,
-                                       os.path.join(ManagedInstallDir,
-                                                    'InstallInfo.plist'))
+            FoundationPlist.writePlist(
+                installinfo,
+                os.path.join(ManagedInstallDir, 'InstallInfo.plist'))
+
     except (manifestutils.ManifestException, UpdateCheckAbortedError):
         # Update check aborted. Check to see if we have a valid
         # install/remove list from an earlier run.
@@ -3070,7 +3065,7 @@ def checkForceInstallPackages():
     now_xhours = NSDate.dateWithTimeIntervalSinceNow_(
         FORCE_INSTALL_WARNING_HOURS * 3600)
 
-    for installinfo_plist in installinfo_types.keys():
+    for installinfo_plist in installinfo_types:
         pl_dict = installinfo_types[installinfo_plist]
         installinfopath = os.path.join(ManagedInstallDir, installinfo_plist)
         try:
