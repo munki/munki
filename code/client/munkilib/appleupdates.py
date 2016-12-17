@@ -536,7 +536,7 @@ class AppleUpdates(object):
         try:
             self.GetSoftwareUpdateResource(
                 full_url, local_file_path, resume=True)
-        except fetch.DownloadError as err:
+        except fetch.Error as err:
             raise ReplicationError(err)
         return local_file_path
 
@@ -890,7 +890,7 @@ class AppleUpdates(object):
             dummy_file_changed = self.GetSoftwareUpdateResource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
             self.ExtractAndCopyDownloadedCatalog()
-        except fetch.DownloadError:
+        except fetch.Error:
             raise
 
     def InstalledApplePackagesHaveChanged(self):
@@ -960,7 +960,7 @@ class AppleUpdates(object):
             self.CacheAppleCatalog()
         except CatalogNotFoundError:
             return False
-        except (ReplicationError, fetch.DownloadError) as err:
+        except (ReplicationError, fetch.Error) as err:
             munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', unicode(err))
