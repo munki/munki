@@ -36,7 +36,7 @@ from Foundation import NSDate
 
 from . import munkilog
 from . import prefs
-from .. import FoundationPlist
+from . import FoundationPlist
 
 
 def format_time(timestamp=None):

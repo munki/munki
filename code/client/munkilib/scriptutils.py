@@ -28,7 +28,7 @@ import subprocess
 
 from . import osutils
 from . import display
-from .. import munkistatus
+from . import munkistatus
 
 
 # we use lots of camelCase-style names. Deal with it.
