@@ -43,20 +43,6 @@ from . import FoundationPlist
 # pylint: disable=C0103
 
 
-class Memoize(dict):
-    '''Class to cache the return values of an expensive function.
-    This version supports only functions with non-keyword arguments'''
-    def __init__(self, func):
-        self.func = func
-
-    def __call__(self, *args):
-        return self[args]
-
-    def __missing__(self, key):
-        result = self[key] = self.func(*key)
-        return result
-
-
 #####################################################
 # Apple package utilities
 #####################################################
@@ -777,7 +763,7 @@ def getPackageMetaData(pkgitem):
     return cataloginfo
 
 
-@Memoize
+@utils.Memoize
 def getInstalledPackages():
     """Builds a dictionary of installed receipts and their version number"""
     installedpkgs = {}

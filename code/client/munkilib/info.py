@@ -47,6 +47,7 @@ from . import osutils
 from . import pkgutils
 from . import prefs
 from . import reports
+from . import utils
 from . import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
@@ -58,20 +59,6 @@ APP_DISCOVERY_EXCLUSION_DIRS = set([
     'Volumes', 'tmp', '.vol', '.Trashes', '.MobileBackups', '.Spotlight-V100',
     '.fseventsd', 'Network', 'net', 'home', 'cores', 'dev', 'private',
     ])
-
-
-class Memoize(dict):
-    '''Class to cache the return values of an expensive function.
-    This version supports only functions with non-keyword arguments'''
-    def __init__(self, func):
-        self.func = func
-
-    def __call__(self, *args):
-        return self[args]
-
-    def __missing__(self, key):
-        result = self[key] = self.func(*key)
-        return result
 
 
 class Error(Exception):
@@ -453,7 +440,7 @@ def getLSInstalledApplications():
     return applist
 
 
-@Memoize
+@utils.Memoize
 def getSPApplicationData():
     '''Uses system profiler to get application info for this machine'''
     cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
@@ -479,7 +466,7 @@ def getSPApplicationData():
     return app_data
 
 
-@Memoize
+@utils.Memoize
 def getAppData():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
@@ -621,7 +608,7 @@ def getAvailableDiskSpace(volumepath='/'):
     return int(st.f_frsize * st.f_bavail / 1024) # f_bavail matches df(1) output
 
 
-@Memoize
+@utils.Memoize
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
     installer is applicable to this OS or hardware"""
@@ -650,7 +637,7 @@ def validPlist(path):
     return retcode == 0
 
 
-@Memoize
+@utils.Memoize
 def getConditions():
     """Fetches key/value pairs from condition scripts
     which can be placed into /usr/local/munki/conditions"""
@@ -765,7 +752,7 @@ def addTimeZoneOffsetToDate(the_date):
     return NSDate.alloc(
         ).initWithTimeInterval_sinceDate_(seconds_offset, the_date)
 
-@Memoize
+@utils.Memoize
 def predicateInfoObject():
     '''Returns our info object used for predicate comparisons'''
     info_object = {}

@@ -31,6 +31,20 @@ import subprocess
 import stat
 
 
+class Memoize(dict):
+    '''Class to cache the return values of an expensive function.
+    This version supports only functions with non-keyword arguments'''
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args):
+        return self[args]
+
+    def __missing__(self, key):
+        result = self[key] = self.func(*key)
+        return result
+
+
 class Error(Exception):
     """Class for domain specific exceptions."""
 
