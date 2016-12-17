@@ -43,6 +43,7 @@ import manifestutils
 import munkicommon
 import munkistatus
 import profiles
+import utils
 import FoundationPlist
 
 
@@ -52,19 +53,6 @@ import FoundationPlist
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
-
-class Memoize(dict):
-    '''Class to cache the return values of an expensive function.
-    This version supports only functions with non-keyword arguments'''
-    def __init__(self, func):
-        self.func = func
-
-    def __call__(self, *args):
-        return self[args]
-
-    def __missing__(self, key):
-        result = self[key] = self.func(*key)
-        return result
 
 
 def makeCatalogDB(catalogitems):
@@ -184,7 +172,7 @@ def bestVersionMatch(vers_num, item_dict):
     return None
 
 
-@Memoize
+@utils.Memoize
 def analyzeInstalledPkgs():
     """Analyzed installed packages in an attempt to determine what is
        installed."""
