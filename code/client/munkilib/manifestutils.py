@@ -169,7 +169,7 @@ def get_primary_manifest(alternate_id=''):
         manifest = get_manifest(
             urllib2.quote(clientidentifier.encode('UTF-8')))
     else:
-        # no client identifier specified, so use the hostname
+        # no client identifier specified, so try the hostname
         hostname = os.uname()[1]
         # there shouldn't be any characters in a hostname that need quoting,
         # but see https://code.google.com/p/munki/issues/detail?id=276
@@ -210,6 +210,8 @@ def get_primary_manifest(alternate_id=''):
             clientidentifier = 'site_default'
             munkicommon.display_detail(
                 'Request failed. Trying %s...', clientidentifier)
+            manifest = get_manifest(
+                clientidentifier, suppress_errors=True)
 
     # record this info for later
     # primary manifest is tagged as PRIMARY_MANIFEST_TAG
