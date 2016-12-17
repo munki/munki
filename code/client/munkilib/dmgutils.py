@@ -26,36 +26,12 @@ import os
 import subprocess
 
 from . import display
+from . import utils
 from . import FoundationPlist
 
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
-
-
-# this function isn't specifically a dmg function, but is used by the other
-# dmg functions
-
-def getFirstPlist(textString):
-    """Gets the next plist from a text string that may contain one or
-    more text-style plists.
-    Returns a tuple - the first plist (if any) and the remaining
-    string after the plist"""
-    plist_header = '<?xml version'
-    plist_footer = '</plist>'
-    plist_start_index = textString.find(plist_header)
-    if plist_start_index == -1:
-        # not found
-        return ("", textString)
-    plist_end_index = textString.find(
-        plist_footer, plist_start_index + len(plist_header))
-    if plist_end_index == -1:
-        # not found
-        return ("", textString)
-    # adjust end value
-    plist_end_index = plist_end_index + len(plist_footer)
-    return (textString[plist_start_index:plist_end_index],
-            textString[plist_end_index:])
 
 
 # dmg helpers
@@ -69,7 +45,7 @@ def DMGisWritable(dmgpath):
     if err:
         display.display_error(
             u'hdiutil error %s with image %s.', err, dmgpath)
-    (pliststr, out) = getFirstPlist(out)
+    (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
             plist = FoundationPlist.readPlistFromString(pliststr)
@@ -92,7 +68,7 @@ def DMGhasSLA(dmgpath):
     if err:
         display.display_error(
             u'hdiutil error %s with image %s.', err, dmgpath)
-    (pliststr, out) = getFirstPlist(out)
+    (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
             plist = FoundationPlist.readPlistFromString(pliststr)
@@ -117,7 +93,7 @@ def hdiutilInfo():
     (out, err) = proc.communicate()
     if err:
         display.display_error(u'hdiutil info error: %s', err)
-    (pliststr, out) = getFirstPlist(out)
+    (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
             plist = FoundationPlist.readPlistFromString(pliststr)
@@ -231,7 +207,7 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
     if proc.returncode:
         display.display_error(
             'Error: "%s" while mounting %s.' % (err.rstrip(), dmgname))
-    (pliststr, out) = getFirstPlist(out)
+    (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
             plist = FoundationPlist.readPlistFromString(pliststr)
