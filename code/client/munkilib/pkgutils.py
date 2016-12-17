@@ -36,6 +36,7 @@ from xml.dom import minidom
 from . import display
 from . import dmgutils
 from . import osutils
+from . import utils
 from . import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
@@ -788,7 +789,7 @@ def getInstalledPackages():
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, dummy_err) = proc.communicate()
     while out:
-        (pliststr, out) = dmgutils.getFirstPlist(out)
+        (pliststr, out) = utils.getFirstPlist(out)
         if pliststr:
             plist = FoundationPlist.readPlistFromString(pliststr)
             if 'pkg-version' in plist and 'pkgid' in plist:
