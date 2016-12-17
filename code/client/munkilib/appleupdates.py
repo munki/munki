@@ -536,7 +536,7 @@ class AppleUpdates(object):
         try:
             self.GetSoftwareUpdateResource(
                 full_url, local_file_path, resume=True)
-        except fetch.MunkiDownloadError as err:
+        except fetch.DownloadError as err:
             raise ReplicationError(err)
         return local_file_path
 
@@ -786,7 +786,7 @@ class AppleUpdates(object):
           A list of string Apple update products ids.
         """
         # pylint: disable=no-self-use
-        
+
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = self.GetSoftwareUpdatePref(
             'RecommendedUpdates')
@@ -890,7 +890,7 @@ class AppleUpdates(object):
             dummy_file_changed = self.GetSoftwareUpdateResource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
             self.ExtractAndCopyDownloadedCatalog()
-        except fetch.MunkiDownloadError:
+        except fetch.DownloadError:
             raise
 
     def InstalledApplePackagesHaveChanged(self):
@@ -960,7 +960,7 @@ class AppleUpdates(object):
             self.CacheAppleCatalog()
         except CatalogNotFoundError:
             return False
-        except (ReplicationError, fetch.MunkiDownloadError) as err:
+        except (ReplicationError, fetch.DownloadError) as err:
             munkicommon.display_warning(
                 'Could not download Apple SUS catalog:')
             munkicommon.display_warning('\t%s', unicode(err))
@@ -1642,11 +1642,17 @@ class AppleUpdates(object):
         """
         success = True
         if suppress_check:
-            # typically because we're doing a logout install; if
-            # there are no waiting Apple Updates we shouldn't
-            # trigger a check for them.
-            pass
-        elif force_check:
+            # don't check at all --
+            # typically because we are doing a logout install
+            # just return any AppleUpdates info we already have
+            if not os.path.exists(self.apple_updates_plist):
+                return 0
+            try:
+                plist = FoundationPlist.readPlist(self.apple_updates_plist)
+            except FoundationPlist.FoundationPlistException:
+                plist = {}
+            return len(plist.get('AppleUpdates', []))
+        if force_check:
             # typically because user initiated the check from
             # Managed Software Update.app
             success = self.CheckForSoftwareUpdates(force_check=True)
@@ -1664,7 +1670,8 @@ class AppleUpdates(object):
                     # dateWithString_ returns None if invalid date string.
                     if not last_su_check:
                         raise ValueError
-                    interval = 24 * 60 * 60  # only force check every 24 hours.
+                    interval = 24 * 60 * 60
+                    # only force check every 24 hours.
                     next_su_check = last_su_check.dateByAddingTimeInterval_(
                         interval)
                 except (ValueError, TypeError):
@@ -1679,8 +1686,6 @@ class AppleUpdates(object):
             count = self.WriteAppleUpdatesFile()
         else:
             self.ClearAppleUpdateInfo()
-            return 0
-        if munkicommon.stopRequested():
             return 0
         return count
 
