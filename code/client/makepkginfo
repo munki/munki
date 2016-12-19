@@ -512,15 +512,6 @@ def main():
         help=('Path to an uninstall script to be run in order '
               'to uninstall this item.')
         )
-    script_options.add_option(
-        '--script_environment', '--script-environment',
-        action="append",
-        metavar='KEY=VALUE',
-        help=('Specifies key/value pairs to set environment variables for use '
-              'by embedded scripts. A key/value pair of '
-              'USER=CURRENT_CONSOLE_USER indicates that USER be set to the '
-              'GUI user, otherwise root. Can be specified multiple times.')
-        )
     p.add_option_group(script_options)
 
     # Drag-n-Drop options
@@ -605,15 +596,6 @@ def main():
         help=('Generate installer choices for metapackages. '
               'Note: Requires Mac OS X 10.6.6 or later.')
         )
-    apple_options.add_option(
-        '--installer_environment', '--installer-environment', '-E',
-        action="append",
-        metavar='KEY=VALUE',
-        help=('Specifies key/value pairs to set environment variables for use '
-              'by /usr/sbin/installer. A key/value pair of '
-              'USER=CURRENT_CONSOLE_USER indicates that USER be set to the '
-              'GUI user, otherwise root. Can be specified multiple times.')
-        )
     p.add_option_group(apple_options)
 
     # Adobe package specific options
@@ -695,6 +677,15 @@ def main():
         action='store_true',
         help=('Indicates this package should be an OnDemand package '
               'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
+        '--environment', '-E',
+        action="append",
+        metavar='KEY=VALUE',
+        help=('Specifies key/value pairs to set environment variables for use '
+              'by /usr/sbin/installer and embedded scripts. A key/value pair of '
+              'USER=CURRENT_CONSOLE_USER indicates that USER be set to the '
+              'GUI user, otherwise root. Can be specified multiple times.')
         )
     additional_options.add_option(
         '--minimum_munki_version', '--minimum-munki-version',
@@ -804,7 +795,7 @@ def main():
     if (len(arguments) == 0 and
             not options.file and
             not options.nopkg and
-            not options.installer_environment and
+            not options.environment and
             not options.installcheck_script and
             not options.uninstallcheck_script and
             not options.preinstall_script and
@@ -812,7 +803,6 @@ def main():
             not options.preuninstall_script and
             not options.postuninstall_script and
             not options.uninstall_script and
-            not options.script-environment and
             not options.apple_update):
         p.print_usage()
         exit(-1)
@@ -1081,15 +1071,6 @@ def main():
         if scriptstring:
             catinfo['uninstall_script'] = scriptstring
             catinfo['uninstall_method'] = 'uninstall_script'
-    if options.script_environment:
-        try:
-            script_environment_dict = dict(
-                (k,v) for k,v in (
-                    kv.split('=') for kv in options.script_environment))
-        except Exception:
-            script_environment_dict = {}
-        if script_environment_dict:
-            catinfo['script_environment'] = script_environment_dict
     if options.autoremove:
         catinfo['autoremove'] = True
     if options.minimum_munki_version:
@@ -1128,15 +1109,15 @@ def main():
         catinfo['blocking_applications'] = options.blocking_application
     if options.uninstall_method:
         catinfo['uninstall_method'] = options.uninstall_method
-    if options.installer_environment:
+    if options.environment:
         try:
-            installer_environment_dict = dict(
+            environment_dict = dict(
                 (k,v) for k,v in (
-                    kv.split('=') for kv in options.installer_environment))
+                    kv.split('=') for kv in options.environment))
         except Exception:
-            installer_environment_dict = {}
-        if installer_environment_dict:
-            catinfo['installer_environment'] = installer_environment_dict
+            environment_dict = {}
+        if environment_dict:
+            catinfo['environment'] = environment_dict
     if options.notes:
         catinfo['notes'] = readFileOrString(options.notes)
     if options.apple_update:

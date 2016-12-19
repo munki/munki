@@ -715,7 +715,12 @@ def installWithInfo(
                                                choicesXMLfile)
                 else:
                     choicesXMLfile = ''
-                installer_environment = item.get('installer_environment')
+                environment = item.get('environment')
+
+                # To keep backward compatibility with installer_environment
+                if not environment:
+                    environment = item.get('installer_environment')
+
                 if munkicommon.hasValidDiskImageExt(itempath):
                     munkicommon.display_status_minor(
                         "Mounting disk image %s" % item["installer_item"])
@@ -748,14 +753,14 @@ def installWithInfo(
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = install(
                                 fullpkgpath, display_name, choicesXMLfile,
-                                suppressBundleRelocation, installer_environment)
+                                suppressBundleRelocation, environment)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = installall(
                             mountpoints[0], display_name, choicesXMLfile,
-                            suppressBundleRelocation, installer_environment)
+                            suppressBundleRelocation, environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
@@ -765,7 +770,7 @@ def installWithInfo(
                       itempath.endswith(".dist")):
                     (retcode, needtorestart) = install(
                         itempath, display_name, choicesXMLfile,
-                        suppressBundleRelocation, installer_environment)
+                        suppressBundleRelocation, environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):

@@ -2527,7 +2527,7 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
     env_vars['USER'] = userinfo.pw_name
     env_vars['HOME'] = userinfo.pw_dir
 
-    environment = pkginfo_item.get('script_environment')
+    environment = pkginfo_item.get('environment')
 
     if environment:
         # Munki admin has specified custom script environment
