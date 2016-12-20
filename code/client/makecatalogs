@@ -398,7 +398,7 @@ def main():
                            'over the default repo_url specified via '
                            '--configure.')
     parser.add_option('--plugin', '--plugin', default=pref('plugin'), 
-                      help='Specify a custom plugin to run for munkiimport Repo.')
+                      help='Optional custom plugin to run for munkiimport Repo.')
     parser.set_defaults(force=False)
     options, arguments = parser.parse_args()
 
