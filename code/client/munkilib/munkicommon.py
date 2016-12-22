@@ -31,7 +31,7 @@ Common functions used by the munki tools.
 from .constants import *
 from .display import *
 from .dmgutils import *
-from .hash import *
+from .munkihash import *
 from .info import *
 from .munkilog import *
 from .osutils import *
