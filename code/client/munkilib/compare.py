@@ -1,0 +1,453 @@
+#!/usr/bin/python
+# encoding: utf-8
+#
+# Copyright 2009-2016 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+compare.py
+
+Created by Greg Neagle on 2016-12-13.
+
+Comparsion/checking functions used by updatecheck.py
+"""
+
+import os
+
+from . import display
+from . import munkihash
+from . import info
+from . import pkgutils
+from . import utils
+from . import FoundationPlist
+
+
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
+
+
+def compareVersions(thisvers, thatvers):
+    """Compares two version numbers to one another.
+
+    Returns:
+      -1 if thisvers is older than thatvers
+      1 if thisvers is the same as thatvers
+      2 if thisvers is newer than thatvers
+    """
+    if (pkgutils.MunkiLooseVersion(thisvers) <
+            pkgutils.MunkiLooseVersion(thatvers)):
+        return -1
+    elif (pkgutils.MunkiLooseVersion(thisvers) ==
+          pkgutils.MunkiLooseVersion(thatvers)):
+        return 1
+    else:
+        return 2
+
+
+def compareApplicationVersion(app):
+    """First checks the given path if it's available,
+    then uses system profiler data to look for the app
+
+    Args:
+      app: dict with application bundle info
+
+    Returns:
+      Boolean.
+             0 if the app isn't installed
+                or doesn't have valid Info.plist
+            -1 if it's older
+             1 if the version is the same
+             2 if the version is newer
+
+    Raises utils.Error if there's an error in the input
+    """
+    if 'path' in app:
+        filepath = os.path.join(app['path'], 'Contents', 'Info.plist')
+        if os.path.exists(filepath):
+            return compareBundleVersion(app)
+
+    # not in default location, or no path specified, so let's search:
+    name = app.get('CFBundleName', '')
+    bundleid = app.get('CFBundleIdentifier', '')
+    version_comparison_key = app.get(
+        'version_comparison_key', 'CFBundleShortVersionString')
+    versionstring = app.get(version_comparison_key)
+    minupvers = app.get('minimum_update_version')
+
+    if name == '' and bundleid == '':
+        if 'path' in app:
+            # already looked at default path, and we don't have
+            # any additional info, so we have to assume it's not installed.
+            return 0
+        else:
+            # no path, no name, no bundleid. Error!
+            raise utils.Error(
+                'No application name or bundleid was specified!')
+
+    display.display_debug1(
+        'Looking for application %s with bundleid: %s, version %s...' %
+        (name, bundleid, versionstring))
+    appinfo = []
+    appdata = info.getAppData()
+    if appdata:
+        for item in appdata:
+            # Skip applications in /Users but not /Users/Shared, for now.
+            if 'path' in item:
+                if item['path'].startswith('/Users/') and \
+                    not item['path'].startswith('/Users/Shared/'):
+                    display.display_debug2(
+                        'Skipped app %s with path %s',
+                        item['name'], item['path'])
+                    continue
+            if bundleid:
+                if item['bundleid'] == bundleid:
+                    appinfo.append(item)
+            elif name and item['name'] == name:
+                appinfo.append(item)
+
+    if not appinfo:
+        # app isn't present!
+        display.display_debug1(
+            '\tDid not find this application on the startup disk.')
+        return 0
+
+    # iterate through matching applications
+    for item in appinfo:
+        if 'name' in item:
+            display.display_debug2(
+                '\tName: \t %s', item['name'])
+        if 'path' in item:
+            apppath = item['path']
+            display.display_debug2(
+                '\tPath: \t %s', apppath)
+            display.display_debug2(
+                '\tCFBundleIdentifier: \t %s', item['bundleid'])
+
+        if apppath and version_comparison_key != 'CFBundleShortVersionString':
+            # if a specific plist version key has been supplied,
+            # if we're suppose to compare against a key other than
+            # 'CFBundleShortVersionString' we can't use item['version']
+            installed_version = pkgutils.getBundleVersion(
+                apppath, version_comparison_key)
+        else:
+            # item['version'] is CFBundleShortVersionString
+            installed_version = item['version']
+
+        if minupvers:
+            if compareVersions(installed_version, minupvers) < 1:
+                display.display_debug1(
+                    '\tVersion %s too old < %s', installed_version, minupvers)
+                # installed version is < minimum_update_version,
+                # too old to match
+                return 0
+
+        if 'version' in item:
+            display.display_debug2(
+                '\tVersion: \t %s', installed_version)
+            if compareVersions(installed_version, versionstring) == 1:
+                # version is the same
+                return 1
+            if compareVersions(installed_version, versionstring) == 2:
+                # version is newer
+                return 2
+
+    # if we got this far, must only be older
+    display.display_debug1(
+        'An older version of this application is present.')
+    return -1
+
+
+def compareBundleVersion(item):
+    """Compares a bundle version passed item dict.
+
+    Returns  0 if the bundle isn't installed
+                or doesn't have valid Info.plist
+            -1 if it's older
+             1 if the version is the same
+             2 if the version is newer
+
+    Raises utils.Error if there's an error in the input
+    """
+    # look for an Info.plist inside the bundle
+    filepath = os.path.join(item['path'], 'Contents', 'Info.plist')
+    if not os.path.exists(filepath):
+        display.display_debug1('\tNo Info.plist found at %s', filepath)
+        filepath = os.path.join(item['path'], 'Resources', 'Info.plist')
+        if not os.path.exists(filepath):
+            display.display_debug1('\tNo Info.plist found at %s', filepath)
+            return 0
+
+    display.display_debug1('\tFound Info.plist at %s', filepath)
+    # just let comparePlistVersion do the comparison
+    saved_path = item['path']
+    item['path'] = filepath
+    compare_result = comparePlistVersion(item)
+    item['path'] = saved_path
+    return compare_result
+
+
+def comparePlistVersion(item):
+    """Gets the version string from the plist at path and compares versions.
+
+    Returns  0 if the plist isn't installed
+            -1 if it's older
+             1 if the version is the same
+             2 if the version is newer
+
+    Raises utils.Error if there's an error in the input
+    """
+    version_comparison_key = item.get(
+        'version_comparison_key', 'CFBundleShortVersionString')
+    if 'path' in item and version_comparison_key in item:
+        versionstring = item[version_comparison_key]
+        filepath = item['path']
+        minupvers = item.get('minimum_update_version')
+    else:
+        raise utils.Error('Missing plist path or version!')
+
+    display.display_debug1('\tChecking %s for %s %s...',
+                           filepath, version_comparison_key, versionstring)
+    if not os.path.exists(filepath):
+        display.display_debug1('\tNo plist found at %s', filepath)
+        return 0
+
+    try:
+        plist = FoundationPlist.readPlist(filepath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        display.display_debug1('\t%s may not be a plist!', filepath)
+        return 0
+    if not hasattr(plist, 'get'):
+        display.display_debug1(
+            'plist not parsed as NSCFDictionary: %s', filepath)
+        return 0
+
+    if 'version_comparison_key' in item:
+        # specific key has been supplied,
+        # so use this to determine installed version
+        display.display_debug1(
+            '\tUsing version_comparison_key %s', version_comparison_key)
+        installedvers = pkgutils.getVersionString(
+            plist, version_comparison_key)
+    else:
+        # default behavior
+        installedvers = pkgutils.getVersionString(plist)
+    if installedvers:
+        display.display_debug1(
+            '\tInstalled item has version %s', installedvers)
+        if minupvers:
+            if compareVersions(installedvers, minupvers) < 1:
+                display.display_debug1(
+                    '\tVersion %s too old < %s', installedvers, minupvers)
+                return 0
+        compare_result = compareVersions(installedvers, versionstring)
+        results = ['older', 'not installed?!', 'the same', 'newer']
+        display.display_debug1(
+            '\tInstalled item is %s.', results[compare_result + 1])
+        return compare_result
+    else:
+        display.display_debug1('\tNo version info in %s.', filepath)
+        return 0
+
+
+def filesystemItemExists(item):
+    """Checks to see if a filesystem item exists.
+
+    If item has md5checksum attribute, compares on disk file's checksum.
+
+    Returns 0 if the filesystem item does not exist on disk,
+    Returns 1 if the filesystem item exists and the checksum matches
+                (or there is no checksum)
+    Returns -1 if the filesystem item exists but the checksum does not match.
+
+    Broken symlinks are OK; we're testing for the existence of the symlink,
+    not the item it points to.
+
+    Raises utils.Error is there's a problem with the input.
+    """
+    if 'path' in item:
+        filepath = item['path']
+        display.display_debug1('Checking existence of %s...', filepath)
+        if os.path.lexists(filepath):
+            display.display_debug2('\tExists.')
+            if 'md5checksum' in item:
+                storedchecksum = item['md5checksum']
+                ondiskchecksum = munkihash.getmd5hash(filepath)
+                display.display_debug2('Comparing checksums...')
+                if storedchecksum == ondiskchecksum:
+                    display.display_debug2('Checksums match.')
+                    return 1
+                else:
+                    display.display_debug2(
+                        'Checksums differ: expected %s, got %s',
+                        storedchecksum, ondiskchecksum)
+                    return -1
+            else:
+                return 1
+        else:
+            display.display_debug2('\tDoes not exist.')
+            return 0
+    else:
+        raise utils.Error('No path specified for filesystem item.')
+
+
+def compareItemVersion(item):
+    '''Compares an installs_item with what's on the startup disk.
+    Wraps other comparsion functions.
+
+    For applications, bundles, and plists:
+    Returns 0 if the item isn't installed
+                or doesn't have valid Info.plist
+            -1 if it's older
+             1 if the version is the same
+             2 if the version is newer
+
+    For other filesystem items:
+    Returns 0 if the filesystem item does not exist on disk,
+            1 if the filesystem item exists and the checksum matches
+                (or there is no checksum)
+           -1 if the filesystem item exists but the checksum does not match.
+    '''
+    if not 'VersionString' in item and 'CFBundleShortVersionString' in item:
+        # Ensure that 'VersionString', if not present, is populated
+        # with the value of 'CFBundleShortVersionString' if present
+        item['VersionString'] = item['CFBundleShortVersionString']
+    itemtype = item.get('type')
+    if itemtype == 'application':
+        return compareApplicationVersion(item)
+    if itemtype == 'bundle':
+        return compareBundleVersion(item)
+    if itemtype == 'plist':
+        return comparePlistVersion(item)
+    if itemtype == 'file':
+        return filesystemItemExists(item)
+    raise utils.Error('Unknown installs item type: %s', itemtype)
+
+
+def compareReceiptVersion(item):
+    """Determines if the given package is already installed.
+
+    Args:
+      item: dict with packageid; a 'com.apple.pkg.ServerAdminTools' style id
+
+    Returns  0 if the receipt isn't present
+            -1 if it's older
+             1 if the version is the same
+             2 if the version is newer
+
+    Raises utils.Error if there's an error in the input
+    """
+    if item.get('optional'):
+        # receipt has been marked as optional, so it doesn't matter
+        # if it's installed or not. Return 1
+        # only check receipts not marked as optional
+        display.display_debug1(
+            'Skipping %s because it is marked as optional',
+            item.get('packageid', item.get('name')))
+        return 1
+    installedpkgs = pkgutils.getInstalledPackages()
+    if 'packageid' in item and 'version' in item:
+        pkgid = item['packageid']
+        vers = item['version']
+    else:
+        raise utils.Error('Missing packageid or version info!')
+
+    display.display_debug1('Looking for package %s, version %s', pkgid, vers)
+    installedvers = installedpkgs.get(pkgid)
+    if installedvers:
+        return compareVersions(installedvers, vers)
+    else:
+        display.display_debug1(
+            '\tThis package is not currently installed.')
+        return 0
+
+
+def getInstalledVersion(item_plist):
+    """Attempts to determine the currently installed version of an item.
+
+    Args:
+      item_plist: pkginfo plist of an item to get the version for.
+
+    Returns:
+      String version of the item, or 'UNKNOWN' if unable to determine.
+
+    """
+    for receipt in item_plist.get('receipts', []):
+        # look for a receipt whose version matches the pkginfo version
+        if compareVersions(receipt.get('version', 0),
+                           item_plist['version']) == 1:
+            pkgid = receipt['packageid']
+            display.display_debug2(
+                'Using receipt %s to determine installed version of %s',
+                pkgid, item_plist['name'])
+            return pkgutils.getInstalledPackageVersion(pkgid)
+
+    install_items_with_versions = [item
+                                   for item in item_plist.get('installs', [])
+                                   if 'CFBundleShortVersionString' in item]
+    for install_item in install_items_with_versions:
+        # look for an installs item whose version matches the pkginfo version
+        if compareVersions(install_item['CFBundleShortVersionString'],
+                           item_plist['version']) == 1:
+            if install_item['type'] == 'application':
+                name = install_item.get('CFBundleName')
+                bundleid = install_item.get('CFBundleIdentifier')
+                display.display_debug2(
+                    'Looking for application %s, bundleid %s',
+                    name, install_item.get('CFBundleIdentifier'))
+                try:
+                    # check default location for app
+                    filepath = os.path.join(install_item['path'],
+                                            'Contents', 'Info.plist')
+                    plist = FoundationPlist.readPlist(filepath)
+                    return plist.get('CFBundleShortVersionString', 'UNKNOWN')
+                except FoundationPlist.NSPropertyListSerializationException:
+                    # that didn't work, fall through to the slow way
+                    appinfo = []
+                    appdata = info.getAppData()
+                    if appdata:
+                        for ad_item in appdata:
+                            if bundleid and ad_item['bundleid'] == bundleid:
+                                appinfo.append(ad_item)
+                            elif name and ad_item['name'] == name:
+                                appinfo.append(ad_item)
+
+                    maxversion = '0.0.0.0.0'
+                    for ai_item in appinfo:
+                        if 'version' in ai_item:
+                            if compareVersions(ai_item['version'],
+                                               maxversion) == 2:
+                                # version is higher
+                                maxversion = ai_item['version']
+                    return maxversion
+            elif install_item['type'] == 'bundle':
+                display.display_debug2(
+                    'Using bundle %s to determine installed version of %s',
+                    install_item['path'], item_plist['name'])
+                filepath = os.path.join(install_item['path'],
+                                        'Contents', 'Info.plist')
+                try:
+                    plist = FoundationPlist.readPlist(filepath)
+                    return plist.get('CFBundleShortVersionString', 'UNKNOWN')
+                except FoundationPlist.NSPropertyListSerializationException:
+                    return "UNKNOWN"
+            elif install_item['type'] == 'plist':
+                display.display_debug2(
+                    'Using plist %s to determine installed version of %s',
+                    install_item['path'], item_plist['name'])
+                try:
+                    plist = FoundationPlist.readPlist(install_item['path'])
+                    return plist.get('CFBundleShortVersionString', 'UNKNOWN')
+                except FoundationPlist.NSPropertyListSerializationException:
+                    return "UNKNOWN"
+    # if we fall through to here we have no idea what version we have
+    return 'UNKNOWN'
