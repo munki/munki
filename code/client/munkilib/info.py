@@ -752,6 +752,7 @@ def addTimeZoneOffsetToDate(the_date):
     return NSDate.alloc(
         ).initWithTimeInterval_sinceDate_(seconds_offset, the_date)
 
+
 @utils.Memoize
 def predicateInfoObject():
     '''Returns our info object used for predicate comparisons'''
