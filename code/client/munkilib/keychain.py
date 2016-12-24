@@ -28,6 +28,7 @@ import base64
 import hashlib
 import os
 import subprocess
+from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 import munkicommon
 
@@ -144,6 +145,20 @@ def get_munki_client_cert_info():
                 site_urls.append(url.rstrip('/') + '/')
         cert_info['site_urls'] = site_urls
     return cert_info
+
+
+def get_client_cert_common_name():
+    '''Returns the common name for the client cert, if any'''
+    common_name = None
+    cert_info = get_munki_client_cert_info()
+    client_cert_path = cert_info['client_cert_path']
+    if client_cert_path and os.path.exists(client_cert_path):
+        fileobj = open(client_cert_path)
+        data = fileobj.read()
+        fileobj.close()
+        x509 = load_certificate(FILETYPE_PEM, data)
+        common_name = x509.get_subject().commonName
+    return common_name
 
 
 def add_ca_certs_to_system_keychain(cert_info=None):
