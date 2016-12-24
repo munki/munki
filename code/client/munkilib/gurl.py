@@ -695,3 +695,7 @@ class Gurl(NSObject):
         # we don't actually use the connection argument, so
         # pylint: disable=W0613
         self.handleReceivedData_(data)
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

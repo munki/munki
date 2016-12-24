@@ -631,3 +631,7 @@ def getDataFromURL(url):
     except (IOError, OSError), err:
         munkicommon.display_warning('Error in getDataFromURL: %s', err)
         return ''
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

@@ -277,3 +277,7 @@ def profile_is_installed(identifier):
     munkicommon.display_debug2(
         'Profile identifier %s is not installed.' % identifier)
     return False
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

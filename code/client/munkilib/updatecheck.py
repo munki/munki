@@ -2718,10 +2718,5 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
     return cataloglist
 
 
-def main():
-    """Placeholder"""
-    pass
-
-
 if __name__ == '__main__':
-    main()
+    print 'This is a library of support tools for the Munki Suite.'

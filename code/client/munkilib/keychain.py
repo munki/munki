@@ -568,3 +568,7 @@ class MunkiKeychain(object):
         '''Remove our keychain from the keychain list if we added it'''
         if self.added_keychain:
             remove_from_keychain_list(self.keychain_path)
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'
