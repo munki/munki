@@ -83,12 +83,11 @@ def get_manifest(manifest_name, suppress_errors=False):
     manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
                                 'manifests')
 
-    manifestdisplayname = manifest_name
     manifesturl = (
         manifestbaseurl + urllib2.quote(manifest_name.encode('UTF-8')))
 
     munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
-    munkicommon.display_detail('Getting manifest %s...', manifestdisplayname)
+    munkicommon.display_detail('Getting manifest %s...', manifest_name)
     manifestpath = os.path.join(manifest_dir, manifest_name)
 
     # Create the folder the manifest shall be stored in
@@ -101,7 +100,7 @@ def get_manifest(manifest_name, suppress_errors=False):
             if not suppress_errors:
                 munkicommon.display_error(
                     'Could not create folder to store manifest %s: %s',
-                    manifestdisplayname, err
+                    manifest_name, err
                 )
             raise ManifestException(err)
 
@@ -115,14 +114,14 @@ def get_manifest(manifest_name, suppress_errors=False):
         if not suppress_errors:
             munkicommon.display_error(
                 'Could not retrieve manifest %s from the server: %s',
-                manifestdisplayname, err)
+                manifest_name, err)
         raise ManifestNotRetrievedException(err)
 
     try:
         # read plist to see if it is valid
         dummy_data = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
-        errormsg = 'manifest returned for %s is invalid.' % manifestdisplayname
+        errormsg = 'manifest returned for %s is invalid.' % manifest_name
         munkicommon.display_error(errormsg)
         try:
             os.unlink(manifestpath)
@@ -166,14 +165,13 @@ def get_primary_manifest(alternate_id=''):
                 clientidentifier = x509.get_subject().commonName
 
     if clientidentifier:
-        manifest = get_manifest(
-            urllib2.quote(clientidentifier.encode('UTF-8')))
+        manifest = get_manifest(clientidentifier)
     else:
         # no client identifier specified, so try the hostname
         hostname = os.uname()[1]
         # there shouldn't be any characters in a hostname that need quoting,
         # but see https://code.google.com/p/munki/issues/detail?id=276
-        clientidentifier = urllib2.quote(hostname)
+        clientidentifier = hostname
         munkicommon.display_detail(
             'No client id specified. Requesting %s...', clientidentifier)
         try:
@@ -183,7 +181,7 @@ def get_primary_manifest(alternate_id=''):
 
         if not manifest:
             # try the short hostname
-            clientidentifier = urllib2.quote(hostname.split('.')[0])
+            clientidentifier = hostname.split('.')[0]
             munkicommon.display_detail(
                 'Request failed. Trying %s...', clientidentifier)
             try:
@@ -194,8 +192,7 @@ def get_primary_manifest(alternate_id=''):
 
         if not manifest:
             # try the machine serial number
-            clientidentifier = urllib2.quote(
-                munkicommon.getMachineFacts()['serial_number'])
+            clientidentifier = munkicommon.getMachineFacts()['serial_number']
             if clientidentifier != 'UNKNOWN':
                 munkicommon.display_detail(
                     'Request failed. Trying %s...', clientidentifier)
@@ -210,8 +207,7 @@ def get_primary_manifest(alternate_id=''):
             clientidentifier = 'site_default'
             munkicommon.display_detail(
                 'Request failed. Trying %s...', clientidentifier)
-            manifest = get_manifest(
-                clientidentifier, suppress_errors=True)
+            manifest = get_manifest(clientidentifier, suppress_errors=True)
 
     # record this info for later
     # primary manifest is tagged as PRIMARY_MANIFEST_TAG
