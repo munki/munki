@@ -298,21 +298,6 @@ def analyzeInstalledPkgs():
     return pkgdata
 
 
-def getAppBundleID(path):
-    """Returns CFBundleIdentifier if available for application at path."""
-    infopath = os.path.join(path, 'Contents', 'Info.plist')
-    if os.path.exists(infopath):
-        try:
-            plist = FoundationPlist.readPlist(infopath)
-            if 'CFBundleIdentifier' in plist:
-                return plist['CFBundleIdentifier']
-        except (AttributeError,
-                FoundationPlist.NSPropertyListSerializationException):
-            pass
-
-    return None
-
-
 def download_installeritem(item_pl, installinfo, uninstalling=False):
     """Downloads an (un)installer item.
     Returns True if the item was downloaded, False if it was already cached.
