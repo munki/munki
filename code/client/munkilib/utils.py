@@ -202,3 +202,7 @@ def getFirstPlist(textString):
     plist_end_index = plist_end_index + len(plist_footer)
     return (textString[plist_start_index:plist_end_index],
             textString[plist_end_index:])
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

@@ -174,11 +174,5 @@ class Job(object):
             return None
 
 
-def main():
-    '''placeholder'''
-    pass
-
-
 if __name__ == '__main__':
-    main()
-
+    print 'This is a library of support tools for the Munki Suite.'

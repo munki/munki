@@ -225,3 +225,7 @@ def getAppInfoPathsFromBundleComponentPkg(pkg_path):
         return [line for line in output.splitlines()
                 if line.endswith('.app/Contents/Info.plist')]
     return []
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

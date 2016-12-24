@@ -47,5 +47,6 @@ ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 LOGINWINDOW = (
     "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow")
 
+
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'

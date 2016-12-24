@@ -1276,3 +1276,7 @@ def run(only_unattended=False):
     powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
 
     return removals_need_restart or installs_need_restart
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

@@ -1863,3 +1863,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
 def displayAppleUpdateInfo():
     """Method for drop-in appleupdates replacement; see primary method docs."""
     getAppleUpdatesInstance().DisplayAppleUpdateInfo()
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'
