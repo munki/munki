@@ -25,13 +25,15 @@ Functions for working with manifest files
 
 import os
 import urllib2
-from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 from . import fetch
+from . import keychain
 from . import munkicommon
 from . import FoundationPlist
 
+
 PRIMARY_MANIFEST_TAG = '_primary_manifest_'
+
 
 class ManifestException(Exception):
     """Lets us raise an exception when we can't get a manifest."""
@@ -137,40 +139,22 @@ def get_manifest(manifest_name, suppress_errors=False):
 def get_primary_manifest(alternate_id=''):
     """Gets the primary client manifest from the server."""
     manifest = ""
-    manifesturl = (munkicommon.pref('ManifestURL') or
-                   munkicommon.pref('SoftwareRepoURL') + '/manifests/')
-    if not manifesturl.endswith('?') and not manifesturl.endswith('/'):
-        manifesturl = manifesturl + '/'
-    munkicommon.display_debug2('Manifest base URL is: %s', manifesturl)
 
-    clientidentifier = alternate_id or munkicommon.pref('ClientIdentifier')
-
-    if not alternate_id and munkicommon.pref('UseClientCertificate') and \
-        munkicommon.pref('UseClientCertificateCNAsClientIdentifier'):
+    if alternate_id:
+        clientidentifier = alternate_id
+    elif (munkicommon.pref('UseClientCertificate') and
+          munkicommon.pref('UseClientCertificateCNAsClientIdentifier')):
         # we're to use the client cert CN as the clientidentifier
-        if munkicommon.pref('UseClientCertificate'):
-            # find the client cert
-            client_cert_path = munkicommon.pref('ClientCertificatePath')
-            if not client_cert_path:
-                for name in ['cert.pem', 'client.pem', 'munki.pem']:
-                    client_cert_path = os.path.join(
-                        munkicommon.pref('ManagedInstallDir'), 'certs', name)
-                    if os.path.exists(client_cert_path):
-                        break
-            if client_cert_path and os.path.exists(client_cert_path):
-                fileobj = open(client_cert_path)
-                data = fileobj.read()
-                fileobj.close()
-                x509 = load_certificate(FILETYPE_PEM, data)
-                clientidentifier = x509.get_subject().commonName
+        clientidentifier = keychain.get_client_cert_common_name()
+    else:
+        # get the ClientIdentifier from Munki's preferences
+        clientidentifier = munkicommon.pref('ClientIdentifier')
 
     if clientidentifier:
         manifest = get_manifest(clientidentifier)
     else:
         # no client identifier specified, so try the hostname
         hostname = os.uname()[1]
-        # there shouldn't be any characters in a hostname that need quoting,
-        # but see https://code.google.com/p/munki/issues/detail?id=276
         clientidentifier = hostname
         munkicommon.display_detail(
             'No client id specified. Requesting %s...', clientidentifier)
@@ -226,7 +210,8 @@ def clean_up_manifests():
         "SelfServeManifest"
     ]
 
-    for (dirpath, dirnames, filenames) in os.walk(manifest_dir, topdown=False):
+    for (dirpath, dummy_dirnames, filenames) in os.walk(
+            manifest_dir, topdown=False):
         for name in filenames:
 
             if name in exceptions:
@@ -240,11 +225,11 @@ def clean_up_manifests():
 
         # Try to remove the directory
         # (rmdir will fail if directory is not empty)
-        try:
-            if dirpath != manifest_dir:
+        if dirpath != manifest_dir:
+            try:
                 os.rmdir(dirpath)
-        except OSError:
-            pass
+            except OSError:
+                pass
 
 
 def get_manifest_data(manifestpath):
