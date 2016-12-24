@@ -1242,10 +1242,9 @@ def processInstall(manifestitem, cataloglist, installinfo,
     will stop the installation of a dependent item
     """
 
-    if munkicommon.munkistatusoutput:
-        # reset progress indicator and detail field
-        munkistatus.percent('-1')
-        munkistatus.detail('')
+    # reset progress indicator and detail field
+    munkistatus.percent('-1')
+    munkistatus.detail('')
 
     manifestitemname = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
@@ -2228,11 +2227,10 @@ def check(client_id='', localmanifestpath=None):
         if munkicommon.stopRequested():
             return 0
 
-        if munkicommon.munkistatusoutput:
-            # reset progress indicator and detail field
-            munkistatus.message('Checking for additional changes...')
-            munkistatus.percent('-1')
-            munkistatus.detail('')
+        # reset progress indicator and detail field
+        munkistatus.message('Checking for additional changes...')
+        munkistatus.percent('-1')
+        munkistatus.detail('')
 
         # now generate a list of items to be uninstalled
         munkicommon.display_detail('**Checking for removals**')
