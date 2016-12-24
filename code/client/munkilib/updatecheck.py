@@ -1584,56 +1584,52 @@ def processManifestForKey(manifest, manifest_key, installinfo,
         munkicommon.display_warning('Manifest %s has no catalogs', manifest)
         return
 
-    nestedmanifests = manifestdata.get('included_manifests')
-    if nestedmanifests:
-        for item in nestedmanifests:
-            nestedmanifestpath = manifestutils.get_manifest(item)
-            if not nestedmanifestpath:
-                raise manifestutils.ManifestException
-            if munkicommon.stopRequested():
-                return {}
-            processManifestForKey(nestedmanifestpath, manifest_key,
-                                  installinfo, cataloglist)
+    for item in manifestdata.get('included_manifests', []):
+        nestedmanifestpath = manifestutils.get_manifest(item)
+        if not nestedmanifestpath:
+            raise manifestutils.ManifestException
+        if munkicommon.stopRequested():
+            return {}
+        processManifestForKey(nestedmanifestpath, manifest_key,
+                              installinfo, cataloglist)
 
-    conditionalitems = manifestdata.get('conditional_items')
+    conditionalitems = manifestdata.get('conditional_items', [])
     if conditionalitems:
         munkicommon.display_debug1(
             '** Processing conditional_items in %s', manifest)
-        # conditionalitems should be an array of dicts
-        # each dict has a predicate; the rest consists of the
-        # same keys as a manifest
-        for item in conditionalitems:
-            try:
-                predicate = item['condition']
-            except (AttributeError, KeyError):
-                munkicommon.display_warning(
-                    'Missing predicate for conditional_item %s', item)
-                continue
-            except BaseException:
-                munkicommon.display_warning(
-                    'Conditional item is malformed: %s', item)
-                continue
-            if munkicommon.predicateEvaluatesAsTrue(
-                    predicate, additional_info={'catalogs': cataloglist}):
-                conditionalmanifest = item
-                processManifestForKey(conditionalmanifest, manifest_key,
-                                      installinfo, cataloglist)
+    # conditionalitems should be an array of dicts
+    # each dict has a predicate; the rest consists of the
+    # same keys as a manifest
+    for item in conditionalitems:
+        try:
+            predicate = item['condition']
+        except (AttributeError, KeyError):
+            munkicommon.display_warning(
+                'Missing predicate for conditional_item %s', item)
+            continue
+        except BaseException:
+            munkicommon.display_warning(
+                'Conditional item is malformed: %s', item)
+            continue
+        if munkicommon.predicateEvaluatesAsTrue(
+                predicate, additional_info={'catalogs': cataloglist}):
+            conditionalmanifest = item
+            processManifestForKey(conditionalmanifest, manifest_key,
+                                  installinfo, cataloglist)
 
-    items = manifestdata.get(manifest_key)
-    if items:
-        for item in items:
-            if munkicommon.stopRequested():
-                return {}
-            if manifest_key == 'managed_installs':
-                dummy_result = processInstall(
-                    item, cataloglist, installinfo)
-            elif manifest_key == 'managed_updates':
-                processManagedUpdate(item, cataloglist, installinfo)
-            elif manifest_key == 'optional_installs':
-                processOptionalInstall(item, cataloglist, installinfo)
-            elif manifest_key == 'managed_uninstalls':
-                dummy_result = processRemoval(
-                    item, cataloglist, installinfo)
+    for item in manifestdata.get(manifest_key, []):
+        if munkicommon.stopRequested():
+            return {}
+        if manifest_key == 'managed_installs':
+            dummy_result = processInstall(
+                item, cataloglist, installinfo)
+        elif manifest_key == 'managed_updates':
+            processManagedUpdate(item, cataloglist, installinfo)
+        elif manifest_key == 'optional_installs':
+            processOptionalInstall(item, cataloglist, installinfo)
+        elif manifest_key == 'managed_uninstalls':
+            dummy_result = processRemoval(
+                item, cataloglist, installinfo)
 
 
 def getReceiptsToRemove(item):
