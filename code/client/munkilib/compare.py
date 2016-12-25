@@ -75,6 +75,9 @@ def compareApplicationVersion(app):
         filepath = os.path.join(app['path'], 'Contents', 'Info.plist')
         if os.path.exists(filepath):
             return compareBundleVersion(app)
+        display.display_debug2('%s doesn\'t exist.', filepath)
+    else:
+        display.display_debug2('No path given for application item.')
 
     # not in default location, or no path specified, so let's search:
     name = app.get('CFBundleName', '')
@@ -103,8 +106,8 @@ def compareApplicationVersion(app):
         for item in appdata:
             # Skip applications in /Users but not /Users/Shared, for now.
             if 'path' in item:
-                if item['path'].startswith('/Users/') and \
-                    not item['path'].startswith('/Users/Shared/'):
+                if (item['path'].startswith('/Users/') and
+                        not item['path'].startswith('/Users/Shared/')):
                     display.display_debug2(
                         'Skipped app %s with path %s',
                         item['name'], item['path'])
@@ -124,18 +127,16 @@ def compareApplicationVersion(app):
     # iterate through matching applications
     for item in appinfo:
         if 'name' in item:
-            display.display_debug2(
-                '\tName: \t %s', item['name'])
+            display.display_debug2('\tName: \t %s', item['name'])
         if 'path' in item:
             apppath = item['path']
-            display.display_debug2(
-                '\tPath: \t %s', apppath)
+            display.display_debug2('\tPath: \t %s', apppath)
             display.display_debug2(
                 '\tCFBundleIdentifier: \t %s', item['bundleid'])
 
         if apppath and version_comparison_key != 'CFBundleShortVersionString':
             # if a specific plist version key has been supplied,
-            # if we're suppose to compare against a key other than
+            # if we're supposed to compare against a key other than
             # 'CFBundleShortVersionString' we can't use item['version']
             installed_version = pkgutils.getBundleVersion(
                 apppath, version_comparison_key)
@@ -152,18 +153,14 @@ def compareApplicationVersion(app):
                 return 0
 
         if 'version' in item:
-            display.display_debug2(
-                '\tVersion: \t %s', installed_version)
-            if compareVersions(installed_version, versionstring) == 1:
-                # version is the same
-                return 1
-            if compareVersions(installed_version, versionstring) == 2:
-                # version is newer
-                return 2
+            display.display_debug2('\tVersion: \t %s', installed_version)
+            compare_result = compareVersions(installed_version, versionstring)
+            if compare_result in (1, 2):
+                # same or greater
+                return compare_result
 
     # if we got this far, must only be older
-    display.display_debug1(
-        'An older version of this application is present.')
+    display.display_debug1('An older version of this application is present.')
     return -1
 
 
