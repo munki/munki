@@ -45,12 +45,11 @@ def supports_auth_restart():
     except subprocess.CalledProcessError as exc:
         if exc.output and 'false' in exc.output:
             display.display_warning('FileVault appears to be disabled...')
-            return False
-        if not exc.output:
+        elif not exc.output:
             display.display_warning(
                 'Encountered problem determining FileVault status...')
-            return False
-        display.display_warning(exc.output)
+        else:
+            display.display_warning(exc.output)
         return False
     display.display_debug1(
         'Checking if FileVault can perform an AuthRestart...')
@@ -59,11 +58,11 @@ def supports_auth_restart():
         is_supported = subprocess.check_output(
             support_cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as exc:
-        if not exc.output:
+        if exc.output:
+            display.display_warning(exc.output)
+        else:
             display.display_warning(
                 'Encountered problem determining AuthRestart Status...')
-            return False
-        display.display_warning(exc.output)
         return False
     if 'true' in is_active and 'true' in is_supported:
         display.display_debug1(
