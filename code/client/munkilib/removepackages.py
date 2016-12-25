@@ -664,8 +664,7 @@ def getpathstoremove(pkgkeylist):
 
     munkicommon.display_status_minor(
         'Determining which filesystem items to remove')
-    if munkicommon.munkistatusoutput:
-        munkistatus.percent(-1)
+    munkistatus.percent(-1)
 
     curs.execute(combined_query)
     results = curs.fetchall()
@@ -934,21 +933,16 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
             for item in removalpaths:
                 print "/" + item.encode('UTF-8')
         else:
-            if munkicommon.munkistatusoutput:
-                munkistatus.disableStopButton()
+            munkistatus.disableStopButton()
             removeFilesystemItems(removalpaths, forcedeletebundles)
     else:
         munkicommon.display_status_minor('Nothing to remove.')
-        if munkicommon.munkistatusoutput:
-            time.sleep(2)
 
     if not listfiles:
         if not noremovereceipts:
             removeReceipts(pkgkeyslist, noupdateapplepkgdb)
-        if munkicommon.munkistatusoutput:
-            munkistatus.enableStopButton()
-            munkicommon.display_status_minor('Package removal complete.')
-            time.sleep(2)
+        munkistatus.enableStopButton()
+        munkicommon.display_status_minor('Package removal complete.')
 
     return 0
 
