@@ -55,7 +55,6 @@ from . import FoundationPlist
 FORCE_INSTALL_WARNING_HOURS = 4
 
 
-
 def makeCatalogDB(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database"""
@@ -1242,10 +1241,6 @@ def processInstall(manifestitem, cataloglist, installinfo,
     will stop the installation of a dependent item
     """
 
-    # reset progress indicator and detail field
-    munkistatus.percent('-1')
-    munkistatus.detail('')
-
     manifestitemname = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
         '* Processing manifest item %s for install', manifestitemname)
@@ -2189,6 +2184,8 @@ def check(client_id='', localmanifestpath=None):
 
     munkicommon.log('### Beginning managed software check ###')
     munkicommon.display_status_major('Checking for available updates...')
+    munkistatus.percent('-1')
+    munkistatus.detail('')
 
     installinfo = {}
 
