@@ -212,19 +212,15 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
                 if os_version == '10.5':
                     # Leopard uses a float from 0 to 1
                     percent = int(percent * 100)
-                if munkicommon.munkistatusoutput:
-                    munkistatus.percent(percent)
-                else:
-                    munkicommon.display_status_minor(
-                        "%s percent complete" % percent)
+                munkistatus.percent(percent)
+                munkicommon.display_status_minor(
+                    "%s percent complete" % percent)
             elif msg.startswith(" Error"):
                 munkicommon.display_error(msg)
-                if munkicommon.munkistatusoutput:
-                    munkistatus.detail(msg)
+                munkistatus.detail(msg)
             elif msg.startswith(" Cannot install"):
                 munkicommon.display_error(msg)
-                if munkicommon.munkistatusoutput:
-                    munkistatus.detail(msg)
+                munkistatus.detail(msg)
             else:
                 munkicommon.log(msg)
 
@@ -242,8 +238,7 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
         restartneeded = False
     elif retcode == 0:
         munkicommon.log("Install of %s was successful." % packagename)
-        if munkicommon.munkistatusoutput:
-            munkistatus.percent(100)
+        munkistatus.percent(100)
 
     return (retcode, restartneeded)
 
@@ -778,7 +773,7 @@ def installWithInfo(
                         % itempath)
                     retcode = -99
 
-        if retcode == 0  and 'postinstall_script' in item:
+        if retcode == 0 and 'postinstall_script' in item:
             # only run embedded postinstall script if the install did not
             # return a failure code
             retcode = munkicommon.runEmbeddedScript(
@@ -1173,8 +1168,7 @@ def run(only_unattended=False):
             munkicommon.display_error("Invalid %s" % installinfopath)
             return -1
 
-        if (munkicommon.munkistatusoutput and
-                munkicommon.pref('SuppressStopButtonOnInstall')):
+        if munkicommon.pref('SuppressStopButtonOnInstall'):
             munkistatus.hideStopButton()
 
         if "removals" in installinfo:
@@ -1183,15 +1177,14 @@ def run(only_unattended=False):
                            if item.get('installed')]
             munkicommon.report['ItemsToRemove'] = removallist
             if removallist:
-                if munkicommon.munkistatusoutput:
-                    if len(removallist) == 1:
-                        munkistatus.message("Removing 1 item...")
-                    else:
-                        munkistatus.message("Removing %i items..." %
-                                            len(removallist))
-                    munkistatus.detail("")
-                    # set indeterminate progress bar
-                    munkistatus.percent(-1)
+                if len(removallist) == 1:
+                    munkistatus.message("Removing 1 item...")
+                else:
+                    munkistatus.message("Removing %i items..." %
+                                        len(removallist))
+                munkistatus.detail("")
+                # set indeterminate progress bar
+                munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
                 (removals_need_restart,
                  skipped_removals) = processRemovals(
@@ -1207,15 +1200,14 @@ def run(only_unattended=False):
                                if item.get('installed') == False]
                 munkicommon.report['ItemsToInstall'] = installlist
                 if installlist:
-                    if munkicommon.munkistatusoutput:
-                        if len(installlist) == 1:
-                            munkistatus.message("Installing 1 item...")
-                        else:
-                            munkistatus.message(
-                                "Installing %i items..." % len(installlist))
-                        munkistatus.detail("")
-                        # set indeterminate progress bar
-                        munkistatus.percent(-1)
+                    if len(installlist) == 1:
+                        munkistatus.message("Installing 1 item...")
+                    else:
+                        munkistatus.message(
+                            "Installing %i items..." % len(installlist))
+                    munkistatus.detail("")
+                    # set indeterminate progress bar
+                    munkistatus.percent(-1)
                     munkicommon.log("Processing installs")
                     (installs_need_restart, skipped_installs) = installWithInfo(
                         installdir, installlist,
