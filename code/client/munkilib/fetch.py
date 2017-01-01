@@ -633,5 +633,39 @@ def getDataFromURL(url):
         return ''
 
 
+def check_server(url):
+    """A function we can call to check to see if the server is
+    available before we kick off a full run. This can be fooled by
+    ISPs that return results for non-existent web servers...
+    Returns a tuple (error_code, error_description)"""
+    # rewritten 12 Dec 2016 to use gurl so we use system proxies, if any
+
+    # deconstruct URL to get scheme
+    url_parts = urlparse.urlsplit(url)
+    if url_parts.scheme in ('http', 'https'):
+        pass
+    elif url_parts.scheme == 'file':
+        if url_parts.hostname not in [None, '', 'localhost']:
+            return (-1, 'Non-local hostnames not supported for file:// URLs')
+        if os.path.exists(url_parts.path):
+            return (0, 'OK')
+        else:
+            return (-1, 'Path %s does not exist' % url_parts.path)
+    else:
+        return (-1, 'Unsupported URL scheme')
+
+    # we have an HTTP or HTTPS URL
+    try:
+        # attempt to get something at the url
+        dummy_data = getDataFromURL(url)
+    except ConnectionError, err:
+        # err should contain a tuple with code and description
+        return (err[0], err[1])
+    except (GurlError, DownloadError):
+        # HTTP errors, etc are OK -- we just need to be able to connect
+        pass
+    return (0, 'OK')
+
+
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'
