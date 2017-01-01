@@ -1,0 +1,670 @@
+#!/usr/bin/python
+# encoding: utf-8
+#
+# Copyright 2009-2017 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+catalogs.py
+
+Created by Greg Neagle on 2017-01-01.
+
+Functions for working with Munki catalogs
+"""
+
+import os
+
+from . import display
+from . import download
+from . import info
+from . import pkgutils
+from . import prefs
+from . import utils
+from . import FoundationPlist
+
+
+# we use lots of camelCase-style names. Deal with it.
+# pylint: disable=C0103
+
+
+def makeCatalogDB(catalogitems):
+    """Takes an array of catalog items and builds some indexes so we can
+    get our common data faster. Returns a dict we can use like a database"""
+    name_table = {}
+    pkgid_table = {}
+
+    itemindex = -1
+    for item in catalogitems:
+        itemindex = itemindex + 1
+        name = item.get('name', 'NO NAME')
+        vers = item.get('version', 'NO VERSION')
+
+        if name == 'NO NAME' or vers == 'NO VERSION':
+            display.display_warning('Bad pkginfo: %s', item)
+
+        # normalize the version number
+        vers = trimVersionString(vers)
+
+        # build indexes for items by name and version
+        if not name in name_table:
+            name_table[name] = {}
+        if not vers in name_table[name]:
+            name_table[name][vers] = []
+        name_table[name][vers].append(itemindex)
+
+        # build table of receipts
+        for receipt in item.get('receipts', []):
+            if 'packageid' in receipt and 'version' in receipt:
+                pkg_id = receipt['packageid']
+                version = receipt['version']
+                if not pkg_id in pkgid_table:
+                    pkgid_table[pkg_id] = {}
+                if not version in pkgid_table[pkg_id]:
+                    pkgid_table[pkg_id][version] = []
+                pkgid_table[pkg_id][version].append(itemindex)
+
+    # build table of update items with a list comprehension --
+    # filter all items from the catalogitems that have a non-empty
+    # 'update_for' list
+    updaters = [item for item in catalogitems if item.get('update_for')]
+
+    # now fix possible admin errors where 'update_for' is a string instead
+    # of a list of strings
+    for update in updaters:
+        if isinstance(update['update_for'], basestring):
+            # convert to list of strings
+            update['update_for'] = [update['update_for']]
+
+    # build table of autoremove items with a list comprehension --
+    # filter all items from the catalogitems that have a non-empty
+    # 'autoremove' list
+    # autoremove items are automatically removed if they are not in the
+    # managed_install list (either directly or indirectly via included
+    # manifests)
+    autoremoveitems = [item.get('name') for item in catalogitems
+                       if item.get('autoremove')]
+    # convert to set and back to list to get list of unique names
+    autoremoveitems = list(set(autoremoveitems))
+
+    pkgdb = {}
+    pkgdb['named'] = name_table
+    pkgdb['receipts'] = pkgid_table
+    pkgdb['updaters'] = updaters
+    pkgdb['autoremoveitems'] = autoremoveitems
+    pkgdb['items'] = catalogitems
+
+    return pkgdb
+
+
+def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
+    """Adds packageids from each catalogitem to two dictionaries.
+    One maps itemnames to receipt pkgids, the other maps receipt pkgids
+    to itemnames"""
+    for item in catalogitems:
+        name = item.get('name')
+        if not name:
+            continue
+        if item.get('receipts'):
+            if not name in itemname_to_pkgid:
+                itemname_to_pkgid[name] = {}
+
+            for receipt in item['receipts']:
+                if 'packageid' in receipt:
+                    pkgid = receipt['packageid']
+                    vers = receipt['version']
+                    if not pkgid in itemname_to_pkgid[name]:
+                        itemname_to_pkgid[name][pkgid] = []
+                    if not vers in itemname_to_pkgid[name][pkgid]:
+                        itemname_to_pkgid[name][pkgid].append(vers)
+
+                    if not pkgid in pkgid_to_itemname:
+                        pkgid_to_itemname[pkgid] = {}
+                    if not name in pkgid_to_itemname[pkgid]:
+                        pkgid_to_itemname[pkgid][name] = []
+                    if not vers in pkgid_to_itemname[pkgid][name]:
+                        pkgid_to_itemname[pkgid][name].append(vers)
+
+
+def nameAndVersion(aString):
+    """Splits a string into the name and version number.
+
+    Name and version must be separated with a hyphen ('-')
+    or double hyphen ('--').
+    'TextWrangler-2.3b1' becomes ('TextWrangler', '2.3b1')
+    'AdobePhotoshopCS3--11.2.1' becomes ('AdobePhotoshopCS3', '11.2.1')
+    'MicrosoftOffice2008-12.2.1' becomes ('MicrosoftOffice2008', '12.2.1')
+    """
+    for delim in ('--', '-'):
+        if aString.count(delim) > 0:
+            chunks = aString.split(delim)
+            vers = chunks.pop()
+            name = delim.join(chunks)
+            if vers[0] in '0123456789':
+                return (name, vers)
+
+    return (aString, '')
+
+
+def getAllItemsWithName(name, cataloglist):
+    """Searches the catalogs in a list for all items matching a given name.
+
+    Returns:
+      list of pkginfo items; sorted with newest version first. No precedence
+      is given to catalog order.
+    """
+    def compare_item_versions(a, b):
+        """Internal comparison function for use with sorting"""
+        return cmp(pkgutils.MunkiLooseVersion(b['version']),
+                   pkgutils.MunkiLooseVersion(a['version']))
+
+    itemlist = []
+    # we'll throw away any included version info
+    name = nameAndVersion(name)[0]
+
+    display.display_debug1('Looking for all items matching: %s...', name)
+    for catalogname in cataloglist:
+        if not catalogname in _CATALOG.keys():
+            # in case catalogname refers to a non-existent catalog...
+            continue
+        # is name in the catalog name table?
+        if name in _CATALOG[catalogname]['named']:
+            versionsmatchingname = _CATALOG[catalogname]['named'][name]
+            for vers in versionsmatchingname:
+                if vers == 'latest':
+                    continue
+                indexlist = _CATALOG[catalogname]['named'][name][vers]
+                for index in indexlist:
+                    thisitem = _CATALOG[catalogname]['items'][index]
+                    if not thisitem in itemlist:
+                        display.display_debug1(
+                            'Adding item %s, version %s from catalog %s...',
+                            name, thisitem['version'], catalogname)
+                        itemlist.append(thisitem)
+
+    if itemlist:
+        # sort so latest version is first
+        itemlist.sort(compare_item_versions)
+    return itemlist
+
+
+def getAutoRemovalItems(installinfo, cataloglist):
+    """Gets a list of items marked for automatic removal from the catalogs
+    in cataloglist. Filters those against items in the processed_installs
+    list, which should contain everything that is supposed to be installed.
+    Then filters against the removals list, which contains all the removals
+    that have already been processed.
+    """
+    autoremovalnames = []
+    for catalogname in cataloglist or []:
+        if catalogname in _CATALOG.keys():
+            autoremovalnames += _CATALOG[catalogname]['autoremoveitems']
+
+    processed_installs_names = [nameAndVersion(item)[0]
+                                for item in installinfo['processed_installs']]
+    autoremovalnames = [item for item in autoremovalnames
+                        if item not in processed_installs_names
+                        and item not in installinfo['processed_uninstalls']]
+    return autoremovalnames
+
+
+def lookForUpdates(itemname, cataloglist):
+    """Looks for updates for a given manifest item that is either
+    installed or scheduled to be installed or removed. This handles not only
+    specific application updates, but also updates that aren't simply
+    later versions of the manifest item.
+    For example, AdobeCameraRaw is an update for Adobe Photoshop, but
+    doesn't update the version of Adobe Photoshop.
+    Returns a list of manifestitem names that are updates for
+    manifestitem.
+    """
+
+    display.display_debug1('Looking for updates for: %s', itemname)
+    # get a list of catalog items that are updates for other items
+    update_list = []
+    for catalogname in cataloglist:
+        if catalogname not in _CATALOG:
+            # in case the list refers to a non-existent catalog
+            continue
+
+        updaters = _CATALOG[catalogname]['updaters']
+        # list comprehension coming up...
+        update_items = [catalogitem['name']
+                        for catalogitem in updaters
+                        if itemname in catalogitem.get('update_for', [])]
+        if update_items:
+            update_list.extend(update_items)
+
+    # make sure the list has only unique items:
+    update_list = list(set(update_list))
+
+    if update_list:
+        # updates were found, so let's display them
+        num_updates = len(update_list)
+        # format the update list for better on-screen viewing
+        update_list_display = ", ".join(str(x) for x in update_list)
+        display.display_debug1(
+            'Found %s update(s): %s', num_updates, update_list_display)
+
+    return update_list
+
+
+def lookForUpdatesForVersion(itemname, itemversion, cataloglist):
+    """Looks for updates for a specific version of an item. Since these
+    can appear in manifests and pkginfo as item-version or item--version
+    we have to search twice."""
+
+    name_and_version = '%s-%s' % (itemname, itemversion)
+    alt_name_and_version = '%s--%s' % (itemname, itemversion)
+    update_list = lookForUpdates(name_and_version, cataloglist)
+    update_list.extend(lookForUpdates(alt_name_and_version, cataloglist))
+
+    # make sure the list has only unique items:
+    update_list = list(set(update_list))
+
+    return update_list
+
+
+def bestVersionMatch(vers_num, item_dict):
+    '''Attempts to find the best match in item_dict for vers_num'''
+    vers_tuple = vers_num.split('.')
+    precision = 1
+    while precision <= len(vers_tuple):
+        test_vers = '.'.join(vers_tuple[0:precision])
+        match_names = []
+        for item in item_dict.keys():
+            for item_version in item_dict[item]:
+                if (item_version.startswith(test_vers) and
+                        item not in match_names):
+                    match_names.append(item)
+        if len(match_names) == 1:
+            return match_names[0]
+        precision = precision + 1
+
+    return None
+
+
+@utils.Memoize
+def analyzeInstalledPkgs():
+    """Analyze catalog data and installed packages in an attempt to determine
+    what is installed."""
+    pkgdata = {}
+    itemname_to_pkgid = {}
+    pkgid_to_itemname = {}
+    for catalogname in _CATALOG:
+        catalogitems = _CATALOG[catalogname]['items']
+        addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname)
+    # itemname_to_pkgid now contains all receipts (pkgids) we know about
+    # from items in all available catalogs
+
+    installedpkgs = pkgutils.getInstalledPackages()
+
+    installed = []
+    partiallyinstalled = []
+    installedpkgsmatchedtoname = {}
+    for name in itemname_to_pkgid:
+        # name is a Munki install item name
+        somepkgsfound = False
+        allpkgsfound = True
+        for pkgid in itemname_to_pkgid[name].keys():
+            if pkgid in installedpkgs.keys():
+                somepkgsfound = True
+                if not name in installedpkgsmatchedtoname:
+                    installedpkgsmatchedtoname[name] = []
+                # record this pkgid for Munki install item name
+                installedpkgsmatchedtoname[name].append(pkgid)
+            else:
+                # didn't find pkgid in installedpkgs
+                allpkgsfound = False
+        if allpkgsfound:
+            # we found all receipts by pkgid on disk
+            installed.append(name)
+        elif somepkgsfound:
+            # we found only some receipts for the item
+            # on disk
+            partiallyinstalled.append(name)
+
+    # we pay special attention to the items that seem partially installed.
+    # we need to see if there are any packages that are unique to this item
+    # if there aren't, then this item probably isn't installed, and we're
+    # just finding receipts that are shared with other items.
+    for name in partiallyinstalled:
+        # get a list of pkgs for this item that are installed
+        pkgsforthisname = installedpkgsmatchedtoname[name]
+        # now build a list of all the pkgs referred to by all the other
+        # items that are either partially or entirely installed
+        allotherpkgs = []
+        for othername in installed:
+            allotherpkgs.extend(installedpkgsmatchedtoname[othername])
+        for othername in partiallyinstalled:
+            if othername != name:
+                allotherpkgs.extend(installedpkgsmatchedtoname[othername])
+        # use Python sets to find pkgs that are unique to this name
+        uniquepkgs = list(set(pkgsforthisname) - set(allotherpkgs))
+        if uniquepkgs:
+            installed.append(name)
+
+    # now filter partiallyinstalled to remove those items we moved to installed
+    partiallyinstalled = [item for item in partiallyinstalled
+                          if item not in installed]
+
+    # build our reference table. For each item we think is installed,
+    # record the receipts on disk matched to the item
+    references = {}
+    for name in installed:
+        for pkgid in installedpkgsmatchedtoname[name]:
+            if not pkgid in references:
+                references[pkgid] = []
+            references[pkgid].append(name)
+
+    # look through all our installedpkgs, looking for ones that have not been
+    # attached to any Munki names yet
+    orphans = [pkgid for pkgid in installedpkgs.keys()
+               if pkgid not in references]
+
+    # attempt to match orphans to Munki item names
+    matched_orphans = []
+    for pkgid in orphans:
+        if pkgid in pkgid_to_itemname:
+            installed_pkgid_version = installedpkgs[pkgid]
+            possible_match_items = pkgid_to_itemname[pkgid]
+            best_match = bestVersionMatch(
+                installed_pkgid_version, possible_match_items)
+            if best_match:
+                matched_orphans.append(best_match)
+
+    # process matched_orphans
+    for name in matched_orphans:
+        if name not in installed:
+            installed.append(name)
+        if name in partiallyinstalled:
+            partiallyinstalled.remove(name)
+        for pkgid in installedpkgsmatchedtoname[name]:
+            if not pkgid in references:
+                references[pkgid] = []
+            if not name in references[pkgid]:
+                references[pkgid].append(name)
+
+    pkgdata['receipts_for_name'] = installedpkgsmatchedtoname
+    pkgdata['installed_names'] = installed
+    pkgdata['pkg_references'] = references
+
+    # left here for future debugging/testing use....
+    #pkgdata['itemname_to_pkgid'] = itemname_to_pkgid
+    #pkgdata['pkgid_to_itemname'] = pkgid_to_itemname
+    #pkgdata['partiallyinstalled_names'] = partiallyinstalled
+    #pkgdata['orphans'] = orphans
+    #pkgdata['matched_orphans'] = matched_orphans
+    #ManagedInstallDir = prefs.pref('ManagedInstallDir')
+    #pkgdatapath = os.path.join(ManagedInstallDir, 'PackageData.plist')
+    #try:
+    #    FoundationPlist.writePlist(pkgdata, pkgdatapath)
+    #except FoundationPlist.NSPropertyListWriteException:
+    #    pass
+    #catalogdbpath =  os.path.join(ManagedInstallDir, 'CatalogDB.plist')
+    #try:
+    #    FoundationPlist.writePlist(CATALOG, catalogdbpath)
+    #except FoundationPlist.NSPropertyListWriteException:
+    #    pass
+    return pkgdata
+
+
+def trimVersionString(version_string):
+    """Trims all lone trailing zeros in the version string after major/minor.
+
+    Examples:
+      10.0.0.0 -> 10.0
+      10.0.0.1 -> 10.0.0.1
+      10.0.0-abc1 -> 10.0.0-abc1
+      10.0.0-abc1.0 -> 10.0.0-abc1
+    """
+    if version_string is None or version_string == '':
+        return ''
+    version_parts = version_string.split('.')
+    # strip off all trailing 0's in the version, while over 2 parts.
+    while len(version_parts) > 2 and version_parts[-1] == '0':
+        del version_parts[-1]
+    return '.'.join(version_parts)
+
+
+def getItemDetail(name, cataloglist, vers=''):
+    """Searches the catalogs in list for an item matching the given name that
+    can be installed on the current hardware/OS
+
+    If no version is supplied, but the version is appended to the name
+    ('TextWrangler--2.3.0.0.0') that version is used.
+    If no version is given at all, the latest version is assumed.
+    Returns a pkginfo item, or None.
+    """
+    def compare_versions(a, b):
+        """Internal comparison function for use in sorting"""
+        return cmp(pkgutils.MunkiLooseVersion(b),
+                   pkgutils.MunkiLooseVersion(a))
+
+    rejected_items = []
+    machine = info.getMachineFacts()
+    # condition check functions
+    def munki_version_ok(item):
+        '''Returns a boolean to indicate if the current Munki version is high
+        enough to install this item. If not, also adds the failure reason to
+        the rejected_items list.'''
+        if 'minimum_munki_version' in item:
+            min_munki_vers = item['minimum_munki_version']
+            display.display_debug1(
+                'Considering item %s, version %s '
+                'with minimum Munki version required %s',
+                item['name'], item['version'], min_munki_vers)
+            display.display_debug1(
+                'Our Munki version is %s', machine['munki_version'])
+            if (pkgutils.MunkiLooseVersion(machine['munki_version'])
+                    < pkgutils.MunkiLooseVersion(min_munki_vers)):
+                reason = (
+                    'Rejected item %s, version %s with minimum Munki version '
+                    'required %s. Our Munki version is %s.'
+                    % (item['name'], item['version'],
+                       item['minimum_munki_version'], machine['munki_version']))
+                rejected_items.append(reason)
+                return False
+        return True
+
+    def os_version_ok(item):
+        '''Returns a boolean to indicate if the item is ok to install under
+        the current OS. If not, also adds the failure reason to the
+        rejected_items list.'''
+        # Is the current OS version >= minimum_os_version for the item?
+        if 'minimum_os_version' in item:
+            min_os_vers = item['minimum_os_version']
+            display.display_debug1(
+                'Considering item %s, version %s '
+                'with minimum os version required %s',
+                item['name'], item['version'], min_os_vers)
+            display.display_debug1(
+                'Our OS version is %s', machine['os_vers'])
+            if (pkgutils.MunkiLooseVersion(machine['os_vers']) <
+                    pkgutils.MunkiLooseVersion(min_os_vers)):
+                # skip this one, go to the next
+                reason = (
+                    'Rejected item %s, version %s with minimum os version '
+                    'required %s. Our OS version is %s.'
+                    % (item['name'], item['version'],
+                       item['minimum_os_version'], machine['os_vers']))
+                rejected_items.append(reason)
+                return False
+
+        # current OS version <= maximum_os_version?
+        if 'maximum_os_version' in item:
+            max_os_vers = item['maximum_os_version']
+            display.display_debug1(
+                'Considering item %s, version %s '
+                'with maximum os version supported %s',
+                item['name'], item['version'], max_os_vers)
+            display.display_debug1(
+                'Our OS version is %s', machine['os_vers'])
+            if (pkgutils.MunkiLooseVersion(machine['os_vers']) >
+                    pkgutils.MunkiLooseVersion(max_os_vers)):
+                # skip this one, go to the next
+                reason = (
+                    'Rejected item %s, version %s with maximum os version '
+                    'required %s. Our OS version is %s.'
+                    % (item['name'], item['version'],
+                       item['maximum_os_version'], machine['os_vers']))
+                rejected_items.append(reason)
+                return False
+        return True
+
+    def cpu_arch_ok(item):
+        '''Returns a boolean to indicate if the item is ok to install under
+        the current CPU architecture. If not, also adds the failure reason to
+        the rejected_items list.'''
+        # current CPU architecture in list of supported_architectures?
+        if 'supported_architectures' in item:
+            supported_arch_found = False
+            display.display_debug1(
+                'Considering item %s, version %s '
+                'with supported architectures: %s',
+                item['name'], item['version'], item['supported_architectures'])
+            display.display_debug1(
+                'Our architecture is %s', machine['arch'])
+            for arch in item['supported_architectures']:
+                if arch == machine['arch']:
+                    # we found a supported architecture that matches
+                    # this machine, so we can use it
+                    supported_arch_found = True
+                    break
+            if (not supported_arch_found and
+                    len(item['supported_architectures']) == 1 and
+                    item['supported_architectures'][0] == 'x86_64' and
+                    machine['arch'] == 'i386' and
+                    machine['x86_64_capable'] is True):
+                supported_arch_found = True
+
+            if not supported_arch_found:
+                # we didn't find a supported architecture that
+                # matches this machine
+                reason = (
+                    'Rejected item %s, version %s with supported '
+                    'architectures: %s. Our architecture is %s.'
+                    % (item['name'], item['version'],
+                       item['supported_architectures'], machine['arch']))
+                rejected_items.append(reason)
+                return False
+        return True
+
+    def installable_condition_ok(item):
+        '''Returns a boolean to indicate if an installable_condition predicate
+        in the current item passes. If not, also adds the failure reason to
+        the rejected_items list.'''
+        # installable condition passes?
+        if 'installable_condition' in item:
+            pkginfo_predicate = item['installable_condition']
+            if not info.predicateEvaluatesAsTrue(
+                    pkginfo_predicate):
+                reason = (
+                    'Rejected item %s, version %s with installable_condition: '
+                    '%s.' % (item['name'], item['version'],
+                             item['installable_condition']))
+                rejected_items.append(reason)
+                return False
+        return True
+
+    if vers == 'apple_update_metadata':
+        vers = 'latest'
+    else:
+        (name, includedversion) = nameAndVersion(name)
+        if vers == '':
+            if includedversion:
+                vers = includedversion
+        if vers:
+            vers = trimVersionString(vers)
+        else:
+            vers = 'latest'
+
+    display.display_debug1(
+        'Looking for detail for: %s, version %s...', name, vers)
+
+    for catalogname in cataloglist:
+        if not catalogname in _CATALOG:
+            # in case the list refers to a non-existent catalog
+            continue
+
+        # is name in the catalog?
+        if name in _CATALOG[catalogname]['named']:
+            itemsmatchingname = _CATALOG[catalogname]['named'][name]
+            indexlist = []
+            if vers == 'latest':
+                # order all our items, latest first
+                versionlist = itemsmatchingname.keys()
+                versionlist.sort(compare_versions)
+                for versionkey in versionlist:
+                    indexlist.extend(itemsmatchingname[versionkey])
+
+            elif vers in itemsmatchingname:
+                # get the specific requested version
+                indexlist = itemsmatchingname[vers]
+
+            display.display_debug1(
+                'Considering %s items with name %s from catalog %s' %
+                (len(indexlist), name, catalogname))
+            for index in indexlist:
+                item = _CATALOG[catalogname]['items'][index]
+                # we have an item whose name and version matches the request.
+                # Now we check other conditions.
+                if (munki_version_ok(item) and os_version_ok(item) and
+                        cpu_arch_ok(item) and installable_condition_ok(item)):
+                    display.display_debug1(
+                        'Found %s, version %s in catalog %s',
+                        item['name'], item['version'], catalogname)
+                    return item
+
+    # if we got this far, we didn't find it.
+    display.display_debug1('Not found')
+    for reason in rejected_items:
+        display.display_warning(reason)
+    return None
+
+
+# global to hold our catalog DBs
+_CATALOG = {}
+def getCatalogs(cataloglist):
+    """Retrieves the catalogs from the server and populates our catalogs
+    dictionary.
+    """
+    #global _CATALOG
+    for catalogname in cataloglist:
+        if not catalogname in _CATALOG:
+            catalogpath = download.download_catalog(catalogname)
+            if catalogpath:
+                try:
+                    catalogdata = FoundationPlist.readPlist(catalogpath)
+                except FoundationPlist.NSPropertyListSerializationException:
+                    display.display_error(
+                        'Retreived catalog %s is invalid.', catalogname)
+                    try:
+                        os.unlink(catalogpath)
+                    except (OSError, IOError):
+                        pass
+                else:
+                    _CATALOG[catalogname] = makeCatalogDB(catalogdata)
+
+
+def clean_up():
+    """Removes any catalog files that are no longer in use by this client"""
+    catalog_dir = os.path.join(prefs.pref('ManagedInstallDir'),
+                               'catalogs')
+    for item in os.listdir(catalog_dir):
+        if item not in _CATALOG:
+            os.unlink(os.path.join(catalog_dir, item))
+
+
+def catalogs():
+    '''Returns our internal _CATALOG dict'''
+    return _CATALOG
