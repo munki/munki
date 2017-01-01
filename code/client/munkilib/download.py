@@ -295,5 +295,28 @@ def download_client_resources():
                     'Could not remove stale %s: %s', resource_archive_path, err)
 
 
+def download_catalog(catalogname):
+    '''Attempt to download a catalog from the Munki server, Returns the path to
+    the downlaoded catalog file'''
+    catalogbaseurl = (prefs.pref('CatalogURL') or
+                      prefs.pref('SoftwareRepoURL') + '/catalogs/')
+    if not catalogbaseurl.endswith('?') and not catalogbaseurl.endswith('/'):
+        catalogbaseurl = catalogbaseurl + '/'
+    display.display_debug2('Catalog base URL is: %s', catalogbaseurl)
+    catalog_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'catalogs')
+    catalogurl = catalogbaseurl + urllib2.quote(catalogname.encode('UTF-8'))
+    catalogpath = os.path.join(catalog_dir, catalogname)
+    display.display_detail('Getting catalog %s...', catalogname)
+    message = 'Retrieving catalog "%s"...' % catalogname
+    try:
+        fetch.munki_resource(catalogurl, catalogpath, message=message)
+        return catalogpath
+    except fetch.Error, err:
+        display.display_error(
+            'Could not retrieve catalog %s from server: %s',
+            catalogname, err)
+        return None
+
+
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'
