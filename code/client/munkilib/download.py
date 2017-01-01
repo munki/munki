@@ -81,7 +81,6 @@ def enough_disk_space(item_pl, installlist=None, uninstalling=False, warn=True):
     return False
 
 
-
 def get_url_basename(url):
     """For a URL, absolute or relative, return the basename string.
 
