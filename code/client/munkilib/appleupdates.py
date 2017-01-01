@@ -34,6 +34,7 @@ from xml.dom import minidom
 from xml.parsers import expat
 
 import FoundationPlist
+import catalogs
 import fetch
 import launchd
 import munkicommon
@@ -1153,7 +1154,7 @@ class AppleUpdates(object):
                         '**Checking for Apple Update Metadata**')
                     for item in apple_updates:
                         # Find matching metadata item
-                        metadata_item = updatecheck.getItemDetail(
+                        metadata_item = catalogs.get_item_detail(
                             item['productKey'], cataloglist,
                             vers='apple_update_metadata')
                         if metadata_item:

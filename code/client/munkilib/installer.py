@@ -28,12 +28,12 @@ import time
 import stat
 
 import adobeutils
+import catalogs
 import launchd
 import munkicommon
 import munkistatus
 import powermgr
 import profiles
-import updatecheck
 import xattr
 import FoundationPlist
 from removepackages import removepackages
@@ -570,7 +570,7 @@ def itemPrereqsInSkippedItems(item, skipped_items):
     for skipped_item in skipped_items:
         if skipped_item['name'] not in skipped_item_dict:
             skipped_item_dict[skipped_item['name']] = []
-        normalized_version = updatecheck.trimVersionString(
+        normalized_version = pkgutils.trim_version_string(
             skipped_item.get('version_to_install', '0.0'))
         munkicommon.display_debug1(
             'Adding skipped item: %s-%s',
@@ -580,12 +580,12 @@ def itemPrereqsInSkippedItems(item, skipped_items):
     # now check prereqs against the skipped items
     matched_prereqs = []
     for prereq in prerequisites:
-        (name, version) = updatecheck.nameAndVersion(prereq)
+        (name, version) = catalogs.split_name_and_version(prereq)
         munkicommon.display_debug1(
             'Comparing %s-%s against skipped items', name, version)
         if name in skipped_item_dict:
             if version:
-                version = updatecheck.trimVersionString(version)
+                version = pkgutils.trim_version_string(version)
                 if version in skipped_item_dict[name]:
                     matched_prereqs.append(prereq)
             else:
@@ -904,7 +904,7 @@ def skippedItemsThatRequireThisItem(item, skipped_items):
             '%s has these prerequisites: %s'
             % (skipped_item['name'], ', '.join(prerequisites)))
         for prereq in prerequisites:
-            (prereq_name, dummy_version) = updatecheck.nameAndVersion(prereq)
+            (prereq_name, dummy_version) = catalogs.split_name_and_version(prereq)
             if prereq_name == item['name']:
                 matched_skipped_items.append(skipped_item['name'])
     return matched_skipped_items

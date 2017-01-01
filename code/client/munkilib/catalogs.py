@@ -33,11 +33,7 @@ from . import utils
 from . import FoundationPlist
 
 
-# we use lots of camelCase-style names. Deal with it.
-# pylint: disable=C0103
-
-
-def makeCatalogDB(catalogitems):
+def make_catalog_db(catalogitems):
     """Takes an array of catalog items and builds some indexes so we can
     get our common data faster. Returns a dict we can use like a database"""
     name_table = {}
@@ -53,7 +49,7 @@ def makeCatalogDB(catalogitems):
             display.display_warning('Bad pkginfo: %s', item)
 
         # normalize the version number
-        vers = trimVersionString(vers)
+        vers = pkgutils.trim_version_string(vers)
 
         # build indexes for items by name and version
         if not name in name_table:
@@ -106,7 +102,7 @@ def makeCatalogDB(catalogitems):
     return pkgdb
 
 
-def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
+def add_package_ids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
     """Adds packageids from each catalogitem to two dictionaries.
     One maps itemnames to receipt pkgids, the other maps receipt pkgids
     to itemnames"""
@@ -135,7 +131,7 @@ def addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
                         pkgid_to_itemname[pkgid][name].append(vers)
 
 
-def nameAndVersion(aString):
+def split_name_and_version(some_string):
     """Splits a string into the name and version number.
 
     Name and version must be separated with a hyphen ('-')
@@ -145,31 +141,31 @@ def nameAndVersion(aString):
     'MicrosoftOffice2008-12.2.1' becomes ('MicrosoftOffice2008', '12.2.1')
     """
     for delim in ('--', '-'):
-        if aString.count(delim) > 0:
-            chunks = aString.split(delim)
+        if some_string.count(delim) > 0:
+            chunks = some_string.split(delim)
             vers = chunks.pop()
             name = delim.join(chunks)
             if vers[0] in '0123456789':
                 return (name, vers)
 
-    return (aString, '')
+    return (some_string, '')
 
 
-def getAllItemsWithName(name, cataloglist):
+def get_all_items_with_name(name, cataloglist):
     """Searches the catalogs in a list for all items matching a given name.
 
     Returns:
       list of pkginfo items; sorted with newest version first. No precedence
       is given to catalog order.
     """
-    def compare_item_versions(a, b):
+    def compare_item_versions(item_a, item_b):
         """Internal comparison function for use with sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(b['version']),
-                   pkgutils.MunkiLooseVersion(a['version']))
+        return cmp(pkgutils.MunkiLooseVersion(item_b['version']),
+                   pkgutils.MunkiLooseVersion(item_a['version']))
 
     itemlist = []
     # we'll throw away any included version info
-    name = nameAndVersion(name)[0]
+    name = split_name_and_version(name)[0]
 
     display.display_debug1('Looking for all items matching: %s...', name)
     for catalogname in cataloglist:
@@ -197,7 +193,7 @@ def getAllItemsWithName(name, cataloglist):
     return itemlist
 
 
-def getAutoRemovalItems(installinfo, cataloglist):
+def get_auto_removal_items(installinfo, cataloglist):
     """Gets a list of items marked for automatic removal from the catalogs
     in cataloglist. Filters those against items in the processed_installs
     list, which should contain everything that is supposed to be installed.
@@ -209,7 +205,7 @@ def getAutoRemovalItems(installinfo, cataloglist):
         if catalogname in _CATALOG.keys():
             autoremovalnames += _CATALOG[catalogname]['autoremoveitems']
 
-    processed_installs_names = [nameAndVersion(item)[0]
+    processed_installs_names = [split_name_and_version(item)[0]
                                 for item in installinfo['processed_installs']]
     autoremovalnames = [item for item in autoremovalnames
                         if item not in processed_installs_names
@@ -217,7 +213,7 @@ def getAutoRemovalItems(installinfo, cataloglist):
     return autoremovalnames
 
 
-def lookForUpdates(itemname, cataloglist):
+def look_for_updates(itemname, cataloglist):
     """Looks for updates for a given manifest item that is either
     installed or scheduled to be installed or removed. This handles not only
     specific application updates, but also updates that aren't simply
@@ -258,15 +254,15 @@ def lookForUpdates(itemname, cataloglist):
     return update_list
 
 
-def lookForUpdatesForVersion(itemname, itemversion, cataloglist):
+def look_for_updates_for_version(itemname, itemversion, cataloglist):
     """Looks for updates for a specific version of an item. Since these
     can appear in manifests and pkginfo as item-version or item--version
     we have to search twice."""
 
     name_and_version = '%s-%s' % (itemname, itemversion)
     alt_name_and_version = '%s--%s' % (itemname, itemversion)
-    update_list = lookForUpdates(name_and_version, cataloglist)
-    update_list.extend(lookForUpdates(alt_name_and_version, cataloglist))
+    update_list = look_for_updates(name_and_version, cataloglist)
+    update_list.extend(look_for_updates(alt_name_and_version, cataloglist))
 
     # make sure the list has only unique items:
     update_list = list(set(update_list))
@@ -274,7 +270,7 @@ def lookForUpdatesForVersion(itemname, itemversion, cataloglist):
     return update_list
 
 
-def bestVersionMatch(vers_num, item_dict):
+def best_version_match(vers_num, item_dict):
     '''Attempts to find the best match in item_dict for vers_num'''
     vers_tuple = vers_num.split('.')
     precision = 1
@@ -294,7 +290,7 @@ def bestVersionMatch(vers_num, item_dict):
 
 
 @utils.Memoize
-def analyzeInstalledPkgs():
+def analyze_installed_pkgs():
     """Analyze catalog data and installed packages in an attempt to determine
     what is installed."""
     pkgdata = {}
@@ -302,7 +298,7 @@ def analyzeInstalledPkgs():
     pkgid_to_itemname = {}
     for catalogname in _CATALOG:
         catalogitems = _CATALOG[catalogname]['items']
-        addPackageids(catalogitems, itemname_to_pkgid, pkgid_to_itemname)
+        add_package_ids(catalogitems, itemname_to_pkgid, pkgid_to_itemname)
     # itemname_to_pkgid now contains all receipts (pkgids) we know about
     # from items in all available catalogs
 
@@ -315,8 +311,8 @@ def analyzeInstalledPkgs():
         # name is a Munki install item name
         somepkgsfound = False
         allpkgsfound = True
-        for pkgid in itemname_to_pkgid[name].keys():
-            if pkgid in installedpkgs.keys():
+        for pkgid in itemname_to_pkgid[name]:
+            if pkgid in installedpkgs:
                 somepkgsfound = True
                 if not name in installedpkgsmatchedtoname:
                     installedpkgsmatchedtoname[name] = []
@@ -377,7 +373,7 @@ def analyzeInstalledPkgs():
         if pkgid in pkgid_to_itemname:
             installed_pkgid_version = installedpkgs[pkgid]
             possible_match_items = pkgid_to_itemname[pkgid]
-            best_match = bestVersionMatch(
+            best_match = best_version_match(
                 installed_pkgid_version, possible_match_items)
             if best_match:
                 matched_orphans.append(best_match)
@@ -418,25 +414,7 @@ def analyzeInstalledPkgs():
     return pkgdata
 
 
-def trimVersionString(version_string):
-    """Trims all lone trailing zeros in the version string after major/minor.
-
-    Examples:
-      10.0.0.0 -> 10.0
-      10.0.0.1 -> 10.0.0.1
-      10.0.0-abc1 -> 10.0.0-abc1
-      10.0.0-abc1.0 -> 10.0.0-abc1
-    """
-    if version_string is None or version_string == '':
-        return ''
-    version_parts = version_string.split('.')
-    # strip off all trailing 0's in the version, while over 2 parts.
-    while len(version_parts) > 2 and version_parts[-1] == '0':
-        del version_parts[-1]
-    return '.'.join(version_parts)
-
-
-def getItemDetail(name, cataloglist, vers=''):
+def get_item_detail(name, cataloglist, vers=''):
     """Searches the catalogs in list for an item matching the given name that
     can be installed on the current hardware/OS
 
@@ -445,10 +423,10 @@ def getItemDetail(name, cataloglist, vers=''):
     If no version is given at all, the latest version is assumed.
     Returns a pkginfo item, or None.
     """
-    def compare_versions(a, b):
+    def compare_versions(item_a, item_b):
         """Internal comparison function for use in sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(b),
-                   pkgutils.MunkiLooseVersion(a))
+        return cmp(pkgutils.MunkiLooseVersion(item_b),
+                   pkgutils.MunkiLooseVersion(item_a))
 
     rejected_items = []
     machine = info.getMachineFacts()
@@ -579,12 +557,12 @@ def getItemDetail(name, cataloglist, vers=''):
     if vers == 'apple_update_metadata':
         vers = 'latest'
     else:
-        (name, includedversion) = nameAndVersion(name)
+        (name, includedversion) = split_name_and_version(name)
         if vers == '':
             if includedversion:
                 vers = includedversion
         if vers:
-            vers = trimVersionString(vers)
+            vers = pkgutils.trim_version_string(vers)
         else:
             vers = 'latest'
 
@@ -592,12 +570,8 @@ def getItemDetail(name, cataloglist, vers=''):
         'Looking for detail for: %s, version %s...', name, vers)
 
     for catalogname in cataloglist:
-        if not catalogname in _CATALOG:
-            # in case the list refers to a non-existent catalog
-            continue
-
         # is name in the catalog?
-        if name in _CATALOG[catalogname]['named']:
+        if catalogname in _CATALOG and name in _CATALOG[catalogname]['named']:
             itemsmatchingname = _CATALOG[catalogname]['named'][name]
             indexlist = []
             if vers == 'latest':
@@ -634,7 +608,7 @@ def getItemDetail(name, cataloglist, vers=''):
 
 # global to hold our catalog DBs
 _CATALOG = {}
-def getCatalogs(cataloglist):
+def get_catalogs(cataloglist):
     """Retrieves the catalogs from the server and populates our catalogs
     dictionary.
     """
@@ -653,7 +627,7 @@ def getCatalogs(cataloglist):
                     except (OSError, IOError):
                         pass
                 else:
-                    _CATALOG[catalogname] = makeCatalogDB(catalogdata)
+                    _CATALOG[catalogname] = make_catalog_db(catalogdata)
 
 
 def clean_up():
@@ -668,3 +642,7 @@ def clean_up():
 def catalogs():
     '''Returns our internal _CATALOG dict'''
     return _CATALOG
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'
