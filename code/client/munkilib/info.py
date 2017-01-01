@@ -37,7 +37,7 @@ import LaunchServices
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSMetadataQuery, NSPredicate, NSRunLoop
-from Foundation import NSDate, NSPredicate, NSTimeZone
+from Foundation import NSDate, NSTimeZone
 # pylint: enable=E0611
 
 # our libs
@@ -654,7 +654,6 @@ def getConditions():
     except (OSError, IOError):
         pass
     if os.path.exists(conditionalscriptdir):
-        from munkilib import utils
         for conditionalscript in osutils.listdir(conditionalscriptdir):
             if conditionalscript.startswith('.'):
                 # skip files that start with a period
