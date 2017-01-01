@@ -223,9 +223,9 @@ def clean_up_manifests():
             if rel_path not in _MANIFESTS:
                 os.unlink(abs_path)
 
-        # Try to remove the directory
-        # (rmdir will fail if directory is not empty)
-        if dirpath != manifest_dir:
+        # If the directory isn't the main manifest dir and is empty, try to
+        # remove it
+        if dirpath != manifest_dir and not len(os.listdir(dirpath)):
             try:
                 os.rmdir(dirpath)
             except OSError:
