@@ -55,15 +55,16 @@ except ImportError:
         print >> sys.stderr, str(err)
     sys.exit(200)
 else:
-    from munkilib import munkicommon
-    from munkilib import updatecheck
+    from munkilib import appleupdates
+    from munkilib import authrestart
+    from munkilib import fetch
     from munkilib import installer
     from munkilib import installinfo
+    from munkilib import munkicommon
     from munkilib import munkistatus
-    from munkilib import appleupdates
-    from munkilib import FoundationPlist
+    from munkilib import updatecheck
     from munkilib import utils
-    from munkilib import authrestart
+    from munkilib import FoundationPlist
 
 
 def signal_handler(signum, dummy_frame):
@@ -219,9 +220,8 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
       Boolean. True if a restart is required, False otherwise.
     """
     if not only_unattended:
-        # first, clear the last notified date
-        # so we can get notified of new changes after this round
-        # of installs
+        # first, clear the last notified date so we can get notified of new
+        # changes after this round of installs
         clearLastNotifiedDate()
 
     munki_need_to_restart = False
@@ -320,30 +320,30 @@ def doRestart():
 def munkiUpdatesAvailable():
     """Return count of available updates."""
     updatesavailable = 0
-    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
-                               'InstallInfo.plist')
-    if os.path.exists(installinfo):
+    install_info = os.path.join(
+        munkicommon.pref('ManagedInstallDir'), 'InstallInfo.plist')
+    if os.path.exists(install_info):
         try:
-            plist = FoundationPlist.readPlist(installinfo)
+            plist = FoundationPlist.readPlist(install_info)
             updatesavailable = (len(plist.get('removals', [])) +
                                 len(plist.get('managed_installs', [])))
         except (AttributeError,
                 FoundationPlist.NSPropertyListSerializationException):
             munkicommon.display_error(
-                'Install info at %s is invalid.' % installinfo)
+                'Install info at %s is invalid.' % install_info)
     return updatesavailable
 
 
 def munkiUpdatesContainAppleItems():
     """Return True if there are any Apple items in the list of updates"""
-    installinfo = os.path.join(munkicommon.pref('ManagedInstallDir'),
-                               'InstallInfo.plist')
-    if os.path.exists(installinfo):
+    install_info = os.path.join(
+        munkicommon.pref('ManagedInstallDir'), 'InstallInfo.plist')
+    if os.path.exists(install_info):
         try:
-            plist = FoundationPlist.readPlist(installinfo)
+            plist = FoundationPlist.readPlist(install_info)
         except FoundationPlist.NSPropertyListSerializationException:
             munkicommon.display_error(
-                'Install info at %s is invalid.' % installinfo)
+                'Install info at %s is invalid.' % install_info)
         else:
             # check managed_installs
             for item in plist.get('managed_installs', []):
@@ -555,9 +555,9 @@ def main():
         options.quiet = True
         options.checkonly = False
         options.installonly = True
-        # if we're running at the loginwindow,
-        # let's make sure the user triggered
-        # the update before logging out, or we triggered it before restarting.
+        # if we're running at the loginwindow, let's make sure the user
+        # triggered the update before logging out, or we triggered it before
+        # restarting.
         user_triggered = False
         flagfiles = [checkandinstallatstartupflag,
                      installatstartupflag,
@@ -570,9 +570,8 @@ def main():
                     options.installonly = False
                     options.auto = True
                     # HACK: sometimes this runs before the network is up.
-                    # we'll attempt to wait up to 60 seconds for the
-                    # network interfaces to come up
-                    # before continuing
+                    # we'll attempt to wait up to 60 seconds for the network
+                    # interfaces to come up before continuing
                     munkicommon.display_status_minor('Waiting for network...')
                     for dummy_i in range(60):
                         if networkUp():
@@ -718,7 +717,7 @@ def main():
         server = munkicommon.pref('ManifestURL') or \
                  munkicommon.pref('SoftwareRepoURL')
         warn_if_server_is_default(server)
-        result = updatecheck.checkServer(server)
+        result = fetch.check_server(server)
         if result != (0, 'OK'):
             munkicommon.display_error(
                 'managedsoftwareupdate: server check for %s failed: %s'
@@ -842,8 +841,7 @@ def main():
     if appleupdatesavailable:
         appleupdates.displayAppleUpdateInfo()
 
-    # send a notification event so MSU can update its display
-    # if needed
+    # send a notification event so MSU can update its display if needed
     sendUpdateNotification()
 
     mustrestart = False
@@ -959,9 +957,8 @@ def main():
         if options.installonly and not options.quiet:
             print 'Nothing to install or remove.'
         if runtype == 'checkandinstallatstartup':
-            # we have nothing to do, so remove the
-            # checkandinstallatstartupflag file
-            # so we'll stop running at startup/logout
+            # we have nothing to do, so remove the checkandinstallatstartupflag
+            # file so we'll stop running at startup/logout
             if os.path.exists(checkandinstallatstartupflag):
                 os.unlink(checkandinstallatstartupflag)
 
@@ -978,8 +975,7 @@ def main():
     munkicommon.set_pref('PendingUpdateCount',
                          updatesavailable + appleupdatesavailable)
 
-    # send a notification event so Dock tile badge can be updated
-    # if needed
+    # send a notification event so Dock tile badge can be updated if needed
     sendDockUpdateNotification()
 
     munkicommon.display_status_major('Finishing...')
@@ -996,18 +992,17 @@ def main():
         print 'Done.'
 
     if notify_user:
-        # it may have been more than a minute since we ran our
-        # original updatecheck so tickle the updatecheck time
-        # so MSU.app knows to display results immediately
+        # it may have been more than a minute since we ran our original
+        # updatecheck so tickle the updatecheck time so MSC.app knows to
+        # display results immediately
         recordUpdateCheckResult(1)
         if force_action:
             notifyUserOfUpdates(force=True)
             time.sleep(2)
             startLogoutHelper()
         elif munkicommon.getconsoleuser() == u'loginwindow':
-            # someone is logged in, but we're sitting at
-            # the loginwindow due to fast user switching
-            # so do nothing
+            # someone is logged in, but we're sitting at the loginwindow due to
+            # to fast user switching so do nothing
             pass
         elif not munkicommon.pref('SuppressUserNotification'):
             notifyUserOfUpdates()
@@ -1032,21 +1027,12 @@ def main():
             if not munkicommon.currentGUIusers():
                 # no-one is logged in
                 idleseconds = getIdleSeconds()
-                if not idleseconds > 10:
+                if idleseconds <= 10:
                     # system is not idle, but check again in case someone has
                     # simply briefly touched the mouse to see progress.
                     time.sleep(15)
                     idleseconds = getIdleSeconds()
                 if idleseconds > 10:
-                    # no-one is logged in and the machine has been idle
-                    # for a few seconds; kill the loginwindow
-                    # (which will cause us to run again)
-                    #munkicommon.log(
-                    #    'Killing loginwindow so we will run again...')
-                    #cmd = ['/usr/bin/killall', 'loginwindow']
-                    #dummy_retcode = subprocess.call(cmd)
-                    # with the new LaunchAgent, we don't have to kill
-                    # the loginwindow
                     pass
                 else:
                     # if the trigger file is present when we exit, we'll

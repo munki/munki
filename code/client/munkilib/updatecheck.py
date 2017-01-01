@@ -24,18 +24,8 @@ Created by Greg Neagle on 2008-11-13.
 # standard libs
 import datetime
 import os
-import urlparse
-from urllib import quote_plus
-
-# Apple's libs
-# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-# No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
-from Foundation import NSDate
-# pylint: enable=E0611
 
 # our libs
-from . import appleupdates
 from . import catalogs
 from . import compare
 from . import download
@@ -46,7 +36,6 @@ from . import licensing
 from . import manifestutils
 from . import munkicommon
 from . import munkistatus
-from . import profiles
 from . import FoundationPlist
 
 
@@ -622,15 +611,6 @@ def processManifestForKey(manifest, manifest_key, installinfo,
             dummy_result = processRemoval(item, cataloglist, installinfo)
 
 
-def getReceiptsToRemove(item):
-    """Returns a list of receipts to remove for item"""
-    name = item['name']
-    pkgdata = catalogs.analyze_installed_pkgs()
-    if name in pkgdata['receipts_for_name']:
-        return pkgdata['receipts_for_name'][name]
-    return []
-
-
 def processRemoval(manifestitem, cataloglist, installinfo):
     """Processes a manifest item; attempts to determine if it
     needs to be removed, and if it can be removed.
@@ -649,9 +629,17 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     Returns a boolean; when processing dependencies, a false return
     will stop the removal of a dependent item.
     """
+    def get_receipts_to_remove(item):
+        """Returns a list of receipts to remove for item"""
+        name = item['name']
+        pkgdata = catalogs.analyze_installed_pkgs()
+        if name in pkgdata['receipts_for_name']:
+            return pkgdata['receipts_for_name'][name]
+        return []
+
     manifestitemname_withversion = os.path.split(manifestitem)[1]
     munkicommon.display_debug1(
-        '* Processing manifest item %s for removal' % 
+        '* Processing manifest item %s for removal' %
         manifestitemname_withversion)
 
     (manifestitemname, includedversion) = catalogs.split_name_and_version(
@@ -660,11 +648,10 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     # have we processed this already?
     if manifestitemname in [catalogs.split_name_and_version(item)[0]
                             for item in installinfo['processed_installs']]:
-        munkicommon.display_warning('Will not attempt to remove %s '
-                                    'because some version of it is in '
-                                    'the list of managed installs, or '
-                                    'it is required by another managed '
-                                    'install.', manifestitemname)
+        munkicommon.display_warning(
+            'Will not attempt to remove %s because some version of it is in '
+            'the list of managed installs, or it is required by another'
+            ' managed install.', manifestitemname)
         return False
     elif manifestitemname in installinfo['processed_uninstalls']:
         munkicommon.display_debug1(
@@ -687,9 +674,8 @@ def processRemoval(manifestitem, cataloglist, installinfo):
 
     if not infoitems:
         munkicommon.display_warning(
-            'Could not process item %s for removal. '
-            'No pkginfo found in catalogs: %s ',
-            manifestitemname, ', '.join(cataloglist))
+            'Could not process item %s for removal. No pkginfo found in '
+            'catalogs: %s ', manifestitemname, ', '.join(cataloglist))
         return False
 
     installEvidence = False
@@ -722,7 +708,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     if item.get('uninstallable') and 'uninstall_method' in item:
         uninstallmethod = item['uninstall_method']
         if uninstallmethod == 'removepackages':
-            packagesToRemove = getReceiptsToRemove(item)
+            packagesToRemove = get_receipts_to_remove(item)
             if packagesToRemove:
                 uninstall_item = item
         elif uninstallmethod.startswith('Adobe'):
@@ -931,40 +917,6 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         'Removal of %s added to ManagedInstaller tasks.',
         manifestitemname_withversion)
     return True
-
-
-def checkServer(url):
-    """A function we can call to check to see if the server is
-    available before we kick off a full run. This can be fooled by
-    ISPs that return results for non-existent web servers...
-    Returns a tuple (error_code, error_description)"""
-    # rewritten 12 Dec 2016 to use gurl so we use system proxies, if any
-
-    # deconstruct URL to get scheme
-    url_parts = urlparse.urlsplit(url)
-    if url_parts.scheme in ('http', 'https'):
-        pass
-    elif url_parts.scheme == 'file':
-        if url_parts.hostname not in [None, '', 'localhost']:
-            return (-1, 'Non-local hostnames not supported for file:// URLs')
-        if os.path.exists(url_parts.path):
-            return (0, 'OK')
-        else:
-            return (-1, 'Path %s does not exist' % url_parts.path)
-    else:
-        return (-1, 'Unsupported URL scheme')
-
-    # we have an HTTP or HTTPS URL
-    try:
-        # attempt to get something at the url
-        dummy_data = fetch.getDataFromURL(url)
-    except fetch.ConnectionError, err:
-        # err should contain a tuple with code and description
-        return (err[0], err[1])
-    except (fetch.GurlError, fetch.DownloadError):
-        # HTTP errors, etc are OK -- we just need to be able to connect
-        pass
-    return (0, 'OK')
 
 
 class UpdateCheckAbortedError(Exception):
