@@ -58,6 +58,7 @@ else:
     from munkilib import munkicommon
     from munkilib import updatecheck
     from munkilib import installer
+    from munkilib import installinfo
     from munkilib import munkistatus
     from munkilib import appleupdates
     from munkilib import FoundationPlist
@@ -837,7 +838,7 @@ def main():
 
     # display any available update information
     if updatecheckresult:
-        updatecheck.displayUpdateInfo()
+        installinfo.display_update_info()
     if appleupdatesavailable:
         appleupdates.displayAppleUpdateInfo()
 
@@ -877,7 +878,7 @@ def main():
                     # check for packages that need to be force installed
                     # soon and convert them to unattended_installs if they
                     # don't require a logout
-                    dummy_action = updatecheck.checkForceInstallPackages()
+                    dummy_action = installinfo.force_install_package_check()
                     # now install anything that can be done unattended
                     munkicommon.log('Installing only items marked unattended '
                                     'because SuppressLoginwindowInstall is '
@@ -911,7 +912,7 @@ def main():
                     # check for packages that need to be force installed
                     # soon and convert them to unattended_installs if they
                     # don't require a logout
-                    dummy_action = updatecheck.checkForceInstallPackages()
+                    dummy_action = installinfo.force_install_package_check()
                     # install anything that can be done unattended
                     dummy_restart = doInstallTasks(
                         appleupdatesavailable, only_unattended=True)
@@ -920,7 +921,7 @@ def main():
                 # if needed
                 sendUpdateNotification()
 
-                force_action = updatecheck.checkForceInstallPackages()
+                force_action = installinfo.force_install_package_check()
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
                 # have stopped even non-logout/reboot installs from
