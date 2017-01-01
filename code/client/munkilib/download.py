@@ -36,28 +36,18 @@ from . import prefs
 from . import reports
 
 
-def enough_disk_space(item_pl, installlist=None,
-                      uninstalling=False, warn=True):
-    """Determine if there is enough disk space to
-    download the manifestitem."""
+def enough_disk_space(item_pl, installlist=None, uninstalling=False, warn=True):
+    """Determine if there is enough disk space to download the installer
+    item."""
     # fudgefactor is set to 100MB
     fudgefactor = 102400
-    installeritemsize = 0
-    installedsize = 0
     alreadydownloadedsize = 0
     if 'installer_item_location' in item_pl:
-        cachedir = os.path.join(prefs.pref('ManagedInstallDir'), 'Cache')
-        download = get_download_cache_path(
-            cachedir, item_pl['installer_item_location'])
+        download = get_download_cache_path(item_pl['installer_item_location'])
         if os.path.exists(download):
             alreadydownloadedsize = os.path.getsize(download)
-    if 'installer_item_size' in item_pl:
-        installeritemsize = int(item_pl['installer_item_size'])
-    if 'installed_size' in item_pl:
-        installedsize = int(item_pl['installed_size'])
-    else:
-        # fudge this value
-        installedsize = installeritemsize
+    installeritemsize = int(item_pl.get('installer_item_size', 0))
+    installedsize = int(item_pl.get('installed_size', installeritemsize))
     if uninstalling:
         installedsize = 0
         if 'uninstaller_item_size' in item_pl:
@@ -103,13 +93,12 @@ def get_url_basename(url):
     return os.path.basename(url_parse.path)
 
 
-def get_download_cache_path(destinationpathprefix, url):
+def get_download_cache_path(url):
     """For a URL, return the path that the download should cache to.
 
     Returns a string."""
-
-    return os.path.join(
-        destinationpathprefix, get_url_basename(url))
+    cachedir = os.path.join(prefs.pref('ManagedInstallDir'), 'Cache')
+    return os.path.join(cachedir, get_url_basename(url))
 
 
 def download_installeritem(item_pl, installinfo, uninstalling=False):
@@ -147,9 +136,7 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     display.display_debug2('Package name is: %s', pkgname)
     display.display_debug2('Download URL is: %s', pkgurl)
 
-    managed_install_dir = prefs.pref('ManagedInstallDir')
-    mycachedir = os.path.join(managed_install_dir, 'Cache')
-    destinationpath = get_download_cache_path(mycachedir, location)
+    destinationpath = get_download_cache_path(location)
     display.display_debug2('Downloading to: %s', destinationpath)
 
     display.display_detail('Downloading %s from %s', pkgname, location)
@@ -173,71 +160,83 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
                                 verify=True)
 
 
-def download_icons(item_list):
-    '''Attempts to download icons (actually png files) for items in
-       item_list'''
-    icon_list = []
-    icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png', '.psd',
-                       '.tga', '.tif', '.tiff', '.yuv']
-    icon_base_url = (prefs.pref('IconURL') or
-                     prefs.pref('SoftwareRepoURL') + '/icons/')
-    icon_base_url = icon_base_url.rstrip('/') + '/'
-    icon_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'icons')
-    display.display_debug2('Icon base URL is: %s', icon_base_url)
-    for item in item_list:
-        icon_name = item.get('icon_name') or item['name']
-        pkginfo_icon_hash = item.get('icon_hash')
-        if not os.path.splitext(icon_name)[1] in icon_known_exts:
-            icon_name += '.png'
-        icon_list.append(icon_name)
-        icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))
-        icon_path = os.path.join(icon_dir, icon_name)
-        if os.path.isfile(icon_path):
-            xattr_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
-            if not xattr_hash:
-                xattr_hash = munkihash.getsha256hash(icon_path)
-                fetch.writeCachedChecksum(icon_path, xattr_hash)
-        else:
-            xattr_hash = 'nonexistent'
-        icon_subdir = os.path.dirname(icon_path)
-        if not os.path.isdir(icon_subdir):
-            try:
-                os.makedirs(icon_subdir, 0755)
-            except OSError, err:
-                display.display_error(
-                    'Could not create %s' % icon_subdir)
-                return
-        if pkginfo_icon_hash != xattr_hash:
-            item_name = item.get('display_name') or item['name']
-            message = 'Getting icon %s for %s...' % (icon_name, item_name)
-            try:
-                dummy_value = fetch.munki_resource(
-                    icon_url, icon_path, message=message)
-            except fetch.Error, err:
-                display.display_debug1(
-                    'Could not retrieve icon %s from the server: %s',
-                    icon_name, err)
-            else:
-                if os.path.isfile(icon_path):
-                    fetch.writeCachedChecksum(icon_path)
+def clean_up_icons_dir(icons_to_keep):
+    '''Remove any cached/downloaded icons that aren't in the list of ones to
+    keep'''
     # remove no-longer needed icons from the local directory
+    icon_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'icons')
     for (dirpath, dummy_dirnames, filenames) in os.walk(
             icon_dir, topdown=False):
         for filename in filenames:
             icon_path = os.path.join(dirpath, filename)
             rel_path = icon_path[len(icon_dir):].lstrip('/')
-            if rel_path not in icon_list:
+            if rel_path not in icons_to_keep:
                 try:
                     os.unlink(icon_path)
-                except (IOError, OSError), err:
+                except (IOError, OSError):
                     pass
         if len(osutils.listdir(dirpath)) == 0:
             # did we empty out this directory (or is it already empty)?
             # if so, remove it
             try:
                 os.rmdir(dirpath)
-            except (IOError, OSError), err:
+            except (IOError, OSError):
                 pass
+
+
+def download_icons(item_list):
+    '''Attempts to download icons (actually image files) for items in
+       item_list'''
+    icons_to_keep = []
+    icon_known_exts = ['.bmp', '.gif', '.icns', '.jpg', '.jpeg', '.png', '.psd',
+                       '.tga', '.tif', '.tiff', '.yuv']
+    icon_base_url = (prefs.pref('IconURL') or
+                     prefs.pref('SoftwareRepoURL') + '/icons/')
+    # make sure the icon_base_url ends with exactly one slash
+    icon_base_url = icon_base_url.rstrip('/') + '/'
+    display.display_debug2('Icon base URL is: %s', icon_base_url)
+    icon_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'icons')
+    for item in item_list:
+        icon_name = item.get('icon_name') or item['name']
+        pkginfo_icon_hash = item.get('icon_hash')
+        if not os.path.splitext(icon_name)[1] in icon_known_exts:
+            icon_name += '.png'
+        icons_to_keep.append(icon_name)
+        icon_path = os.path.join(icon_dir, icon_name)
+        if os.path.isfile(icon_path):
+            # have we already downloaded it? If so get the hash
+            local_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
+            if not local_hash:
+                local_hash = munkihash.getsha256hash(icon_path)
+                fetch.writeCachedChecksum(icon_path, local_hash)
+        else:
+            local_hash = 'nonexistent'
+        icon_subdir = os.path.dirname(icon_path)
+        if not os.path.isdir(icon_subdir):
+            try:
+                os.makedirs(icon_subdir, 0755)
+            except OSError, err:
+                display.display_error('Could not create %s' % icon_subdir)
+                return
+        if pkginfo_icon_hash != local_hash:
+            # hashes don't match, so download the icon
+            item_name = item.get('display_name') or item['name']
+            message = 'Getting icon %s for %s...' % (icon_name, item_name)
+            icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))
+            try:
+                fetch.munki_resource(
+                    icon_url, icon_path, message=message)
+            except fetch.Error, err:
+                display.display_debug1(
+                    'Could not retrieve icon %s from the server: %s',
+                    icon_name, err)
+            else:
+                # if we downloaded it, store the hash for later use
+                if os.path.isfile(icon_path):
+                    fetch.writeCachedChecksum(icon_path)
+
+    # delete any previously downloaded icons we no longer need
+    clean_up_icons_dir(icons_to_keep)
 
 
 def download_client_resources():
@@ -276,9 +275,10 @@ def download_client_resources():
     message = 'Getting client resources...'
     downloaded_resource_path = None
     for filename in filenames:
-        resource_url = resource_base_url + filename
+        resource_url = resource_base_url + urllib2.quote(
+            filename.encode('UTF-8'))
         try:
-            dummy_value = fetch.munki_resource(
+            fetch.munki_resource(
                 resource_url, resource_archive_path, message=message)
             downloaded_resource_path = resource_archive_path
             break
