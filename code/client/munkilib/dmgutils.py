@@ -57,10 +57,10 @@ def DMGisWritable(dmgpath):
     return False
 
 
-def DMGhasSLA(dmgpath):
+def dmg_has_sla(dmgpath):
     '''Returns true if dmg has a Software License Agreement.
     These dmgs normally cannot be attached without user intervention'''
-    hasSLA = False
+    has_sla = False
     proc = subprocess.Popen(
         ['/usr/bin/hdiutil', 'imageinfo', dmgpath, '-plist'],
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -74,14 +74,14 @@ def DMGhasSLA(dmgpath):
             plist = FoundationPlist.readPlistFromString(pliststr)
             properties = plist.get('Properties')
             if properties:
-                hasSLA = properties.get('Software License Agreement', False)
+                has_sla = properties.get('Software License Agreement', False)
         except FoundationPlist.NSPropertyListSerializationException:
             pass
 
-    return hasSLA
+    return has_sla
 
 
-def hdiutilInfo():
+def hdiutil_info():
     """
     Convenience method for running 'hdiutil info -plist'
 
@@ -108,7 +108,7 @@ def diskImageIsMounted(dmgpath):
     Returns true if the given disk image is currently mounted
     """
     isMounted = False
-    infoplist = hdiutilInfo()
+    infoplist = hdiutil_info()
     for imageProperties in infoplist.get('images'):
         if 'image-path' in imageProperties:
             imagepath = imageProperties['image-path']
@@ -125,7 +125,7 @@ def pathIsVolumeMountPoint(path):
     Returns true if the given path is a mount point or false if it isn't
     """
     isMountPoint = False
-    infoplist = hdiutilInfo()
+    infoplist = hdiutil_info()
     for imageProperties in infoplist.get('images'):
         if 'image-path' in imageProperties:
             for entity in imageProperties.get('system-entities', []):
@@ -145,7 +145,7 @@ def diskImageForMountPoint(path):
     a valid mount point
     """
     dmgpath = None
-    infoplist = hdiutilInfo()
+    infoplist = hdiutil_info()
     for imageProperties in infoplist.get('images'):
         if 'image-path' in imageProperties:
             imagepath = imageProperties['image-path']
@@ -157,12 +157,12 @@ def diskImageForMountPoint(path):
     return dmgpath
 
 
-def mountPointsForDiskImage(dmgpath):
+def mount_points_for_disk_image(dmgpath):
     """
     Returns a list of mountpoints for the given disk image
     """
     mountpoints = []
-    infoplist = hdiutilInfo()
+    infoplist = hdiutil_info()
     for imageProperties in infoplist.get('images'):
         if 'image-path' in imageProperties:
             imagepath = imageProperties['image-path']
@@ -187,12 +187,12 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
         # Check if this dmg is already mounted
         # and if so, bail out and return the mountpoints
         if diskImageIsMounted(dmgpath):
-            mountpoints = mountPointsForDiskImage(dmgpath)
+            mountpoints = mount_points_for_disk_image(dmgpath)
             return mountpoints
 
     # Attempt to mount the dmg
     stdin = ''
-    if DMGhasSLA(dmgpath):
+    if dmg_has_sla(dmgpath):
         stdin = 'Y\n'
         display.display_detail(
             'NOTE: %s has embedded Software License Agreement' % dmgname)
