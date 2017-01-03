@@ -504,6 +504,7 @@ def getAppData():
     return app_data
 
 
+@utils.Memoize
 def get_version():
     """Returns version of munkitools, reading version.plist"""
     vers = "UNKNOWN"
