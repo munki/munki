@@ -1690,26 +1690,26 @@ class AppleUpdates(object):
             return 0
         return count
 
-    def SoftwareUpdateList(self):
-        """Returns a list of str update names using softwareupdate -l."""
-        if self._update_list_cache is not None:
-            return self._update_list_cache
-
-        updates = []
-        munkicommon.display_detail(
-            'Getting list of available Apple Software Updates')
-        cmd = ['/usr/sbin/softwareupdate', '-l']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, dummy_err = proc.communicate()
-        if proc.returncode == 0:
-            updates = [str(item)[5:] for item in str(output).splitlines()
-                       if str(item).startswith('   * ')]
-        munkicommon.display_detail(
-            'softwareupdate returned %d updates.', len(updates))
-        self._update_list_cache = updates
-        return updates
+#    def SoftwareUpdateList(self):
+#        """Returns a list of str update names using softwareupdate -l."""
+#        if self._update_list_cache is not None:
+#            return self._update_list_cache
+#
+#        updates = []
+#        munkicommon.display_detail(
+#            'Getting list of available Apple Software Updates')
+#        cmd = ['/usr/sbin/softwareupdate', '-l']
+#        proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+#                                stdin=subprocess.PIPE,
+#                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#        output, dummy_err = proc.communicate()
+#        if proc.returncode == 0:
+#            updates = [str(item)[5:] for item in str(output).splitlines()
+#                       if str(item).startswith('   * ')]
+#        munkicommon.display_detail(
+#            'softwareupdate returned %d updates.', len(updates))
+#        self._update_list_cache = updates
+#        return updates
 
     def copyUpdateMetadata(self, item, metadata):
         """Applies metadata to Apple update item restricted
@@ -1822,9 +1822,9 @@ def getAppleUpdatesInstance():
     return apple_updates_object
 
 
-def softwareUpdateList():
-    """Method for drop-in appleupdates replacement; see primary method docs."""
-    return getAppleUpdatesInstance().SoftwareUpdateList()
+#def softwareUpdateList():
+#    """Method for drop-in appleupdates replacement; see primary method docs."""
+#    return getAppleUpdatesInstance().SoftwareUpdateList()
 
 
 def clearAppleUpdateInfo():

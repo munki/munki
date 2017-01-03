@@ -24,7 +24,6 @@ Utilities for determining installation status for Munki items.
 
 import os
 
-from . import appleupdates
 from . import catalogs
 from . import compare
 from . import display
@@ -61,22 +60,23 @@ def installed_state(item_pl):
         # return 1 so we're marked as not needing to be installed
         return 1
 
-    if item_pl.get('softwareupdatename'):
-        available_apple_updates = appleupdates.softwareUpdateList()
-        display.display_debug2(
-            'Available Apple updates:\n%s', available_apple_updates)
-        if item_pl['softwareupdatename'] in available_apple_updates:
-            display.display_debug1(
-                '%s is in available Apple Software Updates',
-                item_pl['softwareupdatename'])
-            # return 0 so we're marked as needing to be installed
-            return 0
-        else:
-            display.display_debug1(
-                '%s is not in available Apple Software Updates',
-                item_pl['softwareupdatename'])
-            # return 1 so we're marked as not needing to be installed
-            return 1
+    # this was deprecated a very long time ago. removing 02 Jan 2017
+    #if item_pl.get('softwareupdatename'):
+    #    available_apple_updates = appleupdates.softwareUpdateList()
+    #    display.display_debug2(
+    #        'Available Apple updates:\n%s', available_apple_updates)
+    #    if item_pl['softwareupdatename'] in available_apple_updates:
+    #        display.display_debug1(
+    #            '%s is in available Apple Software Updates',
+    #            item_pl['softwareupdatename'])
+    #        # return 0 so we're marked as needing to be installed
+    #        return 0
+    #    else:
+    #        display.display_debug1(
+    #            '%s is not in available Apple Software Updates',
+    #            item_pl['softwareupdatename'])
+    #        # return 1 so we're marked as not needing to be installed
+    #        return 1
 
     if item_pl.get('installer_type') == 'profile':
         identifier = item_pl.get('PayloadIdentifier')
