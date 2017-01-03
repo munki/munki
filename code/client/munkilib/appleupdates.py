@@ -370,8 +370,8 @@ class AppleUpdates(object):
                                 pkgs[pkg_id]['packageid'] = (
                                     pkg.attributes['packageIdentifier'].value)
 
-        # look for localization and parse CDATA
-        cdata = {}
+        # look for localization and parse strings data into a dict
+        strings_data = {}
         localizations = dom.getElementsByTagName('localization')
         if localizations:
             string_elements = localizations[0].getElementsByTagName('strings')
@@ -380,12 +380,13 @@ class AppleUpdates(object):
                 if strings.firstChild:
                     try:
                         text = strings.firstChild.wholeText
-                        #cdata = self.parse_cdata(text)
-                        # .strings data can be parsed by FoundationPlist
-                        cdata = FoundationPlist.readPlistFromString(text)
+                        #strings_data = self.parse_cdata(text)
+                        # strings data can be parsed by FoundationPlist
+                        strings_data = FoundationPlist.readPlistFromString(
+                            "\n" + text)
                     except (AttributeError,
                             FoundationPlist.FoundationPlistException):
-                        cdata = {}
+                        strings_data = {}
 
         # get blocking_applications, if any.
         # First, find all the must-close items.
@@ -429,8 +430,8 @@ class AppleUpdates(object):
         info['description'] = su_choice.get('description', '')
         for key in info.keys():
             if info[key].startswith('SU_'):
-                # get value from cdata dictionary
-                info[key] = cdata.get(info[key], info[key])
+                # get value from strings_data dictionary
+                info[key] = strings_data.get(info[key], info[key])
         #info['pkg_refs'] = pkgs
         installed_size = 0
         for pkg in pkgs.values():
