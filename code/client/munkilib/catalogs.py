@@ -435,7 +435,7 @@ def get_item_detail(name, cataloglist, vers=''):
         '''Returns a boolean to indicate if the current Munki version is high
         enough to install this item. If not, also adds the failure reason to
         the rejected_items list.'''
-        if 'minimum_munki_version' in item:
+        if item.get('minimum_munki_version'):
             min_munki_vers = item['minimum_munki_version']
             display.display_debug1(
                 'Considering item %s, version %s '
@@ -459,7 +459,7 @@ def get_item_detail(name, cataloglist, vers=''):
         the current OS. If not, also adds the failure reason to the
         rejected_items list.'''
         # Is the current OS version >= minimum_os_version for the item?
-        if 'minimum_os_version' in item:
+        if item.get('minimum_os_version'):
             min_os_vers = item['minimum_os_version']
             display.display_debug1(
                 'Considering item %s, version %s '
@@ -479,7 +479,7 @@ def get_item_detail(name, cataloglist, vers=''):
                 return False
 
         # current OS version <= maximum_os_version?
-        if 'maximum_os_version' in item:
+        if item.get('maximum_os_version'):
             max_os_vers = item['maximum_os_version']
             display.display_debug1(
                 'Considering item %s, version %s '
@@ -504,7 +504,7 @@ def get_item_detail(name, cataloglist, vers=''):
         the current CPU architecture. If not, also adds the failure reason to
         the rejected_items list.'''
 
-        if 'supported_architectures' in item:
+        if item.get('supported_architectures'):
             display.display_debug1(
                 'Considering item %s, version %s '
                 'with supported architectures: %s',
@@ -534,7 +534,7 @@ def get_item_detail(name, cataloglist, vers=''):
         in the current item passes. If not, also adds the failure reason to
         the rejected_items list.'''
 
-        if 'installable_condition' in item:
+        if item.get('installable_condition'):
             if not info.predicateEvaluatesAsTrue(item['installable_condition']):
                 reason = (
                     'Rejected item %s, version %s with installable_condition: '
