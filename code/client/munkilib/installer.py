@@ -29,10 +29,13 @@ import stat
 
 import adobeutils
 import catalogs
+import copyfromdmg
 import launchd
 import munkicommon
 import munkistatus
+import pkgutils
 import powermgr
+import processes
 import profiles
 import xattr
 import FoundationPlist
@@ -296,214 +299,6 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
     return (retcode, restartflag)
 
 
-def copyAppFromDMG(dmgpath):
-    '''copies application from DMG to /Applications
-    This type of installer_type is deprecated and should be
-    replaced with the more generic copyFromDMG'''
-    munkicommon.display_status_minor(
-        'Mounting disk image %s' % os.path.basename(dmgpath))
-    mountpoints = munkicommon.mountdmg(dmgpath)
-    if mountpoints:
-        retcode = 0
-        appname = None
-        mountpoint = mountpoints[0]
-        # find an app at the root level, copy it to /Applications
-        for item in munkicommon.listdir(mountpoint):
-            itempath = os.path.join(mountpoint, item)
-            if munkicommon.isApplication(itempath):
-                appname = item
-                break
-
-        if appname:
-            # make an itemlist we can pass to copyItemsFromMountpoint
-            itemlist = []
-            item = {}
-            item['source_item'] = appname
-            item['destination_path'] = "/Applications"
-            itemlist.append(item)
-            retcode = copyItemsFromMountpoint(mountpoint, itemlist)
-            if retcode == 0:
-                # let the user know we completed successfully
-                munkicommon.display_status_minor(
-                    "The software was successfully installed.")
-        else:
-            munkicommon.display_error(
-                "No application found on %s" % os.path.basename(dmgpath))
-            retcode = -2
-        munkicommon.unmountdmg(mountpoint)
-        return retcode
-    else:
-        munkicommon.display_error("No mountable filesystems on %s",
-                                  os.path.basename(dmgpath))
-        return -1
-
-
-def copyItemsFromMountpoint(mountpoint, itemlist):
-    '''copies items from the mountpoint to the startup disk
-    Returns 0 if no issues; some error code otherwise.
-
-    If the 'destination_item' key is provided, items will be copied
-    as its value.'''
-    for item in itemlist:
-
-        # get itemname
-        source_itemname = item.get("source_item")
-        dest_itemname = item.get("destination_item")
-        if not source_itemname:
-            munkicommon.display_error("Missing name of item to copy!")
-            return -1
-
-        # check source path
-        source_itempath = os.path.join(mountpoint, source_itemname)
-        if not os.path.exists(source_itempath):
-            munkicommon.display_error(
-                "Source item %s does not exist!" % source_itemname)
-            return -1
-
-        # check destination path
-        destpath = item.get('destination_path')
-        if not destpath:
-            destpath = item.get('destination_item')
-            if destpath:
-                # split it into path and name
-                dest_itemname = os.path.basename(destpath)
-                destpath = os.path.dirname(destpath)
-
-        if not destpath:
-            munkicommon.display_error("Missing destination path for item!")
-            return -1
-
-        if not os.path.exists(destpath):
-            munkicommon.display_detail(
-                "Destination path %s does not exist, will determine "
-                "owner/permissions from parent" % destpath)
-            parent_path = destpath
-            new_paths = []
-
-            # work our way back up to an existing path and build a list
-            while not os.path.exists(parent_path):
-                new_paths.insert(0, parent_path)
-                parent_path = os.path.split(parent_path)[0]
-
-            # stat the parent, get uid/gid/mode
-            parent_stat = os.stat(parent_path)
-            parent_uid, parent_gid = parent_stat.st_uid, parent_stat.st_gid
-            parent_mode = stat.S_IMODE(parent_stat.st_mode)
-
-            # make the new tree with the parent's mode
-            try:
-                os.makedirs(destpath, mode=parent_mode)
-            except IOError:
-                munkicommon.display_error(
-                    "There was an IO error in creating the path %s!" % destpath)
-                return -1
-            except BaseException:
-                munkicommon.display_error(
-                    "There was an unknown error in creating the path %s!"
-                    % destpath)
-                return -1
-
-            # chown each new dir
-            for new_path in new_paths:
-                os.chown(new_path, parent_uid, parent_gid)
-
-
-        # setup full destination path using 'destination_item', if supplied
-        if dest_itemname:
-            full_destpath = os.path.join(
-                destpath, os.path.basename(dest_itemname))
-        else:
-            full_destpath = os.path.join(
-                destpath, os.path.basename(source_itemname))
-
-        # remove item if it already exists
-        if os.path.exists(full_destpath):
-            retcode = subprocess.call(["/bin/rm", "-rf", full_destpath])
-            if retcode:
-                munkicommon.display_error(
-                    "Error removing existing %s" % full_destpath)
-                return retcode
-
-        # all tests passed, OK to copy
-        munkicommon.display_status_minor(
-            "Copying %s to %s" % (source_itemname, full_destpath))
-        retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
-                                   source_itempath, full_destpath])
-        if retcode:
-            munkicommon.display_error(
-                "Error copying %s to %s" % (source_itempath, full_destpath))
-            return retcode
-
-        # remove com.apple.quarantine xattr since `man ditto` lies and doesn't
-        # seem to actually always remove it
-        try:
-            if "com.apple.quarantine" in xattr.xattr(full_destpath).list():
-                xattr.xattr(full_destpath).remove("com.apple.quarantine")
-        except BaseException as err:
-            munkicommon.display_warning(
-                "Error removing com.apple.quarantine from %s: %s",
-                full_destpath, err)
-
-        # set owner
-        user = item.get('user', 'root')
-        munkicommon.display_detail(
-            "Setting owner for '%s' to '%s'" % (full_destpath, user))
-        retcode = subprocess.call(
-            ['/usr/sbin/chown', '-R', user, full_destpath])
-        if retcode:
-            munkicommon.display_error(
-                "Error setting owner for %s" % (full_destpath))
-            return retcode
-
-        # set group
-        group = item.get('group', 'admin')
-        munkicommon.display_detail(
-            "Setting group for '%s' to '%s'" % (full_destpath, group))
-        retcode = subprocess.call(
-            ['/usr/bin/chgrp', '-R', group, full_destpath])
-        if retcode:
-            munkicommon.display_error(
-                "Error setting group for %s" % (full_destpath))
-            return retcode
-
-        # set mode
-        mode = item.get('mode', 'o-w')
-        munkicommon.display_detail(
-            "Setting mode for '%s' to '%s'" % (full_destpath, mode))
-        retcode = subprocess.call(['/bin/chmod', '-R', mode, full_destpath])
-        if retcode:
-            munkicommon.display_error(
-                "Error setting mode for %s" % (full_destpath))
-            return retcode
-
-    # all items copied successfully!
-    return 0
-
-
-def copyFromDMG(dmgpath, itemlist):
-    '''copies items from DMG to local disk'''
-    if not itemlist:
-        munkicommon.display_error("No items to copy!")
-        return -1
-
-    munkicommon.display_status_minor(
-        'Mounting disk image %s' % os.path.basename(dmgpath))
-    mountpoints = munkicommon.mountdmg(dmgpath)
-    if mountpoints:
-        mountpoint = mountpoints[0]
-        retcode = copyItemsFromMountpoint(mountpoint, itemlist)
-        if retcode == 0:
-            # let the user know we completed successfully
-            munkicommon.display_status_minor(
-                "The software was successfully installed.")
-        munkicommon.unmountdmg(mountpoint)
-        return retcode
-    else:
-        munkicommon.display_error(
-            "No mountable filesystems on %s" % os.path.basename(dmgpath))
-        return -1
-
-
 def removeCopiedItems(itemlist):
     '''Removes filesystem items based on info in itemlist.
     These items were typically installed via DMG'''
@@ -613,7 +408,7 @@ def installWithInfo(
                     ('Skipping install of %s because it\'s not unattended.'
                      % item['name']))
                 continue
-            elif blockingApplicationsRunning(item):
+            elif processes.blockingApplicationsRunning(item):
                 skipped_installs.append(item)
                 munkicommon.display_detail(
                     'Skipping unattended install of %s because '
@@ -672,7 +467,8 @@ def installWithInfo(
                     restartflag = True
                     retcode = 0
             elif installer_type == "copy_from_dmg":
-                retcode = copyFromDMG(itempath, item.get('items_to_copy'))
+                retcode = copyfromdmg.copy_from_dmg(
+                    itempath, item.get('items_to_copy'))
                 if retcode == 0:
                     if (item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
@@ -680,7 +476,7 @@ def installWithInfo(
             elif installer_type == "appdmg":
                 munkicommon.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
-                retcode = copyAppFromDMG(itempath)
+                retcode = copyfromdmg.copy_app_from_dmg(itempath)
             elif installer_type == 'profile':
                 # profiles.install_profile returns True/False
                 retcode = 0
@@ -923,7 +719,7 @@ def processRemovals(removallist, only_unattended=False):
                     ('Skipping removal of %s because it\'s not unattended.'
                      % item['name']))
                 continue
-            elif blockingApplicationsRunning(item):
+            elif processes.blockingApplicationsRunning(item):
                 skipped_removals.append(item)
                 munkicommon.display_detail(
                     'Skipping unattended removal of %s because '
@@ -1071,18 +867,6 @@ def processRemovals(removallist, only_unattended=False):
     return (restartFlag, skipped_removals)
 
 
-def removeItemFromSelfServeInstallList(itemname):
-    """Remove the given itemname from the self-serve manifest's
-    managed_installs list"""
-    removeItemFromSelfServeSection(itemname, 'managed_installs')
-
-
-def removeItemFromSelfServeUninstallList(itemname):
-    """Remove the given itemname from the self-serve manifest's
-    managed_uninstalls list"""
-    removeItemFromSelfServeSection(itemname, 'managed_uninstalls')
-
-
 def removeItemFromSelfServeSection(itemname, section):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
@@ -1115,30 +899,16 @@ def removeItemFromSelfServeSection(itemname, section):
                 "Error writing %s: %s", selfservemanifest, err)
 
 
-def blockingApplicationsRunning(pkginfoitem):
-    """Returns true if any application in the blocking_applications list
-    is running or, if there is no blocking_applications list, if any
-    application in the installs list is running."""
+def removeItemFromSelfServeInstallList(itemname):
+    """Remove the given itemname from the self-serve manifest's
+    managed_installs list"""
+    removeItemFromSelfServeSection(itemname, 'managed_installs')
 
-    if 'blocking_applications' in pkginfoitem:
-        appnames = pkginfoitem['blocking_applications']
-    else:
-        # if no blocking_applications specified, get appnames
-        # from 'installs' list if it exists
-        appnames = [os.path.basename(item.get('path'))
-                    for item in pkginfoitem.get('installs', [])
-                    if item['type'] == 'application']
 
-    munkicommon.display_debug1("Checking for %s" % appnames)
-    running_apps = [appname for appname in appnames
-                    if munkicommon.isAppRunning(appname)]
-    if running_apps:
-        munkicommon.display_detail(
-            "Blocking apps for %s are running:" % pkginfoitem['name'])
-        munkicommon.display_detail(
-            "    %s" % running_apps)
-        return True
-    return False
+def removeItemFromSelfServeUninstallList(itemname):
+    """Remove the given itemname from the self-serve manifest's
+    managed_uninstalls list"""
+    removeItemFromSelfServeSection(itemname, 'managed_uninstalls')
 
 
 def run(only_unattended=False):
@@ -1264,9 +1034,7 @@ def run(only_unattended=False):
         munkicommon.log("###    End managed installer session    ###")
 
     munkicommon.savereport()
-
     powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
-
     return removals_need_restart or installs_need_restart
 
 
