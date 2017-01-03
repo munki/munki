@@ -34,7 +34,6 @@ from types import StringType
 from xml.dom import minidom
 
 from . import display
-from . import dmgutils
 from . import osutils
 from . import utils
 from . import FoundationPlist
@@ -212,7 +211,7 @@ def getBundleVersion(bundlepath, key=None):
     infopath = os.path.join(
         bundlepath, 'Contents', 'Resources', 'English.lproj')
     if os.path.exists(infopath):
-        for item in osutils.osutils.listdir(infopath):
+        for item in osutils.listdir(infopath):
             if os.path.join(infopath, item).endswith('.info'):
                 infofile = os.path.join(infopath, item)
                 fileobj = open(infofile, mode='r')

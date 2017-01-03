@@ -388,6 +388,7 @@ def getInstalledVersion(item_plist):
                 pkgid, item_plist['name'])
             return pkgutils.getInstalledPackageVersion(pkgid)
 
+    # try using items in the installs array to determine version
     install_items_with_versions = [item
                                    for item in item_plist.get('installs', [])
                                    if 'CFBundleShortVersionString' in item]
@@ -420,11 +421,11 @@ def getInstalledVersion(item_plist):
 
                     maxversion = '0.0.0.0.0'
                     for ai_item in appinfo:
-                        if 'version' in ai_item:
-                            if compareVersions(ai_item['version'],
-                                               maxversion) == 2:
-                                # version is higher
-                                maxversion = ai_item['version']
+                        if ('version' in ai_item and
+                                compareVersions(
+                                    ai_item['version'], maxversion) == 2):
+                            # version is higher
+                            maxversion = ai_item['version']
                     return maxversion
             elif install_item['type'] == 'bundle':
                 display.display_debug2(
@@ -436,7 +437,7 @@ def getInstalledVersion(item_plist):
                     plist = FoundationPlist.readPlist(filepath)
                     return plist.get('CFBundleShortVersionString', 'UNKNOWN')
                 except FoundationPlist.NSPropertyListSerializationException:
-                    return "UNKNOWN"
+                    pass
             elif install_item['type'] == 'plist':
                 display.display_debug2(
                     'Using plist %s to determine installed version of %s',
@@ -445,7 +446,7 @@ def getInstalledVersion(item_plist):
                     plist = FoundationPlist.readPlist(install_item['path'])
                     return plist.get('CFBundleShortVersionString', 'UNKNOWN')
                 except FoundationPlist.NSPropertyListSerializationException:
-                    return "UNKNOWN"
+                    pass
     # if we fall through to here we have no idea what version we have
     return 'UNKNOWN'
 

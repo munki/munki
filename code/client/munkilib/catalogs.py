@@ -503,49 +503,39 @@ def get_item_detail(name, cataloglist, vers=''):
         '''Returns a boolean to indicate if the item is ok to install under
         the current CPU architecture. If not, also adds the failure reason to
         the rejected_items list.'''
-        # current CPU architecture in list of supported_architectures?
+
         if 'supported_architectures' in item:
-            supported_arch_found = False
             display.display_debug1(
                 'Considering item %s, version %s '
                 'with supported architectures: %s',
                 item['name'], item['version'], item['supported_architectures'])
             display.display_debug1(
                 'Our architecture is %s', machine['arch'])
-            for arch in item['supported_architectures']:
-                if arch == machine['arch']:
-                    # we found a supported architecture that matches
-                    # this machine, so we can use it
-                    supported_arch_found = True
-                    break
-            if (not supported_arch_found and
-                    len(item['supported_architectures']) == 1 and
-                    item['supported_architectures'][0] == 'x86_64' and
+            if machine['arch'] in item['supported_architectures']:
+                return True
+            if ('x86_64' in item['supported_architectures'] and
                     machine['arch'] == 'i386' and
                     machine['x86_64_capable'] is True):
-                supported_arch_found = True
+                return True
 
-            if not supported_arch_found:
-                # we didn't find a supported architecture that
-                # matches this machine
-                reason = (
-                    'Rejected item %s, version %s with supported '
-                    'architectures: %s. Our architecture is %s.'
-                    % (item['name'], item['version'],
-                       item['supported_architectures'], machine['arch']))
-                rejected_items.append(reason)
-                return False
+            # we didn't find a supported architecture that
+            # matches this machine
+            reason = (
+                'Rejected item %s, version %s with supported architectures: '
+                '%s. Our architecture is %s.'
+                % (item['name'], item['version'],
+                   item['supported_architectures'], machine['arch']))
+            rejected_items.append(reason)
+            return False
         return True
 
     def installable_condition_ok(item):
         '''Returns a boolean to indicate if an installable_condition predicate
         in the current item passes. If not, also adds the failure reason to
         the rejected_items list.'''
-        # installable condition passes?
+
         if 'installable_condition' in item:
-            pkginfo_predicate = item['installable_condition']
-            if not info.predicateEvaluatesAsTrue(
-                    pkginfo_predicate):
+            if not info.predicateEvaluatesAsTrue(item['installable_condition']):
                 reason = (
                     'Rejected item %s, version %s with installable_condition: '
                     '%s.' % (item['name'], item['version'],
@@ -575,23 +565,24 @@ def get_item_detail(name, cataloglist, vers=''):
             itemsmatchingname = _CATALOG[catalogname]['named'][name]
             indexlist = []
             if vers == 'latest':
-                # order all our items, latest first
+                # order all our items, highest version first
                 versionlist = itemsmatchingname.keys()
                 versionlist.sort(compare_versions)
                 for versionkey in versionlist:
                     indexlist.extend(itemsmatchingname[versionkey])
-
-            elif vers in itemsmatchingname:
+            elif vers in itemsmatchingname.keys():
                 # get the specific requested version
                 indexlist = itemsmatchingname[vers]
 
-            display.display_debug1(
-                'Considering %s items with name %s from catalog %s' %
-                (len(indexlist), name, catalogname))
+            if indexlist:
+                display.display_debug1(
+                    'Considering %s items with name %s from catalog %s' %
+                    (len(indexlist), name, catalogname))
             for index in indexlist:
+                # iterate through list of items with matching name, highest
+                # version first, looking for one that passes all the conditional
+                # tests (if any)
                 item = _CATALOG[catalogname]['items'][index]
-                # we have an item whose name and version matches the request.
-                # Now we check other conditions.
                 if (munki_version_ok(item) and os_version_ok(item) and
                         cpu_arch_ok(item) and installable_condition_ok(item)):
                     display.display_debug1(

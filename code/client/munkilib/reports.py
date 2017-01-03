@@ -79,15 +79,15 @@ def printreport(reportdict):
 def savereport():
     """Save our report"""
     FoundationPlist.writePlist(
-        report, os.path.join(prefs.pref('ManagedInstallDir'),
-                             'ManagedInstallReport.plist'))
+        report, os.path.join(
+            prefs.pref('ManagedInstallDir'), 'ManagedInstallReport.plist'))
 
 
 def readreport():
     """Read report data from file"""
     global report
-    reportfile = os.path.join(prefs.pref('ManagedInstallDir'),
-                              'ManagedInstallReport.plist')
+    reportfile = os.path.join(
+        prefs.pref('ManagedInstallDir'), 'ManagedInstallReport.plist')
     try:
         report = FoundationPlist.readPlist(reportfile)
     except FoundationPlist.NSPropertyListSerializationException:
@@ -106,8 +106,8 @@ def _warn(msg):
 
 def archive_report():
     """Archive a report"""
-    reportfile = os.path.join(prefs.pref('ManagedInstallDir'),
-                              'ManagedInstallReport.plist')
+    reportfile = os.path.join(
+        prefs.pref('ManagedInstallDir'), 'ManagedInstallReport.plist')
     if os.path.exists(reportfile):
         modtime = os.stat(reportfile).st_mtime
         formatstr = '%Y-%m-%d-%H%M%S'
@@ -143,7 +143,9 @@ def archive_report():
 
 
 # module globals
+# pylint: disable=invalid-name
 report = {}
+# pylint: enable=invalid-name
 
 
 if __name__ == '__main__':

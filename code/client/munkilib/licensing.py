@@ -21,6 +21,8 @@ Created by Greg Neagle on 2017-01-01.
 
 """
 
+from urllib import quote_plus
+
 from . import display
 from . import fetch
 from . import prefs
@@ -29,6 +31,7 @@ from . import FoundationPlist
 
 def update_available_license_seats(installinfo):
     '''Records # of available seats for each optional install'''
+
     license_info_url = prefs.pref('LicenseInfoURL')
     if not license_info_url:
         # nothing to do!
@@ -99,3 +102,5 @@ def update_available_license_seats(installinfo):
             item['licensed_seats_available'] = seats_available
 
 
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'

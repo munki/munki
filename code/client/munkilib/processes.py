@@ -198,7 +198,7 @@ def forceLogoutNow():
 
 
 # this function is maybe an odd fit for this module, but it's a way for the
-# Managed Software Center.app and MunkiStatus.app processes to tell the 
+# Managed Software Center.app and MunkiStatus.app processes to tell the
 # managedsoftwareupdate process to stop/cancel, so here it is!
 _stop_requested = False
 def stopRequested():
@@ -212,11 +212,11 @@ def stopRequested():
     if os.path.exists(stop_request_flag):
         # store this so it's persistent until this session is over
         _stop_requested = True
-        display_info('### User stopped session ###')
+        display.display_info('### User stopped session ###')
         try:
             os.unlink(stop_request_flag)
         except OSError, err:
-            display_error(
+            display.display_error(
                 'Could not remove %s: %s', stop_request_flag, err)
         return True
     return False
