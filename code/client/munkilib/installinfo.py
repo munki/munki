@@ -152,7 +152,7 @@ def force_install_package_check():
                             result = 'restart'
                     elif not install.get('unattended_install', False):
                         display.display_debug1(
-                            'Setting unattended install for %s', 
+                            'Setting unattended install for %s',
                             install['name'])
                         install['unattended_install'] = True
                         installinfo[pl_dict][i] = install

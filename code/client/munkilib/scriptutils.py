@@ -28,6 +28,7 @@ import subprocess
 
 from . import osutils
 from . import display
+from . import munkilog
 from . import munkistatus
 
 
@@ -124,7 +125,8 @@ def runScript(itemname, path, scriptname, suppress_error=False):
             display.display_error("\t%s" % line.rstrip("\n"))
         display.display_error("-"*78)
     elif not suppress_error:
-        munkilog.log('Running %s for %s was successful.' % (scriptname, itemname))
+        munkilog.log(
+            'Running %s for %s was successful.' % (scriptname, itemname))
 
     if display.munkistatusoutput:
         # clear indeterminate progress bar

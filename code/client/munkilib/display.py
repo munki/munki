@@ -230,8 +230,10 @@ def display_error(msg, *args):
 
 
 # module globals
+# pylint: disable=invalid-name
 verbose = 1
 munkistatusoutput = False
+# pylint: enable=invalid-name
 
 
 if __name__ == '__main__':
