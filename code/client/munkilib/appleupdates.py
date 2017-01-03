@@ -245,6 +245,8 @@ class AppleUpdates(object):
             return firmware_alert_text
         return ''
 
+    # TO-DO: remove this function once it's clear the replacement works
+    # (replacement: passing the string to FoundationPlist.readPlistFromString)
     def parse_cdata(self, cdata_str):
         '''Parses the CDATA string from an Apple Software Update distribution
         file and returns a dictionary with key/value pairs.
@@ -378,8 +380,11 @@ class AppleUpdates(object):
                 if strings.firstChild:
                     try:
                         text = strings.firstChild.wholeText
-                        cdata = self.parse_cdata(text)
-                    except AttributeError:
+                        #cdata = self.parse_cdata(text)
+                        # .strings data can be parsed by FoundationPlist
+                        cdata = FoundationPlist.readPlistFromString(text)
+                    except (AttributeError,
+                            FoundationPlist.FoundationPlistException):
                         cdata = {}
 
         # get blocking_applications, if any.
