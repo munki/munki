@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-distutils.py
+appledistutils.py
 
 Created by Greg Neagle on 2017-01-04.
 
