@@ -30,15 +30,6 @@ import time
 import urllib2
 import urlparse
 
-import FoundationPlist
-import catalogs
-import distutils
-import fetch
-import launchd
-import munkicommon
-import munkistatus
-import updatecheck
-
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
@@ -54,6 +45,16 @@ from CoreFoundation import kCFPreferencesAnyUser
 #from CoreFoundation import kCFPreferencesCurrentUser
 from CoreFoundation import kCFPreferencesCurrentHost
 # pylint: enable=E0611
+
+from . import catalogs
+from . import appledistutils
+from . import fetch
+from . import launchd
+from . import munkicommon
+from . import munkistatus
+from . import updatecheck
+from . import FoundationPlist
+
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
@@ -872,8 +873,9 @@ class AppleUpdates(object):
                     english_dist = self.GetDistributionForProductKey(
                         product_key, sucatalog, 'English')
                     if english_dist:
-                        english_su_info = distutils.parse_su_dist(english_dist)
-                su_info = distutils.parse_su_dist(localized_dist)
+                        english_su_info = appledistutils.parse_su_dist(
+                            english_dist)
+                su_info = appledistutils.parse_su_dist(localized_dist)
                 su_info['productKey'] = product_key
                 if su_info['name'] == '':
                     su_info['name'] = product_key
