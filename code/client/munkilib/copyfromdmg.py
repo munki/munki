@@ -239,3 +239,7 @@ def copy_from_dmg(dmgpath, itemlist):
         display.display_error(
             "No mountable filesystems on %s" % os.path.basename(dmgpath))
         return -1
+
+
+if __name__ == '__main__':
+    print 'This is a library of support tools for the Munki Suite.'
