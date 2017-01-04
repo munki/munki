@@ -46,6 +46,18 @@ FORCE_INSTALL_WARNING_HOURS = 4
 
 def display_update_info():
     '''Prints info about available updates'''
+
+    def display_and_record_restart_info(item):
+        '''Displays logout/restart info for item if present and also updates
+        our report'''
+        if (item.get('RestartAction') == 'RequireRestart' or
+                item.get('RestartAction') == 'RecommendRestart'):
+            display.display_info('       *Restart required')
+            reports.report['RestartRequired'] = True
+        if item.get('RestartAction') == 'RequireLogout':
+            display.display_info('       *Logout required')
+            reports.report['LogoutRequired'] = True
+
     installinfopath = os.path.join(
         prefs.pref('ManagedInstallDir'), 'InstallInfo.plist')
     try:
@@ -67,26 +79,14 @@ def display_update_info():
                 item.get('version_to_install', ''))
             if item.get('description'):
                 display.display_info('        %s', item['description'])
-            if (item.get('RestartAction') == 'RequireRestart' or
-                    item.get('RestartAction') == 'RecommendRestart'):
-                display.display_info('       *Restart required')
-                reports.report['RestartRequired'] = True
-            if item.get('RestartAction') == 'RequireLogout':
-                display.display_info('       *Logout required')
-                reports.report['LogoutRequired'] = True
+            display_and_record_restart_info(item)
 
     if removalcount:
         display.display_info('The following items will be removed:')
     for item in installinfo.get('removals', []):
         if item.get('installed'):
             display.display_info('    - %s', item.get('name'))
-            if (item.get('RestartAction') == 'RequireRestart' or
-                    item.get('RestartAction') == 'RecommendRestart'):
-                display.display_info('       *Restart required')
-                reports.report['RestartRequired'] = True
-            if item.get('RestartAction') == 'RequireLogout':
-                display.display_info('       *Logout required')
-                reports.report['LogoutRequired'] = True
+            display_and_record_restart_info(item)
 
     if installcount == 0 and removalcount == 0:
         display.display_info(
@@ -135,32 +135,31 @@ def force_install_package_check():
             install = installinfo[pl_dict][i]
             force_install_after_date = install.get('force_install_after_date')
 
-            if force_install_after_date:
-                force_install_after_date = (
-                    info.subtractTimeZoneOffsetFromDate(
-                        force_install_after_date))
-                display.display_debug1(
-                    'Forced install for %s at %s',
-                    install['name'], force_install_after_date)
-                if now >= force_install_after_date:
-                    result = 'now'
-                    if install.get('RestartAction'):
-                        if install['RestartAction'] == 'RequireLogout':
-                            result = 'logout'
-                        elif (install['RestartAction'] == 'RequireRestart' or
-                              install['RestartAction'] == 'RecommendRestart'):
-                            result = 'restart'
-                    elif not install.get('unattended_install', False):
-                        display.display_debug1(
-                            'Setting unattended install for %s',
-                            install['name'])
-                        install['unattended_install'] = True
-                        installinfo[pl_dict][i] = install
-                        writeback = True
+            if not force_install_after_date:
+                continue
 
-                if now_xhours >= force_install_after_date:
-                    if not result:
-                        result = 'soon'
+            force_install_after_date = (
+                info.subtractTimeZoneOffsetFromDate(force_install_after_date))
+            display.display_debug1(
+                'Forced install for %s at %s',
+                install['name'], force_install_after_date)
+            if now >= force_install_after_date:
+                result = 'now'
+                if install.get('RestartAction'):
+                    if install['RestartAction'] == 'RequireLogout':
+                        result = 'logout'
+                    elif (install['RestartAction'] == 'RequireRestart' or
+                          install['RestartAction'] == 'RecommendRestart'):
+                        result = 'restart'
+                elif not install.get('unattended_install', False):
+                    display.display_debug1(
+                        'Setting unattended install for %s', install['name'])
+                    install['unattended_install'] = True
+                    installinfo[pl_dict][i] = install
+                    writeback = True
+
+            if not result and now_xhours >= force_install_after_date:
+                result = 'soon'
 
         if writeback:
             FoundationPlist.writePlist(installinfo, installinfopath)
