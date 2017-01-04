@@ -194,10 +194,9 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
                 percent = float(msg[1:])
                 if os_version == '10.5':
                     # Leopard uses a float from 0 to 1
-                    percent = int(percent * 100)
+                    percent = percent * 100
                 munkistatus.percent(percent)
-                display.display_status_minor(
-                    "%s percent complete" % percent)
+                display.display_status_minor("%s percent complete" % percent)
             elif msg.startswith(" Error"):
                 display.display_error(msg)
                 munkistatus.detail(msg)
