@@ -25,7 +25,6 @@ import os
 import pwd
 import subprocess
 import time
-import stat
 
 import adobeutils
 import catalogs
@@ -37,7 +36,6 @@ import pkgutils
 import powermgr
 import processes
 import profiles
-import xattr
 import FoundationPlist
 from removepackages import removepackages
 
