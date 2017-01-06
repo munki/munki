@@ -145,7 +145,7 @@ def findItemsToCheck(repo, itemlist=None):
 
 def generate_pngs_from_munki_items(repo, force=False, itemlist=None):
     '''Generate PNGs from either pkgs or disk images containing applications'''
-    itemlist = find_items_to_check(repo, itemlist=itemlist)
+    itemlist = findItemsToCheck(repo, itemlist=itemlist)
     icons_dir = repo.join(u'icons')
     if not repo.exists(icons_dir):
         repo.mkdir(icons_dir)
@@ -190,7 +190,7 @@ def pref(prefname):
 
 def main():
     '''Main'''
-    usage = "usage: %prog [options] [/path/to/repo_root] [repo_url]"
+    usage = "usage: %prog [options] [/path/to/repo_root] [repo_url] [plugin]"
     parser = OptionParser(usage=usage)
     parser.add_option('--force', '-f', action='store_true', dest='force',
         help='Create pngs even if there is an existing icon in the repo.')
@@ -203,6 +203,7 @@ def main():
     # Make sure we have a path to work with
     repo_path = None
     repo_url = None
+    plugin = None
     if len(arguments) == 0:
         repo_path = pref('repo_path')
         if not repo_path:
@@ -224,8 +225,13 @@ def main():
         else:
             print_utf8("Using repo url: %s" % repo_url)
 
+    if len(arguments) > 2:
+        plugin = arguments[2]
+    else:
+        plugin = pref('plugin')
+
     # Make sure the repo exists
-    repo = Repo.Open(repo_path, repo_url)
+    repo = Repo.Open(repo_path, repo_url, plugin)
     if not repo.available():
         print_err_utf8("Repo root path %s doesn't exist!" % repo_path)
         exit(-1)
