@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-updatecheck.py
+updatecheck.core
 
 Created by Greg Neagle on 2008-11-13.
 
@@ -29,14 +29,15 @@ import os
 from . import catalogs
 from . import compare
 from . import download
-from . import fetch
 from . import installationstate
-from . import keychain
 from . import licensing
 from . import manifestutils
-from . import munkicommon
-from . import munkistatus
-from . import FoundationPlist
+
+from .. import fetch
+from .. import keychain
+from .. import munkicommon
+from .. import munkistatus
+from .. import FoundationPlist
 
 
 # Disable PyLint complaining about 'invalid' camelCase names

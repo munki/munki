@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-download.py
+updatecheck.download
 
 Created by Greg Neagle on 2016-12-31.
 
@@ -27,13 +27,13 @@ import os
 import urllib2
 import urlparse
 
-from . import display
-from . import fetch
-from . import info
-from . import munkihash
-from . import osutils
-from . import prefs
-from . import reports
+from .. import display
+from .. import fetch
+from .. import info
+from .. import munkihash
+from .. import osutils
+from .. import prefs
+from .. import reports
 
 
 def enough_disk_space(item_pl, installlist=None, uninstalling=False, warn=True):

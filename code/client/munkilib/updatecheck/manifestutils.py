@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-manifestutils.py
+updatecheck.manifestutils
 
 Created by Greg Neagle on 2016-12-16.
 
@@ -26,10 +26,10 @@ Functions for working with manifest files
 import os
 import urllib2
 
-from . import fetch
-from . import keychain
-from . import munkicommon
-from . import FoundationPlist
+from .. import fetch
+from .. import keychain
+from .. import munkicommon
+from .. import FoundationPlist
 
 
 PRIMARY_MANIFEST_TAG = '_primary_manifest_'

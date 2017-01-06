@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-catalogs.py
+updatecheck.catalogs
 
 Created by Greg Neagle on 2017-01-01.
 
@@ -24,13 +24,14 @@ Functions for working with Munki catalogs
 
 import os
 
-from . import display
 from . import download
-from . import info
-from . import pkgutils
-from . import prefs
-from . import utils
-from . import FoundationPlist
+
+from .. import display
+from .. import info
+from .. import pkgutils
+from .. import prefs
+from .. import utils
+from .. import FoundationPlist
 
 
 def make_catalog_db(catalogitems):

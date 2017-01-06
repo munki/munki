@@ -15,21 +15,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-compare.py
+updatecheck.compare
 
 Created by Greg Neagle on 2016-12-13.
 
-Comparsion/checking functions used by updatecheck.py
+Comparsion/checking functions used by updatecheck
 """
 
 import os
 
-from . import display
-from . import munkihash
-from . import info
-from . import pkgutils
-from . import utils
-from . import FoundationPlist
+from .. import display
+from .. import munkihash
+from .. import info
+from .. import pkgutils
+from .. import utils
+from .. import FoundationPlist
 
 
 # we use lots of camelCase-style names. Deal with it.

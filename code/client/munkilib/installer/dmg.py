@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-copyfromdmg.py
+installer.dmg
 
 Created by Greg Neagle on 2017-01-03.
 
@@ -27,10 +27,10 @@ import stat
 import subprocess
 import xattr
 
-from . import display
-from . import dmgutils
-from . import osutils
-from . import pkgutils
+from .. import display
+from .. import dmgutils
+from .. import osutils
+from .. import pkgutils
 
 
 def copy_items_from_mountpoint(mountpoint, itemlist):
