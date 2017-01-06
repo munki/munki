@@ -125,15 +125,13 @@ class AppleUpdates(object):
         Returns:
           Boolean. True if successful, False otherwise.
         """
-        #msg = 'Downloading available Apple Software Updates...'
         msg = 'Checking for available Apple Software Updates...'
         self._ResetMunkiStatusAndDisplayMessage(msg)
 
         if os.path.exists(INDEX_PLIST):
-            # try to remove old/stale /Library/Updates/index.plist
-            # in some older versions of OS X this can hang around
-            # and is not always cleaned up when /usr/sbin/softwareupdate
-            # finds no updates
+            # try to remove old/stale /Library/Updates/index.plist --
+            # in some older versions of OS X this can hang around and is not
+            # always cleaned up when /usr/sbin/softwareupdate finds no updates
             try:
                 os.unlink(INDEX_PLIST)
             except OSError:
@@ -271,8 +269,7 @@ class AppleUpdates(object):
                 'Skipping Apple Software Update check '
                 'because sucatalog is unchanged, installed Apple packages are '
                 'unchanged and we recently did a full check.')
-            # return True if we have cached updates
-            # False otherwise
+            # return True if we have cached updates; False otherwise
             return bool(self.GetSoftwareUpdateInfo())
 
         if self.DownloadAvailableUpdates():  # Success; ready to install.
@@ -280,7 +277,7 @@ class AppleUpdates(object):
             product_ids = self.GetAvailableUpdateProductIDs()
             if not product_ids:
                 # No updates found
-                # TO-DO: clear metadata cache
+                self.applesync.clean_up_cache()
                 return False
             os_version_tuple = munkicommon.getOsVersion(as_tuple=True)
             if os_version_tuple < (10, 11):
