@@ -30,7 +30,7 @@ import os
 import subprocess
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
-import munkicommon
+from . import munkicommon
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103

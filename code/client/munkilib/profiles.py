@@ -23,8 +23,8 @@ import os
 import subprocess
 import tempfile
 
-import FoundationPlist
-import munkicommon
+from . import FoundationPlist
+from . import munkicommon
 
 
 def profiles_supported():

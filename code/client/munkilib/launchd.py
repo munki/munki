@@ -28,8 +28,8 @@ import subprocess
 import time
 import uuid
 
-import munkicommon
-import FoundationPlist
+from . import munkicommon
+from . import FoundationPlist
 
 
 class LaunchdJobException(Exception):

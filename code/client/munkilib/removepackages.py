@@ -31,9 +31,10 @@ import optparse
 import subprocess
 import sqlite3
 import time
-import munkistatus
-import munkicommon
-import FoundationPlist
+
+from . import munkistatus
+from . import munkicommon
+from . import FoundationPlist
 
 # pylint: disable=invalid-name
 
