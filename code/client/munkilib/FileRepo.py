@@ -23,13 +23,109 @@ a remote repo mounted via AFP, SMB, or NFS.
 """
 
 from collections import namedtuple
-import sys
-sys.path.append("/usr/local/munki/munkilib")
-import munkilib.munkicommon
-from munkicommon import listdir
+from munkilib.munkicommon import listdir
 import os
 import sys
 import subprocess
+import objc
+
+# NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
+# work here: https://gist.github.com/pudquick/1362a8908be01e23041d
+try:
+    import errno
+    import getpass
+    import objc
+    from CoreFoundation import CFURLCreateWithString
+
+    class Attrdict(dict):
+        '''Custom dict class'''
+        __getattr__ = dict.__getitem__
+        __setattr__ = dict.__setitem__
+
+    NetFS = Attrdict()
+    # Can cheat and provide 'None' for the identifier, it'll just use
+    # frameworkPath instead
+    # scan_classes=False means only add the contents of this Framework
+    NetFS_bundle = objc.initFrameworkWrapper(
+        'NetFS', frameworkIdentifier=None,
+        frameworkPath=objc.pathForFramework('NetFS.framework'),
+        globals=NetFS, scan_classes=False)
+
+    # https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/
+    # ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
+    # Fix NetFSMountURLSync signature
+    del NetFS['NetFSMountURLSync']
+    objc.loadBundleFunctions(
+        NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
+    NETFSMOUNTURLSYNC_AVAILABLE = True
+except (ImportError, KeyError):
+    NETFSMOUNTURLSYNC_AVAILABLE = False
+
+if NETFSMOUNTURLSYNC_AVAILABLE:
+    class ShareMountException(Exception):
+        '''An exception raised if share mounting failed'''
+        pass
+
+
+    class ShareAuthenticationNeededException(ShareMountException):
+        '''An exception raised if authentication is needed'''
+        pass
+
+
+    def mount_share(share_url):
+        '''Mounts a share at /Volumes, returns the mount point or raises an
+        error'''
+        sh_url = CFURLCreateWithString(None, share_url, None)
+        # Set UI to reduced interaction
+        open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+        # Allow mounting sub-directories of root shares
+        mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
+        # Mount!
+        result, output = NetFS.NetFSMountURLSync(
+            sh_url, None, None, None, open_options, mount_options, None)
+        # Check if it worked
+        if result != 0:
+            if result in (errno.ENOTSUP, errno.EAUTH):
+                # errno.ENOTSUP is returned if an afp share needs a login
+                # errno.EAUTH is returned if authentication fails (SMB for sure)
+                raise ShareAuthenticationNeededException()
+            raise ShareMountException(
+                'Error mounting url "%s": %s, error %s'
+                % (share_url, os.strerror(result), result))
+        # Return the mountpath
+        return str(output[0])
+
+
+    def mount_share_with_credentials(share_url, username, password):
+        '''Mounts a share at /Volumes, returns the mount point or raises an
+        error. Include username and password as parameters, not in the
+        share_path URL'''
+        sh_url = CFURLCreateWithString(None, share_url, None)
+        # Set UI to reduced interaction
+        open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+        # Allow mounting sub-directories of root shares
+        mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
+        # Mount!
+        result, output = NetFS.NetFSMountURLSync(
+            sh_url, None, username, password, open_options, mount_options, None)
+        # Check if it worked
+        if result != 0:
+            raise ShareMountException(
+                'Error mounting url "%s": %s, error %s'
+                % (share_url, os.strerror(result), result))
+        # Return the mountpath
+        return str(output[0])
+
+
+    def mount_share_url(share_url):
+        '''Mount a share url under /Volumes, prompting for password if needed
+        Raises ShareMountException if there's an error'''
+        try:
+            mount_share(share_url)
+        except ShareAuthenticationNeededException:
+            username = raw_input('Username: ')
+            password = getpass.getpass()
+            mount_share_with_credentials(share_url, username, password)
 
 class FileRepo:
     '''Repo implementation that access a local or locally-mounted repo.'''
@@ -126,24 +222,37 @@ class FileRepo:
 
     def mount(self):
         '''Mounts the repo locally.'''
+        global WE_MOUNTED_THE_REPO
         if os.path.exists(self.path):
             return
-        os.mkdir(self.path)
-        print self.url
-        print 'Attempting to mount fileshare %s:' % self.url
-        if self.url.startswith('afp:'):
-            cmd = ['/sbin/mount_afp', '-i', self.url, self.path]
-        elif self.url.startswith('smb:'):
-            cmd = ['/sbin/mount_smbfs', self.url[4:], self.path]
-        elif self.url.startswith('nfs://'):
-            cmd = ['/sbin/mount_nfs', self.url[6:], self.path]
+        if NETFSMOUNTURLSYNC_AVAILABLE:
+            try:
+                mount_share_url(self.url)
+            except ShareMountException, err:
+                print sys.stderr, err
+                return 
+            else:
+                WE_MOUNTED_THE_REPO = True
+                return 0
         else:
-            print >> sys.stderr, 'Unsupported filesystem URL!'
-            return
-        retcode = subprocess.call(cmd)
-        if retcode:
-            os.rmdir(self.path)
-        return retcode
+            os.mkdir(self.path)
+            print self.url
+            print 'Attempting to mount fileshare %s:' % self.url
+            if self.url.startswith('afp:'):
+                cmd = ['/sbin/mount_afp', '-i', self.url, self.path]
+            elif self.url.startswith('smb:'):
+                cmd = ['/sbin/mount_smbfs', self.url[4:], self.path]
+            elif self.url.startswith('nfs://'):
+                cmd = ['/sbin/mount_nfs', self.url[6:], self.path]
+            else:
+                print >> sys.stderr, 'Unsupported filesystem URL!'
+                return
+            retcode = subprocess.call(cmd)
+            if retcode:
+                os.rmdir(self.path)
+            else:
+                WE_MOUNTED_THE_REPO = True
+            return retcode
 
     def unmount(self):
         '''Unmounts the repo.'''

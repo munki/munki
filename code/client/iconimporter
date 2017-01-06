@@ -40,8 +40,7 @@ from Foundation import CFPreferencesCopyAppValue
 def generate_png_from_copy_from_dmg_item(install_item, repo):
     '''Generate a PNG from a disk image containing an application'''
     dmgpath = repo.join('pkgs', install_item['installer_item_location'])
-    handle = repo.open(dmgpath, 'r')
-    mountpoints = munkicommon.mountdmg(handle.local_path)
+    mountpoints = munkicommon.mountdmg(dmgpath)
     if mountpoints:
         mountpoint = mountpoints[0]
         apps = [item for item in install_item.get('items_to_copy', [])
@@ -72,8 +71,8 @@ def generate_pngs_from_installer_pkg(install_item, repo):
     pkg_repo = None
     item_path = repo.join( u'pkgs', install_item['installer_item_location'])
     if munkicommon.hasValidDiskImageExt(item_path):
-        handle = repo.open(item_path, 'r')
-        mountpoints = munkicommon.mountdmg(handle.local_path)
+        dmg_path = item_path
+        mountpoints = munkicommon.mountdmg(dmg_path)
         if mountpoints:
             mountpoint = mountpoints[0]
             if install_item.get('package_path'):
