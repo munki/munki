@@ -40,9 +40,17 @@ from Foundation import NSHTTPURLResponse
 # pylint: enable=E0611
 
 #our libs
-from .gurl import Gurl
+from . import constants
+from . import display
+from . import info
 from . import keychain
-from . import munkicommon
+from . import munkihash
+from . import munkilog
+from . import osutils
+from . import prefs
+
+
+from .gurl import Gurl
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
@@ -53,7 +61,7 @@ XATTR_ETAG = 'com.googlecode.munki.etag'
 XATTR_SHA = 'com.googlecode.munki.sha256'
 
 # default value for User-Agent header
-machine = munkicommon.getMachineFacts()
+machine = info.getMachineFacts()
 darwin_version = os.uname()[2]
 #python_version = "%d.%d.%d" % sys.version_info[:3]
 #cfnetwork_version = FoundationPlist.readPlist(
@@ -77,20 +85,20 @@ def import_middleware():
             _tmp = imp.load_source(name, filepath)
             if hasattr(_tmp, required_function_name):
                 if callable(getattr(_tmp, required_function_name)):
-                    munkicommon.display_debug1(
+                    display.display_debug1(
                         'Loading middleware module %s' % filename)
                     globals()['middleware'] = _tmp
                     return
                 else:
-                    munkicommon.display_warning(
+                    display.display_warning(
                         '%s attribute in %s is not callable.'
                         % (required_function_name, filepath))
-                    munkicommon.display_warning('Ignoring %s' % filepath)
+                    display.display_warning('Ignoring %s' % filepath)
             else:
-                munkicommon.display_warning(
+                display.display_warning(
                     '%s does not have a %s function'
                     % (filepath, required_function_name))
-                munkicommon.display_warning('Ignoring %s' % filepath)
+                display.display_warning('Ignoring %s' % filepath)
     return
 
 
@@ -151,7 +159,7 @@ def writeCachedChecksum(file_path, fhash=None):
        calculate it again. Optionally pass the recently calculated hash value.
     """
     if not fhash:
-        fhash = munkicommon.getsha256hash(file_path)
+        fhash = munkihash.getsha256hash(file_path)
     if len(fhash) == 64:
         xattr.setxattr(file_path, XATTR_SHA, fhash)
         return fhash
@@ -204,7 +212,7 @@ def get_url(url, destinationpath,
         del gurl_obj
 
     # only works with NSURLSession (10.9 and newer)
-    ignore_system_proxy = munkicommon.pref('IgnoreSystemProxies')
+    ignore_system_proxy = prefs.pref('IgnoreSystemProxies')
 
     options = {'url': url,
                'file': tempdownloadpath,
@@ -214,16 +222,16 @@ def get_url(url, destinationpath,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
-               'logging_function': munkicommon.display_debug2}
-    munkicommon.display_debug2('Options: %s' % options)
+               'logging_function': display.display_debug2}
+    display.display_debug2('Options: %s' % options)
 
     # Allow middleware to modify options
     if middleware:
-        munkicommon.display_debug2('Processing options through middleware')
+        display.display_debug2('Processing options through middleware')
         # middleware module must have process_request_options function
         # and must return usable options
         options = middleware.process_request_options(options)
-        munkicommon.display_debug2('Options: %s' % options)
+        display.display_debug2('Options: %s' % options)
 
     connection = Gurl.alloc().initWithOptions_(options)
     stored_percent_complete = -1
@@ -237,7 +245,7 @@ def get_url(url, destinationpath,
             if message and connection.status and connection.status != 304:
                 # log always, display if verbose is 1 or more
                 # also display in MunkiStatus detail field
-                munkicommon.display_status_minor(message)
+                display.display_status_minor(message)
                 # now clear message so we don't display it again
                 message = None
             if (str(connection.status).startswith('2')
@@ -245,12 +253,12 @@ def get_url(url, destinationpath,
                 if connection.percentComplete != stored_percent_complete:
                     # display percent done if it has changed
                     stored_percent_complete = connection.percentComplete
-                    munkicommon.display_percent_done(
+                    display.display_percent_done(
                         stored_percent_complete, 100)
             elif connection.bytesReceived != stored_bytes_received:
                 # if we don't have percent done info, log bytes received
                 stored_bytes_received = connection.bytesReceived
-                munkicommon.display_detail(
+                display.display_detail(
                     'Bytes received: %s', stored_bytes_received)
             if connection_done:
                 break
@@ -267,24 +275,24 @@ def get_url(url, destinationpath,
 
     if connection.error is not None:
         # Gurl returned an error
-        munkicommon.display_detail(
+        display.display_detail(
             'Download error %s: %s', connection.error.code(),
             connection.error.localizedDescription())
         if connection.SSLerror:
-            munkicommon.display_detail(
+            display.display_detail(
                 'SSL error detail: %s', str(connection.SSLerror))
             keychain.debug_output()
-        munkicommon.display_detail('Headers: %s', connection.headers)
+        display.display_detail('Headers: %s', connection.headers)
         if os.path.exists(tempdownloadpath) and not resume:
             os.remove(tempdownloadpath)
         raise ConnectionError(connection.error.code(),
                               connection.error.localizedDescription())
 
     if connection.response is not None:
-        munkicommon.display_debug1('Status: %s', connection.status)
-        munkicommon.display_debug1('Headers: %s', connection.headers)
+        display.display_debug1('Status: %s', connection.status)
+        display.display_debug1('Headers: %s', connection.headers)
     if connection.redirection != []:
-        munkicommon.display_debug1('Redirection: %s', connection.redirection)
+        display.display_debug1('Redirection: %s', connection.redirection)
 
     temp_download_exists = os.path.isfile(tempdownloadpath)
     connection.headers['http_result_code'] = str(connection.status)
@@ -297,7 +305,7 @@ def get_url(url, destinationpath,
         return connection.headers
     elif connection.status == 304:
         # unchanged on server
-        munkicommon.display_debug1('Item is unchanged on the server.')
+        display.display_debug1('Item is unchanged on the server.')
         return connection.headers
     else:
         # there was an HTTP error of some sort; remove our temp download.
@@ -343,21 +351,21 @@ def getResourceIfChangedAtomically(url,
         if xattr_hash == expected_hash:
             #File is already current, no change.
             return False
-        elif munkicommon.pref(
+        elif prefs.pref(
                 'PackageVerificationMode').lower() in ['hash_strict', 'hash']:
             try:
                 os.unlink(destinationpath)
             except OSError:
                 pass
-        munkicommon.log('Cached payload does not match hash in catalog, '
-                        'will check if changed and redownload: %s'
-                        % destinationpath)
+        munkilog.log('Cached payload does not match hash in catalog, '
+                     'will check if changed and redownload: %s'
+                     % destinationpath)
         # continue with normal if-modified-since/etag update methods.
 
     if follow_redirects is not True:
         # If we haven't explicitly said to follow redirect,
         # the preference decides
-        follow_redirects = munkicommon.pref('FollowHTTPRedirects')
+        follow_redirects = prefs.pref('FollowHTTPRedirects')
 
     url_parse = urlparse.urlparse(url)
     if url_parse.scheme in ['http', 'https']:
@@ -403,8 +411,7 @@ def munki_resource(
     #   <string>Key-With-Optional-Dashes: Foo Value</string>
     #   <string>another-custom-header: bar value</string>
     # </array>
-    custom_headers = munkicommon.pref(
-        munkicommon.ADDITIONAL_HTTP_HEADERS_KEY)
+    custom_headers = prefs.pref(constants.ADDITIONAL_HTTP_HEADERS_KEY)
 
     return getResourceIfChangedAtomically(url,
                                           destinationpath,
@@ -515,8 +522,8 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
     err = None
     if header['http_result_code'] == '304':
         # not modified, return existing file
-        munkicommon.display_debug1('%s already exists and is up-to-date.',
-                                   destinationpath)
+        display.display_debug1('%s already exists and is up-to-date.',
+                               destinationpath)
         # file is in cache and is unchanged, so we return False
         return False
     else:
@@ -569,44 +576,44 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
         (True/False, sha256-hash)
         True if the package integrity could be validated. Otherwise, False.
     """
-    mode = munkicommon.pref('PackageVerificationMode')
+    mode = prefs.pref('PackageVerificationMode')
     chash = None
     item_name = getURLitemBasename(file_path)
     if always_hash:
-        chash = munkicommon.getsha256hash(file_path)
+        chash = munkihash.getsha256hash(file_path)
 
     if not mode:
         return (True, chash)
     elif mode.lower() == 'none':
-        munkicommon.display_warning('Package integrity checking is disabled.')
+        display.display_warning('Package integrity checking is disabled.')
         return (True, chash)
     elif mode.lower() == 'hash' or mode.lower() == 'hash_strict':
         if item_hash:
-            munkicommon.display_status_minor('Verifying package integrity...')
+            display.display_status_minor('Verifying package integrity...')
             if not chash:
-                chash = munkicommon.getsha256hash(file_path)
+                chash = munkihash.getsha256hash(file_path)
             if item_hash == chash:
                 return (True, chash)
             else:
-                munkicommon.display_error(
+                display.display_error(
                     'Hash value integrity check for %s failed.' %
                     item_name)
                 return (False, chash)
         else:
             if mode.lower() == 'hash_strict':
-                munkicommon.display_error(
+                display.display_error(
                     'Reference hash value for %s is missing in catalog.'
                     % item_name)
                 return (False, chash)
             else:
-                munkicommon.display_warning(
+                display.display_warning(
                     'Reference hash value missing for %s -- package '
                     'integrity verification skipped.' % item_name)
                 return (True, chash)
     else:
-        munkicommon.display_error(
+        display.display_error(
             'The PackageVerificationMode in the ManagedInstalls.plist has an '
-            'illegal value: %s' % munkicommon.pref('PackageVerificationMode'))
+            'illegal value: %s' % prefs.pref('PackageVerificationMode'))
 
     return (False, chash)
 
@@ -615,12 +622,12 @@ def getDataFromURL(url):
     '''Returns data from url as string. We use the existing
     munki_resource function so any custom
     authentication/authorization headers are reused'''
-    urldata = os.path.join(munkicommon.tmpdir(), 'urldata')
+    urldata = os.path.join(osutils.tmpdir(), 'urldata')
     if os.path.exists(urldata):
         try:
             os.unlink(urldata)
         except (IOError, OSError), err:
-            munkicommon.display_warning('Error in getDataFromURL: %s', err)
+            display.display_warning('Error in getDataFromURL: %s', err)
     dummy_result = munki_resource(url, urldata)
     try:
         fdesc = open(urldata)
@@ -629,7 +636,7 @@ def getDataFromURL(url):
         os.unlink(urldata)
         return data
     except (IOError, OSError), err:
-        munkicommon.display_warning('Error in getDataFromURL: %s', err)
+        display.display_warning('Error in getDataFromURL: %s', err)
         return ''
 
 
