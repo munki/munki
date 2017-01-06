@@ -24,16 +24,23 @@ Interface for accessing a repo.
 import re
 import sys
 import imp
+import os
 
 def Open(path, url, plugin):
+    #looks for installtion path for munki
+    command = "munkiimport"
+    commandPath = os.popen("/usr/bin/which %s" % command).read().strip() 
+    commandPath = os.path.split(commandPath)
+    commandPath = commandPath[0]
+
     #looks for plugin in /usr/local/munki/munkilib/plugins (installation of munki)
     if plugin == None or plugin == "":
         #default is FileRepo if no plugin is specified in configuration or options.
-        module = imp.load_source('FileRepo', './munkilib/FileRepo.py')
+        module = imp.load_source('FileRepo', commandPath+'/munkilib/FileRepo.py')
         import_class = getattr(module, "FileRepo")
         parent = import_class
     else:
-        module = imp.load_source(plugin, './munkilib/plugins/' + plugin + ".py")
+        module = imp.load_source(plugin, commandPath + '/munkilib/plugins/' + plugin + ".py")
         import_class = getattr(module, plugin)
         parent = import_class
 
