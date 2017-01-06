@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-appledistutils.py
+dist.py
 
 Created by Greg Neagle on 2017-01-04.
 
@@ -34,9 +34,9 @@ from AppKit import NSAttributedString
 from LaunchServices import LSFindApplicationForInfo
 # pylint: enable=E0611
 
-from . import display
-from . import pkgutils
-from . import FoundationPlist
+from .. import display
+from .. import pkgutils
+from .. import FoundationPlist
 
 
 def get_restart_action(restart_action_list):
