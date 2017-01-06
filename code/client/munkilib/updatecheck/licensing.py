@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-licensing.py
+updatecheck.licensing
 
 Created by Greg Neagle on 2017-01-01.
 
@@ -23,10 +23,10 @@ Created by Greg Neagle on 2017-01-01.
 
 from urllib import quote_plus
 
-from . import display
-from . import fetch
-from . import prefs
-from . import FoundationPlist
+from .. import display
+from .. import fetch
+from .. import prefs
+from .. import FoundationPlist
 
 
 def update_available_license_seats(installinfo):

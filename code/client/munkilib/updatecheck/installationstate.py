@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-installationstate.py
+updatecheck.installationstate
 
 Created by Greg Neagle on 2017-01-01.
 
@@ -26,10 +26,11 @@ import os
 
 from . import catalogs
 from . import compare
-from . import display
-from . import profiles
-from . import scriptutils
-from . import utils
+
+from .. import display
+from .. import profiles
+from .. import scriptutils
+from .. import utils
 
 
 def installed_state(item_pl):

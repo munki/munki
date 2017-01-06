@@ -15,7 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-installer.py
+installer.core
+
 munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
@@ -24,18 +25,20 @@ import datetime
 import os
 import subprocess
 
-import adobeutils
-import catalogs
-import copyfromdmg
-import munkicommon
-import munkistatus
-import pkginstalls
-import pkgutils
-import powermgr
-import processes
-import profiles
-import FoundationPlist
-from removepackages import removepackages
+from . import dmg
+from . import pkg
+
+from ..updatecheck import catalogs
+
+from .. import adobeutils
+from .. import munkicommon
+from .. import munkistatus
+from .. import pkgutils
+from .. import powermgr
+from .. import processes
+from .. import profiles
+from .. import FoundationPlist
+from ..removepackages import removepackages
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -221,7 +224,7 @@ def installWithInfo(
                     restartflag = True
                     retcode = 0
             elif installer_type == "copy_from_dmg":
-                retcode = copyfromdmg.copy_from_dmg(
+                retcode = dmg.copy_from_dmg(
                     itempath, item.get('items_to_copy'))
                 if retcode == 0:
                     if (item.get("RestartAction") == "RequireRestart" or
@@ -230,7 +233,7 @@ def installWithInfo(
             elif installer_type == "appdmg":
                 munkicommon.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
-                retcode = copyfromdmg.copy_app_from_dmg(itempath)
+                retcode = dmg.copy_app_from_dmg(itempath)
             elif installer_type == 'profile':
                 # profiles.install_profile returns True/False
                 retcode = 0
@@ -291,14 +294,14 @@ def installWithInfo(
                         fullpkgpath = os.path.join(
                             mountpoints[0], item['package_path'])
                         if os.path.exists(fullpkgpath):
-                            (retcode, needtorestart) = pkginstalls.install(
+                            (retcode, needtorestart) = pkg.install(
                                 fullpkgpath, display_name, choicesXMLfile,
                                 suppressBundleRelocation, installer_environment)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
-                        (retcode, needtorestart) = pkginstalls.installall(
+                        (retcode, needtorestart) = pkg.installall(
                             mountpoints[0], display_name, choicesXMLfile,
                             suppressBundleRelocation, installer_environment)
                     if (needtorestart or
@@ -308,7 +311,7 @@ def installWithInfo(
                     munkicommon.unmountdmg(mountpoints[0])
                 elif (munkicommon.hasValidPackageExt(itempath) or
                       itempath.endswith(".dist")):
-                    (retcode, needtorestart) = pkginstalls.install(
+                    (retcode, needtorestart) = pkg.install(
                         itempath, display_name, choicesXMLfile,
                         suppressBundleRelocation, installer_environment)
                     if (needtorestart or

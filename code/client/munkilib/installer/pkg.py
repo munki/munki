@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-pkginstalls.py
+installer.pkg
 
 Created by Greg Neagle on 2017-01-03.
 
@@ -27,15 +27,15 @@ import pwd
 import subprocess
 import time
 
-from . import display
-from . import dmgutils
-from . import launchd
-from . import munkilog
-from . import munkistatus
-from . import osutils
-from . import processes
-from . import pkgutils
-from . import FoundationPlist
+from .. import display
+from .. import dmgutils
+from .. import launchd
+from .. import munkilog
+from .. import munkistatus
+from .. import osutils
+from .. import processes
+from .. import pkgutils
+from .. import FoundationPlist
 
 
 def remove_bundle_relocation_info(pkgpath):
