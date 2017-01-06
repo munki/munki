@@ -441,7 +441,7 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
     destination_path = repo.join('pkgsinfo', subdirectory)
     if not repo.exists(destination_path):
         try:
-            os.makedirs(destination_path)
+            repo.makedirs(destination_path)
         except OSError, errmsg:
             raise RepoCopyError('Could not create %s: %s'
                                 % (destination_path, errmsg))
@@ -769,7 +769,7 @@ def make_catalogs():
 def cleanup_and_exit(exitcode):
     """Unmounts the repo if we mounted it, then exits"""
     result = 0
-    if repo.mounted:
+    if repo.mounted and WE_MOUNTED_THE_REPO:
         if not NOINTERACTIVE:
             answer = raw_input('Unmount the repo fileshare? [y/n] ')
             if answer.lower().startswith('y'):
