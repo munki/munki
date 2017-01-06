@@ -41,8 +41,8 @@ from optparse import OptionValueError
 
 from munkilib import munkicommon
 from munkilib import FoundationPlist
-from munkilib import adobeutils
 from munkilib import profiles
+from munkilib.adobeutils import adobeinfo
 
 from Foundation import NSDate, NSUserName
 
@@ -104,12 +104,12 @@ def getCatalogInfoFromPath(pkgpath, options):
                 # we have an Adobe CS5 install package, process
                 # as Adobe install
                 #adobepkgname = cataloginfo['receipts'][0].get('filename')
-                cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath)
+                cataloginfo = adobeinfo.getAdobeCatalogInfo(pkgpath)
                                             #mountpoints[0], adobepkgname)
 
     else:
         # maybe an Adobe installer/updater/patcher?
-        cataloginfo = adobeutils.getAdobeCatalogInfo(pkgpath,
+        cataloginfo = adobeinfo.getAdobeCatalogInfo(pkgpath,
                                                     options.pkgname or '')
     return cataloginfo
 
@@ -173,7 +173,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
 
     if not cataloginfo and not options.item:
         # look for one of the many possible Adobe installer/updaters
-        cataloginfo = adobeutils.getAdobeCatalogInfo(mountpoints[0],
+        cataloginfo = adobeinfo.getAdobeCatalogInfo(mountpoints[0],
                                                      options.pkgname or '')
 
     if not cataloginfo:
