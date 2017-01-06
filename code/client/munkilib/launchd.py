@@ -28,7 +28,7 @@ import subprocess
 import time
 import uuid
 
-from . import munkicommon
+from . import osutils
 from . import FoundationPlist
 
 
@@ -42,7 +42,7 @@ class Job(object):
     '''launchd job object'''
 
     def __init__(self, cmd, environment_vars=None):
-        tmpdir = munkicommon.tmpdir()
+        tmpdir = osutils.tmpdir()
         labelprefix = 'com.googlecode.munki.'
         # create a unique id for this job
         jobid = str(uuid.uuid1())
