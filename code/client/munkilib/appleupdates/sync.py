@@ -321,8 +321,7 @@ class AppleUpdateSync(object):
           String path to the locally cached file.
         """
         relative_url = os.path.normpath(self._GetURLPath(full_url).lstrip('/'))
-        local_file_path = os.path.join(
-            self.cache_dir, relative_url)
+        local_file_path = os.path.join(self.cache_dir, relative_url)
         local_dir_path = os.path.dirname(local_file_path)
         if copy_only_if_missing and os.path.exists(local_file_path):
             return local_file_path
@@ -367,12 +366,10 @@ class AppleUpdateSync(object):
         Distribution (.dist) files for the available updates to the local
         machine and writes a new sucatalog that refers to the local copies
         of these files."""
-        catalog = FoundationPlist.readPlist(
-            self.extracted_catalog_path)
+        catalog = FoundationPlist.readPlist(self.extracted_catalog_path)
         if not 'Products' in catalog:
             display.display_warning(
-                '"Products" not found in %s',
-                self.extracted_catalog_path)
+                '"Products" not found in %s', self.extracted_catalog_path)
             return
 
         for product_key in product_ids:
@@ -524,9 +521,10 @@ class AppleUpdateSync(object):
 
     def clean_up_cache(self):
         """Clean up our cache dir"""
-        if os.path.exists(self.cache_dir):
+        content_cache = os.path.join(self.cache_dir, 'content')
+        if os.path.exists(content_cache):
             # TODO(unassigned): change this to Pythonic delete.
-            dummy_retcode = subprocess.call(['/bin/rm', '-rf', self.cache_dir])
+            dummy_retcode = subprocess.call(['/bin/rm', '-rf', content_cache])
 
 
 if __name__ == '__main__':
