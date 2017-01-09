@@ -25,10 +25,14 @@ import datetime
 import os
 import subprocess
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import NSDate
+# pylint: enable=E0611
+
 from . import dmg
 from . import pkg
-
-from ..updatecheck import catalogs
 
 from .. import adobeutils
 from .. import munkicommon
@@ -38,25 +42,19 @@ from .. import powermgr
 from .. import processes
 from .. import profiles
 from .. import FoundationPlist
+
+from ..updatecheck import catalogs
 from ..removepackages import removepackages
 
-# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-# No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
-from Foundation import NSDate
-# pylint: enable=E0611
-
-# lots of camelCase names
-# pylint: disable=C0103
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
-# calls installWithInfo()
+# calls install_with_info()
 munkicommon.report['InstallResults'] = []
 munkicommon.report['RemovalResults'] = []
 
 
-def removeCopiedItems(itemlist):
+def remove_copied_items(itemlist):
     '''Removes filesystem items based on info in itemlist.
     These items were typically installed via DMG'''
     retcode = 0
@@ -94,7 +92,7 @@ def removeCopiedItems(itemlist):
     return retcode
 
 
-def itemPrereqsInSkippedItems(item, skipped_items):
+def item_prereqs_in_skipped_items(item, skipped_items):
     '''Looks for item prerequisites (requires and update_for) in the list
     of skipped items. Returns a list of matches.'''
 
@@ -145,7 +143,7 @@ def itemPrereqsInSkippedItems(item, skipped_items):
     return matched_prereqs
 
 
-def installWithInfo(
+def install_with_info(
         dirpath, installlist, only_unattended=False, applesus=False):
     """
     Uses the installlist to install items in the
@@ -173,7 +171,7 @@ def installWithInfo(
                     % item['name'])
                 continue
 
-        skipped_prereqs = itemPrereqsInSkippedItems(item, skipped_installs)
+        skipped_prereqs = item_prereqs_in_skipped_items(item, skipped_installs)
         if skipped_prereqs:
             # one or more prerequisite for this item was skipped or failed;
             # need to skip this item too
@@ -252,31 +250,32 @@ def installWithInfo(
                 retcode = -99
             else:
                 # better be Apple installer package
-                suppressBundleRelocation = item.get(
+                suppress_bundle_relocation = item.get(
                     "suppress_bundle_relocation", False)
                 munkicommon.display_debug1(
-                    "suppress_bundle_relocation: %s", suppressBundleRelocation)
+                    "suppress_bundle_relocation: %s",
+                    suppress_bundle_relocation)
                 if 'installer_choices_xml' in item:
-                    choicesXMLfile = os.path.join(munkicommon.tmpdir(),
-                                                  "choices.xml")
+                    choices_xml_file = os.path.join(munkicommon.tmpdir(),
+                                                    "choices.xml")
                     FoundationPlist.writePlist(item['installer_choices_xml'],
-                                               choicesXMLfile)
+                                               choices_xml_file)
                 else:
-                    choicesXMLfile = ''
+                    choices_xml_file = ''
                 installer_environment = item.get('installer_environment')
                 if munkicommon.hasValidDiskImageExt(itempath):
                     munkicommon.display_status_minor(
                         "Mounting disk image %s" % item["installer_item"])
-                    mountWithShadow = suppressBundleRelocation
+                    mount_with_shadow = suppress_bundle_relocation
                     # we need to mount the diskimage as read/write to
                     # be able to modify the package to suppress bundle
                     # relocation
                     mountpoints = munkicommon.mountdmg(
-                        itempath, use_shadow=mountWithShadow)
+                        itempath, use_shadow=mount_with_shadow)
                     if mountpoints == []:
-                        munkicommon.display_error("No filesystems mounted "
-                                                  "from %s",
-                                                  item["installer_item"])
+                        munkicommon.display_error(
+                            "No filesystems mounted from %s",
+                            item["installer_item"])
                         return restartflag, skipped_installs
                     if munkicommon.stopRequested():
                         munkicommon.unmountdmg(mountpoints[0])
@@ -295,15 +294,16 @@ def installWithInfo(
                             mountpoints[0], item['package_path'])
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = pkg.install(
-                                fullpkgpath, display_name, choicesXMLfile,
-                                suppressBundleRelocation, installer_environment)
+                                fullpkgpath, display_name, choices_xml_file,
+                                suppress_bundle_relocation,
+                                installer_environment)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = pkg.installall(
-                            mountpoints[0], display_name, choicesXMLfile,
-                            suppressBundleRelocation, installer_environment)
+                            mountpoints[0], display_name, choices_xml_file,
+                            suppress_bundle_relocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
@@ -312,8 +312,8 @@ def installWithInfo(
                 elif (munkicommon.hasValidPackageExt(itempath) or
                       itempath.endswith(".dist")):
                     (retcode, needtorestart) = pkg.install(
-                        itempath, display_name, choicesXMLfile,
-                        suppressBundleRelocation, installer_environment)
+                        itempath, display_name, choices_xml_file,
+                        suppress_bundle_relocation, installer_environment)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
@@ -345,7 +345,7 @@ def installWithInfo(
         # if install was successful and this is a SelfService OnDemand install
         # remove the item from the SelfServeManifest's managed_installs
         if retcode == 0 and item.get('OnDemand'):
-            removeItemFromSelfServeInstallList(item['name'])
+            remove_from_selfserve_installs(item['name'])
 
         # record install success/failure
         if not 'InstallResults' in munkicommon.report:
@@ -436,7 +436,7 @@ def installWithInfo(
     return (restartflag, skipped_installs)
 
 
-def skippedItemsThatRequireThisItem(item, skipped_items):
+def skipped_items_that_require_this(item, skipped_items):
     '''Looks for items in the skipped_items that require or are update_for
     the current item. Returns a list of matches.'''
 
@@ -463,9 +463,9 @@ def skippedItemsThatRequireThisItem(item, skipped_items):
     return matched_skipped_items
 
 
-def processRemovals(removallist, only_unattended=False):
+def process_removals(removallist, only_unattended=False):
     '''processes removals from the removal list'''
-    restartFlag = False
+    restart_flag = False
     index = 0
     skipped_removals = []
     for item in removallist:
@@ -483,7 +483,7 @@ def processRemovals(removallist, only_unattended=False):
                     'blocking application(s) running.' % item['name'])
                 continue
 
-        dependent_skipped_items = skippedItemsThatRequireThisItem(
+        dependent_skipped_items = skipped_items_that_require_this(
             item, skipped_removals)
         if dependent_skipped_items:
             # need to skip this too
@@ -495,7 +495,7 @@ def processRemovals(removallist, only_unattended=False):
             continue
 
         if munkicommon.stopRequested():
-            return restartFlag, skipped_removals
+            return restart_flag, skipped_removals
         if not item.get('installed'):
             # not installed, so skip it (this shouldn't happen...)
             continue
@@ -515,7 +515,7 @@ def processRemovals(removallist, only_unattended=False):
             if uninstallmethod == "removepackages":
                 if 'packages' in item:
                     if item.get('RestartAction') == "RequireRestart":
-                        restartFlag = True
+                        restart_flag = True
                     retcode = removepackages(item['packages'],
                                              forcedeletebundles=True)
                     if retcode:
@@ -533,7 +533,7 @@ def processRemovals(removallist, only_unattended=False):
                 retcode = adobeutils.do_adobe_removal(item)
 
             elif uninstallmethod == "remove_copied_items":
-                retcode = removeCopiedItems(item.get('items_to_remove'))
+                retcode = remove_copied_items(item.get('items_to_remove'))
 
             elif uninstallmethod == "remove_app":
                 remove_app_info = item.get('remove_app_info', None)
@@ -567,7 +567,7 @@ def processRemovals(removallist, only_unattended=False):
                     'uninstall_script', item)
                 if (retcode == 0 and
                         item.get('RestartAction') == "RequireRestart"):
-                    restartFlag = True
+                    restart_flag = True
 
             elif os.path.exists(uninstallmethod) and \
                  os.access(uninstallmethod, os.X_OK):
@@ -576,7 +576,7 @@ def processRemovals(removallist, only_unattended=False):
                     display_name, uninstallmethod, 'uninstall script')
                 if (retcode == 0 and
                         item.get('RestartAction') == "RequireRestart"):
-                    restartFlag = True
+                    restart_flag = True
 
             else:
                 munkicommon.log("Uninstall of %s failed because "
@@ -604,7 +604,7 @@ def processRemovals(removallist, only_unattended=False):
         if retcode == 0:
             success_msg = "Removal of %s: SUCCESSFUL" % display_name
             munkicommon.log(success_msg, "Install.log")
-            removeItemFromSelfServeUninstallList(item['name'])
+            remove_from_selfserve_uninstalls(item['name'])
         else:
             failure_msg = "Removal of %s: " % display_name + \
                           " FAILED with return code: %s" % retcode
@@ -621,17 +621,16 @@ def processRemovals(removallist, only_unattended=False):
         }
         munkicommon.report['RemovalResults'].append(removal_result)
 
-    return (restartFlag, skipped_removals)
+    return (restart_flag, skipped_removals)
 
 
-def removeItemFromSelfServeSection(itemname, section):
+def remove_from_selfserve_section(itemname, section):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
     munkicommon.display_debug1(
         "Removing %s from SelfSeveManifest's %s...", itemname, section)
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
     selfservemanifest = os.path.join(
-        ManagedInstallDir, "manifests", "SelfServeManifest")
+        munkicommon.pref('ManagedInstallDir'), 'manifests', 'SelfServeManifest')
     if not os.path.exists(selfservemanifest):
         # SelfServeManifest doesn't exist, bail
         munkicommon.display_debug1("%s doesn't exist.", selfservemanifest)
@@ -656,16 +655,16 @@ def removeItemFromSelfServeSection(itemname, section):
                 "Error writing %s: %s", selfservemanifest, err)
 
 
-def removeItemFromSelfServeInstallList(itemname):
+def remove_from_selfserve_installs(itemname):
     """Remove the given itemname from the self-serve manifest's
     managed_installs list"""
-    removeItemFromSelfServeSection(itemname, 'managed_installs')
+    remove_from_selfserve_section(itemname, 'managed_installs')
 
 
-def removeItemFromSelfServeUninstallList(itemname):
+def remove_from_selfserve_uninstalls(itemname):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
-    removeItemFromSelfServeSection(itemname, 'managed_uninstalls')
+    remove_from_selfserve_section(itemname, 'managed_uninstalls')
 
 
 def run(only_unattended=False):
@@ -714,7 +713,7 @@ def run(only_unattended=False):
                 munkistatus.percent(-1)
                 munkicommon.log("Processing removals")
                 (removals_need_restart,
-                 skipped_removals) = processRemovals(
+                 skipped_removals) = process_removals(
                      removallist, only_unattended=only_unattended)
                 # if any removals were skipped, record them for later
                 installinfo['removals'] = skipped_removals
@@ -736,7 +735,7 @@ def run(only_unattended=False):
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
                     munkicommon.log("Processing installs")
-                    (installs_need_restart, skipped_installs) = installWithInfo(
+                    (installs_need_restart, skipped_installs) = install_with_info(
                         installdir, installlist,
                         only_unattended=only_unattended)
                     # if any installs were skipped record them for later
