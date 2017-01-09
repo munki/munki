@@ -108,11 +108,11 @@ def parse_cdata(cdata_str):
     '''
 
     parsed_data = {}
-    REGEX = (r"""^\s*"""
-             r"""(?P<key_quote>['"]?)(?P<key>[^'"]+)(?P=key_quote)"""
-             r"""\s*=\s*"""
-             r"""(?P<value_quote>['"])(?P<value>.*?)(?P=value_quote);$""")
-    regex = re.compile(REGEX, re.MULTILINE | re.DOTALL)
+    regex_text = (r"""^\s*"""
+                  r"""(?P<key_quote>['"]?)(?P<key>[^'"]+)(?P=key_quote)"""
+                  r"""\s*=\s*"""
+                  r"""(?P<value_quote>['"])(?P<value>.*?)(?P=value_quote);$""")
+    regex = re.compile(regex_text, re.MULTILINE | re.DOTALL)
 
     # iterate through the string, finding all possible non-overlapping
     # matches
@@ -149,13 +149,12 @@ def parse_su_dist(filename):
     # look for <choices-outline ui='SoftwareUpdate'
     choice_outlines = dom.getElementsByTagName('choices-outline') or []
     for outline in choice_outlines:
-        if 'ui' in outline.attributes.keys():
-            if outline.attributes['ui'].value == 'SoftwareUpdate':
-                lines = outline.getElementsByTagName('line')
-                if lines:
-                    if 'choice' in lines[0].attributes.keys():
-                        su_choice_id_key = (
-                            lines[0].attributes['choice'].value)
+        if ('ui' in outline.attributes.keys() and
+                outline.attributes['ui'].value == 'SoftwareUpdate'):
+            lines = outline.getElementsByTagName('line')
+            if lines and 'choice' in lines[0].attributes.keys():
+                su_choice_id_key = (
+                    lines[0].attributes['choice'].value)
 
     # get values from choice id=su_choice_id_key
     # (there may be more than one!)
@@ -264,7 +263,7 @@ def parse_su_dist(filename):
     info['apple_product_name'] = info['display_name']
     info['version_to_install'] = su_choice.get('versStr', '')
     info['description'] = su_choice.get('description', '')
-    for key in info.keys():
+    for key in info:
         if info[key].startswith('SU_'):
             # get value from strings_data dictionary
             info[key] = strings_data.get(info[key], info[key])
