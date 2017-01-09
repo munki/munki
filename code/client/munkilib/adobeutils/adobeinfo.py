@@ -32,10 +32,8 @@ from xml.dom import minidom
 from .. import osutils
 from .. import pkgutils
 
-# we use lots of camelCase-style names. Deal with it.
-# pylint: disable=C0103
 
-def findInstallApp(dirpath):
+def find_install_app(dirpath):
     '''Searches dirpath and enclosed directories for Install.app.
     Returns the path to the actual executable.'''
     for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
@@ -46,7 +44,7 @@ def findInstallApp(dirpath):
     return ''
 
 
-def findSetupApp(dirpath):
+def find_setup_app(dirpath):
     '''Search dirpath and enclosed directories for Setup.app.
     Returns the path to the actual executable.'''
     for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
@@ -57,7 +55,7 @@ def findSetupApp(dirpath):
     return ''
 
 
-def findAdobePatchInstallerApp(dirpath):
+def find_adobepatchinstaller_app(dirpath):
     '''Searches dirpath and enclosed directories for AdobePatchInstaller.app.
     Returns the path to the actual executable.'''
     for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
@@ -69,7 +67,7 @@ def findAdobePatchInstallerApp(dirpath):
     return ''
 
 
-def findAdobeDeploymentManager(dirpath):
+def find_adobe_deployment_manager(dirpath):
     '''Searches dirpath and enclosed directories for AdobeDeploymentManager.
     Returns path to the executable.'''
     for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
@@ -80,7 +78,7 @@ def findAdobeDeploymentManager(dirpath):
     return ''
 
 
-def findAcrobatPatchApp(dirpath):
+def find_acrobat_patch_app(dirpath):
     '''Attempts to find an AcrobatPro patching application
     in dirpath. If found, returns the path to the bundled
     patching script.'''
@@ -95,7 +93,7 @@ def findAcrobatPatchApp(dirpath):
     return ''
 
 
-def getPayloadInfo(dirpath):
+def get_payload_info(dirpath):
     '''Parses Adobe payloads, pulling out info useful to munki.
     .proxy.xml files are used if available, or for CC-era updates
     which do not contain one, the Media_db.db file, which contains
@@ -163,7 +161,7 @@ def getPayloadInfo(dirpath):
     return payloadinfo
 
 
-def getAdobeSetupInfo(installroot):
+def get_adobe_setup_info(installroot):
     '''Given the root of mounted Adobe DMG,
     look for info about the installer or updater'''
 
@@ -174,7 +172,7 @@ def getAdobeSetupInfo(installroot):
     for (path, dummy_dirs, dummy_files) in os.walk(installroot):
         if path.endswith('/payloads'):
             driverfolder = ''
-            mediaSignature = ''
+            media_signature = ''
             setupxml = os.path.join(path, 'setup.xml')
             if os.path.exists(setupxml):
                 dom = minidom.parse(setupxml)
@@ -186,23 +184,23 @@ def getAdobeSetupInfo(installroot):
                             'folder'].value.encode('UTF-8')
                 if driverfolder == '':
                     # look for mediaSignature (CS5 AAMEE install)
-                    setupElements = dom.getElementsByTagName('Setup')
-                    if setupElements:
-                        mediaSignatureElements = setupElements[
+                    setup_elements = dom.getElementsByTagName('Setup')
+                    if setup_elements:
+                        media_signature_elements = setup_elements[
                             0].getElementsByTagName('mediaSignature')
-                        if mediaSignatureElements:
-                            element = mediaSignatureElements[0]
+                        if media_signature_elements:
+                            element = media_signature_elements[0]
                             for node in element.childNodes:
-                                mediaSignature += node.nodeValue
+                                media_signature += node.nodeValue
 
             for item in osutils.listdir(path):
                 payloadpath = os.path.join(path, item)
-                payloadinfo = getPayloadInfo(payloadpath)
+                payloadinfo = get_payload_info(payloadpath)
                 if payloadinfo:
                     payloads.append(payloadinfo)
                     if ((driverfolder and item == driverfolder) or
-                            (mediaSignature and
-                             payloadinfo['AdobeCode'] == mediaSignature)):
+                            (media_signature and
+                             payloadinfo['AdobeCode'] == media_signature)):
                         info['display_name'] = payloadinfo['display_name']
                         info['version'] = payloadinfo['version']
                         info['AdobeSetupType'] = 'ProductInstall'
@@ -215,7 +213,7 @@ def getAdobeSetupInfo(installroot):
                     #skip LanguagePacks
                     if item.find("LanguagePack") == -1:
                         itempath = os.path.join(path, item)
-                        payloadinfo = getPayloadInfo(itempath)
+                        payloadinfo = get_payload_info(itempath)
                         if payloadinfo:
                             payloads.append(payloadinfo)
 
@@ -240,11 +238,11 @@ def getAdobeSetupInfo(installroot):
     return info
 
 
-def getAdobePackageInfo(installroot):
+def get_adobe_package_info(installroot):
     '''Gets the package name from the AdobeUberInstaller.xml file;
     other info from the payloads folder'''
 
-    info = getAdobeSetupInfo(installroot)
+    info = get_adobe_setup_info(installroot)
     info['description'] = ""
     installerxml = os.path.join(installroot, "AdobeUberInstaller.xml")
     if os.path.exists(installerxml):
@@ -287,7 +285,7 @@ def getAdobePackageInfo(installroot):
     return info
 
 
-def getXMLtextElement(dom_node, name):
+def get_xml_text_element(dom_node, name):
     '''Returns the text value of the first item found with the given
     tagname'''
     value = None
@@ -299,7 +297,7 @@ def getXMLtextElement(dom_node, name):
     return value
 
 
-def parseOptionXML(option_xml_file):
+def parse_option_xml(option_xml_file):
     '''Parses an optionXML.xml file and pulls ot items of interest, returning
     them in a dictionary'''
     info = {}
@@ -311,8 +309,9 @@ def parseOptionXML(option_xml_file):
         if 'version' in installinfo[0].attributes.keys():
             info['packager_version'] = installinfo[
                 0].attributes['version'].value
-        info['package_name'] = getXMLtextElement(installinfo[0], 'PackageName')
-        info['package_id'] = getXMLtextElement(installinfo[0], 'PackageID')
+        info['package_name'] = get_xml_text_element(
+            installinfo[0], 'PackageName')
+        info['package_id'] = get_xml_text_element(installinfo[0], 'PackageID')
         info['products'] = []
 
         # CS5 to CC 2015.0-2015.2 releases use RIBS, and we retrieve a
@@ -325,17 +324,18 @@ def parseOptionXML(option_xml_file):
             if media_elements:
                 for media in media_elements:
                     product = {}
-                    product['prodName'] = getXMLtextElement(media, 'prodName')
-                    product['prodVersion'] = getXMLtextElement(
+                    product['prodName'] = get_xml_text_element(
+                        media, 'prodName')
+                    product['prodVersion'] = get_xml_text_element(
                         media, 'prodVersion')
-                    product['SAPCode'] = getXMLtextElement(media, 'SAPCode')
+                    product['SAPCode'] = get_xml_text_element(media, 'SAPCode')
                     setup_elements = media.getElementsByTagName('Setup')
                     if setup_elements:
-                        mediaSignatureElements = setup_elements[
+                        media_signature_elements = setup_elements[
                             0].getElementsByTagName('mediaSignature')
-                        if mediaSignatureElements:
+                        if media_signature_elements:
                             product['mediaSignature'] = ''
-                            element = mediaSignatureElements[0]
+                            element = media_signature_elements[0]
                             for node in element.childNodes:
                                 product['mediaSignature'] += node.nodeValue
                     info['products'].append(product)
@@ -365,13 +365,13 @@ def parseOptionXML(option_xml_file):
                             'SAPCode',
                             'MediaType',
                             'TargetFolderName']:
-                        product[elem] = getXMLtextElement(hd_media, elem)
+                        product[elem] = get_xml_text_element(hd_media, elem)
                     info['products'].append(product)
 
     return info
 
 
-def getHDInstallerInfo(hd_payload_root, sap_code):
+def get_hd_installer_info(hd_payload_root, sap_code):
     '''Attempts to extract some information from a HyperDrive payload
     application.json file and return a reduced set in a dict'''
     hd_app_info = {}
@@ -394,7 +394,7 @@ def getHDInstallerInfo(hd_payload_root, sap_code):
     return hd_app_info
 
 
-def getCS5mediaSignature(dirpath):
+def get_cs5_media_signature(dirpath):
     '''Returns the CS5 mediaSignature for an AAMEE CS5 install.
     dirpath is typically the root of a mounted dmg'''
 
@@ -413,12 +413,12 @@ def getCS5mediaSignature(dirpath):
     if os.path.exists(setupxml) and os.path.isfile(setupxml):
         # parse the XML
         dom = minidom.parse(setupxml)
-        setupElements = dom.getElementsByTagName('Setup')
-        if setupElements:
-            mediaSignatureElements = \
-                setupElements[0].getElementsByTagName('mediaSignature')
-            if mediaSignatureElements:
-                element = mediaSignatureElements[0]
+        setup_elements = dom.getElementsByTagName('Setup')
+        if setup_elements:
+            media_signature_elements = (
+                setup_elements[0].getElementsByTagName('mediaSignature'))
+            if media_signature_elements:
+                element = media_signature_elements[0]
                 elementvalue = ''
                 for node in element.childNodes:
                     elementvalue += node.nodeValue
@@ -427,25 +427,25 @@ def getCS5mediaSignature(dirpath):
     return ""
 
 
-def getCS5uninstallXML(optionXMLfile):
+def get_cs5_uninstall_xml(option_xml_file):
     '''Gets the uninstall deployment data from a CS5 installer'''
     xml = ''
-    dom = minidom.parse(optionXMLfile)
-    DeploymentInfo = dom.getElementsByTagName('DeploymentInfo')
-    if DeploymentInfo:
-        for info_item in DeploymentInfo:
-            DeploymentUninstall = info_item.getElementsByTagName(
+    dom = minidom.parse(option_xml_file)
+    deployment_info = dom.getElementsByTagName('DeploymentInfo')
+    if deployment_info:
+        for info_item in deployment_info:
+            deployment_uninstall = info_item.getElementsByTagName(
                 'DeploymentUninstall')
-            if DeploymentUninstall:
-                deploymentData = DeploymentUninstall[0].getElementsByTagName(
+            if deployment_uninstall:
+                deployment_data = deployment_uninstall[0].getElementsByTagName(
                     'Deployment')
-                if deploymentData:
-                    Deployment = deploymentData[0]
-                    xml += Deployment.toxml('UTF-8')
+                if deployment_data:
+                    deployment = deployment_data[0]
+                    xml += deployment.toxml('UTF-8')
     return xml
 
 
-def countPayloads(dirpath):
+def count_payloads(dirpath):
     '''Attempts to count the payloads in the Adobe installation item.
        Used for rough percent-done progress feedback.'''
     count = 0
@@ -465,32 +465,36 @@ def countPayloads(dirpath):
     return count
 
 
-def getAdobeInstallInfo(installdir):
+def get_adobe_install_info(installdir):
     '''Encapsulates info used by the Adobe Setup/Install app.'''
-    adobeInstallInfo = {}
+    adobe_install_info = {}
     if installdir:
-        adobeInstallInfo['media_signature'] = getCS5mediaSignature(installdir)
-        adobeInstallInfo['payload_count'] = countPayloads(installdir)
-        optionXMLfile = os.path.join(installdir, "optionXML.xml")
-        if os.path.exists(optionXMLfile):
-            adobeInstallInfo['uninstallxml'] = getCS5uninstallXML(optionXMLfile)
+        adobe_install_info['media_signature'] = get_cs5_media_signature(
+            installdir)
+        adobe_install_info['payload_count'] = count_payloads(installdir)
+        option_xml_file = os.path.join(installdir, "optionXML.xml")
+        if os.path.exists(option_xml_file):
+            adobe_install_info['uninstallxml'] = get_cs5_uninstall_xml(
+                option_xml_file)
 
-    return adobeInstallInfo
+    return adobe_install_info
 
 
+# Disable PyLint complaining about 'invalid' camelCase names
+# pylint: disable=invalid-name
 def getAdobeCatalogInfo(mountpoint, pkgname=""):
     '''Used by makepkginfo to build pkginfo data for Adobe
     installers/updaters'''
 
     # look for AdobeDeploymentManager (AAMEE installer)
-    deploymentmanager = findAdobeDeploymentManager(mountpoint)
+    deploymentmanager = find_adobe_deployment_manager(mountpoint)
     if deploymentmanager:
         dirpath = os.path.dirname(deploymentmanager)
         option_xml_file = os.path.join(dirpath, 'optionXML.xml')
         option_xml_info = {}
         if os.path.exists(option_xml_file):
-            option_xml_info = parseOptionXML(option_xml_file)
-        cataloginfo = getAdobePackageInfo(dirpath)
+            option_xml_info = parse_option_xml(option_xml_file)
+        cataloginfo = get_adobe_package_info(dirpath)
         if cataloginfo:
             # add some more data
             if option_xml_info.get('packager_id') == u'CloudPackager':
@@ -515,7 +519,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 cataloginfo['uninstall_method'] = "AdobeCS5AAMEEPackage"
                 cataloginfo['installer_type'] = "AdobeCS5AAMEEPackage"
                 cataloginfo['minimum_os_version'] = "10.5.0"
-                cataloginfo['adobe_install_info'] = getAdobeInstallInfo(
+                cataloginfo['adobe_install_info'] = get_adobe_install_info(
                     installdir=dirpath)
                 mediasignature = cataloginfo['adobe_install_info'].get(
                     "media_signature")
@@ -529,7 +533,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
 
             hd_app_infos = []
             for sap_code in hd_metadata_dirs:
-                hd_app_info = getHDInstallerInfo(
+                hd_app_info = get_hd_installer_info(
                     os.path.join(dirpath, 'HD'), sap_code)
                 hd_app_infos.append(hd_app_info)
 
@@ -619,17 +623,17 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
     # Look for Install.app (Bare metal CS5 install)
     # we don't handle this type, but we'll report it
     # back so makepkginfo can provide an error message
-    installapp = findInstallApp(mountpoint)
+    installapp = find_install_app(mountpoint)
     if installapp:
         cataloginfo = {}
         cataloginfo['installer_type'] = "AdobeCS5Installer"
         return cataloginfo
 
     # Look for AdobePatchInstaller.app (CS5 updater)
-    installapp = findAdobePatchInstallerApp(mountpoint)
+    installapp = find_adobepatchinstaller_app(mountpoint)
     if os.path.exists(installapp):
         # this is a CS5 updater disk image
-        cataloginfo = getAdobePackageInfo(mountpoint)
+        cataloginfo = get_adobe_package_info(mountpoint)
         if cataloginfo:
             # add some more data
             cataloginfo['name'] = cataloginfo['display_name'].replace(' ', '')
@@ -681,7 +685,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
     adobeinstallxml = os.path.join(pkgroot, "AdobeUberInstaller.xml")
     if os.path.exists(adobeinstallxml):
         # this is a CS4 Enterprise Deployment package
-        cataloginfo = getAdobePackageInfo(pkgroot)
+        cataloginfo = get_adobe_package_info(pkgroot)
         if cataloginfo:
             # add some more data
             cataloginfo['name'] = cataloginfo['display_name'].replace(' ', '')
@@ -694,9 +698,9 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
 
     # maybe this is an Adobe update DMG or CS3 installer
     # look for Adobe Setup.app
-    setuppath = findSetupApp(mountpoint)
+    setuppath = find_setup_app(mountpoint)
     if setuppath:
-        cataloginfo = getAdobeSetupInfo(mountpoint)
+        cataloginfo = get_adobe_setup_info(mountpoint)
         if cataloginfo:
             # add some more data
             cataloginfo['name'] = cataloginfo['display_name'].replace(' ', '')
@@ -711,7 +715,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             return cataloginfo
 
     # maybe this is an Adobe Acrobat 9 Pro patcher?
-    acrobatpatcherapp = findAcrobatPatchApp(mountpoint)
+    acrobatpatcherapp = find_acrobat_patch_app(mountpoint)
     if acrobatpatcherapp:
         cataloginfo = {}
         cataloginfo['installer_type'] = "AdobeAcrobatUpdater"
@@ -734,6 +738,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
 
     # didn't find any Adobe installers/updaters we understand
     return None
+# pylint: enable=invalid-name
 
 
 if __name__ == '__main__':

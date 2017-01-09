@@ -346,7 +346,7 @@ def run_adobe_setup(dmgpath, uninstalling=False, payloads=None):
         'Mounting disk image %s' % os.path.basename(dmgpath))
     mountpoints = mount_adobe_dmg(dmgpath)
     if mountpoints:
-        setup_path = adobeinfo.findSetupApp(mountpoints[0])
+        setup_path = adobeinfo.find_setup_app(mountpoints[0])
         if setup_path:
             # look for install.xml or uninstall.xml at root
             deploymentfile = None
@@ -372,7 +372,7 @@ def run_adobe_setup(dmgpath, uninstalling=False, payloads=None):
 
             # try to find and count the number of payloads
             # so we can give a rough progress indicator
-            number_of_payloads = adobeinfo.countPayloads(mountpoints[0])
+            number_of_payloads = adobeinfo.count_payloads(mountpoints[0])
             munkicommon.display_status_minor('Running Adobe Setup')
             adobe_setup = [setup_path, '--mode=silent', '--skipProcessCheck=1']
             if deploymentfile:
@@ -446,7 +446,7 @@ def run_adobe_cpp_pkg_script(dmgpath, payloads=None, operation='install'):
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
 
-    deploymentmanager = adobeinfo.findAdobeDeploymentManager(mountpoints[0])
+    deploymentmanager = adobeinfo.find_adobe_deployment_manager(mountpoints[0])
     if not deploymentmanager:
         munkicommon.display_error(
             '%s doesn\'t appear to contain AdobeDeploymentManager',
@@ -477,7 +477,7 @@ def run_adobe_cpp_pkg_script(dmgpath, payloads=None, operation='install'):
                 "No Adobe uninstall script found on %s" % dmgpath)
         munkicommon.unmountdmg(mountpoints[0])
         return -1
-    number_of_payloads = adobeinfo.countPayloads(basepath)
+    number_of_payloads = adobeinfo.count_payloads(basepath)
     tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
 
     # make our symlinks
@@ -538,7 +538,7 @@ def run_adobe_cs5_aamee_install(dmgpath, payloads=None):
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
 
-    deploymentmanager = adobeinfo.findAdobeDeploymentManager(mountpoints[0])
+    deploymentmanager = adobeinfo.find_adobe_deployment_manager(mountpoints[0])
     if deploymentmanager:
         # big hack to convince the Adobe tools to install off a mounted
         # disk image.
@@ -553,7 +553,7 @@ def run_adobe_cs5_aamee_install(dmgpath, payloads=None):
         # installation tools, they are now happy.
 
         basepath = os.path.dirname(deploymentmanager)
-        number_of_payloads = adobeinfo.countPayloads(basepath)
+        number_of_payloads = adobeinfo.count_payloads(basepath)
         tmpdir = tempfile.mkdtemp(prefix='munki-', dir='/tmp')
 
         # make our symlinks
@@ -630,11 +630,11 @@ def run_adobe_cs5_patch_installer(dmgpath, copylocal=False, payloads=None):
         else:
             updatedir = mountpoints[0]
 
-        patchinstaller = adobeinfo.findAdobePatchInstallerApp(updatedir)
+        patchinstaller = adobeinfo.find_adobepatchinstaller_app(updatedir)
         if patchinstaller:
             # try to find and count the number of payloads
             # so we can give a rough progress indicator
-            number_of_payloads = adobeinfo.countPayloads(updatedir)
+            number_of_payloads = adobeinfo.count_payloads(updatedir)
             munkicommon.display_status_minor('Running Adobe Patch Installer')
             install_cmd = [patchinstaller,
                            '--mode=silent',
@@ -677,7 +677,7 @@ def run_adobe_uber_tool(dmgpath, pkgname='', uninstalling=False, payloads=None):
                                     "AdobeUberInstaller")
 
         if os.path.exists(ubertool):
-            info = adobeinfo.getAdobePackageInfo(installroot)
+            info = adobeinfo.get_adobe_package_info(installroot)
             packagename = info['display_name']
             action = "Installing"
             operation = "install"
@@ -690,7 +690,7 @@ def run_adobe_uber_tool(dmgpath, pkgname='', uninstalling=False, payloads=None):
 
             # try to find and count the number of payloads
             # so we can give a rough progress indicator
-            number_of_payloads = adobeinfo.countPayloads(installroot)
+            number_of_payloads = adobeinfo.count_payloads(installroot)
 
             retcode = run_adobe_install_tool(
                 [ubertool], number_of_payloads, kill_adobeair=True,
@@ -722,7 +722,7 @@ def update_acrobatpro(dmgpath):
     mountpoints = mount_adobe_dmg(dmgpath)
     if mountpoints:
         installroot = mountpoints[0]
-        acrobatpatchapp_path = adobeinfo.findAcrobatPatchApp(installroot)
+        acrobatpatchapp_path = adobeinfo.find_acrobat_patch_app(installroot)
     else:
         munkicommon.display_error("No mountable filesystems on %s" % dmgpath)
         return -1
