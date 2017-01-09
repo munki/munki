@@ -58,10 +58,10 @@ def isItemInInstallInfo(item_pl, thelist, vers=''):
                     return True
                 #if the version already installed or processed to be
                 #installed is the same or greater, then we're good.
-                if listitem.get('installed') and (compare.compareVersions(
+                if listitem.get('installed') and (compare.compare_versions(
                         listitem.get('installed_version'), vers) in (1, 2)):
                     return True
-                if (compare.compareVersions(
+                if (compare.compare_versions(
                         listitem.get('version_to_install'), vers) in (1, 2)):
                     return True
         except KeyError:
@@ -498,7 +498,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
             iteminfo['installed_version'] = item_pl['version']
         else:
             # might be newer; attempt to figure out the version
-            installed_version = compare.getInstalledVersion(item_pl)
+            installed_version = compare.get_installed_version(item_pl)
             if installed_version == "UNKNOWN":
                 installed_version = '(newer than %s)' % item_pl['version']
             iteminfo['installed_version'] = installed_version
@@ -519,7 +519,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 update_list.extend(
                     catalogs.look_for_updates_for_version(
                         name, installed_version, cataloglist))
-        elif compare.compareVersions(
+        elif compare.compare_versions(
                 includedversion, iteminfo['installed_version']) == 1:
             # manifest specifies a specific version
             # if that's what's installed, look for any updates

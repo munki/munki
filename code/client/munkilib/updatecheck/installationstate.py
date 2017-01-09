@@ -92,7 +92,7 @@ def installed_state(item_pl):
         installitems = item_pl['installs']
         for item in installitems:
             try:
-                comparison = compare.compareItemVersion(item)
+                comparison = compare.compare_item_version(item)
                 if comparison in (-1, 0):
                     return 0
                 elif comparison == 2:
@@ -110,7 +110,7 @@ def installed_state(item_pl):
         receipts = item_pl['receipts']
         for item in receipts:
             try:
-                comparison = compare.compareReceiptVersion(item)
+                comparison = compare.compare_receipt_version(item)
                 if comparison in (-1, 0):
                     # not there or older
                     return 0
@@ -166,7 +166,7 @@ def some_version_installed(item_pl):
         # check each item for existence
         for item in installitems:
             try:
-                if compare.compareItemVersion(item) == 0:
+                if compare.compare_item_version(item) == 0:
                     # not there
                     return False
             except utils.Error, errmsg:
@@ -180,7 +180,7 @@ def some_version_installed(item_pl):
         receipts = item_pl['receipts']
         for item in receipts:
             try:
-                if compare.compareReceiptVersion(item) == 0:
+                if compare.compare_receipt_version(item) == 0:
                     # not there
                     return False
             except utils.Error, errmsg:
