@@ -20,10 +20,11 @@ Unit tests for processes.isAppRunning.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from munkilib import processes
 import unittest
-from data_scaffolds import getRunningProcessesMock
+
+from ..data_scaffolds import getRunningProcessesMock
+from munkilib import processes
+
 
 try:
     from mock import patch

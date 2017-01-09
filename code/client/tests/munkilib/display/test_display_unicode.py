@@ -20,9 +20,9 @@ Unit tests for display.display_* functions.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import munkilib.display as display
 import unittest
+
+from munkilib import display
 
 
 MSG_UNI = u'Günther\'s favorite thing is %s'
