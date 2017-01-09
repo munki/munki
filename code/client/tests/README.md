@@ -30,14 +30,15 @@ For instance, here is the directory structure for all of the tests:
     └── code
         └── client
             └── munkilib
-                ├── appleupdates_test.py
-                └── munkicommon
-                    ├── munkicommon_data_scaffolds.py
-                    ├── test_munkicommon_isapprunning.py
-                    └── test_munkicommon_unicode.py
+                ├── data_scaffolds.py
+                ├── display
+                      └── test_munkicommon_unicode.py
+                ├── processes    
+                      └─── test_munkicommon_isapprunning.py
+                
 
 
-If you want to add tests for the `blockingApplicationsRunning` function, you would name it `test_blockingapplicationsrunning.py` and place it in `tests/code/client/munkilib/munkicommon`. The resulting file structure would look like this:
+If you want to add tests for the `blockingApplicationsRunning` function, you would name it `test_blockingapplicationsrunning.py` and place it in `tests/code/client/munkilib`. The resulting file structure would look like this:
 
     tests
     ├── README.md
