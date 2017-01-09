@@ -31,7 +31,6 @@ from xml.dom import minidom
 
 from .. import osutils
 from .. import pkgutils
-from .. import FoundationPlist
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -395,25 +394,6 @@ def getHDInstallerInfo(hd_payload_root, sap_code):
     return hd_app_info
 
 
-def getBundleInfo(path):
-    """
-    Returns Info.plist data if available
-    for bundle at path
-    """
-    infopath = os.path.join(path, "Contents", "Info.plist")
-    if not os.path.exists(infopath):
-        infopath = os.path.join(path, "Resources", "Info.plist")
-
-    if os.path.exists(infopath):
-        try:
-            plist = FoundationPlist.readPlist(infopath)
-            return plist
-        except FoundationPlist.NSPropertyListSerializationException:
-            pass
-
-    return None
-
-
 def getCS5mediaSignature(dirpath):
     '''Returns the CS5 mediaSignature for an AAMEE CS5 install.
     dirpath is typically the root of a mounted dmg'''
@@ -736,7 +716,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
         cataloginfo = {}
         cataloginfo['installer_type'] = "AdobeAcrobatUpdater"
         cataloginfo['uninstallable'] = False
-        plist = getBundleInfo(acrobatpatcherapp)
+        plist = pkgutils.getBundleInfo(acrobatpatcherapp)
         cataloginfo['version'] = pkgutils.getVersionString(plist)
         cataloginfo['name'] = "AcrobatPro9Update"
         cataloginfo['display_name'] = "Adobe Acrobat Pro Update"

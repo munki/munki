@@ -263,6 +263,7 @@ def getCatalogInfoFromDmg(dmgpath, options):
     return cataloginfo
 
 
+# TO-DO: delete this and use pkgutils.getBundleInfo() other places here
 def getBundleInfo(path):
     """
     Returns Info.plist data if available
@@ -282,6 +283,7 @@ def getBundleInfo(path):
     return None
 
 
+# TO-DO: this (or a similar) function is defined several places. De-dupe.
 def readfile(path):
     '''Reads file at path. Returns a string.'''
     try:

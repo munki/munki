@@ -173,11 +173,29 @@ def getVersionString(plist, key=None):
     return ''
 
 
+def getBundleInfo(path):
+    """
+    Returns Info.plist data if available
+    for bundle at path
+    """
+    infopath = os.path.join(path, "Contents", "Info.plist")
+    if not os.path.exists(infopath):
+        infopath = os.path.join(path, "Resources", "Info.plist")
+
+    if os.path.exists(infopath):
+        try:
+            plist = FoundationPlist.readPlist(infopath)
+            return plist
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+
+    return None
+
+
 def getAppBundleExecutable(bundlepath):
     """Returns path to the actual executable in an app bundle or None"""
-    infoPlist = os.path.join(bundlepath, 'Contents', 'Info.plist')
-    if os.path.exists(infoPlist):
-        plist = FoundationPlist.readPlist(infoPlist)
+    plist = getBundleInfo(bundlepath)
+    if plist:
         if 'CFBundleExecutable' in plist:
             executable = plist['CFBundleExecutable']
         elif 'CFBundleName' in plist:
@@ -198,11 +216,8 @@ def getBundleVersion(bundlepath, key=None):
     Specify key to use a specific key in the Info.plist for
     the version string.
     """
-    infoPlist = os.path.join(bundlepath, 'Contents', 'Info.plist')
-    if not os.path.exists(infoPlist):
-        infoPlist = os.path.join(bundlepath, 'Resources', 'Info.plist')
-    if os.path.exists(infoPlist):
-        plist = FoundationPlist.readPlist(infoPlist)
+    plist = getBundleInfo(bundlepath)
+    if plist:
         versionstring = getVersionString(plist, key)
         if versionstring:
             return versionstring
@@ -412,11 +427,10 @@ def getBomList(pkgpath):
 def getOnePackageInfo(pkgpath):
     """Gets receipt info for a single bundle-style package"""
     pkginfo = {}
-    plistpath = os.path.join(pkgpath, 'Contents', 'Info.plist')
-    if os.path.exists(plistpath):
+    plist = getBundleInfo(pkgpath)
+    if plist:
         pkginfo['filename'] = os.path.basename(pkgpath)
         try:
-            plist = FoundationPlist.readPlist(plistpath)
             if 'CFBundleIdentifier' in plist:
                 pkginfo['packageid'] = plist['CFBundleIdentifier']
             elif 'Bundle identifier' in plist:
@@ -491,9 +505,8 @@ def getBundlePackageInfo(pkgpath):
 
         # no .dist file found, look for packages in subdirs
         dirsToSearch = []
-        plistpath = os.path.join(pkgpath, 'Contents', 'Info.plist')
-        if os.path.exists(plistpath):
-            plist = FoundationPlist.readPlist(plistpath)
+        plist = getBundleInfo(pkgpath)
+        if plist:
             if 'IFPkgFlagComponentDirectory' in plist:
                 componentdir = plist['IFPkgFlagComponentDirectory']
                 dirsToSearch.append(componentdir)
@@ -842,9 +855,8 @@ def isApplication(pathname):
     if os.path.isdir(pathname):
         # look for app bundle structure
         # use Info.plist to determine the name of the executable
-        infoplist = os.path.join(pathname, 'Contents', 'Info.plist')
-        if os.path.exists(infoplist):
-            plist = FoundationPlist.readPlist(infoplist)
+        plist = getBundleInfo(pathname)
+        if plist:
             if 'CFBundlePackageType' in plist:
                 if plist['CFBundlePackageType'] != 'APPL':
                     return False
