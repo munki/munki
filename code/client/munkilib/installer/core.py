@@ -214,7 +214,7 @@ def installWithInfo(
                 return restartflag, skipped_installs
 
             if installer_type.startswith("Adobe"):
-                retcode = adobeutils.doAdobeInstall(item)
+                retcode = adobeutils.do_adobe_install(item)
                 if retcode == 0:
                     if (item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
@@ -530,7 +530,7 @@ def processRemovals(removallist, only_unattended=False):
                             "Uninstall of %s was successful." % display_name)
 
             elif uninstallmethod.startswith("Adobe"):
-                retcode = adobeutils.doAdobeRemoval(item)
+                retcode = adobeutils.do_adobe_removal(item)
 
             elif uninstallmethod == "remove_copied_items":
                 retcode = removeCopiedItems(item.get('items_to_remove'))
