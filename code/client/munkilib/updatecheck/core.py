@@ -31,9 +31,15 @@ from . import download
 from . import licensing
 from . import manifestutils
 
+from .. import display
+from .. import info
 from .. import keychain
-from .. import munkicommon
+from .. import munkilog
 from .. import munkistatus
+from .. import osutils
+from .. import prefs
+from .. import processes
+from .. import reports
 from .. import FoundationPlist
 
 
@@ -47,17 +53,17 @@ def check(client_id='', localmanifestpath=None):
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
 
-    munkicommon.report['MachineInfo'] = munkicommon.getMachineFacts()
+    reports.report['MachineInfo'] = info.getMachineFacts()
 
     # initialize our Munki keychain if we are using custom certs or CAs
     dummy_keychain_obj = keychain.MunkiKeychain()
 
-    managed_install_dir = munkicommon.pref('ManagedInstallDir')
-    if munkicommon.munkistatusoutput:
+    managed_install_dir = prefs.pref('ManagedInstallDir')
+    if display.munkistatusoutput:
         munkistatus.activate()
 
-    munkicommon.log('### Beginning managed software check ###')
-    munkicommon.display_status_major('Checking for available updates...')
+    munkilog.log('### Beginning managed software check ###')
+    display.display_status_major('Checking for available updates...')
     munkistatus.percent('-1')
     munkistatus.detail('')
 
@@ -70,11 +76,11 @@ def check(client_id='', localmanifestpath=None):
             try:
                 mainmanifestpath = manifestutils.get_primary_manifest(client_id)
             except manifestutils.ManifestException:
-                munkicommon.display_error(
+                display.display_error(
                     'Could not retrieve managed install primary manifest.')
                 raise
 
-        if munkicommon.stop_requested():
+        if processes.stop_requested():
             return 0
 
         # initialize our installinfo record
@@ -86,12 +92,12 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = []
 
         # record info object for conditional item comparisons
-        munkicommon.report['Conditions'] = munkicommon.predicate_info_object()
+        reports.report['Conditions'] = info.predicate_info_object()
 
-        munkicommon.display_detail('**Checking for installs**')
+        display.display_detail('**Checking for installs**')
         analyze.process_manifest_for_key(
             mainmanifestpath, 'managed_installs', installinfo)
-        if munkicommon.stop_requested():
+        if processes.stop_requested():
             return 0
 
         # reset progress indicator and detail field
@@ -100,10 +106,10 @@ def check(client_id='', localmanifestpath=None):
         munkistatus.detail('')
 
         # now generate a list of items to be uninstalled
-        munkicommon.display_detail('**Checking for removals**')
+        display.display_detail('**Checking for removals**')
         analyze.process_manifest_for_key(
             mainmanifestpath, 'managed_uninstalls', installinfo)
-        if munkicommon.stop_requested():
+        if processes.stop_requested():
             return 0
 
         # now check for implicit removals
@@ -113,23 +119,23 @@ def check(client_id='', localmanifestpath=None):
         autoremovalitems = catalogs.get_auto_removal_items(
             installinfo, cataloglist)
         if autoremovalitems:
-            munkicommon.display_detail('**Checking for implicit removals**')
+            display.display_detail('**Checking for implicit removals**')
         for item in autoremovalitems:
-            if munkicommon.stop_requested():
+            if processes.stop_requested():
                 return 0
             analyze.process_removal(item, cataloglist, installinfo)
 
         # look for additional updates
-        munkicommon.display_detail('**Checking for managed updates**')
+        display.display_detail('**Checking for managed updates**')
         analyze.process_manifest_for_key(
             mainmanifestpath, 'managed_updates', installinfo)
-        if munkicommon.stop_requested():
+        if processes.stop_requested():
             return 0
 
         # build list of optional installs
         analyze.process_manifest_for_key(
             mainmanifestpath, 'optional_installs', installinfo)
-        if munkicommon.stop_requested():
+        if processes.stop_requested():
             return 0
 
         # verify available license seats for optional installs
@@ -137,14 +143,14 @@ def check(client_id='', localmanifestpath=None):
             licensing.update_available_license_seats(installinfo)
 
         # process LocalOnlyManifest installs
-        localonlymanifestname = munkicommon.pref('LocalOnlyManifest')
+        localonlymanifestname = prefs.pref('LocalOnlyManifest')
         if localonlymanifestname:
             localonlymanifest = os.path.join(
                 managed_install_dir, 'manifests', localonlymanifestname)
 
             # if the manifest already exists, the name is being reused
             if localonlymanifestname in manifestutils.manifests():
-                munkicommon.display_error(
+                display.display_error(
                     "LocalOnlyManifest %s has the same name as an existing "
                     "manifest, skipping...", localonlymanifestname
                 )
@@ -154,7 +160,7 @@ def check(client_id='', localmanifestpath=None):
                 # use catalogs from main manifest for local only manifest
                 cataloglist = manifestutils.get_manifest_value_for_key(
                     mainmanifestpath, 'catalogs')
-                munkicommon.display_detail(
+                display.display_detail(
                     '**Processing local-only choices**'
                 )
 
@@ -172,7 +178,7 @@ def check(client_id='', localmanifestpath=None):
                 for item in localonlyuninstalls:
                     analyze.process_removal(item, cataloglist, installinfo)
             else:
-                munkicommon.display_debug1(
+                display.display_debug1(
                     "LocalOnlyManifest %s is set but is not present. "
                     "Skipping...", localonlymanifestname
                 )
@@ -196,7 +202,7 @@ def check(client_id='', localmanifestpath=None):
             except FoundationPlist.FoundationPlistException:
                 # problem reading the usermanifest
                 # better remove it
-                munkicommon.display_error('Could not read %s', usermanifest)
+                display.display_error('Could not read %s', usermanifest)
                 try:
                     os.unlink(usermanifest)
                 except OSError:
@@ -206,7 +212,7 @@ def check(client_id='', localmanifestpath=None):
             # use catalogs from main manifest for self-serve manifest
             cataloglist = manifestutils.get_manifest_value_for_key(
                 mainmanifestpath, 'catalogs')
-            munkicommon.display_detail('**Processing self-serve choices**')
+            display.display_detail('**Processing self-serve choices**')
             selfserveinstalls = manifestutils.get_manifest_value_for_key(
                 selfservemanifest, 'managed_installs')
 
@@ -277,16 +283,16 @@ def check(client_id='', localmanifestpath=None):
                     pass
 
         # record detail before we throw it away...
-        munkicommon.report['ManagedInstalls'] = installinfo['managed_installs']
-        munkicommon.report['InstalledItems'] = installed_items
-        munkicommon.report['ProblemInstalls'] = problem_items
-        munkicommon.report['RemovedItems'] = removed_items
+        reports.report['ManagedInstalls'] = installinfo['managed_installs']
+        reports.report['InstalledItems'] = installed_items
+        reports.report['ProblemInstalls'] = problem_items
+        reports.report['RemovedItems'] = removed_items
 
-        munkicommon.report['managed_installs_list'] = installinfo[
+        reports.report['managed_installs_list'] = installinfo[
             'processed_installs']
-        munkicommon.report['managed_uninstalls_list'] = installinfo[
+        reports.report['managed_uninstalls_list'] = installinfo[
             'processed_uninstalls']
-        munkicommon.report['managed_updates_list'] = installinfo[
+        reports.report['managed_updates_list'] = installinfo[
             'managed_updates']
 
         # filter managed_installs and removals lists
@@ -312,8 +318,8 @@ def check(client_id='', localmanifestpath=None):
         download.download_client_resources()
 
         # record the filtered lists
-        munkicommon.report['ItemsToInstall'] = installinfo['managed_installs']
-        munkicommon.report['ItemsToRemove'] = installinfo['removals']
+        reports.report['ItemsToInstall'] = installinfo['managed_installs']
+        reports.report['ItemsToRemove'] = installinfo['removals']
 
         # clean up catalogs directory
         catalogs.clean_up()
@@ -334,7 +340,7 @@ def check(client_id='', localmanifestpath=None):
                            for item in installinfo.get('removals', [])
                            if item.get('uninstaller_item')])
         cachedir = os.path.join(managed_install_dir, 'Cache')
-        for item in munkicommon.listdir(cachedir):
+        for item in osutils.listdir(cachedir):
             if item.endswith('.download'):
                 # we have a partial download here
                 # remove the '.download' from the end of the filename
@@ -353,7 +359,7 @@ def check(client_id='', localmanifestpath=None):
                     # around.
                     os.unlink(os.path.join(cachedir, item))
             elif item not in cache_list:
-                munkicommon.display_detail('Removing %s from cache', item)
+                display.display_detail('Removing %s from cache', item)
                 os.unlink(os.path.join(cachedir, item))
 
         # write out install list so our installer
@@ -365,16 +371,16 @@ def check(client_id='', localmanifestpath=None):
                 oldinstallinfo = FoundationPlist.readPlist(installinfopath)
             except FoundationPlist.NSPropertyListSerializationException:
                 oldinstallinfo = None
-                munkicommon.display_error(
+                display.display_error(
                     'Could not read InstallInfo.plist. Deleting...')
                 try:
                     os.unlink(installinfopath)
                 except OSError, err:
-                    munkicommon.display_error(
+                    display.display_error(
                         'Failed to delete InstallInfo.plist: %s', str(err))
             if oldinstallinfo == installinfo:
                 installinfochanged = False
-                munkicommon.display_detail('No change in InstallInfo.')
+                display.display_detail('No change in InstallInfo.')
 
         if installinfochanged:
             FoundationPlist.writePlist(
@@ -390,13 +396,13 @@ def check(client_id='', localmanifestpath=None):
                 installinfo = FoundationPlist.readPlist(installinfopath)
             except FoundationPlist.NSPropertyListSerializationException:
                 installinfo = {}
-            munkicommon.report['ItemsToInstall'] = \
+            reports.report['ItemsToInstall'] = \
                 installinfo.get('managed_installs', [])
-            munkicommon.report['ItemsToRemove'] = \
+            reports.report['ItemsToRemove'] = \
                 installinfo.get('removals', [])
 
-    munkicommon.savereport()
-    munkicommon.log('###    End managed software check    ###')
+    reports.savereport()
+    munkilog.log('###    End managed software check    ###')
 
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
@@ -427,7 +433,7 @@ def get_primary_manifest_catalogs(client_id='', force_refresh=False):
     else:
         # Use cached manifest if available
         manifest_dir = os.path.join(
-            munkicommon.pref('managed_install_dir'), 'manifests')
+            prefs.pref('managed_install_dir'), 'manifests')
         manifest = os.path.join(
             manifest_dir,
             manifestutils.get_manifest(manifestutils.PRIMARY_MANIFEST_TAG))
