@@ -139,7 +139,7 @@ def force_install_package_check():
                 continue
 
             force_install_after_date = (
-                info.subtractTimeZoneOffsetFromDate(force_install_after_date))
+                info.subtract_tzoffset_from_date(force_install_after_date))
             display.display_debug1(
                 'Forced install for %s at %s',
                 install['name'], force_install_after_date)
