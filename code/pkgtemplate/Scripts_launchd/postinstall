@@ -1,0 +1,41 @@
+#!/usr/bin/python
+"""
+Postinstall script to load munki's launchdaemons.
+"""
+import os
+import subprocess
+
+
+def getconsoleuser():
+    '''Uses Apple's SystemConfiguration framework to get the current
+    console user'''
+    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+    cfuser = SCDynamicStoreCopyConsoleUser(None, None, None)
+    return cfuser[0]
+
+
+def launchctld(identifier):
+    path = os.path.join('/Library/LaunchDaemons/', identifier, '.plist')
+    try:
+        cmd = ['/bin/launchctl', 'load', path]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        output, err = proc.communicate()
+        return output
+    except error:
+        pass
+
+
+def main():
+    # Only load the launch daemons if there isn't a console user or at the
+    # loginwindow. launchctl.py will take care of the restart via the pkg
+    # distribution.xml
+    consoleuser = getconsoleuser()
+    if consoleuser is None or consoleuser == u"loginwindow":
+        launchctld('com.googlecode.munki.managedsoftwareupdate-check')
+        launchctld('com.googlecode.munki.managedsoftwareupdate-install')
+        launchctld('com.googlecode.munki.managedsoftwareupdate-check')
+        launchctld('com.googlecode.munki.logouthelper')
+
+if __name__ == '__main__':
+    main()
