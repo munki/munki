@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-sync.py
+appleupdates.sync
 
 Created by Greg Neagle on 2017-01-06.
 
