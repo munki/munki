@@ -30,11 +30,8 @@ import subprocess
 from .constants import LOGINWINDOW
 from . import display
 
-# we use lots of camelCase-style names. Deal with it.
-# pylint: disable=C0103
 
-
-def getRunningProcesses():
+def get_running_processes():
     """Returns a list of paths of running processes"""
     proc = subprocess.Popen(['/bin/ps', '-axo' 'comm='],
                             shell=False, stdin=subprocess.PIPE,
@@ -44,9 +41,9 @@ def getRunningProcesses():
     if proc.returncode == 0:
         proc_list = [item for item in output.splitlines()
                      if item.startswith('/')]
-        LaunchCFMApp = ('/System/Library/Frameworks/Carbon.framework'
+        launchcfmapp = ('/System/Library/Frameworks/Carbon.framework'
                         '/Versions/A/Support/LaunchCFMApp')
-        if LaunchCFMApp in proc_list:
+        if launchcfmapp in proc_list:
             # we have a really old Carbon app
             proc = subprocess.Popen(['/bin/ps', '-axwwwo' 'args='],
                                     shell=False, stdin=subprocess.PIPE,
@@ -54,9 +51,9 @@ def getRunningProcesses():
                                     stderr=subprocess.PIPE)
             (output, dummy_err) = proc.communicate()
             if proc.returncode == 0:
-                carbon_apps = [item[len(LaunchCFMApp)+1:]
+                carbon_apps = [item[len(launchcfmapp)+1:]
                                for item in output.splitlines()
-                               if item.startswith(LaunchCFMApp)]
+                               if item.startswith(launchcfmapp)]
                 if carbon_apps:
                     proc_list.extend(carbon_apps)
         return proc_list
@@ -64,11 +61,11 @@ def getRunningProcesses():
         return []
 
 
-def isAppRunning(appname):
+def is_app_running(appname):
     """Tries to determine if the application in appname is currently
     running"""
     display.display_detail('Checking if %s is running...' % appname)
-    proc_list = getRunningProcesses()
+    proc_list = get_running_processes()
     matching_items = []
     if appname.startswith('/'):
         # search by exact path
@@ -97,7 +94,7 @@ def isAppRunning(appname):
     return False
 
 
-def blockingApplicationsRunning(pkginfoitem):
+def blocking_applications_running(pkginfoitem):
     """Returns true if any application in the blocking_applications list
     is running or, if there is no blocking_applications list, if any
     application in the installs list is running."""
@@ -113,7 +110,7 @@ def blockingApplicationsRunning(pkginfoitem):
 
     display.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
-                    if isAppRunning(appname)]
+                    if is_app_running(appname)]
     if running_apps:
         display.display_detail(
             "Blocking apps for %s are running:" % pkginfoitem['name'])
@@ -122,7 +119,7 @@ def blockingApplicationsRunning(pkginfoitem):
     return False
 
 
-def findProcesses(user=None, exe=None):
+def find_processes(user=None, exe=None):
     """Find processes in process list.
 
     Args:
@@ -170,10 +167,10 @@ def findProcesses(user=None, exe=None):
     return pids
 
 
-def forceLogoutNow():
+def force_logout_now():
     """Force the logout of interactive GUI users and spawn MSU."""
     try:
-        procs = findProcesses(exe=LOGINWINDOW)
+        procs = find_processes(exe=LOGINWINDOW)
         users = {}
         for pid in procs:
             users[procs[pid]['user']] = pid
@@ -194,24 +191,24 @@ def forceLogoutNow():
                 pass
 
     except BaseException, err:
-        display.display_error('Exception in forceLogoutNow(): %s' % str(err))
+        display.display_error('Exception in force_logout_now(): %s' % str(err))
 
 
 # this function is maybe an odd fit for this module, but it's a way for the
 # Managed Software Center.app and MunkiStatus.app processes to tell the
 # managedsoftwareupdate process to stop/cancel, so here it is!
-_stop_requested = False
-def stopRequested():
+_STOP_REQUESTED = False
+def stop_requested():
     """Allows user to cancel operations when GUI status is being used"""
-    global _stop_requested
-    if _stop_requested:
+    global _STOP_REQUESTED
+    if _STOP_REQUESTED:
         return True
     stop_request_flag = (
         '/private/tmp/'
         'com.googlecode.munki.managedsoftwareupdate.stop_requested')
     if os.path.exists(stop_request_flag):
         # store this so it's persistent until this session is over
-        _stop_requested = True
+        _STOP_REQUESTED = True
         display.display_info('### User stopped session ###')
         try:
             os.unlink(stop_request_flag)

@@ -163,7 +163,7 @@ def install_with_info(
                     ('Skipping install of %s because it\'s not unattended.'
                      % item['name']))
                 continue
-            elif processes.blockingApplicationsRunning(item):
+            elif processes.blocking_applications_running(item):
                 skipped_installs.append(item)
                 munkicommon.display_detail(
                     'Skipping unattended install of %s because '
@@ -186,7 +186,7 @@ def install_with_info(
                 format_str % (item['name'], ", ".join(skipped_prereqs)))
             continue
 
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return restartflag, skipped_installs
 
         display_name = item.get('display_name') or item.get('name')
@@ -194,7 +194,7 @@ def install_with_info(
 
         retcode = 0
         if 'preinstall_script' in item:
-            retcode = munkicommon.runEmbeddedScript('preinstall_script', item)
+            retcode = munkicommon.run_embedded_script('preinstall_script', item)
 
         if retcode == 0 and 'installer_item' in item:
             munkicommon.display_status_major(
@@ -277,7 +277,7 @@ def install_with_info(
                             "No filesystems mounted from %s",
                             item["installer_item"])
                         return restartflag, skipped_installs
-                    if munkicommon.stopRequested():
+                    if munkicommon.stop_requested():
                         munkicommon.unmountdmg(mountpoints[0])
                         return restartflag, skipped_installs
 
@@ -329,7 +329,7 @@ def install_with_info(
         if retcode == 0 and 'postinstall_script' in item:
             # only run embedded postinstall script if the install did not
             # return a failure code
-            retcode = munkicommon.runEmbeddedScript(
+            retcode = munkicommon.run_embedded_script(
                 'postinstall_script', item)
             if retcode:
                 # we won't consider postinstall script failures as fatal
@@ -476,7 +476,7 @@ def process_removals(removallist, only_unattended=False):
                     ('Skipping removal of %s because it\'s not unattended.'
                      % item['name']))
                 continue
-            elif processes.blockingApplicationsRunning(item):
+            elif processes.blocking_applications_running(item):
                 skipped_removals.append(item)
                 munkicommon.display_detail(
                     'Skipping unattended removal of %s because '
@@ -494,7 +494,7 @@ def process_removals(removallist, only_unattended=False):
                 % (item['name'], ", ".join(dependent_skipped_items)))
             continue
 
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return restart_flag, skipped_removals
         if not item.get('installed'):
             # not installed, so skip it (this shouldn't happen...)
@@ -508,7 +508,7 @@ def process_removals(removallist, only_unattended=False):
         retcode = 0
         # run preuninstall_script if it exists
         if 'preuninstall_script' in item:
-            retcode = munkicommon.runEmbeddedScript('preuninstall_script', item)
+            retcode = munkicommon.run_embedded_script('preuninstall_script', item)
 
         if retcode == 0 and 'uninstall_method' in item:
             uninstallmethod = item['uninstall_method']
@@ -563,7 +563,7 @@ def process_removals(removallist, only_unattended=False):
                     munkicommon.display_error(
                         "Profile removal info missing from %s", display_name)
             elif uninstallmethod == 'uninstall_script':
-                retcode = munkicommon.runEmbeddedScript(
+                retcode = munkicommon.run_embedded_script(
                     'uninstall_script', item)
                 if (retcode == 0 and
                         item.get('RestartAction') == "RequireRestart"):
@@ -572,7 +572,7 @@ def process_removals(removallist, only_unattended=False):
             elif os.path.exists(uninstallmethod) and \
                  os.access(uninstallmethod, os.X_OK):
                 # it's a script or program to uninstall
-                retcode = munkicommon.runScript(
+                retcode = munkicommon.run_script(
                     display_name, uninstallmethod, 'uninstall script')
                 if (retcode == 0 and
                         item.get('RestartAction') == "RequireRestart"):
@@ -585,7 +585,7 @@ def process_removals(removallist, only_unattended=False):
                 retcode = -99
 
             if retcode == 0 and item.get('postuninstall_script'):
-                retcode = munkicommon.runEmbeddedScript(
+                retcode = munkicommon.run_embedded_script(
                     'postuninstall_script', item)
                 if retcode:
                     # we won't consider postuninstall script failures as fatal
@@ -719,7 +719,7 @@ def run(only_unattended=False):
                 installinfo['removals'] = skipped_removals
 
         if "managed_installs" in installinfo:
-            if not munkicommon.stopRequested():
+            if not munkicommon.stop_requested():
                 # filter list to items that need to be installed
                 installlist = [item for item in
                                installinfo['managed_installs']

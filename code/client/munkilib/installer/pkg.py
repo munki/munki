@@ -236,7 +236,7 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
     restartflag = False
     installitems = osutils.listdir(dirpath)
     for item in installitems:
-        if processes.stopRequested():
+        if processes.stop_requested():
             return (retcode, restartflag)
         itempath = os.path.join(dirpath, item)
         if pkgutils.hasValidDiskImageExt(item):
@@ -245,7 +245,7 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
             if mountpoints == []:
                 display.display_error("No filesystems mounted from %s", item)
                 return (retcode, restartflag)
-            if processes.stopRequested():
+            if processes.stop_requested():
                 dmgutils.unmountdmg(mountpoints[0])
                 return (retcode, restartflag)
             for mountpoint in mountpoints:

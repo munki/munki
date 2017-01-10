@@ -74,7 +74,7 @@ def earliestForceInstallDate():
             force_install_date = install.get('force_install_after_date')
 
             if force_install_date:
-                force_install_date = munkicommon.subtractTimeZoneOffsetFromDate(
+                force_install_date = munkicommon.subtract_tzoffset_from_date(
                     force_install_date)
                 if not earliest_date or force_install_date < earliest_date:
                     earliest_date = force_install_date
@@ -90,7 +90,7 @@ def alertUserOfForcedLogout(info=None):
       info: dict of data to send with the notification.
     '''
     consoleuser = munkicommon.getconsoleuser()
-    if not munkicommon.findProcesses(
+    if not munkicommon.find_processes(
         exe="/Applications/Managed Software Center.app",
         user=consoleuser):
         # Managed Software Center.app isn't running.
@@ -195,7 +195,7 @@ def main():
 
     if munkicommon.currentGUIusers() and earliestForceInstallDate():
         log('Beginning forced logout')
-        munkicommon.forceLogoutNow()
+        munkicommon.force_logout_now()
     log('exited')
     exit(0)
 

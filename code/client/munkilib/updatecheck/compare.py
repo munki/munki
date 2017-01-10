@@ -102,7 +102,7 @@ def compare_application_version(app):
         'Looking for application %s with bundleid: %s, version %s...' %
         (name, bundleid, versionstring))
     appinfo = []
-    appdata = info.getAppData()
+    appdata = info.app_data()
     if appdata:
         for item in appdata:
             # Skip applications in /Users but not /Users/Shared, for now.
@@ -412,7 +412,7 @@ def get_installed_version(item_plist):
                 except FoundationPlist.NSPropertyListSerializationException:
                     # that didn't work, fall through to the slow way
                     appinfo = []
-                    appdata = info.getAppData()
+                    appdata = info.app_data()
                     if appdata:
                         for ad_item in appdata:
                             if bundleid and ad_item['bundleid'] == bundleid:

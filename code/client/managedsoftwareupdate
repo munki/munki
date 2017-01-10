@@ -696,7 +696,7 @@ def main():
                 if not munkicommon.pythonScriptRunning(myname):
                     break
                 # or user clicks Stop
-                if munkicommon.stopRequested():
+                if munkicommon.stop_requested():
                     break
                 time.sleep(0.5)
         else:
@@ -795,7 +795,7 @@ def main():
             'InstallAppleSoftwareUpdates')
 
     if should_do_apple_updates:
-        if not options.installonly and not munkicommon.stopRequested():
+        if not options.installonly and not munkicommon.stop_requested():
             force_update_check = False
             force_catalog_refresh = False
             if options.manualcheck or runtype == 'checkandinstallatstartup':
@@ -887,7 +887,7 @@ def main():
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because system is not idle '
                                     '(keyboard or mouse activity).')
-                elif munkicommon.isAppRunning(
+                elif munkicommon.is_app_running(
                         '/System/Library/CoreServices/FileSyncAgent.app'):
                     munkicommon.log('Skipping auto install at loginwindow '
                                     'because FileSyncAgent.app is running '
@@ -966,7 +966,7 @@ def main():
     munkicommon.report['EndTime'] = munkicommon.format_time()
     munkicommon.report['ManagedInstallVersion'] = munkicommon.get_version()
     munkicommon.report['AvailableDiskSpace'] = \
-                                        munkicommon.getAvailableDiskSpace()
+                                        munkicommon.available_disk_space()
     munkicommon.report['ConsoleUser'] = munkicommon.getconsoleuser() or \
                                         '<None>'
     munkicommon.savereport()
