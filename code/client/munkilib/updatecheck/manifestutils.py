@@ -26,9 +26,12 @@ Functions for working with manifest files
 import os
 import urllib2
 
+from .. import display
 from .. import fetch
+from .. import info
 from .. import keychain
-from .. import munkicommon
+from .. import prefs
+from .. import reports
 from .. import FoundationPlist
 
 
@@ -77,19 +80,19 @@ def get_manifest(manifest_name, suppress_errors=False):
     if manifest_name in _MANIFESTS:
         return _MANIFESTS[manifest_name]
 
-    manifestbaseurl = (munkicommon.pref('ManifestURL') or
-                       munkicommon.pref('SoftwareRepoURL') + '/manifests/')
+    manifestbaseurl = (prefs.pref('ManifestURL') or
+                       prefs.pref('SoftwareRepoURL') + '/manifests/')
     if (not manifestbaseurl.endswith('?') and
             not manifestbaseurl.endswith('/')):
         manifestbaseurl = manifestbaseurl + '/'
-    manifest_dir = os.path.join(munkicommon.pref('ManagedInstallDir'),
+    manifest_dir = os.path.join(prefs.pref('ManagedInstallDir'),
                                 'manifests')
 
     manifesturl = (
         manifestbaseurl + urllib2.quote(manifest_name.encode('UTF-8')))
 
-    munkicommon.display_debug2('Manifest base URL is: %s', manifestbaseurl)
-    munkicommon.display_detail('Getting manifest %s...', manifest_name)
+    display.display_debug2('Manifest base URL is: %s', manifestbaseurl)
+    display.display_detail('Getting manifest %s...', manifest_name)
     manifestpath = os.path.join(manifest_dir, manifest_name)
 
     # Create the folder the manifest shall be stored in
@@ -100,7 +103,7 @@ def get_manifest(manifest_name, suppress_errors=False):
         # OSError will be raised if destinationdir exists, ignore this case
         if not os.path.isdir(destinationdir):
             if not suppress_errors:
-                munkicommon.display_error(
+                display.display_error(
                     'Could not create folder to store manifest %s: %s',
                     manifest_name, err
                 )
@@ -114,7 +117,7 @@ def get_manifest(manifest_name, suppress_errors=False):
         raise ManifestServerConnectionException(err)
     except fetch.Error, err:
         if not suppress_errors:
-            munkicommon.display_error(
+            display.display_error(
                 'Could not retrieve manifest %s from the server: %s',
                 manifest_name, err)
         raise ManifestNotRetrievedException(err)
@@ -124,7 +127,7 @@ def get_manifest(manifest_name, suppress_errors=False):
         dummy_data = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
         errormsg = 'manifest returned for %s is invalid.' % manifest_name
-        munkicommon.display_error(errormsg)
+        display.display_error(errormsg)
         try:
             os.unlink(manifestpath)
         except (OSError, IOError):
@@ -142,13 +145,13 @@ def get_primary_manifest(alternate_id=''):
 
     if alternate_id:
         clientidentifier = alternate_id
-    elif (munkicommon.pref('UseClientCertificate') and
-          munkicommon.pref('UseClientCertificateCNAsClientIdentifier')):
+    elif (prefs.pref('UseClientCertificate') and
+          prefs.pref('UseClientCertificateCNAsClientIdentifier')):
         # we're to use the client cert CN as the clientidentifier
         clientidentifier = keychain.get_client_cert_common_name()
     else:
         # get the ClientIdentifier from Munki's preferences
-        clientidentifier = munkicommon.pref('ClientIdentifier')
+        clientidentifier = prefs.pref('ClientIdentifier')
 
     if clientidentifier:
         manifest = get_manifest(clientidentifier)
@@ -156,7 +159,7 @@ def get_primary_manifest(alternate_id=''):
         # no client identifier specified, so try the hostname
         hostname = os.uname()[1]
         clientidentifier = hostname
-        munkicommon.display_detail(
+        display.display_detail(
             'No client id specified. Requesting %s...', clientidentifier)
         try:
             manifest = get_manifest(clientidentifier, suppress_errors=True)
@@ -166,7 +169,7 @@ def get_primary_manifest(alternate_id=''):
         if not manifest:
             # try the short hostname
             clientidentifier = hostname.split('.')[0]
-            munkicommon.display_detail(
+            display.display_detail(
                 'Request failed. Trying %s...', clientidentifier)
             try:
                 manifest = get_manifest(
@@ -176,9 +179,9 @@ def get_primary_manifest(alternate_id=''):
 
         if not manifest:
             # try the machine serial number
-            clientidentifier = munkicommon.getMachineFacts()['serial_number']
+            clientidentifier = info.getMachineFacts()['serial_number']
             if clientidentifier != 'UNKNOWN':
-                munkicommon.display_detail(
+                display.display_detail(
                     'Request failed. Trying %s...', clientidentifier)
                 try:
                     manifest = get_manifest(
@@ -189,22 +192,22 @@ def get_primary_manifest(alternate_id=''):
         if not manifest:
             # last resort - try for the site_default manifest
             clientidentifier = 'site_default'
-            munkicommon.display_detail(
+            display.display_detail(
                 'Request failed. Trying %s...', clientidentifier)
             manifest = get_manifest(clientidentifier, suppress_errors=True)
 
     # record this info for later
     # primary manifest is tagged as PRIMARY_MANIFEST_TAG
     _MANIFESTS[PRIMARY_MANIFEST_TAG] = manifest
-    munkicommon.report['ManifestName'] = clientidentifier
-    munkicommon.display_detail('Using manifest: %s', clientidentifier)
+    reports.report['ManifestName'] = clientidentifier
+    display.display_detail('Using manifest: %s', clientidentifier)
     return manifest
 
 
 def clean_up_manifests():
     """Removes any manifest files that are no longer in use by this client"""
     manifest_dir = os.path.join(
-        munkicommon.pref('ManagedInstallDir'), 'manifests')
+        prefs.pref('ManagedInstallDir'), 'manifests')
 
     exceptions = [
         "SelfServeManifest"
@@ -238,15 +241,15 @@ def get_manifest_data(manifestpath):
     try:
         plist = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
-        munkicommon.display_error('Could not read plist: %s', manifestpath)
+        display.display_error('Could not read plist: %s', manifestpath)
         if os.path.exists(manifestpath):
             try:
                 os.unlink(manifestpath)
             except OSError, err:
-                munkicommon.display_error(
+                display.display_error(
                     'Failed to delete plist: %s', unicode(err))
         else:
-            munkicommon.display_error('plist does not exist.')
+            display.display_error('plist does not exist.')
     return plist
 
 
@@ -256,10 +259,10 @@ def get_manifest_value_for_key(manifestpath, keyname):
     try:
         return plist.get(keyname, None)
     except AttributeError, err:
-        munkicommon.display_error(
+        display.display_error(
             'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
-        munkicommon.display_error(
+        display.display_error(
             'Manifest is likely corrupt: %s', unicode(err))
         return None
 
