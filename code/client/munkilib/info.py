@@ -50,9 +50,6 @@ from . import reports
 from . import utils
 from . import FoundationPlist
 
-# we use lots of camelCase-style names. Deal with it.
-# pylint: disable=C0103
-
 
 # Always ignore these directories when discovering applications.
 APP_DISCOVERY_EXCLUSION_DIRS = set([
@@ -69,38 +66,39 @@ class TimeoutError(Error):
     """Timeout limit exceeded since last I/O."""
 
 
-def set_file_nonblock(f, non_blocking=True):
+def set_file_nonblock(fileobj, non_blocking=True):
     """Set non-blocking flag on a file object.
 
     Args:
-      f: file
+      fileobj: file
       non_blocking: bool, default True, non-blocking mode or not
     """
-    flags = fcntl.fcntl(f.fileno(), fcntl.F_GETFL)
+    flags = fcntl.fcntl(fileobj.fileno(), fcntl.F_GETFL)
     if bool(flags & os.O_NONBLOCK) != non_blocking:
         flags ^= os.O_NONBLOCK
-    fcntl.fcntl(f.fileno(), fcntl.F_SETFL, flags)
+    fcntl.fcntl(fileobj.fileno(), fcntl.F_SETFL, flags)
 
 
 class Popen(subprocess.Popen):
     """Subclass of subprocess.Popen to add support for timeouts."""
 
-    def timed_readline(self, f, timeout):
+    def timed_readline(self, fileobj, timeout):
         """Perform readline-like operation with timeout.
 
         Args:
-            f: file object to .readline() on
+            fileobj: file object to .readline() on
             timeout: int, seconds of inactivity to raise error at
         Raises:
             TimeoutError, if timeout is reached
         """
-        set_file_nonblock(f)
+        # pylint: disable=no-self-use
+        set_file_nonblock(fileobj)
 
         output = []
         inactive = 0
         while 1:
             (rlist, dummy_wlist, dummy_xlist) = select.select(
-                [f], [], [], 1.0)
+                [fileobj], [], [], 1.0)
 
             if not rlist:
                 inactive += 1  # approx -- py select doesn't return tv
@@ -108,12 +106,12 @@ class Popen(subprocess.Popen):
                     break
             else:
                 inactive = 0
-                c = f.read(1)
-                output.append(c)  # keep newline
-                if c == '' or c == '\n':
+                char = fileobj.read(1)
+                output.append(char)  # keep newline
+                if char == '' or char == '\n':
                     break
 
-        set_file_nonblock(f, non_blocking=False)
+        set_file_nonblock(fileobj, non_blocking=False)
 
         if inactive >= timeout:
             raise TimeoutError  # note, an incomplete line can be lost
@@ -131,6 +129,7 @@ class Popen(subprocess.Popen):
         Raises:
             TimeoutError, if timeout is reached
         """
+        # pylint: disable=arguments-differ
         if timeout <= 0:
             return super(Popen, self).communicate(input=std_in)
 
@@ -160,24 +159,24 @@ class Popen(subprocess.Popen):
                     raise TimeoutError
             else:
                 inactive = 0
-                for fd in rlist:
-                    if fd is self.stdout:
-                        stdout.append(fd.read())
-                    elif fd is self.stderr:
-                        stderr.append(fd.read())
+                for filedescr in rlist:
+                    if filedescr is self.stdout:
+                        stdout.append(filedescr.read())
+                    elif filedescr is self.stderr:
+                        stderr.append(filedescr.read())
 
             returncode = self.poll()
 
         if self.stdout is not None:
-            stdout = ''.join(stdout)
+            stdout_str = ''.join(stdout)
         else:
-            stdout = None
+            stdout_str = None
         if self.stderr is not None:
-            stderr = ''.join(stderr)
+            stderr_str = ''.join(stderr)
         else:
-            stderr = None
+            stderr_str = None
 
-        return (stdout, stderr)
+        return (stdout_str, stderr_str)
 
 
 def _unsigned(i):
@@ -186,7 +185,7 @@ def _unsigned(i):
     return i & 0xFFFFFFFF
 
 
-def _asciizToStr(a_string):
+def _asciiz_to_str(a_string):
     """Transform a null-terminated string of any length into a Python str.
     Returns a normal Python str that has been terminated.
     """
@@ -196,7 +195,7 @@ def _asciizToStr(a_string):
     return a_string
 
 
-def _fFlagsToSet(f_flags):
+def _f_flags_to_set(f_flags):
     """Transform an int f_flags parameter into a set of mount options.
     Returns a set.
     """
@@ -213,7 +212,7 @@ def _fFlagsToSet(f_flags):
     return flags
 
 
-def getFilesystems():
+def get_filesystems():
     """Get a list of all mounted filesystems on this system.
 
     Return value is dict, e.g. {
@@ -228,7 +227,7 @@ def getFilesystems():
     static for multiple mount instances.
     """
 
-    MNT_NOWAIT = 2
+    mnt_nowait = 2
 
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
     # see man GETFSSTAT(2) for struct
@@ -253,19 +252,19 @@ def getFilesystems():
         # some 10.6 boxes return 64-bit structures on getfsstat(), some do not.
         # forcefully call the 64-bit version in cases where we think
         # a 64-bit struct will be returned.
-        n = libc.getfsstat64(ctypes.byref(buf), bufsize, MNT_NOWAIT)
+        no_of_structs = libc.getfsstat64(ctypes.byref(buf), bufsize, mnt_nowait)
     else:
-        n = libc.getfsstat(ctypes.byref(buf), bufsize, MNT_NOWAIT)
+        no_of_structs = libc.getfsstat(ctypes.byref(buf), bufsize, mnt_nowait)
 
-    if n < 0:
-        display.display_debug1('getfsstat() returned errno %d' % n)
+    if no_of_structs < 0:
+        display.display_debug1('getfsstat() returned errno %d' % no_of_structs)
         return {}
 
     ofs = 0
     output = {}
     # struct_unpack returns lots of values, but we use only a few
     # pylint: disable=unused-variable
-    for i in xrange(0, n):
+    for i in xrange(0, no_of_structs):
         if mode == 64:
             (f_bsize, f_iosize, f_blocks, f_bfree, f_bavail, f_files,
              f_ffree, f_fsid_0, f_fsid_1, f_owner, f_type, f_flags,
@@ -280,12 +279,12 @@ def getFilesystems():
                  statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
 
         try:
-            st = os.stat(_asciizToStr(f_mntonname))
-            output[st.st_dev] = {
-                'f_flags_set': _fFlagsToSet(f_flags),
-                'f_fstypename': _asciizToStr(f_fstypename),
-                'f_mntonname': _asciizToStr(f_mntonname),
-                'f_mntfromname': _asciizToStr(f_mntfromname),
+            stat_val = os.stat(_asciiz_to_str(f_mntonname))
+            output[stat_val.st_dev] = {
+                'f_flags_set': _f_flags_to_set(f_flags),
+                'f_fstypename': _asciiz_to_str(f_fstypename),
+                'f_mntonname': _asciiz_to_str(f_mntonname),
+                'f_mntfromname': _asciiz_to_str(f_mntfromname),
             }
         except OSError:
             pass
@@ -297,7 +296,7 @@ def getFilesystems():
 
 
 FILESYSTEMS = {}
-def isExcludedFilesystem(path, _retry=False):
+def is_excluded_filesystem(path, _retry=False):
     """Gets filesystem information for a path and determine if it should be
     excluded from application searches.
 
@@ -317,29 +316,29 @@ def isExcludedFilesystem(path, _retry=False):
             return True
 
     if not FILESYSTEMS or _retry:
-        FILESYSTEMS = getFilesystems()
+        FILESYSTEMS = get_filesystems()
 
     try:
-        st = os.stat(path)
+        stat_val = os.stat(path)
     except OSError:
-        st = None
+        stat_val = None
 
-    if st is None or st.st_dev not in FILESYSTEMS:
+    if stat_val is None or stat_val.st_dev not in FILESYSTEMS:
         if not _retry:
             # perhaps the stat() on the path caused autofs to mount
             # the required filesystem and now it will be available.
             # try one more time to look for it after flushing the cache.
             display.display_debug1(
                 'Trying isExcludedFilesystem again for %s' % path)
-            return isExcludedFilesystem(path, True)
+            return is_excluded_filesystem(path, True)
         else:
             display.display_debug1(
                 'Could not match path %s to a filesystem' % path)
             return None
 
-    exc_flags = ('read-only' in FILESYSTEMS[st.st_dev]['f_flags_set'] or
-                 'local' not in FILESYSTEMS[st.st_dev]['f_flags_set'])
-    is_nfs = FILESYSTEMS[st.st_dev]['f_fstypename'] == 'nfs'
+    exc_flags = ('read-only' in FILESYSTEMS[stat_val.st_dev]['f_flags_set'] or
+                 'local' not in FILESYSTEMS[stat_val.st_dev]['f_flags_set'])
+    is_nfs = FILESYSTEMS[stat_val.st_dev]['f_fstypename'] == 'nfs'
 
     if is_nfs or exc_flags:
         display.display_debug1(
@@ -348,7 +347,7 @@ def isExcludedFilesystem(path, _retry=False):
     return is_nfs or exc_flags
 
 
-def findAppsInDirs(dirlist):
+def find_apps_in_dirs(dirlist):
     """Do spotlight search for type applications within the
     list of directories provided. Returns a list of paths to applications
     these appear to always be some form of unicode string.
@@ -378,14 +377,14 @@ def findAppsInDirs(dirlist):
             'volume; Spotlight is reindexing a volume.')
 
     for item in query.results():
-        p = item.valueForAttribute_('kMDItemPath')
-        if p and not isExcludedFilesystem(p):
-            applist.append(p)
+        pathname = item.valueForAttribute_('kMDItemPath')
+        if pathname and not is_excluded_filesystem(pathname):
+            applist.append(pathname)
 
     return applist
 
 
-def getSpotlightInstalledApplications():
+def spotlight_installed_apps():
     """Get paths of currently installed applications per Spotlight.
     Return value is list of paths.
     Excludes most non-boot volumes.
@@ -394,31 +393,31 @@ def getSpotlightInstalledApplications():
     dirlist = []
     applist = []
 
-    for f in osutils.listdir(u'/'):
-        p = os.path.join(u'/', f)
-        if os.path.isdir(p) and not os.path.islink(p) \
-                            and not isExcludedFilesystem(p):
-            if f.endswith('.app'):
-                applist.append(p)
+    for filename in osutils.listdir(u'/'):
+        pathname = os.path.join(u'/', filename)
+        if (os.path.isdir(pathname) and not os.path.islink(pathname) and
+                not is_excluded_filesystem(pathname)):
+            if filename.endswith('.app'):
+                applist.append(pathname)
             else:
-                dirlist.append(p)
+                dirlist.append(pathname)
 
     # Future code changes may mean we wish to look for Applications
     # installed on any r/w local volume.
     #for f in osutils.listdir(u'/Volumes'):
     #    p = os.path.join(u'/Volumes', f)
     #    if os.path.isdir(p) and not os.path.islink(p) \
-    #                        and not isExcludedFilesystem(p):
+    #                        and not is_excluded_filesystem(p):
     #        dirlist.append(p)
 
     # /Users is not currently excluded, so no need to add /Users/Shared.
     #dirlist.append(u'/Users/Shared')
 
-    applist.extend(findAppsInDirs(dirlist))
+    applist.extend(find_apps_in_dirs(dirlist))
     return applist
 
 
-def getLSInstalledApplications():
+def launchservices_installed_apps():
     """Get paths of currently installed applications per LaunchServices.
     Return value is list of paths.
     Ignores apps installed on other volumes
@@ -433,7 +432,7 @@ def getLSInstalledApplications():
     applist = []
     for app in apps:
         app_path = app.path()
-        if (app_path and not isExcludedFilesystem(app_path) and
+        if (app_path and not is_excluded_filesystem(app_path) and
                 os.path.exists(app_path)):
             applist.append(app_path)
 
@@ -441,7 +440,7 @@ def getLSInstalledApplications():
 
 
 @utils.Memoize
-def getSPApplicationData():
+def sp_application_data():
     '''Uses system profiler to get application info for this machine'''
     cmd = ['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-xml']
     # uses our internal Popen instead of subprocess's so we can timeout
@@ -458,23 +457,23 @@ def getSPApplicationData():
     try:
         plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array
-        app_data = {}
+        application_data = {}
         for item in plist[0]['_items']:
-            app_data[item.get('path')] = item
+            application_data[item.get('path')] = item
     except BaseException:
-        app_data = {}
-    return app_data
+        application_data = {}
+    return application_data
 
 
 @utils.Memoize
-def getAppData():
+def app_data():
     """Gets info on currently installed apps.
     Returns a list of dicts containing path, name, version and bundleid"""
-    app_data = []
+    application_data = []
     display.display_debug1(
         'Getting info on currently installed applications...')
-    applist = set(getLSInstalledApplications())
-    applist.update(getSpotlightInstalledApplications())
+    applist = set(launchservices_installed_apps())
+    applist.update(spotlight_installed_apps())
     for pathname in applist:
         iteminfo = {}
         iteminfo['name'] = os.path.splitext(os.path.basename(pathname))[0]
@@ -487,21 +486,21 @@ def getAppData():
                 if 'CFBundleName' in plist:
                     iteminfo['name'] = plist['CFBundleName']
                 iteminfo['version'] = pkgutils.getBundleVersion(pathname)
-                app_data.append(iteminfo)
+                application_data.append(iteminfo)
             except BaseException:
                 pass
         else:
             # possibly a non-bundle app. Use system_profiler data
             # to get app name and version
-            sp_app_data = getSPApplicationData()
+            sp_app_data = sp_application_data()
             if pathname in sp_app_data:
                 item = sp_app_data[pathname]
                 iteminfo['bundleid'] = ''
                 iteminfo['version'] = item.get('version') or '0.0.0.0.0'
                 if item.get('_name'):
                     iteminfo['name'] = item['_name']
-                app_data.append(iteminfo)
-    return app_data
+                application_data.append(iteminfo)
+    return application_data
 
 
 @utils.Memoize
@@ -575,7 +574,7 @@ def get_ip_addresses(kind):
     return ip_addresses
 
 
-def getIntel64Support():
+def has_intel64support():
     """Does this machine support 64-bit Intel instruction set?"""
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
 
@@ -589,7 +588,7 @@ def getIntel64Support():
     return buf.value == 1
 
 
-def getAvailableDiskSpace(volumepath='/'):
+def available_disk_space(volumepath='/'):
     """Returns available diskspace in KBytes.
 
     Args:
@@ -600,19 +599,20 @@ def getAvailableDiskSpace(volumepath='/'):
     if volumepath is None:
         volumepath = '/'
     try:
-        st = os.statvfs(volumepath)
-    except OSError, e:
+        stat_val = os.statvfs(volumepath)
+    except OSError, err:
         display.display_error(
-            'Error getting disk space in %s: %s', volumepath, str(e))
+            'Error getting disk space in %s: %s', volumepath, str(err))
         return 0
-
-    return int(st.f_frsize * st.f_bavail / 1024) # f_bavail matches df(1) output
+     # f_bavail matches df(1) output
+    return int(stat_val.f_frsize * stat_val.f_bavail / 1024)
 
 
 @utils.Memoize
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
     installer is applicable to this OS or hardware"""
+    # pylint: disable=C0103
     machine = dict()
     machine['hostname'] = os.uname()[1]
     machine['arch'] = os.uname()[4]
@@ -627,11 +627,11 @@ def getMachineFacts():
     if machine['arch'] == 'x86_64':
         machine['x86_64_capable'] = True
     elif machine['arch'] == 'i386':
-        machine['x86_64_capable'] = getIntel64Support()
+        machine['x86_64_capable'] = has_intel64support()
     return machine
 
 
-def validPlist(path):
+def valid_plist(path):
     """Uses plutil to determine if path contains a valid plist.
     Returns True or False."""
     retcode = subprocess.call(['/usr/bin/plutil', '-lint', '-s', path])
@@ -639,7 +639,7 @@ def validPlist(path):
 
 
 @utils.Memoize
-def getConditions():
+def get_conditions():
     """Fetches key/value pairs from condition scripts
     which can be placed into /usr/local/munki/conditions"""
     # define path to conditions directory which would contain
@@ -676,7 +676,7 @@ def getConditions():
         # /usr/local/munki/conditions does not exist
         pass
     if (os.path.exists(conditionalitemspath) and
-            validPlist(conditionalitemspath)):
+            valid_plist(conditionalitemspath)):
         # import conditions into conditions dict
         conditions = FoundationPlist.readPlist(conditionalitemspath)
         os.unlink(conditionalitemspath)
@@ -689,11 +689,11 @@ def getConditions():
 
 def saveappdata():
     """Save installed application data"""
-    # data from getAppData() is meant for use by updatecheck
+    # data from app_data() is meant for use by updatecheck
     # we need to massage it a bit for more general usage
     munkilog.log('Saving application inventory...')
     app_inventory = []
-    for item in getAppData():
+    for item in app_data():
         inventory_item = {}
         inventory_item['CFBundleName'] = item.get('name')
         inventory_item['bundleid'] = item.get('bundleid')
@@ -714,7 +714,7 @@ def saveappdata():
 
 
 # conditional/predicate info functions
-def subtractTimeZoneOffsetFromDate(the_date):
+def subtract_tzoffset_from_date(the_date):
     """Input: NSDate object
     Output: NSDate object with same date and time as the UTC.
     In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
@@ -726,14 +726,14 @@ def subtractTimeZoneOffsetFromDate(the_date):
     after 2011-06-20 12:00:00 local time.
     """
     # find our time zone offset in seconds
-    tz = NSTimeZone.defaultTimeZone()
-    seconds_offset = tz.secondsFromGMTForDate_(the_date)
+    timezone = NSTimeZone.defaultTimeZone()
+    seconds_offset = timezone.secondsFromGMTForDate_(the_date)
     # return new NSDate minus local_offset
     return NSDate.alloc(
         ).initWithTimeInterval_sinceDate_(-seconds_offset, the_date)
 
 
-def addTimeZoneOffsetToDate(the_date):
+def add_tzoffset_to_date(the_date):
     """Input: NSDate object
     Output: NSDate object with timezone difference added
     to the date. This allows conditional_item conditions to
@@ -746,24 +746,24 @@ def addTimeZoneOffsetToDate(the_date):
 
     """
     # find our time zone offset in seconds
-    tz = NSTimeZone.defaultTimeZone()
-    seconds_offset = tz.secondsFromGMTForDate_(the_date)
+    timezone = NSTimeZone.defaultTimeZone()
+    seconds_offset = timezone.secondsFromGMTForDate_(the_date)
     # return new NSDate minus local_offset
     return NSDate.alloc(
         ).initWithTimeInterval_sinceDate_(seconds_offset, the_date)
 
 
 @utils.Memoize
-def predicateInfoObject():
+def predicate_info_object():
     '''Returns our info object used for predicate comparisons'''
     info_object = {}
     machine = getMachineFacts()
     info_object.update(machine)
-    info_object.update(getConditions())
+    info_object.update(get_conditions())
     # use our start time for "current" date (if we have it)
     # and add the timezone offset to it so we can compare
     # UTC dates as though they were local dates.
-    info_object['date'] = addTimeZoneOffsetToDate(
+    info_object['date'] = add_tzoffset_to_date(
         NSDate.dateWithString_(
             reports.report.get('StartTime', reports.format_time())))
     os_vers = machine['os_vers']
@@ -778,10 +778,10 @@ def predicateInfoObject():
     return info_object
 
 
-def predicateEvaluatesAsTrue(predicate_string, additional_info=None):
+def predicate_evaluates_as_true(predicate_string, additional_info=None):
     '''Evaluates predicate against our info object'''
     display.display_debug1('Evaluating predicate: %s', predicate_string)
-    info_object = predicateInfoObject()
+    info_object = predicate_info_object()
     if isinstance(additional_info, dict):
         info_object.update(additional_info)
     try:

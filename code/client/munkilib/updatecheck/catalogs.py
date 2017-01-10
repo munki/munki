@@ -536,7 +536,7 @@ def get_item_detail(name, cataloglist, vers=''):
         the rejected_items list.'''
 
         if item.get('installable_condition'):
-            if not info.predicateEvaluatesAsTrue(item['installable_condition']):
+            if not info.predicate_evaluates_as_true(item['installable_condition']):
                 reason = (
                     'Rejected item %s, version %s with installable_condition: '
                     '%s.' % (item['name'], item['version'],

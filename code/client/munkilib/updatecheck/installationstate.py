@@ -50,7 +50,7 @@ def installed_state(item_pl):
         return 0
 
     if item_pl.get('installcheck_script'):
-        retcode = scriptutils.runEmbeddedScript(
+        retcode = scriptutils.run_embedded_script(
             'installcheck_script', item_pl, suppress_error=True)
         display.display_debug1('installcheck_script returned %s', retcode)
         # retcode 0 means install is needed
@@ -144,7 +144,7 @@ def some_version_installed(item_pl):
         return False
 
     if item_pl.get('installcheck_script'):
-        retcode = scriptutils.runEmbeddedScript(
+        retcode = scriptutils.run_embedded_script(
             'installcheck_script', item_pl, suppress_error=True)
         display.display_debug1(
             'installcheck_script returned %s', retcode)
@@ -209,7 +209,7 @@ def evidence_this_is_installed(item_pl):
         return False
 
     if item_pl.get('uninstallcheck_script'):
-        retcode = scriptutils.runEmbeddedScript(
+        retcode = scriptutils.run_embedded_script(
             'uninstallcheck_script', item_pl, suppress_error=True)
         display.display_debug1(
             'uninstallcheck_script returned %s', retcode)
@@ -222,7 +222,7 @@ def evidence_this_is_installed(item_pl):
         return False
 
     if item_pl.get('installcheck_script'):
-        retcode = scriptutils.runEmbeddedScript(
+        retcode = scriptutils.run_embedded_script(
             'installcheck_script', item_pl, suppress_error=True)
         display.display_debug1(
             'installcheck_script returned %s', retcode)

@@ -47,7 +47,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_with_exact_path_match(self, ps_mock):
         print("Testing isAppRunning with exact path match...")
         self.assertEqual(
-            processes.isAppRunning('/Applications/Firefox.app/Contents/MacOS/firefox'),
+            processes.is_app_running('/Applications/Firefox.app/Contents/MacOS/firefox'),
             True
         )
 
@@ -55,7 +55,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_with_exact_path_no_match(self, ps_mock):
         print("Testing isAppRunning with exact path no matches...")
         self.assertEqual(
-            processes.isAppRunning('/usr/local/bin/bonzi'),
+            processes.is_app_running('/usr/local/bin/bonzi'),
             False
         )
 
@@ -63,7 +63,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_by_filename_match(self, ps_mock):
         print("Testing isAppRunning with file name match...")
         self.assertEqual(
-            processes.isAppRunning('Firefox.app'),
+            processes.is_app_running('Firefox.app'),
             True
         )
 
@@ -71,7 +71,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_by_filename_no_match(self, ps_mock):
         print("Testing isAppRunning with file name no matches...")
         self.assertEqual(
-            processes.isAppRunning('BonziBUDDY.app'),
+            processes.is_app_running('BonziBUDDY.app'),
             False
         )
 
@@ -79,7 +79,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_by_executable_name_match(self, ps_mock):
         print("Testing isAppRunning with executable name match...")
         self.assertEqual(
-            processes.isAppRunning('firefox'),
+            processes.is_app_running('firefox'),
             True
         )
 
@@ -87,7 +87,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_by_executable_name_no_match(self, ps_mock):
         print("Testing isAppRunning with executable name no matches...")
         self.assertEqual(
-            processes.isAppRunning('bonzi'),
+            processes.is_app_running('bonzi'),
             False
         )
 
@@ -95,7 +95,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_name_with_dot_app_match(self, ps_mock):
         print("Testing isAppRunning with name plus .app match...")
         self.assertEqual(
-            processes.isAppRunning('Firefox'),
+            processes.is_app_running('Firefox'),
             True
         )
 
@@ -103,7 +103,7 @@ class TestIsAppRunning(unittest.TestCase):
     def test_app_name_with_dot_app_no_match(self, ps_mock):
         print("Testing isAppRunning with name plus .app match...")
         self.assertEqual(
-            processes.isAppRunning('BonziBUDDY'),
+            processes.is_app_running('BonziBUDDY'),
             False
         )
 

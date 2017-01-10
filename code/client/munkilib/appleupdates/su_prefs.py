@@ -48,7 +48,7 @@ APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN = 'com.apple.SoftwareUpdate'
 ORIGINAL_CATALOG_URL_KEY = '_OriginalCatalogURL'
 
 
-def GetSoftwareUpdatePref(pref_name):
+def pref(pref_name):
     """Returns a preference from com.apple.SoftwareUpdate.
 
     Uses CoreFoundation.
@@ -60,14 +60,14 @@ def GetSoftwareUpdatePref(pref_name):
         pref_name, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
 
-def CatalogURLisManaged():
+def catalogurl_is_managed():
     """Returns True if Software Update's CatalogURL is managed
     via MCX or Profiles"""
     return CFPreferencesAppValueIsForced(
         'CatalogURL', APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
 
-def GetCatalogURL():
+def get_catalogurl():
     """Returns Software Update's CatalogURL"""
     return CFPreferencesCopyValue(
         'CatalogURL',
@@ -75,7 +75,7 @@ def GetCatalogURL():
         kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
 
 
-def SetCustomCatalogURL(catalog_url):
+def set_custom_catalogurl(catalog_url):
     """Sets Software Update's CatalogURL to custom value, storing the
     original"""
     software_update_key_list = CFPreferencesCopyKeyList(
@@ -83,7 +83,7 @@ def SetCustomCatalogURL(catalog_url):
         kCFPreferencesAnyUser, kCFPreferencesCurrentHost) or []
     if ORIGINAL_CATALOG_URL_KEY not in software_update_key_list:
         # store the original CatalogURL
-        original_catalog_url = GetCatalogURL()
+        original_catalog_url = get_catalogurl()
         if not original_catalog_url:
             # can't store None as a CFPreference
             original_catalog_url = ""
@@ -117,7 +117,7 @@ def SetCustomCatalogURL(catalog_url):
             display.display_error(err)
 
 
-def ResetOriginalCatalogURL():
+def reset_original_catalogurl():
     """Resets SoftwareUpdate's CatalogURL to the original value"""
     software_update_key_list = CFPreferencesCopyKeyList(
         APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,

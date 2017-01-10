@@ -35,7 +35,6 @@ import urlparse
 from Foundation import NSBundle
 # pylint: enable=E0611
 
-
 from . import su_prefs
 
 from .. import display
@@ -161,7 +160,7 @@ class AppleUpdateSync(object):
         self.local_download_catalog_path = os.path.join(
             self.local_catalog_dir, LOCAL_DOWNLOAD_CATALOG_NAME)
 
-    def GetAppleCatalogURL(self):
+    def get_apple_catalogurl(self):
         """Returns the catalog URL of the Apple SU catalog for the current Mac.
 
         Returns:
@@ -169,6 +168,7 @@ class AppleUpdateSync(object):
         Raises:
           CatalogNotFoundError: an Apple catalog was not found for this Mac.
         """
+        # pylint: disable=no-self-use
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         # Prefer Munki's preferences file in OS X <= 10.10
         munkisuscatalog = prefs.pref('SoftwareUpdateServerURL')
@@ -179,7 +179,7 @@ class AppleUpdateSync(object):
                 return munkisuscatalog
 
         # Otherwise prefer MCX or /Library/Preferences/com.apple.SoftwareUpdate
-        prefs_catalog_url = su_prefs.GetSoftwareUpdatePref('CatalogURL')
+        prefs_catalog_url = su_prefs.pref('CatalogURL')
         if prefs_catalog_url:
             return prefs_catalog_url
 
@@ -192,7 +192,7 @@ class AppleUpdateSync(object):
         raise CatalogNotFoundError(
             'No default Software Update CatalogURL for: %s' % os_version)
 
-    def ExtractAndCopyDownloadedCatalog(self, _open=open):
+    def copy_downloaded_catalog(self, _open=open):
         """Copy the downloaded catalog to a new file, extracting if gzipped.
 
         Args:
@@ -221,7 +221,7 @@ class AppleUpdateSync(object):
         fileref.write(contents)
         fileref.close()
 
-    def CacheAppleCatalog(self):
+    def cache_apple_catalog(self):
         """Caches a local copy of the current Apple SUS catalog.
 
         Raises:
@@ -230,7 +230,7 @@ class AppleUpdateSync(object):
           fetch.MunkiDownloadError: error downloading the catalog.
         """
         try:
-            catalog_url = self.GetAppleCatalogURL()
+            catalog_url = self.get_apple_catalogurl()
         except CatalogNotFoundError as err:
             display.display_error(unicode(err))
             raise
@@ -241,13 +241,13 @@ class AppleUpdateSync(object):
                 raise ReplicationError(oserr)
         display.display_detail('Caching CatalogURL %s', catalog_url)
         try:
-            dummy_file_changed = self.GetSoftwareUpdateResource(
+            dummy_file_changed = self.get_su_resource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
-            self.ExtractAndCopyDownloadedCatalog()
+            self.copy_downloaded_catalog()
         except fetch.Error:
             raise
 
-    def _GetURLPath(self, full_url):
+    def _get_url_path(self, full_url):
         """Returns only the URL path.
 
         Args:
@@ -258,7 +258,7 @@ class AppleUpdateSync(object):
         # pylint: disable=no-self-use
         return urlparse.urlsplit(full_url)[2]  # (schema, netloc, path, ...)
 
-    def RewriteURL(self, full_url):
+    def rewrite_url(self, full_url):
         """Rewrites a single URL to point to our local replica.
 
         Args:
@@ -270,9 +270,9 @@ class AppleUpdateSync(object):
             self.cache_dir)
         if full_url.startswith(local_base_url):
             return full_url  # url is already local, so just return it.
-        return local_base_url + self._GetURLPath(full_url)
+        return local_base_url + self._get_url_path(full_url)
 
-    def RewriteProductURLs(self, product, rewrite_pkg_urls=False):
+    def rewrite_product_urls(self, product, rewrite_pkg_urls=False):
         """Rewrites URLs in the product to point to our local cache.
 
         Args:
@@ -282,20 +282,20 @@ class AppleUpdateSync(object):
               rewritten, otherwise only MetadataURLs are rewritten.
         """
         if 'ServerMetadataURL' in product:
-            product['ServerMetadataURL'] = self.RewriteURL(
+            product['ServerMetadataURL'] = self.rewrite_url(
                 product['ServerMetadataURL'])
         for package in product.get('Packages', []):
             if rewrite_pkg_urls and 'URL' in package:
-                package['URL'] = self.RewriteURL(package['URL'])
+                package['URL'] = self.rewrite_url(package['URL'])
             if 'MetadataURL' in package:
-                package['MetadataURL'] = self.RewriteURL(
+                package['MetadataURL'] = self.rewrite_url(
                     package['MetadataURL'])
         distributions = product['Distributions']
         for dist_lang in distributions.keys():
-            distributions[dist_lang] = self.RewriteURL(
+            distributions[dist_lang] = self.rewrite_url(
                 distributions[dist_lang])
 
-    def RewriteCatalogURLs(self, catalog, rewrite_pkg_urls=False):
+    def rewrite_catalog_urls(self, catalog, rewrite_pkg_urls=False):
         """Rewrites URLs in a catalog to point to our local replica.
 
         Args:
@@ -307,9 +307,9 @@ class AppleUpdateSync(object):
 
         for product_key in catalog['Products'].keys():
             product = catalog['Products'][product_key]
-            self.RewriteProductURLs(product, rewrite_pkg_urls=rewrite_pkg_urls)
+            self.rewrite_product_urls(product, rewrite_pkg_urls=rewrite_pkg_urls)
 
-    def RetrieveURLToCacheDir(self, full_url, copy_only_if_missing=False):
+    def retrieve_url_to_cache_dir(self, full_url, copy_only_if_missing=False):
         """Downloads a URL and stores it in the same relative path on our
         filesystem. Returns a path to the replicated file.
 
@@ -320,7 +320,7 @@ class AppleUpdateSync(object):
         Returns:
           String path to the locally cached file.
         """
-        relative_url = os.path.normpath(self._GetURLPath(full_url).lstrip('/'))
+        relative_url = os.path.normpath(self._get_url_path(full_url).lstrip('/'))
         local_file_path = os.path.join(self.cache_dir, relative_url)
         local_dir_path = os.path.dirname(local_file_path)
         if copy_only_if_missing and os.path.exists(local_file_path):
@@ -331,13 +331,13 @@ class AppleUpdateSync(object):
             except OSError as oserr:
                 raise ReplicationError(oserr)
         try:
-            self.GetSoftwareUpdateResource(
+            self.get_su_resource(
                 full_url, local_file_path, resume=True)
         except fetch.Error as err:
             raise ReplicationError(err)
         return local_file_path
 
-    def GetSoftwareUpdateResource(self, url, destinationpath, resume=False):
+    def get_su_resource(self, url, destinationpath, resume=False):
         """Gets item from Apple Software Update Server.
 
         Args:
@@ -361,7 +361,7 @@ class AppleUpdateSync(object):
             url, destinationpath, custom_headers=[user_agent_header],
             resume=resume, follow_redirects=True)
 
-    def CacheUpdateMetadata(self, product_ids):
+    def cache_update_metadata(self, product_ids):
         """Copies ServerMetadata (.smd), Metadata (.pkm), and
         Distribution (.dist) files for the available updates to the local
         machine and writes a new sucatalog that refers to the local copies
@@ -373,48 +373,48 @@ class AppleUpdateSync(object):
             return
 
         for product_key in product_ids:
-            if processes.stopRequested():
+            if processes.stop_requested():
                 break
             display.display_status_minor(
                 'Caching metadata for product ID %s', product_key)
             product = catalog['Products'][product_key]
             if 'ServerMetadataURL' in product:
-                self.RetrieveURLToCacheDir(
+                self.retrieve_url_to_cache_dir(
                     product['ServerMetadataURL'], copy_only_if_missing=True)
 
             for package in product.get('Packages', []):
-                if processes.stopRequested():
+                if processes.stop_requested():
                     break
                 if 'MetadataURL' in package:
                     display.display_status_minor(
                         'Caching package metadata for product ID %s',
                         product_key)
-                    self.RetrieveURLToCacheDir(
+                    self.retrieve_url_to_cache_dir(
                         package['MetadataURL'], copy_only_if_missing=True)
                 # if 'URL' in package:
                 #    display.display_status_minor(
                 #        'Caching package for product ID %s',
                 #        product_key)
-                #    self.RetrieveURLToCacheDir(
+                #    self.retrieve_url_to_cache_dir(
                 #        package['URL'], copy_only_if_missing=True)
 
             distributions = product['Distributions']
             for dist_lang in distributions.keys():
-                if processes.stopRequested():
+                if processes.stop_requested():
                     break
                 display.display_status_minor(
                     'Caching %s distribution for product ID %s',
                     dist_lang, product_key)
                 dist_url = distributions[dist_lang]
                 try:
-                    self.RetrieveURLToCacheDir(
+                    self.retrieve_url_to_cache_dir(
                         dist_url, copy_only_if_missing=True)
                 except ReplicationError:
                     display.display_warning(
                         'Could not cache %s distribution for product ID %s',
                         dist_lang, product_key)
 
-        if processes.stopRequested():
+        if processes.stop_requested():
             return
 
         if not os.path.exists(self.local_catalog_dir):
@@ -424,16 +424,16 @@ class AppleUpdateSync(object):
                 raise ReplicationError(oserr)
 
         # rewrite metadata URLs to point to local caches.
-        self.RewriteCatalogURLs(catalog, rewrite_pkg_urls=False)
+        self.rewrite_catalog_urls(catalog, rewrite_pkg_urls=False)
         FoundationPlist.writePlist(
             catalog, self.local_download_catalog_path)
 
         # rewrite all URLs, including pkgs, to point to local caches.
-        self.RewriteCatalogURLs(catalog, rewrite_pkg_urls=True)
+        self.rewrite_catalog_urls(catalog, rewrite_pkg_urls=True)
         FoundationPlist.writePlist(
             catalog, self.local_catalog_path)
 
-    def _GetPreferredLocalization(self, list_of_localizations):
+    def _preferred_localization(self, list_of_localizations):
         '''Picks the best localization from a list of available
         localizations. Returns a single language/localization name.'''
         # pylint: disable=no-self-use
@@ -455,7 +455,7 @@ class AppleUpdateSync(object):
         # in the list of available languages
         return list_of_localizations[0]
 
-    def GetDistributionForProductKey(self, product_key, language=None):
+    def distribution_for_product_key(self, product_key, language=None):
         '''Returns the path to a distibution file from /Library/Updates
         or the local cache for the given product_key. If language is
         defined it will try to retrieve that specific language, otherwise
@@ -481,11 +481,11 @@ class AppleUpdateSync(object):
                 if language:
                     preferred_language = language
                 else:
-                    preferred_language = self._GetPreferredLocalization(
+                    preferred_language = self._preferred_localization(
                         available_languages)
                 url = distributions[preferred_language]
                 # do we already have it in /Library/Updates?
-                filename = os.path.basename(self._GetURLPath(url))
+                filename = os.path.basename(self._get_url_path(url))
                 dist_path = os.path.join(
                     '/Library/Updates', product_key, filename)
                 if os.path.exists(dist_path):
@@ -498,14 +498,14 @@ class AppleUpdateSync(object):
                         return dist_path
                 # we haven't downloaded this yet
                 try:
-                    return self.RetrieveURLToCacheDir(
+                    return self.retrieve_url_to_cache_dir(
                         url, copy_only_if_missing=True)
                 except ReplicationError, err:
                     display.display_error(
                         'Could not retrieve %s: %s', url, err)
         return None
 
-    def WriteFilteredCatalog(self, product_ids):
+    def write_filtered_catalog(self, product_ids):
         """Write out a sucatalog containing only the updates in product_ids.
 
         Args:

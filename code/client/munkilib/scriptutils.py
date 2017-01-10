@@ -32,10 +32,6 @@ from . import munkilog
 from . import munkistatus
 
 
-# we use lots of camelCase-style names. Deal with it.
-# pylint: disable=C0103
-
-
 def _writefile(stringdata, path):
     '''Writes string data to path.
     Returns the path on success, empty string on failure.'''
@@ -51,7 +47,7 @@ def _writefile(stringdata, path):
         return ""
 
 
-def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
+def run_embedded_script(scriptname, pkginfo_item, suppress_error=False):
     '''Runs a script embedded in the pkginfo.
     Returns the result code.'''
 
@@ -79,11 +75,11 @@ def runEmbeddedScript(scriptname, pkginfo_item, suppress_error=False):
         return -1
 
     # now run the script
-    return runScript(
+    return run_script(
         itemname, scriptpath, scriptname, suppress_error=suppress_error)
 
 
-def runScript(itemname, path, scriptname, suppress_error=False):
+def run_script(itemname, path, scriptname, suppress_error=False):
     '''Runs a script, Returns return code.'''
     if suppress_error:
         display.display_detail(

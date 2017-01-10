@@ -530,7 +530,7 @@ def initDatabase(forcerebuild=False):
     if os.path.exists(receiptsdir):
         receiptlist = osutils.listdir(receiptsdir)
         for item in receiptlist:
-            if processes.stopRequested():
+            if processes.stop_requested():
                 curs.close()
                 conn.close()
                 #our package db isn't valid, so we should delete it
@@ -547,7 +547,7 @@ def initDatabase(forcerebuild=False):
     if os.path.exists(bomsdir):
         bomslist = osutils.listdir(bomsdir)
         for item in bomslist:
-            if processes.stopRequested():
+            if processes.stop_requested():
                 curs.close()
                 conn.close()
                 #our package db isn't valid, so we should delete it
@@ -562,7 +562,7 @@ def initDatabase(forcerebuild=False):
                 display.display_percent_done(currentpkgindex, pkgcount)
 
     for pkg in pkglist:
-        if processes.stopRequested():
+        if processes.stop_requested():
             curs.close()
             conn.close()
             #our package db isn't valid, so we should delete it
@@ -925,10 +925,10 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
     if len(pkgkeyslist) == 0:
         return -4
 
-    if processes.stopRequested():
+    if processes.stop_requested():
         return -128
     removalpaths = getpathstoremove(pkgkeyslist)
-    if processes.stopRequested():
+    if processes.stop_requested():
         return -128
 
     if removalpaths:

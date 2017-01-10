@@ -40,11 +40,7 @@ from .. import munkistatus
 from .. import FoundationPlist
 
 
-# Disable PyLint complaining about 'invalid' camelCase names
-# pylint: disable=C0103
-
-
-def isItemInInstallInfo(item_pl, thelist, vers=''):
+def item_in_installinfo(item_pl, thelist, vers=''):
     """Determines if an item is in a list of processed items.
 
     Returns True if the item has already
@@ -71,7 +67,7 @@ def isItemInInstallInfo(item_pl, thelist, vers=''):
     return False
 
 
-def isAppleItem(item_pl):
+def is_apple_item(item_pl):
     """Returns True if the item to be installed or removed appears to be from
     Apple. If we are installing or removing any Apple items in a check/install
     cycle, we skip checking/installing Apple updates from an Apple Software
@@ -89,7 +85,7 @@ def isAppleItem(item_pl):
     return False
 
 
-def processManagedUpdate(manifestitem, cataloglist, installinfo):
+def process_managed_update(manifestitem, cataloglist, installinfo):
     """Process a managed_updates item to see if it is installed, and if so,
     if it needs an update.
     """
@@ -126,15 +122,15 @@ def processManagedUpdate(manifestitem, cataloglist, installinfo):
     if installationstate.some_version_installed(item_pl):
         # add to the list of processed managed_updates
         installinfo['managed_updates'].append(manifestitemname)
-        dummy_result = processInstall(manifestitem, cataloglist, installinfo,
-                                      is_managed_update=True)
+        dummy_result = process_install(manifestitem, cataloglist, installinfo,
+                                       is_managed_update=True)
     else:
         munkicommon.display_debug1(
             '%s does not appear to be installed, so no managed updates...',
             manifestitemname)
 
 
-def processOptionalInstall(manifestitem, cataloglist, installinfo):
+def process_optional_install(manifestitem, cataloglist, installinfo):
     """Process an optional install item to see if it should be added to
     the list of optional installs.
     """
@@ -217,8 +213,8 @@ def processOptionalInstall(manifestitem, cataloglist, installinfo):
     installinfo['optional_installs'].append(iteminfo)
 
 
-def processInstall(manifestitem, cataloglist, installinfo,
-                   is_managed_update=False):
+def process_install(manifestitem, cataloglist, installinfo,
+                    is_managed_update=False):
     """Processes a manifest item for install. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Installation detail is added to
@@ -263,7 +259,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
                                    % manifestitemname)
         installinfo['processed_installs'].append(manifestitemname)
 
-    if isItemInInstallInfo(item_pl, installinfo['managed_installs'],
+    if item_in_installinfo(item_pl, installinfo['managed_installs'],
                            vers=item_pl.get('version')):
         # has this item already been added to the list of things to install?
         munkicommon.display_debug1(
@@ -271,7 +267,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
         return True
 
     # check dependencies
-    dependenciesMet = True
+    dependencies_met = True
 
     # there are two kinds of dependencies/relationships.
     #
@@ -302,17 +298,17 @@ def processInstall(manifestitem, cataloglist, installinfo,
                 '%s-%s requires %s. Getting info on %s...'
                 % (item_pl.get('name', manifestitemname),
                    item_pl.get('version', ''), item, item))
-            success = processInstall(item, cataloglist, installinfo,
-                                     is_managed_update=is_managed_update)
+            success = process_install(item, cataloglist, installinfo,
+                                      is_managed_update=is_managed_update)
             if not success:
-                dependenciesMet = False
+                dependencies_met = False
 
     iteminfo = {}
     iteminfo['name'] = item_pl.get('name', '')
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
 
-    if not dependenciesMet:
+    if not dependencies_met:
         munkicommon.display_warning('Didn\'t attempt to install %s '
                                     'because could not resolve all '
                                     'dependencies.', manifestitemname)
@@ -420,7 +416,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
             if 'apple_item' not in iteminfo:
                 # admin did not explicitly mark this item; let's determine if
                 # it's from Apple
-                if isAppleItem(item_pl):
+                if is_apple_item(item_pl):
                     munkicommon.log(
                         'Marking %s as apple_item - this will block '
                         'Apple SUS updates' % iteminfo['name'])
@@ -453,7 +449,7 @@ def processInstall(manifestitem, cataloglist, installinfo,
             for update_item in update_list:
                 # call processInstall recursively so we get the
                 # latest version and dependencies
-                dummy_result = processInstall(
+                dummy_result = process_install(
                     update_item, cataloglist, installinfo,
                     is_managed_update=is_managed_update)
             return True
@@ -530,15 +526,15 @@ def processInstall(manifestitem, cataloglist, installinfo,
         for update_item in update_list:
             # call processInstall recursively so we get updates
             # and any dependencies
-            dummy_result = processInstall(
+            dummy_result = process_install(
                 update_item, cataloglist, installinfo,
                 is_managed_update=is_managed_update)
 
         return True
 
 
-def processManifestForKey(manifest, manifest_key, installinfo,
-                          parentcatalogs=None):
+def process_manifest_for_key(manifest, manifest_key, installinfo,
+                             parentcatalogs=None):
     """Processes keys in manifests to build the lists of items to install and
     remove.
 
@@ -570,10 +566,10 @@ def processManifestForKey(manifest, manifest_key, installinfo,
         nestedmanifestpath = manifestutils.get_manifest(item)
         if not nestedmanifestpath:
             raise manifestutils.ManifestException
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return {}
-        processManifestForKey(nestedmanifestpath, manifest_key,
-                              installinfo, cataloglist)
+        process_manifest_for_key(nestedmanifestpath, manifest_key,
+                                 installinfo, cataloglist)
 
     conditionalitems = manifestdata.get('conditional_items', [])
     if conditionalitems:
@@ -593,26 +589,26 @@ def processManifestForKey(manifest, manifest_key, installinfo,
             munkicommon.display_warning(
                 'Conditional item is malformed: %s', item)
             continue
-        if munkicommon.predicateEvaluatesAsTrue(
+        if munkicommon.predicate_evaluates_as_true(
                 predicate, additional_info={'catalogs': cataloglist}):
             conditionalmanifest = item
-            processManifestForKey(
+            process_manifest_for_key(
                 conditionalmanifest, manifest_key, installinfo, cataloglist)
 
     for item in manifestdata.get(manifest_key, []):
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return {}
         if manifest_key == 'managed_installs':
-            dummy_result = processInstall(item, cataloglist, installinfo)
+            dummy_result = process_install(item, cataloglist, installinfo)
         elif manifest_key == 'managed_updates':
-            processManagedUpdate(item, cataloglist, installinfo)
+            process_managed_update(item, cataloglist, installinfo)
         elif manifest_key == 'optional_installs':
-            processOptionalInstall(item, cataloglist, installinfo)
+            process_optional_install(item, cataloglist, installinfo)
         elif manifest_key == 'managed_uninstalls':
-            dummy_result = processRemoval(item, cataloglist, installinfo)
+            dummy_result = process_removal(item, cataloglist, installinfo)
 
 
-def processRemoval(manifestitem, cataloglist, installinfo):
+def process_removal(manifestitem, cataloglist, installinfo):
     """Processes a manifest item; attempts to determine if it
     needs to be removed, and if it can be removed.
 
@@ -679,18 +675,18 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             'catalogs: %s ', manifestitemname, ', '.join(cataloglist))
         return False
 
-    installEvidence = False
+    install_evidence = False
     for item in infoitems:
         munkicommon.display_debug2('Considering item %s-%s for removal info',
                                    item['name'], item['version'])
         if installationstate.evidence_this_is_installed(item):
-            installEvidence = True
+            install_evidence = True
             break
         else:
             munkicommon.display_debug2(
                 '%s-%s not installed.', item['name'], item['version'])
 
-    if not installEvidence:
+    if not install_evidence:
         munkicommon.display_detail(
             '%s doesn\'t appear to be installed.', manifestitemname_withversion)
         iteminfo = {}
@@ -699,18 +695,18 @@ def processRemoval(manifestitem, cataloglist, installinfo):
         installinfo['removals'].append(iteminfo)
         return True
 
-    # if we get here, installEvidence is true, and item
+    # if we get here, install_evidence is true, and item
     # holds the item we found install evidence for, so we
     # should use that item to do the removal
     uninstall_item = None
-    packagesToRemove = []
+    packages_to_remove = []
     # check for uninstall info
     # and grab the first uninstall method we find.
     if item.get('uninstallable') and 'uninstall_method' in item:
         uninstallmethod = item['uninstall_method']
         if uninstallmethod == 'removepackages':
-            packagesToRemove = get_receipts_to_remove(item)
-            if packagesToRemove:
+            packages_to_remove = get_receipts_to_remove(item)
+            if packages_to_remove:
                 uninstall_item = item
         elif uninstallmethod.startswith('Adobe'):
             # Adobe CS3/CS4/CS5/CS6/CC product
@@ -748,9 +744,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     dependentitemsremoved = True
 
     uninstall_item_name = uninstall_item.get('name')
-    uninstall_item_name_with_version = (
+    uninstall_name_w_version = (
         '%s-%s' % (uninstall_item.get('name'), uninstall_item.get('version')))
-    alt_uninstall_item_name_with_version = (
+    alt_uninstall_name_w_version = (
         '%s--%s' % (uninstall_item.get('name'), uninstall_item.get('version')))
     processednames = []
     for catalogname in cataloglist:
@@ -762,9 +758,9 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             if name not in processednames:
                 if 'requires' in item_pl:
                     if (uninstall_item_name in item_pl['requires'] or
-                            uninstall_item_name_with_version
+                            uninstall_name_w_version
                             in item_pl['requires'] or
-                            alt_uninstall_item_name_with_version
+                            alt_uninstall_name_w_version
                             in item_pl['requires']):
                         munkicommon.display_debug1(
                             '%s requires %s, checking to see if it\'s '
@@ -776,7 +772,7 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                                 '%s requires %s. %s must be removed as well.',
                                 item_pl.get('name'), manifestitemname,
                                 item_pl.get('name'))
-                            success = processRemoval(
+                            success = process_removal(
                                 item_pl.get('name'), cataloglist, installinfo)
                             if not success:
                                 dependentitemsremoved = False
@@ -810,32 +806,32 @@ def processRemoval(manifestitem, cataloglist, installinfo):
             iteminfo['unattended_uninstall'] = True
 
     # some keys we'll copy if they exist
-    optionalKeys = ['blocking_applications',
-                    'installs',
-                    'requires',
-                    'update_for',
-                    'payloads',
-                    'preuninstall_script',
-                    'postuninstall_script',
-                    'apple_item',
-                    'category',
-                    'developer',
-                    'icon_name',
-                    'PayloadIdentifier']
-    for key in optionalKeys:
+    optional_keys = ['blocking_applications',
+                     'installs',
+                     'requires',
+                     'update_for',
+                     'payloads',
+                     'preuninstall_script',
+                     'postuninstall_script',
+                     'apple_item',
+                     'category',
+                     'developer',
+                     'icon_name',
+                     'PayloadIdentifier']
+    for key in optional_keys:
         if key in uninstall_item:
             iteminfo[key] = uninstall_item[key]
 
     if 'apple_item' not in iteminfo:
         # admin did not explicitly mark this item; let's determine if
         # it's from Apple
-        if isAppleItem(item_pl):
+        if is_apple_item(item_pl):
             iteminfo['apple_item'] = True
 
-    if packagesToRemove:
+    if packages_to_remove:
         # remove references for each package
-        packagesToReallyRemove = []
-        for pkg in packagesToRemove:
+        packages_to_really_remove = []
+        for pkg in packages_to_remove:
             munkicommon.display_debug1('Considering %s for removal...', pkg)
             # find pkg in pkgdata['pkg_references'] and remove the reference
             # so we only remove packages if we're the last reference to it
@@ -848,13 +844,13 @@ def processRemoval(manifestitem, cataloglist, installinfo):
                     if len(pkgdata['pkg_references'][pkg]) == 0:
                         munkicommon.display_debug1(
                             'Adding %s to removal list.', pkg)
-                        packagesToReallyRemove.append(pkg)
+                        packages_to_really_remove.append(pkg)
             else:
                 # This shouldn't happen
                 munkicommon.display_warning(
                     'pkg id %s missing from pkgdata', pkg)
-        if packagesToReallyRemove:
-            iteminfo['packages'] = packagesToReallyRemove
+        if packages_to_really_remove:
+            iteminfo['packages'] = packages_to_really_remove
         else:
             # no packages that belong to this item only.
             munkicommon.display_warning('could not find unique packages to '
@@ -901,12 +897,12 @@ def processRemoval(manifestitem, cataloglist, installinfo):
     # removal list as well:
     update_list = catalogs.look_for_updates(uninstall_item_name, cataloglist)
     update_list.extend(catalogs.look_for_updates(
-        uninstall_item_name_with_version, cataloglist))
+        uninstall_name_w_version, cataloglist))
     update_list.extend(catalogs.look_for_updates(
-        alt_uninstall_item_name_with_version, cataloglist))
+        alt_uninstall_name_w_version, cataloglist))
     for update_item in update_list:
         # call us recursively...
-        dummy_result = processRemoval(update_item, cataloglist, installinfo)
+        dummy_result = process_removal(update_item, cataloglist, installinfo)
 
     # finish recording info for this removal
     iteminfo['installed'] = True
@@ -935,7 +931,7 @@ def check(client_id='', localmanifestpath=None):
     # initialize our Munki keychain if we are using custom certs or CAs
     dummy_keychain_obj = keychain.MunkiKeychain()
 
-    ManagedInstallDir = munkicommon.pref('ManagedInstallDir')
+    managed_install_dir = munkicommon.pref('ManagedInstallDir')
     if munkicommon.munkistatusoutput:
         munkistatus.activate()
 
@@ -957,7 +953,7 @@ def check(client_id='', localmanifestpath=None):
                     'Could not retrieve managed install primary manifest.')
                 raise
 
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return 0
 
         # initialize our installinfo record
@@ -969,12 +965,12 @@ def check(client_id='', localmanifestpath=None):
         installinfo['removals'] = []
 
         # record info object for conditional item comparisons
-        munkicommon.report['Conditions'] = munkicommon.predicateInfoObject()
+        munkicommon.report['Conditions'] = munkicommon.predicate_info_object()
 
         munkicommon.display_detail('**Checking for installs**')
-        processManifestForKey(
+        process_manifest_for_key(
             mainmanifestpath, 'managed_installs', installinfo)
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return 0
 
         # reset progress indicator and detail field
@@ -984,9 +980,9 @@ def check(client_id='', localmanifestpath=None):
 
         # now generate a list of items to be uninstalled
         munkicommon.display_detail('**Checking for removals**')
-        processManifestForKey(
+        process_manifest_for_key(
             mainmanifestpath, 'managed_uninstalls', installinfo)
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return 0
 
         # now check for implicit removals
@@ -997,21 +993,21 @@ def check(client_id='', localmanifestpath=None):
         if autoremovalitems:
             munkicommon.display_detail('**Checking for implicit removals**')
         for item in autoremovalitems:
-            if munkicommon.stopRequested():
+            if munkicommon.stop_requested():
                 return 0
-            dummy_result = processRemoval(item, cataloglist, installinfo)
+            dummy_result = process_removal(item, cataloglist, installinfo)
 
         # look for additional updates
         munkicommon.display_detail('**Checking for managed updates**')
-        processManifestForKey(
+        process_manifest_for_key(
             mainmanifestpath, 'managed_updates', installinfo)
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return 0
 
         # build list of optional installs
-        processManifestForKey(
+        process_manifest_for_key(
             mainmanifestpath, 'optional_installs', installinfo)
-        if munkicommon.stopRequested():
+        if munkicommon.stop_requested():
             return 0
 
         # verify available license seats for optional installs
@@ -1022,7 +1018,7 @@ def check(client_id='', localmanifestpath=None):
         localonlymanifestname = munkicommon.pref('LocalOnlyManifest')
         if localonlymanifestname:
             localonlymanifest = os.path.join(
-                ManagedInstallDir, 'manifests', localonlymanifestname)
+                managed_install_dir, 'manifests', localonlymanifestname)
 
             # if the manifest already exists, the name is being reused
             if localonlymanifestname in manifestutils.manifests():
@@ -1043,7 +1039,7 @@ def check(client_id='', localmanifestpath=None):
                 localonlyinstalls = manifestutils.get_manifest_value_for_key(
                     localonlymanifest, 'managed_installs') or []
                 for item in localonlyinstalls:
-                    dummy_result = processInstall(
+                    dummy_result = process_install(
                         item,
                         cataloglist,
                         installinfo
@@ -1052,7 +1048,7 @@ def check(client_id='', localmanifestpath=None):
                 localonlyuninstalls = manifestutils.get_manifest_value_for_key(
                     localonlymanifest, 'managed_uninstalls') or []
                 for item in localonlyuninstalls:
-                    dummy_result = processRemoval(
+                    dummy_result = process_removal(
                         item,
                         cataloglist,
                         installinfo
@@ -1066,10 +1062,10 @@ def check(client_id='', localmanifestpath=None):
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'
         selfservemanifest = os.path.join(
-            ManagedInstallDir, 'manifests', 'SelfServeManifest')
+            managed_install_dir, 'manifests', 'SelfServeManifest')
         if os.path.exists(usermanifest):
             # copy user-generated SelfServeManifest to our
-            # ManagedInstallDir
+            # managed_install_dir
             try:
                 plist = FoundationPlist.readPlist(usermanifest)
                 if plist:
@@ -1109,23 +1105,23 @@ def check(client_id='', localmanifestpath=None):
                 selfserveinstalls = [item for item in selfserveinstalls
                                      if item in available_optional_installs]
                 for item in selfserveinstalls:
-                    dummy_result = processInstall(
+                    dummy_result = process_install(
                         item, cataloglist, installinfo)
 
             # we don't need to filter uninstalls
             selfserveuninstalls = manifestutils.get_manifest_value_for_key(
                 selfservemanifest, 'managed_uninstalls') or []
             for item in selfserveuninstalls:
-                dummy_result = processRemoval(item, cataloglist, installinfo)
+                dummy_result = process_removal(item, cataloglist, installinfo)
 
             # update optional_installs with install/removal info
             for item in installinfo['optional_installs']:
                 if (not item.get('installed') and
-                        isItemInInstallInfo(
+                        item_in_installinfo(
                             item, installinfo['managed_installs'])):
                     item['will_be_installed'] = True
                 elif (item.get('installed') and
-                      isItemInInstallInfo(item, installinfo['removals'])):
+                      item_in_installinfo(item, installinfo['removals'])):
                     item['will_be_removed'] = True
 
         # filter managed_installs to get items already installed
@@ -1218,7 +1214,7 @@ def check(client_id='', localmanifestpath=None):
         cache_list.extend([item['uninstaller_item']
                            for item in installinfo.get('removals', [])
                            if item.get('uninstaller_item')])
-        cachedir = os.path.join(ManagedInstallDir, 'Cache')
+        cachedir = os.path.join(managed_install_dir, 'Cache')
         for item in munkicommon.listdir(cachedir):
             if item.endswith('.download'):
                 # we have a partial download here
@@ -1244,7 +1240,7 @@ def check(client_id='', localmanifestpath=None):
         # write out install list so our installer
         # can use it to install things in the right order
         installinfochanged = True
-        installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
+        installinfopath = os.path.join(managed_install_dir, 'InstallInfo.plist')
         if os.path.exists(installinfopath):
             try:
                 oldinstallinfo = FoundationPlist.readPlist(installinfopath)
@@ -1264,12 +1260,12 @@ def check(client_id='', localmanifestpath=None):
         if installinfochanged:
             FoundationPlist.writePlist(
                 installinfo,
-                os.path.join(ManagedInstallDir, 'InstallInfo.plist'))
+                os.path.join(managed_install_dir, 'InstallInfo.plist'))
 
     except (manifestutils.ManifestException, UpdateCheckAbortedError):
         # Update check aborted. Check to see if we have a valid
         # install/remove list from an earlier run.
-        installinfopath = os.path.join(ManagedInstallDir, 'InstallInfo.plist')
+        installinfopath = os.path.join(managed_install_dir, 'InstallInfo.plist')
         if os.path.exists(installinfopath):
             try:
                 installinfo = FoundationPlist.readPlist(installinfopath)
@@ -1292,7 +1288,7 @@ def check(client_id='', localmanifestpath=None):
         return 0
 
 
-def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
+def get_primary_manifest_catalogs(client_id='', force_refresh=False):
     """Return list of catalogs from primary client manifest
 
     Args:
@@ -1312,7 +1308,7 @@ def getPrimaryManifestCatalogs(client_id='', force_refresh=False):
     else:
         # Use cached manifest if available
         manifest_dir = os.path.join(
-            munkicommon.pref('ManagedInstallDir'), 'manifests')
+            munkicommon.pref('managed_install_dir'), 'manifests')
         manifest = os.path.join(
             manifest_dir,
             manifestutils.get_manifest(manifestutils.PRIMARY_MANIFEST_TAG))

@@ -55,8 +55,8 @@ def enough_disk_space(item_pl, installlist=None, uninstalling=False, warn=True):
     diskspaceneeded = (installeritemsize - alreadydownloadedsize +
                        installedsize + fudgefactor)
 
-    # osutils.getAvailableDiskSpace() returns KB
-    availablediskspace = info.getAvailableDiskSpace()
+    # info.available_disk_space() returns KB
+    availablediskspace = info.available_disk_space()
     if installlist:
         for item in installlist:
             # subtract space needed for other items that are to be installed
