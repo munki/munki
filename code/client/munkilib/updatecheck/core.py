@@ -433,7 +433,7 @@ def get_primary_manifest_catalogs(client_id='', force_refresh=False):
     else:
         # Use cached manifest if available
         manifest_dir = os.path.join(
-            prefs.pref('managed_install_dir'), 'manifests')
+            prefs.pref('ManagedInstallDir'), 'manifests')
         manifest = os.path.join(
             manifest_dir,
             manifestutils.get_manifest(manifestutils.PRIMARY_MANIFEST_TAG))
