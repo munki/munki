@@ -34,7 +34,7 @@ def main():
     if consoleuser is None or consoleuser == u"loginwindow" or consoleuser == u"_mbsetupuser":
         launchctld('com.googlecode.munki.managedsoftwareupdate-check')
         launchctld('com.googlecode.munki.managedsoftwareupdate-install')
-        launchctld('com.googlecode.munki.managedsoftwareupdate-check')
+        launchctld('com.googlecode.munki.managedsoftwareupdate-manualcheck')
         launchctld('com.googlecode.munki.logouthelper')
 
 if __name__ == '__main__':
