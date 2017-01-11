@@ -15,7 +15,12 @@ def getconsoleuser():
 
 
 def launchctld(identifier):
-    path = os.path.join('/Library/LaunchDaemons/', identifier + '.plist')
+    launchd = identifier + '.plist'
+    try:
+        volume = os.environ['DSTVOLUME']
+        path = os.path.join(volume, 'Library', 'LaunchDaemons', launchd)
+    except KeyError:
+        path = os.path.join('/Library', 'LaunchDaemons', launchd)
     try:
         cmd = ['/bin/launchctl', 'load', path]
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
