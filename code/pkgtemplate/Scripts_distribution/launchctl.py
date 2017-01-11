@@ -16,7 +16,7 @@ def main():
     # This returns the conditions on whether or not a restart is required
     # for the launchd pkg.
     consoleuser = getconsoleuser()
-    if getconsoleuser() is None or consoleuser == u"loginwindow":
+    if consoleuser is None or consoleuser == u"loginwindow" or consoleuser == "_mbsetupuser":
         exit(0)
     else:
         exit(1)

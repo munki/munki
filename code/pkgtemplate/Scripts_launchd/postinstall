@@ -31,7 +31,7 @@ def main():
     # loginwindow. launchctl.py will take care of the restart via the pkg
     # distribution.xml
     consoleuser = getconsoleuser()
-    if consoleuser is None or consoleuser == u"loginwindow":
+    if consoleuser is None or consoleuser == u"loginwindow" or consoleuser == "_mbsetupuser":
         launchctld('com.googlecode.munki.managedsoftwareupdate-check')
         launchctld('com.googlecode.munki.managedsoftwareupdate-install')
         launchctld('com.googlecode.munki.managedsoftwareupdate-check')
