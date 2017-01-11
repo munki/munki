@@ -409,7 +409,7 @@ chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
 # Create package info file.
 LAUNCHDSIZE=`du -sk $LAUNCHDROOT | cut -f1`
 NFILES=$(echo `find $LAUNCHDROOT/ | wc -l`)
-makeinfo launchd "$PKGTMP/info" "$PKGID" "$LAUNCHDVERSION" $LAUNCHDSIZE $NFILES restart
+makeinfo launchd "$PKGTMP/info" "$PKGID" "$LAUNCHDVERSION" $LAUNCHDSIZE $NFILES norestart
 
 
 #############################
