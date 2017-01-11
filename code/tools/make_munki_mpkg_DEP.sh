@@ -472,8 +472,19 @@ cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.4" authoringToolBuild="179">
     <title>Munki - Managed software installation for OS X</title>
-    <options customize="allow" allow-external-scripts="no"/>
+    <options customize="allow" allow-external-scripts="yes"/>
     <domains enable_anywhere="true"/>
+    <installation-check script="requirerestart()"/>
+    <script>
+function requirerestart() {
+  if (!(system.run('launchctl.py') == 1)) {
+    // == true is equal to return code 0. Therefore if your script returns 0 (aka true)
+    // return true to select all of the options or false to deselect.
+    return "None";
+  }
+  return "RequireRestart";
+}
+</script>
     <choices-outline>
         <line choice="core"/>
         <line choice="admin"/>
@@ -497,7 +508,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$APPSVERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusion="RequireRestart">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusionScript="requirerestart()">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
     $CONFREF
 </installer-script>
 EOF
@@ -536,7 +547,7 @@ for pkg in core admin app launchd; do
             ;;
         "launchd")
             ver="$LAUNCHDVERSION"
-            SCRIPTS=""
+            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_launchd"
             ;;
         *)
             ver="$VERSION"
@@ -545,7 +556,7 @@ for pkg in core admin app launchd; do
     esac
     echo
     echo "Packaging munkitools_$pkg-$ver.pkg"
-    
+
     # Use pkgutil --analyze to build a component property list
     # then turn off bundle relocation
     sudo /usr/bin/pkgbuild \
@@ -580,7 +591,7 @@ for pkg in core admin app launchd; do
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     fi
-    
+
     if [ "$?" -ne 0 ]; then
         echo "Error packaging munkitools_$pkg-$ver.pkg before rebuilding it."
         echo "Attempting to clean up temporary files..."
@@ -598,8 +609,9 @@ echo
     --distribution "$DISTFILE" \
     --package-path "$METAROOT" \
     --resources "$METAROOT/Resources" \
+    --scripts "${MUNKIROOT}/code/pkgtemplate/Scripts_distribution" \
     "$MPKG"
-    
+
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."
     echo "Attempting to clean up temporary files..."
