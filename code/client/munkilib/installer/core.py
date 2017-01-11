@@ -50,7 +50,7 @@ from .. import scriptutils
 from .. import FoundationPlist
 
 from ..updatecheck import catalogs
-from ..removepackages import removepackages
+from ..removepkgslib import removepackages
 
 
 # initialize our report fields
