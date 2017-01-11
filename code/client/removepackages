@@ -33,7 +33,7 @@ import sys
 
 from munkilib import display
 from munkilib import munkistatus
-from munkilib import removepkgslib
+from munkilib.installer import rmpkgs
 
 
 def main():
@@ -78,7 +78,7 @@ def main():
         munkistatus.message("Removing %s packages..." % pkgcount)
         munkistatus.detail("")
 
-    retcode = removepkgslib.removepackages(
+    retcode = rmpkgs.removepackages(
         pkgnames,
         forcedeletebundles=options.forcedeletebundles,
         listfiles=options.listfiles,

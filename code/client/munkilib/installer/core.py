@@ -33,6 +33,7 @@ from Foundation import NSDate
 
 from . import dmg
 from . import pkg
+from . import rmpkgs
 
 from .. import adobeutils
 from .. import display
@@ -50,8 +51,6 @@ from .. import scriptutils
 from .. import FoundationPlist
 
 from ..updatecheck import catalogs
-from ..removepkgslib import removepackages
-
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -524,8 +523,8 @@ def process_removals(removallist, only_unattended=False):
                 if 'packages' in item:
                     if item.get('RestartAction') == "RequireRestart":
                         restart_flag = True
-                    retcode = removepackages(item['packages'],
-                                             forcedeletebundles=True)
+                    retcode = rmpkgs.removepackages(item['packages'],
+                                                    forcedeletebundles=True)
                     if retcode:
                         if retcode == -128:
                             message = ("Uninstall of %s was "

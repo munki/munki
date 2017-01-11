@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-removepkgslib
+installer.rmpkgs
 
 Code to analyze installed packages and remove
 files unique to the packages given. No attempt
@@ -29,13 +29,13 @@ import os
 import subprocess
 import sqlite3
 
-from . import display
-from . import munkistatus
-from . import osutils
-from . import pkgutils
-from . import prefs
-from . import processes
-from . import FoundationPlist
+from .. import display
+from .. import munkistatus
+from .. import osutils
+from .. import pkgutils
+from .. import prefs
+from .. import processes
+from .. import FoundationPlist
 
 
 #################################################################
