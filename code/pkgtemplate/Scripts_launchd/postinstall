@@ -15,7 +15,7 @@ def getconsoleuser():
 
 
 def launchctld(identifier):
-    path = os.path.join('/Library/LaunchDaemons/', identifier, '.plist')
+    path = os.path.join('/Library/LaunchDaemons/', identifier + '.plist')
     try:
         cmd = ['/bin/launchctl', 'load', path]
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
