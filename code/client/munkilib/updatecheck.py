@@ -2867,7 +2867,8 @@ def download_icons(item_list):
                 munkicommon.display_error(
                     'Could not create %s' % icon_subdir)
                 return
-        if pkginfo_icon_hash != xattr_hash:
+        # only fetch icons that exist and don't match our cache.
+        if pkginfo_icon_hash != xattr_hash and pkginfo_icon_hash is not None:
             item_name = item.get('display_name') or item['name']
             message = 'Getting icon %s for %s...' % (icon_name, item_name)
             try:
