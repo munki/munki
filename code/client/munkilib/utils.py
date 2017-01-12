@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # encoding: utf-8
 #
 # Copyright 2010-2016 Google Inc. All Rights Reserved.
