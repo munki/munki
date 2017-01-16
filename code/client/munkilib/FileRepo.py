@@ -207,7 +207,7 @@ class FileRepo(object):
     #
     def open(self, path, mode='r'):
         '''Opens a file in the repo.'''
-        class RepoFile:
+        class RepoFile(object):
             def __init__(self, repo, repo_path, mode):
                 self.repo = repo
                 self.repo_path = repo_path

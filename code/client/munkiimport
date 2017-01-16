@@ -808,9 +808,15 @@ def configure():
             ('plugin', 'Use a plugin to write to a custom munki repository')
             ]:
         if key == 'plugin':
-            if not os.path.isdir("/usr/local/munki/munkilib/plugins"):
+            # first look for a plugins folder in the same dir as us
+            plugin_path = os.path.dirname(os.path.abspath(__file__))
+            plugin_path = os.path.join(plugin_path, 'munkilib')
+            if not os.path.exists(plugin_path):
+                # didn't find it; assume the default install path
+                plugin_path = '/usr/local/munki/munkilib'
+            if not os.path.isdir(plugin_path + '/plugins'):
                 continue
-            if not os.listdir("/usr/local/munki/munkilib/plugins"):
+            if not os.listdir(plugin_path + '/plugins'):
                 continue
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
 
