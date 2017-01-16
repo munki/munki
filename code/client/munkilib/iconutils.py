@@ -232,7 +232,6 @@ def extractAppIconsFromBundlePkg(pkg_path, repo=None):
 
 def getAppInfoPathsFromBOM(bomfile):
     '''Returns a list of paths to application Info.plists'''
-    bomfile = os.path.join(pkg_path, u'Contents/Archive.bom')
     if os.path.exists(bomfile):
         cmd = ['/usr/bin/lsbom', '-s', bomfile]
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,

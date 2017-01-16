@@ -28,19 +28,27 @@ import os
 
 def Open(path, url, plugin):
     #looks for installtion path for munki
-    command = "munkiimport"
-    commandPath = os.popen("/usr/bin/which %s" % command).read().strip() 
-    commandPath = os.path.split(commandPath)
-    commandPath = commandPath[0]
-
+    # first look for a plugin in the same dir as us in munkilib/plugins
+    munkilib_path = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.exists(munkilib_path):
+        # didn't find it; assume the default install path
+        command = "munkiimport"
+        commandPath = os.popen("/usr/bin/which %s" % command).read().strip() 
+        commandPath = os.path.split(commandPath)
+        munkilib_path = commandPath[0]
+        #use default munki location if munki installation path is not found
+        if munkilib_path == None or munkilib_path == "":
+            munkilib_path = '/usr/local/munki/munkilib'
+        else:
+            munkilib_path = munkilib_path + '/munkilib'
     #looks for plugin in /usr/local/munki/munkilib/plugins (installation of munki)
     if plugin == None or plugin == "":
         #default is FileRepo if no plugin is specified in configuration or options.
-        module = imp.load_source('FileRepo', commandPath+'/munkilib/FileRepo.py')
+        module = imp.load_source('FileRepo', munkilib_path+'/FileRepo.py')
         import_class = getattr(module, "FileRepo")
         parent = import_class
     else:
-        module = imp.load_source(plugin, commandPath + '/munkilib/plugins/' + plugin + ".py")
+        module = imp.load_source(plugin, munkilib_path + '/plugins/' + plugin + ".py")
         import_class = getattr(module, plugin)
         parent = import_class
 
