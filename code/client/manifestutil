@@ -424,7 +424,7 @@ def manifest_rename(source_manifest_name, dest_manifest_name,
 def cleanup_and_exit(exitcode):
     """Give the user the chance to unmount the repo when we exit"""
     result = 0
-    if repo.mounted and WE_MOUNTED_THE_REPO:
+    if repo and repo.mounted and repo.WE_MOUNTED_THE_REPO:
         answer = raw_input('Unmount the repo fileshare? [y/n] ')
         if answer.lower().startswith('y'):
             result = repo.unmount()
@@ -1166,7 +1166,6 @@ def handle_subcommand(args):
         return subcommand_function(args[1:])
 
 
-WE_MOUNTED_THE_REPO = False
 INTERACTIVE_MODE = False
 CMD_ARG_DICT = {}
 repo = None
