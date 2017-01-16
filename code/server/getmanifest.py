@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Copyright 2009 Greg Neagle.
+# Copyright 2009-2017 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      https://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,11 +34,11 @@ import socket
 import sys
 import cgi
 import time
-        
+
 hostname = ""
 if 'QUERY_STRING' in os.environ:
     hostname = os.environ['QUERY_STRING']
-    
+
 if hostname == "":
     ip = os.environ['HTTP_PC_REMOTE_ADDR']
     if ip == "":
@@ -48,7 +48,7 @@ if hostname == "":
         hostname = lookup[0]
     except:
         hostname = ip
-        
+
 # the manifestdir is a local path to wherever you keep the manifests;
 # must be readable by the webserver process
 manifestdir = "/Library/WebServer/Documents/repo/manifests"

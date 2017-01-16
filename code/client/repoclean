@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# Copyright 2016 Greg Neagle.
+# Copyright 2016-2017 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ def make_catalogs(repopath):
     if not os.path.exists(makecatalogs_path):
         # didn't find it; assume the default install path
         makecatalogs_path = '/usr/local/munki/makecatalogs'
-    
+
     print 'Rebuilding catalogs at %s...' % repopath
     proc = subprocess.Popen([makecatalogs_path, repopath],
                             bufsize=-1, stdout=subprocess.PIPE,
@@ -467,7 +467,7 @@ def main():
     parser.add_option('--delete-items-in-no-manifests', action='store_true',
                       help='Also delete items that are not referenced in any '
                            'manifests. Not yet implemented.')
-    
+
     options, arguments = parser.parse_args()
 
     if options.version:
@@ -505,4 +505,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
