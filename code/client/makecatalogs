@@ -329,6 +329,8 @@ def makecatalogs(repo, options):
 
     # clear out old catalogs
     catalogpath = repo.join("catalogs")
+    print(repo)
+    print(catalogpath)
     if not repo.exists(catalogpath):
         repo.mkdir(catalogpath)
     else:

@@ -22,18 +22,19 @@ Implementation for accessing a repo via direct file access, including
 a remote repo mounted via AFP, SMB, or NFS.
 """
 
+from collections import namedtuple
 from munkilib.munkicommon import listdir
 import os
 import sys
 import subprocess
 import objc
-import glob
 
 # NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
 # work here: https://gist.github.com/pudquick/1362a8908be01e23041d
 try:
     import errno
     import getpass
+    import objc
     from CoreFoundation import CFURLCreateWithString
 
     class Attrdict(dict):
@@ -126,8 +127,7 @@ if NETFSMOUNTURLSYNC_AVAILABLE:
             password = getpass.getpass()
             mount_share_with_credentials(share_url, username, password)
 
-class FileRepo(object):
-    WE_MOUNTED_THE_REPO = False
+class FileRepo:
     '''Repo implementation that access a local or locally-mounted repo.'''
     def __init__(self, path, url):
         self.path = path
@@ -222,6 +222,7 @@ class FileRepo(object):
 
     def mount(self):
         '''Mounts the repo locally.'''
+        global WE_MOUNTED_THE_REPO
         if os.path.exists(self.path):
             return
         if NETFSMOUNTURLSYNC_AVAILABLE:
@@ -231,7 +232,7 @@ class FileRepo(object):
                 print sys.stderr, err
                 return 
             else:
-                self.WE_MOUNTED_THE_REPO = True
+                WE_MOUNTED_THE_REPO = True
                 return 0
         else:
             os.mkdir(self.path)
@@ -250,7 +251,7 @@ class FileRepo(object):
             if retcode:
                 os.rmdir(self.path)
             else:
-                self.WE_MOUNTED_THE_REPO = True
+                WE_MOUNTED_THE_REPO = True
             return retcode
 
     def unmount(self):
@@ -275,6 +276,5 @@ class FileRepo(object):
         original_dir = os.getcwd()
         os.chdir(path)
         for arg in args:
-            matches += glob.glob(arg)
+            pkgs += glob.glob(arg)
         os.chdir(original_dir)
-        return matches

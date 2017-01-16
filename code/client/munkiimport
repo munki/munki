@@ -313,8 +313,9 @@ def icon_exists_in_repo(pkginfo):
 def add_icon_hash_to_pkginfo(pkginfo):
     """Adds the icon hash tp pkginfo if the icon exists in repo"""
     icon_path = get_icon_path(pkginfo)
-    if repo.isfile(icon_path):
-        pkginfo['icon_hash'] = munkicommon.getsha256hash(icon_path)
+    handle = repo.open(icon_path, 'r')
+    if handle and repo.isfile(handle.local_path):
+        pkginfo['icon_hash'] = munkicommon.getsha256hash(handle.local_path)
 
 
 def generate_png_from_copy_from_dmg_item(dmg_path, pkginfo):
@@ -768,7 +769,7 @@ def make_catalogs():
 def cleanup_and_exit(exitcode):
     """Unmounts the repo if we mounted it, then exits"""
     result = 0
-    if repo and repo.mounted and repo.WE_MOUNTED_THE_REPO:
+    if repo.mounted and WE_MOUNTED_THE_REPO:
         if not NOINTERACTIVE:
             answer = raw_input('Unmount the repo fileshare? [y/n] ')
             if answer.lower().startswith('y'):
@@ -828,6 +829,7 @@ PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
                                             PREFSNAME))
 APPLEMETADATA = False
 NOINTERACTIVE = False
+WE_MOUNTED_THE_REPO = False
 VERBOSE = False
 REPO_PATH = ""
 REPO_URL = ""
