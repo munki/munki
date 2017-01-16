@@ -31,6 +31,7 @@ import tempfile
 
 import munkicommon
 import FoundationPlist
+import Repo
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -166,42 +167,58 @@ def extractAppIconsFromFlatPkg(pkg_path):
     return icon_paths
 
 
-def findInfoPlistPathsInBundlePkg(pkg_path):
+def findInfoPlistPathsInBundlePkg(pkg_path, repo=None):
     '''Returns a dict with pkg paths as keys and filename lists
     as values'''
     pkg_dict = {}
-    bomfile = os.path.join(pkg_path, u'Contents/Archive.bom')
+    if repo:
+        repo_bomfile = repo.join(pkg_path, u'Contents/Archive.bom')
+        handle = repo.open(repo_bomfile, 'r')
+        bomfile = handle.local_path
+    else:
+        bomfile = os.path.join(pkg_path, u'Contents/Archive.bom')
     if os.path.exists(bomfile):
-        info_paths = getAppInfoPathsFromBundleComponentPkg(pkg_path)
+        info_paths = getAppInfoPathsFromBOM(bomfile)
         if info_paths:
             pkg_dict[pkg_path] = info_paths
     else:
         # mpkg or dist pkg; look for component pkgs within
         pkg_dict = {}
-        original_dir = os.getcwd()
-        pkg_contents_dir = os.path.join(pkg_path, u'Contents')
-        if os.path.isdir(pkg_contents_dir):
-            os.chdir(pkg_contents_dir)
-            pkgs = (glob.glob('*.pkg') + glob.glob('*/*.pkg')
-                    + glob.glob('*/*/*.pkg') + glob.glob('*.mpkg') +
-                    glob.glob('*/*.mpkg') + glob.glob('*/*/*.mpkg'))
-            os.chdir(original_dir)
+        pkgs = []
+        if repo:
+            pkg_contents_dir = repo.join(pkg_path, u'Contents')
+            if repo.isdir(pkg_contents_dir):
+                pkgs = repo.glob(pkg_contents_dir, '*.pkg', '*/*.pkg',
+                       '*/*/*.pkg', '*.mpkg', '*/*.mpkg', '*/*/*.mpkg')
         else:
-            pkgs = []
+            pkg_contents_dir = os.path.join(pkg_path, u'Contents')
+            if os.path.isdir(pkg_contents_dir):
+                original_dir = os.getcwd()
+                os.chdir(pkg_contents_dir)
+                pkgs = (glob.glob('*.pkg') + glob.glob('*/*.pkg')
+                        + glob.glob('*/*/*.pkg') + glob.glob('*.mpkg') +
+                        glob.glob('*/*.mpkg') + glob.glob('*/*/*.mpkg'))
+                os.chdir(original_dir)
         for pkg in pkgs:
             full_path = os.path.join(pkg_contents_dir, pkg)
             pkg_dict.update(findInfoPlistPathsInBundlePkg(full_path))
     return pkg_dict
 
 
-def extractAppIconsFromBundlePkg(pkg_path):
+def extractAppIconsFromBundlePkg(pkg_path, repo=None):
     '''Returns a list of paths for application icons found
     inside the bundle pkg at pkg_path'''
-    pkg_dict = findInfoPlistPathsInBundlePkg(pkg_path)
+    pkg_dict = findInfoPlistPathsInBundlePkg(pkg_path, repo)
     icon_paths = []
     exporttmp = tempfile.mkdtemp(dir='/tmp')
     for pkg in pkg_dict:
-        archive_path = os.path.join(pkg, u'Contents/Archive.pax.gz')
+        handle = None
+        if repo:
+            repo_archive_path = repo.join(pkg, u'Contents/Archive.pax.gz')
+            handle = repo.open(repo_archive_path, 'r')
+            archive_path = handle.local_path
+        else:
+            archive_path = os.path.join(pkg, u'Contents/Archive.pax.gz')
         err = extractAppBitsFromPkgArchive(archive_path, exporttmp)
         if err == 0:
             for info_path in pkg_dict[pkg]:
@@ -213,7 +230,7 @@ def extractAppIconsFromBundlePkg(pkg_path):
     return icon_paths
 
 
-def getAppInfoPathsFromBundleComponentPkg(pkg_path):
+def getAppInfoPathsFromBOM(bomfile):
     '''Returns a list of paths to application Info.plists'''
     bomfile = os.path.join(pkg_path, u'Contents/Archive.bom')
     if os.path.exists(bomfile):
