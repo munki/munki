@@ -4,7 +4,7 @@
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 4/25/16.
-#  Copyright (c) 2016 Munki Project. All rights reserved.
+#  Copyright (c) 2017 Munki Project. All rights reserved.
 #
 #  Much code borrowed from https://github.com/MagerValp/LoginLog
 #  with the blessing of MagerValp

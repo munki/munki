@@ -3,7 +3,7 @@
 //
 //  Created by Greg Neagle on 5/27/09.
 //
-// Copyright 2009-2016 Greg Neagle.
+// Copyright 2009-2017 Greg Neagle.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

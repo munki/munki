@@ -2,7 +2,7 @@
 
    File: MSCDockTilePlugIn.m
  
-   Copyright 2015-2016 Greg Neagle.
+   Copyright 2015-2017 Greg Neagle.
    Liberally adapted from Apple sample code:
    https://developer.apple.com/library/mac/samplecode/DockTile/Listings/DockTilePlugIn_DockTilePlugIn_h.html
  

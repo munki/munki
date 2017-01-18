@@ -6,7 +6,7 @@
 #  Created by Greg Neagle on 2/23/14.
 #  Original by John Randolph <jrand@google.com>
 #
-# Copyright 2009-2016 Greg Neagle.
+# Copyright 2009-2017 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
