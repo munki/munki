@@ -30,6 +30,7 @@ def Open(path, url, plugin):
     #looks for installtion path for munki
     # first look for a plugin in the same dir as us in munkilib/plugins
     munkilib_path = os.path.dirname(os.path.abspath(__file__))
+    munkilib_path = os.path.join(munkilib_path, 'plugins')
     if not os.path.exists(munkilib_path):
         # didn't find it; assume the default install path
         command = "munkiimport"
@@ -38,9 +39,9 @@ def Open(path, url, plugin):
         munkilib_path = commandPath[0]
         #use default munki location if munki installation path is not found
         if munkilib_path == None or munkilib_path == "":
-            munkilib_path = '/usr/local/munki/munkilib'
+            munkilib_path = '/usr/local/munki/munkilib/plugins'
         else:
-            munkilib_path = munkilib_path + '/munkilib'
+            munkilib_path = munkilib_path + '/munkilib/plugins'
     #looks for plugin in /usr/local/munki/munkilib/plugins (installation of munki)
     if plugin == None or plugin == "":
         #default is FileRepo if no plugin is specified in configuration or options.
