@@ -31,6 +31,7 @@ import subprocess
 import sys
 import time
 import thread
+import re
 
 from ctypes.util import find_library
 from optparse import OptionParser, BadOptionError, AmbiguousOptionError
@@ -810,13 +811,20 @@ def configure():
         if key == 'plugin':
             # first look for a plugins folder in the same dir as us
             plugin_path = os.path.dirname(os.path.abspath(__file__))
-            plugin_path = os.path.join(plugin_path, 'munkilib')
+            plugin_path = os.path.join(plugin_path, 'munkilib/plugins')
             if not os.path.exists(plugin_path):
                 # didn't find it; assume the default install path
-                plugin_path = '/usr/local/munki/munkilib'
-            if not os.path.isdir(plugin_path + '/plugins'):
+                plugin_path = '/usr/local/munki/munkilib/plugins'
+            hasPlugin = False
+            included_extensions = ['py']
+            plugins = [fn for fn in os.listdir(plugin_path)
+              if any(fn.endswith(ext) for ext in included_extensions)]
+            for plugin in plugins:
+                if 'FileRepo' not in plugin:
+                    hasPlugin = True
+            if not os.path.isdir(plugin_path):
                 continue
-            if not os.listdir(plugin_path + '/plugins'):
+            if not hasPlugin:
                 continue
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
 
