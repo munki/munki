@@ -438,7 +438,7 @@ def copy_pkginfo_to_repo(pkginfo, subdirectory=''):
     """Saves pkginfo to munki_repo_path/pkgsinfo/subdirectory"""
     # less error checking because we copy the installer_item
     # first and bail if it fails...
-    destination_path = repo.join('pkgsinfo', subdirectory)
+    destination_path = repo.join(REPO_PATH, 'pkgsinfo', subdirectory)
     if not repo.exists(destination_path):
         try:
             repo.makedirs(destination_path)
