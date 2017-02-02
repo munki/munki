@@ -1015,9 +1015,8 @@ def main():
                     # simply briefly touched the mouse to see progress.
                     time.sleep(15)
                     idleseconds = getIdleSeconds()
-                if idleseconds > 10:
-                    pass
-                else:
+                if idleseconds <= 10:
+                    # we're still not idle.
                     # if the trigger file is present when we exit, we'll
                     # be relaunched by launchd, so we need to remove it
                     # to prevent automatic relaunch.
