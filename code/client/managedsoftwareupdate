@@ -713,27 +713,10 @@ def main():
 
     skip_munki_check = (options.installonly or applesoftwareupdatesonly)
     if not skip_munki_check:
-        # check to see if we can talk to the manifest server
-        server = munkicommon.pref('ManifestURL') or \
-                 munkicommon.pref('SoftwareRepoURL')
+        # check to see if we are using an insecure default
+        server = (munkicommon.pref('ManifestURL') or
+                  munkicommon.pref('SoftwareRepoURL'))
         warn_if_server_is_default(server)
-        result = fetch.check_server(server)
-        if result != (0, 'OK'):
-            munkicommon.display_error(
-                'managedsoftwareupdate: server check for %s failed: %s'
-                % (server, str(result)))
-            if options.manualcheck:
-                # record our result
-                recordUpdateCheckResult(-1)
-            if not options.auto:
-                munkicommon.cleanUpTmpDir()
-                exit(munkicommon.EXIT_STATUS_SERVER_UNAVAILABLE)
-            else:
-                # even if we can't reach the manifest server, we can
-                # attempt to do installs of cached items. Setting
-                # skip_munki_check to True will cause the updatecheck
-                # to be skipped
-                skip_munki_check = True
 
     # reset our errors and warnings files, rotate main log if needed
     munkicommon.reset_errors()
