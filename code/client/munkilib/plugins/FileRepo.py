@@ -224,6 +224,7 @@ class FileRepo(object):
         '''Mounts the repo locally.'''
         if os.path.exists(self.path):
             return
+        print 'Attempting to mount fileshare %s:' % self.url
         if NETFSMOUNTURLSYNC_AVAILABLE:
             try:
                 mount_share_url(self.url)
@@ -235,8 +236,6 @@ class FileRepo(object):
                 return 0
         else:
             os.mkdir(self.path)
-            print self.url
-            print 'Attempting to mount fileshare %s:' % self.url
             if self.url.startswith('afp:'):
                 cmd = ['/sbin/mount_afp', '-i', self.url, self.path]
             elif self.url.startswith('smb:'):
@@ -255,11 +254,12 @@ class FileRepo(object):
 
     def unmount(self):
         '''Unmounts the repo.'''
+        if not os.path.exists(self.path):
+            return
         retcode = 0
         if os.path.exists(self.path):
             cmd = ['/sbin/umount', self.path]
             retcode = subprocess.call(cmd)
-            os.rmdir(self.path)
         return retcode
 
     def walk(self, path, **kwargs):

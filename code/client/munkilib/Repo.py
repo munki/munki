@@ -44,14 +44,11 @@ def Open(path, url, plugin):
             munkilib_path = munkilib_path + '/munkilib/plugins'
     #looks for plugin in /usr/local/munki/munkilib/plugins (installation of munki)
     if plugin == None or plugin == "":
-        #default is FileRepo if no plugin is specified in configuration or options.
-        module = imp.load_source('FileRepo', munkilib_path+'/FileRepo.py')
-        import_class = getattr(module, "FileRepo")
-        parent = import_class
-    else:
-        module = imp.load_source(plugin, munkilib_path + '/plugins/' + plugin + ".py")
-        import_class = getattr(module, plugin)
-        parent = import_class
+        #default is FileRepo
+        plugin = 'FileRepo'
+    module = imp.load_source(plugin, munkilib_path + "/" + plugin + ".py")
+    import_class = getattr(module, plugin)
+    parent = import_class
 
     class Repo(parent):
         mounted = False

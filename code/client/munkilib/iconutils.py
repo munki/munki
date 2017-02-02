@@ -31,7 +31,6 @@ import tempfile
 
 import munkicommon
 import FoundationPlist
-import Repo
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
