@@ -22,7 +22,7 @@ The next three are preferred to SoftwareRepoURL; They allow you to serve manifes
 Use SSL client certificates to secure communication with the web server:
 
     prefs['UseClientCertificate'] = False
-    prefs['ClientIdentifier'] = '' # (munki will use the FQDN, then short hostname, then look for site_default)
+    prefs['ClientIdentifier'] = '' # (Munki will attempt the following identifiers, in order: fully-qualified hostname, "short" hostname, serial number and finally, "site_default")
 
 
 Location for logging and verbosity:
