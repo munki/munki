@@ -562,6 +562,21 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 if 'payloads' not in cataloginfo:
                     cataloginfo['payloads'] = []
                 cataloginfo['payloads'].extend(hd_app_infos)
+
+                # Calculate installed_size by counting packages in payloads
+                # in these indexed HD medias. installed_size may exist already
+                # if this package contained RIBS payloads, so try reading it
+                # and default to 0. This will typically include several very
+                # small packages (language or regional recommended settings)
+                # which would not actually get installed. These seem to be
+                # no larger than a few MB, so in practice it increases the
+                # 'installed_size' value by only ~1%.
+                installed_size = cataloginfo.get('installed_size', 0)
+                for hd_payload in hd_app_infos:
+                    for package in hd_payload['Packages']:
+                        installed_size += package.get('ExtractSize', 0) / 1024
+                cataloginfo['installed_size'] = installed_size
+
                 uninstalldir = (
                     '/Library/Application Support/Adobe/Installers/uninstallXml'
                 )
