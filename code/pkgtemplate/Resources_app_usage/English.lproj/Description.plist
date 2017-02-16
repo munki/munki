@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IFPkgDescriptionTitle</key>
+	<string>Munki app usage monitoring tool</string>
+	<key>IFPkgDescriptionDescription</key>
+	<string>Munki app usage monitoring tool and launchdaemon.
+Optional install; if installed Munki can use data collected by this tool to automatically remove unused software.</string>
+</dict>
+</plist>
