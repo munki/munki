@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# only do this if we are installing to current startup volume
+if [ "$3" == "/" ]; then
+    #(re-)load our LaunchDaemon
+    /bin/launchctl unload /Library/LaunchDaemons/com.googlecode.munki.app_usage_monitor.plist
+    /bin/launchctl load /Library/LaunchDaemons/com.googlecode.munki.app_usage_monitor.plist
+fi
+

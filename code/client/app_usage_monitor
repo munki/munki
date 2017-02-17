@@ -1,0 +1,382 @@
+#!/usr/bin/python
+# encoding: utf-8
+#
+# Copyright 2017 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+app_usage_monitor
+
+Created by Greg Neagle 14 Feb 2017
+
+A tool to monitor application usage and record it to a database.
+Borrowing lots of code and ideas from the crankd project, part of pyamcadmin:
+    https://github.com/MacSysadmin/pymacadmin
+and the application_usage scripts created by Google MacOps:
+    https://github.com/google/macops/tree/master/crankd
+"""
+
+# standard Python libs
+import logging
+import os
+import sqlite3
+import sys
+import time
+
+# our libs
+from munkilib import prefs
+
+try:
+    # Apple frameworks
+    from Foundation import NSDate
+    from Foundation import NSDictionary
+    from Foundation import NSObject
+    from Foundation import NSRunLoop
+
+    from AppKit import NSWorkspace
+except ImportError:
+    logging.critical("PyObjC wrappers for Apple frameworks are missing.")
+    sys.exit(-1)
+
+
+# SQLite db to store application usage data
+APPLICATION_USAGE_DB = os.path.join(
+   prefs.pref('ManagedInstallDir'), 'application_usage.sqlite')
+# SQL to detect existance of application usage table
+APPLICATION_USAGE_TABLE_DETECT = 'SELECT * FROM application_usage LIMIT 1'
+# This table creates ~64 bytes of disk data per event.
+APPLICATION_USAGE_TABLE_CREATE = (
+    'CREATE TABLE application_usage ('
+    'event TEXT,'
+    'bundle_id TEXT,'
+    'app_version TEXT,'
+    'app_path TEXT,'
+    'last_time INTEGER DEFAULT 0,'
+    'number_times INTEGER DEFAULT 0,'
+    'PRIMARY KEY (event, bundle_id)'
+    ')')
+
+APPLICATION_USAGE_TABLE_INSERT = (
+    'INSERT INTO application_usage VALUES ('
+    '?, '  # event
+    '?, '  # bundle_id
+    '?, '  # app_version
+    '?, '  # app_path
+    '?, '  # last_time
+    '? '   # number_times
+    ')'
+    )
+
+# keep same order of columns as APPLICATION_USAGE_TABLE_INSERT
+APPLICATION_USAGE_TABLE_SELECT = (
+    'SELECT '
+    'event, bundle_id, app_version, app_path, last_time, number_times '
+    'FROM application_usage'
+    )
+
+APPLICATION_USAGE_TABLE_UPDATE = (
+    'UPDATE application_usage SET '
+    'app_version=?,'
+    'app_path=?,'
+    'last_time=?,'
+    'number_times=number_times+1 '
+    'WHERE event=? and bundle_id=?'
+    )
+
+
+class ApplicationUsage(object):
+    """Tracks application launches, activations, and quits."""
+
+    def _connect(self, database_name=None):
+        """Connect to database.
+        Args:
+          database_name: str, default APPLICATION_USAGE_DB
+        Returns:
+          sqlite3.Connection instance
+        """
+        # pylint: disable=no-self-use
+        if database_name is None:
+            database_name = APPLICATION_USAGE_DB
+
+        conn = sqlite3.connect(database_name)
+        return conn
+
+    def _close(self, conn):
+        """Close database.
+        Args:
+          conn: sqlite3.Connection instance
+        """
+        # pylint: disable=no-self-use
+        conn.close()
+
+    def _detect_application_usage_table(self, conn):
+        """Detect whether the application usage table exists.
+        Args:
+          conn: sqlite3.Connection object
+        Returns:
+          True if the table exists, False if not.
+        Raises:
+          sqlite3.Error: if error occurs
+        """
+        # pylint: disable=no-self-use
+        try:
+            conn.execute(APPLICATION_USAGE_TABLE_DETECT)
+            exists = True
+        except sqlite3.OperationalError, err:
+            if err.args[0].startswith('no such table'):
+                exists = False
+            else:
+                raise
+        return exists
+
+    def _create_application_usage_table(self, conn):
+        """Create application usage table when it does not exist.
+        Args:
+          conn: sqlite3.Connection object
+        Raises:
+          sqlite3.Error: if error occurs
+        """
+        # pylint: disable=no-self-use
+        conn.execute(APPLICATION_USAGE_TABLE_CREATE)
+
+    def _insert_application_usage(
+            self, conn, event, bundle_id, app_version, app_path, now):
+        """Insert usage data into application usage table.
+        Args:
+          conn: sqlite3.Connection object
+          event: str
+          bundle_id: str
+          app_version: str
+          app_path: str
+          now: int
+        """
+        # pylint: disable=no-self-use
+        # this looks weird, but it's the simplest way to do an update or insert
+        # operation in sqlite, and atomically update number_times, that I could
+        # figure out.  plus we avoid using transactions and multiple SQL
+        # statements in most cases.
+
+        data = (app_version, app_path, now, event, bundle_id)
+        query = conn.execute(APPLICATION_USAGE_TABLE_UPDATE, data)
+        if query.rowcount == 0:
+            number_times = 1
+            data = (event, bundle_id, app_version, app_path, now, number_times)
+            conn.execute(APPLICATION_USAGE_TABLE_INSERT, data)
+
+    def _recreate_database(self):
+        """Recreate a database.
+        Returns:
+          int number of rows that were recovered from old database
+          and written into new one
+        """
+        recovered = 0
+
+        try:
+            conn = self._connect()
+            table = []
+            query = conn.execute(APPLICATION_USAGE_TABLE_SELECT)
+            try:
+                while 1:
+                    row = query.fetchone()
+                    if not row:
+                        break
+                    table.append(row)
+            except sqlite3.Error:
+                pass
+                # ok, done, hit an error
+            conn.close()
+        except sqlite3.Error, err:
+            logging.error('Unhandled error reading existing db: %s', str(err))
+            return recovered
+
+        usage_db_tmp = '%s.tmp.%d' % (APPLICATION_USAGE_DB, os.getpid())
+
+        try:
+            conn = self._connect(usage_db_tmp)
+            self._create_application_usage_table(conn)
+            recovered = 0
+            for row in table:
+                if row[1:3] == ['', '', '']:
+                    continue
+                try:
+                    conn.execute(APPLICATION_USAGE_TABLE_INSERT, row)
+                    conn.commit()
+                    recovered += 1
+                except sqlite3.IntegrityError, err:
+                    logging.error('Ignored error: %s: %s', str(err), str(row))
+            self._close(conn)
+            os.unlink(APPLICATION_USAGE_DB)
+            os.rename(usage_db_tmp, APPLICATION_USAGE_DB)
+        except sqlite3.Error, err:
+            logging.error('Unhandled error: %s', str(err))
+            recovered = 0
+
+        return recovered
+
+    def verify_database(self, fix=False):
+        """Verify database integrity."""
+        conn = self._connect()
+        try:
+            query = conn.execute(APPLICATION_USAGE_TABLE_SELECT)
+            dummy_rows = query.fetchall()
+            query_ok = True
+        except sqlite3.Error:
+            query_ok = False
+
+        if not query_ok:
+            if fix:
+                logging.warning('Recreating database.')
+                logging.warning(
+                    'Recovered %d rows.', self._recreate_database())
+            else:
+                logging.warning('Database is malformed.')
+        else:
+            logging.info('Database is OK.')
+
+    def get_app_info(self, app_object):
+        """Gets info about an application.
+        Args:
+            app_object: NSRunningApplication object
+        Returns:
+            bundle id, app name, app version (all str)"""
+        # pylint: disable=no-self-use
+        if app_object:
+            try:
+                url = app_object.bundleURL()
+                app_path = url.path()
+            except AttributeError:
+                app_path = None
+            try:
+                bundle_id = app_object.bundleIdentifier()
+            except AttributeError:
+                # use the base filename
+                if app_path:
+                    bundle_id = os.path.basename(app_path)
+            if app_path:
+                app_info_plist = NSDictionary.dictionaryWithContentsOfFile_(
+                    '%s/Contents/Info.plist' % app_path)
+                if app_info_plist:
+                    app_version = app_info_plist.get(
+                        'CFBundleShortVersionString',
+                        app_info_plist.get('CFBundleVersion', '0'))
+                else:
+                    app_version = '0'
+
+        return bundle_id, app_path, app_version
+
+    def log_application_usage(self, event, app_object):
+        """Log application usage.
+        Args:
+            event: str, like "launch" or "quit"
+            bundle_id: str
+            app_version: str
+            app_path: str
+        """
+        bundle_id, app_path, app_version = self.get_app_info(app_object)
+        if bundle_id is None:
+            logging.warning('Application object had no bundle_id')
+            return
+
+        logging.debug('%s: bundle_id: %s version: %s path: %s',
+                      event, bundle_id, app_version, app_path)
+        try:
+            now = int(time.time())
+            conn = self._connect()
+            if not self._detect_application_usage_table(conn):
+                self._create_application_usage_table(conn)
+            self._insert_application_usage(
+                conn,
+                event, bundle_id, app_version, app_path, now)
+            conn.commit()
+        except sqlite3.OperationalError, err:
+            logging.error('Error writing %s event to database: %s', event, err)
+        except sqlite3.DatabaseError, err:
+            if err.args[0] == 'database disk image is malformed':
+                self._recreate_database()
+            logging.error('Database error: %s', err)
+        self._close(conn)
+
+
+class WorkspaceNotificationHandler(NSObject):
+    """A subclass of NSObject to handle workspace notifications"""
+
+    # Disable PyLint complaining about 'invalid' camelCase names
+    # pylint: disable=C0103
+
+    def init(self):
+        """NSObject-compatible initializer"""
+        self = super(WorkspaceNotificationHandler, self).init()
+        if self is None:
+            return None
+        self.usage = ApplicationUsage()
+        return self # NOTE: Unlike Python, NSObject's init() must return self!
+
+    def didLaunchApplicationNotification_(self, the_notification):
+        """Handle NSWorkspaceDidLaunchApplicationNotification"""
+        user_info = the_notification.userInfo()
+        app_object = user_info.get('NSWorkspaceApplicationKey')
+        self.usage.log_application_usage('launch', app_object)
+
+    def didActivateApplicationNotification_(self, the_notification):
+        """Handle NSWorkspaceDidActivateApplicationNotification"""
+        user_info = the_notification.userInfo()
+        app_object = user_info.get('NSWorkspaceApplicationKey')
+        self.usage.log_application_usage('activate', app_object)
+
+    def didTerminateApplicationNotification_(self, the_notification):
+        """Handle NSWorkspaceDidTerminateApplicationNotification"""
+        user_info = the_notification.userInfo()
+        app_object = user_info.get('NSWorkspaceApplicationKey')
+        self.usage.log_application_usage('quit', app_object)
+
+
+def main():
+    """Initialize our handler object and let NSWorkspace's notification center
+    know we are interested in notifications"""
+    
+    # configure logging
+    logpath = os.path.join(
+        os.path.dirname(prefs.pref('LogFile')), 'app_usage_monitor.log')
+    logging.basicConfig(
+        filename=logpath,
+        format='%(asctime)s %(levelname)s:%(message)s',
+        level=logging.INFO)
+
+    logging.info('app_usage_monitor started')
+    # PyLint can't tell that WorkspaceNotificationHandler' NSObject superclass
+    # has an alloc() method
+    # pylint: disable=no-member
+    notification_handler = WorkspaceNotificationHandler.alloc().init()
+    # pylint: enable=no-member
+    notification_center = NSWorkspace.sharedWorkspace().notificationCenter()
+
+    notification_center.addObserver_selector_name_object_(
+        notification_handler, 'didLaunchApplicationNotification:',
+        'NSWorkspaceDidLaunchApplicationNotification', None)
+
+    notification_center.addObserver_selector_name_object_(
+        notification_handler, 'didActivateApplicationNotification:',
+        'NSWorkspaceDidActivateApplicationNotification', None)
+
+    notification_center.addObserver_selector_name_object_(
+        notification_handler, 'didTerminateApplicationNotification:',
+        'NSWorkspaceDidTerminateApplicationNotification', None)
+
+    while True:
+        # listen for notifications forever
+        NSRunLoop.currentRunLoop().runUntilDate_(
+            NSDate.dateWithTimeIntervalSinceNow_(0.1))
+
+
+if __name__ == '__main__':
+    main()
