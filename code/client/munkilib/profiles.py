@@ -49,12 +49,14 @@ def config_profile_info(ignore_cache=False):
     output_plist = os.path.join(
         tempfile.mkdtemp(dir=osutils.tmpdir()), 'profiles')
     cmd = ['/usr/bin/profiles', '-C', '-o', output_plist]
+    # /usr/bin/profiles likes to output errors to stdout instead of stderr
+    # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.communicate()
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = proc.communicate()[0]
     if proc.returncode != 0:
         display.display_error(
-            'Could not obtain configuration profile info: %s' % proc.stderr)
+            'Could not obtain configuration profile info: %s' % stdout)
         config_profile_info.cache = {}
     else:
         try:
@@ -200,13 +202,15 @@ def install_profile(profile_path, profile_identifier):
     if not profiles_supported():
         return False
     cmd = ['/usr/bin/profiles', '-IF', profile_path]
+    # /usr/bin/profiles likes to output errors to stdout instead of stderr
+    # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.communicate()
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = proc.communicate()[0]
     if proc.returncode != 0:
         display.display_error(
             'Profile %s installation failed: %s'
-            % (os.path.basename(profile_path), proc.stderr))
+            % (os.path.basename(profile_path), stdout))
         return False
     if profile_identifier:
         record_profile_receipt(profile_path, profile_identifier)
@@ -223,12 +227,14 @@ def remove_profile(identifier):
     if not profiles_supported():
         return False
     cmd = ['/usr/bin/profiles', '-Rp', identifier]
+    # /usr/bin/profiles likes to output errors to stdout instead of stderr
+    # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.communicate()
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = proc.communicate()[0]
     if proc.returncode != 0:
         display.display_error(
-            'Profile %s removal failed: %s' % (identifier, proc.stderr))
+            'Profile %s removal failed: %s' % (identifier, stdout))
         return False
     remove_profile_receipt(identifier)
     return True
