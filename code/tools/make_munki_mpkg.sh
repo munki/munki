@@ -32,18 +32,19 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
+    -s cert     Sign distribution package with signing certificate from keychain
 
 EOF
 }
 
 
-while getopts "i:r:o:c:h" option
+while getopts "i:r:o:c:s:h" option
 do
     case $option in
         "i")
@@ -57,6 +58,9 @@ do
             ;;
         "c")
             CONFPKG="$OPTARG"
+            ;;
+        "s")
+            SIGNINGCERT="$OPTARG"
             ;;
         "h" | *)
             usage
@@ -591,7 +595,7 @@ for pkg in core admin app launchd app_usage; do
     esac
     echo
     echo "Packaging munkitools_$pkg-$ver.pkg"
-    
+
     # Use pkgutil --analyze to build a component property list
     # then turn off bundle relocation
     sudo /usr/bin/pkgbuild \
@@ -626,7 +630,7 @@ for pkg in core admin app launchd app_usage; do
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     fi
-    
+
     if [ "$?" -ne 0 ]; then
         echo "Error packaging munkitools_$pkg-$ver.pkg before rebuilding it."
         echo "Attempting to clean up temporary files..."
@@ -640,12 +644,22 @@ done
 
 echo
 # build distribution pkg from the components
-/usr/bin/productbuild \
-    --distribution "$DISTFILE" \
-    --package-path "$METAROOT" \
-    --resources "$METAROOT/Resources" \
-    "$MPKG"
-    
+# Sign package if specified with options.
+if [ "$SIGNINGCERT" != "" ]; then
+     /usr/bin/productbuild \
+        --distribution "$DISTFILE" \
+        --package-path "$METAROOT" \
+        --resources "$METAROOT/Resources" \
+        --sign "$SIGNINGCERT" \
+        "$MPKG"
+else
+    /usr/bin/productbuild \
+        --distribution "$DISTFILE" \
+        --package-path "$METAROOT" \
+        --resources "$METAROOT/Resources" \
+        "$MPKG"
+fi
+
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."
     echo "Attempting to clean up temporary files..."
