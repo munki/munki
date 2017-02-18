@@ -38,8 +38,8 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -r root     Set the munki source root
     -o dir      Set the output directory
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
-    -s cert     Sign distribution package with signing certificate from keychain.
-                Example: ./make_munki_mpkg.sh -s "Developer ID Installer: Munki (U8PN57A5N2)"
+    -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
+                Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
 
 EOF
 }
