@@ -32,18 +32,19 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
+    -s cert     Sign distribution package with signing certificate from keychain
 
 EOF
 }
 
 
-while getopts "i:r:o:c:h" option
+while getopts "i:r:o:c:s:h" option
 do
     case $option in
         "i")
@@ -57,6 +58,9 @@ do
             ;;
         "c")
             CONFPKG="$OPTARG"
+            ;;
+        "s")
+            SIGNINGCERT="$OPTARG"
             ;;
         "h" | *)
             usage
@@ -606,12 +610,24 @@ done
 
 echo
 # build distribution pkg from the components
-/usr/bin/productbuild \
-    --distribution "$DISTFILE" \
-    --package-path "$METAROOT" \
-    --resources "$METAROOT/Resources" \
-    --scripts "${MUNKIROOT}/code/pkgtemplate/Scripts_distribution" \
-    "$MPKG"
+# Sign package if specified with options.
+if [ "$SIGNINGCERT" != "" ]; then
+     /usr/bin/productbuild \
+        --distribution "$DISTFILE" \
+        --package-path "$METAROOT" \
+        --resources "$METAROOT/Resources" \
+        --scripts "${MUNKIROOT}/code/pkgtemplate/Scripts_distribution" \
+        --sign "$SIGNINGCERT" \
+        "$MPKG"
+else
+    /usr/bin/productbuild \
+        --distribution "$DISTFILE" \
+        --package-path "$METAROOT" \
+        --resources "$METAROOT/Resources" \
+        --scripts "${MUNKIROOT}/code/pkgtemplate/Scripts_distribution" \
+        "$MPKG"
+fi
+
 
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."
