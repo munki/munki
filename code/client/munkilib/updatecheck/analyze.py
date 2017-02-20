@@ -28,10 +28,12 @@ from . import compare
 from . import download
 from . import installationstate
 from . import manifestutils
+from . import unused_software
 
 from .. import display
 from .. import fetch
 from .. import info
+from .. import installer
 from .. import munkilog
 from .. import processes
 
@@ -162,6 +164,12 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             'Could not process item %s for optional install. No pkginfo found '
             'in catalogs: %s ', manifestitem, ', '.join(cataloglist))
         return
+    
+    is_currently_installed = installationstate.some_version_installed(item_pl)
+    if is_currently_installed and unused_software.should_be_removed(item_pl):
+        process_removal(manifestitem, cataloglist, installinfo)
+        installer.remove_from_selfserve_installs(manifestitem)
+        return
 
     # if we get to this point we can add this item
     # to the list of optional installs
@@ -174,7 +182,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                 'requires', 'RestartAction']:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
-    iteminfo['installed'] = installationstate.some_version_installed(item_pl)
+    iteminfo['installed'] = is_currently_installed
     if iteminfo['installed']:
         iteminfo['needs_update'] = (
             installationstate.installed_state(item_pl) == 0)

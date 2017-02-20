@@ -141,7 +141,7 @@ APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
 # get a pseudo-svn revision number for the launchd pkg
-LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd`
+LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd/LaunchDaemons launchd/LaunchAgents`
 GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
