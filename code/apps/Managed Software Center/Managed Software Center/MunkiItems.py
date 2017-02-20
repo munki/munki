@@ -367,6 +367,20 @@ def filtered_html(text, filter_images=False):
         return text.replace('\n', '<br>\n')
 
 
+def post_install_request_notification(event, item):
+    '''Post an NSDistributedNotification to be recorded by the
+    app_usage_monitor'''
+    user_info = {'event': event,
+                 'name': item['name'],
+                 'version': item.get('version_to_install', '0')}
+    dnc = NSDistributedNotificationCenter.defaultCenter()
+    dnc.postNotificationName_object_userInfo_options_(
+        'com.googlecode.munki.managedsoftwareupdate.installrequest',
+        None,
+        user_info,
+        NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
+
+
 class SelfServiceError(Exception):
     '''General error class for SelfService exceptions'''
     pass
@@ -418,12 +432,12 @@ class SelfService(object):
                 'Could not save self-service choices to %s'
                 % munki.WRITEABLE_SELF_SERVICE_MANIFEST_PATH)
 
-
 def subscribe(item):
     '''Add item to SelfServeManifest's managed_installs.
        Also track user selections.'''
     SelfService().subscribe(item)
     user_install_selections.add(item['name'])
+    post_install_request_notification('install', item)
 
 
 def unsubscribe(item):
@@ -431,6 +445,7 @@ def unsubscribe(item):
        Also track user selections.'''
     SelfService().unsubscribe(item)
     user_removal_selections.add(item['name'])
+    post_install_request_notification('remove', item)
 
 
 def unmanage(item):
