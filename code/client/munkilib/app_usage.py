@@ -28,6 +28,7 @@ Much code lifted from the application_usage scripts created by Google MacOps:
 import logging
 import os
 import sqlite3
+import tempfile
 import time
 
 # our libs
@@ -297,11 +298,11 @@ class ApplicationUsageRecorder(object):
 
         usage_db_tmp = '%s.tmp.%d' % (APPLICATION_USAGE_DB, os.getpid())
 
+        recovered = 0
         try:
             conn = self._connect(usage_db_tmp)
             for table in tables:
                 conn.execute(table['create_sql'])
-                recovered = 0
                 for row in table['rows']:
                     if row[1] == '':
                         # skip rows with empty bundle_id or item_name
