@@ -41,7 +41,7 @@ except ImportError:
         LOCAL_PREFS_SUPPORT = True
     except ImportError:
         # maybe we're not on an OS X machine...
-        print >> sys.stderr, ("WARNING: FoundationPlist is not available, "
+        print >> sys.stderr, ("Note: FoundationPlist is not available, "
                               "using plistlib instead.")
         import plistlib
         LOCAL_PREFS_SUPPORT = False
