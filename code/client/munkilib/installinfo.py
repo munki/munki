@@ -43,6 +43,75 @@ from . import FoundationPlist
 FORCE_INSTALL_WARNING_HOURS = 4
 
 
+def oldest_pending_update_in_days():
+    '''Return the datestamp of the oldest pending update'''
+    pendingupdatespath = os.path.join(
+        prefs.pref('ManagedInstallDir'), 'UpdateNotificationTracking.plist')
+    try:
+        pending_updates = FoundationPlist.readPlist(pendingupdatespath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        return 0
+
+    oldest_date = now = NSDate.date()
+    for category in pending_updates:
+        for name in pending_updates[category]:
+            this_date = pending_updates[category][name]
+            if this_date < oldest_date:
+                oldest_date = this_date
+
+    return now.timeIntervalSinceDate_(oldest_date) / (24 * 60 * 60)
+
+
+def save_pending_update_times():
+    '''Record the time each update first is made available. We can use this to
+    escalate our notifications if there are items that have been skipped a lot
+    '''
+    now = NSDate.date()
+    managed_install_dir = prefs.pref('ManagedInstallDir')
+    installinfopath = os.path.join(managed_install_dir, 'InstallInfo.plist')
+    appleupdatespath = os.path.join(managed_install_dir, 'AppleUpdates.plist')
+    pendingupdatespath = os.path.join(
+        managed_install_dir, 'UpdateNotificationTracking.plist')
+
+    try:
+        installinfo = FoundationPlist.readPlist(installinfopath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        installinfo = {}
+    install_names = [item['name']
+                     for item in installinfo.get('managed_installs', [])]
+    removal_names = [item['name']
+                     for item in installinfo.get('removals', [])]
+
+    try:
+        appleupdatesinfo = FoundationPlist.readPlist(appleupdatespath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        appleupdatesinfo = {}
+    appleupdate_names = [item['name']
+                         for item in appleupdatesinfo.get('AppleUpdates', [])]
+    update_names = {
+        'managed_installs': install_names,
+        'removals': removal_names,
+        'AppleUpdates': appleupdate_names}
+
+    try:
+        pending_updates = FoundationPlist.readPlist(pendingupdatespath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        pending_updates = {}
+
+    for category in update_names:
+        if category not in pending_updates:
+            pending_updates[category] = {}
+        for name in update_names[category]:
+            if name not in pending_updates[category]:
+                pending_updates[category][name] = now
+        for name in pending_updates[category]:
+            if name not in update_names[category]:
+                del pending_updates[category][name]
+
+    FoundationPlist.writePlist(pending_updates, pendingupdatespath)
+
+
+
 def display_update_info():
     '''Prints info about available updates'''
 
