@@ -815,6 +815,8 @@ def configure():
             if not os.path.exists(plugin_path):
                 # didn't find it; assume the default install path
                 plugin_path = '/usr/local/munki/munkilib/plugins'
+            if not os.path.isdir(plugin_path):
+                continue
             hasPlugin = False
             included_extensions = ['py']
             plugins = [fn for fn in os.listdir(plugin_path)
@@ -822,8 +824,6 @@ def configure():
             for plugin in plugins:
                 if 'FileRepo' not in plugin:
                     hasPlugin = True
-            if not os.path.isdir(plugin_path):
-                continue
             if not hasPlugin:
                 continue
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
