@@ -9,30 +9,26 @@
 /* Begin PBXBuildFile section */
 		C0022FD61AD9BCED007DCEC3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0022FD51AD9BCED007DCEC3 /* Cocoa.framework */; };
 		C0022FDF1AD9BCED007DCEC3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C0022FDE1AD9BCED007DCEC3 /* main.m */; };
-		C0022FE21AD9BCED007DCEC3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C0022FE01AD9BCED007DCEC3 /* Credits.rtf */; };
 		C0022FE71AD9BCED007DCEC3 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = C0022FE61AD9BCED007DCEC3 /* main.py */; };
 		C0022FE91AD9BCED007DCEC3 /* AppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = C0022FE81AD9BCED007DCEC3 /* AppDelegate.py */; };
 		C0022FEC1AD9BCED007DCEC3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0022FEA1AD9BCED007DCEC3 /* MainMenu.xib */; };
 		C0022FEE1AD9BCED007DCEC3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0022FED1AD9BCED007DCEC3 /* Images.xcassets */; };
-		C01D0DC51E5CAE60002A2EE1 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C01D0DC41E5CAE60002A2EE1 /* libpython2.6.dylib */; };
-		C0CC76561ADF416F0001FFF9 /* ncdb.py in Resources */ = {isa = PBXBuildFile; fileRef = C0CC76551ADF416F0001FFF9 /* ncdb.py */; };
+		C059327F1E5E3BA700BAFB16 /* libpython2.7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C059327E1E5E3BA700BAFB16 /* libpython2.7.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		C0022FD21AD9BCED007DCEC3 /* notifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = notifier.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0022FD21AD9BCED007DCEC3 /* munki-notifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "munki-notifier.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0022FD51AD9BCED007DCEC3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C0022FD81AD9BCED007DCEC3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		C0022FD91AD9BCED007DCEC3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		C0022FDA1AD9BCED007DCEC3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		C0022FDD1AD9BCED007DCEC3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0022FDE1AD9BCED007DCEC3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C0022FE11AD9BCED007DCEC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		C0022FE61AD9BCED007DCEC3 /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		C0022FE81AD9BCED007DCEC3 /* AppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = AppDelegate.py; sourceTree = "<group>"; };
 		C0022FEB1AD9BCED007DCEC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C0022FED1AD9BCED007DCEC3 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		C01D0DC41E5CAE60002A2EE1 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
-		C0CC76551ADF416F0001FFF9 /* ncdb.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = ncdb.py; sourceTree = "<group>"; };
+		C059327E1E5E3BA700BAFB16 /* libpython2.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.7.dylib; path = ../../../../../../../../System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/libpython2.7.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +37,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0022FD61AD9BCED007DCEC3 /* Cocoa.framework in Frameworks */,
-				C01D0DC51E5CAE60002A2EE1 /* libpython2.6.dylib in Frameworks */,
+				C059327F1E5E3BA700BAFB16 /* libpython2.7.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,7 +47,7 @@
 		C0022FC91AD9BCED007DCEC3 = {
 			isa = PBXGroup;
 			children = (
-				C0022FDB1AD9BCED007DCEC3 /* notifier */,
+				C0022FDB1AD9BCED007DCEC3 /* munki-notifier */,
 				C0022FD41AD9BCED007DCEC3 /* Frameworks */,
 				C0022FD31AD9BCED007DCEC3 /* Products */,
 			);
@@ -60,7 +56,7 @@
 		C0022FD31AD9BCED007DCEC3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C0022FD21AD9BCED007DCEC3 /* notifier.app */,
+				C0022FD21AD9BCED007DCEC3 /* munki-notifier.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -84,7 +80,7 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
-		C0022FDB1AD9BCED007DCEC3 /* notifier */ = {
+		C0022FDB1AD9BCED007DCEC3 /* munki-notifier */ = {
 			isa = PBXGroup;
 			children = (
 				C0022FE61AD9BCED007DCEC3 /* main.py */,
@@ -93,9 +89,8 @@
 				C0022FED1AD9BCED007DCEC3 /* Images.xcassets */,
 				C0022FE31AD9BCED007DCEC3 /* SharedLibraries */,
 				C0022FDC1AD9BCED007DCEC3 /* Supporting Files */,
-				C0CC76551ADF416F0001FFF9 /* ncdb.py */,
 			);
-			path = notifier;
+			path = "munki-notifier";
 			sourceTree = "<group>";
 		};
 		C0022FDC1AD9BCED007DCEC3 /* Supporting Files */ = {
@@ -103,7 +98,6 @@
 			children = (
 				C0022FDD1AD9BCED007DCEC3 /* Info.plist */,
 				C0022FDE1AD9BCED007DCEC3 /* main.m */,
-				C0022FE01AD9BCED007DCEC3 /* Credits.rtf */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -111,7 +105,7 @@
 		C0022FE31AD9BCED007DCEC3 /* SharedLibraries */ = {
 			isa = PBXGroup;
 			children = (
-				C01D0DC41E5CAE60002A2EE1 /* libpython2.6.dylib */,
+				C059327E1E5E3BA700BAFB16 /* libpython2.7.dylib */,
 			);
 			name = SharedLibraries;
 			sourceTree = "<group>";
@@ -119,9 +113,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C0022FD11AD9BCED007DCEC3 /* notifier */ = {
+		C0022FD11AD9BCED007DCEC3 /* munki-notifier */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C0022FF11AD9BCED007DCEC3 /* Build configuration list for PBXNativeTarget "notifier" */;
+			buildConfigurationList = C0022FF11AD9BCED007DCEC3 /* Build configuration list for PBXNativeTarget "munki-notifier" */;
 			buildPhases = (
 				C0022FCE1AD9BCED007DCEC3 /* Sources */,
 				C0022FCF1AD9BCED007DCEC3 /* Frameworks */,
@@ -132,9 +126,9 @@
 			);
 			dependencies = (
 			);
-			name = notifier;
+			name = "munki-notifier";
 			productName = notifier;
-			productReference = C0022FD21AD9BCED007DCEC3 /* notifier.app */;
+			productReference = C0022FD21AD9BCED007DCEC3 /* munki-notifier.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -151,7 +145,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C0022FCD1AD9BCED007DCEC3 /* Build configuration list for PBXProject "notifier" */;
+			buildConfigurationList = C0022FCD1AD9BCED007DCEC3 /* Build configuration list for PBXProject "munki-notifier" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -163,7 +157,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C0022FD11AD9BCED007DCEC3 /* notifier */,
+				C0022FD11AD9BCED007DCEC3 /* munki-notifier */,
 			);
 		};
 /* End PBXProject section */
@@ -173,10 +167,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0022FE21AD9BCED007DCEC3 /* Credits.rtf in Resources */,
 				C0022FEE1AD9BCED007DCEC3 /* Images.xcassets in Resources */,
 				C0022FE91AD9BCED007DCEC3 /* AppDelegate.py in Resources */,
-				C0CC76561ADF416F0001FFF9 /* ncdb.py in Resources */,
 				C0022FE71AD9BCED007DCEC3 /* main.py in Resources */,
 				C0022FEC1AD9BCED007DCEC3 /* MainMenu.xib in Resources */,
 			);
@@ -213,14 +205,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		C0022FE01AD9BCED007DCEC3 /* Credits.rtf */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C0022FE11AD9BCED007DCEC3 /* en */,
-			);
-			name = Credits.rtf;
-			sourceTree = "<group>";
-		};
 		C0022FEA1AD9BCED007DCEC3 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -329,14 +313,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = notifier/Info.plist;
+				INFOPLIST_FILE = "munki-notifier/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_NAME = "munki-notifier";
 			};
 			name = Debug;
 		};
@@ -345,21 +330,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = notifier/Info.plist;
+				INFOPLIST_FILE = "munki-notifier/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_NAME = "munki-notifier";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C0022FCD1AD9BCED007DCEC3 /* Build configuration list for PBXProject "notifier" */ = {
+		C0022FCD1AD9BCED007DCEC3 /* Build configuration list for PBXProject "munki-notifier" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0022FEF1AD9BCED007DCEC3 /* Debug */,
@@ -368,7 +354,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C0022FF11AD9BCED007DCEC3 /* Build configuration list for PBXNativeTarget "notifier" */ = {
+		C0022FF11AD9BCED007DCEC3 /* Build configuration list for PBXNativeTarget "munki-notifier" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0022FF21AD9BCED007DCEC3 /* Debug */,

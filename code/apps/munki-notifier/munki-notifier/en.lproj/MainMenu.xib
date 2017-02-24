@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1060" identifier="macosx"/>
+        <deployment version="1080" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application">
+        <customObject id="-3" userLabel="Application" customClass="NSObject">
             <connections>
                 <outlet property="delegate" destination="373" id="374"/>
             </connections>
         </customObject>
         <menu title="AMainMenu" systemMenu="main" id="29" userLabel="MainMenu">
             <items>
-                <menuItem title="notifier" id="56">
-                    <menu key="submenu" title="notifier" systemMenu="apple" id="57">
+                <menuItem title="munki-notifier" id="56">
+                    <menu key="submenu" title="munki-notifier" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About notifier" id="58">
+                            <menuItem title="About munki-notifier" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
@@ -32,7 +32,7 @@
                             <menuItem isSeparatorItem="YES" id="144">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Hide notifier" keyEquivalent="h" id="134">
+                            <menuItem title="Hide munki-notifier" keyEquivalent="h" id="134">
                                 <connections>
                                     <action selector="hide:" target="-1" id="367"/>
                                 </connections>
@@ -51,7 +51,7 @@
                             <menuItem isSeparatorItem="YES" id="149">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Quit notifier" keyEquivalent="q" id="136" userLabel="1111">
+                            <menuItem title="Quit munki-notifier" keyEquivalent="q" id="136" userLabel="1111">
                                 <connections>
                                     <action selector="terminate:" target="-1" id="369"/>
                                 </connections>
@@ -62,7 +62,7 @@
                 <menuItem title="Help" id="103" userLabel="1">
                     <menu key="submenu" title="Help" id="106" userLabel="2">
                         <items>
-                            <menuItem title="notifier Help" keyEquivalent="?" id="111">
+                            <menuItem title="munki-notifier Help" keyEquivalent="?" id="111">
                                 <connections>
                                     <action selector="showHelp:" target="-1" id="360"/>
                                 </connections>
