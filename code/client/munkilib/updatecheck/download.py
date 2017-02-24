@@ -31,6 +31,7 @@ from .. import fetch
 from .. import info
 from .. import munkihash
 from .. import osutils
+from .. import powermgr
 from .. import prefs
 from .. import reports
 
@@ -104,6 +105,8 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
     Returns True if the item was downloaded, False if it was already cached.
     Raises an error if there are issues..."""
 
+    # Create a power assertion to stop sleep during downloads
+    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
     download_item_key = 'installer_item_location'
     item_hash_key = 'installer_item_hash'
     if uninstalling and 'uninstaller_item_location' in item_pl:
@@ -151,6 +154,9 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     dl_message = 'Downloading %s...' % pkgname
     expected_hash = item_pl.get(item_hash_key, None)
+
+    # Release power assertion
+    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
     return fetch.munki_resource(pkgurl, destinationpath,
                                 resume=True,
                                 message=dl_message,
