@@ -32,18 +32,20 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
+    -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
+                Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
 
 EOF
 }
 
 
-while getopts "i:r:o:c:h" option
+while getopts "i:r:o:c:s:h" option
 do
     case $option in
         "i")
@@ -57,6 +59,9 @@ do
             ;;
         "c")
             CONFPKG="$OPTARG"
+            ;;
+        "s")
+            SIGNINGCERT="$OPTARG"
             ;;
         "h" | *)
             usage
@@ -136,7 +141,7 @@ APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
 # get a pseudo-svn revision number for the launchd pkg
-LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd`
+LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd/LaunchDaemons launchd/LaunchAgents`
 GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
@@ -591,7 +596,7 @@ for pkg in core admin app launchd app_usage; do
     esac
     echo
     echo "Packaging munkitools_$pkg-$ver.pkg"
-    
+
     # Use pkgutil --analyze to build a component property list
     # then turn off bundle relocation
     sudo /usr/bin/pkgbuild \
@@ -626,7 +631,7 @@ for pkg in core admin app launchd app_usage; do
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     fi
-    
+
     if [ "$?" -ne 0 ]; then
         echo "Error packaging munkitools_$pkg-$ver.pkg before rebuilding it."
         echo "Attempting to clean up temporary files..."
@@ -640,12 +645,22 @@ done
 
 echo
 # build distribution pkg from the components
-/usr/bin/productbuild \
-    --distribution "$DISTFILE" \
-    --package-path "$METAROOT" \
-    --resources "$METAROOT/Resources" \
-    "$MPKG"
-    
+# Sign package if specified with options.
+if [ "$SIGNINGCERT" != "" ]; then
+     /usr/bin/productbuild \
+        --distribution "$DISTFILE" \
+        --package-path "$METAROOT" \
+        --resources "$METAROOT/Resources" \
+        --sign "$SIGNINGCERT" \
+        "$MPKG"
+else
+    /usr/bin/productbuild \
+        --distribution "$DISTFILE" \
+        --package-path "$METAROOT" \
+        --resources "$METAROOT/Resources" \
+        "$MPKG"
+fi
+
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."
     echo "Attempting to clean up temporary files..."

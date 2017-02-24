@@ -239,7 +239,7 @@ def import_package(packagepath, curs):
                       plist.get('Bundle identifier', pkgname))
     # 'Bundle versions string, short' is a weird Casper Composer thing
     vers = plist.get('CFBundleShortVersionString',
-                     plist.get('Bundle versions string, short'), '1.0')
+                     plist.get('Bundle versions string, short', '1.0'))
     ppath = plist.get('IFPkgRelocatedPath', '').lstrip('./').rstrip('/')
 
     values_t = (timestamp, owner, pkgid, vers, ppath, pkgname)
