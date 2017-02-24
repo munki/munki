@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #  AppDelegate.py
-#  notifier
+#  munki-notifier
 #
 #  Created by Greg Neagle on 4/11/15.
 #  Copyright (c) 2015-2017 The Munki Project. All rights reserved.
@@ -17,15 +17,14 @@ from AppKit import *
 
 import objc
 
-#import ncdb
 
-MSCbundleIdentifier = u'com.googlecode.munki.ManagedSoftwareCenter'
-NotificationCenterUIBundleID = u'com.apple.notificationcenterui'
+MSCBUNDLEIDENTIFIER = u'com.googlecode.munki.ManagedSoftwareCenter'
+NOTIFICATIONCENTERBUNDLEID = u'com.apple.notificationcenterui'
 
 
 def convertDictionary(a_dict):
     '''Converts a python dictionary to a more native-ish NSDictionary containing NSStrings'''
-    # convert all our strings to native NSStrings to avoid this:
+    # convert all our strings to native NSStrings to avoid this on Sierra+:
     #  "Class 'OC_PythonDictionary' has a superclass that supports secure
     #   coding, but 'OC_PythonDictionary' overrides -initWithCoder: and does
     #   not override +supportsSecureCoding. The class must implement
@@ -39,7 +38,9 @@ def convertDictionary(a_dict):
 
 
 class AppDelegate(NSObject):
+    '''NSApplication delegate'''
     def applicationDidFinishLaunching_(self, notification):
+        '''React to app launch'''
         nc = NSUserNotificationCenter.defaultUserNotificationCenter()
         nc.setDelegate_(self)
 
@@ -51,37 +52,32 @@ class AppDelegate(NSObject):
             return
         else:
             # can we post a Notification Center notification?
-            print "Starting up"
             runningProcesses = NSWorkspace.sharedWorkspace(
                 ).runningApplications().valueForKey_('bundleIdentifier')
-            if NotificationCenterUIBundleID in runningProcesses:
-                print "Gonna post a notification"
-                self.notify('Important updates pending', '', 'Due by 04/30/2015.',
-                            'munki://updates')
+            if NOTIFICATIONCENTERBUNDLEID in runningProcesses:
+                # Notification Center is running, OK to notify
+                self.notify('Software updates available',
+                            text='Some updates have been pending for more than 3 days',
+                            url='munki://updates')
                 return
         # Notification center is not available; just launch MSC.app and show updates
-        url = NSURL.URLWithString_('munki://updates')
-        NSWorkspace.sharedWorkspace(
-            ).openURLs_withAppBundleIdentifier_options_additionalEventParamDescriptor_launchIdentifiers_(
-                [url], MSCbundleIdentifier, 0, None, None)
+        NSWorkspace.sharedWorkspace().openURL_(NSURL.URLWithString_('munki://updates'))
         NSApp.terminate_(self)
 
-    def notify(self, title, subtitle, text, url):
+    def notify(self, title='', subtitle='', text='', url=''):
         '''Send our notification'''
-        print "Entered notify"
         notification = NSUserNotification.alloc().init()
-        print "Created notification"
         notification.setTitle_(title)
         if subtitle:
             notification.setSubtitle_(subtitle)
         if text:
             notification.setInformativeText_(text)
         notification.setSoundName_('NSUserNotificationDefaultSoundName')
-        user_info = convertDictionary({'sender': MSCbundleIdentifier,
-                                       'action': 'open_url',
-                                       'url': url,
-                                       'type': 'updates'})
-        notification.setUserInfo_(user_info)
+        if url:
+            user_info = convertDictionary({'action': 'open_url',
+                                           'value': url,
+                                           'type': 'updates'})
+            notification.setUserInfo_(user_info)
         notification.setHasActionButton_(True)
         notification.setActionButtonTitle_('Details')
         # attempt to do notifications of alert style by default
@@ -91,39 +87,35 @@ class AppDelegate(NSObject):
         # remove previously delivered notifications so we don't have multiple
         # update notifications in Notification Center
         nc.removeAllDeliveredNotifications()
-        print "Scheduling notification"
-        nc.scheduleNotification_(notification)
+        # send our notification on its way
+        nc.deliverNotification_(notification)
 
-    #def userNotificationCenter_didActivateNotification_(self, center, notification):
-    #    '''User clicked on our notification'''
-    #    print 'Got userNotificationCenter:didActivateNotification:'
-    #    self.userActivatedNotification_(notification)
+    def userNotificationCenter_didActivateNotification_(self, center, notification):
+        '''User clicked on our notification'''
+        self.userActivatedNotification_(notification)
+        NSApp.terminate_(self)
 
     def userNotificationCenter_shouldPresentNotification_(self, center, notification):
         '''Delegate method called when Notification Center has decided it doesn't
         need to present the notification -- returning True overrides that decision'''
-        print 'Got userNotificationCenter:shouldPresentNotification:'
         return True
 
     def userNotificationCenter_didDeliverNotification_(self, center, notification):
         '''Notification was delivered and we can exit'''
-        print 'Got userNotificationCenter:didDeliverNotification:'
         NSApp.terminate_(self)
 
     def userActivatedNotification_(self, notification):
-        '''React to user clicking on notification by launching MSC.app and showing Updates page'''
+        '''React to user clicking on notification by opening a URL or by launching MSC.app and
+        showing Updates page'''
         NSUserNotificationCenter.defaultUserNotificationCenter().removeDeliveredNotification_(
             notification)
         user_info = notification.userInfo()
         if user_info and user_info.get('action') == 'open_url':
-            url = user_info.get('url')
-            NSWorkspace.sharedWorkspace(
-                ).openURLs_withAppBundleIdentifier_options_additionalEventParamDescriptor_launchIdentifiers_(
-                    [NSURL.URLWithString_(url)], MSCbundleIdentifier, 0, None, None)
+            url = user_info.get('value', 'munki://updates')
+            NSWorkspace.sharedWorkspace().openURL_(NSURL.URLWithString_(url))
         else:
-            NSWorkspace.sharedWorkspace(
-                ).openURLs_withAppBundleIdentifier_options_additionalEventParamDescriptor_launchIdentifiers_(
-                    [NSURL.URLWithString_('munki://updates')], MSCbundleIdentifier, 0, None, None)
+            # just fall back to our default behavior, which is to show MSC updates
+            NSWorkspace.sharedWorkspace().openURL_(NSURL.URLWithString_('munki://updates'))
 
 
 def swizzle(*args):
@@ -168,7 +160,7 @@ def swizzled_bundleIdentifier(self, original):
         """
     if self == NSBundle.mainBundle():
         # return our fake bundle identifier
-        return MSCbundleIdentifier
+        return MSCBUNDLEIDENTIFIER
     else:
         # call original function
         return original(self)
