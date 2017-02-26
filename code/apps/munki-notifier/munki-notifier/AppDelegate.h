@@ -1,5 +1,5 @@
 //
-//  main.m
+//  AppDelegate.h
 //  munki-notifier
 //
 //  Created by Greg Neagle on 2/23/17.
@@ -8,6 +8,5 @@
 
 #import <Cocoa/Cocoa.h>
 
-int main(int argc, const char * argv[]) {
-    return NSApplicationMain(argc, argv);
-}
+@interface AppDelegate : NSObject <NSApplicationDelegate, NSUserNotificationCenterDelegate>
+@end

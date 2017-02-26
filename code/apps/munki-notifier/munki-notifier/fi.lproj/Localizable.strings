@@ -1,0 +1,15 @@
+/* Multiple Update message */
+"%@ pending updates" = "%@ päivitystä saatavilla";
+
+/* One Update message */
+"1 pending update" = "1 päivitys saatavilla";
+
+/* Details label */
+"Details" = "Lisätietoja";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %@" = "Yksi tai useampi kohde täytyy asentaa ennen %@";
+
+/* Software updates available message */
+"Software updates available" = "Ohjelmistopäivityksiä saatavilla";
+

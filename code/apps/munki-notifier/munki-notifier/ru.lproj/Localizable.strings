@@ -1,0 +1,15 @@
+/* Multiple Update message */
+"%@ pending updates" = "%@ отложенных обновлений";
+
+/* One Update message */
+"1 pending update" = "1 отложенное обновление";
+
+/* Details label */
+"Details" = "Подробнее";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %@" = "Один или несколько элементов должны быть установлены до %@";
+
+/* Software updates available message */
+"Software updates available" = "Обновления программного обеспечения, доступные";
+
