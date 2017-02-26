@@ -448,9 +448,9 @@ def notifyUserOfUpdates(force=False):
         munkicommon.log('Notifying user of available updates.')
         munkicommon.log('LastNotifiedDate was %s' % lastNotifiedString)
 
-        # notify user of available updates using LaunchAgent to start
-        # Managed Software Center.app in the user context.
-        launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
+        # notify user of available updates using LaunchAgent to launch
+        # munki-notifier.app in the user context.
+        launchfile = '/var/run/com.googlecode.munki.munki-notifier'
         f = open(launchfile, 'w')
         f.close()
         time.sleep(5)
