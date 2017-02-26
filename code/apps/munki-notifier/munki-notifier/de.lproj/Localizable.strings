@@ -1,0 +1,15 @@
+/* Multiple Update message */
+"%@ pending updates" = "%@ anstehende Updates";
+
+/* One Update message */
+"1 pending update" = "1 anstehendes Update";
+
+/* Details label */
+"Details" = "Details";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %@" = "Eines oder mehrere Objekte müssen bis %@ installiert werden.";
+
+/* Software updates available message */
+"Software updates available" = "Software-Updates verfügbar";
+
