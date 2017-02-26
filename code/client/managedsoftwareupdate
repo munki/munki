@@ -824,7 +824,7 @@ def main():
     if appleupdatesavailable:
         appleupdates.displayAppleUpdateInfo()
 
-    # send a notification event so MSU can update its display if needed
+    # send a notification event so MSC can update its display if needed
     sendUpdateNotification()
 
     mustrestart = False
@@ -898,7 +898,7 @@ def main():
                     dummy_restart = doInstallTasks(
                         appleupdatesavailable, only_unattended=True)
 
-                # send a notification event so MSU can update its display
+                # send a notification event so MSC can update its display
                 # if needed
                 sendUpdateNotification()
 
@@ -954,9 +954,14 @@ def main():
                                         '<None>'
     munkicommon.savereport()
 
-    # store the current pending update count
+    # store the current pending update count and other data for munki-notifier
     munkicommon.set_pref('PendingUpdateCount',
                          updatesavailable + appleupdatesavailable)
+    installinfo.save_pending_update_times()
+    munkicommon.set_pref('OldestUpdateDays',
+                         installinfo.oldest_pending_update_in_days())
+    munkicommon.set_pref('ForcedUpdateDueDate',
+                         installinfo.earliest_force_install_date())
 
     # send a notification event so Dock tile badge can be updated if needed
     sendDockUpdateNotification()
