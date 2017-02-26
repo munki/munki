@@ -227,6 +227,28 @@ else
     echo "MunkiStatus.app version: $MSVERSION"
 fi
 
+# Build munki-notifier
+echo "Building munki-notifier.xcodeproj..."
+pushd "$MUNKIROOT/code/apps/munki-notifier" > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets clean > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets build > /dev/null
+XCODEBUILD_RESULT="$?"
+popd > /dev/null
+if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
+    echo "Error building munki-notifier.app: $XCODEBUILD_RESULT"
+    exit 2
+fi
+
+NOTIFIERAPP="$MUNKIROOT/code/apps/munki-notifier/build/Release/munki-notifier.app"
+if [ ! -e  "$NOTIFIERAPP" ]; then
+    echo "Need a release build of munki-notifier.app!"
+    echo "Open the Xcode project $MUNKIROOT/code/apps/notifier/munki-notifier.xcodeproj and build it."
+    exit 2
+else
+    NOTIFIERVERSION=`defaults read "$NOTIFIERAPP/Contents/Info" CFBundleShortVersionString`
+    echo "munki-notifier.app version: $NOTIFIERVERSION"
+fi
+
 # Create a PackageInfo file.
 makeinfo() {
     pkg="$1"
@@ -385,10 +407,12 @@ chmod -R 775 "$APPROOT/Applications"
 cp -R "$MSCAPP" "$APPROOT/Applications/"
 # Copy MunkiStatus helper app
 cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+# Copy notifier helper app
+cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
-# make a symlink for the old MSU.app
-ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed Software Update.app"
+## make a symlink for the old MSU.app
+#ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed Software Update.app"
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)

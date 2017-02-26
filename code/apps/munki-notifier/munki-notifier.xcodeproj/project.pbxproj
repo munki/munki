@@ -62,7 +62,7 @@
 		C0891DC11E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C0891DC21E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C0891DC61E60B535001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/MainMenu.strings; sourceTree = "<group>"; };
-		C0891DCB1E60B972001446D5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "munki-notifier/Info.plist"; sourceTree = "<group>"; };
+		C0891DCB1E60B972001446D5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +80,6 @@
 		C081D8AB1E5F4F5E00323D9C = {
 			isa = PBXGroup;
 			children = (
-				C0891DCB1E60B972001446D5 /* Info.plist */,
 				C081D8CA1E5F5F5000323D9C /* Frameworks */,
 				C081D8B61E5F4F5E00323D9C /* munki-notifier */,
 				C081D8B51E5F4F5E00323D9C /* Products */,
@@ -98,12 +97,8 @@
 		C081D8B61E5F4F5E00323D9C /* munki-notifier */ = {
 			isa = PBXGroup;
 			children = (
-				C081D8D61E60A82600323D9C /* InfoPlist.strings */,
-				C081D8D01E60A82600323D9C /* Localizable.strings */,
 				C081D8B71E5F4F5E00323D9C /* AppDelegate.h */,
 				C081D8B81E5F4F5E00323D9C /* AppDelegate.m */,
-				C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */,
-				C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */,
 				C081D8BA1E5F4F5E00323D9C /* Supporting Files */,
 			);
 			path = "munki-notifier";
@@ -112,6 +107,11 @@
 		C081D8BA1E5F4F5E00323D9C /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C081D8D61E60A82600323D9C /* InfoPlist.strings */,
+				C081D8D01E60A82600323D9C /* Localizable.strings */,
+				C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */,
+				C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */,
+				C0891DCB1E60B972001446D5 /* Info.plist */,
 				C081D8BB1E5F4F5E00323D9C /* main.m */,
 			);
 			name = "Supporting Files";
@@ -143,6 +143,7 @@
 				C081D8B01E5F4F5E00323D9C /* Sources */,
 				C081D8B11E5F4F5E00323D9C /* Frameworks */,
 				C081D8B21E5F4F5E00323D9C /* Resources */,
+				C02B7AA11E63676E00B206D4 /* Append build number to version */,
 			);
 			buildRules = (
 			);
@@ -207,6 +208,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C02B7AA11E63676E00B206D4 /* Append build number to version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Append build number to version";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\n# Git isn't installed on 10.6 or earlier by default, so find it\nGIT=`which git`\nif [ \"$GIT\" == \"\" ] ; then\n# let's hope it's in /usr/local/bin\nif [ -x \"/usr/local/bin/git\" ] ; then\nGIT=/usr/local/bin/git\nfi\nfi\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a psuedo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C081D8B01E5F4F5E00323D9C /* Sources */ = {

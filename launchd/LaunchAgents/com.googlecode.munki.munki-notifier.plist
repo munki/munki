@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.googlecode.munki.ManagedSoftwareCenter</string>
+  <string>com.googlecode.munki.munki-notifier</string>
   <key>LimitLoadToSessionType</key>
   <array>
     <string>Aqua</string>
@@ -12,7 +12,7 @@
   <array>
     <string>/usr/local/munki/launchapp</string>
     <string>-a</string>
-    <string>/Applications/Managed Software Center.app</string>
+    <string>/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app</string>
   </array>
   <key>RunAtLoad</key>
   <false/>
@@ -20,7 +20,7 @@
   <dict>
      <key>PathState</key>
      <dict>
-       <key>/var/run/com.googlecode.munki.ManagedSoftwareUpdate</key>
+       <key>/var/run/com.googlecode.munki.munki-notifier</key>
        <true/>
      </dict>
   </dict>
