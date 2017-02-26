@@ -96,7 +96,7 @@ def alertUserOfForcedLogout(info=None):
         # Managed Software Center.app isn't running.
         # Use our LaunchAgent to start
         # Managed Software Center.app in the user context.
-        launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareUpdate'
+        launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareCenter'
         f = open(launchfile, 'w')
         f.close()
         # now wait a bit for it to launch before proceeding
