@@ -42,6 +42,62 @@ from . import FoundationPlist
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
+class BadDateError(Exception):
+    '''Exception when transforming dates'''
+    pass
+
+
+def get_installinfo():
+    '''Returns the dictionary describing the managed installs and removals'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    plist = {}
+    installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
+    if os.path.exists(installinfo):
+        try:
+            plist = FoundationPlist.readPlist(installinfo)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return plist
+
+
+def get_appleupdates():
+    '''Returns any available Apple updates'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    plist = {}
+    appleupdatesfile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
+    if (os.path.exists(appleupdatesfile) and
+            (prefs.pref('InstallAppleSoftwareUpdates') or
+             prefs.pref('AppleSoftwareUpdatesOnly'))):
+        try:
+            plist = FoundationPlist.readPlist(appleupdatesfile)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return plist
+
+
+def earliest_force_install_date():
+    """Check installable packages for force_install_after_dates
+    Returns None or earliest force_install_after_date converted to local time
+    """
+    earliest_date = None
+
+    installinfo = get_installinfo().get('managed_installs', [])
+    installinfo.extend(get_appleupdates().get('AppleUpdates', []))
+
+    for install in installinfo:
+        this_force_install_date = install.get('force_install_after_date')
+
+        if this_force_install_date:
+            try:
+                this_force_install_date = info.subtract_tzoffset_from_date(
+                    this_force_install_date)
+                if not earliest_date or this_force_install_date < earliest_date:
+                    earliest_date = this_force_install_date
+            except BadDateError:
+                # some issue with the stored date
+                pass
+    return earliest_date
+
 
 def oldest_pending_update_in_days():
     '''Return the datestamp of the oldest pending update'''
@@ -68,24 +124,16 @@ def save_pending_update_times():
     '''
     now = NSDate.date()
     managed_install_dir = prefs.pref('ManagedInstallDir')
-    installinfopath = os.path.join(managed_install_dir, 'InstallInfo.plist')
-    appleupdatespath = os.path.join(managed_install_dir, 'AppleUpdates.plist')
     pendingupdatespath = os.path.join(
         managed_install_dir, 'UpdateNotificationTracking.plist')
 
-    try:
-        installinfo = FoundationPlist.readPlist(installinfopath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        installinfo = {}
+    installinfo = get_installinfo()
     install_names = [item['name']
                      for item in installinfo.get('managed_installs', [])]
     removal_names = [item['name']
                      for item in installinfo.get('removals', [])]
 
-    try:
-        appleupdatesinfo = FoundationPlist.readPlist(appleupdatespath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        appleupdatesinfo = {}
+    appleupdatesinfo = get_appleupdates()
     appleupdate_names = [item['name']
                          for item in appleupdatesinfo.get('AppleUpdates', [])]
     update_names = {
@@ -126,13 +174,7 @@ def display_update_info():
             display.display_info('       *Logout required')
             reports.report['LogoutRequired'] = True
 
-    installinfopath = os.path.join(
-        prefs.pref('ManagedInstallDir'), 'InstallInfo.plist')
-    try:
-        installinfo = FoundationPlist.readPlist(installinfopath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        installinfo = {}
-
+    installinfo = get_installinfo()
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
 

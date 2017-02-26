@@ -14,6 +14,7 @@ NSString * const MunkiNotifyBundleID = @"com.googlecode.munki.munki-notify";
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
 NSString * const MunkiUpdatesURL = @"munki://updates";
+long const DefaultUseNotificationCenterDays = 3;
 
 
 NSString *_fakeBundleIdentifier = nil;
@@ -76,8 +77,9 @@ InstallFakeBundleIdentifierHook()
         // get count of pending updates, oldest update days and any forced update due date
         // from Munki's preferences
         CFPropertyListRef plistRef = nil;
-        NSInteger updateCount = 0;
-        NSInteger oldestUpdateDays = 0;
+        long updateCount = 0;
+        float oldestUpdateDays = 0;
+        long useNotificationCenterDays = DefaultUseNotificationCenterDays;
         NSDate *forcedUpdateDueDate = nil;
         
         CFPreferencesAppSynchronize(CFSTR("ManagedInstalls"));
@@ -89,7 +91,12 @@ InstallFakeBundleIdentifierHook()
         plistRef = CFPreferencesCopyValue(
             CFSTR("OldestUpdateDays"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
         if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
-            oldestUpdateDays = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
+            oldestUpdateDays = [(NSNumber *)CFBridgingRelease(plistRef) floatValue];
+        }
+        plistRef = CFPreferencesCopyValue(
+            CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
+        if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
+            useNotificationCenterDays = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
         }
         plistRef = CFPreferencesCopyValue(
              CFSTR("ForcedUpdateDueDate"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
@@ -108,9 +115,14 @@ InstallFakeBundleIdentifierHook()
         }
         
         // updateCount > 0
-        if (! notificationCenterAvailable || oldestUpdateDays > 3) {
+        if (! notificationCenterAvailable || oldestUpdateDays > useNotificationCenterDays) {
             // Notification Center is not available or Notification Manager notifications
             // are being ignored or suppressed; launch MSC.app and show updates
+            if (notificationCenterAvailable) {
+                // clear any previously posted updates available notifications since we are going
+                // to launch MSC.app
+                [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+            }
             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
             [NSApp terminate: self];
             return;
