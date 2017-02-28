@@ -4,6 +4,7 @@ Postinstall script to load munki's launchdaemons.
 """
 import subprocess
 import sys
+import os
 
 
 def getconsoleuser():
