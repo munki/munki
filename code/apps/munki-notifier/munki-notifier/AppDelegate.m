@@ -49,12 +49,25 @@ InstallFakeBundleIdentifierHook()
 }
 
 
+void launchMSCapp()
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath: @"/Applications/Managed Software Center.app"]) {
+        [[NSWorkspace sharedWorkspace] launchApplication: @"/Applications/Managed Software Center.app"];
+    } else {
+        // just let LaunchServices find it and launch it for us
+        [[NSWorkspace sharedWorkspace] launchApplication: @"Managed Software Center.app"];
+    }
+}
+
+
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
     if (floor(kCFCoreFoundationVersionNumber) < kCFCoreFoundationVersionNumber10_8) {
         // we are running on something earlier than 10.8. Just launch MSC.app and quit.
+        launchMSCapp();
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
         [NSApp terminate: self];
         return;
