@@ -9,6 +9,7 @@
 
 #import "AppDelegate.h"
 #import <objc/runtime.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 NSString * const MunkiNotifyBundleID = @"com.googlecode.munki.munki-notify";
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
@@ -52,6 +53,13 @@ InstallFakeBundleIdentifierHook()
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
+    if (floor(kCFCoreFoundationVersionNumber) < kCFCoreFoundationVersionNumber10_8) {
+        // we are running on something earlier than 10.8. Just launch MSC.app and quit.
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
+        [NSApp terminate: self];
+        return;
+    }
+    
     NSUserNotification *userNotification = notification.userInfo[
         NSApplicationLaunchUserNotificationKey];
     if (userNotification) {
@@ -202,8 +210,11 @@ InstallFakeBundleIdentifierHook()
     if (! [message isEqualToString:@""]) userNotification.informativeText = message;
     userNotification.userInfo = options;
     
-    // Attempt to display as alert style (though user can override at any time)
-    [userNotification setValue:@YES forKey:@"_showsButtons"];
+    if (floor(kCFCoreFoundationVersionNumber) > kCFCoreFoundationVersionNumber10_8) {
+        // We're running on 10.9 or higher
+        // Attempt to display as alert style (though user can override at any time)
+        [userNotification setValue:@YES forKey:@"_showsButtons"];
+    }
     userNotification.hasActionButton = true;
     userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
     
