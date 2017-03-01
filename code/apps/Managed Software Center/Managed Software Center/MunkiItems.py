@@ -875,6 +875,8 @@ class OptionalItem(GenericItem):
         if 'category' not in self:
             self['category'] = NSLocalizedString(u"Uncategorized",
                                                  u"No Category name")
+        if 'featured' not in self:
+            self['featured'] = False
         if self['developer']:
             self['category_and_developer'] = u'%s - %s' % (
                 self['category'], self['developer'])

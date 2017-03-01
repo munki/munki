@@ -272,16 +272,26 @@ def build_list_page(category=None, developer=None, filter=None):
         header = u'Search results for %s' % filter
         page_name = u'filter-%s.html' % filter
 
+    featured_items = [item for item in items if item.get('featured')]
+    if (featured_items and category is None and developer is None and
+            filter is None):
+        header  = NSLocalizedString(u"Featured items",
+                                    u"FeaturedItemsHeaderText")
+
     category_list = []
     for item in items:
         if 'category' in item and item['category'] not in category_list:
             category_list.append(item['category'])
 
     item_html = build_list_page_items_html(
-                            category=category, developer=developer, filter=filter)
+        category=category, developer=developer, filter=filter)
 
     # make HTML for Categories pop-up menu
-    all_categories_label = NSLocalizedString(u"All Categories", u"AllCategoriesLabel")
+    if featured_items:
+        all_categories_label = NSLocalizedString(u"Featured", u"FeaturedLabel")
+    else:
+        all_categories_label = NSLocalizedString(u"All Categories",
+                                                 u"AllCategoriesLabel")
     if category:
         categories_html = u'<option>%s</option>\n' % all_categories_label
     else:
@@ -320,7 +330,8 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
     item_html = u''
     if filter:
         # since the filter term came through the filesystem,
-        # HFS+ does some unicode character decomposition which can cause issues with comparisons
+        # HFS+ does some unicode character decomposition which can cause issue
+        # with comparisons
         # so before we do our comparison, we normalize the unicode string
         # using unicodedata.normalize
         filter = normalize('NFC', filter)
@@ -336,6 +347,13 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
     if developer:
         items = [item for item in items
                  if developer.lower() in item.get('developer', '').lower()]
+
+    if category is None and developer is None and filter is None:
+        # this is the default (formerly) "all items" view
+        # look for featured items and display those if we have them
+        featured_items = [item for item in items if item.get('featured')]
+        if featured_items:
+            items = featured_items
 
     if items:
         item_template = get_template('list_item_template.html')
