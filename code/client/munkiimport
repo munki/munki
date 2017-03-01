@@ -1096,6 +1096,7 @@ def main():
                             'update_for',
                             'category',
                             'developer',
+                            'featured',
                             'icon_name']:
                     if key in matchingpkginfo:
                         print 'Copying %s: %s' % (key, matchingpkginfo[key])
@@ -1108,6 +1109,7 @@ def main():
                       ('Version', 'version', 'str'),
                       ('Category', 'category', 'str'),
                       ('Developer', 'developer', 'str'),
+                      ('Featured', 'featured', 'bool'),
                       ('Unattended install', 'unattended_install', 'bool'),
                       ('Unattended uninstall', 'unattended_uninstall', 'bool'),
                      )
