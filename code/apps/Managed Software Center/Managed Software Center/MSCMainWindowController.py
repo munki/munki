@@ -1144,7 +1144,8 @@ class MSCMainWindowController(NSWindowController):
         changes the category selected in the sidebar popup'''
         all_categories_label = NSLocalizedString(
             u"All Categories", u"AllCategoriesLabel")
-        if category == all_categories_label:
+        featured_label = NSLocalizedString(u"Featured", u"FeaturedLabel")
+        if category in [all_categories_label, featured_label]:
             category = u'all'
         self.load_page('category-%s.html' % category)
 
