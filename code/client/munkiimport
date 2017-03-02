@@ -31,7 +31,6 @@ import subprocess
 import sys
 import time
 import thread
-import re
 
 from ctypes.util import find_library
 from optparse import OptionParser, BadOptionError, AmbiguousOptionError
@@ -39,7 +38,12 @@ from optparse import OptionParser, BadOptionError, AmbiguousOptionError
 import objc
 
 from munkilib import iconutils
-from munkilib import munkicommon
+from munkilib import info
+from munkilib import display
+from munkilib import dmgutils
+from munkilib import munkihash
+from munkilib import osutils
+from munkilib import pkgutils
 from munkilib import FoundationPlist
 from munkilib import Repo
 
@@ -158,7 +162,7 @@ def raw_input_with_default(prompt, default_text):
 
     # 10.6's libedit doesn't have the rl_set_prompt function, so we fall back
     # to the previous behavior
-    if munkicommon.getOsVersion() == '10.6':
+    if osutils.getOsVersion() == '10.6':
         if default_text:
             prompt = '%s [%s]: ' % (prompt.rstrip(': '), default_text)
             return (unicode(raw_input(prompt), encoding=sys.stdin.encoding) or
@@ -218,7 +222,7 @@ def make_dmg(pkgpath):
     pkgname = repo.basename(pkgpath)
     print 'Making disk image containing %s...' % pkgname
     diskimagename = repo.splitext(pkgname)[0] + '.dmg'
-    diskimagepath = repo.join(munkicommon.tmpdir(), diskimagename)
+    diskimagepath = repo.join(osutils.tmpdir(), diskimagename)
     cmd = ['/usr/bin/hdiutil', 'create', '-srcfolder', pkgpath, diskimagepath]
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -315,13 +319,13 @@ def add_icon_hash_to_pkginfo(pkginfo):
     """Adds the icon hash tp pkginfo if the icon exists in repo"""
     icon_path = get_icon_path(pkginfo)
     if repo.isfile(icon_path):
-        pkginfo['icon_hash'] = munkicommon.getsha256hash(icon_path)
+        pkginfo['icon_hash'] = munkihash.getsha256hash(icon_path)
 
 
 def generate_png_from_copy_from_dmg_item(dmg_path, pkginfo):
     '''Generates a product icon from a copy_from_dmg item
     and uploads to the repo'''
-    mountpoints = munkicommon.mountdmg(dmg_path)
+    mountpoints = dmgutils.mountdmg(dmg_path)
     if mountpoints:
         mountpoint = mountpoints[0]
         apps = [item for item in pkginfo.get('items_to_copy', [])
@@ -335,7 +339,7 @@ def generate_png_from_copy_from_dmg_item(dmg_path, pkginfo):
                 print 'No application icons found.'
         else:
             print 'No application icons found.'
-        munkicommon.unmountdmg(mountpoint)
+        dmgutils.unmountdmg(mountpoint)
 
 
 def generate_pngs_from_installer_pkg(item_path, pkginfo):
@@ -344,20 +348,20 @@ def generate_pngs_from_installer_pkg(item_path, pkginfo):
     icon_paths = []
     mountpoint = None
     pkg_path = None
-    if munkicommon.hasValidDiskImageExt(item_path):
+    if pkgutils.hasValidDiskImageExt(item_path):
         dmg_path = item_path
-        mountpoints = munkicommon.mountdmg(dmg_path)
+        mountpoints = dmgutils.mountdmg(dmg_path)
         if mountpoints:
             mountpoint = mountpoints[0]
             if pkginfo.get('package_path'):
                 pkg_path = os.path.join(mountpoint, pkginfo['package_path'])
             else:
                 # find first item that appears to be a pkg at the root
-                for fileitem in munkicommon.listdir(mountpoints[0]):
-                    if munkicommon.hasValidPackageExt(fileitem):
+                for fileitem in osutils.listdir(mountpoints[0]):
+                    if pkgutils.hasValidPackageExt(fileitem):
                         pkg_path = os.path.join(mountpoint, fileitem)
                         break
-    elif munkicommon.hasValidPackageExt(item_path):
+    elif pkgutils.hasValidPackageExt(item_path):
         pkg_path = item_path
     if pkg_path:
         if os.path.isdir(pkg_path):
@@ -366,7 +370,7 @@ def generate_pngs_from_installer_pkg(item_path, pkginfo):
             icon_paths = iconutils.extractAppIconsFromFlatPkg(pkg_path)
 
     if mountpoint:
-        munkicommon.unmountdmg(mountpoint)
+        dmgutils.unmountdmg(mountpoint)
 
     if len(icon_paths) == 1:
         convert_and_install_icon(pkginfo, icon_paths[0])
@@ -396,7 +400,7 @@ def convert_and_install_icon(pkginfo, icon_path, index=None):
 
     png_name = destination_name + u'.png'
     png_path = repo.join(destination_path, png_name)
-    png_tmp = repo.join(munkicommon.tmpdir(), png_name)
+    png_tmp = repo.join(osutils.tmpdir(), png_name)
     result = iconutils.convertIconToPNG(icon_path, png_tmp)
     if result:
         result = repo.put(png_tmp, png_path)
@@ -540,7 +544,7 @@ def make_catalog_db():
         vers = item.get('version', 'NO VERSION')
 
         if name == 'NO NAME' or vers == 'NO VERSION':
-            munkicommon.display_warning('Bad pkginfo: %s' % item)
+            display.display_warning('Bad pkginfo: %s' % item)
 
         # add to hash table
         if 'installer_item_hash' in item:
@@ -554,7 +558,7 @@ def make_catalog_db():
                 item['installer_item_location'])
             (name, ext) = repo.splitext(installer_item_name)
             if '-' in name:
-                (name, vers) = munkicommon.nameAndVersion(name)
+                (name, vers) = pkgutils.nameAndVersion(name)
             installer_item_name = name + ext
             if not installer_item_name in installer_item_table:
                 installer_item_table[installer_item_name] = {}
@@ -574,7 +578,7 @@ def make_catalog_db():
                         pkgid_table[pkgid][pkgvers] = []
                     pkgid_table[pkgid][pkgvers].append(itemindex)
             except TypeError:
-                munkicommon.display_warning(
+                display.display_warning(
                     'Bad receipt data for %s-%s: %s'
                     % (name, vers, receipt))
 
@@ -589,7 +593,7 @@ def make_catalog_db():
                             app_table[install['path']][vers] = []
                         app_table[install['path']][vers].append(itemindex)
             except TypeError:
-                munkicommon.display_warning(
+                display.display_warning(
                     'Bad install data for %s-%s: %s'
                     % (name, vers, install))
 
@@ -618,8 +622,8 @@ def find_matching_pkginfo(pkginfo):
 
     def compare_version_keys(value_a, value_b):
         """Internal comparison function for use in sorting"""
-        return cmp(munkicommon.MunkiLooseVersion(value_b),
-                   munkicommon.MunkiLooseVersion(value_a))
+        return cmp(pkgutils.MunkiLooseVersion(value_b),
+                   pkgutils.MunkiLooseVersion(value_a))
 
     try:
         catdb = make_catalog_db()
@@ -777,7 +781,7 @@ def cleanup_and_exit(exitcode):
         else:
             result = repo.unmount()
     # clean up tmpdir
-    munkicommon.cleanUpTmpDir()
+    osutils.cleanUpTmpDir()
 
     exit(exitcode or result)
 
@@ -806,8 +810,7 @@ def configure():
              'pkginfo editor (examples: /usr/bin/vi or TextMate.app; '
              'leave empty to not open an editor after import)'),
             ('default_catalog', 'Default catalog to use (example: testing)'),
-            ('plugin', 'Use a plugin to write to a custom munki repository')
-            ]:
+            ('plugin', 'Use a plugin to write to a custom munki repository')]:
         if key == 'plugin':
             # first look for a plugins folder in the same dir as us
             plugin_path = os.path.dirname(os.path.abspath(__file__))
@@ -815,16 +818,16 @@ def configure():
             if not os.path.exists(plugin_path):
                 # didn't find it; assume the default install path
                 plugin_path = '/usr/local/munki/munkilib/plugins'
-            hasPlugin = False
+            has_plugin = False
             included_extensions = ['py']
             plugins = [fn for fn in os.listdir(plugin_path)
-              if any(fn.endswith(ext) for ext in included_extensions)]
+                       if any(fn.endswith(ext) for ext in included_extensions)]
             for plugin in plugins:
                 if 'FileRepo' not in plugin:
-                    hasPlugin = True
+                    has_plugin = True
             if not os.path.isdir(plugin_path):
                 continue
-            if not hasPlugin:
+            if not has_plugin:
                 continue
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
 
@@ -894,7 +897,7 @@ def main():
                       help='Optional repo fileshare URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
-    parser.add_option('--plugin', '--plugin', default='', 
+    parser.add_option('--plugin', '--plugin', default='',
                       help='Optional custom plugin to run for munkiimport Repo.')
     parser.add_option('--icon_path', '--icon-path', default='', type='string',
                       help='Path to an icon file for the package. '
@@ -908,7 +911,7 @@ def main():
     options, arguments = parser.parse_args()
 
     if options.version:
-        print munkicommon.get_version()
+        print info.get_version()
         exit(0)
 
     if options.configure:
@@ -931,7 +934,7 @@ def main():
             exit(-1)
 
         REPO_PATH = options.repo_path
-    #if specified options, override defaults   
+    #if specified options, override defaults
     if options.repo_url:
         REPO_URL = options.repo_url
 
@@ -971,13 +974,13 @@ def main():
         installer_item = installer_item.rstrip('/')
 
         # Check if the item is a mount point for a disk image
-        if munkicommon.pathIsVolumeMountPoint(installer_item):
+        if dmgutils.pathIsVolumeMountPoint(installer_item):
             # Get the disk image path for the mount point
             # and use that instead of the original item
-            installer_item = munkicommon.diskImageForMountPoint(installer_item)
+            installer_item = dmgutils.diskImageForMountPoint(installer_item)
 
-        if not munkicommon.hasValidInstallerItemExt(installer_item) and \
-           not munkicommon.isApplication(installer_item):
+        if not pkgutils.hasValidInstallerItemExt(installer_item) and \
+           not pkgutils.isApplication(installer_item):
             print >> sys.stderr, (
                 'Unknown installer item type: "%s"' % installer_item)
             exit(-1)
@@ -1000,7 +1003,7 @@ def main():
 
     if not APPLEMETADATA:
         if repo.isdir(installer_item): # Start of indent
-            if munkicommon.hasValidDiskImageExt(installer_item):
+            if pkgutils.hasValidDiskImageExt(installer_item):
                 # a directory named foo.dmg or foo.iso!
                 print >> sys.stderr, '%s is an unknown type.' % installer_item
                 cleanup_and_exit(-1)
@@ -1021,7 +1024,7 @@ def main():
 
         if uninstaller_item:
             if repo.isdir(uninstaller_item):
-                if munkicommon.hasValidDiskImageExt(uninstaller_item):
+                if pkgutils.hasValidDiskImageExt(uninstaller_item):
                     # a directory named foo.dmg or foo.iso!
                     print >> sys.stderr, (
                         '%s is an unknown type.' % uninstaller_item)
@@ -1123,10 +1126,7 @@ def main():
             pkginfo[key] = raw_input_with_default(prompt, default)
             if kind == 'bool':
                 value = pkginfo[key].lower().strip()
-                if value.startswith(('y', 't')):
-                    pkginfo[key] = True
-                else:
-                    pkginfo[key] = False
+                pkginfo[key] = value.startswith(('y', 't'))
 
         # special handling for catalogs array
         prompt = '%20s: ' % 'Catalogs'
@@ -1214,7 +1214,7 @@ def main():
             # the actual location and name; update size and hash
             pkginfo['uninstaller_item_location'] = uploaded_pkgpath
             itemsize = int(repo.getsize(uninstaller_item))
-            itemhash = munkicommon.getsha256hash(uninstaller_item)
+            itemhash = munkihash.getsha256hash(uninstaller_item)
             pkginfo['uninstaller_item_size'] = int(itemsize/1024)
             pkginfo['uninstaller_item_hash'] = itemhash
 
