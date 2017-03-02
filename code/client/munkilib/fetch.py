@@ -81,23 +81,27 @@ def import_middleware():
                 and os.path.splitext(filename)[1] == '.py'):
             name = os.path.splitext(filename)[0]
             filepath = os.path.join(munki_dir, filename)
-            _tmp = imp.load_source(name, filepath)
-            if hasattr(_tmp, required_function_name):
-                if callable(getattr(_tmp, required_function_name)):
-                    display.display_debug1(
-                        'Loading middleware module %s' % filename)
-                    globals()['middleware'] = _tmp
-                    return
+            try:
+                _tmp = imp.load_source(name, filepath)
+                if hasattr(_tmp, required_function_name):
+                    if callable(getattr(_tmp, required_function_name)):
+                        display.display_debug1(
+                            'Loading middleware module %s' % filename)
+                        globals()['middleware'] = _tmp
+                        return
+                    else:
+                        display.display_warning(
+                            '%s attribute in %s is not callable.'
+                            % (required_function_name, filepath))
+                        display.display_warning('Ignoring %s' % filepath)
                 else:
                     display.display_warning(
-                        '%s attribute in %s is not callable.'
-                        % (required_function_name, filepath))
+                        '%s does not have a %s function'
+                        % (filepath, required_function_name))
                     display.display_warning('Ignoring %s' % filepath)
-            else:
-                display.display_warning(
-                    '%s does not have a %s function'
-                    % (filepath, required_function_name))
-                display.display_warning('Ignoring %s' % filepath)
+            except:
+                    display.display_warning('Ignoring %s because of error importing module.'
+                                            % filepath)
     return
 
 
