@@ -20,6 +20,7 @@ manifestutil
 Created by Greg Neagle on 2011-03-04.
 """
 
+#
 import ctypes
 import fnmatch
 import optparse
@@ -27,7 +28,6 @@ import os
 import plistlib
 import readline
 import shlex
-import subprocess
 import sys
 import thread
 import time
@@ -35,16 +35,11 @@ import time
 from ctypes.util import find_library
 from xml.parsers.expat import ExpatError
 
-from munkilib import munkicommon
+# our libs
+from munkilib import info
+from munkilib import osutils
 from munkilib import Repo
 
-try:
-    from munkilib.munkicommon import get_version
-except ImportError:
-    # munkilib is not available
-    def get_version():
-        '''Placeholder if munkilib is not available'''
-        return 'UNKNOWN'
 
 # NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
 # work here: https://gist.github.com/pudquick/1362a8908be01e23041d
@@ -421,6 +416,7 @@ def manifest_rename(source_manifest_name, dest_manifest_name,
             source_manifest_name, dest_manifest_name, err)
         return False
 
+
 def cleanup_and_exit(exitcode):
     """Give the user the chance to unmount the repo when we exit"""
     result = 0
@@ -428,7 +424,7 @@ def cleanup_and_exit(exitcode):
         answer = raw_input('Unmount the repo fileshare? [y/n] ')
         if answer.lower().startswith('y'):
             result = repo.unmount()
-    munkicommon.cleanUpTmpDir()
+    osutils.cleanUpTmpDir()
     exit(exitcode or result)
 
 
@@ -473,7 +469,7 @@ def version(args):
     if len(args) != 0:
         print >> sys.stderr, 'Usage: version'
         return 22 # Invalid argument
-    print get_version()
+    print info.get_version()
     return 0
 
 
@@ -1126,6 +1122,7 @@ def set_up_tab_completer():
 
 
 def handle_subcommand(args):
+    '''Umm, handles our subcommands'''
     global repo
 
     '''Does all our subcommands'''
