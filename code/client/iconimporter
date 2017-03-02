@@ -22,13 +22,18 @@ Created by Greg Neagle on 2014-03-03.
 
 Converts and imports icons as png files for Munki repo
 """
+# standard libs
 import sys
 import os
 from optparse import OptionParser
 
-from munkilib import munkicommon
-from munkilib import FoundationPlist
+# our libs
+from munkilib import dmgutils
 from munkilib import iconutils
+from munkilib import osutils
+from munkilib import pkgutils
+
+from munkilib import FoundationPlist
 from munkilib import Repo
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -37,10 +42,10 @@ from munkilib import Repo
 from Foundation import CFPreferencesCopyAppValue
 # pylint: enable=E0611
 
-def generate_png_from_copy_from_dmg_item(install_item, repo):
+def generate_png_from_dmg_item(install_item, repo):
     '''Generate a PNG from a disk image containing an application'''
     dmgpath = repo.join('pkgs', install_item['installer_item_location'])
-    mountpoints = munkicommon.mountdmg(dmgpath)
+    mountpoints = dmgutils.mountdmg(dmgpath)
     if mountpoints:
         mountpoint = mountpoints[0]
         apps = [item for item in install_item.get('items_to_copy', [])
@@ -51,7 +56,8 @@ def generate_png_from_copy_from_dmg_item(install_item, repo):
             if icon_path:
                 png_path = repo.join(u'icons', install_item['name'] + u'.png')
                 png_handle = repo.open(png_path, 'w')
-                result = iconutils.convertIconToPNG(icon_path, png_handle.local_path)
+                result = iconutils.convertIconToPNG(
+                    icon_path, png_handle.local_path)
                 if result:
                     print_utf8(u'\tWrote: %s' % png_path)
                 else:
@@ -60,19 +66,19 @@ def generate_png_from_copy_from_dmg_item(install_item, repo):
                 print_utf8(u'\tNo application icons found.')
         else:
             print_utf8(u'\tNo application icons found.')
-        munkicommon.unmountdmg(mountpoint)
+        dmgutils.unmountdmg(mountpoint)
 
 
-def generate_pngs_from_installer_pkg(install_item, repo):
+def generate_pngs_from_pkg(install_item, repo):
     '''Generate PNGS from applications inside a pkg'''
     icon_paths = []
     mountpoint = None
     pkg_path = None
     pkg_repo = None
-    item_path = repo.join( u'pkgs', install_item['installer_item_location'])
-    if munkicommon.hasValidDiskImageExt(item_path):
+    item_path = repo.join(u'pkgs', install_item['installer_item_location'])
+    if pkgutils.hasValidDiskImageExt(item_path):
         dmg_path = item_path
-        mountpoints = munkicommon.mountdmg(dmg_path)
+        mountpoints = dmgutils.mountdmg(dmg_path)
         if mountpoints:
             mountpoint = mountpoints[0]
             if install_item.get('package_path'):
@@ -80,16 +86,18 @@ def generate_pngs_from_installer_pkg(install_item, repo):
                     mountpoint, install_item['package_path'])
             else:
                 # find first item that appears to be a pkg at the root
-                for fileitem in munkicommon.listdir(mountpoints[0]):
-                    if munkicommon.hasValidPackageExt(fileitem):
+                for fileitem in osutils.listdir(mountpoints[0]):
+                    if pkgutils.hasValidPackageExt(fileitem):
                         pkg_path = os.path.join(mountpoint, fileitem)
                         break
-    elif munkicommon.hasValidPackageExt(item_path):
+    elif pkgutils.hasValidPackageExt(item_path):
         pkg_path = item_path
         pkg_repo = repo
     if pkg_path:
-        if (pkg_repo and pkg_repo.isdir(pkg_path)) or (not repo and os.path.isdir(pkg_path)):
-            icon_paths = iconutils.extractAppIconsFromBundlePkg(pkg_path, pkg_repo)
+        if ((pkg_repo and pkg_repo.isdir(pkg_path)) or
+                (not repo and os.path.isdir(pkg_path))):
+            icon_paths = iconutils.extractAppIconsFromBundlePkg(
+                pkg_path, pkg_repo)
         else:
             handle = None
             if pkg_repo:
@@ -98,7 +106,7 @@ def generate_pngs_from_installer_pkg(install_item, repo):
             icon_paths = iconutils.extractAppIconsFromFlatPkg(pkg_path)
 
     if mountpoint:
-        munkicommon.unmountdmg(mountpoint)
+        dmgutils.unmountdmg(mountpoint)
 
     if len(icon_paths) == 1:
         png_path = repo.join(u'icons', install_item['name'] + u'.png')
@@ -120,7 +128,7 @@ def generate_pngs_from_installer_pkg(install_item, repo):
         print_utf8(u'\tNo application icons found.')
 
 
-def findItemsToCheck(repo, itemlist=None):
+def find_items_to_check(repo, itemlist=None):
     '''Builds a list of items to check; only the latest version
     of an item is retained. If itemlist is given, include items
     only on that list.'''
@@ -134,18 +142,18 @@ def findItemsToCheck(repo, itemlist=None):
         name = catalogitem['name']
         if name not in itemdb:
             itemdb[name] = catalogitem
-        elif (munkicommon.MunkiLooseVersion(catalogitem['version'])
-              > munkicommon.MunkiLooseVersion(itemdb[name]['version'])):
+        elif (pkgutils.MunkiLooseVersion(catalogitem['version'])
+              > pkgutils.MunkiLooseVersion(itemdb[name]['version'])):
             itemdb[name] = catalogitem
     pkg_list = []
-    for key in itemdb.keys():
+    for key in itemdb:
         pkg_list.append(itemdb[key])
     return pkg_list
 
 
 def generate_pngs_from_munki_items(repo, force=False, itemlist=None):
     '''Generate PNGs from either pkgs or disk images containing applications'''
-    itemlist = findItemsToCheck(repo, itemlist=itemlist)
+    itemlist = find_items_to_check(repo, itemlist=itemlist)
     icons_dir = repo.join(u'icons')
     if not repo.exists(icons_dir):
         repo.mkdir(icons_dir)
@@ -160,9 +168,9 @@ def generate_pngs_from_munki_items(repo, force=False, itemlist=None):
             continue
         installer_type = item.get('installer_type')
         if installer_type == 'copy_from_dmg':
-            generate_png_from_copy_from_dmg_item(item, repo)
+            generate_png_from_dmg_item(item, repo)
         elif installer_type in [None, '']:
-            generate_pngs_from_installer_pkg(item, repo)
+            generate_pngs_from_pkg(item, repo)
         else:
             print_utf8(u'\tCan\'t process installer_type: %s' % installer_type)
 
@@ -192,7 +200,8 @@ def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root] [repo_url] [plugin]"
     parser = OptionParser(usage=usage)
-    parser.add_option('--force', '-f', action='store_true', dest='force',
+    parser.add_option(
+        '--force', '-f', action='store_true', dest='force',
         help='Create pngs even if there is an existing icon in the repo.')
     parser.add_option(
         '--item', '-i', action='append', type='string', dest='items',
@@ -237,11 +246,11 @@ def main():
         exit(-1)
 
     # generate icons!
-    generate_pngs_from_munki_items(repo, force=options.force,
-        itemlist=options.items)
+    generate_pngs_from_munki_items(
+        repo, force=options.force, itemlist=options.items)
 
     # clean up
-    munkicommon.cleanUpTmpDir()
+    osutils.cleanUpTmpDir()
 
 if __name__ == '__main__':
     main()
