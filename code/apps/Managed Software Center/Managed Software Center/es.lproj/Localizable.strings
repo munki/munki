@@ -53,7 +53,7 @@
 "Cancel update" = "Cancelar actualización";
 
 /* Item Not Found message */
-"Cannot display the requested item." = "No se puede mostar el elemento solicitado.";
+"Cannot display the requested item." = "No se puede mostar el ítem solicitado.";
 
 /* Categories label */
 "Categories" = "Categorías";
@@ -95,7 +95,7 @@
 "Determining which filesystem items to remove" = "Determinando que archivos hay que quitar";
 
 /* Sidebar Developer label */
-"Developer:" = "Desarollador:";
+"Developer:" = "Desarrollador:";
 
 /* managedsoftwareupdate message */
 "Done." = "Hecho.";
@@ -108,6 +108,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Requerida:";
+
+/* FeaturedLabel */
+"Featured" = "Destacados";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Ítems destacados";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Finalizando...";
@@ -143,7 +149,7 @@
 "Install requested" = "Instalación solicitada";
 
 /* Install Session Failed title */
-"Install session failed" = "Error en la sesión instalación";
+"Install session failed" = "Error en la sesión de instalación";
 
 /* Install Error status text */
 "Installation Error" = "Error durante la instalación";
@@ -188,7 +194,7 @@
 "More in %s" = "Otros en %s";
 
 /* My Items label */
-"My Items" = "Mis aplicaciones";
+"My Items" = "Mis ítems";
 
 /* No Licenses Available display text */
 "No licenses available" = "No hay licencias disponibles";
@@ -215,7 +221,7 @@
 "OK" = "Aceptar";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Una o mas applicaciones tiene que ser instalada para el %s";
+"One or more items must be installed by %s" = "Uno o mas ítems tienen que ser instalados para el %s";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "El periodo de instalación de una o más actualizaciones requeridas ha expirado. En breve se forzará el cierre de sesión";
@@ -317,13 +323,13 @@
 "There are additional pending updates to install or remove." = "Hay actualizaciones adicionales pendientes de instalar o desinstalar.";
 
 /* No Items primary text */
-"There are no available software items." = "No hay applicaciones disponibles.";
+"There are no available software items." = "No hay aplicaciones disponibles.";
 
 /* No Developer Results primary text */
-"There are no items from this developer." = "No hay aplicacions de este desarollador.";
+"There are no items from this developer." = "No hay aplicaciones de este desarollador.";
 
 /* No Category Results primary text */
-"There are no items in this category." = "No hay applicaciones en esta categoria.";
+"There are no items in this category." = "No hay ítems en esta categoria.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Hay otros usuarios con sesiones abiertas en este equipo.\nActualizar ahora puede causar perdidas en su trabajo.\n\nPor favor prueba más tarde cuando los otros usuarios hayan cerrado sus sesiones.";
@@ -341,7 +347,7 @@
 "There is no new software for your computer at this time." = "No hay actualizaciones de software disponibles.";
 
 /* Dependency List prologue text */
-"This item is required by:" = "Requerida por:";
+"This item is required by:" = "Requerido por:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Tiene que estar instalado para el %s";
