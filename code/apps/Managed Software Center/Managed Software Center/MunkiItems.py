@@ -479,16 +479,15 @@ class GenericItem(dict):
         self['icon'] = self.getIcon()
         self['due_date_sort'] = NSDate.distantFuture()
         # sort items that need restart highest, then logout, then other
-        if self.get('RestartAction') in [None, 'None']:
-            self['restart_action_text'] = u''
-            self['restart_sort'] = 2
-        elif self['RestartAction'] in ['RequireRestart', 'RecommendRestart']:
+        self['restart_action_text'] = u''
+        self['restart_sort'] = 2
+        if self.get('RestartAction') in ['RequireRestart', 'RecommendRestart']:
             self['restart_sort'] = 0
             self['restart_action_text'] = NSLocalizedString(
                 u"Restart Required", u"Restart Required title")
             self['restart_action_text'] += (
                 u'<div class="restart-needed-icon"></div>')
-        elif self['RestartAction'] in ['RequireLogout', 'RecommendLogout']:
+        elif self.get('RestartAction') in ['RequireLogout', 'RecommendLogout']:
             self['restart_sort'] = 1
             self['restart_action_text'] = NSLocalizedString(
                 u"Logout Required", u"Logout Required title")
