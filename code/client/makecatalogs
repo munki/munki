@@ -31,7 +31,8 @@ import sys
 import os
 import optparse
 import hashlib
-from munkilib import Repo
+
+from munkilib import munkirepo
 
 try:
     from munkilib import FoundationPlist as plistlib
@@ -381,8 +382,8 @@ def pref(prefname):
 
 
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
-                                            PREFSNAME))
+PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences', PREFSNAME))
+
 def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root]"
@@ -396,7 +397,7 @@ def main():
                            'over the default repo_url specified via '
                            '--configure.')
     parser.add_option('--plugin', '--plugin', default=pref('plugin'), 
-                      help='Specify a custom plugin to run for munkiimport Repo.')
+                      help='Specify a custom plugin to connect to repo.')
     parser.set_defaults(force=False)
     options, arguments = parser.parse_args()
 
@@ -416,11 +417,18 @@ def main():
     else:
         repopath = arguments[0].rstrip("/")
 
-    # Make sure the repo path exists
-    repo = Repo.Open(repopath, options.repo_url, options.plugin)
-    if not repo.exists():
-        print_err_utf8("Repo root path %s doesn't exist!" % repopath)
+    if options.plugin is None:
+        options.plugin = 'FileRepo'
+
+    # Make sure the repo exists
+    repo = munkirepo.connect(repopath, options.repo_url, options.plugin)
+    if not repo.available():
+        print_err_utf8('Could not connect to munki repo. Check the '
+                       'configuration and try again.')
         exit(-1)
+    #if not repo.exists():
+    #    print_err_utf8("Repo root path %s doesn't exist!" % repopath)
+    #    exit(-1)
 
     # Make the catalogs
     makecatalogs(repo, options)
