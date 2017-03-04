@@ -754,6 +754,9 @@ def make_catalogs():
     if REPO_URL:
         cmd.append('--repo-url')
         cmd.append(REPO_URL)
+    if REPO_PLUGIN:
+        cmd.append('--plugin')
+        cmd.append(REPO_PLUGIN)
     cmd.append(REPO_PATH)
     proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
@@ -857,6 +860,7 @@ def main():
     global VERBOSE
     global REPO_PATH
     global REPO_URL
+    global REPO_PLUGIN
     global repo
 
     usage = """usage: %prog [options] /path/to/installer_item
