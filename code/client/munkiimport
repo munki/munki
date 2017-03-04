@@ -42,10 +42,11 @@ from munkilib import info
 from munkilib import display
 from munkilib import dmgutils
 from munkilib import munkihash
+from munkilib import munkirepo
 from munkilib import osutils
 from munkilib import pkgutils
 from munkilib import FoundationPlist
-from munkilib import Repo
+
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -902,7 +903,7 @@ def main():
                            'over the default repo_url specified via '
                            '--configure.')
     parser.add_option('--plugin', '--plugin', default='',
-                      help='Optional custom plugin to run for munkiimport Repo.')
+                      help='Specify a custom plugin to connect to repo.')
     parser.add_option('--icon_path', '--icon-path', default='', type='string',
                       help='Path to an icon file for the package. '
                            'Will overwrite an existing icon.')
@@ -927,7 +928,7 @@ def main():
     #default is what user put in munkiimport --configure
     REPO_PATH = pref('repo_path')
     REPO_URL = pref('repo_url')
-    REPO_PLUGIN = pref('plugin')
+    REPO_PLUGIN = pref('plugin') or 'FileRepo'
 
     if options.repo_path:
         if not os.path.exists(options.repo_path) and not options.repo_url:
@@ -999,7 +1000,7 @@ def main():
                               'tool, or provide with --repo-path')
         exit(-1)
 
-    repo = Repo.Open(REPO_PATH, REPO_URL, REPO_PLUGIN)
+    repo = munkirepo.connect(REPO_PATH, REPO_URL, REPO_PLUGIN)
     if not repo.available():
         print >> sys.stderr, ('Could not connect to munki repo. Check the '
                               'configuration and try again.')

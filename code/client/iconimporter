@@ -30,11 +30,11 @@ from optparse import OptionParser
 # our libs
 from munkilib import dmgutils
 from munkilib import iconutils
+from munkilib import munkirepo
 from munkilib import osutils
 from munkilib import pkgutils
 
 from munkilib import FoundationPlist
-from munkilib import Repo
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -45,7 +45,8 @@ from Foundation import CFPreferencesCopyAppValue
 def generate_png_from_dmg_item(install_item, repo):
     '''Generate a PNG from a disk image containing an application'''
     dmgpath = repo.join('pkgs', install_item['installer_item_location'])
-    mountpoints = dmgutils.mountdmg(dmgpath)
+    dmg_handle = repo.open(dmgpath, 'r')
+    mountpoints = dmgutils.mountdmg(dmg_handle.local_path)
     if mountpoints:
         mountpoint = mountpoints[0]
         apps = [item for item in install_item.get('items_to_copy', [])
@@ -78,7 +79,8 @@ def generate_pngs_from_pkg(install_item, repo):
     item_path = repo.join(u'pkgs', install_item['installer_item_location'])
     if pkgutils.hasValidDiskImageExt(item_path):
         dmg_path = item_path
-        mountpoints = dmgutils.mountdmg(dmg_path)
+        dmg_handle = repo.open(dmg_path, 'r')
+        mountpoints = dmgutils.mountdmg(dmg_handle.local_path)
         if mountpoints:
             mountpoint = mountpoints[0]
             if install_item.get('package_path'):
@@ -198,7 +200,7 @@ def pref(prefname):
 
 def main():
     '''Main'''
-    usage = "usage: %prog [options] [/path/to/repo_root] [repo_url] [plugin]"
+    usage = "usage: %prog [options] [/path/to/repo_root]"
     parser = OptionParser(usage=usage)
     parser.add_option(
         '--force', '-f', action='store_true', dest='force',
@@ -206,13 +208,14 @@ def main():
     parser.add_option(
         '--item', '-i', action='append', type='string', dest='items',
         help='Only run for given pkginfo item name(s).')
+    parser.add_option('--plugin', '--plugin', default=pref('plugin'), 
+                      help='Optional. Custom plugin to connect to repo.')
+    parser.add_option('--repo_url', '--repo-url', default=pref('repo_url'),
+                      help='Optional repo fileshare URL used by repo plugin.')
     parser.set_defaults(force=False)
     options, arguments = parser.parse_args()
 
     # Make sure we have a path to work with
-    repo_path = None
-    repo_url = None
-    plugin = None
     if len(arguments) == 0:
         repo_path = pref('repo_path')
         if not repo_path:
@@ -223,26 +226,14 @@ def main():
     else:
         repo_path = arguments[0].rstrip("/")
 
-    # Make sure the repo path exists
-    if len(arguments) > 1:
-        repo_url = arguments[1].rstrip("/")
-    else:
-        repo_url = pref('repo_url')
-        if not repo_url:
-            print_err_utf8("Need to specify a URL for the repo!")
-            exit(-1)
-        else:
-            print_utf8("Using repo url: %s" % repo_url)
-
-    if len(arguments) > 2:
-        plugin = arguments[2]
-    else:
-        plugin = pref('plugin')
+    if options.plugin is None:
+        options.plugin = 'FileRepo'
 
     # Make sure the repo exists
-    repo = Repo.Open(repo_path, repo_url, plugin)
+    repo = munkirepo.connect(repo_path, options.repo_url, options.plugin)
     if not repo.available():
-        print_err_utf8("Repo root path %s doesn't exist!" % repo_path)
+        print_err_utf8('Could not connect to munki repo. Check the '
+                       'configuration and try again.')
         exit(-1)
 
     # generate icons!
