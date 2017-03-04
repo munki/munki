@@ -37,8 +37,9 @@ from xml.parsers.expat import ExpatError
 
 # our libs
 from munkilib import info
+from munkilib import munkirepo
 from munkilib import osutils
-from munkilib import Repo
+
 
 
 # NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
@@ -1145,7 +1146,8 @@ def handle_subcommand(args):
     if (subcommand not in ['version', 'configure', 'help']
             and '-h' not in args and '--help' not in args):
         if not repo:
-            repo = Repo.Open(pref('repo_path'), pref('repo_url'), pref('plugin'))
+            repo = munkirepo.connect(
+                pref('repo_path'), pref('repo_url'), pref('plugin'))
             if not repo.available():
                 exit(-1)
 
@@ -1204,8 +1206,9 @@ def main():
         # if we get here, no options or commands,
         # so let's enter interactive mode
         INTERACTIVE_MODE = True
-        # must have an available repo for interfactive mode
-        repo = Repo.Open(pref('repo_path'), pref('repo_url'), pref('plugin'))
+        # must have an available repo for interactive mode
+        repo = munkirepo.connect(
+            pref('repo_path'), pref('repo_url'), pref('plugin'))
         if not repo.available():
             exit(-1)
         # build the rest of our dict to enable tab completion
