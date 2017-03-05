@@ -142,7 +142,7 @@ def make_catalogs(repopath):
         if not output and (proc.poll() != None):
             break
         if 0:
-            print output.rstrip('\n').encode('UTF-8')
+            print output.rstrip('\n').decode('UTF-8')
 
     errors = proc.stderr.read()
     if errors:
