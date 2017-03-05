@@ -232,7 +232,7 @@ def make_dmg(pkgpath):
         output = proc.stdout.readline()
         if not output and (proc.poll() != None):
             break
-        print output.rstrip('\n').encode('UTF-8')
+        print output.rstrip('\n').decode('UTF-8')
         sys.stdout.flush()
     retcode = proc.poll()
     if retcode:
@@ -766,7 +766,7 @@ def make_catalogs():
         if not output and (proc.poll() != None):
             break
         if VERBOSE:
-            print output.rstrip('\n').encode('UTF-8')
+            print output.rstrip('\n').decode('UTF-8')
 
     errors = proc.stderr.read()
     if errors:
