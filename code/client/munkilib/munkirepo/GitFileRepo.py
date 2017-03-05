@@ -1,3 +1,4 @@
+import inspect
 import os
 import pwd
 import subprocess
@@ -51,6 +52,12 @@ class MunkiGit(object):
         """Commits the file at 'a_path'. This method will also automatically
         generate the commit log appropriate for the status of a_path where
         status would be 'modified', 'new file', or 'deleted'"""
+        
+        # figure out the name of the tool in use
+        try:
+            toolname = os.path.basename(inspect.stack()[-1][1])
+        except IndexError:
+            toolname = 'Munki command-line tools'
 
         # get the status of the file at a_path
         self.git_repo_dir = os.path.dirname(a_path)
@@ -74,8 +81,8 @@ class MunkiGit(object):
         username = pwd.getpwuid(os.getuid()).pw_name
 
         # generate the log message
-        log_msg = ('%s %s \'%s\' via Munki command-line tools'
-                   % (username, action, itempath))
+        log_msg = (
+            '%s %s \'%s\' via %s' % (username, action, itempath, toolname))
         print "Doing git commit: %s" % log_msg
         self.run_git(['commit', '-m', log_msg])
         if self.results['returncode'] != 0:
