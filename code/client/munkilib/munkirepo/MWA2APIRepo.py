@@ -1,4 +1,5 @@
 # encoding: utf-8
+'''Defines MWA2APIRepo plugin. See docstring for MWA2APIRepo class'''
 
 import base64
 import getpass

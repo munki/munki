@@ -3,45 +3,16 @@ import os
 import sys
 
 
+class RepoError(Exception):
+    '''Base exception for repo errors'''
+    pass
+
+
 class Repo(object):
     '''Abstract base class for repo'''
-    mounted = False
-
-    def __init__(self, path, url):
-        self.root = path
-        self.url = url
-
-    def available(self):
-        '''if path does not exist, mount to local filesystem'''
-        if not self.exists():
-            retcode = self.mount()
-            if retcode == 0:
-                self.mounted = True
-        #if path still doesn't exist, then cannot find munki_repo
-        if not self.exists():
-            print >> sys.stderr, "repo is missing"
-            return False
-        #check if all subdirectories are there
-        for subdir in ['catalogs', 'manifests', 'pkgs', 'pkgsinfo']:
-            if not self.exists(subdir):
-                print >> sys.stderr, "repo is missing %s" % subdir
-                return False
-        # if we get this far, the repo path looks OK
-        return True
-
-    def exists(self):
-        '''Must be overriden in subclass'''
-        return False
-
-    def mount(self):
-        '''Must be overridden in subclasses'''
-        return -1
-
-
-class MissingRepo(Repo):
-    '''Stub object to return when we can't find the one requsted'''
-    def available(self):
-        return False
+    def __init__(self, url):
+        '''Override in subclasses'''
+        pass
 
 
 def plugin_named(name):
@@ -55,15 +26,15 @@ def plugin_named(name):
         return None
 
 
-def connect(repo_path, repo_url, plugin_name):
+def connect(repo_url, plugin_name):
     '''Return a repo object for operations on our Munki repo'''
     if plugin_name is None:
         plugin_name = 'FileRepo'
     plugin = plugin_named(plugin_name)
     if plugin:
-        return plugin(repo_path, repo_url)
+        return plugin(repo_url)
     else:
-        return MissingRepo(repo_path, repo_url)
+        raise RepoError('Could not find repo plugin named %s' % plugin_name)
 
 
 # yes, having this at the end is weird. But it allows us to dynamically import
