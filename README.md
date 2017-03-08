@@ -1,4 +1,4 @@
-munki
+Munki
 =====
 
 _Managed software installation for OS X_
