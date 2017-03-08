@@ -820,7 +820,7 @@ def configure():
             plugins = [fn for fn in os.listdir(plugin_path)
               if any(fn.endswith(ext) for ext in included_extensions)]
             for plugin in plugins:
-                if 'FileRepo' not in plugin:
+                if 'FileRepo' not in plugin and '__init__' not in plugin:
                     hasPlugin = True
             if not os.path.isdir(plugin_path):
                 continue
