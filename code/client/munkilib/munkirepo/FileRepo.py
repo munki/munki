@@ -1,41 +1,22 @@
-#!/usr/bin/python
 # encoding: utf-8
-#
-# Copyright 2016 Centrify Corporation.
-#
-# Licensed under the Apache License, Version 2.0 (the 'License');
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+'''Defines FileRepo plugin. See docstring for FileRepo class'''
 
-"""
-FileRepo
-Created by Centrify Corporation 2016-06-02.
-Implementation for accessing a repo via direct file access, including
-a remote repo mounted via AFP, SMB, or NFS.
-"""
-
+import errno
+import getpass
 import os
-import sys
+import shutil
 import subprocess
-import objc
-import glob
+import sys
 
-from munkilib.munkicommon import listdir
-from munkilib.munkirepo import Repo
+from urlparse import urlparse
+
+from munkilib.munkirepo import Repo, RepoError
+
 
 # NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
 # work here: https://gist.github.com/pudquick/1362a8908be01e23041d
 try:
-    import errno
-    import getpass
+    import objc
     from CoreFoundation import CFURLCreateWithString
 
     class Attrdict(dict):
@@ -62,218 +43,214 @@ try:
 except (ImportError, KeyError):
     NETFSMOUNTURLSYNC_AVAILABLE = False
 
-if NETFSMOUNTURLSYNC_AVAILABLE:
-    class ShareMountException(Exception):
-        '''An exception raised if share mounting failed'''
-        pass
+
+class ShareMountException(Exception):
+    '''An exception raised if share mounting failed'''
+    pass
 
 
-    class ShareAuthenticationNeededException(ShareMountException):
-        '''An exception raised if authentication is needed'''
-        pass
+class ShareAuthenticationNeededException(ShareMountException):
+    '''An exception raised if authentication is needed'''
+    pass
 
 
-    def mount_share(share_url):
-        '''Mounts a share at /Volumes, returns the mount point or raises an
-        error'''
-        sh_url = CFURLCreateWithString(None, share_url, None)
-        # Set UI to reduced interaction
-        open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
-        # Allow mounting sub-directories of root shares
-        mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
-        # Mount!
-        result, output = NetFS.NetFSMountURLSync(
-            sh_url, None, None, None, open_options, mount_options, None)
-        # Check if it worked
-        if result != 0:
-            if result in (errno.ENOTSUP, errno.EAUTH):
-                # errno.ENOTSUP is returned if an afp share needs a login
-                # errno.EAUTH is returned if authentication fails (SMB for sure)
-                raise ShareAuthenticationNeededException()
-            raise ShareMountException(
-                'Error mounting url "%s": %s, error %s'
-                % (share_url, os.strerror(result), result))
-        # Return the mountpath
-        return str(output[0])
+def mount_share(share_url):
+    '''Mounts a share at /Volumes, returns the mount point or raises an error'''
+    sh_url = CFURLCreateWithString(None, share_url, None)
+    # Set UI to reduced interaction
+    open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+    # Allow mounting sub-directories of root shares
+    mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
+    # Mount!
+    result, mountpoints = NetFS.NetFSMountURLSync(
+        sh_url, None, None, None, open_options, mount_options, None)
+    # Check if it worked
+    if result != 0:
+        if result in (-6600, errno.EINVAL, errno.ENOTSUP, errno.EAUTH):
+            # -6600 is kNetAuthErrorInternal in NetFS.h 10.9+
+            # errno.EINVAL is returned if an afp share needs a login in some
+            #               versions of OS X
+            # errno.ENOTSUP is returned if an afp share needs a login in some
+            #               versions of OS X
+            # errno.EAUTH is returned if authentication fails (SMB for sure)
+            raise ShareAuthenticationNeededException()
+        raise ShareMountException('Error mounting url "%s": %s, error %s'
+                                  % (share_url, os.strerror(result), result))
+    # Return the mountpath
+    return str(mountpoints[0])
 
 
-    def mount_share_with_credentials(share_url, username, password):
-        '''Mounts a share at /Volumes, returns the mount point or raises an
-        error. Include username and password as parameters, not in the
-        share_path URL'''
-        sh_url = CFURLCreateWithString(None, share_url, None)
-        # Set UI to reduced interaction
-        open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
-        # Allow mounting sub-directories of root shares
-        mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
-        # Mount!
-        result, output = NetFS.NetFSMountURLSync(
-            sh_url, None, username, password, open_options, mount_options, None)
-        # Check if it worked
-        if result != 0:
-            raise ShareMountException(
-                'Error mounting url "%s": %s, error %s'
-                % (share_url, os.strerror(result), result))
-        # Return the mountpath
-        return str(output[0])
+def mount_share_with_credentials(share_url, username, password):
+    '''Mounts a share at /Volumes, returns the mount point or raises an error
+    Include username and password as parameters, not in the share_path URL'''
+    sh_url = CFURLCreateWithString(None, share_url, None)
+    # Set UI to reduced interaction
+    open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+    # Allow mounting sub-directories of root shares
+    mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
+    # Mount!
+    result, mountpoints = NetFS.NetFSMountURLSync(
+        sh_url, None, username, password, open_options, mount_options, None)
+    # Check if it worked
+    if result != 0:
+        raise ShareMountException('Error mounting url "%s": %s, error %s'
+                                  % (share_url, os.strerror(result), result))
+    # Return the mountpath
+    return str(mountpoints[0])
 
 
-    def mount_share_url(share_url):
-        '''Mount a share url under /Volumes, prompting for password if needed
-        Raises ShareMountException if there's an error'''
-        try:
-            mount_share(share_url)
-        except ShareAuthenticationNeededException:
-            username = raw_input('Username: ')
-            password = getpass.getpass()
-            mount_share_with_credentials(share_url, username, password)
+def mount_share_url(share_url):
+    '''Mount a share url under /Volumes, prompting for password if needed
+    Raises ShareMountException if there's an error'''
+    try:
+        mountpoint = mount_share(share_url)
+    except ShareAuthenticationNeededException:
+        username = raw_input('Username: ')
+        password = getpass.getpass()
+        mountpoint = mount_share_with_credentials(share_url, username, password)
+    return mountpoint
+
 
 class FileRepo(Repo):
-    WE_MOUNTED_THE_REPO = False
-    '''Repo implementation that access a local or locally-mounted repo.'''
+    '''Handles local filesystem repo and repos mounted via filesharing'''
 
-    def exists(self, subdir=None):
-        '''Returns true if the specified path exists in the repo'''
-        full_path = self.root
-        if subdir:
-            full_path = os.path.join(full_path, subdir)
-        return os.path.exists(full_path)
-
-    def isdir(self, path):
-        '''Returns true if the specified path exists in the repo
-        and is a directory.'''
-        return os.path.isdir(os.path.join(self.root, path))
-
-    def isfile(self, path):
-        '''Returns true if the specified path exists in the repo
-        and is a regular file.'''
-        return os.path.isfile(os.path.join(self.root, path))
-
-    def join(self, *args):
-        '''Combines path elements within the repo.'''
-        return os.path.join(*args)
-
-    def dirname(self, path):
-        '''Returns the directory portion of a path.'''
-        return os.path.dirname(path)
-
-    def basename(self, path):
-        '''Returns the filename portion of a path.'''
-        return os.path.basename(path)
-
-    def splitext(self, path):
-        '''Splits the base and extention parts of a path.'''
-        return os.path.splitext(path)
-
-    def mkdir(self, path, mode=0777):
-        '''Creates a directory within the repo.'''
-        return os.mkdir(os.path.join(self.root, path), mode)
-
-    def makedirs(self, path, mode=0777):
-        '''Creates a directory within the repo, including parent directories.'''
-        return os.makedirs(os.path.join(self.root, path), mode)
-
-    def listdir(self, path):
-        '''Lists the contents of a repo directory.'''
-        return listdir(os.path.join(self.root, path))
-
-    def remove(self, path):
-        '''Removes a file from the repo.'''
-        return os.remove(os.path.join(self.root, path))
-
-    def unlink(self, path):
-        '''Removes a file from the repo.'''
-        return os.unlink(os.path.join(self.root, path))
-
-    def get(self, src, dest):
-        '''Copies a file from the repo to a local file.'''
-        cmd = ['/bin/cp', os.path.join(self.root, src), dest]
-        return subprocess.call(cmd)
-
-    def put(self, src, dest):
-        '''Copies a local file to the repo.'''
-        cmd = ['/bin/cp', src, os.path.join(self.root, dest)]
-        return subprocess.call(cmd)
-
-    #
-    # Some callers open a file, but then use the local_path field
-    # to access it rather than reading or writing through the returned
-    # handle.  For local repos those callers could just use the
-    # file name directly rather than opening it through this method,
-    # but for the CommandRepo implementation the local_path field
-    # will be a local temporary file that was copied from the remote
-    # repo and/or will be copied to the remote repo on close.
-    #
-    class RepoFile(object):
-        def __init__(self, repo, repo_path, mode):
-            self.repo = repo
-            self.repo_path = repo_path
-            self.repo_mode = mode
-            self.file = open(self.repo_path, mode)
-            self.local_path = self.repo_path
-
-        def read(self):
-            return self.file.read()
-
-    def open(self, path, mode='r'):
-        '''Opens a file in the repo.'''
-        return self.RepoFile(self, os.path.join(self.root, path), mode)
-
-    def mount(self):
-        '''Mounts the repo locally.'''
-        if os.path.exists(self.root):
-            return
-        print 'Attempting to mount fileshare %s:' % self.url
-        if NETFSMOUNTURLSYNC_AVAILABLE:
-            try:
-                mount_share_url(self.url)
-            except ShareMountException, err:
-                print sys.stderr, err
-                return 
-            else:
-                self.WE_MOUNTED_THE_REPO = True
-                return 0
+    def __init__(self, baseurl):
+        '''Constructor'''
+        self.baseurl = baseurl
+        url_parts = urlparse(baseurl)
+        self.url_scheme = url_parts.scheme
+        if self.url_scheme == 'file':
+            self.root = url_parts.path
         else:
-            os.mkdir(self.root)
-            if self.url.startswith('afp:'):
-                cmd = ['/sbin/mount_afp', '-i', self.url, self.root]
-            elif self.url.startswith('smb:'):
-                cmd = ['/sbin/mount_smbfs', self.url[4:], self.root]
-            elif self.url.startswith('nfs://'):
-                cmd = ['/sbin/mount_nfs', self.url[6:], self.root]
-            else:
-                print >> sys.stderr, 'Unsupported filesystem URL!'
-                return
-            retcode = subprocess.call(cmd)
-            if retcode:
-                os.rmdir(self.root)
-            else:
-                self.WE_MOUNTED_THE_REPO = True
-            return retcode
+            self.root = os.path.join('/Volumes', url_parts.path)
+        self.we_mounted_repo = False
+        self._connect()
 
-    def unmount(self):
-        '''Unmounts the repo.'''
-        if not os.path.exists(self.root):
-            return
-        retcode = 0
-        if os.path.exists(self.root):
+    def __del__(self):
+        '''Destructor -- unmount the fileshare if we mounted it'''
+        if self.we_mounted_repo and os.path.exists(self.root):
             cmd = ['/sbin/umount', self.root]
-            retcode = subprocess.call(cmd)
-        return retcode
+            subprocess.call(cmd)
 
-    def walk(self, path, **kwargs):
-        '''Walks a path in the repo, returning all files and subdirectories.
-        Only a subset of the features of os.walk() are supported.'''
-        for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.root, path), **kwargs):
-            dirpath = dirpath[len(self.root) + 1:]
-            yield (dirpath, dirnames, filenames)
+    def _connect(self):
+        '''If self.root is present, return. Otherwise try to mount the share
+        url.'''
+        if not os.path.exists(self.root) and self.url_scheme != 'file':
+            print 'Attempting to mount fileshare %s:' % self.baseurl
+            if NETFSMOUNTURLSYNC_AVAILABLE:
+                try:
+                    self.root = mount_share_url(self.baseurl)
+                except ShareMountException, err:
+                    print sys.stderr, err
+                    return
+                else:
+                    self.we_mounted_repo = True
+            else:
+                os.mkdir(self.root)
+                if self.baseurl.startswith('afp:'):
+                    cmd = ['/sbin/mount_afp', '-i', self.baseurl, self.root]
+                elif self.baseurl.startswith('smb:'):
+                    cmd = ['/sbin/mount_smbfs', self.baseurl[4:], self.root]
+                elif self.baseurl.startswith('nfs://'):
+                    cmd = ['/sbin/mount_nfs', self.baseurl[6:], self.root]
+                else:
+                    print >> sys.stderr, 'Unsupported filesystem URL!'
+                    return
+                retcode = subprocess.call(cmd)
+                if retcode:
+                    os.rmdir(self.root)
+                else:
+                    self.we_mounted_repo = True
+        # mount attempt complete; check again for existence of self.root
+        if not os.path.exists(self.root):
+            raise RepoError('%s does not exist' % self.root)
 
-    def glob(self, path, *args):
-        '''Expands a set of glob patterns within a repo path.'''
-        matches = []
-        original_dir = os.getcwd()
-        os.chdir(path)
-        for arg in args:
-            matches += glob.glob(arg)
-        os.chdir(original_dir)
-        return matches
+    def itemlist(self, kind):
+        '''Returns a list of identifiers for each item of kind.
+        Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
+        For a file-backed repo this would be a list of pathnames.'''
+        search_dir = os.path.join(self.root, kind)
+        file_list = []
+        try:
+            for (dirpath, dummy_dirnames, filenames) in os.walk(search_dir):
+                for name in filenames:
+                    abs_path = os.path.join(dirpath, name)
+                    rel_path = abs_path[len(search_dir):].lstrip("/")
+                    file_list.append(rel_path)
+            return file_list
+        except (OSError, IOError), err:
+            raise RepoError(err)
+
+    def get(self, resource_identifier):
+        '''Returns the content of item with given resource_identifier.
+        For a file-backed repo, a resource_identifier of
+        'pkgsinfo/apps/Firefox-52.0.plist' would return the contents of
+        <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
+        Avoid using this method with the 'pkgs' kind as it might return a
+        really large blob of data.'''
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        try:
+            fileref = open(repo_filepath)
+            data = fileref.read()
+            fileref.close()
+            return data
+        except OSError, err:
+            raise RepoError(err)
+
+    def get_to_local_file(self, resource_identifier, local_file_path):
+        '''Gets the contents of item with given resource_identifier and saves
+        it to local_file_path.
+        For a file-backed repo, a resource_identifier
+        of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
+        <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
+        local_file_path.'''
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        try:
+            shutil.copyfile(repo_filepath, local_file_path)
+        except (OSError, IOError), err:
+            raise RepoError(err)
+
+    def put(self, resource_identifier, content):
+        '''Stores content on the repo based on resource_identifier.
+        For a file-backed repo, a resource_identifier of
+        'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
+        saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        dir_path = os.path.dirname(repo_filepath)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, 0755)
+        try:
+            fileref = open(repo_filepath, 'w')
+            fileref.write(content)
+            fileref.close()
+        except OSError, err:
+            raise RepoError(err)
+
+    def put_from_local_file(self, resource_identifier, local_file_path):
+        '''Copies the content of local_file_path to the repo based on
+        resource_identifier. For a file-backed repo, a resource_identifier
+        of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
+        being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        if local_file_path == repo_filepath:
+            # nothing to do!
+            return
+        dir_path = os.path.dirname(repo_filepath)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, 0755)
+        try:
+            shutil.copyfile(local_file_path, repo_filepath)
+        except (OSError, IOError), err:
+            raise RepoError(err)
+
+    def delete(self, resource_identifier):
+        '''Deletes a repo object located by resource_identifier.
+        For a file-backed repo, a resource_identifier of
+        'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
+        <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        try:
+            os.remove(repo_filepath)
+        except OSError, err:
+            raise RepoError(err)
+        
