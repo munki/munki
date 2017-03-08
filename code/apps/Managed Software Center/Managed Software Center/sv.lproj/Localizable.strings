@@ -136,11 +136,11 @@
 /* Install action text */
 "Install" = "Installera";
 
-/* Install Required action text */
-"Install Required" = "Installation krävs";
-
 /* Install Requested status text */
 "Install requested" = "Installation begärd";
+
+/* Install Required action text */
+"Install Required" = "Installation krävs";
 
 /* Install Session Failed title */
 "Install session failed" = "Installationen misslyckades";
@@ -196,14 +196,14 @@
 /* No Updates message */
 "No pending updates" = "Inga uppdateringar väntar.";
 
-/* Item Not Found title */
-"Not Found" = "Kunde inte hittas";
-
 /* Not Currently Available display text */
 "Not currently available" = "Inte tillgänglig just nu";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Inte tillräckligt med utrymme på skivan";
+
+/* Item Not Found title */
+"Not Found" = "Kunde inte hittas";
 
 /* Not Installed status text */
 "Not installed" = "Ej installerat";
@@ -373,9 +373,6 @@
 /* Update All button title */
 "Update All" = "Uppdatera alla";
 
-/* Update Required long action text */
-"Update Required" = "Uppdatering krävs";
-
 /* Update Available status text */
 "Update available" = "Uppdatering tillgänglig";
 
@@ -387,6 +384,9 @@
 
 /* Update Now button title */
 "Update now" = "Uppdatera nu";
+
+/* Update Required long action text */
+"Update Required" = "Uppdatering krävs";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Uppdateringen kommer att installeras";
@@ -429,3 +429,4 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
+
