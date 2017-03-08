@@ -8,7 +8,7 @@
 "Details" = "Détails";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %@" = "Un article doit être installé avant le %@";
+"One or more items must be installed by %@" = "Une ou plusieurs mises à jour doivent être installées avant le %@";
 
 /* Software updates available message */
 "Software updates available" = "Mises à jour logicielles disponibles";
