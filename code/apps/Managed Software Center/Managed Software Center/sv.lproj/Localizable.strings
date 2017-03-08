@@ -112,6 +112,12 @@
 /* Sidebar Due label */
 "Due:" = "Dags:";
 
+/* FeaturedLabel */
+"Featured" = "I blickfånget";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "I blickfånget";
+
 /* managedsoftwareupdate message */
 "Finishing..." = "Avslutar...";
 
