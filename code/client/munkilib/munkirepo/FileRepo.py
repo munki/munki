@@ -172,8 +172,16 @@ class FileRepo(Repo):
         search_dir = os.path.join(self.root, kind)
         file_list = []
         try:
-            for (dirpath, dummy_dirnames, filenames) in os.walk(search_dir):
+            for (dirpath, dirnames, filenames) in os.walk(search_dir):
+                for dirname in dirnames:
+                    if dirname.startswith('.'):
+                        # don't recurse into directories that start
+                        # with a period.
+                        dirnames.remove(dirname)
                 for name in filenames:
+                    if name.startswith('.'):
+                        # skip files that start with a period as well
+                        continue
                     abs_path = os.path.join(dirpath, name)
                     rel_path = abs_path[len(search_dir):].lstrip("/")
                     file_list.append(rel_path)
