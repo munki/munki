@@ -87,6 +87,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['processed_uninstalls'] = []
         installinfo['managed_updates'] = []
         installinfo['optional_installs'] = []
+        installinfo['featured_installs'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
 
@@ -134,6 +135,12 @@ def check(client_id='', localmanifestpath=None):
         # build list of optional installs
         analyze.process_manifest_for_key(
             mainmanifestpath, 'optional_installs', installinfo)
+        if processes.stop_requested():
+            return 0
+
+        # build list of featured installs
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'featured_installs', installinfo)
         if processes.stop_requested():
             return 0
 
