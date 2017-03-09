@@ -7,6 +7,7 @@ import os
 import plistlib
 import subprocess
 import tempfile
+import urllib2
 
 from munkilib.munkirepo import Repo
 from munkilib import display
@@ -23,8 +24,9 @@ class MWA2APIRepo(Repo):
         '''Constructor'''
         self.baseurl = baseurl
         self.authtoken = None
+        self._connect()
 
-    def connect(self):
+    def _connect(self):
         '''For a fileshare repo, we'd mount the share, prompting for
         credentials if needed. For the API repo, well look for a stored
         authtoken; if we don't find one, we'll prompt for credentials
@@ -55,7 +57,9 @@ class MWA2APIRepo(Repo):
             print >> fileobj, 'header = "Accept: application/xml"'
         else:
             print >> fileobj, 'header = "Content-type: application/xml"'
+
         url = os.path.join(self.baseurl, relative_url)
+
         print >> fileobj, 'url = "%s"' % url
         fileobj.close()
 
@@ -84,7 +88,7 @@ class MWA2APIRepo(Repo):
         '''Returns a list of identifiers for each item of kind.
         Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
         For a file-backed repo this would be a list of pathnames.'''
-        url = kind + '?api_fields=filename'
+        url = urllib2.quote(kind.encode('UTF-8')) + '?api_fields=filename'
         try:
             data = self._curl(url)
         except CurlError, err:
@@ -104,8 +108,9 @@ class MWA2APIRepo(Repo):
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
         Avoid using this method with the 'pkgs' kind as it might return a
         really large blob of data.'''
+        url = urllib2.quote(resource_identifier.encode('UTF-8'))
         try:
-            return self._curl(resource_identifier)
+            return self._curl(url)
         except CurlError, err:
             raise
 
@@ -116,8 +121,9 @@ class MWA2APIRepo(Repo):
         of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
         local_file_path.'''
+        url = urllib2.quote(resource_identifier.encode('UTF-8'))
         try:
-            result = self._curl(resource_identifier, filename=local_file_path)
+            result = self._curl(url, filename=local_file_path)
         except CurlError, err:
             raise
 
@@ -126,9 +132,9 @@ class MWA2APIRepo(Repo):
         For a file-backed repo, a resource_identifier of
         'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
         saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        url = urllib2.quote(resource_identifier.encode('UTF-8'))
         try:
-            result = self._curl(
-                resource_identifier, method='PUT', content=content)
+            result = self._curl(url, method='PUT', content=content)
         except CurlError, err:
             raise
 
@@ -137,9 +143,9 @@ class MWA2APIRepo(Repo):
         resource_identifier. For a file-backed repo, a resource_identifier
         of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
         being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        url = urllib2.quote(resource_identifier.encode('UTF-8'))
         try:
-            result = self._curl(
-                resource_identifier, method='PUT', filename=local_file_path)
+            result = self._curl(url, method='PUT', filename=local_file_path)
         except CurlError, err:
             raise
 
@@ -148,8 +154,9 @@ class MWA2APIRepo(Repo):
         For a file-backed repo, a resource_identifier of
         'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        url = urllib2.quote(resource_identifier.encode('UTF-8'))
         try:
-            result = self._curl(resource_identifier, method='DELETE')
+            result = self._curl(url, method='DELETE')
         except CurlError, err:
             raise
         
