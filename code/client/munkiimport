@@ -380,8 +380,9 @@ def edit_pkginfo_in_editor(pkginfo):
     if editor:
         answer = raw_input('Edit pkginfo before upload? [y/n]: ')
         if answer.lower().startswith('y'):
-            fileref, filepath = tempfile.mkstemp()
-            os.close(fileref)
+            filedesc, filepath = tempfile.mkstemp()
+            # we just want the path; close the file descriptor
+            os.close(filedesc)
             try:
                 FoundationPlist.writePlist(pkginfo, filepath)
             except FoundationPlist.FoundationPlistException, err:
