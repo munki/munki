@@ -28,8 +28,12 @@ import os
 import readline
 import subprocess
 import sys
+import tempfile
 import time
 import thread
+import urllib
+import urlparse
+
 
 from optparse import OptionParser, BadOptionError, AmbiguousOptionError
 
@@ -149,6 +153,7 @@ class RepoCopyError(Exception):
     '''Exception raised when copying a file to the repo fails'''
     pass
 
+
 def list_items_of_kind(repo, kind):
     '''Returns a list of items of kind. Relative pathnames are prepended
     with kind. (example: ['icons/Bar.png', 'icons/Foo.png'])'''
@@ -160,7 +165,6 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     If itempath is a path within the repo/pkgs directory, copies nothing.
     Renames the item if an item already exists with that name.
     Returns the relative path to the item."""
-
 
     destination_path = os.path.join('pkgs', subdirectory)
     item_name = os.path.basename(itempath)
@@ -368,22 +372,52 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
     except munkirepo.RepoError, err:
         raise RepoCopyError('Unable to save pkginfo to %s: %s'
                             % (pkginfo_path, unicode(err)))
-    return pkginfo_path
 
 
-def open_pkginfo_in_editor(pkginfo_path):
+def edit_pkginfo_in_editor(pkginfo):
     """Opens pkginfo list in the user's chosen editor."""
     editor = pref('editor')
     if editor:
-        if editor.endswith('.app'):
-            cmd = ['/usr/bin/open', '-a', editor, pkginfo_path]
-        else:
-            cmd = [editor, pkginfo_path]
-        try:
-            dummy_returncode = subprocess.check_call(cmd)
-        except (OSError, subprocess.CalledProcessError), err:
-            print >> sys.stderr, (
-                'Problem running editor %s: %s.' % (editor, err))
+        answer = raw_input('Edit pkginfo before upload? [y/n]: ')
+        if answer.lower().startswith('y'):
+            fileref, filepath = tempfile.mkstemp()
+            os.close(fileref)
+            try:
+                FoundationPlist.writePlist(pkginfo, filepath)
+            except FoundationPlist.FoundationPlistException, err:
+                print >> sys.stderr, (
+                    u'Could not save pkginfo to temp file: %s'
+                    % unicode(err))
+                return pkginfo
+
+            if editor.endswith('.app'):
+                cmd = ['/usr/bin/open', '-a', editor, filepath]
+            else:
+                cmd = [editor, filepath]
+            try:
+                dummy_returncode = subprocess.check_call(cmd)
+            except (OSError, subprocess.CalledProcessError), err:
+                print >> sys.stderr, (
+                    'Problem running editor %s: %s.' % (editor, err))
+                os.remove(filepath)
+                return pkginfo
+            else:
+                if editor.endswith('.app'):
+                    # wait for user to finish with GUI editor.
+                    answer = 'no'
+                    while not answer.lower().startswith('y'):
+                        answer = raw_input('Pkginfo editing complete? [y/n]: ')
+                try:
+                    edited_pkginfo = FoundationPlist.readPlist(filepath)
+                except FoundationPlist.FoundationPlistException, err:
+                    print >> sys.stderr, (
+                        u'Problem reading edited pkginfo: %s' % unicode(err))
+                    os.remove(filepath)
+                    return pkginfo
+                os.remove(filepath)
+                return edited_pkginfo
+    return pkginfo
+                
 
 
 def prompt_for_subdirectory(repo, subdirectory):
@@ -530,7 +564,7 @@ def find_matching_pkginfo(repo, pkginfo):
     try:
         catdb = make_catalog_db(repo)
     except CatalogDBException, err:
-        print (u'Could not get a list of existing items from the repo: %s' 
+        print (u'Could not get a list of existing items from the repo: %s'
                % unicode(err))
         return {}
 
@@ -651,7 +685,7 @@ def make_catalogs():
         # didn't find it; assume the default install path
         makecatalogs_path = '/usr/local/munki/makecatalogs'
     if not VERBOSE:
-        print 'Rebuilding catalogs at %s...' % REPO_PATH
+        print 'Rebuilding catalogs at %s...' % REPO_URL
     cmd = [makecatalogs_path]
     if REPO_URL:
         cmd.append('--repo-url')
@@ -659,7 +693,7 @@ def make_catalogs():
     if REPO_PLUGIN:
         cmd.append('--plugin')
         cmd.append(REPO_PLUGIN)
-    cmd.append(REPO_PATH)
+    #cmd.append(REPO_PATH)
     proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
@@ -745,13 +779,17 @@ def configure():
             CFPreferencesAppSynchronize(BUNDLE_ID)
 
 
+def path2url(path):
+    '''Converts a path to a file: url'''
+    return urlparse.urljoin('file:', urllib.pathname2url(path))
+
+
 PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
 PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
                                             PREFSNAME))
 APPLEMETADATA = False
 NOINTERACTIVE = False
 VERBOSE = False
-REPO_PATH = ""
 REPO_URL = ""
 REPO_PLUGIN = ""
 
@@ -760,7 +798,6 @@ def main():
     global APPLEMETADATA
     global NOINTERACTIVE
     global VERBOSE
-    global REPO_PATH
     global REPO_URL
     global REPO_PLUGIN
 
@@ -826,7 +863,7 @@ def main():
     NOINTERACTIVE = options.nointeractive
     VERBOSE = options.verbose
     #default is what user put in munkiimport --configure
-    REPO_PATH = pref('repo_path')
+    repo_path = pref('repo_path')
     REPO_URL = pref('repo_url')
     REPO_PLUGIN = pref('plugin') or 'FileRepo'
 
@@ -838,10 +875,13 @@ def main():
                 'file share, or correct the path and try again.')
             exit(-1)
 
-        REPO_PATH = options.repo_path
+        repo_path = options.repo_path
     #if specified options, override defaults
     if options.repo_url:
         REPO_URL = options.repo_url
+
+    if not REPO_URL and repo_path:
+        REPO_URL = path2url(repo_path)
 
     if options.plugin:
         REPO_PLUGIN = options.plugin
@@ -1055,6 +1095,7 @@ def main():
             cleanup_and_exit(0)
 
         if options.subdirectory == '':
+            # TODO: deal with this stuff
             #pkgs_path = repo.join('pkgs')
             #if not APPLEMETADATA and installer_item.startswith(pkgs_path):
             #    # the installer item is already in the repo.
@@ -1129,12 +1170,10 @@ def main():
 
     # installer_item upload was successful. so upload pkginfo to repo
     if not options.nointeractive:
-        # open the pkginfo file in the user's editor
-        #open_pkginfo_in_editor(pkginfo)
-        #answer = raw_input('Type <return> when done editing...')
-        pass
+        # possibly edit the pkginfo file in the user's editor
+        pkginfo = edit_pkginfo_in_editor(pkginfo)
     try:
-        pkginfo_path = copy_pkginfo_to_repo(repo, pkginfo, options.subdirectory)
+        copy_pkginfo_to_repo(repo, pkginfo, options.subdirectory)
     except RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
         cleanup_and_exit(-1)
