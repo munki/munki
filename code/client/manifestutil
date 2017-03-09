@@ -67,16 +67,19 @@ try:
         return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
 
 
-    def configure(args):
+    def configure(repo, args):
         """Configures manifestutil for use"""
+        # we ignore the repo arg, but all the other subcommands require it
         _prefs = {}
         if len(args):
             print >> sys.stderr, 'Usage: configure'
             return 22 # Invalid argument
         for (key, prompt) in [
-                ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+                #('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
                 ('repo_url',
-                 'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
+                 'Repo URL (example: afp://munki.example.com/repo)'),
+                ('plugin', 'Munki repo plugin (defaults to FileRepo)')
+             ]:
 
             newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
             _prefs[key] = newvalue or pref(key) or ''
@@ -109,15 +112,18 @@ except ImportError:
             return None
 
 
-    def configure(args):
+    def configure(repo, args):
         """Configures manifestutil for use"""
+        # we ignore the repo arg, but all the other subcommands require it
         if len(args):
             print >> sys.stderr, 'Usage: configure'
             return 22 # Invalid argument
         for (key, prompt) in [
-                ('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
+                #('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
                 ('repo_url',
-                 'Repo fileshare URL (example: afp://munki.example.com/repo)')]:
+                 'Repo URL (example: afp://munki.example.com/repo)'),
+                ('plugin', 'Munki repo plugin (defaults to FileRepo)')
+             ]:
 
             newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
             _PREFS[key] = newvalue or pref(key) or ''
@@ -1157,7 +1163,7 @@ def main():
             'new-manifest':              'default',
             'copy-manifest':             'manifests',
             'rename-manifest':           'manifests',
-            'refresh-cache':            'default',
+            'refresh-cache':             'default',
             'exit':                      'default',
             'help':                      'default',
             'configure':                 'default',
