@@ -400,6 +400,8 @@ def list_catalogs(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
 
     if len(arguments) != 0:
         parser.print_usage(sys.stderr)
@@ -419,6 +421,8 @@ def list_catalog_items(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
 
     if len(arguments) == 0:
         parser.print_usage(sys.stderr)
@@ -444,6 +448,8 @@ def list_manifests(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
 
     if len(arguments) == 1:
         list_filter = arguments[0]
@@ -474,6 +480,9 @@ def find(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.section and len(arguments) == 2:
         options.section = arguments[1]
         del arguments[1]
@@ -536,6 +545,9 @@ def display_manifest(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if len(arguments) != 1:
         parser.print_usage(sys.stderr)
         return 7 # Argument list too long
@@ -558,6 +570,9 @@ def expand_included_manifests(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if len(arguments) != 1:
         parser.print_usage(sys.stderr)
         return 7 # Argument list too long
@@ -593,6 +608,9 @@ def new_manifest(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if len(arguments) != 1:
         parser.print_usage(sys.stderr)
         return 7 # Argument list too long
@@ -619,6 +637,9 @@ def copy_manifest(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if len(arguments) != 2:
         parser.print_usage(sys.stderr)
         return 7 # Argument list too long
@@ -643,6 +664,9 @@ def rename_manifest(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if len(arguments) != 2:
         parser.print_usage(sys.stderr)
         return 7 # Argument list too long
@@ -677,6 +701,9 @@ def add_pkg(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.manifest:
         if len(arguments) == 2:
             options.manifest = arguments[1]
@@ -738,6 +765,9 @@ def remove_pkg(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.manifest:
         if len(arguments) == 2:
             options.manifest = arguments[1]
@@ -786,6 +816,9 @@ def add_catalog(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.manifest:
         if len(arguments) == 2:
             options.manifest = arguments[1]
@@ -839,6 +872,9 @@ def remove_catalog(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.manifest:
         if len(arguments) == 2:
             options.manifest = arguments[1]
@@ -884,6 +920,9 @@ def add_included_manifest(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.manifest:
         if len(arguments) == 2:
             options.manifest = arguments[1]
@@ -941,6 +980,9 @@ def remove_included_manifest(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
     if not options.manifest:
         if len(arguments) == 2:
             options.manifest = arguments[1]
@@ -983,6 +1025,8 @@ def refresh_cache(repo, args):
     except MyOptParseError, errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
 
     if len(arguments) != 0:
         parser.print_usage(sys.stderr)
