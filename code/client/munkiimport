@@ -418,7 +418,6 @@ def edit_pkginfo_in_editor(pkginfo):
                 os.remove(filepath)
                 return edited_pkginfo
     return pkginfo
-                
 
 
 def prompt_for_subdirectory(repo, subdirectory):
@@ -694,7 +693,6 @@ def make_catalogs():
     if REPO_PLUGIN:
         cmd.append('--plugin')
         cmd.append(REPO_PLUGIN)
-    #cmd.append(REPO_PATH)
     proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
@@ -744,31 +742,13 @@ def configure():
     for (key, prompt) in [
             #('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
             ('repo_url',
-             'Repo fileshare URL (example: afp://munki.example.com/repo)'),
+             'Repo URL (example: afp://munki.example.com/repo)'),
             ('pkginfo_extension', 'pkginfo extension (Example: .plist)'),
             ('editor',
              'pkginfo editor (examples: /usr/bin/vi or TextMate.app; '
              'leave empty to not open an editor after import)'),
             ('default_catalog', 'Default catalog to use (example: testing)'),
-            ('plugin', 'Use a plugin to write to a custom munki repository')]:
-        if key == 'plugin':
-            # first look for a plugins folder in the same dir as us
-            plugin_path = os.path.dirname(os.path.abspath(__file__))
-            plugin_path = os.path.join(plugin_path, 'munkilib/plugins')
-            if not os.path.exists(plugin_path):
-                # didn't find it; assume the default install path
-                plugin_path = '/usr/local/munki/munkilib/plugins'
-            has_plugin = False
-            included_extensions = ['py']
-            plugins = [fn for fn in os.listdir(plugin_path)
-                       if any(fn.endswith(ext) for ext in included_extensions)]
-            for plugin in plugins:
-                if 'FileRepo' not in plugin:
-                    has_plugin = True
-            if not os.path.isdir(plugin_path):
-                continue
-            if not has_plugin:
-                continue
+            ('plugin', 'Repo access plugin (defaults to FileRepo)')]:
         _prefs[key] = raw_input_with_default('%15s: ' % prompt, pref(key))
 
     for key, value in _prefs.items():
