@@ -385,12 +385,20 @@ def main():
         print get_version()
         exit(0)
 
-    if arguments and not options.repo_url and not options.plugin:
-        options.repo_url = path2url(arguments[0])
+    # backwards compatibility
+    if not options.repo_url and not options.plugin:
+        if arguments:
+            options.repo_url = path2url(arguments[0])
+        elif pref('repo_path'):
+            options.repo_url = path2url(pref('repo_path'))
         options.plugin = 'FileRepo'
 
     elif options.plugin is None:
         options.plugin = 'FileRepo'
+    
+    if not options.repo_url:
+        parser.print_usage()
+        exit(-1)
 
     # Connect to the repo
     try:
