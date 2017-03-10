@@ -915,7 +915,7 @@ def main():
             exit(-1)
 
     try:
-        repo = munkirepo.connect(REPO_URL, REPO_PLUGIN)
+        repo = munkirepo.connect(REPO_URL, REPO_PLUGIN or 'FileRepo')
     except munkirepo.RepoError, err:
         print >> sys.stderr, (u'Could not connect to munki repo: %s'
                               % unicode(err))
