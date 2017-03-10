@@ -76,7 +76,8 @@ def generate_png_from_dmg_item(repo, install_item):
     '''Generate a PNG from a disk image containing an application'''
     # Since the repo might be a remote repo reached by a web API, we have
     # to download the file first. We might want to extend the Repo plugin
-    # "API" to let us get the direct filepath, skipping the need to download.
+    # "API" to let us get the direct filepath, skipping the need to download for
+    # the FileRepo-type repos at least.
     dmg_ref = os.path.join('pkgs', install_item['installer_item_location'])
     dmg_temp = TempFile()
     try:
