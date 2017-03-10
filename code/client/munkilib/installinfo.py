@@ -142,21 +142,27 @@ def save_pending_update_times():
         'AppleUpdates': appleupdate_names}
 
     try:
-        pending_updates = FoundationPlist.readPlist(pendingupdatespath)
+        prior_pending_updates = FoundationPlist.readPlist(pendingupdatespath)
     except FoundationPlist.NSPropertyListSerializationException:
-        pending_updates = {}
+        prior_pending_updates = {}
+    current_pending_updates = {}
 
     for category in update_names:
-        if category not in pending_updates:
-            pending_updates[category] = {}
+        current_pending_updates[category] = {}
         for name in update_names[category]:
-            if name not in pending_updates[category]:
-                pending_updates[category][name] = now
-        for name in pending_updates[category]:
-            if name not in update_names[category]:
-                del pending_updates[category][name]
-
-    FoundationPlist.writePlist(pending_updates, pendingupdatespath)
+            if (category in prior_pending_updates and
+                    name in prior_pending_updates[category]):
+                # copy the prior datetime from matching item
+                current_pending_updates[category][name] = prior_pending_updates[
+                    category][name]
+            else:
+                # record new item with current datetime
+                current_pending_updates[category][name] = now
+    try:
+        FoundationPlist.writePlist(current_pending_updates, pendingupdatespath)
+    except FoundationPlist.NSPropertyListWriteException:
+        # we tried! oh well
+        pass
 
 
 
