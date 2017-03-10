@@ -5,6 +5,8 @@ repo plugins are in munkilib/munkirepo.
 
 FileRepo is the default plugin and handles both local file repos and repos hosted on fileshares.
 
+GitFileRepo is a proof-of-concept plugin. It inherits the behavior of FileRepo and does git commits for file changes in the repo.
+
 MWA2APIRepo is a proof-of-concept plugin that talks to a remote repo via the MWA2 API. It requires the latest MWA2 code from GitHub.
 
 ### Command-line tools
@@ -142,4 +144,32 @@ Edit pkginfo before upload? [y/n]: n
 Saving pkginfo to pkgsinfo/apps/AutoDMG-1.7.3.plist...
 Rebuild catalogs? [y/n] y
 Rebuilding catalogs at http://localhost:8080/api...
+```
+
+```
+bash-3.2$ ./manifestutil --configure
+Repo URL (example: afp://munki.example.com/repo): file:///Users/Shared/munki_repo
+Munki repo plugin (defaults to FileRepo): GitFileRepo
+bash-3.2$ ./manifestutil 
+Entering interactive mode... (type "help" for commands)
+> display-manifest site_default
+ catalogs:
+     testing
+     production
+ included_manifests:
+     groups/StandardApps
+     groups/AllOptionalInstalls
+ managed_installs:
+     Firefox
+ managed_uninstalls:
+ managed_updates:
+ optional_installs:
+     GoogleChrome
+     AdobeReaderDC
+> add-pkg AutoDMG --manifest site_default --section optional_installs
+Doing git commit: gneagle modified 'manifests/site_default' via manifestutil
+Added AutoDMG to section optional_installs of manifest site_default.
+> new-manifest sacrificial
+Doing git commit: gneagle created 'manifests/sacrificial' via manifestutil
+> exit
 ```
