@@ -120,8 +120,10 @@ class FileRepo(Repo):
         url_parts = urlparse(baseurl)
         self.url_scheme = url_parts.scheme
         if self.url_scheme == 'file':
+            # local file repo
             self.root = url_parts.path
         else:
+            # repo is on a fileshare that will be mounted under /Volumes
             self.root = os.path.join('/Volumes', url_parts.path)
         self.we_mounted_repo = False
         self._connect()
@@ -133,8 +135,8 @@ class FileRepo(Repo):
             subprocess.call(cmd)
 
     def _connect(self):
-        '''If self.root is present, return. Otherwise try to mount the share
-        url.'''
+        '''If self.root is present, return. Otherwise, if the url scheme is not
+        "file:" then try to mount the share url.'''
         if not os.path.exists(self.root) and self.url_scheme != 'file':
             print 'Attempting to mount fileshare %s:' % self.baseurl
             if NETFSMOUNTURLSYNC_AVAILABLE:
