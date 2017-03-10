@@ -11,8 +11,8 @@ import urllib2
 from xml.parsers.expat import ExpatError
 
 from munkilib.munkirepo import Repo, RepoError
-#from munkilib import display
 
+# TODO: make this more easily configurable
 CURL_CMD = '/usr/bin/curl'
 
 class CurlError(Exception):
@@ -44,6 +44,7 @@ class MWA2APIRepo(Repo):
         '''Use curl to talk to MWA2 API'''
         # we use a config/directive file to avoid having the auth header show
         # up in a process listing
+        contentpath = None
         fileref, directivepath = tempfile.mkstemp()
         fileobj = os.fdopen(fileref, 'w')
         print >> fileobj, 'silent'         # no progress meter
@@ -55,7 +56,7 @@ class MWA2APIRepo(Repo):
             for key in headers:
                 print >> fileobj, 'header = "%s: %s"' % (key, headers[key])
         print >> fileobj, 'header = "Authorization: %s"' % self.authtoken
-        
+
         if formdata:
             for line in formdata:
                 print >> fileobj, 'form = "%s"' % line
@@ -71,18 +72,30 @@ class MWA2APIRepo(Repo):
         if filename and method in ('PUT', 'POST'):
             cmd.extend(['-d', '@%s' % filename])
         elif content and method in ('PUT', 'POST'):
-            cmd.extend(['-d', content])
+            if len(content) > 1024:
+                # it's a lot of data; let's write it to a local file first
+                # because we can't really pass it all via subprocess
+                fileref, contentpath = tempfile.mkstemp()
+                fileobj = os.fdopen(fileref, 'w')
+                fileobj.write(content)
+                fileobj.close()
+                cmd.extend(['-d', '@%s' % contentpath])
+            else:
+                cmd.extend(['-d', content])
 
-        #display.display_debug1('Curl command is %s', cmd)
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, err = proc.communicate()
+        # save our curl_directives for debugging
+        # TODO: remove this or make it dependent on a debug flag
         fileref = open(directivepath)
         curl_directives = fileref.read()
         fileref.close()
         try:
             os.unlink(directivepath)
+            if contentpath:
+                os.unlink(contentpath)
         except OSError:
             pass
         if proc.returncode:
@@ -152,14 +165,13 @@ class MWA2APIRepo(Repo):
         'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
         saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
         url = urllib2.quote(resource_identifier.encode('UTF-8'))
-        method = 'PUT'
         if resource_identifier.startswith(
                 ('catalogs/', 'manifests/', 'pkgsinfo/')):
             headers = {'Content-type': 'application/xml'}
         else:
             headers = {}
         try:
-            self._curl(url, headers=headers, method=method, content=content)
+            self._curl(url, headers=headers, method='PUT', content=content)
         except CurlError, err:
             raise RepoError(err)
 
@@ -169,11 +181,11 @@ class MWA2APIRepo(Repo):
         of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
         being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
         url = urllib2.quote(resource_identifier.encode('UTF-8'))
-        
+
         if resource_identifier.startswith(('pkgs/', 'icons/')):
             # MWA2API only supports POST for pkgs and icons
             # and file uploads need to be form encoded
-            formdata = ['filedata=@%s' % local_file_path] 
+            formdata = ['filedata=@%s' % local_file_path]
             try:
                 self._curl(url, method='POST', formdata=formdata)
             except CurlError, err:
