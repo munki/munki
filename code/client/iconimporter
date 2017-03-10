@@ -284,7 +284,7 @@ def main():
 
     # Make sure the repo exists
     try:
-        repo = munkirepo.connect(options.repo_url, options.plugin)
+        repo = munkirepo.connect(options.repo_url, options.plugin or 'FileRepo')
     except munkirepo.RepoError, err:
         print_err_utf8(u'Could not connect to munki repo: %s' % unicode(err))
         exit(-1)
