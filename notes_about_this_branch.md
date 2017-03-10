@@ -43,3 +43,50 @@ If you answer 'yes', the pkginfo is opened in your editor of choice.
 
 ### Plugin developer notes
 The "API" of the new-style repo plugins is greatly simplified over the previous style of repo plugins. It's possible I've over-simplfied it and it might need extension to cover things I haven't thought of. See the munkilib/munkirepo/FileRepo.py and munkilib/munkirepo/MWA2APIRepo.py files for concrete examples of the new-style repo plugins.
+
+Repo subclasses need to implement these methods:
+
+```python
+
+    def __init__(self, baseurl):
+        '''Constructor, does initial setup and handles login/mounting'''
+
+    def itemlist(self, kind):
+        '''Returns a list of identifiers for each item of kind.
+        Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
+        For a file-backed repo this would be a list of pathnames.'''
+
+    def get(self, resource_identifier):
+        '''Returns the content of item with given resource_identifier.
+        For a file-backed repo, a resource_identifier of
+        'pkgsinfo/apps/Firefox-52.0.plist' would return the contents of
+        <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
+        Avoid using this method with the 'pkgs' kind as it might return a
+        really large blob of data.'''
+
+    def get_to_local_file(self, resource_identifier, local_file_path):
+        '''Gets the contents of item with given resource_identifier and saves
+        it to local_file_path.
+        For a file-backed repo, a resource_identifier
+        of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
+        <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
+        local_file_path.'''
+
+    def put(self, resource_identifier, content):
+        '''Stores content on the repo based on resource_identifier.
+        For a file-backed repo, a resource_identifier of
+        'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
+        saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+
+    def put_from_local_file(self, resource_identifier, local_file_path):
+        '''Copies the content of local_file_path to the repo based on
+        resource_identifier. For a file-backed repo, a resource_identifier
+        of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
+        being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+
+    def delete(self, resource_identifier):
+        '''Deletes a repo object located by resource_identifier.
+        For a file-backed repo, a resource_identifier of
+        'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
+        <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+```
