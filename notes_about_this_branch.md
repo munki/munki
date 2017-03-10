@@ -1,5 +1,5 @@
 ### Introduction
-This branch contains a re-think of the repo plugin support.
+This branch contains a re-think of the repo plugin support currently in development for Munki 3.
 
 repo plugins are in munkilib/munkirepo.
 
