@@ -1,3 +1,6 @@
+# encoding: utf-8
+'''Subclasses FileRepo to do git commits of file changes'''
+
 import inspect
 import os
 import pwd
@@ -6,12 +9,14 @@ import sys
 
 from FileRepo import FileRepo
 
+# TODO: make this more easily customized
+GITCMD = '/usr/bin/git'
 
 class MunkiGit(object):
     """A simple interface for some common interactions with the git binary"""
-    
+
     def __init__(self, repo):
-        self.cmd = '/usr/bin/git'
+        self.cmd = GITCMD
         self.git_repo_dir = os.getcwd()
         self.munki_repo_dir = repo.root
         self.args = []
@@ -22,7 +27,7 @@ class MunkiGit(object):
         returns a dictionary with the keys 'output', 'error', and
         'returncode'. You can optionally pass an array into customArgs to
         override the self.args value without overwriting them."""
-        custom_args = self.args if custom_args == None else custom_args
+        custom_args = self.args if custom_args is None else custom_args
         proc = subprocess.Popen([self.cmd] + custom_args,
                                 shell=False,
                                 bufsize=-1,
@@ -52,7 +57,7 @@ class MunkiGit(object):
         """Commits the file at 'a_path'. This method will also automatically
         generate the commit log appropriate for the status of a_path where
         status would be 'modified', 'new file', or 'deleted'"""
-        
+
         # figure out the name of the tool in use
         try:
             toolname = os.path.basename(inspect.stack()[-1][1])
@@ -72,7 +77,7 @@ class MunkiGit(object):
         else:
             action = 'did something with'
 
-        # determine the path relative to self.munki_repo_dir 
+        # determine the path relative to self.munki_repo_dir
         # for the file at a_path
         itempath = a_path
         if a_path.startswith(self.munki_repo_dir):
@@ -113,39 +118,22 @@ class MunkiGit(object):
         """Deletes a file from the filesystem and Git repo."""
         self._add_remove_file_at_path(a_path, 'rm')
 
+
 class GitFileRepo(FileRepo):
     '''A subclass of FileRepo that does git commits for pkginfo files'''
 
-    def remove(self, path):
-        '''Removes a file from the repo.'''
-        result = os.remove(os.path.join(self.root, path))
-        if result == 0:
-            MunkiGit(self).delete_file_at_path(os.path.join(self.root, path))
-        return result
+    def put(self, resource_identifier, content):
+        super(GitFileRepo, self).put(resource_identifier, content)
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        MunkiGit(self).add_file_at_path(repo_filepath)
 
-    def unlink(self, path):
-        '''Removes a file from the repo.'''
-        self.remove(path)
+    def put_from_local_file(self, resource_identifier, local_file_path):
+        super(GitFileRepo, self).put_from_local_file(
+            resource_identifier, local_file_path)
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        MunkiGit(self).add_file_at_path(repo_filepath)
 
-    def put(self, src, dest):
-        '''Copies a local file to the repo.'''
-        cmd = ['/bin/cp', src, os.path.join(self.root, dest)]
-        result = subprocess.call(cmd)
-        if result == 0:
-            MunkiGit(self).add_file_at_path(os.path.join(self.root, dest))
-        return result
-
-    class RepoFile(object):
-        def __init__(self, repo, repo_path, mode):
-            self.repo = repo
-            self.repo_path = repo_path
-            self.repo_mode = mode
-            self.file = open(self.repo_path, mode)
-            self.local_path = self.repo_path
-
-        def __del__(self):
-            if 'w' in self.repo_mode:
-                MunkiGit(self.repo).add_file_at_path(self.repo_path)
-
-        def read(self):
-            return self.file.read()
+    def delete(self, resource_identifier):
+        super(GitFileRepo, self).delete(resource_identifier)
+        repo_filepath = os.path.join(self.root, resource_identifier)
+        MunkiGit(self).delete_file_at_path(repo_filepath)
