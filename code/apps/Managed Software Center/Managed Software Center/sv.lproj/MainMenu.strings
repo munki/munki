@@ -27,7 +27,7 @@
 "106.title" = "Hjälp";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
-"111.title" = "Hjälp för Managed Software Center";
+"111.title" = "Managed Software Center Hjälp";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
 "130.title" = "Tjänster";
