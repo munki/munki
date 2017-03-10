@@ -387,8 +387,10 @@ class MyOptionParser(optparse.OptionParser):
         raise MyOptParseExit
 
 
-def version(args):
+def version(repo, args):
     '''Prints version number'''
+    # we ignore repo arg but subcommand dispatcher sends it to all
+    # subcommands
     if len(args) != 0:
         print >> sys.stderr, 'Usage: version'
         return 22 # Invalid argument
@@ -568,6 +570,20 @@ def display_manifest(repo, args):
 
 def expand_included_manifests(repo, args):
     '''Prints a manifest, expanding any included manifests.'''
+
+    def manifest_recurser(repo, manifest):
+        '''Recursive expansion of included manifests'''
+        # No infinite loop checking! Be wary!
+        if 'included_manifests' in manifest:
+            for (index, item) in enumerate(manifest['included_manifests']):
+                included_manifest = get_manifest(repo, item)
+                if included_manifest:
+                    included_manifest = manifest_recurser(repo, included_manifest)
+                manifest['included_manifests'][index] = {
+                    item: included_manifest
+                }
+        return manifest
+
     parser = MyOptionParser()
     parser.set_usage('''expand-included-manifest MANIFESTNAME
         Prints included manifests in the specified manifest''')
@@ -588,20 +604,6 @@ def expand_included_manifests(repo, args):
         printplist(manifest_recurser(repo, manifest))
     else:
         return 2 # No such file or directory
-
-
-def manifest_recurser(repo, manifest):
-    '''Recursive expansion of included manifests'''
-    # No infinite loop checking! Be wary!
-    if 'included_manifests' in manifest:
-        for (index, item) in enumerate(manifest['included_manifests']):
-            included_manifest = get_manifest(repo, item)
-            if included_manifest:
-                included_manifest = manifest_recurser(repo, included_manifest)
-            manifest['included_manifests'][index] = {
-                item: included_manifest
-            }
-    return manifest
 
 
 def new_manifest(repo, args):
@@ -1042,6 +1044,7 @@ def refresh_cache(repo, args):
     CMD_ARG_DICT['pkgs'] = get_installer_item_names(
         repo, CMD_ARG_DICT['catalogs'])
 
+##### end subcommand functions
 
 def show_help():
     '''Prints available subcommands'''
