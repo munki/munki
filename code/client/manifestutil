@@ -1115,12 +1115,7 @@ def handle_subcommand(repo, args):
     if (subcommand not in ['version', 'configure', 'help']
             and '-h' not in args and '--help' not in args):
         if not repo:
-            try:
-                repo = munkirepo.connect(
-                    pref('repo_url'), pref('plugin') or 'FileRepo')
-            except munkirepo.RepoError, err:
-                print >> sys.stderr, u'Repo error: %s' % unicode(err)
-                exit(-1)
+            repo = connect_to_repo()
 
     try:
         # find function to call by looking in the global name table
@@ -1139,6 +1134,26 @@ def handle_subcommand(repo, args):
 def path2url(path):
     '''Converts a path to a file: url'''
     return urlparse.urljoin('file:', urllib.pathname2url(path))
+
+
+def connect_to_repo():
+    '''Connects to the Munki repo'''
+    repo_url = pref('repo_url')
+    repo_path = pref('repo_path')
+    repo_plugin = pref('plugin') or 'FileRepo'
+    if not repo_url and repo_path:
+        repo_url = path2url(repo_path)
+    if not repo_url:
+        print >> sys.stderr, (
+            u'No repo URL defined. Run %s --configure to define one.'
+            % os.path.basename(__file__))
+        exit(-1)
+    try:
+        repo = munkirepo.connect(repo_url, repo_plugin)
+    except munkirepo.RepoError, err:
+        print >> sys.stderr, u'Repo error: %s' % unicode(err)
+        exit(-1)
+    return repo
 
 
 INTERACTIVE_MODE = False
@@ -1182,12 +1197,7 @@ def main():
         # so let's enter interactive mode
         INTERACTIVE_MODE = True
         # must have an available repo for interactive mode
-        try:
-            repo = munkirepo.connect(
-                pref('repo_url'), pref('plugin') or 'FileRepo')
-        except munkirepo.RepoError, err:
-            print >> sys.stderr, u'Repo error: %s' % unicode(err)
-            exit(-1)
+        repo = connect_to_repo()
         # build the rest of our dict to enable tab completion
         CMD_ARG_DICT['options'] = {'--manifest': 'manifests',
                                    '--section':  'sections'}
