@@ -1116,7 +1116,8 @@ def handle_subcommand(repo, args):
             and '-h' not in args and '--help' not in args):
         if not repo:
             try:
-                repo = munkirepo.connect(pref('repo_url'), pref('plugin'))
+                repo = munkirepo.connect(
+                    pref('repo_url'), pref('plugin') or 'FileRepo')
             except munkirepo.RepoError, err:
                 print >> sys.stderr, u'Repo error: %s' % unicode(err)
                 exit(-1)
