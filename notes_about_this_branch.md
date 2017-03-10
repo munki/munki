@@ -41,6 +41,8 @@ If you answer 'yes', the pkginfo is opened in your editor of choice.
 
 `iconimporter` has to download dmgs and pkgs from the repo in order to process them for possible icons. This is slower and uses more disk than the direct file access possible when only file-based repos were supported. Running `iconimporter` against an entire repo should be an infrequent operation, so it's not likely this is worth optimizing in any way.
 
+When using the MWA2APIRepo plugin, rebuilding catalogs at the end of a `munkiimport` run is currently broken because output from `makecatalogs` is suppressed, `makecatalogs` will need authentication credentials, and there's no way yet for `munkiimport` to pass the credentials/authorization it has to `makecatalogs`. So it sits there forever, waiting for credentials that will never come. Current workaround is to skip rebuilding catalogs and then runninf `makecatalogs` seperately.
+
 ### Plugin developer notes
 The "API" of the new-style repo plugins is greatly simplified over the previous style of repo plugins. It's possible I've over-simplfied it and it might need extension to cover things I haven't thought of. See the munkilib/munkirepo/FileRepo.py and munkilib/munkirepo/MWA2APIRepo.py files for concrete examples of the new-style repo plugins.
 
@@ -89,4 +91,55 @@ Repo subclasses need to implement these methods:
         For a file-backed repo, a resource_identifier of
         'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+```
+
+### Interaction examples
+```
+bash-3.2$ ./munkiimport --configure
+Repo URL (example: afp://munki.example.com/repo): http://localhost:8080/api
+pkginfo extension (Example: .plist): .plist
+pkginfo editor (examples: /usr/bin/vi or TextMate.app; leave empty to not open an editor after import): /usr/bin/vi
+Default catalog to use (example: testing): testing
+Repo access plugin (defaults to FileRepo): MWA2APIRepo
+```
+
+```
+bash-3.2$ ./munkiimport ~/Downloads/AutoDMG-1.7.3.dmg 
+Please provide credentials for http://localhost:8080/api:
+Username: gneagle
+Password: 
+This item is similar to an existing item in the repo:
+            Item name: AutoDMG
+         Display name: AutoDMG
+          Description: Create deployable system images from OS X installer.
+              Version: 1.7
+  Installer item path: apps/AutoDMG-1.7__1.dmg
+
+Use existing item as a template? [y/n] y
+Copying unattended_install: True
+Copying unattended_uninstall: False
+Copying category: Admin Tools
+Copying developer: Per Olofsson
+Copying featured: False
+           Item name: AutoDMG
+        Display name: AutoDMG
+         Description: Create deployable system images from OS X installer.
+             Version: 1.7.3
+            Category: Admin Tools
+           Developer: Per Olofsson
+            Featured: False
+  Unattended install: True
+Unattended uninstall: False
+            Catalogs: testing
+
+Import this item? [y/n] y
+No existing product icon found.
+Attempt to create a product icon? [y/n] y
+Attempting to extract and upload icon...
+Created icon: icons/AutoDMG.png
+Copying AutoDMG-1.7.3.dmg to pkgs/apps/AutoDMG-1.7.3.dmg...
+Edit pkginfo before upload? [y/n]: n
+Saving pkginfo to pkgsinfo/apps/AutoDMG-1.7.3.plist...
+Rebuild catalogs? [y/n] y
+Rebuilding catalogs at http://localhost:8080/api...
 ```
