@@ -143,6 +143,10 @@ def check(client_id='', localmanifestpath=None):
             mainmanifestpath, 'featured_installs', installinfo)
         if processes.stop_requested():
             return 0
+        in_featinst = set(installinfo.get('featured_installs', []))
+        in_optinst = set(item['name'] for item in installinfo.get('optional_installs', []))
+        for item in in_featinst - in_optinst:
+            display.display_warning('%s is featured but not an optional install' % item)
 
         # verify available license seats for optional installs
         if installinfo.get('optional_installs'):
