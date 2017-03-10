@@ -606,6 +606,8 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             process_optional_install(item, cataloglist, installinfo)
         elif manifest_key == 'managed_uninstalls':
             dummy_result = process_removal(item, cataloglist, installinfo)
+        elif manifest_key == 'featured_installs':
+            installinfo['featured_installs'].append(item)
 
 
 def process_removal(manifestitem, cataloglist, installinfo):

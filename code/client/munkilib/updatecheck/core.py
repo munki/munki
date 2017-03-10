@@ -87,6 +87,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['processed_uninstalls'] = []
         installinfo['managed_updates'] = []
         installinfo['optional_installs'] = []
+        installinfo['featured_installs'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
 
@@ -136,6 +137,16 @@ def check(client_id='', localmanifestpath=None):
             mainmanifestpath, 'optional_installs', installinfo)
         if processes.stop_requested():
             return 0
+
+        # build list of featured installs
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'featured_installs', installinfo)
+        if processes.stop_requested():
+            return 0
+        in_featinst = set(installinfo.get('featured_installs', []))
+        in_optinst = set(item['name'] for item in installinfo.get('optional_installs', []))
+        for item in in_featinst - in_optinst:
+            display.display_warning('%s is featured but not an optional install' % item)
 
         # verify available license seats for optional installs
         if installinfo.get('optional_installs'):
