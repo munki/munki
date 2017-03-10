@@ -77,6 +77,10 @@ def getOptionalInstallItems():
         _cache['optional_install_items'] = [
             OptionalItem(item)
             for item in getInstallInfo().get('optional_installs', [])]
+        featured_items = getInstallInfo().get('featured_items', [])
+        for item in _cache['optional_install_items']:
+            if item['name'] in featured_items:
+                item['featured'] = True
     return _cache['optional_install_items']
 
 
