@@ -1183,7 +1183,8 @@ def main():
         INTERACTIVE_MODE = True
         # must have an available repo for interactive mode
         try:
-            repo = munkirepo.connect(pref('repo_url'), pref('plugin'))
+            repo = munkirepo.connect(
+                pref('repo_url'), pref('plugin') or 'FileRepo')
         except munkirepo.RepoError, err:
             print >> sys.stderr, u'Repo error: %s' % unicode(err)
             exit(-1)
