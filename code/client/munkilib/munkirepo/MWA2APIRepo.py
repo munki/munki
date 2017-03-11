@@ -105,7 +105,7 @@ class MWA2APIRepo(Repo):
             if DEBUG:
                 raise CurlError((proc.returncode, err, curl_directives, cmd))
             else:
-                raise CurlError((proc.returncode, err)
+                raise CurlError((proc.returncode, err))
         return output
 
     def itemlist(self, kind):
