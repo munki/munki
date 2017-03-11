@@ -28,9 +28,7 @@ def plugin_named(name):
 
 def connect(repo_url, plugin_name):
     '''Return a repo object for operations on our Munki repo'''
-    if plugin_name is None:
-        plugin_name = 'FileRepo'
-    plugin = plugin_named(plugin_name)
+    plugin = plugin_named(plugin_name or 'FileRepo')
     if plugin:
         return plugin(repo_url)
     else:
