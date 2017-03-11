@@ -138,7 +138,7 @@ class FileRepo(Repo):
         '''If self.root is present, return. Otherwise, if the url scheme is not
         "file:" then try to mount the share url.'''
         if not os.path.exists(self.root) and self.url_scheme != 'file':
-            print 'Attempting to mount fileshare %s:' % self.baseurl
+            print u'Attempting to mount fileshare %s:' % self.baseurl
             if NETFSMOUNTURLSYNC_AVAILABLE:
                 try:
                     self.root = mount_share_url(self.baseurl)
@@ -148,7 +148,11 @@ class FileRepo(Repo):
                 else:
                     self.we_mounted_repo = True
             else:
-                os.mkdir(self.root)
+                try:
+                    os.mkdir(self.root)
+                except OSError, err:
+                    raise RepoError(
+                        u'Could not make repo mountpoint: %s' % unicode(err))
                 if self.baseurl.startswith('afp:'):
                     cmd = ['/sbin/mount_afp', '-i', self.baseurl, self.root]
                 elif self.baseurl.startswith('smb:'):
@@ -165,7 +169,7 @@ class FileRepo(Repo):
                     self.we_mounted_repo = True
         # mount attempt complete; check again for existence of self.root
         if not os.path.exists(self.root):
-            raise RepoError('%s does not exist' % self.root)
+            raise RepoError(u'%s does not exist' % self.root)
 
     def itemlist(self, kind):
         '''Returns a list of identifiers for each item of kind.
