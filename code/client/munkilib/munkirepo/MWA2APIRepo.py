@@ -12,6 +12,8 @@ from xml.parsers.expat import ExpatError
 
 from munkilib.munkirepo import Repo, RepoError
 
+DEBUG = False
+
 # TODO: make this more easily configurable
 CURL_CMD = '/usr/bin/curl'
 
@@ -87,11 +89,12 @@ class MWA2APIRepo(Repo):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, err = proc.communicate()
-        # save our curl_directives for debugging
-        # TODO: remove this or make it dependent on a debug flag
-        fileref = open(directivepath)
-        curl_directives = fileref.read()
-        fileref.close()
+
+        if DEBUG:
+            # save our curl_directives for debugging
+            fileref = open(directivepath)
+            curl_directives = fileref.read()
+            fileref.close()
         try:
             os.unlink(directivepath)
             if contentpath:
@@ -99,7 +102,10 @@ class MWA2APIRepo(Repo):
         except OSError:
             pass
         if proc.returncode:
-            raise CurlError((proc.returncode, err, curl_directives, cmd))
+            if DEBUG:
+                raise CurlError((proc.returncode, err, curl_directives, cmd))
+            else:
+                raise CurlError((proc.returncode, err)
         return output
 
     def itemlist(self, kind):
