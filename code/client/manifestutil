@@ -1143,7 +1143,7 @@ def connect_to_repo():
     '''Connects to the Munki repo'''
     repo_url = pref('repo_url')
     repo_path = pref('repo_path')
-    repo_plugin = pref('plugin') or 'FileRepo'
+    repo_plugin = pref('plugin')
     if not repo_url and repo_path:
         repo_url = path2url(repo_path)
     if not repo_url:
