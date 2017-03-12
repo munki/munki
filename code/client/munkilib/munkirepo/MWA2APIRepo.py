@@ -35,11 +35,14 @@ class MWA2APIRepo(Repo):
         authtoken; if we don't find one, we'll prompt for credentials
         and make an authtoken.'''
         if not self.authtoken:
-            print 'Please provide credentials for %s:' % self.baseurl
-            username = raw_input('Username: ')
-            password = getpass.getpass()
-            user_and_pass = '%s:%s' % (username, password)
-            self.authtoken = 'Basic %s' % base64.b64encode(user_and_pass)
+            if 'MUNKIREPO_AUTHTOKEN' in os.environ:
+                self.authtoken = os.environ['MUNKIREPO_AUTHTOKEN']
+            else:
+                print 'Please provide credentials for %s:' % self.baseurl
+                username = raw_input('Username: ')
+                password = getpass.getpass()
+                user_and_pass = '%s:%s' % (username, password)
+                self.authtoken = 'Basic %s' % base64.b64encode(user_and_pass)
 
     def _curl(self, relative_url, headers=None, method='GET',
               filename=None, content=None, formdata=None):
