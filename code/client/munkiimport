@@ -715,6 +715,7 @@ def make_catalogs(repo, options):
 def cleanup_and_exit(exitcode):
     """Unmounts the repo if we mounted it, then exits"""
     result = 0
+    # TODO: reimplement this
     #if repo and repo.mounted and repo.WE_MOUNTED_THE_REPO:
     #    if not NOINTERACTIVE:
     #        answer = raw_input('Unmount the repo fileshare? [y/n] ')
