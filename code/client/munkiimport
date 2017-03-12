@@ -676,11 +676,15 @@ def make_pkginfo(options=None, test_mode=False):
     return FoundationPlist.readPlistFromString(stdout)
 
 
-def make_catalogs(options):
+def make_catalogs(repo, options):
     """Calls makecatalogs to rebuild our catalogs"""
-    # TODO: this breaks for an API repo since we aren't properly forwarding a
-    # authtoken. We need to fix that.
     # first look for a makecatalogs in the same dir as us
+    if hasattr(repo, 'authtoken'):
+        # Build an environment dict so we can put the authtoken
+        # into makecatalogs' environment
+        env = {'MUNKIREPO_AUTHTOKEN': repo.authtoken}
+    else:
+        env = None
     mydir = os.path.dirname(os.path.abspath(__file__))
     makecatalogs_path = os.path.join(mydir, 'makecatalogs')
     if not os.path.exists(makecatalogs_path):
@@ -693,7 +697,7 @@ def make_catalogs(options):
     cmd.append(options.repo_url)
     cmd.append('--plugin')
     cmd.append(options.plugin)
-    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
+    proc = subprocess.Popen(cmd, bufsize=-1, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
         output = proc.stdout.readline()
@@ -720,7 +724,6 @@ def cleanup_and_exit(exitcode):
     #        result = repo.unmount()
     # clean up tmpdir
     osutils.cleanUpTmpDir()
-
     exit(exitcode or result)
 
 
@@ -1138,7 +1141,7 @@ Extended Options: (makepkginfo options)
         answer = raw_input('Rebuild catalogs? [y/n] ')
         if answer.lower().startswith('y'):
             try:
-                make_catalogs(options)
+                make_catalogs(repo, options)
             except RepoCopyError, errmsg:
                 print >> sys.stderr, errmsg
                 cleanup_and_exit(-1)
