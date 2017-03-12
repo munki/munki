@@ -5,7 +5,7 @@ repo plugins are in munkilib/munkirepo.
 
 FileRepo is the default plugin and handles both local file repos and repos hosted on fileshares.
 
-GitFileRepo is a proof-of-concept plugin. It inherits the behavior of FileRepo and does git commits for file changes in the repo.
+GitFileRepo is a proof-of-concept plugin. It inherits the behavior of FileRepo and does git commits for file changes in the repo (which must be already configured/initialized as a git repo)
 
 MWA2APIRepo is a proof-of-concept plugin that talks to a remote repo via the MWA2 API. It requires the latest MWA2 code from GitHub.
 
@@ -39,14 +39,12 @@ If you answer 'yes', the pkginfo is opened in your editor of choice.
 - The pkginfo is saved to a temp file before it is opened in the text editor, so don't be concerned about the strange path you might see.
 
 ### Other notes
-`makecatalogs` works with the MWA2APIRepo but is very, very slow due to all the web calls neeed to get every icon and pkginfo item. A future version of the code will allow a plugin to tell the repo to makecatalogs itself: so for the MWA2API, it would trigger the MWA2 code to do the catalog rebuild.
+`makecatalogs` works with the MWA2APIRepo but is very slow due to all the web calls neeed to get every icon and pkginfo item. A future version of the code will allow a plugin to tell the repo to makecatalogs itself: so for the MWA2API, it would trigger the MWA2 code to do the catalog rebuild.
 
 `iconimporter` has to download dmgs and pkgs from the repo in order to process them for possible icons. This is slower and uses more disk than the direct file access possible when only file-based repos were supported. Running `iconimporter` against an entire repo should be an infrequent operation, so it's not likely this is worth optimizing in any way.
 
-When using the MWA2APIRepo plugin, rebuilding catalogs at the end of a `munkiimport` run is currently broken because output from `makecatalogs` is suppressed, `makecatalogs` will need authentication credentials, and there's no way yet for `munkiimport` to pass the credentials/authorization it has to `makecatalogs`. So it sits there forever, waiting for credentials that will never come. Current workaround is to skip rebuilding catalogs and then runninf `makecatalogs` seperately.
-
 ### Plugin developer notes
-The "API" of the new-style repo plugins is greatly simplified over the previous style of repo plugins. It's possible I've over-simplfied it and it might need extension to cover things I haven't thought of. See the munkilib/munkirepo/FileRepo.py and munkilib/munkirepo/MWA2APIRepo.py files for concrete examples of the new-style repo plugins.
+The "API" of the new-style repo plugins is greatly simplified over the previous style of repo plugins. It's possible I've over-simplfied it and it might need extension to cover things I haven't thought of. See the munkilib/munkirepo/FileRepo.py, munkilib/munkirepo/GitFileRepo.py and munkilib/munkirepo/MWA2APIRepo.py files for concrete examples of the new-style repo plugins.
 
 Repo subclasses need to implement these methods:
 
