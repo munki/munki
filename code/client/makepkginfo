@@ -1155,7 +1155,7 @@ def main():
     print FoundationPlist.writePlistToString(catinfo)
 
     # clean up
-    osutils.cleanUpTmpDir()
+    #osutils.cleanUpTmpDir()
 
 
 if __name__ == '__main__':

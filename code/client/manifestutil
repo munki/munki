@@ -42,7 +42,6 @@ from xml.parsers.expat import ExpatError
 # our libs
 from munkilib import info
 from munkilib import munkirepo
-from munkilib import osutils
 
 
 try:
@@ -347,7 +346,6 @@ def cleanup_and_exit(exitcode):
     #    answer = raw_input('Unmount the repo fileshare? [y/n] ')
     #    if answer.lower().startswith('y'):
     #        result = repo.unmount()
-    osutils.cleanUpTmpDir()
     exit(exitcode or result)
 
 
