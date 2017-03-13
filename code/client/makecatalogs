@@ -30,43 +30,12 @@ User calling this needs to be able to write to repo/catalogs.
 import hashlib
 import os
 import optparse
+import plistlib
 import sys
-import urllib
-import urlparse
 
+from munkilib.cliutils import pref, path2url, print_utf8, print_err_utf8
+from munkilib.cliutils import get_version
 from munkilib import munkirepo
-
-try:
-    from munkilib import FoundationPlist as plistlib
-    LOCAL_PREFS_SUPPORT = True
-except ImportError:
-    try:
-        import FoundationPlist as plistlib
-        LOCAL_PREFS_SUPPORT = True
-    except ImportError:
-        # maybe we're not on an OS X machine...
-        print >> sys.stderr, ("Note: FoundationPlist is not available, "
-                              "using plistlib instead.")
-        import plistlib
-        LOCAL_PREFS_SUPPORT = False
-
-try:
-    from munkilib.info import get_version
-except ImportError:
-    # munkilib.info is not available
-    def get_version():
-        '''Placeholder if munkilib is not available'''
-        return 'UNKNOWN'
-
-
-def print_utf8(text):
-    '''Print Unicode text as UTF-8'''
-    print text.encode('UTF-8')
-
-
-def print_err_utf8(text):
-    '''Print Unicode text to stderr as UTF-8'''
-    print >> sys.stderr, text.encode('UTF-8')
 
 
 def list_items_of_kind(repo, kind):
@@ -341,29 +310,6 @@ def makecatalogs(repo, options):
     exit(exit_code)
 
 
-def pref(prefname):
-    """Returns a preference for prefname"""
-    if not LOCAL_PREFS_SUPPORT:
-        return None
-    try:
-        _prefs = plistlib.readPlist(PREFSPATH)
-    except BaseException:
-        return None
-    if prefname in _prefs:
-        return _prefs[prefname]
-    else:
-        return None
-
-
-def path2url(path):
-    '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(path))
-
-
-PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences', PREFSNAME))
-
-
 def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root]"
@@ -372,11 +318,11 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    parser.add_option('--repo_url', '--repo-url', default=pref('repo_url'),
+    parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
-    parser.add_option('--plugin', '--plugin', default=pref('plugin'),
+    parser.add_option('--plugin', '--plugin',
                       help='Specify a custom plugin to connect to repo.')
     parser.set_defaults(force=False)
     options, arguments = parser.parse_args()
@@ -391,11 +337,10 @@ def main():
             options.repo_url = path2url(arguments[0])
         elif pref('repo_path'):
             options.repo_url = path2url(pref('repo_path'))
-        options.plugin = 'FileRepo'
+        else:
+            options.repo_url = pref('repo_url')
+            options.plugin = pref('plugin')
 
-    elif options.plugin is None:
-        options.plugin = 'FileRepo'
-    
     if not options.repo_url:
         parser.print_usage()
         exit(-1)
