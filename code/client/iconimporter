@@ -25,12 +25,12 @@ Converts and imports icons as png files for Munki repo
 # standard libs
 import os
 from optparse import OptionParser
-import sys
-import tempfile
-import urllib
-import urlparse
 
 # our libs
+from munkilib.cliutils import TempFile
+from munkilib.cliutils import pref, path2url
+from munkilib.cliutils import print_utf8, print_err_utf8
+
 from munkilib import dmgutils
 from munkilib import iconutils
 from munkilib import munkirepo
@@ -38,28 +38,6 @@ from munkilib import osutils
 from munkilib import pkgutils
 
 from munkilib import FoundationPlist
-
-# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-# No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
-from Foundation import CFPreferencesCopyAppValue
-# pylint: enable=E0611
-
-
-class TempFile(object):
-    '''A class that creates a temp file that is automatically deleted when
-    the object goes out of scope.'''
-    def __init__(self):
-        filedesc, filepath = tempfile.mkstemp()
-        # we just want the path; close the file descriptor
-        os.close(filedesc)
-        self.path = filepath
-
-    def __del__(self):
-        try:
-            os.unlink(self.path)
-        except OSError:
-            pass
 
 
 def copy_icon_to_repo(repo, name, path):
@@ -225,33 +203,6 @@ def generate_pngs_from_munki_items(repo, force=False, itemlist=None):
             generate_pngs_from_pkg(repo, item)
         else:
             print_utf8(u'\tCan\'t process installer_type: %s' % installer_type)
-
-
-def print_utf8(text):
-    '''Print Unicode text as UTF-8'''
-    print text.encode('UTF-8')
-
-
-def print_err_utf8(text):
-    '''Print Unicode text to stderr as UTF-8'''
-    print >> sys.stderr, text.encode('UTF-8')
-
-
-BUNDLE_ID = 'com.googlecode.munki.munkiimport'
-def pref(prefname):
-    """Return a preference. Since this uses CFPreferencesCopyAppValue,
-    Preferences can be defined several places. Precedence is:
-        - MCX/Configuration Profile
-        - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XX.plist
-        - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
-        - /Library/Preferences/com.googlecode.munki.munkiimport.plist
-    """
-    return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
-
-
-def path2url(path):
-    '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(path))
 
 
 def main():

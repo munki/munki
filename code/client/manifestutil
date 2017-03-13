@@ -22,8 +22,6 @@ Created by Greg Neagle on 2011-03-04.
 
 # TODO: add support for delete-manifest
 
-import ctypes
-from ctypes.util import find_library
 import fnmatch
 import optparse
 import os
@@ -31,158 +29,16 @@ import plistlib
 import readline
 import shlex
 import sys
-import tempfile
-import thread
-import time
-import urllib
-import urlparse
 
 from xml.parsers.expat import ExpatError
 
 # our libs
-from munkilib import info
+from munkilib.cliutils import ConfigurationSaveError
+from munkilib.cliutils import configure as _configure
+from munkilib.cliutils import libedit
+from munkilib.cliutils import get_version, pref, path2url
+
 from munkilib import munkirepo
-
-
-try:
-    # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-    # No name 'Foo' in module 'Bar' warnings. Disable them.
-    # pylint: disable=E0611
-    from Foundation import CFPreferencesAppSynchronize
-    from Foundation import CFPreferencesCopyAppValue
-    from Foundation import CFPreferencesSetAppValue
-    # pylint: enable=E0611
-
-    BUNDLE_ID = 'com.googlecode.munki.munkiimport'
-    def pref(prefname):
-        """Return a preference. Since this uses CFPreferencesCopyAppValue,
-        Preferences can be defined several places. Precedence is:
-            - MCX/Configuration Profile
-            - ~/Library/Preferences/ByHost/
-                com.googlecode.munki.munkiimport.XX.plist
-            - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
-            - /Library/Preferences/com.googlecode.munki.munkiimport.plist
-        """
-        return CFPreferencesCopyAppValue(prefname, BUNDLE_ID)
-
-
-    def configure(repo, args):
-        """Configures manifestutil for use"""
-        # we ignore the repo arg, but all the other subcommands require it
-        _prefs = {}
-        if len(args):
-            print >> sys.stderr, 'Usage: configure'
-            return 22 # Invalid argument
-        for (key, prompt) in [
-                #('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-                ('repo_url',
-                 'Repo URL (example: afp://munki.example.com/repo)'),
-                ('plugin', 'Munki repo plugin (defaults to FileRepo)')
-             ]:
-
-            newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
-            _prefs[key] = newvalue or pref(key) or ''
-
-        for key, value in _prefs.items():
-            try:
-                CFPreferencesSetAppValue(key, value, BUNDLE_ID)
-            except BaseException:
-                print >> sys.stderr, 'Could not save configuration!'
-            finally:
-                CFPreferencesAppSynchronize(BUNDLE_ID)
-
-except ImportError:
-    # Foundation isn't available
-    PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-    PREFSPATH = os.path.expanduser(
-        os.path.join('~/Library/Preferences', PREFSNAME))
-    _PREFS = {}
-    def pref(prefname):
-        """Returns a preference for prefname"""
-        global _PREFS
-        if not _PREFS:
-            try:
-                _PREFS = plistlib.readPlist(PREFSPATH)
-            except (IOError, OSError, ExpatError):
-                pass
-        if prefname in _PREFS:
-            return _PREFS[prefname]
-        else:
-            return None
-
-
-    def configure(repo, args):
-        """Configures manifestutil for use"""
-        # we ignore the repo arg, but all the other subcommands require it
-        if len(args):
-            print >> sys.stderr, 'Usage: configure'
-            return 22 # Invalid argument
-        for (key, prompt) in [
-                #('repo_path', 'Path to munki repo (example: /Volumes/repo)'),
-                ('repo_url',
-                 'Repo URL (example: afp://munki.example.com/repo)'),
-                ('plugin', 'Munki repo plugin (defaults to FileRepo)')
-             ]:
-
-            newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
-            _PREFS[key] = newvalue or pref(key) or ''
-
-        try:
-            plistlib.writePlist(_PREFS, PREFSPATH)
-            return 0
-        except (IOError, OSError, ExpatError):
-            print >> sys.stderr, (
-                'Could not save configuration to %s' % PREFSPATH)
-            return 1 # Operation not permitted
-
-
-if 'libedit' in readline.__doc__:
-    # readline module was compiled against libedit
-    LIBEDIT = ctypes.cdll.LoadLibrary(find_library('libedit'))
-else:
-    LIBEDIT = None
-
-
-def raw_input_with_default(prompt, default_text):
-    '''A nasty, nasty hack to get around Python readline limitations under
-    OS X. Gives us editable default text for munkiimport choices'''
-
-    def insert_default_text(prompt, text):
-        '''Helper function'''
-        time.sleep(0.01)
-        LIBEDIT.rl_set_prompt(prompt)
-        readline.insert_text(text)
-        LIBEDIT.rl_forced_update_display()
-
-    readline.clear_history()
-    if not default_text:
-        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
-    elif LIBEDIT:
-        # readline module was compiled against libedit
-        thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return unicode(raw_input(), encoding=sys.stdin.encoding)
-    else:
-        readline.set_startup_hook(lambda: readline.insert_text(default_text))
-        try:
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
-        finally:
-            readline.set_startup_hook()
-
-
-class TempFile(object):
-    '''A class that creates a temp file that is automatically deleted when
-    the object goes out of scope.'''
-    def __init__(self):
-        filedesc, filepath = tempfile.mkstemp()
-        # we just want the path; close the file descriptor
-        os.close(filedesc)
-        self.path = filepath
-
-    def __del__(self):
-        try:
-            os.unlink(self.path)
-        except OSError:
-            pass
 
 
 def get_installer_item_names(repo, catalog_limit_list):
@@ -392,8 +248,25 @@ def version(repo, args):
     if len(args) != 0:
         print >> sys.stderr, 'Usage: version'
         return 22 # Invalid argument
-    print info.get_version()
+    print get_version()
     return 0
+
+
+def configure(repo, args):
+    '''Allow user to configure tool options'''
+    # we ignore the repo arg, but all the other subcommands require it
+    if len(args):
+        print >> sys.stderr, 'Usage: configure'
+        return 22 # Invalid argument
+    prompt_list = [
+        ('repo_url', 'Repo URL (example: afp://munki.example.com/repo)'),
+        ('plugin', 'Munki repo plugin (defaults to FileRepo)')
+    ]
+    try:
+        _configure(prompt_list)
+        return 0
+    except ConfigurationSaveError:
+        return 1 # Operation not permitted
 
 
 def list_catalogs(repo, args):
@@ -1088,7 +961,7 @@ def tab_completer(text, state):
 def set_up_tab_completer():
     '''Starts our tab-completer when running interactively'''
     readline.set_completer(tab_completer)
-    if LIBEDIT:
+    if libedit:
         # readline module was compiled against libedit
         readline.parse_and_bind("bind ^I rl_complete")
     else:
@@ -1132,11 +1005,6 @@ def handle_subcommand(repo, args):
         return subcommand_function(repo, args[1:])
 
 
-def path2url(path):
-    '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(path))
-
-
 def connect_to_repo():
     '''Connects to the Munki repo'''
     repo_url = pref('repo_url')
@@ -1157,12 +1025,10 @@ def connect_to_repo():
     return repo
 
 
-INTERACTIVE_MODE = False
 CMD_ARG_DICT = {}
 
 def main():
     '''Our main routine'''
-    global INTERACTIVE_MODE
     repo = None
 
     cmds = {'add-pkg':                   'pkgs',
@@ -1196,7 +1062,6 @@ def main():
     else:
         # if we get here, no options or commands,
         # so let's enter interactive mode
-        INTERACTIVE_MODE = True
         # must have an available repo for interactive mode
         repo = connect_to_repo()
         # build the rest of our dict to enable tab completion
