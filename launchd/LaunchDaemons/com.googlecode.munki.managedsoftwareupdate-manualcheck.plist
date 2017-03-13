@@ -2,28 +2,26 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.googlecode.munki.managedsoftwareupdate-manualcheck</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/usr/local/munki/supervisor</string>
-    <string>--timeout</string>
-    <string>43200</string>
-    <string>--</string>
-    <string>/usr/local/munki/managedsoftwareupdate</string>
-    <string>--manualcheck</string>
-  </array>
-  <key>KeepAlive</key>
-  <dict>
-     <key>PathState</key>
-     <dict>
-       <key>/private/tmp/.com.googlecode.munki.updatecheck.launchd</key>
-       <true/>
-     </dict>
-  </dict>
-  <key>OnDemand</key>
-  <true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>PathState</key>
+		<dict>
+			<key>/private/tmp/.com.googlecode.munki.updatecheck.launchd</key>
+			<true/>
+		</dict>
+	</dict>
+	<key>Label</key>
+	<string>com.googlecode.munki.managedsoftwareupdate-manualcheck</string>
+	<key>OnDemand</key>
+	<true/>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/munki/supervisor</string>
+		<string>--timeout</string>
+		<string>43200</string>
+		<string>--</string>
+		<string>/usr/local/munki/managedsoftwareupdate</string>
+		<string>--manualcheck</string>
+	</array>
 </dict>
 </plist>
-
-
