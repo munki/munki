@@ -35,7 +35,7 @@
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle anstehenden Updates werden installiert. Alle ungespeicherte Arbeit geht verloren.\nDurch jetziges Abmelden können sie eine erzwungene Abmeldung verhindern";
 
 /* Install Error message */
-"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installation fehlgeschlagen. Installation wird wieder versucht.\nFalls dieses Verhalten anhält. verständigen Sie bitte ihren Systemadministrator.";
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installation fehlgeschlagen. Installation wird wieder versucht.\nFalls dieses Verhalten anhält, verständigen Sie bitte ihren Systemadministrator.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applikationen, die von anderen benutzt werden";
@@ -108,6 +108,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Fällig:";
+
+/* FeaturedLabel */
+"Featured" = "Highlights";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "App-Highlights";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Abschließen...";
@@ -356,7 +362,7 @@
 "Try selecting another category." = "Versuchen Sie eine andere Kategorie.";
 
 /* No Developer Results secondary text */
-"Try selecting another developer." = "Versuchen Sie einen anderen Entwickler.";
+"Try selecting another developer." = "Versuchen Sie einen anderen Entwickler auszuwählen.";
 
 /* Sidebar Type label */
 "Type:" = "Typ:";
