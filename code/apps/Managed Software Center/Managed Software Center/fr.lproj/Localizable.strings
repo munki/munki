@@ -429,3 +429,9 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Votre logiciel est à jour.";
+
+/* FeaturedLabel */
+"Featured" = "En vedette";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Articles en vedette";
