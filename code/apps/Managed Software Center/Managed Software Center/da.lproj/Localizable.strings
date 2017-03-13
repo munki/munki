@@ -109,6 +109,12 @@
 /* Sidebar Due label */
 "Due:" = "Forfalder:";
 
+/* FeaturedLabel */
+"Featured" = "Udvalgte";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Udvalgt software";
+
 /* managedsoftwareupdate message */
 "Finishing..." = "Afslutter...";
 
