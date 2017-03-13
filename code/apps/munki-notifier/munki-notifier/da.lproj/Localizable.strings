@@ -1,8 +1,8 @@
 /* Multiple Update message */
-"%@ pending updates" = "%@ ventende opdateringer";
+"%@ pending updates" = "%@ opdateringer venter";
 
 /* One Update message */
-"1 pending update" = "1 ventende opdatering";
+"1 pending update" = "1 opdatering venter";
 
 /* Details label */
 "Details" = "Detaljer";
@@ -11,4 +11,4 @@
 "One or more items must be installed by %@" = "Et eller flere emner skal installeres senest %@";
 
 /* Software updates available message */
-"Software updates available" = "Softwareopdateringer til rådighed";
+"Software updates available" = "Der er softwareopdateringer";
