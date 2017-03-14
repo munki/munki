@@ -124,7 +124,7 @@ class FileRepo(Repo):
             self.root = url_parts.path
         else:
             # repo is on a fileshare that will be mounted under /Volumes
-            self.root = os.path.join('/Volumes', url_parts.path)
+            self.root = os.path.join('/Volumes', url_parts.path.lstrip('/'))
         self.we_mounted_repo = False
         self._connect()
 
