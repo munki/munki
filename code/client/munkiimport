@@ -651,7 +651,7 @@ def make_catalogs(repo, options):
 
     errors = proc.stderr.read()
     if errors:
-        print '\nThe following errors occurred while building catalogs:\n'
+        print '\nThe following issues occurred while building catalogs:\n'
         print errors
 
 
