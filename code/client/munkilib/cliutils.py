@@ -192,10 +192,17 @@ class ConfigurationSaveError(Exception):
 
 def configure(prompt_list):
     """Gets configuration options and saves them to preferences store"""
+    darwin_vers = int(os.uname()[2].split('.')[0])
     edited_prefs = {}
     for (key, prompt) in prompt_list:
         newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
-        edited_prefs[key] = newvalue or pref(key) or ''
+        if darwin_vers == 10:
+            # old behavior in SL: hitting return gives you an empty string,
+            # and means accept the default value.
+            edited_prefs[key] = newvalue or pref(key) or ''
+        else:
+            # just use the edited value as-is
+            edited_prefs[key] = newvalue
 
     if FOUNDATION_SUPPORT:
         for key, value in edited_prefs.items():
