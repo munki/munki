@@ -428,7 +428,6 @@ echo "Creating launchd package template..."
 # Create directory structure.
 LAUNCHDROOT="$PKGTMP/munki_launchd"
 mkdir -m 1775 "$LAUNCHDROOT"
-
 mkdir -m 1775 "$LAUNCHDROOT/Library"
 mkdir -m 755 "$LAUNCHDROOT/Library/LaunchAgents"
 mkdir -m 755 "$LAUNCHDROOT/Library/LaunchDaemons"
