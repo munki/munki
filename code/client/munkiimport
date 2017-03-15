@@ -964,7 +964,8 @@ Extended Options: (makepkginfo options)
             cleanup_and_exit(0)
 
         if options.subdirectory == '':
-            if not is_applemetadata and options.plugin == 'FileRepo':
+            if (not is_applemetadata and
+                    isinstance(repo, munkirepo.FileRepo.FileRepo)):
                 repo_pkgs_path = os.path.join(repo.root, 'pkgs')
                 installer_item_abspath = os.path.abspath(installer_item)
                 if installer_item_abspath.startswith(repo_pkgs_path):
@@ -974,8 +975,8 @@ Extended Options: (makepkginfo options)
                     # In this case, we want to use the same subdirectory for
                     # the pkginfo that corresponds to the one the pkg is
                     # already in.
-                    # We aren't handling the case of subclasses of FileRepo
-                    # or alternate implementations of FileRepo.
+                    # We aren't handling the case of alternate implementations
+                    # FileRepo.
                     installer_item_dirpath = os.path.dirname(
                         installer_item_abspath)
                     options.subdirectory = installer_item_dirpath[
