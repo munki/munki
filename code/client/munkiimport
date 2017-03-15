@@ -751,6 +751,9 @@ Extended Options: (makepkginfo options)
         if repo_path:
             options.repo_url = path2url(repo_path)
 
+    if not options.plugin:
+        options.plugin = 'FileRepo'
+
     if options.icon_path and not os.path.isfile(options.icon_path):
         print >> sys.stderr, ('The specified icon file does not exist.')
         exit(-1)
