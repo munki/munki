@@ -22,7 +22,5 @@
 		<string>-a</string>
 		<string>/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app</string>
 	</array>
-	<key>RunAtLoad</key>
-	<false/>
 </dict>
 </plist>
