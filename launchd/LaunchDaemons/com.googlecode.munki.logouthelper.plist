@@ -8,7 +8,5 @@
 	<array>
 		<string>/usr/local/munki/logouthelper</string>
 	</array>
-	<key>RunAtLoad</key>
-	<false/>
 </dict>
 </plist>

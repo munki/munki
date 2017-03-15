@@ -29,7 +29,5 @@
 		<string>/usr/local/munki/managedsoftwareupdate</string>
 		<string>--logoutinstall</string>
 	</array>
-	<key>RunAtLoad</key>
-	<false/>
 </dict>
 </plist>
