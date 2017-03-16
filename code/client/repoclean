@@ -129,11 +129,9 @@ def delete_items(repo, items_to_delete, pkgs_to_keep):
     '''Deletes items from the repo'''
     for item in items_to_delete:
         if 'resource_identifier' in item:
-            item_to_remove = os.path.join(
-                'pkgsinfo', item['resource_identifier'])
-            print_utf8('Removing %s' % item_to_remove)
+            print_utf8('Removing %s' % item['resource_identifier'])
             try:
-                repo.delete(item_to_remove)
+                repo.delete(item['resource_identifier'])
             except munkirepo.RepoError, err:
                 print_err_utf8(unicode(err))
         if 'pkg_path' in item and not item['pkg_path'] in pkgs_to_keep:
@@ -219,8 +217,13 @@ def clean_repo(repo, options):
             errors.append(
                 "Unexpected error for %s: %s" % (pkginfo_name, unicode(err)))
             continue
-        name = pkginfo['name']
-        version = pkginfo['version']
+        try:
+            name = pkginfo['name']
+            version = pkginfo['version']
+        except KeyError:
+            errors.append(
+                "Missing 'name' or 'version' keys in %s" % pkginfo_name)
+            continue
         pkgpath = pkginfo.get('installer_item_location', '')
         pkgsize = pkginfo.get('installer_item_size', 0) * 1024
 
