@@ -97,7 +97,8 @@ def make_catalogs(repo, options):
         output = proc.stdout.readline()
         if not output and (proc.poll() != None):
             break
-        print output.rstrip('\n').decode('UTF-8')
+        # we don't print stdout -- too much info
+        #print output.rstrip('\n').decode('UTF-8')
 
     errors = proc.stderr.read()
     if errors:
