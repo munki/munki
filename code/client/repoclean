@@ -128,8 +128,9 @@ def get_file_sizes(items_to_delete, pkgs_to_keep):
 def delete_items(repo, items_to_delete, pkgs_to_keep):
     '''Deletes items from the repo'''
     for item in items_to_delete:
-        if 'relative_path' in item:
-            item_to_remove = os.path.join('pkgsinfo', item['relative_path'])
+        if 'resource_identifier' in item:
+            item_to_remove = os.path.join(
+                'pkgsinfo', item['resource_identifier'])
             print_utf8('Removing %s' % item_to_remove)
             try:
                 repo.delete(item_to_remove)
