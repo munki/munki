@@ -150,7 +150,7 @@ class FileRepo(Repo):
             else:
                 try:
                     os.mkdir(self.root)
-                except OSError, err:
+                except (OSError, IOError), err:
                     raise RepoError(
                         u'Could not make repo mountpoint: %s' % unicode(err))
                 if self.baseurl.startswith('afp:'):
@@ -208,7 +208,7 @@ class FileRepo(Repo):
             data = fileref.read()
             fileref.close()
             return data
-        except OSError, err:
+        except (OSError, IOError), err:
             raise RepoError(err)
 
     def get_to_local_file(self, resource_identifier, local_file_path):
@@ -237,7 +237,7 @@ class FileRepo(Repo):
             fileref = open(repo_filepath, 'w')
             fileref.write(content)
             fileref.close()
-        except OSError, err:
+        except (OSError, IOError), err:
             raise RepoError(err)
 
     def put_from_local_file(self, resource_identifier, local_file_path):
@@ -265,6 +265,6 @@ class FileRepo(Repo):
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
             os.remove(repo_filepath)
-        except OSError, err:
+        except (OSError, IOError), err:
             raise RepoError(err)
         
