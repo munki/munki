@@ -37,7 +37,7 @@ from munkilib.cliutils import print_utf8, print_err_utf8
 from munkilib import munkirepo
 
 
-def nameAndVersion(a_string):
+def name_and_version(a_string):
     """Splits a string into the name and version number.
 
     Name and version must be seperated with a hyphen ('-')
@@ -57,7 +57,7 @@ def nameAndVersion(a_string):
     return (a_string, '')
 
 
-def humanReadable(size_in_bytes):
+def human_readable(size_in_bytes):
     """Returns sizes in human-readable units."""
     units = [(" bytes", 2**10),
              (" KB", 2**20),
@@ -106,9 +106,14 @@ def make_catalogs(repo, options):
 
 
 def count_pkgs_to_delete(items_to_delete, pkgs_to_keep):
+    '''Simply count the number of installer and uninstaller pkgs we will
+    delete'''
     count = 0
     for item in items_to_delete:
-        if 'pkg_path' in item and not item['pkg_path'] in pkgs_to_keep:
+        if item.get('pkg_path') and not item['pkg_path'] in pkgs_to_keep:
+            count += 1
+        if (item.get('uninstallpkg_path') and
+                not item['uninstallpkg_path'] in pkgs_to_keep):
             count += 1
     return count
 
@@ -120,9 +125,12 @@ def get_file_sizes(items_to_delete, pkgs_to_keep):
     pkg_total_size = 0
     for item in items_to_delete:
         pkginfo_total_size += int(item.get('item_size', 0))
-        if 'pkg_path' in item and not item['pkg_path'] in pkgs_to_keep:
+        if item.get('pkg_path') and not item['pkg_path'] in pkgs_to_keep:
             pkg_total_size += int(item.get('pkg_size', 0))
-    return (humanReadable(pkginfo_total_size), humanReadable(pkg_total_size))
+        if (item.get('uninstallpkg_path') and
+                not item['uninstallpkg_path'] in pkgs_to_keep):
+            pkg_total_size += int(item.get('uninstallpkg_size', 0))
+    return (human_readable(pkginfo_total_size), human_readable(pkg_total_size))
 
 
 def delete_items(repo, items_to_delete, pkgs_to_keep):
@@ -134,8 +142,16 @@ def delete_items(repo, items_to_delete, pkgs_to_keep):
                 repo.delete(item['resource_identifier'])
             except munkirepo.RepoError, err:
                 print_err_utf8(unicode(err))
-        if 'pkg_path' in item and not item['pkg_path'] in pkgs_to_keep:
+        if item.get('pkg_path') and not item['pkg_path'] in pkgs_to_keep:
             pkg_to_remove = os.path.join('pkgs', item['pkg_path'])
+            print_utf8('Removing %s' % pkg_to_remove)
+            try:
+                repo.delete(pkg_to_remove)
+            except munkirepo.RepoError, err:
+                print_err_utf8(unicode(err))
+        if (item.get('uninstallpkg_path') and
+                not item['uninstallpkg_path'] in pkgs_to_keep):
+            pkg_to_remove = os.path.join('pkgs', item['uninstallpkg_path'])
             print_utf8('Removing %s' % pkg_to_remove)
             try:
                 repo.delete(pkg_to_remove)
@@ -146,9 +162,9 @@ def delete_items(repo, items_to_delete, pkgs_to_keep):
 def clean_repo(repo, options):
     '''Clean it all up'''
 
-    def compare_versions(a, b):
+    def compare_versions(thing_a, thing_b):
         """sort highest version to top"""
-        return cmp(LooseVersion(b), LooseVersion(a))
+        return cmp(LooseVersion(thing_b), LooseVersion(thing_a))
 
     errors = []
     manifest_items = set()
@@ -178,7 +194,7 @@ def clean_repo(repo, options):
         for key in ['managed_installs', 'managed_uninstalls',
                     'managed_updates', 'optional_installs']:
             for item in manifest.get(key, []):
-                itemname, itemvers = nameAndVersion(item)
+                itemname, itemvers = name_and_version(item)
                 manifest_items.add(itemname)
                 if itemvers:
                     manifest_items_with_versions.add((itemname, itemvers))
@@ -187,7 +203,7 @@ def clean_repo(repo, options):
             for key in ['managed_installs', 'managed_uninstalls',
                         'managed_updates', 'optional_installs']:
                 for item in conditional_item.get(key, []):
-                    itemname, itemvers = nameAndVersion(item)
+                    itemname, itemvers = name_and_version(item)
                     manifest_items.add(itemname)
                     if itemvers:
                         manifest_items_with_versions.add((itemname, itemvers))
@@ -226,6 +242,8 @@ def clean_repo(repo, options):
             continue
         pkgpath = pkginfo.get('installer_item_location', '')
         pkgsize = pkginfo.get('installer_item_size', 0) * 1024
+        uninstallpkgpath = pkginfo.get('uninstaller_item_location', '')
+        uninstallpkgsize = pkginfo.get('uninstaller_item_size', 0) * 1024
 
         # track required items; if these are in "Foo-1.0" format, we need to
         # note these so we don't delete the specific referenced version
@@ -236,7 +254,7 @@ def clean_repo(repo, options):
             if isinstance(dependencies, basestring):
                 dependencies = [dependencies]
             for dependency in dependencies:
-                required_name, required_vers = nameAndVersion(dependency)
+                required_name, required_vers = name_and_version(dependency)
                 if required_vers:
                     required_items.add((required_name, required_vers))
                 # if this item is in a manifest, then anything it requires
@@ -254,7 +272,7 @@ def clean_repo(repo, options):
             if isinstance(update_items, basestring):
                 update_items = [update_items]
             for update_item in update_items:
-                update_item_name, update_item_vers = nameAndVersion(update_item)
+                update_item_name, dummy_vers = name_and_version(update_item)
                 if update_item_name in manifest_items:
                     # add our name
                     manifest_items.add(name)
@@ -283,9 +301,11 @@ def clean_repo(repo, options):
             'name': name,
             'version': version,
             'resource_identifier': pkginfo_identifier,
-            'pkg_path': pkgpath,
             'item_size': len(data),
-            'pkg_size': pkgsize
+            'pkg_path': pkgpath,
+            'pkg_size': pkgsize,
+            'uninstallpkg_path': uninstallpkgpath,
+            'uninstallpkg_size': uninstallpkgsize
         })
         pkginfo_count += 1
 
@@ -309,16 +329,22 @@ def clean_repo(repo, options):
                 for item in item_list:
                     if item['pkg_path']:
                         pkgs_to_keep.add(item['pkg_path'])
+                    if item['uninstallpkg_path']:
+                        pkgs_to_keep.add(item['uninstallpkg_path'])
                 line_info = "(REQUIRED by a manifest)"
             elif (item_list[0]['name'], version) in required_items:
                 for item in item_list:
                     if item['pkg_path']:
                         pkgs_to_keep.add(item['pkg_path'])
+                    if item['uninstallpkg_path']:
+                        pkgs_to_keep.add(item['uninstallpkg_path'])
                 line_info = "(REQUIRED by another pkginfo item)"
             elif index <= options.keep:
                 for item in item_list:
                     if item['pkg_path']:
                         pkgs_to_keep.add(item['pkg_path'])
+                    if item['uninstallpkg_path']:
+                        pkgs_to_keep.add(item['uninstallpkg_path'])
             else:
                 for item in item_list:
                     items_to_delete.append(item)
