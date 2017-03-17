@@ -174,6 +174,11 @@ class MSUStatusWindowController(NSObject):
 
     def initStatusSession(self):
         '''Initialize our status session'''
+        # Wait for Setup Assistant to finish before showing the window.
+        if not os.path.exists('/private/var/log/.AppleSetupDone'):
+            NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+                5.0, self, self.initStatusSession, None, NO)
+            return
         self.setWindowLevel()
         consoleuser = munki.getconsoleuser()
         if consoleuser == None or consoleuser == u"loginwindow":
