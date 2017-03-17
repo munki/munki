@@ -143,8 +143,7 @@ class FileRepo(Repo):
                 try:
                     self.root = mount_share_url(self.baseurl)
                 except ShareMountException, err:
-                    print sys.stderr, err
-                    return
+                    raise RepoError(err)
                 else:
                     self.we_mounted_repo = True
             else:
