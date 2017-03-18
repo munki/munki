@@ -126,11 +126,7 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(os.path.join('manifests', manifest_name))
                 manifest = plistlib.readPlistFromString(data)
-            except munkirepo.RepoError, err:
-                self.errors.append(
-                    "Repo error for %s: %s" % (manifest_name, unicode(err)))
-                continue
-            except (IOError, OSError, ExpatError), err:
+            except (munkirepo.RepoError, IOError, OSError, ExpatError), err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (manifest_name, unicode(err)))
                 continue
@@ -154,8 +150,8 @@ class RepoCleaner(object):
                                 (itemname, itemvers))
 
     def analyze_pkgsinfo(self):
-        '''Examines all pkginfo files and populates pkginfodb,
-        required_items and pkginfo_count'''
+        '''Examines all pkginfo files and populates self.pkginfodb,
+        self.required_items and self.pkginfo_count'''
         print_utf8('Analyzing pkginfo files...')
         try:
             pkgsinfo_list = self.repo.itemlist('pkgsinfo')
@@ -169,11 +165,7 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(pkginfo_identifier)
                 pkginfo = plistlib.readPlistFromString(data)
-            except munkirepo.RepoError, err:
-                self.errors.append(
-                    "Repo error for %s: %s" % (pkginfo_name, unicode(err)))
-                continue
-            except (IOError, OSError, ExpatError), err:
+            except (munkirepo.RepoError, IOError, OSError, ExpatError), err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (pkginfo_name, unicode(err)))
                 continue
@@ -254,7 +246,10 @@ class RepoCleaner(object):
             self.pkginfo_count += 1
 
     def find_cleanup_items(self):
-        '''Using the info on manifests and pkgsinfo, find items to cleanup'''
+        '''Using the info on manifests and pkgsinfo, find items to clean up.
+        Populates self.items_to_delete: a list of pkginfo items to remove,
+        and self.pkgs_to_keep: pkgs (install and uninstall items) that we need
+        to keep.'''
 
         def compare_versions(thing_a, thing_b):
             """sort highest version to top"""
