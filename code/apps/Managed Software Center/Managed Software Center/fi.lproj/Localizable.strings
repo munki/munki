@@ -109,6 +109,12 @@
 /* Sidebar Due label */
 "Due:" = "Asennettava:";
 
+/* FeaturedLabel */
+"Featured" = "Esittelyssä";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Esittelyssä";
+
 /* managedsoftwareupdate message */
 "Finishing..." = "Viimeistellään...";
 
