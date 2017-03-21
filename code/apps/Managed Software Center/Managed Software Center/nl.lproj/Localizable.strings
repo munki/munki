@@ -109,6 +109,12 @@
 /* Sidebar Due label */
 "Due:" = "Vervaldatum:";
 
+/* FeaturedLabel */
+"Featured" = "Uitgelicht";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Uitgelicht";
+
 /* managedsoftwareupdate message */
 "Finishing..." = "Afronden...";
 
