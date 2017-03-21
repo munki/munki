@@ -178,11 +178,8 @@ class FileRepo(Repo):
         file_list = []
         try:
             for (dirpath, dirnames, filenames) in os.walk(search_dir):
-                for dirname in dirnames:
-                    if dirname.startswith('.'):
-                        # don't recurse into directories that start
-                        # with a period.
-                        dirnames.remove(dirname)
+                # don't recurse into directories that start with a period.
+                dirnames[:] = [name for name in dirnames if not name.startswith('.')]
                 for name in filenames:
                     if name.startswith('.'):
                         # skip files that start with a period as well
