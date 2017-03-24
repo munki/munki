@@ -225,9 +225,9 @@
 		C09004E416CDD84E00BE34CE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				CLASSPREFIX = MT;
+				CLASSPREFIX = MSC;
 				LastUpgradeCheck = 0450;
-				ORGANIZATIONNAME = MacTech;
+				ORGANIZATIONNAME = "The Munki Project";
 			};
 			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "MunkiStatus" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -510,7 +510,7 @@
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = MunkiStatus;
 				WRAPPER_EXTENSION = app;
@@ -533,7 +533,7 @@
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = MunkiStatus;
 				WRAPPER_EXTENSION = app;
 			};
