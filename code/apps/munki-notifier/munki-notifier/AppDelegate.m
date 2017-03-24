@@ -102,7 +102,7 @@ void launchMSCapp()
         float oldestUpdateDays = 0;
         long useNotificationCenterDays = DefaultUseNotificationCenterDays;
         NSDate *forcedUpdateDueDate = nil;
-        
+
         CFPreferencesAppSynchronize(CFSTR("ManagedInstalls"));
         plistRef = CFPreferencesCopyValue(
             CFSTR("PendingUpdateCount"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
@@ -124,7 +124,7 @@ void launchMSCapp()
         if (plistRef && CFGetTypeID(plistRef) == CFDateGetTypeID()) {
             forcedUpdateDueDate = (NSDate *)CFBridgingRelease((CFDateRef)plistRef);
         }
-        
+
         if (updateCount == 0) {
             // no available updates
             if (notificationCenterAvailable) {
@@ -134,7 +134,7 @@ void launchMSCapp()
             [NSApp terminate: self];
             return;
         }
-        
+
         // updateCount > 0
         if (! notificationCenterAvailable || oldestUpdateDays > useNotificationCenterDays) {
             // Notification Center is not available or Notification Manager notifications
@@ -148,7 +148,7 @@ void launchMSCapp()
             [NSApp terminate: self];
             return;
         }
-        
+
         // We have Notification Center, create and post our notification
         // Build a localized update count message
         NSString *updateCountMessage = NSLocalizedString(@"1 pending update", @"One Update message");
@@ -158,7 +158,7 @@ void launchMSCapp()
             updateCountMessage = [NSString stringWithFormat:multipleUpdatesFormatString,
                                   [@(updateCount) stringValue]];
         }
-        
+
         // Build a localized force install date message
         NSString *deadlineMessage = nil;
         NSString *deadlineMessageFormatString = NSLocalizedString(
@@ -167,7 +167,7 @@ void launchMSCapp()
             deadlineMessage = [NSString stringWithFormat:deadlineMessageFormatString,
                 [self stringFromDate: forcedUpdateDueDate]];
         }
-        
+
         // Assemble all our needed notification info
         NSString *title    = NSLocalizedString(
             @"Software updates available", @"Software updates available message");
@@ -177,8 +177,7 @@ void launchMSCapp()
             subtitle = updateCountMessage;
             message = deadlineMessage;
         }
-        NSString *sound = @"default";
-        
+
         // Create options (userInfo) dictionary
         NSMutableDictionary *options = [NSMutableDictionary dictionary];
         options[@"groupID"]  = @"com.googlecode.munki.munki-notifier.update-notification";
@@ -190,7 +189,7 @@ void launchMSCapp()
                                   subtitle:subtitle
                                    message:message
                                    options:options
-                                     sound:sound];
+                                     sound:nil];
     }
 }
 
@@ -216,7 +215,7 @@ void launchMSCapp()
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
     // this other way doesn't seem to work reliably.
     //if (options[@"groupID"]) [self removeNotificationWithGroupID:options[@"groupID"]];
-    
+
     NSUserNotification *userNotification = [NSUserNotification new];
     userNotification.title = title;
     if (! [subtitle isEqualToString:@""]) userNotification.subtitle = subtitle;
@@ -230,11 +229,11 @@ void launchMSCapp()
     }
     userNotification.hasActionButton = true;
     userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
-    
+
     if (sound != nil) {
         userNotification.soundName = [sound isEqualToString: @"default"] ? NSUserNotificationDefaultSoundName : sound;
     }
-    
+
     NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
     center.delegate = self;
     [center deliverNotification:userNotification];
