@@ -3,7 +3,7 @@ Munki
 
 _Managed software installation for OS X_
 
-####Introduction
+#### Introduction
 
 Munki is an open source project from [Walt Disney Animation Studios](https://www.disneyanimation.com/technology/opensource).
 
@@ -15,7 +15,7 @@ Additionally, Munki can be configured to install Apple Software Updates, either 
 
 Munki is currently in use at organizations all over the world, managing software for tens of thousands of Macs.
 
-####Get started
+#### Get started
 
 Get started with Munki here: [Getting Started with Munki](https://github.com/munki/munki/wiki/)
 
@@ -23,7 +23,7 @@ Check out the [Wiki](https://github.com/munki/munki/wiki) for some notes and doc
 
 Some video learning resources are [here](https://github.com/munki/munki/wiki/More-Links-And-Tools#video-resources).
 
-####Get help
+#### Get help
 
 The wiki is an in-depth resource: https://github.com/munki/munki/wiki  
 Frequently Asked Questions are here: https://github.com/munki/munki/wiki/FAQ
