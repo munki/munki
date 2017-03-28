@@ -313,23 +313,31 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="mXP-yD-2El">
-                                        <rect key="frame" x="62" y="3" width="16" height="16"/>
+                                        <rect key="frame" x="60" y="4" width="16" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     </progressIndicator>
-                                    <segmentedControl verticalHuggingPriority="750" id="jcc-R8-zGb">
-                                        <rect key="frame" x="3" y="-1" width="49" height="25"/>
+                                    <button verticalHuggingPriority="750" id="5fL-Tq-Ajk">
+                                        <rect key="frame" x="0.0" y="-1" width="27" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="texturedSquare" trackingMode="momentary" id="ZsM-fh-8z5">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSGoLeftTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Uz1-Pt-HP6">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
-                                            <segments>
-                                                <segment image="NSGoLeftTemplate" width="23"/>
-                                                <segment image="NSGoRightTemplate" width="23" tag="1"/>
-                                            </segments>
-                                        </segmentedCell>
+                                        </buttonCell>
                                         <connections>
-                                            <action selector="navigationBtnClicked:" target="KMl-S0-0FF" id="CvU-yd-Zcd"/>
+                                            <action selector="navigateBackBtnClicked:" target="KMl-S0-0FF" id="Frj-uc-9SD"/>
                                         </connections>
-                                    </segmentedControl>
+                                    </button>
+                                    <button verticalHuggingPriority="750" id="3tK-Kg-Idc">
+                                        <rect key="frame" x="26" y="-1" width="27" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSGoRightTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jkw-VK-yd7">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="navigateForwardBtnClicked:" target="KMl-S0-0FF" id="3ai-MZ-ToF"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </view>
                             <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
@@ -404,7 +412,8 @@
                 <outlet property="fullScreenMenuItem" destination="jQt-Mr-wFT" id="9tf-Lb-Mec"/>
                 <outlet property="myItemsMenuItem" destination="1uK-HI-wGR" id="Jkb-QR-M6x"/>
                 <outlet property="myItemsToolbarButton" destination="eek-hQ-v8t" id="HdQ-Tf-9h7"/>
-                <outlet property="navigationBtn" destination="jcc-R8-zGb" id="Iv5-MT-vc7"/>
+                <outlet property="navigateBackBtn" destination="5fL-Tq-Ajk" id="1A3-2b-WqF"/>
+                <outlet property="navigateForwardBtn" destination="3tK-Kg-Idc" id="mLk-P1-ngS"/>
                 <outlet property="progressSpinner" destination="mXP-yD-2El" id="i8K-at-fcb"/>
                 <outlet property="searchField" destination="gLI-O8-siB" id="APe-GG-ZHl"/>
                 <outlet property="softwareMenuItem" destination="VYO-og-DRc" id="K69-dp-kBp"/>
