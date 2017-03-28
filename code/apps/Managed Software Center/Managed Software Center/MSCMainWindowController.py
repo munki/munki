@@ -66,7 +66,8 @@ class MSCMainWindowController(NSWindowController):
     myItemsToolbarButton = IBOutlet()
     updatesToolbarButton = IBOutlet()
     webView = IBOutlet()
-    navigationBtn = IBOutlet()
+    navigateBackBtn = IBOutlet()
+    navigateForwardBtn = IBOutlet()
     progressSpinner = IBOutlet()
     searchField = IBOutlet()
     updateButtonCell = IBOutlet()
@@ -709,9 +710,8 @@ class MSCMainWindowController(NSWindowController):
     def webView_didFinishLoadForFrame_(self, view, frame):
         '''Stop progress spinner and update state of back/forward buttons'''
         self.progressSpinner.stopAnimation_(self)
-        self.navigationBtn.setEnabled_forSegment_(self.webView.canGoBack(), 0)
-        self.navigationBtn.setEnabled_forSegment_(
-            self.webView.canGoForward(), 1)
+        self.navigateBackBtn.setEnabled_(self.webView.canGoBack())
+        self.navigateForwardBtn.setEnabled_(self.webView.canGoForward())
 
     def webView_didFailProvisionalLoadWithError_forFrame_(
             self, view, error, frame):
@@ -769,6 +769,9 @@ class MSCMainWindowController(NSWindowController):
             self.checkForUpdates()
         else:
             # must say "Update"
+            # we're on the Updates page, so users can see all the pending/
+            # outstanding updates
+            self._alertedUserToOutstandingUpdates = True
             self.updateNow()
 
     def showUpdateProgressSpinner(self):
@@ -1181,15 +1184,15 @@ class MSCMainWindowController(NSWindowController):
                 u"%@", alertDetail)
             result = alert.runModal()
 
+    @IBAction
+    def navigateBackBtnClicked_(self, sender):
+        '''Handle WebView back button'''
+        self.webView.goBack_(self)
 
     @IBAction
-    def navigationBtnClicked_(self, sender):
-        '''Handle WebView forward/back buttons'''
-        segment = sender.selectedSegment()
-        if segment == 0:
-            self.webView.goBack_(self)
-        if segment == 1:
-            self.webView.goForward_(self)
+    def navigateForwardBtnClicked_(self, sender):
+        '''Handle WebView forward button'''
+        self.webView.goForward_(self)
 
     @IBAction
     def loadAllSoftwarePage_(self, sender):
