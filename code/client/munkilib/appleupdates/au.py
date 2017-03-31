@@ -512,11 +512,14 @@ class AppleUpdates(object):
         # device so its output is unbuffered so we can get progress info
         #
         # Try to find our ptyexec tool
-        # first look in the parent directory of this file's directory
+        # first look in the parent directory of the parent directory of this
+        # file's directory
         # (../)
-        parent_dir = os.path.dirname(
+        parent_dir = (
             os.path.dirname(
-                os.path.abspath(__file__)))
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.abspath(__file__)))))
         ptyexec_path = os.path.join(parent_dir, 'ptyexec')
         if not os.path.exists(ptyexec_path):
             # try absolute path in munki's normal install dir
