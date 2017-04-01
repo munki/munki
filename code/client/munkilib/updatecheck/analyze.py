@@ -69,6 +69,9 @@ def is_apple_item(item_pl):
     Apple. If we are installing or removing any Apple items in a check/install
     cycle, we skip checking/installing Apple updates from an Apple Software
     Update server so we don't stomp on each other"""
+    # is this a startosinstall item?
+    if item_pl.get('installer_type') == 'startosinstall':
+        return True
     # check receipts
     for receipt in item_pl.get('receipts', []):
         if receipt.get('packageid', '').startswith('com.apple.'):
