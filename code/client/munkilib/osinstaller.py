@@ -160,7 +160,7 @@ class StartOSInstallRunner(object):
 
         # more magic to get startosinstall to not buffer its output for
         # percent complete
-        env = {'NSUnbufferedIO': ',YES'}
+        env = {'NSUnbufferedIO': 'YES'}
 
         proc = subprocess.Popen(cmd, shell=False, bufsize=0,
                                 stdout=subprocess.PIPE,
@@ -196,24 +196,27 @@ class StartOSInstallRunner(object):
             # save all startosinstall output in case there is
             # an error so we can dump it to the log
             startosinstall_output.append(info_output)
-            # we don't know what/how to parse yet, so just display everything
+
+            # parse output for useful progress info
             msg = info_output.rstrip('\n')
-            if msg.startswith('By using the agreetolicense option'):
-                pass
-            elif msg.startswith('If you do not agree,'):
+            if msg.startswith(('By using the agreetolicense option',
+                               'If you do not agree,', 'Preparing to run ')):
+                # annoying legalese
                 pass
             elif msg.startswith(
-                    ['Signaling PID:', 'Waiting to reboot',
-                     'Process signaled okay']):
+                    ('Signaling PID:', 'Waiting to reboot',
+                     'Process signaled okay')):
+                # messages around the SIGUSR1 signalling
                 display.display_debug1('startosinstall: %s', msg)
-            elif (msg.startswith('Preparing ') and
-                  not msg.startswith('Preparing to run ')):
+            elif msg.startswith('Preparing '):
+                # percent-complete messages
                 try:
                     percent = int(float(msg[10:].rstrip().rstrip('.')))
                 except ValueError:
                     percent = -1
                 display.display_percent_done(percent, 100)
             else:
+                # none of the above, just display
                 display.display_status_minor(msg)
 
         # osinstaller exited
