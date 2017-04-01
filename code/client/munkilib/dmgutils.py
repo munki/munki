@@ -173,11 +173,13 @@ def mount_points_for_disk_image(dmgpath):
     return mountpoints
 
 
-def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
+def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
+             random_mountpoint=True):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
     If use_shadow is true, mount image with shadow file
+    If random_mountpoint, mount at random dir under /tmp
     """
     mountpoints = []
     dmgname = os.path.basename(dmgpath)
@@ -195,8 +197,9 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False):
         stdin = 'Y\n'
         display.display_detail(
             'NOTE: %s has embedded Software License Agreement' % dmgname)
-    cmd = ['/usr/bin/hdiutil', 'attach', dmgpath,
-           '-mountRandom', '/tmp', '-nobrowse', '-plist']
+    cmd = ['/usr/bin/hdiutil', 'attach', dmgpath, '-nobrowse', '-plist']
+    if random_mountpoint:
+        cmd.extend(['-mountRandom', '/tmp'])
     if use_shadow:
         cmd.append('-shadow')
     proc = subprocess.Popen(cmd,
