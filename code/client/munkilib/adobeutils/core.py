@@ -37,7 +37,6 @@ from .. import munkilog
 from .. import osutils
 from .. import prefs
 from .. import utils
-from .. import FoundationPlist
 
 
 def get_pdapp_log_path():
@@ -186,29 +185,12 @@ class AdobeInstallProgressMonitor(object):
 
 
 # dmg helper
-# we need this instead of the one in munkicommon because the Adobe stuff
-# needs the dmgs mounted under /Volumes.  We can merge this later (or not).
 def mount_adobe_dmg(dmgpath):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
     """
-    mountpoints = []
-    dmgname = os.path.basename(dmgpath)
-    proc = subprocess.Popen(['/usr/bin/hdiutil', 'attach', dmgpath,
-                             '-nobrowse', '-noverify', '-plist'],
-                            bufsize=-1,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (pliststr, err) = proc.communicate()
-    if err:
-        display.display_error('Error %s mounting %s.' % (err, dmgname))
-    if pliststr:
-        plist = FoundationPlist.readPlistFromString(pliststr)
-        for entity in plist['system-entities']:
-            if 'mount-point' in entity:
-                mountpoints.append(entity['mount-point'])
-
-    return mountpoints
+    return dmgutils.mountdmg(dmgpath, random_mountpoint=False)
 
 
 def get_percent(current, maximum):
