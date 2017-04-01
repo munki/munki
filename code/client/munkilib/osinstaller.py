@@ -202,6 +202,10 @@ class StartOSInstallRunner(object):
                 pass
             elif msg.startswith('If you do not agree,'):
                 pass
+            elif msg.startswith(
+                    ['Signaling PID:', 'Waiting to reboot',
+                     'Process signaled okay']):
+                display.display_debug1('startosinstall: %s', msg)
             elif (msg.startswith('Preparing ') and
                   not msg.startswith('Preparing to run ')):
                 try:
