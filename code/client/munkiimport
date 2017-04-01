@@ -40,6 +40,7 @@ from munkilib import display
 from munkilib import dmgutils
 from munkilib import munkihash
 from munkilib import munkirepo
+from munkilib import osinstaller
 from munkilib import osutils
 from munkilib import pkgutils
 from munkilib import FoundationPlist
@@ -170,6 +171,21 @@ def add_icon_hash_to_pkginfo(pkginfo):
     icon_path = get_icon_path(pkginfo)
     if os.path.isfile(icon_path):
         pkginfo['icon_hash'] = munkihash.getsha256hash(icon_path)
+
+
+def generate_png_from_startosinstall_item(repo, dmg_path, pkginfo):
+    '''Generates a product icon from a startosinstall item
+    and uploads to the repo'''
+    mountpoints = dmgutils.mountdmg(dmg_path)
+    if mountpoints:
+        mountpoint = mountpoints[0]
+        app_path = osinstaller.find_install_macos_app(mountpoint)
+        icon_path = iconutils.findIconForApp(app_path)
+        if icon_path:
+            convert_and_install_icon(repo, pkginfo, icon_path)
+        else:
+            print 'No application icons found.'
+        dmgutils.unmountdmg(mountpoint)
 
 
 def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
@@ -946,7 +962,8 @@ Extended Options: (makepkginfo options)
                                for item in newvalue.split(',')]
 
         if (not is_applemetadata and
-                not pkginfo.get('installer_type') == 'profile'):
+                not pkginfo.get(
+                    'installer_type') in ['profile', 'startosinstall']):
             if 'receipts' not in pkginfo and 'installs' not in pkginfo:
                 print >> sys.stderr, ('WARNING: There are no receipts and no '
                                       '\'installs\' items for this installer '
@@ -998,6 +1015,9 @@ Extended Options: (makepkginfo options)
                 installer_type = pkginfo.get('installer_type')
                 if installer_type == 'copy_from_dmg':
                     generate_png_from_dmg_item(
+                        repo, installer_item, pkginfo)
+                elif installer_type == 'startosinstall':
+                    generate_png_from_startosinstall_item(
                         repo, installer_item, pkginfo)
                 elif installer_type in [None, '']:
                     generate_pngs_from_pkg(

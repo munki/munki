@@ -43,6 +43,7 @@ import time
 from munkilib import dmgutils
 from munkilib import info
 from munkilib import munkihash
+from munkilib import osinstaller
 from munkilib import osutils
 from munkilib import pkgutils
 from munkilib import profiles
@@ -187,6 +188,10 @@ def get_catalog_info_from_dmg(dmgpath, options):
         # look for one of the many possible Adobe installer/updaters
         cataloginfo = adobeinfo.getAdobeCatalogInfo(
             mountpoints[0], options.pkgname or '')
+
+    if not cataloginfo:
+        # could be a wrapped Install macOS.app
+        cataloginfo = osinstaller.get_catalog_info(mountpoints[0])
 
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
@@ -395,7 +400,8 @@ def has_valid_install_critieria(catinfo):
             or catinfo.get('receipts')
             or catinfo.get('installcheck_script')
             or catinfo.get('installer_type') == 'profile'
-            or catinfo.get('installer_type') == 'apple_update_metadata')
+            or catinfo.get('installer_type') == 'apple_update_metadata'
+            or catinfo.get('installer_type') == 'startosinstall')
 
 def main():
     '''Main routine'''

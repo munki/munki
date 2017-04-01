@@ -38,6 +38,33 @@ from . import osutils
 from . import pkgutils
 
 
+def find_install_macos_app(dir_path):
+    '''Returns the path to the first Install macOS.app found the top level of
+    dir_path, or None'''
+    for item in osutils.listdir(dir_path):
+        item_path = os.path.join(dir_path, item)
+        startosinstall_path = os.path.join(
+            item_path, 'Contents/Resources/startosinstall')
+        if os.path.exists(startosinstall_path):
+            return item_path
+    # if we get here we didn't find one
+    return None
+
+
+def get_os_version(app_path):
+    '''Returns the os version from the OS Installer app'''
+    installinfo_plist = os.path.join(
+        app_path, 'Contents/SharedSupport/InstallInfo.plist')
+    if not os.path.isfile(installinfo_plist):
+        # no Contents/SharedSupport/InstallInfo.plist
+        return ''
+    try:
+        info = plistlib.readPlist(installinfo_plist)
+        return info['System Image Info']['version']
+    except (ExpatError, IOError, KeyError, AttributeError, TypeError):
+        return ''
+
+
 class StartOSInstallError(Exception):
     '''Exception to raise if starting the macOS install fails'''
     pass
@@ -63,21 +90,18 @@ class StartOSInstallRunner(object):
         # so just target processes named 'startosinstall'
         subprocess.call(['/usr/bin/killall', '-SIGUSR1', 'startosinstall'])
 
-    def get_tool_paths(self, dmgpath):
-        '''Mounts dmgpath and returns paths to the Install macOS.app and
-        startosinstall tool'''
+    def get_app_path(self, dmgpath):
+        '''Mounts dmgpath and returns path to the Install macOS.app'''
         if pkgutils.hasValidDiskImageExt(dmgpath):
             display.display_info("Mounting disk image %s" % dmgpath)
             mountpoints = dmgutils.mountdmg(dmgpath, random_mountpoint=False)
             if mountpoints:
-                self.dmg_mountpoint = mountpoints[0]
                 # look in the first mountpoint for apps
-                for item in osutils.listdir(self.dmg_mountpoint):
-                    item_path = os.path.join(self.dmg_mountpoint, item)
-                    startosinstall_path = os.path.join(
-                        item_path, 'Contents/Resources/startosinstall')
-                    if os.path.exists(startosinstall_path):
-                        return (item_path, startosinstall_path)
+                self.dmg_mountpoint = mountpoints[0]
+                app_path = find_install_macos_app(self.dmg_mountpoint)
+                if app_path:
+                    # leave dmg mounted
+                    return app_path
                 # if we get here we didn't find an Install macOS.app with the
                 # expected contents
                 dmgutils.unmountdmg(dmgpath)
@@ -91,18 +115,6 @@ class StartOSInstallRunner(object):
             raise StartOSInstallError(
                 u'%s doesn\'t appear to be a disk image' % dmgpath)
 
-    def get_os_version(self, app_path):
-        '''Returns the os version from the OS Installer'''
-        installinfo_plist = os.path.join(
-            app_path, 'Contents/SharedSupport/InstallInfo.plist')
-        if not os.path.isfile(installinfo_plist):
-            return ''
-        try:
-            info = plistlib.readPlist(installinfo_plist)
-            return info['System Image Info']['version']
-        except (ExpatError, IOError, KeyError, AttributeError, TypeError):
-            return ''
-
     def start(self, dmgpath):
         '''Starts a macOS install from an Install macOS.app stored at the root
         of a disk image. Will always reboot after if the setup is successful.
@@ -113,9 +125,11 @@ class StartOSInstallRunner(object):
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
         # get our tool paths
-        install_app_path, startosinstall_path = self.get_tool_paths(dmgpath)
+        install_app_path = self.get_app_path(dmgpath)
+        startosinstall_path = os.path.join(
+            install_app_path, 'Contents/Resources/startosinstall')
 
-        os_version = self.get_os_version(install_app_path)
+        os_version = get_os_version(install_app_path)
 
         display.display_status_major(
             'Starting macOS %s install...' % os_version)
@@ -130,9 +144,10 @@ class StartOSInstallRunner(object):
         # Try to find our ptyexec tool
         # first look in the parent directory of this file's directory
         # (../)
-        parent_dir = os.path.dirname(
+        parent_dir = (
             os.path.dirname(
-                os.path.abspath(__file__)))
+                os.path.dirname(
+                    os.path.abspath(__file__))))
         ptyexec_path = os.path.join(parent_dir, 'ptyexec')
         if not os.path.exists(ptyexec_path):
             # try absolute path in munki's normal install dir
@@ -236,11 +251,34 @@ class StartOSInstallRunner(object):
             raise StartOSInstallError(
                 'startosinstall failed with return code %s' % retcode)
         if self.got_sigusr1:
+            # startosinstall got far enough along to signal us it was ready
+            # to finish and reboot, so we can believe it was successful
             munkilog.log("macOS install successfully set up.")
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
                 'See /var/log/install.log for details.')
+
+
+def get_catalog_info(mounted_dmgpath):
+    '''Returns catalog info (pkginfo) for a macOS installer on a disk image'''
+    app_path = find_install_macos_app(mounted_dmgpath)
+    if app_path:
+        vers = get_os_version(app_path)
+        short_vers = '.'.join(vers.split('.')[0:2])
+        name = 'Install_macOS_%s' % short_vers
+        display_name = 'Install macOS %s' % vers
+        description = 'Installs macOS version %s' % vers
+        return {'RestartAction': 'RequireRestart',
+                'apple_item': True,
+                'description': description,
+                'display_name': display_name,
+                'installer_type': 'startosinstall',
+                'minimum_os_version': '10.10',
+                'name': name,
+                'uninstallable': False,
+                'version': vers}
+    return None
 
 
 def startosinstall(dmgpath):
