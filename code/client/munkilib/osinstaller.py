@@ -48,11 +48,13 @@ class StartOSInstallRunner(object):
     of macOS'''
     def __init__(self):
         self.dmg_mountpoint = None
+        self.got_sigusr1 = False
 
     def sigusr1_handler(self, dummy_signum, dummy_frame):
         '''Signal handler for SIGUSR1 from startosinstall, which tells us it's
         done setting up the macOS install and is ready and waiting to reboot'''
-        display.display_info('Got SIGUSR1 from startosinstall')
+        display.display_debug1('Got SIGUSR1 from startosinstall')
+        self.got_sigusr1 = True
         # do stuff here: cleanup, record-keeping, notifications
         time.sleep(1)
         # then tell startosinstall it's OK to proceed with restart
@@ -66,7 +68,7 @@ class StartOSInstallRunner(object):
         startosinstall tool'''
         if pkgutils.hasValidDiskImageExt(dmgpath):
             display.display_info("Mounting disk image %s" % dmgpath)
-            mountpoints = dmgutils.mountdmg(dmgpath)
+            mountpoints = dmgutils.mountdmg(dmgpath, random_mountpoint=False)
             if mountpoints:
                 self.dmg_mountpoint = mountpoints[0]
                 # look in the first mountpoint for apps
@@ -98,7 +100,7 @@ class StartOSInstallRunner(object):
         try:
             info = plistlib.readPlist(installinfo_plist)
             return info['System Image Info']['version']
-        except (ExpatError, IOError, KeyError, AttributeError, TypeError), err:
+        except (ExpatError, IOError, KeyError, AttributeError, TypeError):
             return ''
 
     def start(self, dmgpath):
@@ -211,6 +213,7 @@ class StartOSInstallRunner(object):
                 display.display_status_minor(msg)
 
         # osinstaller exited
+        munkistatus.percent(100)
         retcode = proc.returncode
         if retcode:
             dmgutils.unmountdmg(self.dmg_mountpoint)
@@ -225,9 +228,12 @@ class StartOSInstallRunner(object):
             display.display_error("-"*78)
             raise StartOSInstallError(
                 'startosinstall failed with return code %s' % retcode)
-        else:
+        if self.got_sigusr1:
             munkilog.log("macOS install successfully set up.")
-            munkistatus.percent(100)
+        else:
+            raise StartOSInstallError(
+                'startosinstall did not complete successfully. '
+                'See /var/log/install.log for details.')
 
 
 def startosinstall(dmgpath):
