@@ -48,16 +48,15 @@ def _getsteps(num_of_steps, limit):
 def display_percent_done(current, maximum):
     """
     Mimics the command-line progress meter seen in some
-    of Apple's tools (like softwareupdate), or tells
+    of Apple's tools (like softwareupdate), and tells
     MunkiStatus to display percent done via progress bar.
     """
-    step = _getsteps(21, maximum)
-    if current in step:
-        if current == maximum:
-            percentdone = 100
-        else:
-            percentdone = int(float(current)/float(maximum)*100)
-        munkistatus.percent(str(percentdone))
+    if current >= maximum:
+        percentdone = 100
+    else:
+        percentdone = int(float(current)/float(maximum)*100)
+    munkistatus.percent(str(percentdone))
+
     if verbose:
         step = _getsteps(16, maximum)
         output = ''
