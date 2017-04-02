@@ -294,6 +294,21 @@ def check(client_id='', localmanifestpath=None):
                 except FoundationPlist.FoundationPlistException:
                     pass
 
+        # sort startosinstall items to the end of managed_installs
+        installinfo['managed_installs'].sort(
+            key=lambda x: x.get('install_type') == 'startosinstall')
+
+        # warn if there is more than one startosinstall item
+        startosinstall_items = [item for item in installinfo['managed_installs']
+                                if item.get('install_type') == 'startosinstall']
+        if len(startosinstall_items) > 1:
+            display.display_warning(
+                'There are multiple startosinstall items in managed_installs. '
+                'Only the install of %s--%s will be attempted.'
+                % (startosinstall_items[0].get('name'),
+                   startosinstall_items[0].get('version_to_install'))
+            )
+
         # record detail before we throw it away...
         reports.report['ManagedInstalls'] = installinfo['managed_installs']
         reports.report['InstalledItems'] = installed_items

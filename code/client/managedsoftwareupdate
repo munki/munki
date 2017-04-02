@@ -64,6 +64,7 @@ else:
     from munkilib import installinfo
     from munkilib import munkilog
     from munkilib import munkistatus
+    from munkilib import osinstaller
     from munkilib import osutils
     from munkilib import prefs
     from munkilib import processes
@@ -242,6 +243,20 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             munkilog.log(traceback.format_exc())
             reports.savereport()
             raise
+        if not only_unattended and munkiUpdatesContainStartOSInstallItem():
+            reports.savereport()
+            # install macOS
+            try:
+                success = osinstaller.run()
+            except:
+                display.display_error(
+                    'Unexpected error in munkilib.osinstaller:')
+                munkilog.log(traceback.format_exc())
+                reports.savereport()
+                raise
+            if success:
+                # startosinstall will be restarting; get out of the way
+                sys.exit()
 
     if do_apple_updates:
         # install Apple updates
@@ -337,6 +352,25 @@ def munkiUpdatesAvailable():
             display.display_error(
                 'Install info at %s is invalid.' % install_info)
     return updatesavailable
+
+
+def munkiUpdatesContainStartOSInstallItem():
+    """Return True if there is a startosinstall item in the list of updates"""
+    install_info = os.path.join(
+        prefs.pref('ManagedInstallDir'), 'InstallInfo.plist')
+    if os.path.exists(install_info):
+        try:
+            plist = FoundationPlist.readPlist(install_info)
+        except FoundationPlist.NSPropertyListSerializationException:
+            display.display_error(
+                'Install info at %s is invalid.' % install_info)
+        else:
+            # check managed_installs for startosinstall items
+            for item in plist.get('managed_installs', []):
+                if item.get('installer_type') == 'startosinstall':
+                    return True
+    return False
+
 
 
 def munkiUpdatesContainAppleItems():

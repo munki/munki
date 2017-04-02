@@ -160,19 +160,25 @@ def install_with_info(
         # Keep track of when this particular install started.
         utc_now = datetime.datetime.utcnow()
         itemindex = itemindex + 1
+
+        if item.get('installer_type') == 'startosinstall':
+            skipped_installs.append(item)
+            display.display_debug1(
+                'Skipping install of %s because it\'s a startosinstall item. '
+                'Will install later.' % item['name'])
+            continue
         if only_unattended:
             if not item.get('unattended_install'):
                 skipped_installs.append(item)
                 display.display_detail(
-                    ('Skipping install of %s because it\'s not unattended.'
-                     % item['name']))
+                    'Skipping install of %s because it\'s not unattended.'
+                    % item['name'])
                 continue
             elif processes.blocking_applications_running(item):
                 skipped_installs.append(item)
                 display.display_detail(
-                    'Skipping unattended install of %s because '
-                    'blocking application(s) running.'
-                    % item['name'])
+                    'Skipping unattended install of %s because blocking '
+                    'application(s) running.' % item['name'])
                 continue
 
         skipped_prereqs = item_prereqs_in_skipped_items(item, skipped_installs)

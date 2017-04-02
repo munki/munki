@@ -23,19 +23,24 @@ Support for using startosinstall to install macOS.
 
 # stdlib imports
 import os
-import plistlib
 import signal
 import subprocess
 import time
-from xml.parsers.expat import ExpatError
 
 # our imports
+from . import FoundationPlist
 from . import display
 from . import dmgutils
 from . import munkilog
 from . import munkistatus
 from . import osutils
 from . import pkgutils
+from . import prefs
+from . import processes
+
+
+CHECKANDINSTALLATSTARTUPFLAG = \
+           '/Users/Shared/.com.googlecode.munki.checkandinstallatstartup'
 
 
 def find_install_macos_app(dir_path):
@@ -59,9 +64,10 @@ def get_os_version(app_path):
         # no Contents/SharedSupport/InstallInfo.plist
         return ''
     try:
-        info = plistlib.readPlist(installinfo_plist)
+        info = FoundationPlist.readPlist(installinfo_plist)
         return info['System Image Info']['version']
-    except (ExpatError, IOError, KeyError, AttributeError, TypeError):
+    except (FoundationPlist.FoundationPlistException,
+            IOError, KeyError, AttributeError, TypeError):
         return ''
 
 
@@ -83,7 +89,14 @@ class StartOSInstallRunner(object):
         display.display_debug1('Got SIGUSR1 from startosinstall')
         self.got_sigusr1 = True
         # do stuff here: cleanup, record-keeping, notifications
-        time.sleep(1)
+
+        # set Munki to run at boot after the OS upgrade is complete
+        try:
+            open(CHECKANDINSTALLATSTARTUPFLAG, 'w').close()
+        except (OSError, IOError), err:
+            display.display_error(
+                'Could not set up Munki to run after OS upgrade is complete: '
+                "%s", err)
         # then tell startosinstall it's OK to proceed with restart
         # can't use os.kill now that we wrap the call of startosinstall
         #os.kill(self.startosinstall_pid, signal.SIGUSR1)
@@ -130,9 +143,6 @@ class StartOSInstallRunner(object):
             install_app_path, 'Contents/Resources/startosinstall')
 
         os_version = get_os_version(install_app_path)
-
-        display.display_status_major(
-            'Starting macOS %s install...' % os_version)
 
         # run startosinstall via subprocess
 
@@ -214,15 +224,8 @@ class StartOSInstallRunner(object):
 
             # parse output for useful progress info
             msg = info_output.rstrip('\n')
-            if msg.startswith(('By using the agreetolicense option',
-                               'If you do not agree,', 'Preparing to run ')):
-                # annoying legalese
-                pass
-            elif msg.startswith(
-                    ('Signaling PID:', 'Waiting to reboot',
-                     'Process signaled okay')):
-                # messages around the SIGUSR1 signalling
-                display.display_debug1('startosinstall: %s', msg)
+            if msg.startswith('Preparing to '):
+                display.display_status_minor(msg)
             elif msg.startswith('Preparing '):
                 # percent-complete messages
                 try:
@@ -230,11 +233,20 @@ class StartOSInstallRunner(object):
                 except ValueError:
                     percent = -1
                 display.display_percent_done(percent, 100)
+            elif msg.startswith(('By using the agreetolicense option',
+                                 'If you do not agree,')):
+                # annoying legalese
+                pass
+            elif msg.startswith(
+                    ('Signaling PID:', 'Waiting to reboot',
+                     'Process signaled okay')):
+                # messages around the SIGUSR1 signalling
+                display.display_debug1('startosinstall: %s', msg)
             else:
                 # none of the above, just display
                 display.display_status_minor(msg)
 
-        # osinstaller exited
+        # startosinstall exited
         munkistatus.percent(100)
         retcode = proc.returncode
         if retcode:
@@ -254,6 +266,9 @@ class StartOSInstallRunner(object):
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
             munkilog.log("macOS install successfully set up.")
+            munkilog.log(
+                'Starting macOS install of %s: SUCCESSFUL' % os_version,
+                'Install.log')
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
@@ -264,10 +279,9 @@ def get_catalog_info(mounted_dmgpath):
     '''Returns catalog info (pkginfo) for a macOS installer on a disk image'''
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
+        display_name = os.path.splitext(os.path.basename(app_path))[0]
+        name = display_name.replace(' ', '_')
         vers = get_os_version(app_path)
-        short_vers = '.'.join(vers.split('.')[0:2])
-        name = 'Install_macOS_%s' % short_vers
-        display_name = 'Install macOS %s' % vers
         description = 'Installs macOS version %s' % vers
         return {'RestartAction': 'RequireRestart',
                 'apple_item': True,
@@ -291,7 +305,46 @@ def startosinstall(dmgpath):
     except StartOSInstallError, err:
         display.display_error(
             u'Error starting macOS install: %s', unicode(err))
+        munkilog.log(
+            'Starting macOS install: FAILED: %s' % unicode(err), 'Install.log')
         return False
+
+
+def run():
+    '''Installs the first startosinstall item in InstallInfo.plist's
+    managed_installs. Returns True if successful, False otherwise'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    cachedir = os.path.join(managedinstallbase, 'Cache')
+    installinfopath = os.path.join(managedinstallbase, 'InstallInfo.plist')
+    try:
+        installinfo = FoundationPlist.readPlist(installinfopath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        display.display_error("Invalid %s" % installinfopath)
+        return False
+
+    if prefs.pref('SuppressStopButtonOnInstall'):
+        munkistatus.hideStopButton()
+
+    munkilog.log("### Beginning os installer session ###")
+    success = False
+    if "managed_installs" in installinfo:
+        if not processes.stop_requested():
+            # filter list to items that need to be installed
+            installlist = [
+                item for item in installinfo['managed_installs']
+                if item.get('installer_type') == 'startosinstall']
+            if installlist:
+                item = installlist[0]
+                if 'installer_item' in item:
+                    display.display_status_major(
+                        'Starting macOS %s install...'
+                        % item['version_to_install'])
+                    # set indeterminate progress bar
+                    munkistatus.percent(-1)
+                    itempath = os.path.join(cachedir, item["installer_item"])
+                    success = startosinstall(itempath)
+    munkilog.log("### Ending os installer session ###")
+    return success
 
 
 if __name__ == '__main__':
