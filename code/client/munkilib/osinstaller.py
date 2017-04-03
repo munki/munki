@@ -287,6 +287,8 @@ def get_catalog_info(mounted_dmgpath):
                 'apple_item': True,
                 'description': description,
                 'display_name': display_name,
+                'installed_size': 9227469, 
+                    # 8.8GB - http://www.apple.com/macos/how-to-upgrade/
                 'installer_type': 'startosinstall',
                 'minimum_os_version': '10.10',
                 'name': name,
