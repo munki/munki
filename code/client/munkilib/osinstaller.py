@@ -31,6 +31,7 @@ import time
 from . import FoundationPlist
 from . import display
 from . import dmgutils
+from . import launchd
 from . import munkilog
 from . import munkistatus
 from . import osutils
@@ -187,18 +188,26 @@ class StartOSInstallRunner(object):
         # percent complete
         env = {'NSUnbufferedIO': 'YES'}
 
-        proc = subprocess.Popen(cmd, shell=False, bufsize=0,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                env=env)
+        try:
+            job = launchd.Job(cmd, environment_vars=env)
+            job.start()
+        except launchd.LaunchdJobException as err:
+            display.display_error(
+                'Error with launchd job (%s): %s', cmd, err)
+            display.display_error('Aborting startosinstall run.')
+            raise StartOSInstallError(err)
 
         startosinstall_output = []
         timeout = 2 * 60 * 60
         inactive = 0
         while True:
-            info_output = proc.stdout.readline()
+            if processes.stop_requested():
+                job.stop()
+                break
+
+            info_output = job.stdout.readline()
             if not info_output:
-                if proc.poll() is not None:
+                if job.returncode() is not None:
                     break
                 else:
                     # no data, but we're still running
@@ -208,7 +217,7 @@ class StartOSInstallRunner(object):
                         display.display_error(
                             "startosinstall timeout after %d seconds"
                             % timeout)
-                        proc.kill()
+                        job.stop()
                         break
                     # sleep a bit before checking for more output
                     time.sleep(1)
@@ -248,12 +257,12 @@ class StartOSInstallRunner(object):
 
         # startosinstall exited
         munkistatus.percent(100)
-        retcode = proc.returncode
+        retcode = job.returncode()
         if retcode:
             dmgutils.unmountdmg(self.dmg_mountpoint)
             # append stderr to our startosinstall_output
-            if proc.stderr:
-                startosinstall_output.extend(proc.stderr.read().splitlines())
+            if job.stderr:
+                startosinstall_output.extend(job.stderr.read().splitlines())
             display.display_status_minor(
                 "Starting macOS install failed with return code %s" % retcode)
             display.display_error("-"*78)
@@ -287,8 +296,8 @@ def get_catalog_info(mounted_dmgpath):
                 'apple_item': True,
                 'description': description,
                 'display_name': display_name,
-                'installed_size': 9227469, 
-                    # 8.8GB - http://www.apple.com/macos/how-to-upgrade/
+                'installed_size': 9227469,
+                #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
                 'installer_type': 'startosinstall',
                 'minimum_os_version': '10.10',
                 'name': name,
