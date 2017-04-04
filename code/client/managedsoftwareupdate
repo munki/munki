@@ -600,6 +600,22 @@ def main():
         print >> sys.stderr, 'You must run this as root!'
         exit(constants.EXIT_STATUS_ROOT_REQUIRED)
 
+    # check to see if another instance of this script is running
+    myname = os.path.basename(sys.argv[0])
+    other_managedsoftwareupdate_pid = osutils.pythonScriptRunning(myname)
+    if other_managedsoftwareupdate_pid:
+        # another instance of this script is running, so we should quit
+        munkilog.log('*' * 60)
+        munkilog.log('%s launched as pid %s' % (myname, os.getpid()))
+        munkilog.log('Another instance of %s is running as pid %s.'
+                     % (myname, other_managedsoftwareupdate_pid))
+        munkilog.log('pid %s exiting.' % os.getpid())
+        munkilog.log('*' * 60)
+        print >> sys.stderr, (
+            'Another instance of %s is running. Exiting.' % myname)
+        osutils.cleanUpTmpDir()
+        exit(0)
+
     runtype = 'custom'
 
     checkandinstallatstartupflag = \
@@ -750,33 +766,6 @@ def main():
     # create needed directories if necessary
     if not initMunkiDirs():
         exit(constants.EXIT_STATUS_MUNKI_DIRS_FAILURE)
-
-    # check to see if another instance of this script is running
-    myname = os.path.basename(sys.argv[0])
-    if osutils.pythonScriptRunning(myname):
-        # another instance of this script is running, so we should quit
-        if options.manualcheck:
-            # a manual update check was triggered
-            # (probably by Managed Software Center), but managedsoftwareupdate
-            # is already running. We should provide user feedback
-            munkistatus.activate()
-            munkistatus.message('Checking for available updates...')
-            while True:
-                # loop til the other instance exits
-                if not osutils.pythonScriptRunning(myname):
-                    break
-                # or user clicks Stop
-                if processes.stop_requested():
-                    break
-                time.sleep(0.5)
-        else:
-            msg = 'Another instance of %s is running. Exiting.' % myname
-            munkilog.log(msg)
-            print >> sys.stderr, msg
-        # tell status app we're done sending status
-        munkistatus.quit()
-        osutils.cleanUpTmpDir()
-        exit(0)
 
     applesoftwareupdatesonly = (prefs.pref('AppleSoftwareUpdatesOnly')
                                 or options.applesuspkgsonly)
