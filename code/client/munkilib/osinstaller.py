@@ -309,6 +309,7 @@ def get_catalog_info(mounted_dmgpath):
                 'installed_size': 9227469,
                 #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
                 'installer_type': 'startosinstall',
+                'minimum_munki_version': '3.0.0.3211',
                 'minimum_os_version': '10.8',
                 'name': name,
                 'uninstallable': False,
