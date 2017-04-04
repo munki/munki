@@ -40,7 +40,9 @@ class LaunchdJobException(Exception):
 class Job(object):
     '''launchd job object'''
 
-    def __init__(self, cmd, environment_vars=None):
+    def __init__(self, cmd, environment_vars=None, cleanup_at_exit=True):
+        '''Initialize our launchd job'''
+        self.cleanup_at_exit = cleanup_at_exit
         tmpdir = osutils.tmpdir()
         labelprefix = 'com.googlecode.munki.'
         # create a unique id for this job
@@ -76,20 +78,21 @@ class Job(object):
 
     def __del__(self):
         '''Attempt to clean up'''
-        if self.plist:
-            launchctl_cmd = ['/bin/launchctl', 'unload', self.plist_path]
-            dummy_result = subprocess.call(launchctl_cmd)
-        try:
-            self.stdout.close()
-            self.stderr.close()
-        except AttributeError:
-            pass
-        try:
-            os.unlink(self.plist_path)
-            os.unlink(self.stdout_path)
-            os.unlink(self.stderr_path)
-        except (OSError, IOError):
-            pass
+        if self.cleanup_at_exit:
+            if self.plist:
+                launchctl_cmd = ['/bin/launchctl', 'unload', self.plist_path]
+                dummy_result = subprocess.call(launchctl_cmd)
+            try:
+                self.stdout.close()
+                self.stderr.close()
+            except AttributeError:
+                pass
+            try:
+                os.unlink(self.plist_path)
+                os.unlink(self.stdout_path)
+                os.unlink(self.stderr_path)
+            except (OSError, IOError):
+                pass
 
     def start(self):
         '''Start the launchd job'''

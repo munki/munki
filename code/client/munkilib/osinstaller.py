@@ -80,7 +80,9 @@ class StartOSInstallError(Exception):
 class StartOSInstallRunner(object):
     '''Handles running startosinstall to set up and kick off an upgrade install
     of macOS'''
-    def __init__(self):
+    def __init__(self, installer, finishing_tasks=None):
+        self.installer = installer
+        self.finishing_tasks = finishing_tasks
         self.dmg_mountpoint = None
         self.got_sigusr1 = False
 
@@ -90,7 +92,8 @@ class StartOSInstallRunner(object):
         display.display_debug1('Got SIGUSR1 from startosinstall')
         self.got_sigusr1 = True
         # do stuff here: cleanup, record-keeping, notifications
-
+        if self.finishing_tasks:
+            self.finishing_tasks()
         # set Munki to run at boot after the OS upgrade is complete
         try:
             open(CHECKANDINSTALLATSTARTUPFLAG, 'w').close()
@@ -104,11 +107,13 @@ class StartOSInstallRunner(object):
         # so just target processes named 'startosinstall'
         subprocess.call(['/usr/bin/killall', '-SIGUSR1', 'startosinstall'])
 
-    def get_app_path(self, dmgpath):
+    def get_app_path(self, itempath):
         '''Mounts dmgpath and returns path to the Install macOS.app'''
-        if pkgutils.hasValidDiskImageExt(dmgpath):
-            display.display_info("Mounting disk image %s" % dmgpath)
-            mountpoints = dmgutils.mountdmg(dmgpath, random_mountpoint=False)
+        if itempath.endswith('.app'):
+            return itempath
+        if pkgutils.hasValidDiskImageExt(itempath):
+            display.display_info("Mounting disk image %s" % itempath)
+            mountpoints = dmgutils.mountdmg(itempath, random_mountpoint=False)
             if mountpoints:
                 # look in the first mountpoint for apps
                 self.dmg_mountpoint = mountpoints[0]
@@ -118,20 +123,22 @@ class StartOSInstallRunner(object):
                     return app_path
                 # if we get here we didn't find an Install macOS.app with the
                 # expected contents
-                dmgutils.unmountdmg(dmgpath)
+                dmgutils.unmountdmg(self.dmg_mountpoint)
                 self.dmg_mountpoint = None
                 raise StartOSInstallError(
-                    'Valid Install macOS.app not found on %s' % dmgpath)
+                    'Valid Install macOS.app not found on %s' % itempath)
             else:
                 raise StartOSInstallError(
-                    u'No filesystems mounted from %s' % dmgpath)
+                    u'No filesystems mounted from %s' % itempath)
         else:
             raise StartOSInstallError(
-                u'%s doesn\'t appear to be a disk image' % dmgpath)
+                u'%s doesn\'t appear to be an application or disk image'
+                % itempath)
 
-    def start(self, dmgpath):
+    def start(self):
         '''Starts a macOS install from an Install macOS.app stored at the root
-        of a disk image. Will always reboot after if the setup is successful.
+        of a disk image, or from a locally installed Install macOS.app.
+        Will always reboot after if the setup is successful.
         Therefore this must be done at the end of all other actions that Munki
         performs during a managedsoftwareupdate run.'''
 
@@ -139,11 +146,11 @@ class StartOSInstallRunner(object):
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
         # get our tool paths
-        install_app_path = self.get_app_path(dmgpath)
+        app_path = self.get_app_path(self.installer)
         startosinstall_path = os.path.join(
-            install_app_path, 'Contents/Resources/startosinstall')
+            app_path, 'Contents/Resources/startosinstall')
 
-        os_version = get_os_version(install_app_path)
+        os_version = get_os_version(app_path)
 
         # run startosinstall via subprocess
 
@@ -173,7 +180,7 @@ class StartOSInstallRunner(object):
 
         cmd.extend([startosinstall_path,
                     '--agreetolicense',
-                    '--applicationpath', install_app_path,
+                    '--applicationpath', app_path,
                     '--rebootdelay', '300',
                     '--pidtosignal', str(os.getpid()),
                     '--nointeraction'])
@@ -189,7 +196,7 @@ class StartOSInstallRunner(object):
         env = {'NSUnbufferedIO': 'YES'}
 
         try:
-            job = launchd.Job(cmd, environment_vars=env)
+            job = launchd.Job(cmd, environment_vars=env, cleanup_at_exit=False)
             job.start()
         except launchd.LaunchdJobException as err:
             display.display_error(
@@ -259,7 +266,8 @@ class StartOSInstallRunner(object):
         munkistatus.percent(100)
         retcode = job.returncode()
         if retcode:
-            dmgutils.unmountdmg(self.dmg_mountpoint)
+            if self.dmg_mountpoint:
+                dmgutils.unmountdmg(self.dmg_mountpoint)
             # append stderr to our startosinstall_output
             if job.stderr:
                 startosinstall_output.extend(job.stderr.read().splitlines())
@@ -279,6 +287,8 @@ class StartOSInstallRunner(object):
                 'Starting macOS install of %s: SUCCESSFUL' % os_version,
                 'Install.log')
         else:
+            if self.dmg_mountpoint:
+                dmgutils.unmountdmg(self.dmg_mountpoint)
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
                 'See /var/log/install.log for details.')
@@ -299,19 +309,20 @@ def get_catalog_info(mounted_dmgpath):
                 'installed_size': 9227469,
                 #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
                 'installer_type': 'startosinstall',
-                'minimum_os_version': '10.10',
+                'minimum_os_version': '10.8',
                 'name': name,
                 'uninstallable': False,
                 'version': vers}
     return None
 
 
-def startosinstall(dmgpath):
+def startosinstall(installer, finishing_tasks=None):
     '''Run startosinstall to set up an install of macOS, using a Install app
-    located on the given disk image. Returns True if startosinstall completes
-    successfully, False otherwise.'''
+    installed locally or located on a given disk image. Returns True if
+    startosinstall completes successfully, False otherwise.'''
     try:
-        StartOSInstallRunner().start(dmgpath)
+        StartOSInstallRunner(
+            installer, finishing_tasks=finishing_tasks).start()
         return True
     except StartOSInstallError, err:
         display.display_error(
@@ -321,8 +332,8 @@ def startosinstall(dmgpath):
         return False
 
 
-def run():
-    '''Installs the first startosinstall item in InstallInfo.plist's
+def run(finishing_tasks=None):
+    '''Runs the first startosinstall item in InstallInfo.plist's
     managed_installs. Returns True if successful, False otherwise'''
     managedinstallbase = prefs.pref('ManagedInstallDir')
     cachedir = os.path.join(managedinstallbase, 'Cache')
@@ -353,7 +364,8 @@ def run():
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
                     itempath = os.path.join(cachedir, item["installer_item"])
-                    success = startosinstall(itempath)
+                    success = startosinstall(
+                        itempath, finishing_tasks=finishing_tasks)
     munkilog.log("### Ending os installer session ###")
     return success
 

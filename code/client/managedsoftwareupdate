@@ -247,7 +247,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             reports.savereport()
             # install macOS
             try:
-                success = osinstaller.run()
+                success = osinstaller.run(finishing_tasks=doFinishingTasks)
             except:
                 display.display_error(
                     'Unexpected error in munkilib.osinstaller:')
@@ -272,6 +272,37 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
 
     reports.savereport()
     return munki_need_to_restart or apple_need_to_restart
+
+
+def doFinishingTasks():
+    '''A collection of tasks to do as we finish up'''
+    # finish our report
+    reports.report['EndTime'] = reports.format_time()
+    reports.report['ManagedInstallVersion'] = info.get_version()
+    reports.report['AvailableDiskSpace'] = info.available_disk_space()
+    reports.report['ConsoleUser'] = osutils.getconsoleuser() or '<None>'
+    reports.savereport()
+
+    # store the current pending update count and other data for munki-notifier
+    update_info = installinfo.get_pending_update_info()
+    prefs.set_pref('PendingUpdateCount', update_info['PendingUpdateCount'])
+    installinfo.save_pending_update_times()
+    prefs.set_pref('OldestUpdateDays', update_info['OldestUpdateDays'])
+    prefs.set_pref('ForcedUpdateDueDate', update_info['ForcedUpdateDueDate'])
+
+    # save application inventory data
+    info.saveappdata()
+
+    # run the postflight script if it exists
+    scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    postflightscript = os.path.join(scriptdir, 'postflight')
+    try:
+        localruntype = runtype
+    except NameError:
+        # runtype is not defined -- we're being called by osinstall
+        localruntype = 'osinstall'
+    runScript(postflightscript, 'postflight', localruntype)
+    # we ignore the result of the postflight
 
 
 def startLogoutHelper():
@@ -982,33 +1013,10 @@ def main():
             if os.path.exists(checkandinstallatstartupflag):
                 os.unlink(checkandinstallatstartupflag)
 
-    # finish our report
-    reports.report['EndTime'] = reports.format_time()
-    reports.report['ManagedInstallVersion'] = info.get_version()
-    reports.report['AvailableDiskSpace'] = info.available_disk_space()
-    reports.report['ConsoleUser'] = osutils.getconsoleuser() or '<None>'
-    reports.savereport()
-
-    # store the current pending update count and other data for munki-notifier
-    prefs.set_pref(
-        'PendingUpdateCount', updatesavailable + appleupdatesavailable)
-    installinfo.save_pending_update_times()
-    prefs.set_pref(
-        'OldestUpdateDays', installinfo.oldest_pending_update_in_days())
-    prefs.set_pref(
-        'ForcedUpdateDueDate', installinfo.earliest_force_install_date())
-
-    # send a notification event so Dock tile badge can be updated if needed
-    sendDockUpdateNotification()
-
     display.display_status_major('Finishing...')
+    sendDockUpdateNotification()
     sendEndNotification()
-    # save application inventory data
-    info.saveappdata()
-    # run the postflight script if it exists
-    postflightscript = os.path.join(scriptdir, 'postflight')
-    result = runScript(postflightscript, 'postflight', runtype)
-    # we ignore the result of the postflight
+    doFinishingTasks()
 
     munkilog.log("### Ending managedsoftwareupdate run ###")
     if options.verbose:
