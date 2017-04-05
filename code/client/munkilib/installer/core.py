@@ -39,7 +39,6 @@ from .. import display
 from .. import dmgutils
 from .. import munkistatus
 from .. import munkilog
-from .. import osutils
 from .. import pkgutils
 from .. import powermgr
 from .. import prefs
@@ -265,14 +264,6 @@ def install_with_info(
                 display.display_debug1(
                     "suppress_bundle_relocation: %s",
                     suppress_bundle_relocation)
-                if 'installer_choices_xml' in item:
-                    choices_xml_file = os.path.join(
-                        osutils.tmpdir(), 'choices.xml')
-                    FoundationPlist.writePlist(
-                        item['installer_choices_xml'], choices_xml_file)
-                else:
-                    choices_xml_file = ''
-                installer_environment = item.get('installer_environment')
                 if pkgutils.hasValidDiskImageExt(itempath):
                     display.display_status_minor(
                         "Mounting disk image %s" % item["installer_item"])
@@ -304,26 +295,20 @@ def install_with_info(
                             mountpoints[0], item['package_path'])
                         if os.path.exists(fullpkgpath):
                             (retcode, needtorestart) = pkg.install(
-                                fullpkgpath, display_name, choices_xml_file,
-                                suppress_bundle_relocation,
-                                installer_environment)
+                                fullpkgpath, item)
                     else:
                         # no relative path to pkg on dmg, so just install all
                         # pkgs found at the root of the first mountpoint
                         # (hopefully there's only one)
                         (retcode, needtorestart) = pkg.installall(
-                            mountpoints[0], display_name, choices_xml_file,
-                            suppress_bundle_relocation, installer_environment)
+                            mountpoints[0], item)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):
                         restartflag = True
                     dmgutils.unmountdmg(mountpoints[0])
-                elif (pkgutils.hasValidPackageExt(itempath) or
-                      itempath.endswith(".dist")):
-                    (retcode, needtorestart) = pkg.install(
-                        itempath, display_name, choices_xml_file,
-                        suppress_bundle_relocation, installer_environment)
+                elif pkgutils.hasValidPackageExt(itempath):
+                    (retcode, needtorestart) = pkg.install(itempath, item)
                     if (needtorestart or
                             item.get("RestartAction") == "RequireRestart" or
                             item.get("RestartAction") == "RecommendRestart"):

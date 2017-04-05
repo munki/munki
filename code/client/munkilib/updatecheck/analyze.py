@@ -167,7 +167,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             'Could not process item %s for optional install. No pkginfo found '
             'in catalogs: %s ', manifestitem, ', '.join(cataloglist))
         return
-    
+
     is_currently_installed = installationstate.some_version_installed(item_pl)
     if is_currently_installed and unused_software.should_be_removed(item_pl):
         process_removal(manifestitem, cataloglist, installinfo)
@@ -384,8 +384,9 @@ def process_install(manifestitem, cataloglist, installinfo,
                 else:
                     iteminfo['unattended_install'] = True
 
-            # optional keys
-            optional_keys = ['suppress_bundle_relocation',
+            # optional keys to copy if they exist
+            optional_keys = ['allow_untrusted',
+                             'suppress_bundle_relocation',
                              'installer_choices_xml',
                              'installer_environment',
                              'adobe_install_info',

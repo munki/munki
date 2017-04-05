@@ -71,11 +71,10 @@ def remove_bundle_relocation_info(pkgpath):
                 pass
 
 
-def install(pkgpath, display_name=None, choicesXMLpath=None,
-            suppressBundleRelocation=False, environment=None):
+def install(pkgpath, options=None):
     """
     Uses the apple installer to install the package or metapackage
-    at pkgpath. Prints status messages to STDOUT.
+    at pkgpath.
     Returns a tuple:
     the installer return code and restart needed as a boolean.
     """
@@ -83,11 +82,19 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
     restartneeded = False
     installeroutput = []
 
+    if not options:
+        options = {}
+    display_name = options.get('display_name') or options.get('name')
+    suppress_bundle_relocation = options.get('suppress_bundle_relocation')
+    installer_choices_xml = options.get('installer_choices_xml')
+    environment = options.get('installer_environment')
+    allow_untrusted = options.get('allow_untrusted')
+
     if os.path.islink(pkgpath):
         # resolve links before passing them to /usr/bin/installer
         pkgpath = os.path.realpath(pkgpath)
 
-    if suppressBundleRelocation:
+    if suppress_bundle_relocation:
         remove_bundle_relocation_info(pkgpath)
 
     packagename = os.path.basename(pkgpath)
@@ -95,15 +102,21 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
         display_name = packagename
     munkilog.log("Installing %s from %s" % (display_name, packagename))
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
-    if choicesXMLpath:
-        cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
+    if installer_choices_xml:
+        choices_xml_file = os.path.join(osutils.tmpdir(), 'choices.xml')
+        FoundationPlist.writePlist(installer_choices_xml, choices_xml_file)
+        cmd.extend(['-applyChoiceChangesXML', choices_xml_file])
+    else:
+        choices_xml_file = None
+    if allow_untrusted:
+        cmd.append('-allowUntrusted')
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    restartaction = str(output).decode('UTF-8').rstrip("\n")
-    if restartaction == "RequireRestart" or \
-       restartaction == "RecommendRestart":
+    restartaction = str(output).decode('UTF-8').rstrip('\n')
+    if (restartaction == 'RequireRestart' or
+            restartaction == 'RecommendRestart'):
         display.display_status_minor(
             '%s requires a restart after installation.' % display_name)
         restartneeded = True
@@ -112,8 +125,10 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
     # which varies depending on OS version.
     os_version = osutils.getOsVersion()
     cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, '-target', '/']
-    if choicesXMLpath:
-        cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
+    if choices_xml_file:
+        cmd.extend(['-applyChoiceChangesXML', choices_xml_file])
+    if allow_untrusted:
+        cmd.append('-allowUntrusted')
 
     # set up environment for installer
     env_vars = os.environ.copy()
@@ -224,8 +239,7 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
     return (retcode, restartneeded)
 
 
-def installall(dirpath, display_name=None, choicesXMLpath=None,
-               suppressBundleRelocation=False, environment=None):
+def installall(dirpath, options=None):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -250,10 +264,8 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                (retcode, needsrestart) = installall(mountpoint, display_name,
-                                                     choicesXMLpath,
-                                                     suppressBundleRelocation,
-                                                     environment)
+                (retcode, needsrestart) = installall(
+                    mountpoint, options=options)
                 if needsrestart:
                     restartflag = True
                 if retcode:
@@ -265,8 +277,7 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
 
         if pkgutils.hasValidInstallerItemExt(item):
             (retcode, needsrestart) = install(
-                itempath, display_name,
-                choicesXMLpath, suppressBundleRelocation, environment)
+                itempath, options=options)
             if needsrestart:
                 restartflag = True
             if retcode:
