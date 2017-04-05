@@ -64,6 +64,7 @@ else:
     from munkilib import installinfo
     from munkilib import munkilog
     from munkilib import munkistatus
+    from munkilib import osinstaller
     from munkilib import osutils
     from munkilib import prefs
     from munkilib import processes
@@ -242,6 +243,20 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             munkilog.log(traceback.format_exc())
             reports.savereport()
             raise
+        if not only_unattended and munkiUpdatesContainStartOSInstallItem():
+            reports.savereport()
+            # install macOS
+            try:
+                success = osinstaller.run(finishing_tasks=doFinishingTasks)
+            except:
+                display.display_error(
+                    'Unexpected error in munkilib.osinstaller:')
+                munkilog.log(traceback.format_exc())
+                reports.savereport()
+                raise
+            if success:
+                # startosinstall will be restarting; get out of the way
+                sys.exit()
 
     if do_apple_updates:
         # install Apple updates
@@ -257,6 +272,37 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
 
     reports.savereport()
     return munki_need_to_restart or apple_need_to_restart
+
+
+def doFinishingTasks():
+    '''A collection of tasks to do as we finish up'''
+    # finish our report
+    reports.report['EndTime'] = reports.format_time()
+    reports.report['ManagedInstallVersion'] = info.get_version()
+    reports.report['AvailableDiskSpace'] = info.available_disk_space()
+    reports.report['ConsoleUser'] = osutils.getconsoleuser() or '<None>'
+    reports.savereport()
+
+    # store the current pending update count and other data for munki-notifier
+    update_info = installinfo.get_pending_update_info()
+    prefs.set_pref('PendingUpdateCount', update_info['PendingUpdateCount'])
+    installinfo.save_pending_update_times()
+    prefs.set_pref('OldestUpdateDays', update_info['OldestUpdateDays'])
+    prefs.set_pref('ForcedUpdateDueDate', update_info['ForcedUpdateDueDate'])
+
+    # save application inventory data
+    info.saveappdata()
+
+    # run the postflight script if it exists
+    scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    postflightscript = os.path.join(scriptdir, 'postflight')
+    try:
+        localruntype = runtype
+    except NameError:
+        # runtype is not defined -- we're being called by osinstall
+        localruntype = 'osinstall'
+    runScript(postflightscript, 'postflight', localruntype)
+    # we ignore the result of the postflight
 
 
 def startLogoutHelper():
@@ -337,6 +383,25 @@ def munkiUpdatesAvailable():
             display.display_error(
                 'Install info at %s is invalid.' % install_info)
     return updatesavailable
+
+
+def munkiUpdatesContainStartOSInstallItem():
+    """Return True if there is a startosinstall item in the list of updates"""
+    install_info = os.path.join(
+        prefs.pref('ManagedInstallDir'), 'InstallInfo.plist')
+    if os.path.exists(install_info):
+        try:
+            plist = FoundationPlist.readPlist(install_info)
+        except FoundationPlist.NSPropertyListSerializationException:
+            display.display_error(
+                'Install info at %s is invalid.' % install_info)
+        else:
+            # check managed_installs for startosinstall items
+            for item in plist.get('managed_installs', []):
+                if item.get('installer_type') == 'startosinstall':
+                    return True
+    return False
+
 
 
 def munkiUpdatesContainAppleItems():
@@ -535,6 +600,22 @@ def main():
         print >> sys.stderr, 'You must run this as root!'
         exit(constants.EXIT_STATUS_ROOT_REQUIRED)
 
+    # check to see if another instance of this script is running
+    myname = os.path.basename(sys.argv[0])
+    other_managedsoftwareupdate_pid = osutils.pythonScriptRunning(myname)
+    if other_managedsoftwareupdate_pid:
+        # another instance of this script is running, so we should quit
+        munkilog.log('*' * 60)
+        munkilog.log('%s launched as pid %s' % (myname, os.getpid()))
+        munkilog.log('Another instance of %s is running as pid %s.'
+                     % (myname, other_managedsoftwareupdate_pid))
+        munkilog.log('pid %s exiting.' % os.getpid())
+        munkilog.log('*' * 60)
+        print >> sys.stderr, (
+            'Another instance of %s is running. Exiting.' % myname)
+        osutils.cleanUpTmpDir()
+        exit(0)
+
     runtype = 'custom'
 
     checkandinstallatstartupflag = \
@@ -685,33 +766,6 @@ def main():
     # create needed directories if necessary
     if not initMunkiDirs():
         exit(constants.EXIT_STATUS_MUNKI_DIRS_FAILURE)
-
-    # check to see if another instance of this script is running
-    myname = os.path.basename(sys.argv[0])
-    if osutils.pythonScriptRunning(myname):
-        # another instance of this script is running, so we should quit
-        if options.manualcheck:
-            # a manual update check was triggered
-            # (probably by Managed Software Center), but managedsoftwareupdate
-            # is already running. We should provide user feedback
-            munkistatus.activate()
-            munkistatus.message('Checking for available updates...')
-            while True:
-                # loop til the other instance exits
-                if not osutils.pythonScriptRunning(myname):
-                    break
-                # or user clicks Stop
-                if processes.stop_requested():
-                    break
-                time.sleep(0.5)
-        else:
-            msg = 'Another instance of %s is running. Exiting.' % myname
-            munkilog.log(msg)
-            print >> sys.stderr, msg
-        # tell status app we're done sending status
-        munkistatus.quit()
-        osutils.cleanUpTmpDir()
-        exit(0)
 
     applesoftwareupdatesonly = (prefs.pref('AppleSoftwareUpdatesOnly')
                                 or options.applesuspkgsonly)
@@ -948,33 +1002,10 @@ def main():
             if os.path.exists(checkandinstallatstartupflag):
                 os.unlink(checkandinstallatstartupflag)
 
-    # finish our report
-    reports.report['EndTime'] = reports.format_time()
-    reports.report['ManagedInstallVersion'] = info.get_version()
-    reports.report['AvailableDiskSpace'] = info.available_disk_space()
-    reports.report['ConsoleUser'] = osutils.getconsoleuser() or '<None>'
-    reports.savereport()
-
-    # store the current pending update count and other data for munki-notifier
-    prefs.set_pref(
-        'PendingUpdateCount', updatesavailable + appleupdatesavailable)
-    installinfo.save_pending_update_times()
-    prefs.set_pref(
-        'OldestUpdateDays', installinfo.oldest_pending_update_in_days())
-    prefs.set_pref(
-        'ForcedUpdateDueDate', installinfo.earliest_force_install_date())
-
-    # send a notification event so Dock tile badge can be updated if needed
-    sendDockUpdateNotification()
-
     display.display_status_major('Finishing...')
+    sendDockUpdateNotification()
     sendEndNotification()
-    # save application inventory data
-    info.saveappdata()
-    # run the postflight script if it exists
-    postflightscript = os.path.join(scriptdir, 'postflight')
-    result = runScript(postflightscript, 'postflight', runtype)
-    # we ignore the result of the postflight
+    doFinishingTasks()
 
     munkilog.log("### Ending managedsoftwareupdate run ###")
     if options.verbose:

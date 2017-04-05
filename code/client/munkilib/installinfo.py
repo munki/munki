@@ -42,10 +42,6 @@ from . import FoundationPlist
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4
 
-class BadDateError(Exception):
-    '''Exception when transforming dates'''
-    pass
-
 
 def get_installinfo():
     '''Returns the dictionary describing the managed installs and removals'''
@@ -75,30 +71,6 @@ def get_appleupdates():
     return plist
 
 
-def earliest_force_install_date():
-    """Check installable packages for force_install_after_dates
-    Returns None or earliest force_install_after_date converted to local time
-    """
-    earliest_date = None
-
-    installinfo = get_installinfo().get('managed_installs', [])
-    installinfo.extend(get_appleupdates().get('AppleUpdates', []))
-
-    for install in installinfo:
-        this_force_install_date = install.get('force_install_after_date')
-
-        if this_force_install_date:
-            try:
-                this_force_install_date = info.subtract_tzoffset_from_date(
-                    this_force_install_date)
-                if not earliest_date or this_force_install_date < earliest_date:
-                    earliest_date = this_force_install_date
-            except BadDateError:
-                # some issue with the stored date
-                pass
-    return earliest_date
-
-
 def oldest_pending_update_in_days():
     '''Return the datestamp of the oldest pending update'''
     pendingupdatespath = os.path.join(
@@ -116,6 +88,38 @@ def oldest_pending_update_in_days():
                 oldest_date = this_date
 
     return now.timeIntervalSinceDate_(oldest_date) / (24 * 60 * 60)
+
+
+def get_pending_update_info():
+    '''Returns a dict with some data managedsoftwareupdate records at the end
+    of a run'''
+    data = {}
+    installinfo = get_installinfo()
+    data['install_count'] = len(installinfo.get('managed_installs', []))
+    data['removal_count'] = len(installinfo.get('removals', []))
+    appleupdates = get_appleupdates()
+    data['apple_update_count'] = len(appleupdates.get('AppleUpdates', []))
+    data['PendingUpdateCount'] = (data['install_count'] + data['removal_count']
+                                  + data['apple_update_count'])
+    data['OldestUpdateDays'] = oldest_pending_update_in_days()
+    # calculate earliest date a forced install is due
+    installs = installinfo.get('managed_installs', [])
+    installs.extend(appleupdates.get('AppleUpdates', []))
+    earliest_date = None
+    for install in installs:
+        this_force_install_date = install.get('force_install_after_date')
+
+        if this_force_install_date:
+            try:
+                this_force_install_date = info.subtract_tzoffset_from_date(
+                    this_force_install_date)
+                if not earliest_date or this_force_install_date < earliest_date:
+                    earliest_date = this_force_install_date
+            except ValueError:
+                # bad date!
+                pass
+    data['ForcedUpdateDueDate'] = earliest_date
+    return data
 
 
 def save_pending_update_times():
