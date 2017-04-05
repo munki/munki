@@ -101,6 +101,12 @@ class StartOSInstallRunner(object):
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
                 "%s", err)
+        # remove the diskimage to free up more space for the actual install
+        if pkgutils.hasValidDiskImageExt(self.installer):
+            try:
+                os.unlink(self.installer)
+            except (IOError, OSError):
+                pass
         # then tell startosinstall it's OK to proceed with restart
         # can't use os.kill now that we wrap the call of startosinstall
         #os.kill(self.startosinstall_pid, signal.SIGUSR1)
@@ -295,25 +301,27 @@ class StartOSInstallRunner(object):
 
 
 def get_catalog_info(mounted_dmgpath):
-    '''Returns catalog info (pkginfo) for a macOS installer on a disk image'''
+    '''Returns catalog info (pkginfo) for a macOS Sierra installer on a disk
+    image'''
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
-        display_name = os.path.splitext(os.path.basename(app_path))[0]
-        name = display_name.replace(' ', '_')
         vers = get_os_version(app_path)
-        description = 'Installs macOS version %s' % vers
-        return {'RestartAction': 'RequireRestart',
-                'apple_item': True,
-                'description': description,
-                'display_name': display_name,
-                'installed_size': 9227469,
-                #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
-                'installer_type': 'startosinstall',
-                'minimum_munki_version': '3.0.0.3211',
-                'minimum_os_version': '10.8',
-                'name': name,
-                'uninstallable': False,
-                'version': vers}
+        if vers:
+            display_name = os.path.splitext(os.path.basename(app_path))[0]
+            name = display_name.replace(' ', '_')
+            description = 'Installs macOS version %s' % vers
+            return {'RestartAction': 'RequireRestart',
+                    'apple_item': True,
+                    'description': description,
+                    'display_name': display_name,
+                    'installed_size': 9227469,
+                    #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
+                    'installer_type': 'startosinstall',
+                    'minimum_munki_version': '3.0.0.3211',
+                    'minimum_os_version': '10.8',
+                    'name': name,
+                    'uninstallable': False,
+                    'version': vers}
     return None
 
 
