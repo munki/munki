@@ -100,28 +100,17 @@ def compare_application_version(app):
     display.display_debug1(
         'Looking for application %s with bundleid: %s, version %s...' %
         (name, bundleid, versionstring))
-    appinfo = []
-    appdata = info.app_data()
-    if appdata:
-        for item in appdata:
-            # Skip applications in /Users but not /Users/Shared, for now.
-            if 'path' in item:
-                if (item['path'].startswith('/Users/') and
-                        not item['path'].startswith('/Users/Shared/')):
-                    display.display_debug2(
-                        'Skipped app %s with path %s',
-                        item['name'], item['path'])
-                    continue
-            if bundleid:
-                if item['bundleid'] == bundleid:
-                    appinfo.append(item)
-            elif name and item['name'] == name:
-                appinfo.append(item)
+
+    # find installed apps that match this item by name or bundleid
+    appdata = info.filtered_app_data()
+    appinfo = [item for item in appdata
+               if (item['bundleid'] == bundleid or
+                   (name and item['name'] == name))]
 
     if not appinfo:
-        # app isn't present!
+        # No matching apps found
         display.display_debug1(
-            '\tDid not find this application on the startup disk.')
+            '\tFound no matching applications on the startup disk.')
         return ITEM_NOT_PRESENT
 
     # iterate through matching applications
