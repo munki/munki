@@ -182,9 +182,10 @@ def makecatalogs(repo, options):
                     if installeritempath.lower() == repo_pkg.lower():
                         errors.append(
                             "WARNING: %s refers to installer item: %s. "
-                            "The item in the repo has different case: %s. "
-                            "This may cause issues depending on the case-"
-                            "sensitivity of the underlying filesystem."
+                            "The pathname of the item in the repo has "
+                            "different case: %s. This may cause issues "
+                            "depending on the case-sensitivity of the "
+                            "underlying filesystem."
                             % (pkginfo_ref,
                                pkginfo['installer_item_location'], repo_pkg))
                         found_caseinsensitive_match = True
@@ -230,9 +231,10 @@ def makecatalogs(repo, options):
                     if uninstalleritempath.lower() == repo_pkg.lower():
                         errors.append(
                             "WARNING: %s refers to uninstaller item: %s. "
-                            "The item in the repo has different case: %s. "
-                            "This may cause issues depending on the case-"
-                            "sensitivity of the underlying filesystem."
+                            "The pathname of the item in the repo has "
+                            "different case: %s. This may cause issues "
+                            "depending on the case-sensitivity of the "
+                            "underlying filesystem."
                             % (pkginfo_ref,
                                pkginfo['uninstaller_item_location'], repo_pkg))
                         found_caseinsensitive_match = True
