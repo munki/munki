@@ -22,7 +22,6 @@ Utilities for working with Apple software update dist files
 """
 
 import os
-import re
 from xml.dom import minidom
 from xml.parsers import expat
 
@@ -80,148 +79,9 @@ def get_firmware_alert_text(dom):
     return ''
 
 
-# TO-DO: remove this function once it's clear the replacement works
-# (replacement: passing the string to FoundationPlist.readPlistFromString)
-def parse_cdata(cdata_str):
-    '''Parses the CDATA string from an Apple Software Update distribution
-    file and returns a dictionary with key/value pairs.
-
-    The data in the CDATA string is in the format of an OS X .strings file,
-    which is generally:
-
-    "KEY1" = "VALUE1";
-    "KEY2"='VALUE2';
-    "KEY3" = 'A value
-    that spans
-    multiple lines.
-    ';
-
-    Values can span multiple lines; either single or double-quotes can be
-    used to quote the keys and values, and the alternative quote character
-    is allowed as a literal inside the other, otherwise the quote character
-    is escaped.
-
-    //-style comments and blank lines are allowed in the string; these
-    should be skipped by the parser unless within a value.
-
-    '''
-
-    parsed_data = {}
-    regex_text = (r"""^\s*"""
-                  r"""(?P<key_quote>['"]?)(?P<key>[^'"]+)(?P=key_quote)"""
-                  r"""\s*=\s*"""
-                  r"""(?P<value_quote>['"])(?P<value>.*?)(?P=value_quote);$""")
-    regex = re.compile(regex_text, re.MULTILINE | re.DOTALL)
-
-    # iterate through the string, finding all possible non-overlapping
-    # matches
-    for match_obj in re.finditer(regex, cdata_str):
-        match_dict = match_obj.groupdict()
-        if 'key' in match_dict.keys() and 'value' in match_dict.keys():
-            key = match_dict['key']
-            value = match_dict['value']
-            # now 'de-escape' escaped quotes
-            quote = match_dict.get('value_quote')
-            if quote:
-                escaped_quote = '\\' + quote
-                value = value.replace(escaped_quote, quote)
-            parsed_data[key] = value
-
-    return parsed_data
-
-def parse_su_dist(filename):
-    '''Parses a softwareupdate dist file, looking for information of
-    interest. Returns a dictionary containing the info we discovered in a
-    Munki-friendly format.'''
-    try:
-        dom = minidom.parse(filename)
-    except expat.ExpatError:
-        display.display_error(
-            'Invalid XML in %s', filename)
-        return None
-    except IOError, err:
-        display.display_error(
-            'Error reading %s: %s', filename, err)
-        return None
-
-    su_choice_id_key = 'su'
-    # look for <choices-outline ui='SoftwareUpdate'
-    choice_outlines = dom.getElementsByTagName('choices-outline') or []
-    for outline in choice_outlines:
-        if ('ui' in outline.attributes.keys() and
-                outline.attributes['ui'].value == 'SoftwareUpdate'):
-            lines = outline.getElementsByTagName('line')
-            if lines and 'choice' in lines[0].attributes.keys():
-                su_choice_id_key = (
-                    lines[0].attributes['choice'].value)
-
-    # get values from choice id=su_choice_id_key
-    # (there may be more than one!)
-    pkgs = {}
-    su_choice = {}
-    choice_elements = dom.getElementsByTagName('choice') or []
-    for choice in choice_elements:
-        keys = choice.attributes.keys()
-        if 'id' in keys:
-            choice_id = choice.attributes['id'].value
-            if choice_id == su_choice_id_key:
-                # this is the one Software Update uses
-                for key in keys:
-                    su_choice[key] = choice.attributes[key].value
-                pkg_refs = choice.getElementsByTagName('pkg-ref') or []
-                for pkg in pkg_refs:
-                    if 'id' in pkg.attributes.keys():
-                        pkg_id = pkg.attributes['id'].value
-                        if not pkg_id in pkgs.keys():
-                            pkgs[pkg_id] = {}
-                # now get all pkg-refs so we can assemble all metadata
-                # there is additional metadata in pkg-refs outside of the
-                # choices element
-                pkg_refs = dom.getElementsByTagName('pkg-ref') or []
-                for pkg in pkg_refs:
-                    if 'id' in pkg.attributes.keys():
-                        pkg_id = pkg.attributes['id'].value
-                        if not pkg_id in pkgs.keys():
-                            # this pkg_id was not in our choice list
-                            continue
-                        if pkg.firstChild:
-                            try:
-                                pkg_name = pkg.firstChild.wholeText
-                                if pkg_name:
-                                    pkgs[pkg_id]['name'] = pkg_name
-                            except AttributeError:
-                                pass
-                        if 'onConclusion' in pkg.attributes.keys():
-                            pkgs[pkg_id]['RestartAction'] = (
-                                pkg.attributes['onConclusion'].value)
-                        if 'version' in pkg.attributes.keys():
-                            pkgs[pkg_id]['version'] = (
-                                pkg.attributes['version'].value)
-                        if 'installKBytes' in pkg.attributes.keys():
-                            pkgs[pkg_id]['installed_size'] = int(
-                                pkg.attributes['installKBytes'].value)
-                        if 'packageIdentifier' in pkg.attributes.keys():
-                            pkgs[pkg_id]['packageid'] = (
-                                pkg.attributes['packageIdentifier'].value)
-
-    # look for localization and parse strings data into a dict
-    strings_data = {}
-    localizations = dom.getElementsByTagName('localization')
-    if localizations:
-        string_elements = localizations[0].getElementsByTagName('strings')
-        if string_elements:
-            strings = string_elements[0]
-            if strings.firstChild:
-                try:
-                    text = strings.firstChild.wholeText
-                    #strings_data = parse_cdata(text)
-                    # strings data can be parsed by FoundationPlist
-                    strings_data = FoundationPlist.readPlistFromString(
-                        "\n" + text)
-                except (AttributeError,
-                        FoundationPlist.FoundationPlistException):
-                    strings_data = {}
-
+def get_blocking_apps_from_dom(dom):
+    '''Gets must-close items from parsed su_dist and returns an array of
+    blocking_applications in the format Munki wants'''
     # get blocking_applications, if any.
     # First, find all the must-close items.
     must_close_app_ids = []
@@ -251,7 +111,122 @@ def parse_su_dist(filename):
                 # path to executable should be location agnostic
                 executable = executable[len(dirname + '/'):]
             blocking_apps.append(executable or pathname)
+    return blocking_apps
 
+
+def get_localization_strings(dom):
+    '''Returns localization strings'''
+    strings_data = {}
+    localizations = dom.getElementsByTagName('localization')
+    if localizations:
+        string_elements = localizations[0].getElementsByTagName('strings')
+        if string_elements:
+            strings = string_elements[0]
+            if strings.firstChild:
+                try:
+                    text = strings.firstChild.wholeText
+                    # strings data can be parsed by FoundationPlist
+                    strings_data = FoundationPlist.readPlistFromString(
+                        "\n" + text)
+                except (AttributeError,
+                        FoundationPlist.FoundationPlistException):
+                    strings_data = {}
+    return strings_data
+
+
+def populate_pkgs_from_pkg_refs(dom, pkgs):
+    '''Uses pkg-ref elements in the dom to populate data in the pkgs dict'''
+    dom_pkg_refs = dom.getElementsByTagName('pkg-ref') or []
+    for pkg_ref in dom_pkg_refs:
+        if not 'id' in pkg_ref.attributes.keys():
+            continue
+        pkg_id = pkg_ref.attributes['id'].value
+        if not pkg_id in pkgs.keys():
+            # this pkg_id was not in our choice list
+            continue
+        if pkg_ref.firstChild:
+            try:
+                pkg_name = pkg_ref.firstChild.wholeText
+                if pkg_name:
+                    pkgs[pkg_id]['name'] = pkg_name
+            except AttributeError:
+                pass
+        if 'onConclusion' in pkg_ref.attributes.keys():
+            pkgs[pkg_id]['RestartAction'] = (
+                pkg_ref.attributes['onConclusion'].value)
+        if 'version' in pkg_ref.attributes.keys():
+            pkgs[pkg_id]['version'] = (
+                pkg_ref.attributes['version'].value)
+        if 'installKBytes' in pkg_ref.attributes.keys():
+            pkgs[pkg_id]['installed_size'] = int(
+                pkg_ref.attributes['installKBytes'].value)
+        if 'packageIdentifier' in pkg_ref.attributes.keys():
+            pkgs[pkg_id]['packageid'] = (
+                pkg_ref.attributes['packageIdentifier'].value)
+
+
+def get_su_choice_and_pkgs(dom):
+    '''Returns a tuple of dictionaries containing su_choice and pkgs'''
+    su_choice_id_key = 'su'
+    # look for <choices-outline ui='SoftwareUpdate'
+    choice_outlines = dom.getElementsByTagName('choices-outline') or []
+    for outline in choice_outlines:
+        if ('ui' in outline.attributes.keys() and
+                outline.attributes['ui'].value == 'SoftwareUpdate'):
+            lines = outline.getElementsByTagName('line')
+            if lines and 'choice' in lines[0].attributes.keys():
+                su_choice_id_key = (
+                    lines[0].attributes['choice'].value)
+
+    # get values from choice id=su_choice_id_key
+    # (there may be more than one!)
+    pkgs = {}
+    su_choice = {}
+    choice_elements = dom.getElementsByTagName('choice') or []
+    for choice in choice_elements:
+        keys = choice.attributes.keys()
+        if not 'id' in keys:
+            continue
+        choice_id = choice.attributes['id'].value
+        if choice_id == su_choice_id_key:
+            # this is the one Software Update uses
+            for key in keys:
+                su_choice[key] = choice.attributes[key].value
+            choice_pkg_refs = choice.getElementsByTagName('pkg-ref') or []
+            for pkg in choice_pkg_refs:
+                if 'id' in pkg.attributes.keys():
+                    pkg_id = pkg.attributes['id'].value
+                    if not pkg_id in pkgs.keys():
+                        pkgs[pkg_id] = {}
+
+    # now look through all pkg-refs in dom so we can assemble all
+    # metadata -- there is additional metadata in pkg-refs outside of
+    # the choices element
+    populate_pkgs_from_pkg_refs(dom, pkgs)
+    return (su_choice, pkgs)
+
+
+def parse_su_dist(filename):
+    '''Parses a softwareupdate dist file, looking for information of
+    interest. Returns a dictionary containing the info we discovered in a
+    Munki-friendly format.'''
+    try:
+        dom = minidom.parse(filename)
+    except expat.ExpatError:
+        display.display_error(
+            'Invalid XML in %s', filename)
+        return None
+    except IOError, err:
+        display.display_error(
+            'Error reading %s: %s', filename, err)
+        return None
+
+    # get softwareupdate choice info and pkg info
+    (su_choice, pkgs) = get_su_choice_and_pkgs(dom)
+    # look for localization and parse strings data into a dict
+    strings_data = get_localization_strings(dom)
+    # get blocking_applications, if any.
+    blocking_apps = get_blocking_apps_from_dom(dom)
     # get firmware alert text if any
     firmware_alert_text = get_firmware_alert_text(dom)
 
@@ -266,7 +241,6 @@ def parse_su_dist(filename):
         if info[key].startswith('SU_'):
             # get value from strings_data dictionary
             info[key] = strings_data.get(info[key], info[key])
-    #info['pkg_refs'] = pkgs
     installed_size = 0
     for pkg in pkgs.values():
         installed_size += pkg.get('installed_size', 0)
