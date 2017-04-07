@@ -1003,9 +1003,9 @@ def main():
                 os.unlink(checkandinstallatstartupflag)
 
     display.display_status_major('Finishing...')
+    doFinishingTasks()
     sendDockUpdateNotification()
     sendEndNotification()
-    doFinishingTasks()
 
     munkilog.log("### Ending managedsoftwareupdate run ###")
     if options.verbose:
