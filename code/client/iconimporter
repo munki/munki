@@ -131,16 +131,15 @@ def generate_pngs_from_pkg(repo, install_item):
     mountpoint = None
     pkg_path = None
     item_path = os.path.join(u'pkgs', install_item['installer_item_location'])
+    file_temp = TempFile()
+    try:
+        repo.get_to_local_file(item_path, file_temp.path)
+    except munkirepo.RepoError, err:
+        print_err_utf8(u'\tCan\'t download %s from repo: %s'
+                       % (item_path, unicode(err)))
+        return
     if pkgutils.hasValidDiskImageExt(item_path):
-        dmg_ref = item_path
-        dmg_temp = TempFile()
-        try:
-            repo.get_to_local_file(dmg_ref, dmg_temp.path)
-        except munkirepo.RepoError, err:
-            print_err_utf8(u'\tCan\'t download %s from repo: %s'
-                           % (dmg_ref, unicode(err)))
-            return
-        mountpoints = dmgutils.mountdmg(dmg_temp.path)
+        mountpoints = dmgutils.mountdmg(file_temp.path)
         if mountpoints:
             mountpoint = mountpoints[0]
             if install_item.get('package_path'):
@@ -153,15 +152,8 @@ def generate_pngs_from_pkg(repo, install_item):
                         pkg_path = os.path.join(mountpoint, fileitem)
                         break
     elif pkgutils.hasValidPackageExt(item_path):
-        pkg_ref = item_path
-        pkg_temp = TempFile()
-        try:
-            repo.get_to_local_file(pkg_ref, pkg_temp.path)
-            pkg_path = pkg_temp.path
-        except munkirepo.RepoError, err:
-            print_err_utf8(u'\tCan\'t download %s from repo: %s'
-                           % (pkg_ref, unicode(err)))
-            return
+        pkg_path = file_temp.path
+
     if pkg_path:
         if os.path.isdir(pkg_path):
             icon_paths = iconutils.extractAppIconsFromBundlePkg(pkg_path)
