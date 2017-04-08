@@ -139,10 +139,12 @@ class TempFile(object):
             pass
 
 
+# pylint: disable=invalid-name
 libedit = None
 if 'libedit' in readline.__doc__:
     # readline module was compiled against libedit
     libedit = ctypes.cdll.LoadLibrary(find_library('libedit'))
+# pylint: enable=invalid-name
 
 
 def raw_input_with_default(prompt, default_text):
