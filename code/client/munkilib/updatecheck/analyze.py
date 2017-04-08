@@ -85,6 +85,22 @@ def is_apple_item(item_pl):
     return False
 
 
+def already_processed(itemname, installinfo, sections):
+    '''Returns True if itemname has already been added to installinfo in one
+    of the given sections'''
+    description = {'processed_installs': 'install',
+                   'processed_uninstalls': 'uninstall',
+                   'managed_updates': 'update',
+                   'optional_installs': 'optional install'}
+    for section in sections:
+        if itemname in installinfo[section]:
+            display.display_debug1(
+                '%s has already been processed for %s.',
+                itemname, description[section])
+            return True
+    return False
+
+
 def process_managed_update(manifestitem, cataloglist, installinfo):
     """Process a managed_updates item to see if it is installed, and if so,
     if it needs an update.
@@ -93,20 +109,9 @@ def process_managed_update(manifestitem, cataloglist, installinfo):
     display.display_debug1(
         '* Processing manifest item %s for update', manifestitemname)
 
-    # check to see if item is already in the update list:
-    if manifestitemname in installinfo['managed_updates']:
-        display.display_debug1(
-            '%s has already been processed for update.', manifestitemname)
-        return
-    # check to see if item is already in the installlist:
-    if manifestitemname in installinfo['processed_installs']:
-        display.display_debug1(
-            '%s has already been processed for install.', manifestitemname)
-        return
-    # check to see if item is already in the removallist:
-    if manifestitemname in installinfo['processed_uninstalls']:
-        display.display_debug1(
-            '%s has already been processed for uninstall.', manifestitemname)
+    if already_processed(
+            manifestitemname, installinfo,
+            ['managed_updates', 'processed_installs', 'processed_uninstalls']):
         return
 
     item_pl = catalogs.get_item_detail(manifestitem, cataloglist)
@@ -137,19 +142,10 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     display.display_debug1(
         "* Processing manifest item %s for optional install" % manifestitemname)
 
-    # have we already processed this?
-    if manifestitemname in installinfo['optional_installs']:
-        display.display_debug1(
-            '%s has already been processed for optional install.',
-            manifestitemname)
-        return
-    elif manifestitemname in installinfo['processed_installs']:
-        display.display_debug1(
-            '%s has already been processed for install.', manifestitemname)
-        return
-    elif manifestitemname in installinfo['processed_uninstalls']:
-        display.display_debug1(
-            '%s has already been processed for uninstall.', manifestitemname)
+    if already_processed(
+            manifestitemname, installinfo,
+            ['optional_installs',
+             'processed_installs', 'processed_uninstalls']):
         return
 
     # check to see if item (any version) is already in the
@@ -232,6 +228,7 @@ def process_install(manifestitem, cataloglist, installinfo,
         '* Processing manifest item %s for install', manifestitemname)
     (manifestitemname_withoutversion, includedversion) = (
         catalogs.split_name_and_version(manifestitemname))
+
     # have we processed this already?
     if manifestitemname in installinfo['processed_installs']:
         display.display_debug1(
