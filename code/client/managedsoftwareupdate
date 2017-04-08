@@ -757,7 +757,7 @@ def main():
         # update check results.
         recordUpdateCheckResult(-2)
         # tell status app we're done sending status
-        munkistatus.quit()
+        munkistatus.quit_app()
         osutils.cleanUpTmpDir()
         exit(result)
     # Force a prefs refresh, in case preflight modified the prefs file.
@@ -1038,7 +1038,7 @@ def main():
         doRestart()
     else:
         # tell status app we're done sending status
-        munkistatus.quit()
+        munkistatus.quit_app()
 
     if runtype == 'checkandinstallatstartup' and not mustrestart:
         if os.path.exists(checkandinstallatstartupflag):
