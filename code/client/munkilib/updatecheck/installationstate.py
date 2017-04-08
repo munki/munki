@@ -170,7 +170,7 @@ def some_version_installed(item_pl):
         return True
 
     if item_pl.get('installer_type') == 'startosinstall':
-        '''Some version of macOS is always installed!'''
+        # Some version of macOS is always installed!
         return True
 
     if item_pl.get('installer_type') == 'profile':
@@ -252,7 +252,7 @@ def evidence_this_is_installed(item_pl):
         return True
 
     if item_pl.get('installer_type') == 'startosinstall':
-        '''Some version of macOS is always installed!'''
+        # Some version of macOS is always installed!
         return True
 
     if item_pl.get('installer_type') == 'profile':
