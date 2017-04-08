@@ -31,12 +31,17 @@ import os
 import subprocess
 import time
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+# pylint: enable=E0611
+
 
 def getconsoleuser():
     '''Uses Apple's SystemConfiguration framework to get the current
     console user'''
-    from SystemConfiguration import SCDynamicStoreCopyConsoleUser
-    cfuser = SCDynamicStoreCopyConsoleUser( None, None, None )
+    cfuser = SCDynamicStoreCopyConsoleUser(None, None, None)
     return cfuser[0]
 
 
@@ -51,8 +56,8 @@ def main():
         # is undefined, so we'll return root (the effective user)
         thisuser = "root"
 
-    if (consoleuser == thisuser) or \
-        (consoleuser == None and thisuser == "root"):
+    if (consoleuser == thisuser or
+            (consoleuser is None and thisuser == "root")):
         cmd = ["/usr/bin/open"]
         if len(sys.argv) > 1:
             cmd.extend(sys.argv[1:])
@@ -72,4 +77,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
