@@ -28,15 +28,16 @@ import shutil
 import subprocess
 import tempfile
 
-import munkicommon
-import FoundationPlist
-
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSData
 from AppKit import NSBitmapImageRep, NSPNGFileType
 # pylint: enable=E0611
+
+from . import display
+from . import FoundationPlist
+
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -109,7 +110,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
                             stderr=subprocess.STDOUT)
     output = proc.communicate()[0]
     if proc.returncode:
-        munkicommon.display_error(u'Could not get bom files from %s', pkg_path)
+        display.display_error(u'Could not get bom files from %s', pkg_path)
         return []
     bomfilepaths = output.splitlines()
     pkg_dict = {}
@@ -126,7 +127,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
                                 stderr=subprocess.STDOUT)
         output = proc.communicate()[0]
         if proc.returncode:
-            munkicommon.display_error(u'Could not lsbom %s', bomfile)
+            display.display_error(u'Could not lsbom %s', bomfile)
         # record paths to all app Info.plist files
         pkg_dict[pkgname] = [
             os.path.normpath(line)
@@ -155,11 +156,11 @@ def extractAppIconsFromFlatPkg(pkg_path):
                     if icon_path:
                         icon_paths.append(icon_path)
             else:
-                munkicommon.display_error(
+                display.display_error(
                     u'pax could not read files from %s', archive_path)
                 return []
     else:
-        munkicommon.display_error(u'Could not expand %s', pkg_path)
+        display.display_error(u'Could not expand %s', pkg_path)
     # clean up our expanded flat package; we no longer need it
     shutil.rmtree(pkgtmp)
     return icon_paths
@@ -186,8 +187,9 @@ def findInfoPlistPathsInBundlePkg(pkg_path, repo=None):
         if repo:
             pkg_contents_dir = repo.join(pkg_path, u'Contents')
             if repo.isdir(pkg_contents_dir):
-                pkgs = repo.glob(pkg_contents_dir, '*.pkg', '*/*.pkg',
-                       '*/*/*.pkg', '*.mpkg', '*/*.mpkg', '*/*/*.mpkg')
+                pkgs = repo.glob(
+                    pkg_contents_dir, '*.pkg', '*/*.pkg', '*/*/*.pkg',
+                    '*.mpkg', '*/*.mpkg', '*/*/*.mpkg')
         else:
             pkg_contents_dir = os.path.join(pkg_path, u'Contents')
             if os.path.isdir(pkg_contents_dir):
