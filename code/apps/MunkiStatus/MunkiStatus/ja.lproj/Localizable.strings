@@ -64,7 +64,7 @@
 /* managedsoftwareupdate message */
 "Software installed or removed requires a restart." = "再起動を必要とするソフトウエアをインストールまたは削除しました";
 
-/* Restart Required alert detail */
+/* No comment provided by engineer. */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "再起動を必要とするソフトウエアをインストールまたは削除しました。現在使用中のドキュメントの保存ができます。";
 
 /* managedsoftwareupdate message */
