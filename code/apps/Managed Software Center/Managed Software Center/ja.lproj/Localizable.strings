@@ -1,8 +1,8 @@
 ﻿/* Multiple Updates message */
-"%s pending updates" = "%s個のアップデートを保留しています";
+"%@ pending updates" = "アップデートを%@個保留しています";
 
 /* One Update message */
-"1 pending update" = "1つのアップデートを保留しています";
+"1 pending update" = "アップデートを1つ保留しています";
 
 /* Logout Required detail */
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデートの前にログアウトする必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
@@ -21,6 +21,9 @@
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデート後に再起動する必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "システムコンフィギュレーションの問題が、Managed Software Centerの正常なオペレーションを妨げています。報告された問題は:";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "その他保留中のアップデート";
@@ -108,6 +111,12 @@
 
 /* Sidebar Due label */
 "Due:" = "アップデート期限:";
+
+/* FeaturedLabel */
+"Featured" = "おすすめ";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "おすすめのアイテム";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "仕上げ中…";
@@ -215,7 +224,7 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "%sまでに、一つまたそれ以上のアイテムをインストールしなければいけません";
+"One or more items must be installed by %@" = "%@までに、1つまたそれ以上のアイテムのインストールが必要です";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "一つまたそれ以上の必須アップデートが期日までに行われていないため、強制的にログアウトをします";
@@ -309,6 +318,9 @@
 
 /* Sidebar Status label */
 "Status:" = "ステータス:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "システムコンフィギュレーションに問題があります";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "ソフトウェアのインストールが完了しました";
