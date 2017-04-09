@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Vent et øyeblikk da det kan oppstå en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Flere ventende oppdateringer";
 
@@ -108,6 +111,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Forfall:";
+
+/* FeaturedLabel */
+"Featured" = "Featured";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Featured items";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Avslutter...";
@@ -310,6 +319,9 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "System configuration problem";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installasjon av programvaren er fullført.";
 
@@ -417,9 +429,6 @@
 
 /* No Installed Software primary text */
 "You have no selected software." = "Du har ikke valgt noe program.";
-
-/* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:\n\n%s";
 
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:\n\n%s";
