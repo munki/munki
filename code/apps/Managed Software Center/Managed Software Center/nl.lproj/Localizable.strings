@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Het is nodig te herstarten na het bijwerken. Nadat het login window verschijnt kan het een ogenblik duren voordat bijwerken begint. Wilt U nu uitloggen en bijwerken?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Een probleem met de systeemconfiguratie verhindert het correct functioneren van Managed Software Center. Het probleem is: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Additionele Wachtende Updates";
 
@@ -315,6 +318,9 @@
 
 /* Sidebar Status label */
 "Status:" = "Status:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "Probleem met de systeemconfiguratie";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "De software is succesvol geïnstalleerd.";
