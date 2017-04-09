@@ -1,5 +1,5 @@
 ﻿/* Multiple Updates message */
-"%@ pending updates" = "アップデートを%@個保留しています";
+"%s pending updates" = "アップデートを%s個保留しています";
 
 /* One Update message */
 "1 pending update" = "アップデートを1つ保留しています";
@@ -224,7 +224,7 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %@" = "%@までに、1つまたそれ以上のアイテムのインストールが必要です";
+"One or more items must be installed by %s" = "%sまでに、1つまたそれ以上のアイテムのインストールが必要です";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "一つまたそれ以上の必須アップデートが期日までに行われていないため、強制的にログアウトをします";
