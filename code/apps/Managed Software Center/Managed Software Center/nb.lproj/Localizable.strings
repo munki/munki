@@ -23,7 +23,7 @@
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Vent et øyeblikk da det kan oppstå en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
 
 /* System configuration problem alert detail */
-"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Et systemkonfigurasjonsproblem hindrer Managed Software Center fra å virker som det skal. Det rapporterte problemet er: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Flere ventende oppdateringer";
@@ -113,10 +113,10 @@
 "Due:" = "Forfall:";
 
 /* FeaturedLabel */
-"Featured" = "Featured";
+"Featured" = "Valgt";
 
 /* FeaturedItemsHeaderText */
-"Featured items" = "Featured items";
+"Featured items" = "Valgte elementer";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Avslutter...";
@@ -320,7 +320,7 @@
 "Status:" = "Status:";
 
 /* System configuration problem alert title */
-"System configuration problem" = "System configuration problem";
+"System configuration problem" = "Problem med systemkonfigurasjon";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installasjon av programvaren er fullført.";
