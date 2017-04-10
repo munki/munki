@@ -310,7 +310,7 @@ def make_client_keychain(cert_info=None):
         try:
             output = security('default-keychain')
             if output:
-                display.display_debug2(output)
+                display.display_debug2('Default keychain is %s', output)
             # One is defined, remember the path
             default_keychain = [
                 x.strip().strip('"')
@@ -323,7 +323,9 @@ def make_client_keychain(cert_info=None):
             output = security(
                 'default-keychain', '-s', abs_keychain_path)
             if output:
-                display.display_debug2(output)
+                display.display_debug2(
+                    'Attempting to set default keychain to %s resulted in: %s',
+                    abs_keychain_path, output)
         except SecurityError, err:
             display.display_error(
                 'Could not set default keychain to %s failed: %s'
@@ -338,7 +340,8 @@ def make_client_keychain(cert_info=None):
                     'set-identity-preference',
                     '-s', url, '-Z', id_hash, abs_keychain_path)
                 if output:
-                    display.display_debug2(output)
+                    display.display_debug2(
+                        'security set-identity-preference output: ' + output)
             except SecurityError, err:
                 display.display_error(
                     'Setting identity preference for %s failed: %s'
@@ -348,7 +351,9 @@ def make_client_keychain(cert_info=None):
             output = security(
                 'default-keychain', '-s', default_keychain)
             if output:
-                display.display_debug2(output)
+                display.display_debug2(
+                    'Attempting to set default keychain to %s resulted in: %s',
+                    default_keychain, output)
 
     # we're done, clean up.
     if added_keychain:
@@ -451,10 +456,7 @@ def client_certs_exist():
     client_cert_path = cert_info['client_cert_path']
     # we must have a client cert; we don't at this stage need
     # to check for a key
-    if client_cert_path and os.path.exists(client_cert_path):
-        return True
-    else:
-        return False
+    return client_cert_path and os.path.exists(client_cert_path)
 
 
 def client_certs_newer_than_keychain():
