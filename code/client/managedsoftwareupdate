@@ -556,8 +556,8 @@ def main():
     p.set_usage('Usage: %prog [options]')
     p.add_option('--auto', '-a', action='store_true',
                  help='Used by launchd LaunchAgent for scheduled runs. '
-                 'No user feedback or intervention. All other options '
-                 'ignored.')
+                 'No user feedback or intervention. Not tested or supported '
+                 'with other options.')
     p.add_option('--logoutinstall', '-l', action='store_true',
                  help='Used by launchd LaunchAgent when running at the '
                  'loginwindow.')
