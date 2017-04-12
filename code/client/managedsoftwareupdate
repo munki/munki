@@ -456,7 +456,7 @@ def sendDockUpdateNotification():
     '''Sends an update notification via NSDistributedNotificationCenter
     MSU.app's docktileplugin registers to receive these events.'''
     userInfo = {'pid': os.getpid()}
-    sendDistribitedNotification(
+    sendDistributedNotification(
         'com.googlecode.munki.managedsoftwareupdate.dock.updateschanged',
         userInfo)
 
@@ -464,7 +464,7 @@ def sendDockUpdateNotification():
 def sendStartNotification():
     '''Sends a start notification via NSDistributedNotificationCenter'''
     userInfo = {'pid': os.getpid()}
-    sendDistribitedNotification(
+    sendDistributedNotification(
         'com.googlecode.munki.managedsoftwareupdate.started',
         userInfo)
 
