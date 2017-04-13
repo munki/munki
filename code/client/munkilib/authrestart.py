@@ -103,6 +103,15 @@ def get_auth_restart_key():
         return ''
 
 
+def can_attempt_auth_restart():
+    '''Returns a boolean to indicate if all the needed conditions are present
+    for us to attempt an authrestart'''
+    os_version_tuple = osutils.getOsVersion(as_tuple=True)
+    return (os_version_tuple >= (10, 8) and
+            prefs.pref('PerformAuthRestarts') and filevault_is_active() and
+            supports_auth_restart() and get_auth_restart_key() != '')
+
+
 def perform_auth_restart():
     """When called this will perform an authorized restart. Before trying
     to perform an authorized restart it checks to see if the machine supports
@@ -138,7 +147,7 @@ def perform_auth_restart():
 
 
 def do_authorized_or_normal_restart():
-    '''Do an authrestart is allowed/possible, else do a normal restart.'''
+    '''Do an authrestart if allowed/possible, else do a normal restart.'''
     display.display_info('Restarting now.')
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
     if (prefs.pref('PerformAuthRestarts')

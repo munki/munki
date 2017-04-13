@@ -110,24 +110,22 @@ class StartOSInstallRunner(object):
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
                 "%s", err)
-        # remove the diskimage to free up more space for the actual install
         if pkgutils.hasValidDiskImageExt(self.installer):
+            # remove the diskimage to free up more space for the actual install
             try:
                 os.unlink(self.installer)
             except (IOError, OSError):
                 pass
-        # set a preference to tell the osinstaller process to exit instead
-        # of restart
-        # this is the equivalent of:
-        # `defaults write /Library/Preferences/.GlobalPreferences
-        #                 IAQuitInsteadOfReboot -bool YES`
-        CFPreferencesSetValue(
-            'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
-            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        if authrestart.can_attempt_auth_restart():
+            # set a secret preference to tell the osinstaller process to exit
+            # instead of restart
+            # this is the equivalent of:
+            # `defaults write /Library/Preferences/.GlobalPreferences
+            #                 IAQuitInsteadOfReboot -bool YES`
+            CFPreferencesSetValue(
+                'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         # now tell startosinstall it's OK to proceed
-        # can't use os.kill now that we wrap the call of startosinstall
-        #os.kill(self.startosinstall_pid, signal.SIGUSR1)
-        # so just target processes named 'startosinstall'
         subprocess.call(['/usr/bin/killall', '-SIGUSR1', 'startosinstall'])
 
     def get_app_path(self, itempath):
@@ -317,7 +315,7 @@ class StartOSInstallRunner(object):
             if retcode == 255:
                 munkilog.log('startosinstall quit instead of rebooted; we will '
                              'do restart.')
-                # clear our special InstallAssistant preference
+                # clear our special secret InstallAssistant preference
                 CFPreferencesSetValue(
                     'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
                     kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
