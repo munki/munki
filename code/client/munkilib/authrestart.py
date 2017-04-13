@@ -31,11 +31,8 @@ from . import prefs
 from . import FoundationPlist
 
 
-def supports_auth_restart():
-    """Check if FileVault is enabled then checks
-    if an Authorized Restart is supported, returns True
-    or False accordingly.
-    """
+def filevault_is_active():
+    """Check if FileVault is enabled; returns True or False accordingly."""
     display.display_debug1('Checking if FileVault is enabled...')
     active_cmd = ['/usr/bin/fdesetup', 'isactive']
     try:
@@ -50,6 +47,15 @@ def supports_auth_restart():
         else:
             display.display_warning(exc.output)
         return False
+    if 'true' in is_active:
+        return True
+    return False
+
+
+def supports_auth_restart():
+    """Checks if an Authorized Restart is supported; returns True
+    or False accordingly.
+    """
     display.display_debug1(
         'Checking if FileVault can perform an AuthRestart...')
     support_cmd = ['/usr/bin/fdesetup', 'supportsauthrestart']
@@ -61,15 +67,13 @@ def supports_auth_restart():
             display.display_warning(exc.output)
         else:
             display.display_warning(
-                'Encountered problem determining AuthRestart Status...')
+                'Encountered problem determining AuthRestart status...')
         return False
-    if 'true' in is_active and 'true' in is_supported:
-        display.display_debug1(
-            'FileVault is on and supports an AuthRestart...')
+    if 'true' in is_supported:
+        display.display_debug1('FileVault supports AuthRestart...')
         return True
     else:
-        display.display_warning(
-            'FileVault is disabled or does not support an AuthRestart...')
+        display.display_warning('FileVault AuthRestart is not supported...')
         return False
 
 
@@ -131,6 +135,29 @@ def perform_auth_restart():
         return False
     else:
         return True
+
+
+def do_authorized_or_normal_restart():
+    '''Do an authrestart is allowed/possible, else do a normal restart.'''
+    display.display_info('Restarting now.')
+    os_version_tuple = osutils.getOsVersion(as_tuple=True)
+    if (prefs.pref('PerformAuthRestarts')
+            and prefs.pref('RecoveryKeyFile')
+            and os_version_tuple >= (10, 8)):
+        if filevault_is_active():
+            display.display_debug1('Configured to perform AuthRestarts...')
+            # try to perform an auth restart
+            if not perform_auth_restart():
+                # if we got to here then the auth restart failed
+                # notify that it did then perform a normal restart
+                display.display_warning(
+                    'Authorized Restart failed. Performing normal restart...')
+            else:
+                # we triggered an authrestart
+                return
+    # fall back to normal restart
+    display.display_debug1('Performing a regular restart...')
+    dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
 
 
 if __name__ == '__main__':
