@@ -332,23 +332,7 @@ def doRestart():
     if not consoleuser or consoleuser == u'loginwindow':
         # no-one is logged in or we're at the loginwindow
         time.sleep(5)
-        #check to see if we should perform an AuthRestart
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if (prefs.pref('PerformAuthRestarts')
-                and prefs.pref('RecoveryKeyFile')
-                and os_version_tuple >= (10, 8)):
-            display.display_debug1('Configured to perform AuthRestarts...')
-            # try to perform an auth restart
-            if not authrestart.perform_auth_restart():
-                # if we got to here then the auth restart failed
-                # notify that it did then perform a normal restart
-                display.display_warning(
-                    'Authorized Restart Failed. Performing normal restart...')
-            else:
-                # we should be performing the auth restart now give it time to
-                # complete
-                time.sleep(10)
-        dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
+        authrestart.do_authorized_or_normal_restart()
     else:
         if display.munkistatusoutput:
             # someone is logged in and we're using Managed Software Center.
