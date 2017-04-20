@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.googlecode.munki.managedsoftwareupdated</string>
+	<string>com.googlecode.munki.authrestartd</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/managedsoftwareupdate</string>
+		<string>/usr/local/munki/authrestartd</string>
 	</array>
 	<key>Sockets</key>
 	<dict>
-		<key>managedsoftwareupdated</key>
+		<key>authrestartd</key>
 		<dict>
 			<key>SockPathName</key>
-			<string>/var/run/managedsoftwareupdated</string>
+			<string>/var/run/authrestartd</string>
 			<key>SockPathMode</key>
 			<integer>438</integer>
 		</dict>

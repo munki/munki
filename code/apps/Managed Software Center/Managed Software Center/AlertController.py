@@ -7,8 +7,8 @@
 #
 
 import os
-#import sys
 
+import authrestart
 import munki
 import msclog
 import MunkiItems
@@ -139,22 +139,33 @@ class AlertController(NSObject):
         if self.alertedToMultipleUsers():
             return
         elif MunkiItems.updatesRequireRestart():
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                NSLocalizedString(u"Restart Required",
-                                  u"Restart Required title"),
-                NSLocalizedString(u"Log out and update",
-                                  u"Log out and Update button text"),
-                NSLocalizedString(u"Cancel",
-                                  u"Cancel button title/short action text"),
-                nil,
-                u"%@", NSLocalizedString(
-                    u"A restart is required after updating. Please be patient "
-                    "as there may be a short delay at the login window. Log "
-                    "out and update now?", u"Restart Required detail")
-                )
-            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                self.window, self,
-                self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
+            username = NSUserName()
+            if (authrestart.verify_user(username) and
+                not authrestart.verify_recovery_key_present()):
+                # FV is on and user is in list of FV users, so they can 
+                # authrestart, and we do not have a stored FV recovery
+                # key/password. So we should prompt the user for a password
+                # we can use for fdesetup authrestart
+                self.window.windowController(
+                    ).passwordSheetController.promptForPasswordForAuthRestart(
+                        self)
+            else:
+                alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                    NSLocalizedString(u"Restart Required",
+                                      u"Restart Required title"),
+                    NSLocalizedString(u"Log out and update",
+                                      u"Log out and Update button text"),
+                    NSLocalizedString(u"Cancel",
+                                      u"Cancel button title/short action text"),
+                    nil,
+                    u"%@", NSLocalizedString(
+                        u"A restart is required after updating. Please be patient "
+                        "as there may be a short delay at the login window. Log "
+                        "out and update now?", u"Restart Required detail")
+                    )
+                alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                    self.window, self,
+                    self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
         elif MunkiItems.updatesRequireLogout() or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Required", u"Logout Required title"),
@@ -350,7 +361,8 @@ class AlertController(NSObject):
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 item['name'],
                 NSLocalizedString(u"Continue", u"Continue button text"),
-                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
+                NSLocalizedString(
+                    u"Cancel", u"Cancel button title/short action text"),
                 nil,
                 u"")
             if on_battery_power:
