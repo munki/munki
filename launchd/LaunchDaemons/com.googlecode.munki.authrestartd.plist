@@ -12,10 +12,10 @@
 	<dict>
 		<key>authrestartd</key>
 		<dict>
-			<key>SockPathName</key>
-			<string>/var/run/authrestartd</string>
 			<key>SockPathMode</key>
 			<integer>438</integer>
+			<key>SockPathName</key>
+			<string>/var/run/authrestartd</string>
 		</dict>
 	</dict>
 </dict>
