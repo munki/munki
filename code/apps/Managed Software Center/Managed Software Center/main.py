@@ -15,6 +15,7 @@ from PyObjCTools import AppHelper
 # import modules containing classes required to start application and load MainMenu.nib
 import MSCAppDelegate
 import MSCMainWindowController
+import MSCPasswordSheetController
 import MSCStatusController
 import MSCLogWindowController
 import MSCToolbar

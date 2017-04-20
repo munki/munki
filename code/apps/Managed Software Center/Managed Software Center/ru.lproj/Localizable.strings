@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Дополнительные отложенные обновления";
 
@@ -108,6 +111,12 @@
 
 /* Sidebar Due label */
 "Due:" = "До:";
+
+/* FeaturedLabel */
+"Featured" = "Featured";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Featured items";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Завершение...";
@@ -309,6 +318,9 @@
 
 /* Sidebar Status label */
 "Status:" = "Статус:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "System configuration problem";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Программное обеспечение было успешно установлено.";

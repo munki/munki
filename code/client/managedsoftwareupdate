@@ -62,7 +62,6 @@ else:
     from munkilib import info
     from munkilib import installer
     from munkilib import installinfo
-    from munkilib import launch
     from munkilib import munkilog
     from munkilib import munkistatus
     from munkilib import osinstaller
@@ -73,6 +72,8 @@ else:
     from munkilib import updatecheck
     from munkilib import utils
     from munkilib import FoundationPlist
+
+    import munkilib.authrestart.client as authrestartd
 
 
 def signal_handler(signum, dummy_frame):
@@ -333,7 +334,10 @@ def doRestart():
     if not consoleuser or consoleuser == u'loginwindow':
         # no-one is logged in or we're at the loginwindow
         time.sleep(5)
-        authrestart.do_authorized_or_normal_restart()
+        # try to use authrestartd to do an auth restart; if that fails
+        # do it directly
+        if not authrestartd.restart():
+            authrestart.do_authorized_or_normal_restart()
     else:
         if display.munkistatusoutput:
             # someone is logged in and we're using Managed Software Center.
@@ -531,11 +535,6 @@ def warn_if_server_is_default(server):
 
 def main():
     """Main"""
-    if launch.get_socket_fd():
-        munkilog.log('Launched via socket')
-        time.sleep(10)
-        sys.exit()
-
     # install handler for SIGTERM
     signal.signal(signal.SIGTERM, signal_handler)
 
