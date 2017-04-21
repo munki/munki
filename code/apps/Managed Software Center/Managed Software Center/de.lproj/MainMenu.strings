@@ -82,6 +82,9 @@
 /* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
 "376.title" = "Navigation";
 
+/* Class = "NSTextFieldCell"; title = "<password reason>"; ObjectID = "43d-or-eol"; */
+"43d-or-eol.title" = "<password reason>";
+
 /* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
 "56.title" = "Geführte Softwareaktualisierung";
 
@@ -90,6 +93,9 @@
 
 /* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
 "58.title" = "Über Geführte Softwareaktualisierung";
+
+/* Class = "NSTextFieldCell"; title = "<alert title>"; ObjectID = "8bJ-MB-k6c"; */
+"8bJ-MB-k6c.title" = "<alert title>";
 
 /* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
 "9S1-fB-bKZ.title" = "Kategorien";
@@ -106,11 +112,23 @@
 /* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
 "CEb-sx-e3H.paletteLabel" = "Navigation";
 
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "Ef8-fO-Dm6"; */
+"Ef8-fO-Dm6.title" = "Password:";
+
 /* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
 "G2X-M7-NVB.label" = "Kategorien";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
 "G2X-M7-NVB.paletteLabel" = "Kategorien";
+
+/* Class = "NSTextFieldCell"; title = "<alert detail>"; ObjectID = "H56-iu-nxN"; */
+"H56-iu-nxN.title" = "<alert detail>";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "P8o-UC-3SR"; */
+"P8o-UC-3SR.title" = "Cancel";
+
+/* Class = "NSButtonCell"; title = "Confirm action"; ObjectID = "Pfj-dh-wrt"; */
+"Pfj-dh-wrt.title" = "Confirm action";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Rl8-0j-Dpu"; */
 "Rl8-0j-Dpu.title" = "Text Cell";

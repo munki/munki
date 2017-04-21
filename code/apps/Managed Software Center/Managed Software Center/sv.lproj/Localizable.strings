@@ -17,7 +17,10 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En automatisk utloggning kommer att ske om mindre än en minut.\nAlla väntande uppdateringar kommer att installereras. Ej sparat arbete kommer att förloras!";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Avinstallationen misslyckades. Ytterligare försök att avinstallera kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
+
+/* Restart Required detail, shorter */
+"A restart is required after updating. Log out and update now?" = "En omstart krävs efter uppdateringen. Logga ut och uppdatera nu?";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart krävs efter uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
@@ -145,11 +148,11 @@
 /* Install action text */
 "Install" = "Installera";
 
-/* Install Requested status text */
-"Install requested" = "Installation begärd";
-
 /* Install Required action text */
 "Install Required" = "Installation krävs";
+
+/* Install Requested status text */
+"Install requested" = "Installation begärd";
 
 /* Install Session Failed title */
 "Install session failed" = "Installationen misslyckades";
@@ -205,14 +208,14 @@
 /* No Updates message */
 "No pending updates" = "Inga uppdateringar väntar.";
 
+/* Item Not Found title */
+"Not Found" = "Kunde inte hittas";
+
 /* Not Currently Available display text */
 "Not currently available" = "Inte tillgänglig just nu";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Inte tillräckligt med utrymme på skivan";
-
-/* Item Not Found title */
-"Not Found" = "Kunde inte hittas";
 
 /* Not Installed status text */
 "Not installed" = "Ej installerat";
@@ -243,6 +246,9 @@
 
 /* managedsoftwareupdate message */
 "Package removal complete." = "Paketet borttaget.";
+
+/* Password label */
+"Password:" = "Password:";
 
 /* Pending Updates alert title */
 "Pending updates" = "Väntande uppdateringar";
@@ -352,6 +358,9 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Det finns inga uppdateringar för närvarande.";
 
+/* Restart Password explanation */
+"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Krävs av:";
 
@@ -385,6 +394,9 @@
 /* Update All button title */
 "Update All" = "Uppdatera alla";
 
+/* Update Required long action text */
+"Update Required" = "Uppdatering krävs";
+
 /* Update Available status text */
 "Update available" = "Uppdatering tillgänglig";
 
@@ -396,9 +408,6 @@
 
 /* Update Now button title */
 "Update now" = "Uppdatera nu";
-
-/* Update Required long action text */
-"Update Required" = "Uppdatering krävs";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Uppdateringen kommer att installeras";
@@ -441,4 +450,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
-
