@@ -1204,6 +1204,8 @@ class MSCMainWindowController(NSWindowController):
         '''Called by Navigate menu item'''
         self.load_page('updates.html')
         self._alertedUserToOutstandingUpdates = True
+        # clear all earlier update notifications
+        NSUserNotificationCenter.defaultUserNotificationCenter().removeAllDeliveredNotifications()
 
     @IBAction
     def softwareToolbarButtonClicked_(self, sender):
