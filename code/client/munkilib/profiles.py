@@ -71,7 +71,7 @@ def config_profile_info(ignore_cache=False):
                 os.unlink(output_plist + '.plist')
             except BaseException:
                 pass
-        return config_profile_info.cache
+    return config_profile_info.cache
 
 
 def info_for_installed_identifier(identifier, ignore_cache=False):
