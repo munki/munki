@@ -92,7 +92,7 @@ class FDEUtil(object):
                 self.log.info('Restart request denied')
                 raise FDEUtilError('Restart may only be triggered by root')
 
-        elif self.request['task'] == 'store_password':
+        if self.request['task'] == 'store_password':
             # store a password for later fdesetup authrestart
             self.log.info('Store password request')
             username = self.request.get('username')
@@ -110,7 +110,7 @@ class FDEUtil(object):
             self.log.info('Password stored.')
             return 'DONE'
 
-        elif self.request['task'] == 'verify_can_attempt_auth_restart':
+        if self.request['task'] == 'verify_can_attempt_auth_restart':
             # Check if we have all the required bits to attempt an auth
             # restart.
             self.log.info('Verify ready for auth restart')
@@ -122,9 +122,9 @@ class FDEUtil(object):
                 self.log.info('Not ready for auth restart attempt')
                 raise FDEUtilError('Not ready for auth restart attempt')
 
-        elif self.request['task'] == 'verify_recovery_key_present':
+        if self.request['task'] == 'verify_recovery_key_present':
             # Check if a plist containing a recovery key or password is
-            # present. Return a boolean.
+            # present.
             self.log.info('Verify recovery key request')
             if authrestart.get_auth_restart_key(quiet=True) == '':
                 self.log.info('No valid recovery key plist')
@@ -132,7 +132,7 @@ class FDEUtil(object):
             self.log.info('Valid recovery key plist found')
             return 'PRESENT'
 
-        elif self.request['task'] == 'verify_user':
+        if self.request['task'] == 'verify_user':
             # Check to see if we can perform an authrestart for this user.
             # FileVault must be active, the hardware must support authrestart,
             # and the user must be enabled for FileVault.
@@ -148,7 +148,7 @@ class FDEUtil(object):
             self.log.info('User %s ok for auth restart', username)
             return 'USER VERIFIED'
 
-        elif self.request['task'] == 'verify_filevault':
+        if self.request['task'] == 'verify_filevault':
             # check if FileVault is active
             self.log.info('Verify FileVault request')
             if not authrestart.filevault_is_active():
@@ -157,9 +157,9 @@ class FDEUtil(object):
             self.log.info('FileVault is active.')
             return 'FILEVAULT ON'
 
-        else:
-            self.log.info('Unknown task request: %s', self.request['task'])
-            raise FDEUtilError('Unknown task')
+        # the task is not one we know how to handle
+        self.log.info('Unknown task request: %s', self.request['task'])
+        raise FDEUtilError('Unknown task')
 
 
 class RunHandler(SocketServer.StreamRequestHandler):
@@ -167,7 +167,7 @@ class RunHandler(SocketServer.StreamRequestHandler):
 
     def verify_request_syntax(self, plist):
         '''Verify the basic syntax of request plist.'''
-
+        # pylint: disable=no-self-use
         # Keep a list of error messages.
         errors = list()
 
@@ -287,16 +287,15 @@ class RestartHelperDaemon(SocketServer.UnixStreamServer):
         self.socket = socket.fromfd(
             socket_fd, socket.AF_UNIX, socket.SOCK_STREAM)
         self.socket.listen(self.request_queue_size)
-        SocketServer.BaseServer.__init__(self,
-                                         self.socket.getsockname(),
-                                         RequestHandlerClass)
+        SocketServer.BaseServer.__init__(
+            self, self.socket.getsockname(), RequestHandlerClass)
         self.timed_out = False
         self.stored_password = None
+        self.log = logging.getLogger(APPNAME)
 
     def setup_logging(self):
         '''Configure logging'''
         try:
-            self.log = logging.getLogger(APPNAME)
             self.log.setLevel(logging.DEBUG)
 
             log_console = logging.StreamHandler()
@@ -326,7 +325,7 @@ class RestartHelperDaemon(SocketServer.UnixStreamServer):
         self.timed_out = True
 
 
-def main(argv):
+def main():
     '''Start our daemon, connect to socket and process requests'''
     # Make sure we're launched as root
     if os.geteuid() != 0:
@@ -382,4 +381,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    sys.exit(main())
