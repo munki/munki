@@ -248,7 +248,7 @@
 "Package removal complete." = "Paketin poisto valmis.";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "Salasana:";
 
 /* Pending Updates alert title */
 "Pending updates" = "Odottavat päivitykset";

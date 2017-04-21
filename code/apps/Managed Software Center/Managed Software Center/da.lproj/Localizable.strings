@@ -248,7 +248,7 @@
 "Package removal complete." = "Fjernelse af software er gennemført.";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "Adgangskode:";
 
 /* Pending Updates alert title */
 "Pending updates" = "Ventende opdateringer";

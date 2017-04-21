@@ -248,7 +248,7 @@
 "Package removal complete." = "Удаление пакета завершено.";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "Пароль:";
 
 /* Pending Updates alert title */
 "Pending updates" = "Отложенные обновления";
