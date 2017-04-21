@@ -620,6 +620,11 @@ class MSCMainWindowController(NSWindowController):
             NSURL.fileURLWithPath_(html_file),
             NSURLRequestReloadIgnoringLocalCacheData, 10)
         self.webView.mainFrame().loadRequest_(request)
+        if url_fragment == 'updates.html':
+            # clear all earlier update notifications
+            NSUserNotificationCenter.defaultUserNotificationCenter(
+                ).removeAllDeliveredNotifications()
+
 
     def setNoPageCache(self):
         '''We disable the back/forward page cache because
@@ -1214,8 +1219,6 @@ class MSCMainWindowController(NSWindowController):
         '''Called by Navigate menu item'''
         self.load_page('updates.html')
         self._alertedUserToOutstandingUpdates = True
-        # clear all earlier update notifications
-        NSUserNotificationCenter.defaultUserNotificationCenter().removeAllDeliveredNotifications()
 
     @IBAction
     def softwareToolbarButtonClicked_(self, sender):
