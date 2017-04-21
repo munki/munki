@@ -248,7 +248,7 @@
 "Package removal complete." = "Desinstalación del paquete completada.";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "Contraseña:";
 
 /* Pending Updates alert title */
 "Pending updates" = "Actualizaciones pendientes";

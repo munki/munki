@@ -248,7 +248,7 @@
 "Package removal complete." = "Paquet supprimé avec succès.";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "Mot de passe :";
 
 /* Pending Updates alert title */
 "Pending updates" = "Mises à jour en attente";

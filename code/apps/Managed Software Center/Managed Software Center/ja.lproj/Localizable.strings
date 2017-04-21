@@ -248,7 +248,7 @@
 "Package removal complete." = "パッケージの削除が完了しました";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "パスワード:";
 
 /* Pending Updates alert title */
 "Pending updates" = "アップデートを保留中";
