@@ -476,7 +476,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd Managed\\ Software\\ Center\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to it --utf8\n./Localize.py --from en --to ja --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8\n";
+			shellScript = "cd Managed\\ Software\\ Center\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to it --utf8\n./Localize.py --from en --to ja --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8";
 		};
 		C09CE1DA18BEA59E00B9724A /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
