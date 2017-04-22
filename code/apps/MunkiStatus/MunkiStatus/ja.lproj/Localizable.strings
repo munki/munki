@@ -41,6 +41,9 @@
 "Performing preflight tasks..." = "preflightタスクを実行中…";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Preparing to run macOS Installer...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Receipt情報を削除中です";
 
 /* No comment provided by engineer. */
@@ -71,10 +74,16 @@
 "Starting Adobe installer..." = "Adobeインストーラーを開始…";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starting macOS upgrade...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "開始…";
 
 /* No comment provided by engineer. */
 "Starting…" = "開始…";
+
+/* managedsoftwareupdate message */
+"System going down for install..." = "System going down for install...";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "ソフトウェアのインストールが完了しました";
