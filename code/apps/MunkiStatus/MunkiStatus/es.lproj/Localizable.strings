@@ -41,6 +41,9 @@
 "Performing preflight tasks..." = "Ejecutando los scripts de preinstalación...";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Preparing to run macOS Installer...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Quitando la información del recibo";
 
 /* No comment provided by engineer. */
@@ -71,10 +74,16 @@
 "Starting Adobe installer..." = "Empezando el instalador de Adobe...";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starting macOS upgrade...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "Empezando...";
 
 /* No comment provided by engineer. */
 "Starting…" = "Empezando…";
+
+/* managedsoftwareupdate message */
+"System going down for install..." = "System going down for install...";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "El software se instaló correctamente.";

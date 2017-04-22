@@ -368,7 +368,7 @@ def run(finishing_tasks=None):
                 item = installlist[0]
                 if 'installer_item' in item:
                     display.display_status_major(
-                        'Starting macOS %s install...'
+                        'Starting macOS upgrade...'
                         % item['version_to_install'])
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
