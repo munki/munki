@@ -246,7 +246,7 @@ def main():
     parser.add_option(
         '--item', '-i', action='append', type='string', dest='items',
         help='Only run for given pkginfo item name(s).')
-    parser.add_option('--plugin', '--plugin', default=pref('plugin'),
+    parser.add_option('--plugin', default=pref('plugin'),
                       help='Optional. Custom plugin to connect to repo.')
     parser.add_option('--repo_url', '--repo-url', default=pref('repo_url'),
                       help='Optional repo fileshare URL used by repo plugin.')
