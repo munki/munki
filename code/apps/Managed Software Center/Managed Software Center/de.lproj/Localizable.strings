@@ -17,7 +17,10 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Eine Abmeldung wird in weniger als einer Minute erzwungen.\nAlle anstehenden Updates werden installiert. Alle ungespeicherte Arbeit geht verloren.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Entfernen fehlgeschlagen. Entfernen wird erneut versucht.\nFalls dieses Verhalten anhält, verständigen Sie bitte ihren Systemadministrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
+
+/* Restart Required detail, shorter */
+"A restart is required after updating. Log out and update now?" = "Für das Update ist ein Neustart erforderlich. Jetzt abmelden und aktualisieren?";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für das Update ist ein Neustart erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
@@ -244,6 +247,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Entfernen des Paketes abgeschlossen.";
 
+/* Password label */
+"Password:" = "Passwort:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Anstehende updates";
 
@@ -351,6 +357,9 @@
 
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Zurzeit sind keine Softwareupdates für Ihren Computer verfügbar.";
+
+/* Restart Password explanation */
+"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Dieses Objekt wird benötigt von:";

@@ -20,7 +20,11 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
 
 /* Restart Required detail, shorter */
+<<<<<<< HEAD
 "A restart is required after updating. Log out and update now?" = "A restart is required after updating. Log out and update now?";
+=======
+"A restart is required after updating. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjaudu ulos ja päivitä nyt?";
+>>>>>>> authrestart
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
@@ -248,7 +252,7 @@
 "Package removal complete." = "Paketin poisto valmis.";
 
 /* Password label */
-"Password:" = "Password:";
+"Password:" = "Salasana:";
 
 /* Pending Updates alert title */
 "Pending updates" = "Odottavat päivitykset";

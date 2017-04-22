@@ -45,6 +45,7 @@ class MSCAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
+        NSLog("Finished launching")
         # setup client logging
         msclog.setup_logging()
         
