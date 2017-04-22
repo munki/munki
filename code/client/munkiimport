@@ -740,7 +740,7 @@ Extended Options: (makepkginfo options)
     parser.add_option('--repo_url', '--repo-url', default=pref('repo_url'),
                       help='Optional repo URL. If specified, overrides any '
                            'repo_url specified via --configure.')
-    parser.add_option('--plugin', '--plugin', default=pref('plugin'),
+    parser.add_option('--plugin', default=pref('plugin'),
                       help='Optional plugin to connect to repo. If specified, '
                            'overrides any plugin specified via --configure.')
     parser.add_option('--icon_path', '--icon-path', default='', type='string',
