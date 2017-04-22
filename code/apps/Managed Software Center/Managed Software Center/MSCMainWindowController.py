@@ -77,6 +77,7 @@ class MSCMainWindowController(NSWindowController):
     softwareMenuItem = IBOutlet()
     categoriesMenuItem = IBOutlet()
     myItemsMenuItem = IBOutlet()
+    passwordSheetController = IBOutlet()
 
     def appShouldTerminate(self):
         '''called by app delegate
@@ -151,17 +152,6 @@ class MSCMainWindowController(NSWindowController):
             # initiate the updates
             self.updateNow()
             self.loadUpdatesPage_(self)
-
-    ### no longer needed now that we are using a "real" NSToolbar ###
-    #def window_willPositionSheet_usingRect_(self, window, sheet, rect):
-    #    '''NSWindowDelegate method that allows us to modify the
-    #    position sheets appear attached to a window'''
-    #    # move the anchor point of our sheets to below our toolbar
-    #    # (or really, to the top of the web view)
-    #    webViewRect = self.webView.frame()
-    #    return NSMakeRect(webViewRect.origin.x,
-    #                      webViewRect.origin.y + webViewRect.size.height,
-    #                      webViewRect.size.width, 0)
 
     def loadInitialView(self):
         '''Called by app delegate from applicationDidFinishLaunching:'''

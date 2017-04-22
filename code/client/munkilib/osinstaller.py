@@ -27,8 +27,17 @@ import signal
 import subprocess
 import time
 
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
+from Foundation import CFPreferencesSetValue
+from Foundation import kCFPreferencesAnyUser
+from Foundation import kCFPreferencesCurrentHost
+# pylint: enable=E0611
+
 # our imports
 from . import FoundationPlist
+from . import authrestart
 from . import display
 from . import dmgutils
 from . import launchd
@@ -101,16 +110,22 @@ class StartOSInstallRunner(object):
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
                 "%s", err)
-        # remove the diskimage to free up more space for the actual install
         if pkgutils.hasValidDiskImageExt(self.installer):
+            # remove the diskimage to free up more space for the actual install
             try:
                 os.unlink(self.installer)
             except (IOError, OSError):
                 pass
-        # then tell startosinstall it's OK to proceed with restart
-        # can't use os.kill now that we wrap the call of startosinstall
-        #os.kill(self.startosinstall_pid, signal.SIGUSR1)
-        # so just target processes named 'startosinstall'
+        if authrestart.can_attempt_auth_restart():
+            # set a secret preference to tell the osinstaller process to exit
+            # instead of restart
+            # this is the equivalent of:
+            # `defaults write /Library/Preferences/.GlobalPreferences
+            #                 IAQuitInsteadOfReboot -bool YES`
+            CFPreferencesSetValue(
+                'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        # now tell startosinstall it's OK to proceed
         subprocess.call(['/usr/bin/killall', '-SIGUSR1', 'startosinstall'])
 
     def get_app_path(self, itempath):
@@ -118,7 +133,8 @@ class StartOSInstallRunner(object):
         if itempath.endswith('.app'):
             return itempath
         if pkgutils.hasValidDiskImageExt(itempath):
-            display.display_info("Mounting disk image %s" % itempath)
+            display.display_status_minor(
+                'Mounting disk image %s' % os.path.basename(itempath))
             mountpoints = dmgutils.mountdmg(itempath, random_mountpoint=False)
             if mountpoints:
                 # look in the first mountpoint for apps
@@ -259,6 +275,9 @@ class StartOSInstallRunner(object):
                                  'If you do not agree,')):
                 # annoying legalese
                 pass
+            elif msg.startswith('Helper tool creashed'):
+                # no need to print that stupid message to screen!
+                munkilog.log(msg)
             elif msg.startswith(
                     ('Signaling PID:', 'Waiting to reboot',
                      'Process signaled okay')):
@@ -271,9 +290,10 @@ class StartOSInstallRunner(object):
         # startosinstall exited
         munkistatus.percent(100)
         retcode = job.returncode()
-        if retcode:
-            if self.dmg_mountpoint:
-                dmgutils.unmountdmg(self.dmg_mountpoint)
+        if self.dmg_mountpoint:
+            dmgutils.unmountdmg(self.dmg_mountpoint)
+
+        if retcode and not (retcode == 255 and self.got_sigusr1):
             # append stderr to our startosinstall_output
             if job.stderr:
                 startosinstall_output.extend(job.stderr.read().splitlines())
@@ -288,13 +308,20 @@ class StartOSInstallRunner(object):
         if self.got_sigusr1:
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
-            munkilog.log("macOS install successfully set up.")
+            munkilog.log('macOS install successfully set up.')
             munkilog.log(
                 'Starting macOS install of %s: SUCCESSFUL' % os_version,
                 'Install.log')
+            if retcode == 255:
+                munkilog.log('startosinstall quit instead of rebooted; we will '
+                             'do restart.')
+                # clear our special secret InstallAssistant preference
+                CFPreferencesSetValue(
+                    'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
+                    kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+                # restart
+                authrestart.do_authorized_or_normal_restart()
         else:
-            if self.dmg_mountpoint:
-                dmgutils.unmountdmg(self.dmg_mountpoint)
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
                 'See /var/log/install.log for details.')

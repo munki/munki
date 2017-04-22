@@ -17,7 +17,10 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle uarkiverede oplysninger vil gå tabt.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Forsøg på fjernelse mislykkedes. Fjernelse bliver forsøgt igen.\nHvis problemet består, skal du kontakte systemadministratoren.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
+
+/* Restart Required detail, shorter */
+"A restart is required after updating. Log out and update now?" = "Computeren skal genstartes efter opdatering. Log ud og opdater nu?";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Computeren skal genstartes efter opdatering. Vent et øjeblik da der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
@@ -244,6 +247,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Fjernelse af software er gennemført.";
 
+/* Password label */
+"Password:" = "Adgangskode:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Ventende opdateringer";
 
@@ -351,6 +357,9 @@
 
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Der er ingen nye opdateringer lige nu.";
+
+/* Restart Password explanation */
+"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Dette emne kræves af:";

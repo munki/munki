@@ -17,7 +17,10 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen utlogging vil skje om mindre enn et minutt.\nAlle ventende oppdateringer vil da bli installert. Alt arbeid som ikke er lagret vil gå tapt.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Et forsøk på å fjerne feilet. Fjerning vil bli forsøkt igjen.\nHvis problemet fortsetter, kontakt din systemadministrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
+
+/* Restart Required detail, shorter */
+"A restart is required after updating. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Logg ut og oppdater nå?";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Vent et øyeblikk da det kan oppstå en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
@@ -244,6 +247,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Avinstallasjon av programvare er gjennomført.";
 
+/* Password label */
+"Password:" = "Passord:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Ventende oppdateringer";
 
@@ -351,6 +357,9 @@
 
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Det er ingen nye oppdateringer for din datamaskin på det nåværende tidspunkt.";
+
+/* Restart Password explanation */
+"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Dette objektet er krevd av:";

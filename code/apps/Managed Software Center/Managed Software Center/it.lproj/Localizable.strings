@@ -17,7 +17,10 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Un logout verrà forzato in meno di un minuto.\nTutti gli aggiornamenti in sospeso verranno installati. I documenti non salvati verranno persi.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Un tentativo di rimozione è fallito. La rimozione verrà riprovata ancora.\nSe questa situazione persiste, contattare l'amministratore di sistema.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
+
+/* Restart Required detail, shorter */
+"A restart is required after updating. Log out and update now?" = "È necessario un riavvio dopo dell'aggiornamento. Eseguire il logout e l'aggiornamento adesso?";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "È necessario un riavvio dopo dell'aggiornamento. Potrebbe esserci un leggero ritardo prima della finestra di login. Eseguire il logout e l'aggiornamento adesso?";
@@ -113,7 +116,7 @@
 "Due:" = "Da fare:";
 
 /* FeaturedLabel */
-"Featured" = "In primo piano";;
+"Featured" = "In primo piano";
 
 /* FeaturedItemsHeaderText */
 "Featured items" = "Elementi in primo piano";
@@ -244,6 +247,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Rimozione pacchetto riuscita.";
 
+/* Password label */
+"Password:" = "Password:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Aggiornamenti in sospeso";
 
@@ -351,6 +357,9 @@
 
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Al momento non ci sono nuove applicazioni per questo computer.";
+
+/* Restart Password explanation */
+"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Questo elemento è richiesto da:";
