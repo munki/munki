@@ -26,7 +26,7 @@
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
 
 /* System configuration problem alert detail */
-"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Järjestelmän määritysvirhe estää Managed Software Center -ohjelman toiminnan. Raportoitu ongelma on: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Muut odottavat päivitykset";
@@ -248,7 +248,11 @@
 "Package removal complete." = "Paketin poisto valmis.";
 
 /* Password label */
+<<<<<<< HEAD
 "Password:" = "Salasana:";
+=======
+"Password:" = "Password:";
+>>>>>>> cf90939... Updated Finnish localization courtesy miqviq
 
 /* Pending Updates alert title */
 "Pending updates" = "Odottavat päivitykset";
@@ -326,7 +330,7 @@
 "Status:" = "Tila:";
 
 /* System configuration problem alert title */
-"System configuration problem" = "System configuration problem";
+"System configuration problem" = "Järjestelmän määritysvirhe";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Ohjelmiston asennus onnistui.";
