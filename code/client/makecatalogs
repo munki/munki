@@ -324,7 +324,7 @@ def main():
                       help='Optional repo URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
-    parser.add_option('--plugin', '--plugin',
+    parser.add_option('--plugin',
                       help='Specify a custom plugin to connect to repo.')
     parser.set_defaults(force=False)
     options, arguments = parser.parse_args()
