@@ -335,7 +335,6 @@ class MSCMainWindowController(NSWindowController):
         '''Our window was deactivated, make sure controls enabled as needed'''
         self.enableOrDisableToolbarButtons_(NO)
 
-
     def configureFullScreenMenuItem(self):
         '''check to see if NSWindow's toggleFullScreen: selector is implemented.
         if so, unhide the menu items for going full screen'''
@@ -614,7 +613,6 @@ class MSCMainWindowController(NSWindowController):
             # clear all earlier update notifications
             NSUserNotificationCenter.defaultUserNotificationCenter(
                 ).removeAllDeliveredNotifications()
-
 
     def setNoPageCache(self):
         '''We disable the back/forward page cache because
