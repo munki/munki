@@ -127,7 +127,7 @@ def alert_user_of_forced_logout(info_dict=None):
     dnc = NSDistributedNotificationCenter.defaultCenter()
     dnc.postNotificationName_object_userInfo_options_(
         'com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn',
-        None, info,
+        None, info_dict,
         NSNotificationDeliverImmediately + NSNotificationPostToAllSessions)
 
     # make sure flag is in place to cause munki to install at logout
