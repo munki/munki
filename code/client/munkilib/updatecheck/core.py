@@ -242,7 +242,8 @@ def check(client_id='', localmanifestpath=None):
                                      if item in available_optional_installs]
                 for item in selfserveinstalls:
                     dummy_result = analyze.process_install(
-                        item, cataloglist, installinfo)
+                        item, cataloglist, installinfo,
+                        is_optional_install=True)
 
             # we don't need to filter uninstalls
             selfserveuninstalls = manifestutils.get_manifest_value_for_key(

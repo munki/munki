@@ -213,7 +213,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
 
 
 def process_install(manifestitem, cataloglist, installinfo,
-                    is_managed_update=False):
+                    is_managed_update=False,
+                    is_optional_install=False):
     """Processes a manifest item for install. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Installation detail is added to
@@ -408,6 +409,12 @@ def process_install(manifestitem, cataloglist, installinfo,
                              'PayloadIdentifier',
                              'icon_hash',
                              'OnDemand']
+
+            if (is_optional_install and
+                    not installationstate.some_version_installed(item_pl)):
+                # For optional installs where no version is installed yet
+                # we do not enforce force_install_after_date
+                optional_keys.remove('force_install_after_date')
 
             for key in optional_keys:
                 if key in item_pl:
