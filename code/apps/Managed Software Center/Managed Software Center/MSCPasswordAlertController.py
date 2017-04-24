@@ -35,6 +35,7 @@ class MSCPasswordAlertController(NSObject):
 
     def promptForPasswordForAuthRestart(self):
         '''Set up and display our alert that prompts for password'''
+        # Set up all the fields and buttons with localized text
         alert = NSAlert.alloc().init()
         alert.addButtonWithTitle_(
             NSLocalizedString(u"Allow", u"Allow button text"))
@@ -50,7 +51,16 @@ class MSCPasswordAlertController(NSObject):
         alert.setAccessoryView_(self.passwordView)
         self.passwordLabel.setStringValue_(NSLocalizedString(
             u"Password:",u"Password label"))
-        self.passwordField.setStringValue_("")
+        self.passwordField.setStringValue_(u"")
+        # resize label to fit the text
+        self.passwordLabel.sizeToFit()
+        # resize the password field to use the rest of the available space
+        viewWidth = self.passwordView.frame().size.width
+        labelWidth = self.passwordLabel.frame().size.width
+        fieldFrame = self.passwordField.frame()
+        fieldFrame.origin.x = labelWidth + 8
+        fieldFrame.size.width = viewWidth - labelWidth - 8
+        self.passwordField.setFrame_(fieldFrame)
         # add esc as a key equivilent for the Deny button
         alert.buttons().objectAtIndex_(1).setKeyEquivalent_(chr(27))
         # change the Allow button to call our password validation method
@@ -59,9 +69,10 @@ class MSCPasswordAlertController(NSObject):
         allowButton.setAction_(self.verifyPassword_)
         # make sure our password field is ready to accept input
         alert.window().setInitialFirstResponder_(self.passwordField)
+        # we can finally run the alert!
         result = alert.runModal()
         if result == NSAlertFirstButtonReturn:
-            # they clicked "Allow"
+            # they clicked "Allow". We handled it in the verifyPassword method
             msclog.log("user", "stored password for auth restart")
         if result == NSAlertSecondButtonReturn:
             # they clicked "Deny"
