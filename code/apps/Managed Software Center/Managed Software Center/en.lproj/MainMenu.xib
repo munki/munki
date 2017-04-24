@@ -537,7 +537,7 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <secureTextField wantsLayer="YES" verticalHuggingPriority="750" id="RBe-5Z-jso">
-                    <rect key="frame" x="104" y="0.0" width="213" height="22"/>
+                    <rect key="frame" x="75" y="0.0" width="242" height="22"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                     <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="675-6Y-zrc">
                         <font key="font" metaFont="system"/>
@@ -549,9 +549,9 @@
                     </secureTextFieldCell>
                 </secureTextField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="X5P-3t-HRa">
-                    <rect key="frame" x="1" y="3" width="97" height="17"/>
+                    <rect key="frame" x="1" y="3" width="76" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="Ef8-fO-Dm6">
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Password:" id="Ef8-fO-Dm6">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
