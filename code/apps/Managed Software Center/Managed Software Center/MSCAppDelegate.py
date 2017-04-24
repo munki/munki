@@ -38,6 +38,7 @@ class MSCAppDelegate(NSObject):
 
     mainWindowController = IBOutlet()
     statusController = IBOutlet()
+    passwordAlertController = IBOutlet()
 
     def applicationShouldTerminate_(self, sender):
         '''Called if user selects 'Quit' from menu'''
