@@ -23,7 +23,6 @@ import munki
 import mschtml
 import msclib
 import msclog
-#import FoundationPlist
 import MSCBadgedTemplateImage
 import MunkiItems
 
@@ -77,7 +76,6 @@ class MSCMainWindowController(NSWindowController):
     softwareMenuItem = IBOutlet()
     categoriesMenuItem = IBOutlet()
     myItemsMenuItem = IBOutlet()
-    passwordSheetController = IBOutlet()
 
     def appShouldTerminate(self):
         '''called by app delegate

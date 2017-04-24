@@ -395,6 +395,7 @@
         <customObject id="373" userLabel="MSCAppDelegate" customClass="MSCAppDelegate">
             <connections>
                 <outlet property="mainWindowController" destination="KMl-S0-0FF" id="m7n-3a-HoQ"/>
+                <outlet property="passwordAlertController" destination="7j7-vi-FnZ" id="peP-bR-3XF"/>
                 <outlet property="statusController" destination="GhX-6Z-STv" id="3ln-OI-LRD"/>
             </connections>
         </customObject>
@@ -414,7 +415,6 @@
                 <outlet property="myItemsToolbarButton" destination="eek-hQ-v8t" id="HdQ-Tf-9h7"/>
                 <outlet property="navigateBackBtn" destination="5fL-Tq-Ajk" id="1A3-2b-WqF"/>
                 <outlet property="navigateForwardBtn" destination="3tK-Kg-Idc" id="mLk-P1-ngS"/>
-                <outlet property="passwordSheetController" destination="OQM-Ir-ac8" id="TDk-DK-YxZ"/>
                 <outlet property="progressSpinner" destination="mXP-yD-2El" id="i8K-at-fcb"/>
                 <outlet property="searchField" destination="gLI-O8-siB" id="APe-GG-ZHl"/>
                 <outlet property="softwareMenuItem" destination="VYO-og-DRc" id="K69-dp-kBp"/>
@@ -426,24 +426,19 @@
                 <outlet property="windowMenuSeperatorItem" destination="92" id="eCt-83-MtH"/>
             </connections>
         </customObject>
-        <customObject id="OQM-Ir-ac8" customClass="MSCPasswordSheetController">
-            <connections>
-                <outlet property="cancelButton" destination="fiW-WQ-vhg" id="lXx-KI-31L"/>
-                <outlet property="okButton" destination="RQV-eS-e7D" id="34I-Y3-mVH"/>
-                <outlet property="passwordSheet" destination="nid-FX-atr" id="hw6-6p-SMK"/>
-                <outlet property="sheetDetailLabel" destination="EZ7-Gg-XAW" id="ooS-0d-eMF"/>
-                <outlet property="sheetPasswordDetailLabel" destination="crz-uu-DnU" id="Ejf-js-gyd"/>
-                <outlet property="sheetPasswordField" destination="RBe-5Z-jso" id="aqr-fi-QJE"/>
-                <outlet property="sheetPasswordLabel" destination="X5P-3t-HRa" id="aNH-gg-QUx"/>
-                <outlet property="sheetTitleLabel" destination="7J0-tP-CVL" id="Xif-BR-njS"/>
-            </connections>
-        </customObject>
         <customObject id="a6z-Lq-EqL" customClass="MSCLogWindowController">
             <connections>
                 <outlet property="logView" destination="UAy-M3-yRr" id="cvs-RK-Mg2"/>
                 <outlet property="pathControl" destination="WBU-xF-NX3" id="90X-cm-AqK"/>
                 <outlet property="searchField" destination="N3t-et-cTX" id="4hW-Ue-VWp"/>
                 <outlet property="window" destination="X5I-7f-aJs" id="2H4-ci-ApV"/>
+            </connections>
+        </customObject>
+        <customObject id="7j7-vi-FnZ" customClass="MSCPasswordAlertController">
+            <connections>
+                <outlet property="passwordField" destination="RBe-5Z-jso" id="zYq-Pt-66l"/>
+                <outlet property="passwordLabel" destination="X5P-3t-HRa" id="fH0-42-wqC"/>
+                <outlet property="passwordView" destination="ZH2-ra-J2V" id="ZPQ-um-15i"/>
             </connections>
         </customObject>
         <userDefaultsController representsSharedInstance="YES" id="602"/>
@@ -537,107 +532,37 @@
             </connections>
             <point key="canvasLocation" x="68" y="887"/>
         </window>
-        <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="nid-FX-atr" userLabel="Password sheet" customClass="NSPanel">
-            <windowStyleMask key="styleMask" titled="YES" documentModal="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="131" y="158" width="424" height="218"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
-            <view key="contentView" id="fiC-PT-Zga">
-                <rect key="frame" x="0.0" y="0.0" width="424" height="218"/>
-                <autoresizingMask key="autoresizingMask"/>
-                <subviews>
-                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="awJ-Ad-pRP">
-                        <rect key="frame" x="20" y="139" width="64" height="64"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="Managed Software Center" id="aPX-0r-HwV"/>
-                    </imageView>
-                    <button verticalHuggingPriority="750" id="RQV-eS-e7D">
-                        <rect key="frame" x="201" y="13" width="211" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Confirm action" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Pfj-dh-wrt">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent" base64-UTF8="YES">
-DQ
-</string>
-                        </buttonCell>
-                        <connections>
-                            <action selector="okClickedForPasswordSheet:" target="OQM-Ir-ac8" id="KF6-Um-2ss"/>
-                        </connections>
-                    </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="7J0-tP-CVL">
-                        <rect key="frame" x="102" y="176" width="304" height="22"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="&lt;alert title&gt;" id="8bJ-MB-k6c">
-                            <font key="font" metaFont="systemBold"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="X5P-3t-HRa">
-                        <rect key="frame" x="102" y="60" width="66" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Password:" id="Ef8-fO-Dm6">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <secureTextField wantsLayer="YES" verticalHuggingPriority="750" id="RBe-5Z-jso">
-                        <rect key="frame" x="174" y="57" width="230" height="22"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="675-6Y-zrc">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                            <allowedInputSourceLocales>
-                                <string>NSAllRomanInputSourcesLocaleIdentifier</string>
-                            </allowedInputSourceLocales>
-                        </secureTextFieldCell>
-                    </secureTextField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="crz-uu-DnU">
-                        <rect key="frame" x="102" y="85" width="304" height="42"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="&lt;password reason&gt;" id="43d-or-eol">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="EZ7-Gg-XAW">
-                        <rect key="frame" x="102" y="133" width="304" height="42"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
-                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="&lt;alert detail&gt;" id="H56-iu-nxN">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <button verticalHuggingPriority="750" id="fiW-WQ-vhg">
-                        <rect key="frame" x="81" y="13" width="120" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="P8o-UC-3SR">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent" base64-UTF8="YES">
-Gw
-</string>
-                        </buttonCell>
-                        <connections>
-                            <action selector="cancelPasswordSheet:" target="OQM-Ir-ac8" id="BrX-CU-nBW"/>
-                        </connections>
-                    </button>
-                </subviews>
-            </view>
-            <connections>
-                <outlet property="delegate" destination="OQM-Ir-ac8" id="lH4-Ae-Kz3"/>
-            </connections>
-            <point key="canvasLocation" x="35" y="-523"/>
-        </window>
+        <customView id="ZH2-ra-J2V">
+            <rect key="frame" x="0.0" y="0.0" width="317" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <secureTextField wantsLayer="YES" verticalHuggingPriority="750" id="RBe-5Z-jso">
+                    <rect key="frame" x="104" y="0.0" width="213" height="22"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                    <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="675-6Y-zrc">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <allowedInputSourceLocales>
+                            <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                        </allowedInputSourceLocales>
+                    </secureTextFieldCell>
+                </secureTextField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="X5P-3t-HRa">
+                    <rect key="frame" x="1" y="3" width="97" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="Ef8-fO-Dm6">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <point key="canvasLocation" x="-1957.5" y="-2587"/>
+        </customView>
     </objects>
     <resources>
         <image name="AllItemsTemplate" width="28" height="26"/>
-        <image name="Managed Software Center" width="512" height="512"/>
         <image name="MyStuffTemplate" width="28" height="23.5"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>

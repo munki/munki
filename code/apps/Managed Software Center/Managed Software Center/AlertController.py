@@ -12,6 +12,7 @@ import authrestart
 import munki
 import msclog
 import MunkiItems
+from MSCPasswordAlertController import MSCPasswordAlertController
 
 from objc import nil
 from AppKit import *
@@ -28,6 +29,19 @@ class AlertController(NSObject):
     def setWindow_(self, the_window):
         '''Store our parent window'''
         self.window = the_window
+
+    def handlePossibleAuthRestart(self):
+        '''Ask for and store a password for auth restart if needed/possible'''
+        username = NSUserName()
+        if (MunkiItems.updatesRequireRestart() and
+                authrestart.verify_user(username) and
+                not authrestart.verify_recovery_key_present()):
+            # FV is on and user is in list of FV users, so they can 
+            # authrestart, and we do not have a stored FV recovery
+            # key/password. So we should prompt the user for a password
+            # we can use for fdesetup authrestart
+            NSApp.delegate(
+                ).passwordAlertController.promptForPasswordForAuthRestart()
 
     def forcedLogoutWarning(self, notification_obj):
         '''Display a forced logout warning'''
@@ -105,6 +119,7 @@ class AlertController(NSObject):
         btn_pressed = self._force_warning_btns.get(returncode)
         if btn_pressed == self._force_warning_logout_btn:
             msclog.log("user", "install_with_logout")
+            self.handlePossibleAuthRestart()
             result = munki.logoutAndUpdate()
         elif btn_pressed == self._force_warning_ok_btn:
             msclog.log("user", "dismissed_forced_logout_warning")
@@ -139,33 +154,22 @@ class AlertController(NSObject):
         if self.alertedToMultipleUsers():
             return
         elif MunkiItems.updatesRequireRestart():
-            username = NSUserName()
-            if (authrestart.verify_user(username) and
-                not authrestart.verify_recovery_key_present()):
-                # FV is on and user is in list of FV users, so they can 
-                # authrestart, and we do not have a stored FV recovery
-                # key/password. So we should prompt the user for a password
-                # we can use for fdesetup authrestart
-                self.window.windowController(
-                    ).passwordSheetController.promptForPasswordForAuthRestart(
-                        self)
-            else:
-                alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
-                    NSLocalizedString(u"Restart Required",
-                                      u"Restart Required title"),
-                    NSLocalizedString(u"Log out and update",
-                                      u"Log out and Update button text"),
-                    NSLocalizedString(u"Cancel",
-                                      u"Cancel button title/short action text"),
-                    nil,
-                    u"%@", NSLocalizedString(
-                        u"A restart is required after updating. Please be patient "
-                        "as there may be a short delay at the login window. Log "
-                        "out and update now?", u"Restart Required detail")
-                    )
-                alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-                    self.window, self,
-                    self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
+                NSLocalizedString(u"Restart Required",
+                                  u"Restart Required title"),
+                NSLocalizedString(u"Log out and update",
+                                  u"Log out and Update button text"),
+                NSLocalizedString(u"Cancel",
+                                  u"Cancel button title/short action text"),
+                nil,
+                u"%@", NSLocalizedString(
+                    u"A restart is required after updating. Please be patient "
+                    "as there may be a short delay at the login window. Log "
+                    "out and update now?", u"Restart Required detail")
+                )
+            alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
+                self.window, self,
+                self.logoutAlertDidEnd_returnCode_contextInfo_, nil)
         elif MunkiItems.updatesRequireLogout() or munki.installRequiresLogout():
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(u"Logout Required", u"Logout Required title"),
@@ -204,6 +208,7 @@ class AlertController(NSObject):
                 msclog.log("user", "alerted_on_battery_power_and_cancelled")
                 return
             msclog.log("user", "install_with_logout")
+            self.handlePossibleAuthRestart()
             result = munki.logoutAndUpdate()
             if result:
                 self.installSessionErrorAlert()

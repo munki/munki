@@ -12,6 +12,7 @@
 		C01FBD311EA64CD600AE97EE /* passwdutil.py in Resources */ = {isa = PBXBuildFile; fileRef = C01FBD301EA64CD600AE97EE /* passwdutil.py */; };
 		C02C98891911B81D00425167 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C02C98871911B81D00425167 /* Localizable.strings */; };
 		C035274E18A9C582004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274D18A9C582004A5AE4 /* libpython2.6.dylib */; };
+		C042CA151EAD86DE006CC681 /* MSCPasswordAlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */; };
 		C0453A211CCEF7B60002D396 /* MSCLogWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */; };
 		C049C9951AEC77DD00251D45 /* updatesTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C049C9941AEC77DD00251D45 /* updatesTemplate.png */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
@@ -34,7 +35,6 @@
 		C0B3744718708A0300B6204E /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744518708A0300B6204E /* WebResources */; };
 		C0B9E8B219AB8E5500DB7247 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
 		C0B9E8B619AF7E9E00DB7247 /* Managed Software Center 10_6.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0B9E8B519AF7E9E00DB7247 /* Managed Software Center 10_6.icns */; };
-		C0D6D0671EA5404C0099C126 /* MSCPasswordSheetController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0D6D0661EA5404C0099C126 /* MSCPasswordSheetController.py */; };
 		C0D6D0691EA55B470099C126 /* authrestart.py in Resources */ = {isa = PBXBuildFile; fileRef = C0D6D0681EA55B470099C126 /* authrestart.py */; };
 		C0E098BC1857A3C80045DEEB /* msclib.py in Resources */ = {isa = PBXBuildFile; fileRef = C0E098BB1857A3C80045DEEB /* msclib.py */; };
 		C0EF96BA1ADDB9B2002C02FF /* MSCDockTilePlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */; };
@@ -101,6 +101,7 @@
 		C02C98901911B83000425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C02C98911911B83100425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C035274D18A9C582004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = SOURCE_ROOT; };
+		C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = MSCPasswordAlertController.py; path = "Managed Software Center/MSCPasswordAlertController.py"; sourceTree = "<group>"; };
 		C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCLogWindowController.py; sourceTree = "<group>"; };
 		C046261519FFF8C000AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C046261619FFF8CC00AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -148,7 +149,6 @@
 		C0B9E8AE19AA55DC00DB7247 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C0B9E8AF19AA55DC00DB7247 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C0B9E8B519AF7E9E00DB7247 /* Managed Software Center 10_6.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Center 10_6.icns"; sourceTree = "<group>"; };
-		C0D6D0661EA5404C0099C126 /* MSCPasswordSheetController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCPasswordSheetController.py; sourceTree = "<group>"; };
 		C0D6D0681EA55B470099C126 /* authrestart.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = authrestart.py; sourceTree = "<group>"; };
 		C0E098BB1857A3C80045DEEB /* msclib.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msclib.py; sourceTree = "<group>"; };
 		C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MSCDockTilePlugin.docktileplugin; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -190,6 +190,7 @@
 		C09004E216CDD84E00BE34CE = {
 			isa = PBXGroup;
 			children = (
+				C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */,
 				C09004F916CDD84E00BE34CE /* Managed Software Center */,
 				C0EF96B21ADDB90B002C02FF /* MSCDockTilePlugin */,
 				C09004F016CDD84E00BE34CE /* Frameworks */,
@@ -247,7 +248,6 @@
 				C0AAA21F18BC67F90012663F /* mschtml.py */,
 				C079D9C018BD435200BAD62E /* AlertController.py */,
 				C0D6D0681EA55B470099C126 /* authrestart.py */,
-				C0D6D0661EA5404C0099C126 /* MSCPasswordSheetController.py */,
 				C01FBD301EA64CD600AE97EE /* passwdutil.py */,
 				650B29A319B69FC800A5E946 /* MSCToolbar.py */,
 				C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */,
@@ -429,6 +429,7 @@
 				C049C9951AEC77DD00251D45 /* updatesTemplate.png in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C0E098BC1857A3C80045DEEB /* msclib.py in Resources */,
+				C042CA151EAD86DE006CC681 /* MSCPasswordAlertController.py in Resources */,
 				C0AAA21E18BAD8710012663F /* msclog.py in Resources */,
 				C0AAA22018BC67F90012663F /* mschtml.py in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
@@ -437,7 +438,6 @@
 				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
 				C0D6D0691EA55B470099C126 /* authrestart.py in Resources */,
 				C0453A211CCEF7B60002D396 /* MSCLogWindowController.py in Resources */,
-				C0D6D0671EA5404C0099C126 /* MSCPasswordSheetController.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSCAppDelegate.py in Resources */,
 				C0AE865A186D32AF00C87AE7 /* MSCBadgedTemplateImage.py in Resources */,
 				C0A71B76188A47C700A6EE82 /* MSCMainWindowController.py in Resources */,
