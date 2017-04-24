@@ -307,6 +307,10 @@ footer {
     padding: 0 20px
 }
 
+footer script {
+   display: none !important;
+}
+
 footer div.bottom-links {
     margin: 0 0 0 0;
     border-top: 1px solid #d3d7db;
