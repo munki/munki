@@ -283,6 +283,9 @@ class StartOSInstallRunner(object):
                      'Process signaled okay')):
                 # messages around the SIGUSR1 signalling
                 display.display_debug1('startosinstall: %s', msg)
+            elif msg.startswith('System going down for install'):
+                display.display_status_minor(
+                    'System will restart and begin upgrade of macOS.')
             else:
                 # none of the above, just display
                 display.display_status_minor(msg)
@@ -394,9 +397,7 @@ def run(finishing_tasks=None):
             if installlist:
                 item = installlist[0]
                 if 'installer_item' in item:
-                    display.display_status_major(
-                        'Starting macOS upgrade...'
-                        % item['version_to_install'])
+                    display.display_status_major('Starting macOS upgrade...')
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
                     itempath = os.path.join(cachedir, item["installer_item"])
