@@ -522,4 +522,5 @@ def more_localized_strings():
     dummy = NSLocalizedString(
         u"Preparing to run macOS Installer...", "managedsoftwareupdate message")
     dummy = NSLocalizedString(
-        u"System going down for install...", "managedsoftwareupdate message")
+        u"System will restart and begin upgrade of macOS.",
+        "managedsoftwareupdate message")
