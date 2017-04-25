@@ -23,7 +23,7 @@
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Computeren skal genstartes efter opdatering. Vent et øjeblik da der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
 /* System configuration problem alert detail */
-"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "En systemfejl forhindre Managed Software Center i at operere korrekt. Den rapporteret fejl er: ";
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "En fejl i systemkonfigurationen forhindrer Managed Software Center i at fungere korrekt. Den rapporterede fejl er: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Flere ventende opdateringer";
@@ -332,7 +332,7 @@
 "Status:" = "Status:";
 
 /* System configuration problem alert title */
-"System configuration problem" = "System configuration fejl";
+"System configuration problem" = "Problem med systemkonfigurationen";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installation af software er gennemført.";
