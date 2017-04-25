@@ -83,7 +83,7 @@
 "Starting…" = "Запуск…";
 
 /* managedsoftwareupdate message */
-"System going down for install..." = "System going down for install...";
+"System will restart and begin upgrade of macOS." = "System will restart and begin upgrade of macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Программное обеспечение было успешно установлено.";

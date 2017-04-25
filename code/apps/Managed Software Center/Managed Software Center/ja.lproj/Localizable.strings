@@ -19,9 +19,6 @@
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
 
-/* Restart Required detail, shorter */
-"A restart is required after updating. Log out and update now?" = "アップデート後に再起動する必要があります。今からログアウトしアップデートを実行しますか？";
-
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデート後に再起動する必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
 
@@ -39,6 +36,9 @@
 
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "保留中のすべてのアップデートをインストールします。保存されていない作業内容は消失します。\n今ログアウトをすれば、強制ログアウトを避ける事ができます。";
+
+/* Allow button text */
+"Allow" = "Allow";
 
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "インストールに失敗しました。再度インストールを試みます。\nインストールの失敗が続くようであれば、システム管理者に連絡してください。";
@@ -96,6 +96,9 @@
 
 /* Unavailable long action text */
 "Currently Unavailable" = "現在利用できません";
+
+/* Deny button text */
+"Deny" = "Deny";
 
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "どのファイル項目を削除するか特定中";
@@ -183,6 +186,9 @@
 
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centerは現在アップーデートサーバーと接続できません。\n後でもう一度実行してください。もしこの状況が改善されない場合は、システム管理者に連絡してください。";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
 
 /* Managed Update type */
 "Managed Update" = "必須のアップデート";
@@ -358,14 +364,14 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "このコンピューターのソフトウェアを更新する必要はありません";
 
-/* Restart Password explanation */
-"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
-
 /* Dependency List prologue text */
 "This item is required by:" = "関連アイテム:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "このアイテムは%sまでにインストールしなければいけません";
+
+/* Password explanation */
+"To allow this, enter your login password." = "To allow this, enter your login password.";
 
 /* No Items secondary text */
 "Try again later." = "後でもう一度実行してください";

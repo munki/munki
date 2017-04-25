@@ -19,9 +19,6 @@
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
 
-/* Restart Required detail, shorter */
-"A restart is required after updating. Log out and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. ¿Cerrar sesión y actualizar ahora?";
-
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. Por favor se paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar sesión y actualizar ahora?";
 
@@ -39,6 +36,9 @@
 
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Todas las actualizaciones pendientes serán instaladas. Cualquier cambio no guardado se perderá.\nPuedes evitar el cierre forzado de la sesión cerrándola ahora.";
+
+/* Allow button text */
+"Allow" = "Permitir";
 
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Una instalación ha fallado. Se volverá a intentar.\nSi esta situación continua, contacta con el administrador de sistemas.";
@@ -96,6 +96,9 @@
 
 /* Unavailable long action text */
 "Currently Unavailable" = "Actualmente no disponible";
+
+/* Deny button text */
+"Deny" = "Denegar";
 
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Determinando que archivos hay que quitar";
@@ -183,6 +186,9 @@
 
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Centro de aplicaciones no puede contactar con el servidor de actualizaciones.\nPrueba más tarde. Si esta situación continua, contacta con el administrador de sistemas.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
 
 /* Managed Update type */
 "Managed Update" = "Actualización controlada";
@@ -358,14 +364,14 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "No hay actualizaciones de software disponibles.";
 
-/* Restart Password explanation */
-"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
-
 /* Dependency List prologue text */
 "This item is required by:" = "Requerido por:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Tiene que estar instalado para el %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "To allow this, enter your login password.";
 
 /* No Items secondary text */
 "Try again later." = "Probar de nuevo más tarde.";

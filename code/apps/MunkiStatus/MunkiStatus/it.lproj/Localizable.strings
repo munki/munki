@@ -50,7 +50,7 @@
 "Restart" = "Riavvio";
 
 /* No comment provided by engineer. */
-"Restart Required" = "Restart Required";
+"Restart Required" = "Riavvio Necessario";
 
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Recupero la lista delle applicazioni per questo mac...";
@@ -83,7 +83,7 @@
 "Starting…" = "Avvio…";
 
 /* managedsoftwareupdate message */
-"System going down for install..." = "System going down for install...";
+"System will restart and begin upgrade of macOS." = "System will restart and begin upgrade of macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "L'applicazione è stata installata con successo.";

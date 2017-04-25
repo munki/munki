@@ -19,9 +19,6 @@
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
 
-/* Restart Required detail, shorter */
-"A restart is required after updating. Log out and update now?" = "En omstart krävs efter uppdateringen. Logga ut och uppdatera nu?";
-
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart krävs efter uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
 
@@ -39,6 +36,9 @@
 
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alla väntande uppdateringar kommer att installeras. Ej sparat arbete kommer att förloras!\nDu kan undgå detta genom att logga ut nu.";
+
+/* Allow button text */
+"Allow" = "Tillåt";
 
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installationen misslyckades. Ytterligare installationsförsök kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
@@ -96,6 +96,9 @@
 
 /* Unavailable long action text */
 "Currently Unavailable" = "Inte tillgänglig just nu";
+
+/* Deny button text */
+"Deny" = "Avbryt";
 
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Bestämmer vad som ska tas bort";
@@ -183,6 +186,9 @@
 
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte kontakta den uppdateringsservern just nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
 
 /* Managed Update type */
 "Managed Update" = "Hanterad uppdatering";
@@ -358,14 +364,14 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Det finns inga uppdateringar för närvarande.";
 
-/* Restart Password explanation */
-"This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this." = "This computer is protected by FileVault. A password is required to unlock the startup disk after restart. Enter your password to allow this.";
-
 /* Dependency List prologue text */
 "This item is required by:" = "Krävs av:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Måste installeras senast %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "To allow this, enter your login password.";
 
 /* No Items secondary text */
 "Try again later." = "Försök igen senare.";
