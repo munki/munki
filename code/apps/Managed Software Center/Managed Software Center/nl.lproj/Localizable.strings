@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan de update server op dit moment niet bereiken.\nProbeer later nog eens. Als deze situatie niet verandert, neem contact op met uw systeembeheerder.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wil de opstartschijf ontgrendelen na herstart zodat alle nog wachtende updates uitgevoerd kunnen worden.";
 
 /* Managed Update type */
 "Managed Update" = "Beheerde Update";
@@ -371,7 +371,7 @@
 "This item must be installed by %s" = "Dit item moet geïnstalleerd zijn voor %s";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Om dit toe te staan, vul je loginwachtwoord in.";
 
 /* No Items secondary text */
 "Try again later." = "Probeer later nog eens.";
