@@ -41,7 +41,7 @@
 "Performing preflight tasks..." = "Preflight taken afhandelen...";
 
 /* managedsoftwareupdate message */
-"Preparing to run macOS Installer..." = "Preparing to run macOS Installer...";
+"Preparing to run macOS Installer..." = "MacOS installatieprogramma voorbereiden...";
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Receipt informatie verwijderen";
@@ -74,7 +74,7 @@
 "Starting Adobe installer..." = "Adobe installer opstarten...";
 
 /* managedsoftwareupdate message */
-"Starting macOS upgrade..." = "Starting macOS upgrade...";
+"Starting macOS upgrade..." = "Beginnen met macOS upgrade...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Beginnen...";
@@ -83,7 +83,7 @@
 "Starting…" = "Beginnen…";
 
 /* managedsoftwareupdate message */
-"System will restart and begin upgrade of macOS." = "System will restart and begin upgrade of macOS.";
+"System will restart and begin upgrade of macOS." = "Systeem zal herstarten en de upgrade van macOS starten.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "De software is succesvol geïnstalleerd.";
