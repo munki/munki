@@ -119,10 +119,10 @@
 "Due:" = "До:";
 
 /* FeaturedLabel */
-"Featured" = "Featured";
+"Featured" = "Подборка";
 
 /* FeaturedItemsHeaderText */
-"Featured items" = "Featured items";
+"Featured items" = "Подборка элементов";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Завершение...";
