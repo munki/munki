@@ -23,7 +23,7 @@
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
 
 /* System configuration problem alert detail */
-"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Проблема с конфигурацией системы не позволяет правильному функционированию Центра Управления ПО. Сообщаемая проблема: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Дополнительные отложенные обновления";
@@ -38,7 +38,7 @@
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Будут установлены все отложенные обновления. Все несохраненные данные будут потеряны.\nВы можете избежать принудительного завершения работы, выполнив выход из системы.";
 
 /* Allow button text */
-"Allow" = "Allow";
+"Allow" = "Разрешить";
 
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Попытка установки не удалась. Попытка будет предпринята снова.\nЕсли эта ситуация продолжится, обратитесь к системному администратору.";
@@ -98,7 +98,7 @@
 "Currently Unavailable" = "В настоящее время Недоступно";
 
 /* Deny button text */
-"Deny" = "Deny";
+"Deny" = "Не разрешать";
 
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Определение элементов файловой системы для удаления";
@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Центр Управления ПО не может связаться с сервером обновлений в данный момент.\nПопробуйте еще раз позже. Если эта ситуация продолжится, обратитесь к системному администратору.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Центр Управления ПО хочет разблокировать загрузочный диск после перезапуска, чтобы завершить все ожидающие обновления.";
 
 /* Managed Update type */
 "Managed Update" = "Управляемое Обновление";
@@ -332,7 +332,7 @@
 "Status:" = "Статус:";
 
 /* System configuration problem alert title */
-"System configuration problem" = "System configuration problem";
+"System configuration problem" = "Проблема с конфигурацией системы";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Программное обеспечение было успешно установлено.";
@@ -371,7 +371,7 @@
 "This item must be installed by %s" = "Этот элемент должен быть установлен до %s";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Для разрешения  введите свой пароль для входа в систему.";
 
 /* No Items secondary text */
 "Try again later." = "Попробуйте еще раз позже.";
