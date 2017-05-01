@@ -17,7 +17,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "１分以内に強制的にログアウトさせられます。\n保留中のアップデートはすべてインストールされます。保存されていない作業内容は消失します。";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "削除に失敗しました。次回削除を試みます。\nそれでも削除されない場合は、システムの管理者に連絡してください。";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデート後に再起動する必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";

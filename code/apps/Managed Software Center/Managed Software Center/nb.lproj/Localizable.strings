@@ -17,7 +17,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen utlogging vil skje om mindre enn et minutt.\nAlle ventende oppdateringer vil da bli installert. Alt arbeid som ikke er lagret vil gå tapt.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Et forsøk på å fjerne feilet. Fjerning vil bli forsøkt igjen.\nHvis problemet fortsetter, kontakt din systemadministrator.";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Vent et øyeblikk da det kan oppstå en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
