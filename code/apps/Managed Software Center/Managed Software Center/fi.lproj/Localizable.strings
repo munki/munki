@@ -17,7 +17,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Uloskirjautuminen suoritetaan alle minuutin kuluttua pakotetusti.\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systemsadministrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Poistaminen epäonnistui mutta sitä yritetään uudelleen.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";

@@ -979,7 +979,7 @@ class OptionalItem(GenericItem):
             warning_text = NSLocalizedString(
                 u"A removal attempt failed. "
                 "Removal will be attempted again.\n"
-                "If this situation continues, contact your systems"
+                "If this situation continues, contact your systems "
                 "administrator.",
                 u"Removal Error message")
             start_text += ('<span class="warning">%s</span><br/><br/>'
