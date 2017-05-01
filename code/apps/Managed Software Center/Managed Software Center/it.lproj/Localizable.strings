@@ -17,7 +17,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Un logout verrà forzato in meno di un minuto.\nTutti gli aggiornamenti in sospeso verranno installati. I documenti non salvati verranno persi.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Un tentativo di rimozione è fallito. La rimozione verrà riprovata ancora.\nSe questa situazione persiste, contattare l'amministratore di sistema.";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "È necessario un riavvio dopo dell'aggiornamento. Potrebbe esserci un leggero ritardo prima della finestra di login. Eseguire il logout e l'aggiornamento adesso?";
