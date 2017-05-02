@@ -23,7 +23,7 @@
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. Por favor se paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar sesión y actualizar ahora?";
 
 /* System configuration problem alert detail */
-"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Un fallo en la configuración del sistema ha provocado que Centro de Aplicaciones no funcione de forma correcta. El fallo reportado es: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Actualizaciones adicionales pendientes";
@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Centro de aplicaciones no puede contactar con el servidor de actualizaciones.\nPrueba más tarde. Si esta situación continua, contacta con el administrador de sistemas.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Centro de Aplicaciones quiere desbloquear el disco de inicio tras el reinicio para completar todas las actualizaciones pendientes.";
 
 /* Managed Update type */
 "Managed Update" = "Actualización controlada";
@@ -332,7 +332,7 @@
 "Status:" = "Estado:";
 
 /* System configuration problem alert title */
-"System configuration problem" = "System configuration problem";
+"System configuration problem" = "Problema en la configuración del sistema";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "El software se instaló correctamente.";
@@ -371,7 +371,7 @@
 "This item must be installed by %s" = "Tiene que estar instalado para el %s";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Para permitir esto, introduzca su contraseña de usuario.";
 
 /* No Items secondary text */
 "Try again later." = "Probar de nuevo más tarde.";
