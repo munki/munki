@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Le Centre de gestion des logiciels ne peut contacter le serveur de mise à jour.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Le Centre de gestion des logiciels doit déverrouiller votre disque de démarrage au prochain redémarrage afin de terminer les mises à jour en attente.";
 
 /* Managed Update type */
 "Managed Update" = "Mise à jour gérée";
@@ -371,7 +371,7 @@
 "This item must be installed by %s" = "Cet article doit être installé avant le %s";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Pour autoriser cette opération, veuillez entrer votre mot de passe.";
 
 /* No Items secondary text */
 "Try again later." = "Essayez plus tard.";
