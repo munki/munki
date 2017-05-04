@@ -64,8 +64,7 @@ def makecatalogs(repo, options):
         # Try to read the icon file
         try:
             icondata = repo.get(icon_ref)
-            icons[os.path.basename(icon_ref)] = hashlib.sha256(
-                icondata).hexdigest()
+            icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
         except munkirepo.RepoError, err:
             errors.append('RepoError for %s: %s' % (icon_ref, unicode(err)))
             exit_code = -1
@@ -129,8 +128,8 @@ def makecatalogs(repo, options):
         if iconhashing:
             name = pkginfo.get('name')
             if pkginfo.get('icon_name'):
-                iconhash = (icons.get(pkginfo['icon_name']) or
-                            icons.get(pkginfo['icon_name'] + '.png'))
+                iconhash = (icons.get('icons/' + pkginfo['icon_name']) or
+                            icons.get('icons/' + pkginfo['icon_name'] + '.png'))
                 if not iconhash:
                     errors.append(
                         "WARNING: icon_name specified in %s but it does not "
