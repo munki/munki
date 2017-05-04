@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei saa yhteyttä palvelimeen juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center haluaa avata käynnistyslevyn lukituksen seuraavalla käynnistyskerralla jatkaakseen päivitysten asentamista.";
 
 /* Managed Update type */
 "Managed Update" = "Hallittu päivitys";
@@ -371,7 +371,7 @@
 "This item must be installed by %s" = "Asennettava ennen %s";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Salli lukituksen avaaminen syöttämällä salasana.";
 
 /* No Items secondary text */
 "Try again later." = "Yritä myöhemmin uudelleen.";
