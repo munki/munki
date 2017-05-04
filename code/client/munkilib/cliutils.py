@@ -109,7 +109,8 @@ def get_version():
 
 def path2url(path):
     '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(path))
+    return urlparse.urljoin('file:', urllib.pathname2url(
+        os.path.abspath(os.path.expanduser(path))))
 
 
 def print_utf8(text):
