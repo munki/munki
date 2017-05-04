@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import sys
+import urllib
 
 from urlparse import urlparse
 
@@ -121,7 +122,7 @@ class FileRepo(Repo):
         self.url_scheme = url_parts.scheme
         if self.url_scheme == 'file':
             # local file repo
-            self.root = url_parts.path
+            self.root = urllib.unquote(url_parts.path)
         else:
             # repo is on a fileshare that will be mounted under /Volumes
             self.root = os.path.join('/Volumes', url_parts.path.lstrip('/'))
