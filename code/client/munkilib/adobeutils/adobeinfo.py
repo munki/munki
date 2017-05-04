@@ -574,7 +574,25 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 installed_size = cataloginfo.get('installed_size', 0)
                 for hd_payload in hd_app_infos:
                     for package in hd_payload['Packages']:
-                        installed_size += package.get('ExtractSize', 0) / 1024
+                        # Generally, all app installs will include 1-3 'core'
+                        # packages and then additional language/settings/color
+                        # packages which are regional or language-specific.
+                        # If we filter this by including both unconditional installs
+                        # and those which are language/region specific, we get a rough
+                        # approximation of the total size of supplemental packages,
+                        # as their equivalents for other languages are very close
+                        # to the same size. We also get one included language package
+                        # which would be the case for any install.
+                        if 'Condition' not in package.keys() or \
+                            '[installLanguage]==en_US' in package.get('Condition', ''):
+                            installed_size += package.get('ExtractSize', 0) / 1024
+                            # We get much closer to Adobe's "HDSetup" calculated
+                            # install space requirement if we include both the DownloadSize
+                            # and ExtractSize data (DownloadSize is just the zip file size)
+                            installed_size += package.get('DownloadSize', 0) / 1024
+                # Add another 300MB for the CC app and plumbing in case they've
+                # never been installed on the system
+                installed_size += 307200
                 cataloginfo['installed_size'] = installed_size
 
                 uninstalldir = (
