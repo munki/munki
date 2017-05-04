@@ -41,7 +41,7 @@
 "Performing preflight tasks..." = "Udfører preflight-opgaver...";
 
 /* managedsoftwareupdate message */
-"Preparing to run macOS Installer..." = "Preparing to run macOS Installer...";
+"Preparing to run macOS Installer..." = "Forbereder afvikling af macOS-installeringsprogrammet...";
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
@@ -83,7 +83,7 @@
 "Starting…" = "Starter…";
 
 /* managedsoftwareupdate message */
-"System will restart and begin upgrade of macOS." = "System will restart and begin upgrade of macOS.";
+"System will restart and begin upgrade of macOS." = "Systemet vil genstarte og begynde opgradering af macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installation af software er gennemført.";
