@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte kontakta den uppdateringsservern just nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center behöver låsa upp startskivan efter omstart för att slutföra alla uppdateringar.";
 
 /* Managed Update type */
 "Managed Update" = "Hanterad uppdatering";
@@ -371,7 +371,7 @@
 "This item must be installed by %s" = "Måste installeras senast %s";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Ange ditt inloggningslösenord för att tillåta detta.";
 
 /* No Items secondary text */
 "Try again later." = "Försök igen senare.";
