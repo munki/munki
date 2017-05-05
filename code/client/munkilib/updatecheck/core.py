@@ -132,28 +132,6 @@ def check(client_id='', localmanifestpath=None):
         if processes.stop_requested():
             return 0
 
-        # build list of optional installs
-        analyze.process_manifest_for_key(
-            mainmanifestpath, 'optional_installs', installinfo)
-        if processes.stop_requested():
-            return 0
-
-        # build list of featured installs
-        analyze.process_manifest_for_key(
-            mainmanifestpath, 'featured_items', installinfo)
-        if processes.stop_requested():
-            return 0
-        in_featured_items = set(installinfo.get('featured_items', []))
-        in_optional_installs = set(item['name'] for item in installinfo.get(
-            'optional_installs', []))
-        for item in in_featured_items - in_optional_installs:
-            display.display_warning(
-                '%s is a featured item but not an optional install' % item)
-
-        # verify available license seats for optional installs
-        if installinfo.get('optional_installs'):
-            licensing.update_available_license_seats(installinfo)
-
         # process LocalOnlyManifest installs
         localonlymanifestname = prefs.pref('LocalOnlyManifest')
         if localonlymanifestname:
@@ -194,6 +172,28 @@ def check(client_id='', localmanifestpath=None):
                     "LocalOnlyManifest %s is set but is not present. "
                     "Skipping...", localonlymanifestname
                 )
+
+        # build list of optional installs
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'optional_installs', installinfo)
+        if processes.stop_requested():
+            return 0
+
+        # build list of featured installs
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'featured_items', installinfo)
+        if processes.stop_requested():
+            return 0
+        in_featured_items = set(installinfo.get('featured_items', []))
+        in_optional_installs = set(item['name'] for item in installinfo.get(
+            'optional_installs', []))
+        for item in in_featured_items - in_optional_installs:
+            display.display_warning(
+                '%s is a featured item but not an optional install' % item)
+
+        # verify available license seats for optional installs
+        if installinfo.get('optional_installs'):
+            licensing.update_available_license_seats(installinfo)
 
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'
