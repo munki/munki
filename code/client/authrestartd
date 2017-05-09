@@ -45,7 +45,7 @@ from munkilib import prefs
 
 
 APPNAME = 'authrestartd'
-VERSION = '0.1'
+VERSION = '0.2'
 
 
 class FDEUtilError(Exception):
@@ -362,6 +362,9 @@ def main():
         time.sleep(10)
         return 1
 
+    # Keep track of time for launchd.
+    start_time = time.time()
+
     # Get socket file descriptors from launchd.
     socket_fd = launchd.get_socket_fd('authrestartd')
     if not socket_fd:
@@ -375,9 +378,25 @@ def main():
 
     daemon.log.info('%s v%s starting', APPNAME, VERSION)
 
-    # Once we're launched, we run until restart
+    # Process incoming requests
     while True:
         daemon.handle_request()
+        if not daemon.timed_out or daemon.stored_password:
+            continue
+        # we timed out and we don't have a stored password, so we can exit
+        # Keep running for at least 10 seconds make launchd happy.
+        run_time = time.time() - start_time
+        daemon.log.info("run time: %fs", run_time)
+        if run_time < 10.0:
+            # Only sleep for a short while in case new requests pop up.
+            sleep_time = min(1.0, 10.0 - run_time)
+            daemon.log.debug(
+                "sleeping for %f seconds to make launchd happy",
+                sleep_time)
+            time.sleep(sleep_time)
+        else:
+            daemon.log.info('Nothing to do: exiting')
+            break
 
 
 if __name__ == '__main__':

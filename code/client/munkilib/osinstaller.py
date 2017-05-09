@@ -36,6 +36,8 @@ from Foundation import kCFPreferencesCurrentHost
 # pylint: enable=E0611
 
 # our imports
+import munkilib.authrestart.client as authrestartd
+
 from . import FoundationPlist
 from . import authrestart
 from . import display
@@ -116,7 +118,10 @@ class StartOSInstallRunner(object):
                 os.unlink(self.installer)
             except (IOError, OSError):
                 pass
-        if authrestart.can_attempt_auth_restart():
+        # ask authrestartd if we can do an auth restart, or look for a recovery
+        # key (via munkilib.authrestart methods)
+        if (authrestartd.verify_can_attempt_auth_restart() or
+                authrestart.can_attempt_auth_restart()):
             # set a secret preference to tell the osinstaller process to exit
             # instead of restart
             # this is the equivalent of:
@@ -322,8 +327,9 @@ class StartOSInstallRunner(object):
                 CFPreferencesSetValue(
                     'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
                     kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
-                # restart
-                authrestart.do_authorized_or_normal_restart()
+                # attempt to do an auth restart, or regular restart
+                if not authrestartd.restart():
+                    authrestart.do_authorized_or_normal_restart()
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
@@ -400,6 +406,12 @@ def run(finishing_tasks=None):
                     display.display_status_major('Starting macOS upgrade...')
                     # set indeterminate progress bar
                     munkistatus.percent(-1)
+                    # remove the InstallInfo.plist since it won't be valid
+                    # after the upgrade
+                    try:
+                        os.unlink(installinfopath)
+                    except (OSError, IOError):
+                        pass
                     itempath = os.path.join(cachedir, item["installer_item"])
                     success = startosinstall(
                         itempath, finishing_tasks=finishing_tasks)
