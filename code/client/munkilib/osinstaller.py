@@ -280,7 +280,7 @@ class StartOSInstallRunner(object):
                                  'If you do not agree,')):
                 # annoying legalese
                 pass
-            elif msg.startswith('Helper tool creashed'):
+            elif msg.startswith('Helper tool crashed'):
                 # no need to print that stupid message to screen!
                 munkilog.log(msg)
             elif msg.startswith(
