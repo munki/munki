@@ -584,7 +584,12 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                         # languages are very close to the same size. We also
                         # get one included language package which would be the
                         # case for any install.
+                        #
+                        # Because InDesign CC 2017 is not like any other package
+                        # and contains a 'Condition' key but as an empty
+                        # string, we explicitly test this case as well.
                         if ('Condition' not in package.keys() or
+                                package.get('Condition') == '' or
                                 '[installLanguage]==en_US' in
                                 package.get('Condition', '')):
                             installed_size += package.get(
