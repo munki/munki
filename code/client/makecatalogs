@@ -135,7 +135,7 @@ def makecatalogs(repo, options):
                         "WARNING: icon_name specified in %s but it does not "
                         "exist" % pkginfo_ref)
             else:
-                iconhash = icons.get(name + '.png')
+                iconhash = icons.get('icons/' + name + '.png')
 
             if iconhash is not None:
                 pkginfo['icon_hash'] = iconhash
