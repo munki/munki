@@ -44,39 +44,36 @@ def list_items_of_kind(repo, kind):
     return [os.path.join(kind, item) for item in repo.itemlist(kind)]
 
 
+def hash_icons(repo):
+    '''Builds a dictionary containing hashes for all our repo icons'''
+    errors = []
+    icons = {}
+    icon_list = repo.itemlist('icons')
+    for icon_ref in icon_list:
+        print_utf8("Hashing %s..." % (icon_ref))
+        # Try to read the icon file
+        try:
+            icondata = repo.get('icons/' + icon_ref)
+            icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
+        except munkirepo.RepoError, err:
+            errors.append(u'RepoError for %s: %s' % (icon_ref, unicode(err)))
+        except IOError, err:
+            errors.append(u'IO error for %s: %s' % (icon_ref, err))
+        except BaseException, err:
+            errors.append(u'Unexpected error for %s: %s' % (icon_ref, err))
+    return icons, errors
+
+
 def makecatalogs(repo, options):
     '''Assembles all pkginfo files into catalogs.
     Assumes a pkgsinfo directory under repopath.
     User calling this needs to be able to write to the repo/catalogs
     directory.'''
 
-    # start with no errors!
-    errors = []
     exit_code = 0
-
-    icons = {}
-    iconhashing = False
-    icon_list = list_items_of_kind(repo, 'icons')
-    if icon_list:
-        iconhashing = True
-    for icon_ref in icon_list:
-        print_utf8("Hashing %s..." % (icon_ref))
-        # Try to read the icon file
-        try:
-            icondata = repo.get(icon_ref)
-            icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
-        except munkirepo.RepoError, err:
-            errors.append('RepoError for %s: %s' % (icon_ref, unicode(err)))
-            exit_code = -1
-            continue
-        except IOError, err:
-            errors.append("IO error for %s: %s" % (icon_ref, err))
-            exit_code = -1
-            continue
-        except BaseException, err:
-            errors.append("Unexpected error for %s: %s" % (icon_ref, err))
-            exit_code = -1
-            continue
+    icons, errors = hash_icons(repo)
+    if errors:
+        exit_code = -1
 
     # get a list of pkgsinfo items
     try:
@@ -125,17 +122,16 @@ def makecatalogs(repo, options):
             if key.startswith('_'):
                 del pkginfo[key]
 
-        if iconhashing:
-            name = pkginfo.get('name')
+        if icons:
             if pkginfo.get('icon_name'):
-                iconhash = (icons.get('icons/' + pkginfo['icon_name']) or
-                            icons.get('icons/' + pkginfo['icon_name'] + '.png'))
+                iconhash = (icons.get(pkginfo['icon_name']) or
+                            icons.get(pkginfo['icon_name'] + '.png'))
                 if not iconhash:
                     errors.append(
                         "WARNING: icon_name specified in %s but it does not "
                         "exist" % pkginfo_ref)
             else:
-                iconhash = icons.get(name + '.png')
+                iconhash = icons.get(pkginfo['name'] + '.png')
 
             if iconhash is not None:
                 pkginfo['icon_hash'] = iconhash
