@@ -92,8 +92,9 @@ class StartOSInstallError(Exception):
 class StartOSInstallRunner(object):
     '''Handles running startosinstall to set up and kick off an upgrade install
     of macOS'''
-    def __init__(self, installer, finishing_tasks=None):
+    def __init__(self, installer, finishing_tasks=None, installinfo=None):
         self.installer = installer
+        self.installinfo = installinfo
         self.finishing_tasks = finishing_tasks
         self.dmg_mountpoint = None
         self.got_sigusr1 = False
@@ -104,6 +105,11 @@ class StartOSInstallRunner(object):
         display.display_debug1('Got SIGUSR1 from startosinstall')
         self.got_sigusr1 = True
         # do stuff here: cleanup, record-keeping, notifications
+        if self.installinfo:
+            if 'postinstall_script' in self.installinfo:
+                # run the postinstall_script
+                dummy_retcode = scriptutils.run_embedded_script(
+                    'postinstall_script', self.installinfo)
         if self.finishing_tasks:
             self.finishing_tasks()
         # set Munki to run at boot after the OS upgrade is complete
@@ -365,13 +371,14 @@ def get_catalog_info(mounted_dmgpath):
     return None
 
 
-def startosinstall(installer, finishing_tasks=None):
+def startosinstall(installer, finishing_tasks=None, installinfo=None):
     '''Run startosinstall to set up an install of macOS, using a Install app
     installed locally or located on a given disk image. Returns True if
     startosinstall completes successfully, False otherwise.'''
     try:
         StartOSInstallRunner(
-            installer, finishing_tasks=finishing_tasks).start()
+            installer,
+            finishing_tasks=finishing_tasks, installinfo=installinfo).start()
         return True
     except StartOSInstallError, err:
         display.display_error(
@@ -429,7 +436,8 @@ def run(finishing_tasks=None):
                     pass
                 itempath = os.path.join(cachedir, item["installer_item"])
                 success = startosinstall(
-                    itempath, finishing_tasks=finishing_tasks)
+                    itempath,
+                    finishing_tasks=finishing_tasks, installinfo=item)
     munkilog.log("### Ending os installer session ###")
     return success
 
