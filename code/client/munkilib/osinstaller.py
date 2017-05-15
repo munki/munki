@@ -49,6 +49,7 @@ from . import osutils
 from . import pkgutils
 from . import prefs
 from . import processes
+from . import scriptutils
 
 
 CHECKANDINSTALLATSTARTUPFLAG = \
@@ -395,7 +396,6 @@ def run(finishing_tasks=None):
     if prefs.pref('SuppressStopButtonOnInstall'):
         munkistatus.hideStopButton()
 
-    munkilog.log("### Beginning os installer session ###")
     success = False
     if "managed_installs" in installinfo:
         if not processes.stop_requested():
@@ -404,20 +404,32 @@ def run(finishing_tasks=None):
                 item for item in installinfo['managed_installs']
                 if item.get('installer_type') == 'startosinstall']
             if installlist:
+                munkilog.log("### Beginning os installer session ###")
                 item = installlist[0]
-                if 'installer_item' in item:
-                    display.display_status_major('Starting macOS upgrade...')
-                    # set indeterminate progress bar
-                    munkistatus.percent(-1)
-                    # remove the InstallInfo.plist since it won't be valid
-                    # after the upgrade
-                    try:
-                        os.unlink(installinfopath)
-                    except (OSError, IOError):
-                        pass
-                    itempath = os.path.join(cachedir, item["installer_item"])
-                    success = startosinstall(
-                        itempath, finishing_tasks=finishing_tasks)
+                if not 'installer_item' in item:
+                    display.display_error(
+                        'startosinstall item is missing installer_item.')
+                    return False
+                if 'preinstall_script' in item:
+                    retcode = scriptutils.run_embedded_script(
+                        'preinstall_script', item)
+                    if retcode:
+                        # don't install macOS, return failure
+                        display.display_info('Skipping macOS upgrade due '
+                                             'to preinstall_script error.')
+                        return False
+                display.display_status_major('Starting macOS upgrade...')
+                # set indeterminate progress bar
+                munkistatus.percent(-1)
+                # remove the InstallInfo.plist since it won't be valid
+                # after the upgrade
+                try:
+                    os.unlink(installinfopath)
+                except (OSError, IOError):
+                    pass
+                itempath = os.path.join(cachedir, item["installer_item"])
+                success = startosinstall(
+                    itempath, finishing_tasks=finishing_tasks)
     munkilog.log("### Ending os installer session ###")
     return success
 
