@@ -104,12 +104,11 @@ class StartOSInstallRunner(object):
         done setting up the macOS install and is ready and waiting to reboot'''
         display.display_debug1('Got SIGUSR1 from startosinstall')
         self.got_sigusr1 = True
-        # do stuff here: cleanup, record-keeping, notifications
-        if self.installinfo:
-            if 'postinstall_script' in self.installinfo:
-                # run the postinstall_script
-                dummy_retcode = scriptutils.run_embedded_script(
-                    'postinstall_script', self.installinfo)
+        # do cleanup, record-keeping, notifications
+        if self.installinfo and 'postinstall_script' in self.installinfo:
+            # run the postinstall_script
+            dummy_retcode = scriptutils.run_embedded_script(
+                'postinstall_script', self.installinfo)
         if self.finishing_tasks:
             self.finishing_tasks()
         # set Munki to run at boot after the OS upgrade is complete
@@ -175,6 +174,15 @@ class StartOSInstallRunner(object):
         Will always reboot after if the setup is successful.
         Therefore this must be done at the end of all other actions that Munki
         performs during a managedsoftwareupdate run.'''
+
+        if self.installinfo and 'preinstall_script' in self.installinfo:
+            # run the postinstall_script
+            retcode = scriptutils.run_embedded_script(
+                'preinstall_script', self.installinfo)
+            if retcode:
+                # don't install macOS, return failure
+                raise StartOSInstallError(
+                    'Skipping macOS upgrade due to preinstall_script error.')
 
         # set up our signal handler
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
@@ -417,14 +425,6 @@ def run(finishing_tasks=None):
                     display.display_error(
                         'startosinstall item is missing installer_item.')
                     return False
-                if 'preinstall_script' in item:
-                    retcode = scriptutils.run_embedded_script(
-                        'preinstall_script', item)
-                    if retcode:
-                        # don't install macOS, return failure
-                        display.display_info('Skipping macOS upgrade due '
-                                             'to preinstall_script error.')
-                        return False
                 display.display_status_major('Starting macOS upgrade...')
                 # set indeterminate progress bar
                 munkistatus.percent(-1)
