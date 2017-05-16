@@ -392,7 +392,6 @@ NFILES=$(echo `find $ADMINROOT/ | wc -l`)
 makeinfo admin "$PKGTMP/info" "$PKGID" "$VERSION" $ADMINSIZE $NFILES norestart
 
 
-
 ###################
 ## /Applications ##
 ###################
@@ -402,8 +401,7 @@ echo "Creating applications package template..."
 # Create directory structure.
 APPROOT="$PKGTMP/munki_app"
 mkdir -m 1775 "$APPROOT"
-#mkdir -p "$APPROOT/Applications/Utilities"
-chmod -R 775 "$APPROOT/Applications"
+mkdir -m 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
 # Copy MunkiStatus helper app
@@ -412,8 +410,6 @@ cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resou
 cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
-## make a symlink for the old MSU.app
-#ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed Software Update.app"
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
