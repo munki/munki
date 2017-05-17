@@ -188,7 +188,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kann den  Updateserver derzeit nicht erreichen.\nVersuchen Sie es später noch einmal. Falls dieses Problem weiter besteht, kontaktieren Sie Ihren Systemadministrator.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Die geführte Softwareaktualisierung möchte nach einem Neustart das Startvolume entsperren, um alle anstehenden Aktualisierungen abzuschließen.";
 
 /* Managed Update type */
 "Managed Update" = "Verwaltetes Update";
