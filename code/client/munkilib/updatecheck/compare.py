@@ -132,8 +132,8 @@ def compare_application_version(app):
         compare_result = compare_bundle_version(test_app)
         if compare_result in (VERSION_IS_THE_SAME, VERSION_IS_HIGHER):
             return compare_result
-        else:
-            end_result = compare_result
+        elif compare_result == VERSION_IS_LOWER:
+            end_result = VERSION_IS_LOWER
 
     # didn't find an app with the same or higher version
     if end_result == VERSION_IS_LOWER:
