@@ -295,7 +295,7 @@ class StartOSInstallRunner(object):
                                  'If you do not agree,')):
                 # annoying legalese
                 pass
-            elif msg.startswith('Helper tool creashed'):
+            elif msg.startswith('Helper tool crashed'):
                 # no need to print that stupid message to screen!
                 # yes, 'creashed' is misspelled. This is not a Munki bug/typo,
                 # this is an Apple typo. But we have to match against what
