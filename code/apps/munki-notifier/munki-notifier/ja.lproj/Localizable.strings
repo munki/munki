@@ -1,0 +1,15 @@
+/* Multiple Update message */
+"%@ pending updates" = "アップデートを%@個保留しています";
+
+/* One Update message */
+"1 pending update" = "アップデートを1つ保留しています";
+
+/* Details label */
+"Details" = "詳細";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %@" = "%@までに、1つまたそれ以上のアイテムのインストールが必要です";
+
+/* Software updates available message */
+"Software updates available" = "利用可能なソフトウェアアップデート";
+

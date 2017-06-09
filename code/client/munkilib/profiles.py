@@ -71,7 +71,7 @@ def config_profile_info(ignore_cache=False):
                 os.unlink(output_plist + '.plist')
             except BaseException:
                 pass
-        return config_profile_info.cache
+    return config_profile_info.cache
 
 
 def info_for_installed_identifier(identifier, ignore_cache=False):
@@ -209,14 +209,14 @@ def install_profile(profile_path, profile_identifier):
     stdout = proc.communicate()[0]
     if proc.returncode != 0:
         display.display_error(
-            'Profile %s installation failed: %s'
-            % (os.path.basename(profile_path), stdout))
+            u'Profile %s installation failed: %s'
+            % (os.path.basename(profile_path), stdout.decode('UTF-8')))
         return False
     if profile_identifier:
         record_profile_receipt(profile_path, profile_identifier)
     else:
         display.display_warning(
-            'No identifier for profile %s; cannot record an installation '
+            u'No identifier for profile %s; cannot record an installation '
             'receipt.' % os.path.basename(profile_path))
     return True
 

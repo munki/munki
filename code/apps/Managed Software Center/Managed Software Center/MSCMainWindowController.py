@@ -23,13 +23,12 @@ import munki
 import mschtml
 import msclib
 import msclog
-#import FoundationPlist
-import MSCBadgedTemplateImage
 import MunkiItems
 
 from urlparse import urlparse
 
 from AlertController import AlertController
+from MSCBadgedTemplateImage import MSCBadgedTemplateImage
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
@@ -66,7 +65,8 @@ class MSCMainWindowController(NSWindowController):
     myItemsToolbarButton = IBOutlet()
     updatesToolbarButton = IBOutlet()
     webView = IBOutlet()
-    navigationBtn = IBOutlet()
+    navigateBackBtn = IBOutlet()
+    navigateForwardBtn = IBOutlet()
     progressSpinner = IBOutlet()
     searchField = IBOutlet()
     updateButtonCell = IBOutlet()
@@ -150,17 +150,6 @@ class MSCMainWindowController(NSWindowController):
             # initiate the updates
             self.updateNow()
             self.loadUpdatesPage_(self)
-
-    ### no longer needed now that we are using a "real" NSToolbar ###
-    #def window_willPositionSheet_usingRect_(self, window, sheet, rect):
-    #    '''NSWindowDelegate method that allows us to modify the
-    #    position sheets appear attached to a window'''
-    #    # move the anchor point of our sheets to below our toolbar
-    #    # (or really, to the top of the web view)
-    #    webViewRect = self.webView.frame()
-    #    return NSMakeRect(webViewRect.origin.x,
-    #                      webViewRect.origin.y + webViewRect.size.height,
-    #                      webViewRect.size.width, 0)
 
     def loadInitialView(self):
         '''Called by app delegate from applicationDidFinishLaunching:'''
@@ -343,7 +332,6 @@ class MSCMainWindowController(NSWindowController):
     def windowDidResignMain_(self, notification):
         '''Our window was deactivated, make sure controls enabled as needed'''
         self.enableOrDisableToolbarButtons_(NO)
-
 
     def configureFullScreenMenuItem(self):
         '''check to see if NSWindow's toggleFullScreen: selector is implemented.
@@ -619,6 +607,10 @@ class MSCMainWindowController(NSWindowController):
             NSURL.fileURLWithPath_(html_file),
             NSURLRequestReloadIgnoringLocalCacheData, 10)
         self.webView.mainFrame().loadRequest_(request)
+        if url_fragment == 'updates.html':
+            # clear all earlier update notifications
+            NSUserNotificationCenter.defaultUserNotificationCenter(
+                ).removeAllDeliveredNotifications()
 
     def setNoPageCache(self):
         '''We disable the back/forward page cache because
@@ -709,9 +701,8 @@ class MSCMainWindowController(NSWindowController):
     def webView_didFinishLoadForFrame_(self, view, frame):
         '''Stop progress spinner and update state of back/forward buttons'''
         self.progressSpinner.stopAnimation_(self)
-        self.navigationBtn.setEnabled_forSegment_(self.webView.canGoBack(), 0)
-        self.navigationBtn.setEnabled_forSegment_(
-            self.webView.canGoForward(), 1)
+        self.navigateBackBtn.setEnabled_(self.webView.canGoBack())
+        self.navigateForwardBtn.setEnabled_(self.webView.canGoForward())
 
     def webView_didFailProvisionalLoadWithError_forFrame_(
             self, view, error, frame):
@@ -769,6 +760,9 @@ class MSCMainWindowController(NSWindowController):
             self.checkForUpdates()
         else:
             # must say "Update"
+            # we're on the Updates page, so users can see all the pending/
+            # outstanding updates
+            self._alertedUserToOutstandingUpdates = True
             self.updateNow()
 
     def showUpdateProgressSpinner(self):
@@ -1144,7 +1138,8 @@ class MSCMainWindowController(NSWindowController):
         changes the category selected in the sidebar popup'''
         all_categories_label = NSLocalizedString(
             u"All Categories", u"AllCategoriesLabel")
-        if category == all_categories_label:
+        featured_label = NSLocalizedString(u"Featured", u"FeaturedLabel")
+        if category in [all_categories_label, featured_label]:
             category = u'all'
         self.load_page('category-%s.html' % category)
 
@@ -1180,15 +1175,15 @@ class MSCMainWindowController(NSWindowController):
                 u"%@", alertDetail)
             result = alert.runModal()
 
+    @IBAction
+    def navigateBackBtnClicked_(self, sender):
+        '''Handle WebView back button'''
+        self.webView.goBack_(self)
 
     @IBAction
-    def navigationBtnClicked_(self, sender):
-        '''Handle WebView forward/back buttons'''
-        segment = sender.selectedSegment()
-        if segment == 0:
-            self.webView.goBack_(self)
-        if segment == 1:
-            self.webView.goForward_(self)
+    def navigateForwardBtnClicked_(self, sender):
+        '''Handle WebView forward button'''
+        self.webView.goForward_(self)
 
     @IBAction
     def loadAllSoftwarePage_(self, sender):

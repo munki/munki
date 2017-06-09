@@ -138,7 +138,7 @@ def activate():
     _currentStatus['command'] = ''
 
 
-def quit():
+def quit_app():
     '''Tells the status app that we're done.'''
     _currentStatus['command'] = 'quit'
     postStatusNotification()

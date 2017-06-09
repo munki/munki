@@ -77,6 +77,10 @@ def getOptionalInstallItems():
         _cache['optional_install_items'] = [
             OptionalItem(item)
             for item in getInstallInfo().get('optional_installs', [])]
+        featured_items = getInstallInfo().get('featured_items', [])
+        for item in _cache['optional_install_items']:
+            if item['name'] in featured_items:
+                item['featured'] = True
     return _cache['optional_install_items']
 
 
@@ -184,21 +188,10 @@ def updatesContainNonUserSelectedItems():
 
 def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
-        make the effective list of updates'''
-    managed_update_names = getInstallInfo().get('managed_updates', [])
-    self_service_installs = SelfService().installs()
-    self_service_uninstalls = SelfService().uninstalls()
-    # items in the update_list that are part of optional_items
-    # could have their installation state changed; so filter those out
-    optional_installs = getOptionalWillBeInstalledItems()
-    optional_removals = getOptionalWillBeRemovedItems()
-    optional_item_names = [item['name']
-                           for item in optional_installs + optional_removals]
-
-    mandatory_updates = [item for item in getUpdateList()
-                         if item['name'] not in optional_item_names]
-
-    return mandatory_updates + optional_installs + optional_removals
+       make the effective list of updates'''
+    # this was more complex in the past, but caused some edge case issues
+    # so we're going to simplify
+    return getUpdateList()
 
 
 def getMyItemsList():
@@ -874,6 +867,8 @@ class OptionalItem(GenericItem):
         if 'category' not in self:
             self['category'] = NSLocalizedString(u"Uncategorized",
                                                  u"No Category name")
+        if 'featured' not in self:
+            self['featured'] = False
         if self['developer']:
             self['category_and_developer'] = u'%s - %s' % (
                 self['category'], self['developer'])
@@ -984,7 +979,7 @@ class OptionalItem(GenericItem):
             warning_text = NSLocalizedString(
                 u"A removal attempt failed. "
                 "Removal will be attempted again.\n"
-                "If this situation continues, contact your systems"
+                "If this situation continues, contact your systems "
                 "administrator.",
                 u"Removal Error message")
             start_text += ('<span class="warning">%s</span><br/><br/>'

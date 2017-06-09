@@ -150,7 +150,8 @@ def set_pref(pref_name, pref_value):
 def pref(pref_name):
     """Return a preference. Since this uses CFPreferencesCopyAppValue,
     Preferences can be defined several places. Precedence is:
-        - MCX
+        - MCX/configuration profile
+        - /var/root/Library/Preferences/ByHost/ManagedInstalls.XXXXXX.plist
         - /var/root/Library/Preferences/ManagedInstalls.plist
         - /Library/Preferences/ManagedInstalls.plist
         - default_prefs defined here.

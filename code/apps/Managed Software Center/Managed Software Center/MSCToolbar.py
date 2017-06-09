@@ -6,8 +6,12 @@
 #  Created by Daniel Hazelbaker on 9/2/14.
 #
 
+# builtin super doesn't work with Cocoa classes in recent PyObjC releases.
+from objc import super
+
 from objc import YES, NO, nil
 from Foundation import *
+from AppKit import *
 
 
 class MSCToolbarButton(NSButton):
@@ -26,13 +30,14 @@ class MSCToolbarButton(NSButton):
         return view
 
 
-
 class MSCToolbarButtonCell(NSButtonCell):
     '''Subclass of NSButtonCell which properly works inside of a toolbar item
         to allow clicking on the label.'''
 
-    def _hitTestForTrackMouseEvent_inRect_ofView_(self, theEvent, rect, controlView):
-        aPoint = controlView.superview().convertPoint_fromView_(theEvent.locationInWindow(), nil)
+    def _hitTestForTrackMouseEvent_inRect_ofView_(self, theEvent,
+                                                  rect, controlView):
+        aPoint = controlView.superview().convertPoint_fromView_(
+            theEvent.locationInWindow(), nil)
         hit = NO
 
         for v in controlView.superview().subviews():

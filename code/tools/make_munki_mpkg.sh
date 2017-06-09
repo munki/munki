@@ -227,6 +227,28 @@ else
     echo "MunkiStatus.app version: $MSVERSION"
 fi
 
+# Build munki-notifier
+echo "Building munki-notifier.xcodeproj..."
+pushd "$MUNKIROOT/code/apps/munki-notifier" > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets clean > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets build > /dev/null
+XCODEBUILD_RESULT="$?"
+popd > /dev/null
+if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
+    echo "Error building munki-notifier.app: $XCODEBUILD_RESULT"
+    exit 2
+fi
+
+NOTIFIERAPP="$MUNKIROOT/code/apps/munki-notifier/build/Release/munki-notifier.app"
+if [ ! -e  "$NOTIFIERAPP" ]; then
+    echo "Need a release build of munki-notifier.app!"
+    echo "Open the Xcode project $MUNKIROOT/code/apps/notifier/munki-notifier.xcodeproj and build it."
+    exit 2
+else
+    NOTIFIERVERSION=`defaults read "$NOTIFIERAPP/Contents/Info" CFBundleShortVersionString`
+    echo "munki-notifier.app version: $NOTIFIERVERSION"
+fi
+
 # Create a PackageInfo file.
 makeinfo() {
     pkg="$1"
@@ -292,7 +314,7 @@ mkdir -p "$COREROOT/usr/local/munki/munkilib"
 chmod -R 755 "$COREROOT/usr"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
+for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
 do
     cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
@@ -321,6 +343,7 @@ chmod +x "$COREROOT/usr/local/munki"
 mkdir -p "$COREROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
 chmod -R 755 "$COREROOT/private"
+chmod 644 "$COREROOT/private/etc/paths.d/munki"
 
 # Create directory structure for /Library/Managed Installs.
 mkdir -m 1775 "$COREROOT/Library"
@@ -369,7 +392,6 @@ NFILES=$(echo `find $ADMINROOT/ | wc -l`)
 makeinfo admin "$PKGTMP/info" "$PKGID" "$VERSION" $ADMINSIZE $NFILES norestart
 
 
-
 ###################
 ## /Applications ##
 ###################
@@ -379,16 +401,15 @@ echo "Creating applications package template..."
 # Create directory structure.
 APPROOT="$PKGTMP/munki_app"
 mkdir -m 1775 "$APPROOT"
-mkdir -p "$APPROOT/Applications/Utilities"
-chmod -R 775 "$APPROOT/Applications"
+mkdir -m 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
 # Copy MunkiStatus helper app
 cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+# Copy notifier helper app
+cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
-# make a symlink for the old MSU.app
-ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed Software Update.app"
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
@@ -404,7 +425,6 @@ echo "Creating launchd package template..."
 # Create directory structure.
 LAUNCHDROOT="$PKGTMP/munki_launchd"
 mkdir -m 1775 "$LAUNCHDROOT"
-
 mkdir -m 1775 "$LAUNCHDROOT/Library"
 mkdir -m 755 "$LAUNCHDROOT/Library/LaunchAgents"
 mkdir -m 755 "$LAUNCHDROOT/Library/LaunchDaemons"

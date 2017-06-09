@@ -71,70 +71,81 @@ def remove_bundle_relocation_info(pkgpath):
                 pass
 
 
-def install(pkgpath, display_name=None, choicesXMLpath=None,
-            suppressBundleRelocation=False, environment=None):
-    """
-    Uses the apple installer to install the package or metapackage
-    at pkgpath. Prints status messages to STDOUT.
-    Returns a tuple:
-    the installer return code and restart needed as a boolean.
-    """
-
-    restartneeded = False
-    installeroutput = []
-
-    if os.path.islink(pkgpath):
-        # resolve links before passing them to /usr/bin/installer
-        pkgpath = os.path.realpath(pkgpath)
-
-    if suppressBundleRelocation:
-        remove_bundle_relocation_info(pkgpath)
-
-    packagename = os.path.basename(pkgpath)
-    if not display_name:
-        display_name = packagename
-    munkilog.log("Installing %s from %s" % (display_name, packagename))
+def pkg_needs_restart(pkgpath, options):
+    '''Query a package for its RestartAction. Returns True if a restart is
+    needed, False otherwise'''
     cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
-    if choicesXMLpath:
-        cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
+    if options.get('installer_choices_xml'):
+        choices_xml_file = os.path.join(osutils.tmpdir(), 'choices.xml')
+        FoundationPlist.writePlist(
+            options.get('installer_choices_xml'), choices_xml_file)
+        cmd.extend(['-applyChoiceChangesXML', choices_xml_file])
+    else:
+        choices_xml_file = None
+    if options.get('allow_untrusted'):
+        cmd.append('-allowUntrusted')
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    restartaction = str(output).decode('UTF-8').rstrip("\n")
-    if restartaction == "RequireRestart" or \
-       restartaction == "RecommendRestart":
-        display.display_status_minor(
-            '%s requires a restart after installation.' % display_name)
-        restartneeded = True
+    restartaction = str(output).decode('UTF-8').rstrip('\n')
+    return (restartaction == 'RequireRestart' or
+            restartaction == 'RecommendRestart')
 
-    # get the OS version; we need it later when processing installer's output,
-    # which varies depending on OS version.
-    os_version = osutils.getOsVersion()
-    cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, '-target', '/']
-    if choicesXMLpath:
-        cmd.extend(['-applyChoiceChangesXML', choicesXMLpath])
 
-    # set up environment for installer
+def get_installer_env(custom_env):
+    '''Sets up environment for installer'''
     env_vars = os.environ.copy()
     # get info for root
     userinfo = pwd.getpwuid(0)
     env_vars['USER'] = userinfo.pw_name
     env_vars['HOME'] = userinfo.pw_dir
-    if environment:
+    if custom_env:
         # Munki admin has specified custom installer environment
-        for key in environment.keys():
-            if key == 'USER' and environment[key] == 'CURRENT_CONSOLE_USER':
+        for key in custom_env.keys():
+            if key == 'USER' and custom_env[key] == 'CURRENT_CONSOLE_USER':
                 # current console user (if there is one) 'owns' /dev/console
                 userinfo = pwd.getpwuid(os.stat('/dev/console').st_uid)
                 env_vars['USER'] = userinfo.pw_name
                 env_vars['HOME'] = userinfo.pw_dir
             else:
-                env_vars[key] = environment[key]
+                env_vars[key] = custom_env[key]
         display.display_debug1(
             'Using custom installer environment variables: %s', env_vars)
+    return env_vars
 
-    # run installer as a launchd job
+
+def _display_installer_output(installinfo):
+    '''Parses a line of output from installer, displays it as progress output
+    and logs it'''
+    # output we're dealing with always starts with 'installer:'
+    msg = installinfo[10:].rstrip("\n")
+    if msg.startswith("PHASE:"):
+        phase = msg[6:]
+        if phase:
+            display.display_status_minor(phase)
+    elif msg.startswith("STATUS:"):
+        status = msg[7:]
+        if status:
+            display.display_status_minor(status)
+    elif msg.startswith("%"):
+        percent = float(msg[1:])
+        munkistatus.percent(percent)
+        display.display_status_minor("%s percent complete" % percent)
+    elif msg.startswith(" Error"):
+        display.display_error(msg)
+        munkistatus.detail(msg)
+    elif msg.startswith(" Cannot install"):
+        display.display_error(msg)
+        munkistatus.detail(msg)
+    else:
+        munkilog.log(msg)
+
+
+def _run_installer(cmd, env_vars, packagename):
+    '''Runs /usr/sbin/installer, parses and displays the output, and returns
+    the process exit code'''
+    installeroutput = []
     try:
         job = launchd.Job(cmd, environment_vars=env_vars)
         job.start()
@@ -142,7 +153,7 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
         display.display_error(
             'Error with launchd job (%s): %s', cmd, str(err))
         display.display_error('Can\'t run installer.')
-        return (-3, False)
+        return -3 # arbitrary non-zero exit
 
     timeout = 2 * 60 * 60
     inactive = 0
@@ -180,30 +191,7 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
             # save all installer output in case there is
             # an error so we can dump it to the log
             installeroutput.append(installinfo)
-            msg = installinfo[10:].rstrip("\n")
-            if msg.startswith("PHASE:"):
-                phase = msg[6:]
-                if phase:
-                    display.display_status_minor(phase)
-            elif msg.startswith("STATUS:"):
-                status = msg[7:]
-                if status:
-                    display.display_status_minor(status)
-            elif msg.startswith("%"):
-                percent = float(msg[1:])
-                if os_version == '10.5':
-                    # Leopard uses a float from 0 to 1
-                    percent = percent * 100
-                munkistatus.percent(percent)
-                display.display_status_minor("%s percent complete" % percent)
-            elif msg.startswith(" Error"):
-                display.display_error(msg)
-                munkistatus.detail(msg)
-            elif msg.startswith(" Cannot install"):
-                display.display_error(msg)
-                munkistatus.detail(msg)
-            else:
-                munkilog.log(msg)
+            _display_installer_output(installinfo)
 
     # installer exited
     retcode = job.returncode()
@@ -216,16 +204,64 @@ def install(pkgpath, display_name=None, choicesXMLpath=None,
         for line in installeroutput:
             display.display_error(line.rstrip("\n"))
         display.display_error("-"*78)
-        restartneeded = False
     elif retcode == 0:
         munkilog.log("Install of %s was successful." % packagename)
         munkistatus.percent(100)
+    return retcode
 
+
+def install(pkgpath, options=None):
+    """
+    Uses the apple installer to install the package or metapackage
+    at pkgpath.
+    Returns a tuple:
+    the installer return code and restart needed as a boolean.
+    """
+
+    restartneeded = False
+
+    if not options:
+        options = {}
+    display_name = options.get('display_name') or options.get('name')
+
+    if os.path.islink(pkgpath):
+        # resolve links before passing them to /usr/bin/installer
+        pkgpath = os.path.realpath(pkgpath)
+
+    if options.get('suppress_bundle_relocation'):
+        remove_bundle_relocation_info(pkgpath)
+
+    packagename = os.path.basename(pkgpath)
+    if not display_name:
+        display_name = packagename
+
+    munkilog.log("Installing %s from %s" % (display_name, packagename))
+    if pkg_needs_restart(pkgpath, options):
+        display.display_status_minor(
+            '%s requires a restart after installation.' % display_name)
+        restartneeded = True
+
+    # set up installer cmd
+    cmd = ['/usr/sbin/installer', '-verboseR', '-pkg', pkgpath, '-target', '/']
+    if options.get('installer_choices_xml'):
+        # choices_xml_file was already built by pkg_needs_restart(),
+        # just re-use it
+        choices_xml_file = os.path.join(osutils.tmpdir(), 'choices.xml')
+        cmd.extend(['-applyChoiceChangesXML', choices_xml_file])
+    if options.get('allow_untrusted'):
+        cmd.append('-allowUntrusted')
+
+    # get env for installer
+    env_vars = get_installer_env(options.get('installer_environment'))
+
+    # run it!
+    retcode = _run_installer(cmd, env_vars, packagename)
+    if retcode:
+        restartneeded = False
     return (retcode, restartneeded)
 
 
-def installall(dirpath, display_name=None, choicesXMLpath=None,
-               suppressBundleRelocation=False, environment=None):
+def installall(dirpath, options=None):
     """
     Attempts to install all pkgs and mpkgs in a given directory.
     Will mount dmg files and install pkgs and mpkgs found at the
@@ -250,10 +286,8 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
             for mountpoint in mountpoints:
                 # install all the pkgs and mpkgs at the root
                 # of the mountpoint -- call us recursively!
-                (retcode, needsrestart) = installall(mountpoint, display_name,
-                                                     choicesXMLpath,
-                                                     suppressBundleRelocation,
-                                                     environment)
+                (retcode, needsrestart) = installall(
+                    mountpoint, options=options)
                 if needsrestart:
                     restartflag = True
                 if retcode:
@@ -265,8 +299,7 @@ def installall(dirpath, display_name=None, choicesXMLpath=None,
 
         if pkgutils.hasValidInstallerItemExt(item):
             (retcode, needsrestart) = install(
-                itempath, display_name,
-                choicesXMLpath, suppressBundleRelocation, environment)
+                itempath, options=options)
             if needsrestart:
                 restartflag = True
             if retcode:

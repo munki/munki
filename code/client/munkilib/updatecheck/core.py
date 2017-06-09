@@ -87,6 +87,7 @@ def check(client_id='', localmanifestpath=None):
         installinfo['processed_uninstalls'] = []
         installinfo['managed_updates'] = []
         installinfo['optional_installs'] = []
+        installinfo['featured_items'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
 
@@ -131,16 +132,6 @@ def check(client_id='', localmanifestpath=None):
         if processes.stop_requested():
             return 0
 
-        # build list of optional installs
-        analyze.process_manifest_for_key(
-            mainmanifestpath, 'optional_installs', installinfo)
-        if processes.stop_requested():
-            return 0
-
-        # verify available license seats for optional installs
-        if installinfo.get('optional_installs'):
-            licensing.update_available_license_seats(installinfo)
-
         # process LocalOnlyManifest installs
         localonlymanifestname = prefs.pref('LocalOnlyManifest')
         if localonlymanifestname:
@@ -181,6 +172,28 @@ def check(client_id='', localmanifestpath=None):
                     "LocalOnlyManifest %s is set but is not present. "
                     "Skipping...", localonlymanifestname
                 )
+
+        # build list of optional installs
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'optional_installs', installinfo)
+        if processes.stop_requested():
+            return 0
+
+        # build list of featured installs
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'featured_items', installinfo)
+        if processes.stop_requested():
+            return 0
+        in_featured_items = set(installinfo.get('featured_items', []))
+        in_optional_installs = set(item['name'] for item in installinfo.get(
+            'optional_installs', []))
+        for item in in_featured_items - in_optional_installs:
+            display.display_warning(
+                '%s is a featured item but not an optional install' % item)
+
+        # verify available license seats for optional installs
+        if installinfo.get('optional_installs'):
+            licensing.update_available_license_seats(installinfo)
 
         # now process any self-serve choices
         usermanifest = '/Users/Shared/.SelfServeManifest'
@@ -229,7 +242,8 @@ def check(client_id='', localmanifestpath=None):
                                      if item in available_optional_installs]
                 for item in selfserveinstalls:
                     dummy_result = analyze.process_install(
-                        item, cataloglist, installinfo)
+                        item, cataloglist, installinfo,
+                        is_optional_install=True)
 
             # we don't need to filter uninstalls
             selfserveuninstalls = manifestutils.get_manifest_value_for_key(
@@ -280,6 +294,21 @@ def check(client_id='', localmanifestpath=None):
                     FoundationPlist.writePlist(plist, selfservemanifest)
                 except FoundationPlist.FoundationPlistException:
                     pass
+
+        # sort startosinstall items to the end of managed_installs
+        installinfo['managed_installs'].sort(
+            key=lambda x: x.get('install_type') == 'startosinstall')
+
+        # warn if there is more than one startosinstall item
+        startosinstall_items = [item for item in installinfo['managed_installs']
+                                if item.get('install_type') == 'startosinstall']
+        if len(startosinstall_items) > 1:
+            display.display_warning(
+                'There are multiple startosinstall items in managed_installs. '
+                'Only the install of %s--%s will be attempted.'
+                % (startosinstall_items[0].get('name'),
+                   startosinstall_items[0].get('version_to_install'))
+            )
 
         # record detail before we throw it away...
         reports.report['ManagedInstalls'] = installinfo['managed_installs']

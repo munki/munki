@@ -535,12 +535,12 @@ def get_item_detail(name, cataloglist, vers=''):
         the rejected_items list.'''
 
         if item.get('installable_condition'):
-            if not info.predicate_evaluates_as_true(item['installable_condition']):
-                reason = (
+            if not info.predicate_evaluates_as_true(
+                    item['installable_condition']):
+                rejected_items.append(
                     'Rejected item %s, version %s with installable_condition: '
                     '%s.' % (item['name'], item['version'],
                              item['installable_condition']))
-                rejected_items.append(reason)
                 return False
         return True
 
@@ -548,9 +548,8 @@ def get_item_detail(name, cataloglist, vers=''):
         vers = 'latest'
     else:
         (name, includedversion) = split_name_and_version(name)
-        if vers == '':
-            if includedversion:
-                vers = includedversion
+        if includedversion and vers == '':
+            vers = includedversion
         if vers:
             vers = pkgutils.trim_version_string(vers)
         else:
