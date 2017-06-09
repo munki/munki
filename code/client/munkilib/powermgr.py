@@ -55,12 +55,11 @@ def _IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
     return (errcode, assertID)
 
 
-def assertNoIdleSleep():
+def assertNoIdleSleep(reason='Munki is installing software'):
     """Uses IOKit functions to prevent idle sleep."""
     # based on code by Michael Lynn, pudquick@github
     kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
     kIOPMAssertionLevelOn = 255
-    reason = "Munki is installing software"
 
     dummy_errcode, assertID = _IOPMAssertionCreateWithName(
         kIOPMAssertionTypeNoIdleSleep,
