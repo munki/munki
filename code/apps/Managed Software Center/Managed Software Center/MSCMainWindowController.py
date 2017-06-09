@@ -23,12 +23,12 @@ import munki
 import mschtml
 import msclib
 import msclog
-import MSCBadgedTemplateImage
 import MunkiItems
 
 from urlparse import urlparse
 
 from AlertController import AlertController
+from MSCBadgedTemplateImage import MSCBadgedTemplateImage
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
