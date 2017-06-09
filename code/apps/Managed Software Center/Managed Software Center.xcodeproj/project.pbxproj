@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		650B29A419B69FC800A5E946 /* MSCToolbar.py in Resources */ = {isa = PBXBuildFile; fileRef = 650B29A319B69FC800A5E946 /* MSCToolbar.py */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C01B396D1EEA6A9000DFBA3B /* libpython2.7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */; };
 		C01FBD311EA64CD600AE97EE /* passwdutil.py in Resources */ = {isa = PBXBuildFile; fileRef = C01FBD301EA64CD600AE97EE /* passwdutil.py */; };
 		C02C98891911B81D00425167 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C02C98871911B81D00425167 /* Localizable.strings */; };
-		C035274E18A9C582004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274D18A9C582004A5AE4 /* libpython2.6.dylib */; };
 		C042CA151EAD86DE006CC681 /* MSCPasswordAlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */; };
 		C0453A211CCEF7B60002D396 /* MSCLogWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */; };
 		C049C9951AEC77DD00251D45 /* updatesTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C049C9941AEC77DD00251D45 /* updatesTemplate.png */; };
@@ -69,6 +69,7 @@
 /* Begin PBXFileReference section */
 		650B29A319B69FC800A5E946 /* MSCToolbar.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCToolbar.py; sourceTree = "<group>"; };
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.7.dylib; path = ../../../../../../../../../System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/libpython2.7.dylib; sourceTree = SDKROOT; };
 		C01E26911B4DADDC005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C01E26921B4DADE4005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C01E26931B4DADEB005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -100,7 +101,6 @@
 		C02C988F1911B82E00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C02C98901911B83000425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C02C98911911B83100425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
-		C035274D18A9C582004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = SOURCE_ROOT; };
 		C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = MSCPasswordAlertController.py; path = "Managed Software Center/MSCPasswordAlertController.py"; sourceTree = "<group>"; };
 		C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCLogWindowController.py; sourceTree = "<group>"; };
 		C046261519FFF8C000AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -173,7 +173,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */,
-				C035274E18A9C582004A5AE4 /* libpython2.6.dylib in Frameworks */,
+				C01B396D1EEA6A9000DFBA3B /* libpython2.7.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -195,7 +195,7 @@
 				C0EF96B21ADDB90B002C02FF /* MSCDockTilePlugin */,
 				C09004F016CDD84E00BE34CE /* Frameworks */,
 				C09004EE16CDD84E00BE34CE /* Products */,
-				C035274D18A9C582004A5AE4 /* libpython2.6.dylib */,
+				C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */,
 			);
 			sourceTree = "<group>";
 		};
@@ -636,7 +636,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -658,7 +658,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -678,6 +678,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = NO;
@@ -703,6 +704,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
