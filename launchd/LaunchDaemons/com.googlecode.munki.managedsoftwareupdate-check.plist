@@ -2,24 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.googlecode.munki.managedsoftwareupdate-check</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/usr/local/munki/supervisor</string>
-    <string>--delayrandom</string>
-    <string>3600</string>
-    <string>--timeout</string>
-    <string>43200</string>
-    <string>--</string>
-    <string>/usr/local/munki/managedsoftwareupdate</string>
-    <string>--auto</string>
-  </array>
-  <key>StartCalendarInterval</key>
-  <dict>
-    <key>Minute</key>
-    <integer>10</integer>
-  </dict>
+	<key>Label</key>
+	<string>com.googlecode.munki.managedsoftwareupdate-check</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/munki/supervisor</string>
+		<string>--delayrandom</string>
+		<string>3600</string>
+		<string>--timeout</string>
+		<string>43200</string>
+		<string>--</string>
+		<string>/usr/local/munki/managedsoftwareupdate</string>
+		<string>--auto</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Minute</key>
+		<integer>10</integer>
+	</dict>
 </dict>
 </plist>
-

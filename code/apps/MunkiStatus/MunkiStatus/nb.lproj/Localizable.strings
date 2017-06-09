@@ -41,6 +41,9 @@
 "Performing preflight tasks..." = "Utfører preflight-oppgaver...";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Forbereder å kjøre macOS-installeringsprogrammet...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner opplysninger om kvittering";
 
 /* No comment provided by engineer. */
@@ -71,10 +74,16 @@
 "Starting Adobe installer..." = "Starter Adobe installer...";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starter macOS-oppgradering...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "Starter...";
 
 /* No comment provided by engineer. */
 "Starting…" = "Starter…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Systemet vil gjøre en omstart og begynne oppgraderingen av macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installasjon av programvaren er fullført.";

@@ -1,25 +1,3 @@
-﻿
-/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "Ventana";
-
-/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Minimizar";
-
-/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "Ventana";
-
-/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMenuPrincipal";
-
-/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
-"56.title" = "Centro de aplicaciones";
-
-/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
-"57.title" = "Centro de aplicaciones";
-
-/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
-"58.title" = "Acerca del Centro de aplicaciones";
-
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Ayuda";
 
@@ -47,6 +25,9 @@
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
 "150.title" = "Mostrar todos";
 
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Ventana";
+
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
 "197.title" = "Copiar";
 
@@ -55,6 +36,12 @@
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
 "199.title" = "Cortar";
+
+/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
+"1XY-pX-Pwv.title" = "Buscar";
+
+/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
+"1uK-HI-wGR.title" = "Mis aplicaciones";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
 "202.title" = "Eliminar";
@@ -74,8 +61,17 @@
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
 "217.title" = "Editar";
 
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Minimizar";
+
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoom";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Ventana";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMenuPrincipal";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
 "371.title" = "Centro de aplicaciones";
@@ -86,11 +82,14 @@
 /* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
 "376.title" = "Navegar";
 
-/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
-"1XY-pX-Pwv.title" = "Buscar";
+/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
+"56.title" = "Centro de aplicaciones";
 
-/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
-"1uK-HI-wGR.title" = "Mis aplicaciones";
+/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
+"57.title" = "Centro de aplicaciones";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
+"58.title" = "Acerca del Centro de aplicaciones";
 
 /* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
 "9S1-fB-bKZ.title" = "Categorías";
@@ -107,11 +106,17 @@
 /* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
 "CEb-sx-e3H.paletteLabel" = "Navigation";
 
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "Ef8-fO-Dm6"; */
+"Ef8-fO-Dm6.title" = "Password:";
+
 /* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
 "G2X-M7-NVB.label" = "Categorías";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
 "G2X-M7-NVB.paletteLabel" = "Categorías";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Rl8-0j-Dpu"; */
+"Rl8-0j-Dpu.title" = "Text Cell";
 
 /* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "Uby-CQ-lvU"; */
 "Uby-CQ-lvU.label" = "Mis aplicaciones";
@@ -121,6 +126,12 @@
 
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
 "VYO-og-DRc.title" = "Aplicaciones";
+
+/* Class = "NSWindow"; title = "Log"; ObjectID = "X5I-7f-aJs"; */
+"X5I-7f-aJs.title" = "Log";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "a1e-6Q-iNS"; */
+"a1e-6Q-iNS.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
 "bd5-IY-BXv.title" = "Cerrar";

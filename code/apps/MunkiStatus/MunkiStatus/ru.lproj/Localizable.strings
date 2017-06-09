@@ -41,6 +41,9 @@
 "Performing preflight tasks..." = "Выполнение предварительных задач...";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Пoдготовка запуска Программы Установки macOS...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Удаление квитанции";
 
 /* No comment provided by engineer. */
@@ -71,10 +74,16 @@
 "Starting Adobe installer..." = "Запуск Adobe installer...";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Запуск обновление для macOS...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "Запуск...";
 
 /* No comment provided by engineer. */
 "Starting…" = "Запуск…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Система перегрузится и начнет обновление macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Программное обеспечение было успешно установлено.";

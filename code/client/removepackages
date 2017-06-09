@@ -86,7 +86,7 @@ def main():
         noremovereceipts=options.noremovereceipts,
         noupdateapplepkgdb=options.noupdateapplepkgdb)
     if options.munkistatusoutput:
-        munkistatus.quit()
+        munkistatus.quit_app()
     exit(retcode)
 
 

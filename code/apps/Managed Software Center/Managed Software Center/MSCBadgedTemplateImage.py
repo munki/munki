@@ -18,6 +18,9 @@
 # limitations under the License.
 
 
+# builtin super doesn't work with Cocoa classes in recent PyObjC releases.
+from objc import super
+
 from Foundation import *
 from AppKit import *
 

@@ -1,0 +1,15 @@
+/* Multiple Update message */
+"%@ pending updates" = "%@ uppdateringar väntar";
+
+/* One Update message */
+"1 pending update" = "1 uppdatering väntar";
+
+/* Details label */
+"Details" = "Detaljer";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %@" = "Ett eller flera objekt måste installeras senast %@";
+
+/* Software updates available message */
+"Software updates available" = "Programuppdateringar finns";
+

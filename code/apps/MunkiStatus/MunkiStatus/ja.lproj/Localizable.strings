@@ -41,6 +41,9 @@
 "Performing preflight tasks..." = "preflightタスクを実行中…";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "macOSインストーラーの実行を準備中...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Receipt情報を削除中です";
 
 /* No comment provided by engineer. */
@@ -64,17 +67,23 @@
 /* managedsoftwareupdate message */
 "Software installed or removed requires a restart." = "再起動を必要とするソフトウエアをインストールまたは削除しました";
 
-/* Restart Required alert detail */
+/* No comment provided by engineer. */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "再起動を必要とするソフトウエアをインストールまたは削除しました。現在使用中のドキュメントの保存ができます。";
 
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Adobeインストーラーを開始…";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "macOSアップグレードの開始...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "開始…";
 
 /* No comment provided by engineer. */
 "Starting…" = "開始…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "システムを再起動し、macOSアップグレードを開始します。";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "ソフトウェアのインストールが完了しました";

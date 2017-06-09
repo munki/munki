@@ -581,6 +581,12 @@ def getPowerInfo():
     # Currently drawing from 'Battery Power'
     # -InternalBattery-0    100%; discharging; 5:55 remaining
     #
+    #######
+    # as of some macOS update, or perhaps with certain models, the battery info
+    # looks like:
+    # Now drawing from 'Battery Power'
+    # -InternalBattery-0 (id=4325475)	100%; discharging; 5:01 remaining present: true
+    #
     line = output.splitlines()
     if 'AC Power' in line[0]:
         power_dict['PowerSource'] = 'AC Power'
@@ -589,6 +595,10 @@ def getPowerInfo():
         power_dict['PowerSource'] = 'Battery Power'
         if len(line) > 1:
             part = line[1].split()
+            if part[1].startswith('(id='):
+                # get rid of the battery id so we're working with the same
+                # format as previously
+                del(part[1])
             try:
                 power_dict['BatteryCharge'] = int(part[1].rstrip('%;'))
             except (IndexError, ValueError):

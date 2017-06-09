@@ -2,31 +2,29 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.googlecode.munki.MunkiStatus</string>
-  <key>LimitLoadToSessionType</key>
-  <array>
-    <string>LoginWindow</string>
-  </array>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
-  </array>
-  <key>RunAtLoad</key>
-  <false/>
-  <key>KeepAlive</key>
-  <dict>
-     <key>PathState</key>
-     <dict>
-       <key>/var/run/com.googlecode.munki.MunkiStatus</key>
-       <true/>
-       <key>/private/tmp/com.googlecode.munki.installatlogout</key>
-       <true/>
-       <key>/Users/Shared/.com.googlecode.munki.checkandinstallatstartup</key>
-       <true/>
-       <key>/Users/Shared/.com.googlecode.munki.installatstartup</key>
-       <true/>
-     </dict>
-  </dict>
+	<key>KeepAlive</key>
+	<dict>
+		<key>PathState</key>
+		<dict>
+			<key>/Users/Shared/.com.googlecode.munki.checkandinstallatstartup</key>
+			<true/>
+			<key>/Users/Shared/.com.googlecode.munki.installatstartup</key>
+			<true/>
+			<key>/private/tmp/com.googlecode.munki.installatlogout</key>
+			<true/>
+			<key>/var/run/com.googlecode.munki.MunkiStatus</key>
+			<true/>
+		</dict>
+	</dict>
+	<key>Label</key>
+	<string>com.googlecode.munki.MunkiStatus</string>
+	<key>LimitLoadToSessionType</key>
+	<array>
+		<string>LoginWindow</string>
+	</array>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
+	</array>
 </dict>
 </plist>

@@ -279,9 +279,6 @@ class AppleUpdates(object):
                 # No updates found
                 self.applesync.clean_up_cache()
                 return False
-            os_version_tuple = osutils.getOsVersion(as_tuple=True)
-            if os_version_tuple < (10, 11):
-                self.applesync.write_filtered_catalog(product_ids)
             try:
                 self.applesync.cache_update_metadata(product_ids)
             except sync.ReplicationError as err:
@@ -349,8 +346,7 @@ class AppleUpdates(object):
         apple_updates = []
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
-        recommended_updates = su_prefs.pref(
-            'RecommendedUpdates')
+        recommended_updates = su_prefs.pref('RecommendedUpdates')
         if recommended_updates:
             for item in recommended_updates:
                 try:
@@ -402,8 +398,7 @@ class AppleUpdates(object):
                 english_dist = self.applesync.distribution_for_product_key(
                     product_key, 'English')
                 if english_dist:
-                    english_su_info = dist.parse_su_dist(
-                        english_dist)
+                    english_su_info = dist.parse_su_dist(english_dist)
             su_info = dist.parse_su_dist(localized_dist)
             su_info['productKey'] = product_key
             if su_info['name'] == '':
@@ -415,8 +410,7 @@ class AppleUpdates(object):
                 su_info['apple_product_name'] = (
                     english_su_info['apple_product_name'])
             if product_key in update_versions:
-                su_info['version_to_install'] = (
-                    update_versions[product_key])
+                su_info['version_to_install'] = update_versions[product_key]
             elif english_su_info:
                 su_info['version_to_install'] = (
                     english_su_info['version_to_install'])
@@ -512,11 +506,14 @@ class AppleUpdates(object):
         # device so its output is unbuffered so we can get progress info
         #
         # Try to find our ptyexec tool
-        # first look in the parent directory of this file's directory
+        # first look in the parent directory of the parent directory of this
+        # file's directory
         # (../)
-        parent_dir = os.path.dirname(
+        parent_dir = (
             os.path.dirname(
-                os.path.abspath(__file__)))
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.abspath(__file__)))))
         ptyexec_path = os.path.join(parent_dir, 'ptyexec')
         if not os.path.exists(ptyexec_path):
             # try absolute path in munki's normal install dir
@@ -671,11 +668,6 @@ class AppleUpdates(object):
         # Get list of unattended_installs
         if only_unattended:
             msg = 'Installing unattended Apple Software Updates...'
-            # Creating an 'unattended_install' filtered catalog
-            # against the existing filtered catalog is not an option as
-            # cached downloads are purged if they do not exist in the
-            # filtered catalog.  Instead, get a list of updates, and their
-            # product_ids, that are eligible for unattended_install.
             unattended_install_items, unattended_install_product_ids = \
                 self.get_unattended_installs()
             # ensure that we don't restart for unattended installations
@@ -717,7 +709,7 @@ class AppleUpdates(object):
             # --no-scan option
             catalog_url = None
         else:
-            # use our filtered local catalog
+            # use our local catalog
             if not os.path.exists(self.applesync.local_catalog_path):
                 display.display_error(
                     'Missing local Software Update catalog at %s',
@@ -773,12 +765,6 @@ class AppleUpdates(object):
 
         if retcode:  # there was an error
             display.display_error('softwareupdate error: %s' % retcode)
-
-        # Refresh Applicable updates and catalogs
-        # since we may have performed some unattended installs
-        if only_unattended:
-            product_ids = self.available_update_product_ids()
-            self.applesync.write_filtered_catalog(product_ids)
 
         # clean up our now stale local cache
         if not only_unattended:

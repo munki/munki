@@ -141,7 +141,7 @@ APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
 # get a pseudo-svn revision number for the launchd pkg
-LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd`
+LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd/LaunchDaemons launchd/LaunchAgents`
 GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
@@ -227,6 +227,28 @@ else
     echo "MunkiStatus.app version: $MSVERSION"
 fi
 
+# Build munki-notifier
+echo "Building munki-notifier.xcodeproj..."
+pushd "$MUNKIROOT/code/apps/munki-notifier" > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets clean > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets build > /dev/null
+XCODEBUILD_RESULT="$?"
+popd > /dev/null
+if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
+    echo "Error building munki-notifier.app: $XCODEBUILD_RESULT"
+    exit 2
+fi
+
+NOTIFIERAPP="$MUNKIROOT/code/apps/munki-notifier/build/Release/munki-notifier.app"
+if [ ! -e  "$NOTIFIERAPP" ]; then
+    echo "Need a release build of munki-notifier.app!"
+    echo "Open the Xcode project $MUNKIROOT/code/apps/notifier/munki-notifier.xcodeproj and build it."
+    exit 2
+else
+    NOTIFIERVERSION=`defaults read "$NOTIFIERAPP/Contents/Info" CFBundleShortVersionString`
+    echo "munki-notifier.app version: $NOTIFIERVERSION"
+fi
+
 # Create a PackageInfo file.
 makeinfo() {
     pkg="$1"
@@ -292,7 +314,7 @@ mkdir -p "$COREROOT/usr/local/munki/munkilib"
 chmod -R 755 "$COREROOT/usr"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
+for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
@@ -321,6 +343,7 @@ chmod +x "$COREROOT/usr/local/munki"
 mkdir -p "$COREROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
 chmod -R 755 "$COREROOT/private"
+chmod 644 "$COREROOT/private/etc/paths.d/munki"
 
 # Create directory structure for /Library/Managed Installs.
 mkdir -m 1775 "$COREROOT/Library"
@@ -369,7 +392,6 @@ NFILES=$(echo `find $ADMINROOT/ | wc -l`)
 makeinfo admin "$PKGTMP/info" "$PKGID" "$VERSION" $ADMINSIZE $NFILES norestart
 
 
-
 ###################
 ## /Applications ##
 ###################
@@ -379,16 +401,15 @@ echo "Creating applications package template..."
 # Create directory structure.
 APPROOT="$PKGTMP/munki_app"
 mkdir -m 1775 "$APPROOT"
-mkdir -p "$APPROOT/Applications/Utilities"
-chmod -R 775 "$APPROOT/Applications"
+mkdir -m 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
 # Copy MunkiStatus helper app
 cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+# Copy notifier helper app
+cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
-# make a symlink for the old MSU.app
-ln -s "../Managed Software Center.app" "$APPROOT/Applications/Utilities/Managed Software Update.app"
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
@@ -418,6 +439,37 @@ NFILES=$(echo `find $LAUNCHDROOT/ | wc -l`)
 makeinfo launchd "$PKGTMP/info" "$PKGID" "$LAUNCHDVERSION" $LAUNCHDSIZE $NFILES norestart
 
 
+#######################
+## app_usage_monitor ##
+#######################
+
+echo "Creating app_usage package template..."
+
+# Create directory structure.
+APPUSAGEROOT="$PKGTMP/munki_app_usage"
+mkdir -m 1775 "$APPUSAGEROOT"
+mkdir -m 1775 "$APPUSAGEROOT/Library"
+mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
+mkdir -p "$APPUSAGEROOT/usr/local/munki"
+chmod -R 755 "$APPUSAGEROOT/usr"
+# Copy tools and launch daemon.
+cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
+chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
+# Copy tool.
+# edit this if list of tools changes!
+for TOOL in app_usage_monitor
+do
+	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
+done
+# Set permissions.
+chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
+chmod +x "$APPUSAGEROOT/usr/local/munki"
+# Create package info file.
+APPUSAGESIZE=`du -sk $APPUSAGEROOT | cut -f1`
+NFILES=$(echo `find $APPUSAGEROOT/ | wc -l`)
+makeinfo app_usage "$PKGTMP/info" "$PKGID" "$VERSION" $APPUSAGEROOT $NFILES norestart
+
+
 #############################
 ## Create metapackage root ##
 #############################
@@ -439,10 +491,12 @@ CORETITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lpr
 ADMINTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionTitle`
 APPTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionTitle`
 LAUNCHDTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionTitle`
+APPUSAGETITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionTitle`
 COREDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lproj/Description" IFPkgDescriptionDescription`
 ADMINDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionDescription`
 APPDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionDescription`
 LAUNCHDDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionDescription`
+APPUSAGEDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionDescription`
 CONFOUTLINE=""
 CONFCHOICE=""
 CONFREF=""
@@ -496,6 +550,7 @@ function requirerestart() {
         <line choice="admin"/>
         <line choice="app"/>
         <line choice="launchd"/>
+        <line choice="app_usage"/>
         $CONFOUTLINE
     </choices-outline>
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -510,11 +565,15 @@ function requirerestart() {
     <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='my.choice.packageUpgradeAction != "installed"'>
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
+    <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
+        <pkg-ref id="$PKGID.app_usage"/>
+    </choice>
     $CONFCHOICE
     <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$APPSVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusionScript="requirerestart()">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGEIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
     $CONFREF
 </installer-script>
 EOF
@@ -539,13 +598,15 @@ sudo chown root:admin "$LAUNCHDROOT/Library"
 sudo chown -hR root:wheel "$LAUNCHDROOT/Library/LaunchDaemons"
 sudo chown -hR root:wheel "$LAUNCHDROOT/Library/LaunchAgents"
 
-
+sudo chown root:admin "$APPUSAGEROOT/Library"
+sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchDaemons"
+sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 ######################
 ## Run pkgbuild ##
 ######################
 CURRENTUSER=`whoami`
-for pkg in core admin app launchd; do
+for pkg in core admin app launchd app_usage; do
     case $pkg in
         "app")
             ver="$APPSVERSION"
@@ -554,6 +615,10 @@ for pkg in core admin app launchd; do
         "launchd")
             ver="$LAUNCHDVERSION"
             SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_launchd"
+            ;;
+        "app_usage")
+            ver="$VERSION"
+            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_app_usage"
             ;;
         *)
             ver="$VERSION"
@@ -628,7 +693,6 @@ else
         --scripts "${MUNKIROOT}/code/pkgtemplate/Scripts_distribution" \
         "$MPKG"
 fi
-
 
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."

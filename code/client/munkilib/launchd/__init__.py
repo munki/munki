@@ -2,23 +2,27 @@
 #
 # Copyright 2011-2017 Greg Neagle.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-launchd.py
+launchd
 
 Created by Greg Neagle on 2011-07-22.
+get_socket_fd and refactoring by Greg Neagle on 2017-04-14.
 
-A wrapper for using launchd to run a process as root outside of munki's
+Code for getting a socket file descriptor from launchd.
+Returns a file descriptor for a socket defined in a launchd plist.
+-and-
+A wrapper for using launchd to run a process as root outside of Munki's
 process space. Needed to properly run /usr/sbin/softwareupdate, for example.
 """
 
@@ -27,8 +31,37 @@ import subprocess
 import time
 import uuid
 
-from . import osutils
-from . import FoundationPlist
+from .. import osutils
+from .. import FoundationPlist
+
+
+def get_socket_fd(socket_name):
+    '''Get socket file descriptors from launchd.'''
+    os_version = osutils.getOsVersion(as_tuple=True)
+    if os_version >= (10, 10):
+        # use new launchd api
+        from . import launch2
+        try:
+            sockets = launch2.launch_activate_socket(socket_name)
+        except launch2.LaunchDError:
+            # no sockets found
+            return None
+        return sockets[0]
+
+    else:
+        # use old launchd api
+        from . import launch1
+        try:
+            socket_dict = launch1.get_launchd_socket_fds()
+        except launch1.LaunchDCheckInError:
+            # no sockets found
+            return None
+
+        if socket_name not in socket_dict:
+            # no sockets found with the expected name
+            return None
+
+        return socket_dict[socket_name][0]
 
 
 class LaunchdJobException(Exception):
@@ -40,7 +73,9 @@ class LaunchdJobException(Exception):
 class Job(object):
     '''launchd job object'''
 
-    def __init__(self, cmd, environment_vars=None):
+    def __init__(self, cmd, environment_vars=None, cleanup_at_exit=True):
+        '''Initialize our launchd job'''
+        self.cleanup_at_exit = cleanup_at_exit
         tmpdir = osutils.tmpdir()
         labelprefix = 'com.googlecode.munki.'
         # create a unique id for this job
@@ -76,20 +111,21 @@ class Job(object):
 
     def __del__(self):
         '''Attempt to clean up'''
-        if self.plist:
-            launchctl_cmd = ['/bin/launchctl', 'unload', self.plist_path]
-            dummy_result = subprocess.call(launchctl_cmd)
-        try:
-            self.stdout.close()
-            self.stderr.close()
-        except AttributeError:
-            pass
-        try:
-            os.unlink(self.plist_path)
-            os.unlink(self.stdout_path)
-            os.unlink(self.stderr_path)
-        except (OSError, IOError):
-            pass
+        if self.cleanup_at_exit:
+            if self.plist:
+                launchctl_cmd = ['/bin/launchctl', 'unload', self.plist_path]
+                dummy_result = subprocess.call(launchctl_cmd)
+            try:
+                self.stdout.close()
+                self.stderr.close()
+            except AttributeError:
+                pass
+            try:
+                os.unlink(self.plist_path)
+                os.unlink(self.stdout_path)
+                os.unlink(self.stderr_path)
+            except (OSError, IOError):
+                pass
 
     def start(self):
         '''Start the launchd job'''

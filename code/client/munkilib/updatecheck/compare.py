@@ -22,6 +22,7 @@ Comparsion/checking functions used by updatecheck
 """
 
 import os
+from operator import itemgetter
 
 from .. import display
 from .. import munkihash
@@ -56,8 +57,8 @@ def compare_versions(thisvers, thatvers):
 
 
 def compare_application_version(app):
-    """First checks the given path if it's available,
-    then uses system profiler data to look for the app
+    """Checks the given path if it's available,
+    otherwise uses LaunchServices and/or Spotlight to look for the app
 
     Args:
       app: dict with application bundle info
@@ -76,92 +77,69 @@ def compare_application_version(app):
         if os.path.exists(filepath):
             return compare_bundle_version(app)
         display.display_debug2('%s doesn\'t exist.', filepath)
-    else:
-        display.display_debug2('No path given for application item.')
+        return ITEM_NOT_PRESENT
 
-    # not in default location, or no path specified, so let's search:
+    # no 'path' in dict
+    display.display_debug2('No path given for application item.')
+    # let's search:
     name = app.get('CFBundleName', '')
     bundleid = app.get('CFBundleIdentifier', '')
     version_comparison_key = app.get(
         'version_comparison_key', 'CFBundleShortVersionString')
     versionstring = app.get(version_comparison_key)
-    minupvers = app.get('minimum_update_version')
 
     if name == '' and bundleid == '':
-        if 'path' in app:
-            # already looked at default path, and we don't have
-            # any additional info, so we have to assume it's not installed.
-            return ITEM_NOT_PRESENT
-        else:
-            # no path, no name, no bundleid. Error!
-            raise utils.Error(
-                'No application name or bundleid was specified!')
+        # no path, no name, no bundleid. Error!
+        raise utils.Error(
+            'No path, application name or bundleid was specified!')
 
     display.display_debug1(
         'Looking for application %s with bundleid: %s, version %s...' %
         (name, bundleid, versionstring))
-    appinfo = []
-    appdata = info.app_data()
-    if appdata:
-        for item in appdata:
-            # Skip applications in /Users but not /Users/Shared, for now.
-            if 'path' in item:
-                if (item['path'].startswith('/Users/') and
-                        not item['path'].startswith('/Users/Shared/')):
-                    display.display_debug2(
-                        'Skipped app %s with path %s',
-                        item['name'], item['path'])
-                    continue
-            if bundleid:
-                if item['bundleid'] == bundleid:
-                    appinfo.append(item)
-            elif name and item['name'] == name:
-                appinfo.append(item)
+
+    # find installed apps that match this item by name or bundleid
+    appdata = info.filtered_app_data()
+    appinfo = [item for item in appdata
+               if (item['path'] and
+                   (item['bundleid'] == bundleid or
+                    (name and item['name'] == name)))]
 
     if not appinfo:
-        # app isn't present!
+        # No matching apps found
         display.display_debug1(
-            '\tDid not find this application on the startup disk.')
+            '\tFound no matching applications on the startup disk.')
         return ITEM_NOT_PRESENT
 
+    # sort highest version first
+    try:
+        appinfo.sort(key=itemgetter('version'), reverse=True)
+    except KeyError:
+        # some item did not have a version key
+        pass
+
     # iterate through matching applications
+    end_result = ITEM_NOT_PRESENT
     for item in appinfo:
         if 'name' in item:
-            display.display_debug2('\tName: \t %s', item['name'])
-        if 'path' in item:
-            apppath = item['path']
-            display.display_debug2('\tPath: \t %s', apppath)
-            display.display_debug2(
-                '\tCFBundleIdentifier: \t %s', item['bundleid'])
+            display.display_debug2('\tFound name: \t %s', item['name'])
+        display.display_debug2('\tFound path: \t %s', item['path'])
+        display.display_debug2(
+            '\tFound CFBundleIdentifier: \t %s', item['bundleid'])
+        # create a test_app item with our found path
+        test_app = {}
+        test_app.update(app)
+        test_app['path'] = item['path']
+        compare_result = compare_bundle_version(test_app)
+        if compare_result in (VERSION_IS_THE_SAME, VERSION_IS_HIGHER):
+            return compare_result
+        elif compare_result == VERSION_IS_LOWER:
+            end_result = VERSION_IS_LOWER
 
-        if apppath and version_comparison_key != 'CFBundleShortVersionString':
-            # if a specific plist version key has been supplied,
-            # if we're supposed to compare against a key other than
-            # 'CFBundleShortVersionString' we can't use item['version']
-            installed_version = pkgutils.getBundleVersion(
-                apppath, version_comparison_key)
-        else:
-            # item['version'] is CFBundleShortVersionString
-            installed_version = item['version']
-
-        if minupvers:
-            if compare_versions(installed_version, minupvers) < 1:
-                display.display_debug1(
-                    '\tVersion %s too old < %s', installed_version, minupvers)
-                # installed version is < minimum_update_version,
-                # too old to match, so act like it's not there at all
-                return ITEM_NOT_PRESENT
-
-        if 'version' in item:
-            display.display_debug2('\tVersion: \t %s', installed_version)
-            compare_result = compare_versions(installed_version, versionstring)
-            if compare_result in (1, 2):
-                # same or greater
-                return compare_result
-
-    # if we got this far, must only be older
-    display.display_debug1('An older version of this application is present.')
-    return VERSION_IS_LOWER
+    # didn't find an app with the same or higher version
+    if end_result == VERSION_IS_LOWER:
+        display.display_debug1(
+            'An older version of this application is present.')
+    return end_result
 
 
 def compare_bundle_version(item):

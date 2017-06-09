@@ -38,6 +38,7 @@ class MSCAppDelegate(NSObject):
 
     mainWindowController = IBOutlet()
     statusController = IBOutlet()
+    passwordAlertController = IBOutlet()
 
     def applicationShouldTerminate_(self, sender):
         '''Called if user selects 'Quit' from menu'''
@@ -45,6 +46,7 @@ class MSCAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
+        NSLog("Finished launching")
         # setup client logging
         msclog.setup_logging()
         
@@ -144,7 +146,7 @@ class MSCAppDelegate(NSObject):
         '''User clicked on a Notification Center alert'''
         user_info = notification.userInfo()
         if user_info.get('action') == 'open_url':
-            url = user_info.get('value')
+            url = user_info.get('value', 'munki://updates')
             msclog.log("MSU", "Got user notification to open %s" % url)
             self.openMunkiURL(url)
             center.removeDeliveredNotification_(notification)

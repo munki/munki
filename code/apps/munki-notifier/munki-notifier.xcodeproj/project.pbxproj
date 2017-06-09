@@ -1,0 +1,428 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C081D8B91E5F4F5E00323D9C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C081D8B81E5F4F5E00323D9C /* AppDelegate.m */; };
+		C081D8BC1E5F4F5E00323D9C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C081D8BB1E5F4F5E00323D9C /* main.m */; };
+		C081D8BE1E5F4F5E00323D9C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */; };
+		C081D8C11E5F4F5E00323D9C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */; };
+		C081D8C91E5F5F2500323D9C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C081D8C81E5F5F2500323D9C /* Cocoa.framework */; };
+		C081D8CE1E60A82600323D9C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C081D8D01E60A82600323D9C /* Localizable.strings */; };
+		C081D8D41E60A82600323D9C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C081D8D61E60A82600323D9C /* InfoPlist.strings */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C01F29471E64D1010057F5E8 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F29481E64D1010057F5E8 /* da */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = da; path = da.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F29491E64D1010057F5E8 /* de */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = de; path = de.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F294A1E64D1020057F5E8 /* es */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = es; path = es.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F294B1E64D1020057F5E8 /* fi */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fi; path = fi.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F294C1E64D1020057F5E8 /* it */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = it; path = it.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F294D1E64D1020057F5E8 /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ja; path = ja.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F294E1E64D1020057F5E8 /* fr */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fr; path = fr.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F294F1E64D1030057F5E8 /* nb */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = nb; path = nb.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F29501E64D1030057F5E8 /* nl */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = nl; path = nl.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F29511E64D1030057F5E8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ru; path = ru.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01F29521E64D1030057F5E8 /* sv */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = sv; path = sv.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C06BD1761E60B35800CB208E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C06BD1771E60B35800CB208E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C081D8B41E5F4F5E00323D9C /* munki-notifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "munki-notifier.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C081D8B71E5F4F5E00323D9C /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		C081D8B81E5F4F5E00323D9C /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		C081D8BB1E5F4F5E00323D9C /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C081D8C81E5F5F2500323D9C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		C081D8CF1E60A82600323D9C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C081D8D51E60A82600323D9C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C081D8D71E60A95000323D9C /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C081D8D91E60A95000323D9C /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C081D8DA1E60AAFA00323D9C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C081D8DC1E60AAFA00323D9C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891D901E60B3C5001446D5 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891D911E60B3C5001446D5 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891D971E60B3F0001446D5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891D981E60B3F0001446D5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891D9D1E60B40A001446D5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891D9E1E60B40A001446D5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891DAD1E60B44E001446D5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891DAE1E60B454001446D5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891DAF1E60B473001446D5 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891DB01E60B473001446D5 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891DB91E60B4D4001446D5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891DBA1E60B4DE001446D5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891DBB1E60B4F1001446D5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891DBC1E60B4F1001446D5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891DC11E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0891DC21E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0891DCB1E60B972001446D5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C081D8B11E5F4F5E00323D9C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C081D8C91E5F5F2500323D9C /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C081D8AB1E5F4F5E00323D9C = {
+			isa = PBXGroup;
+			children = (
+				C081D8CA1E5F5F5000323D9C /* Frameworks */,
+				C081D8B61E5F4F5E00323D9C /* munki-notifier */,
+				C081D8B51E5F4F5E00323D9C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C081D8B51E5F4F5E00323D9C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C081D8B41E5F4F5E00323D9C /* munki-notifier.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C081D8B61E5F4F5E00323D9C /* munki-notifier */ = {
+			isa = PBXGroup;
+			children = (
+				C081D8B71E5F4F5E00323D9C /* AppDelegate.h */,
+				C081D8B81E5F4F5E00323D9C /* AppDelegate.m */,
+				C081D8BA1E5F4F5E00323D9C /* Supporting Files */,
+			);
+			path = "munki-notifier";
+			sourceTree = "<group>";
+		};
+		C081D8BA1E5F4F5E00323D9C /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C081D8D61E60A82600323D9C /* InfoPlist.strings */,
+				C081D8D01E60A82600323D9C /* Localizable.strings */,
+				C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */,
+				C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */,
+				C0891DCB1E60B972001446D5 /* Info.plist */,
+				C081D8BB1E5F4F5E00323D9C /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C081D8CA1E5F5F5000323D9C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C081D8CB1E5F5F6A00323D9C /* Other Frameworks */,
+				C081D8C81E5F5F2500323D9C /* Cocoa.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C081D8CB1E5F5F6A00323D9C /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C081D8B31E5F4F5E00323D9C /* munki-notifier */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C081D8C51E5F4F5E00323D9C /* Build configuration list for PBXNativeTarget "munki-notifier" */;
+			buildPhases = (
+				C081D8B01E5F4F5E00323D9C /* Sources */,
+				C081D8B11E5F4F5E00323D9C /* Frameworks */,
+				C081D8B21E5F4F5E00323D9C /* Resources */,
+				C02B7AA11E63676E00B206D4 /* Append build number to version */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "munki-notifier";
+			productName = "munki-notifier";
+			productReference = C081D8B41E5F4F5E00323D9C /* munki-notifier.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C081D8AC1E5F4F5E00323D9C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0730;
+				ORGANIZATIONNAME = "The Munki Project";
+				TargetAttributes = {
+					C081D8B31E5F4F5E00323D9C = {
+						CreatedOnToolsVersion = 7.3.1;
+					};
+				};
+			};
+			buildConfigurationList = C081D8AF1E5F4F5E00323D9C /* Build configuration list for PBXProject "munki-notifier" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				es,
+				fi,
+				it,
+				ja,
+				fr,
+				nb,
+				nl,
+				ru,
+				sv,
+			);
+			mainGroup = C081D8AB1E5F4F5E00323D9C;
+			productRefGroup = C081D8B51E5F4F5E00323D9C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C081D8B31E5F4F5E00323D9C /* munki-notifier */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C081D8B21E5F4F5E00323D9C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C081D8BE1E5F4F5E00323D9C /* Assets.xcassets in Resources */,
+				C081D8D41E60A82600323D9C /* InfoPlist.strings in Resources */,
+				C081D8CE1E60A82600323D9C /* Localizable.strings in Resources */,
+				C081D8C11E5F4F5E00323D9C /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C02B7AA11E63676E00B206D4 /* Append build number to version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Append build number to version";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\n# Git isn't installed on 10.6 or earlier by default, so find it\nGIT=`which git`\nif [ \"$GIT\" == \"\" ] ; then\n# let's hope it's in /usr/local/bin\nif [ -x \"/usr/local/bin/git\" ] ; then\nGIT=/usr/local/bin/git\nfi\nfi\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a psuedo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C081D8B01E5F4F5E00323D9C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C081D8BC1E5F4F5E00323D9C /* main.m in Sources */,
+				C081D8B91E5F4F5E00323D9C /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C01F29471E64D1010057F5E8 /* en */,
+				C01F29481E64D1010057F5E8 /* da */,
+				C01F29491E64D1010057F5E8 /* de */,
+				C01F294A1E64D1020057F5E8 /* es */,
+				C01F294B1E64D1020057F5E8 /* fi */,
+				C01F294C1E64D1020057F5E8 /* it */,
+				C01F294D1E64D1020057F5E8 /* ja */,
+				C01F294E1E64D1020057F5E8 /* fr */,
+				C01F294F1E64D1030057F5E8 /* nb */,
+				C01F29501E64D1030057F5E8 /* nl */,
+				C01F29511E64D1030057F5E8 /* ru */,
+				C01F29521E64D1030057F5E8 /* sv */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		C081D8D01E60A82600323D9C /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C081D8CF1E60A82600323D9C /* en */,
+				C081D8D71E60A95000323D9C /* da */,
+				C081D8DA1E60AAFA00323D9C /* de */,
+				C06BD1771E60B35800CB208E /* es */,
+				C0891D911E60B3C5001446D5 /* fi */,
+				C0891D981E60B3F0001446D5 /* it */,
+				C0891D9E1E60B40A001446D5 /* ja */,
+				C0891DAD1E60B44E001446D5 /* fr */,
+				C0891DB01E60B473001446D5 /* nb */,
+				C0891DBA1E60B4DE001446D5 /* nl */,
+				C0891DBC1E60B4F1001446D5 /* ru */,
+				C0891DC21E60B527001446D5 /* sv */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		C081D8D61E60A82600323D9C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C081D8D51E60A82600323D9C /* en */,
+				C081D8D91E60A95000323D9C /* da */,
+				C081D8DC1E60AAFA00323D9C /* de */,
+				C06BD1761E60B35800CB208E /* es */,
+				C0891D901E60B3C5001446D5 /* fi */,
+				C0891D971E60B3F0001446D5 /* it */,
+				C0891D9D1E60B40A001446D5 /* ja */,
+				C0891DAE1E60B454001446D5 /* fr */,
+				C0891DAF1E60B473001446D5 /* nb */,
+				C0891DB91E60B4D4001446D5 /* nl */,
+				C0891DBB1E60B4F1001446D5 /* ru */,
+				C0891DC11E60B527001446D5 /* sv */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C081D8C31E5F4F5E00323D9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C081D8C41E5F4F5E00323D9C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C081D8C61E5F4F5E00323D9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "munki-notifier/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.munki-notifier";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C081D8C71E5F4F5E00323D9C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "munki-notifier/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.munki-notifier";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C081D8AF1E5F4F5E00323D9C /* Build configuration list for PBXProject "munki-notifier" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C081D8C31E5F4F5E00323D9C /* Debug */,
+				C081D8C41E5F4F5E00323D9C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C081D8C51E5F4F5E00323D9C /* Build configuration list for PBXNativeTarget "munki-notifier" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C081D8C61E5F4F5E00323D9C /* Debug */,
+				C081D8C71E5F4F5E00323D9C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C081D8AC1E5F4F5E00323D9C /* Project object */;
+}

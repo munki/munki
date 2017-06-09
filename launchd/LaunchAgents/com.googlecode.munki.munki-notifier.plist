@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>KeepAlive</key>
+	<dict>
+		<key>PathState</key>
+		<dict>
+			<key>/var/run/com.googlecode.munki.munki-notifier</key>
+			<true/>
+		</dict>
+	</dict>
+	<key>Label</key>
+	<string>com.googlecode.munki.munki-notifier</string>
+	<key>LimitLoadToSessionType</key>
+	<array>
+		<string>Aqua</string>
+	</array>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/munki/launchapp</string>
+		<string>-a</string>
+		<string>/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app</string>
+	</array>
+</dict>
+</plist>

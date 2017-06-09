@@ -43,6 +43,133 @@ from . import FoundationPlist
 FORCE_INSTALL_WARNING_HOURS = 4
 
 
+def get_installinfo():
+    '''Returns the dictionary describing the managed installs and removals'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    plist = {}
+    installinfo = os.path.join(managedinstallbase, 'InstallInfo.plist')
+    if os.path.exists(installinfo):
+        try:
+            plist = FoundationPlist.readPlist(installinfo)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return plist
+
+
+def get_appleupdates():
+    '''Returns any available Apple updates'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    plist = {}
+    appleupdatesfile = os.path.join(managedinstallbase, 'AppleUpdates.plist')
+    if (os.path.exists(appleupdatesfile) and
+            (prefs.pref('InstallAppleSoftwareUpdates') or
+             prefs.pref('AppleSoftwareUpdatesOnly'))):
+        try:
+            plist = FoundationPlist.readPlist(appleupdatesfile)
+        except FoundationPlist.NSPropertyListSerializationException:
+            pass
+    return plist
+
+
+def oldest_pending_update_in_days():
+    '''Return the datestamp of the oldest pending update'''
+    pendingupdatespath = os.path.join(
+        prefs.pref('ManagedInstallDir'), 'UpdateNotificationTracking.plist')
+    try:
+        pending_updates = FoundationPlist.readPlist(pendingupdatespath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        return 0
+
+    oldest_date = now = NSDate.date()
+    for category in pending_updates:
+        for name in pending_updates[category]:
+            this_date = pending_updates[category][name]
+            if this_date < oldest_date:
+                oldest_date = this_date
+
+    return now.timeIntervalSinceDate_(oldest_date) / (24 * 60 * 60)
+
+
+def get_pending_update_info():
+    '''Returns a dict with some data managedsoftwareupdate records at the end
+    of a run'''
+    data = {}
+    installinfo = get_installinfo()
+    data['install_count'] = len(installinfo.get('managed_installs', []))
+    data['removal_count'] = len(installinfo.get('removals', []))
+    appleupdates = get_appleupdates()
+    data['apple_update_count'] = len(appleupdates.get('AppleUpdates', []))
+    data['PendingUpdateCount'] = (data['install_count'] + data['removal_count']
+                                  + data['apple_update_count'])
+    data['OldestUpdateDays'] = oldest_pending_update_in_days()
+    # calculate earliest date a forced install is due
+    installs = installinfo.get('managed_installs', [])
+    installs.extend(appleupdates.get('AppleUpdates', []))
+    earliest_date = None
+    for install in installs:
+        this_force_install_date = install.get('force_install_after_date')
+
+        if this_force_install_date:
+            try:
+                this_force_install_date = info.subtract_tzoffset_from_date(
+                    this_force_install_date)
+                if not earliest_date or this_force_install_date < earliest_date:
+                    earliest_date = this_force_install_date
+            except ValueError:
+                # bad date!
+                pass
+    data['ForcedUpdateDueDate'] = earliest_date
+    return data
+
+
+def save_pending_update_times():
+    '''Record the time each update first is made available. We can use this to
+    escalate our notifications if there are items that have been skipped a lot
+    '''
+    now = NSDate.date()
+    managed_install_dir = prefs.pref('ManagedInstallDir')
+    pendingupdatespath = os.path.join(
+        managed_install_dir, 'UpdateNotificationTracking.plist')
+
+    installinfo = get_installinfo()
+    install_names = [item['name']
+                     for item in installinfo.get('managed_installs', [])]
+    removal_names = [item['name']
+                     for item in installinfo.get('removals', [])]
+
+    appleupdatesinfo = get_appleupdates()
+    appleupdate_names = [item['name']
+                         for item in appleupdatesinfo.get('AppleUpdates', [])]
+    update_names = {
+        'managed_installs': install_names,
+        'removals': removal_names,
+        'AppleUpdates': appleupdate_names}
+
+    try:
+        prior_pending_updates = FoundationPlist.readPlist(pendingupdatespath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        prior_pending_updates = {}
+    current_pending_updates = {}
+
+    for category in update_names:
+        current_pending_updates[category] = {}
+        for name in update_names[category]:
+            if (category in prior_pending_updates and
+                    name in prior_pending_updates[category]):
+                # copy the prior datetime from matching item
+                current_pending_updates[category][name] = prior_pending_updates[
+                    category][name]
+            else:
+                # record new item with current datetime
+                current_pending_updates[category][name] = now
+    try:
+        FoundationPlist.writePlist(current_pending_updates, pendingupdatespath)
+    except FoundationPlist.NSPropertyListWriteException:
+        # we tried! oh well
+        pass
+
+
+
 def display_update_info():
     '''Prints info about available updates'''
 
@@ -57,13 +184,7 @@ def display_update_info():
             display.display_info('       *Logout required')
             reports.report['LogoutRequired'] = True
 
-    installinfopath = os.path.join(
-        prefs.pref('ManagedInstallDir'), 'InstallInfo.plist')
-    try:
-        installinfo = FoundationPlist.readPlist(installinfopath)
-    except FoundationPlist.NSPropertyListSerializationException:
-        installinfo = {}
-
+    installinfo = get_installinfo()
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
 

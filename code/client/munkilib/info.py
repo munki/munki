@@ -503,6 +503,15 @@ def app_data():
 
 
 @utils.Memoize
+def filtered_app_data():
+    '''Returns a filtered version of app_data, filtering out apps in user
+    home directories for use by compare.compare_application_version()'''
+    return [item for item in app_data()
+            if not (item['path'].startswith('/Users/') and
+                    not item['path'].startswith('/Users/Shared/'))]
+
+
+@utils.Memoize
 def get_version():
     """Returns version of munkitools, reading version.plist"""
     vers = "UNKNOWN"

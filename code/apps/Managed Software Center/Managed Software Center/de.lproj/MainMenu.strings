@@ -1,25 +1,3 @@
-﻿
-/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "Fenster";
-
-/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Minimieren";
-
-/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "Fenster";
-
-/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMainMenu";
-
-/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
-"56.title" = "Geführte Softwareaktualisierung";
-
-/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
-"57.title" = "Geführte Softwareaktualisierung";
-
-/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
-"58.title" = "Über Geführte Softwareaktualisierung";
-
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Hilfe";
 
@@ -47,6 +25,9 @@
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
 "150.title" = "Alle einblenden";
 
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Fenster";
+
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
 "197.title" = "Kopieren";
 
@@ -55,6 +36,12 @@
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
 "199.title" = "Ausschneiden";
+
+/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
+"1XY-pX-Pwv.title" = "Suche";
+
+/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
+"1uK-HI-wGR.title" = "Installiert";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
 "202.title" = "Löschen";
@@ -74,8 +61,17 @@
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
 "217.title" = "Bearbeiten";
 
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Minimieren";
+
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zoomen";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Fenster";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
 "371.title" = "Geführte Softwareaktualisierung";
@@ -86,11 +82,14 @@
 /* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
 "376.title" = "Navigation";
 
-/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
-"1XY-pX-Pwv.title" = "Suche";
+/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
+"56.title" = "Geführte Softwareaktualisierung";
 
-/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
-"1uK-HI-wGR.title" = "Installiert";
+/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
+"57.title" = "Geführte Softwareaktualisierung";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
+"58.title" = "Über Geführte Softwareaktualisierung";
 
 /* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
 "9S1-fB-bKZ.title" = "Kategorien";
@@ -107,11 +106,17 @@
 /* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
 "CEb-sx-e3H.paletteLabel" = "Navigation";
 
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "Ef8-fO-Dm6"; */
+"Ef8-fO-Dm6.title" = "Password:";
+
 /* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
 "G2X-M7-NVB.label" = "Kategorien";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
 "G2X-M7-NVB.paletteLabel" = "Kategorien";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Rl8-0j-Dpu"; */
+"Rl8-0j-Dpu.title" = "Text Cell";
 
 /* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "Uby-CQ-lvU"; */
 "Uby-CQ-lvU.label" = "Installiert";
@@ -122,6 +127,12 @@
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
 "VYO-og-DRc.title" = "Software";
 
+/* Class = "NSWindow"; title = "Log"; ObjectID = "X5I-7f-aJs"; */
+"X5I-7f-aJs.title" = "Log";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "a1e-6Q-iNS"; */
+"a1e-6Q-iNS.title" = "Text Cell";
+
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
 "bd5-IY-BXv.title" = "Schließen";
 
@@ -131,14 +142,14 @@
 /* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "fbJ-cF-weR"; */
 "fbJ-cF-weR.paletteLabel" = "Suche";
 
+/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
+"jQt-Mr-wFT.title" = "Vollbild";
+
 /* Class = "NSToolbarItem"; label = "Software"; ObjectID = "jTu-Wf-fi2"; */
 "jTu-Wf-fi2.label" = "Software";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "jTu-Wf-fi2"; */
 "jTu-Wf-fi2.paletteLabel" = "Software";
-
-/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
-"jQt-Mr-wFT.title" = "Vollbild";
 
 /* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "sF1-NQ-sSb"; */
 "sF1-NQ-sSb.paletteLabel" = "Narrow Space";

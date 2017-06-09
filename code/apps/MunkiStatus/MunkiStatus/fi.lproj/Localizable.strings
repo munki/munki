@@ -41,6 +41,9 @@
 "Performing preflight tasks..." = "Suoritetaan valmistavia tehtäviä...";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Valmistaudutaan käynnistämään macOS-asentaja...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Poistetaan kuitteja";
 
 /* No comment provided by engineer. */
@@ -71,10 +74,16 @@
 "Starting Adobe installer..." = "Käynnistetään Adobe-asentajaa...";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Aloitetaan macOS-päivitystä...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "Aloitetaan...";
 
 /* No comment provided by engineer. */
 "Starting…" = "Aloitetaan…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Tietokone käynnistyy uudelleen ja aloittaa macOS-päivityksen.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Ohjelmiston asennus onnistui.";
