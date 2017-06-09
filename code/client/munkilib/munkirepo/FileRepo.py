@@ -55,6 +55,15 @@ class ShareAuthenticationNeededException(ShareMountException):
     pass
 
 
+def unicodeize(path):
+    '''Convert a path to unicode'''
+    if type(path) is str:
+        return unicode(path, 'utf-8')
+    elif type(path) is not unicode:
+        return unicode(path)
+    return path
+
+
 def mount_share(share_url):
     '''Mounts a share at /Volumes, returns the mount point or raises an error'''
     sh_url = CFURLCreateWithString(None, share_url, None)
@@ -122,10 +131,12 @@ class FileRepo(Repo):
         self.url_scheme = url_parts.scheme
         if self.url_scheme == 'file':
             # local file repo
-            self.root = urllib.unquote(url_parts.path)
+            self.root = unicodeize(urllib.unquote(url_parts.path))
         else:
             # repo is on a fileshare that will be mounted under /Volumes
-            self.root = os.path.join('/Volumes', url_parts.path.lstrip('/'))
+            self.root = os.path.join(
+                u'/Volumes',
+                unicodeize(urllib.unquote(url_parts.path).lstrip('/')))
         self.we_mounted_repo = False
         self._connect()
 
@@ -175,12 +186,14 @@ class FileRepo(Repo):
         '''Returns a list of identifiers for each item of kind.
         Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
         For a file-backed repo this would be a list of pathnames.'''
+        kind = unicodeize(kind)
         search_dir = os.path.join(self.root, kind)
         file_list = []
         try:
             for (dirpath, dirnames, filenames) in os.walk(search_dir):
                 # don't recurse into directories that start with a period.
-                dirnames[:] = [name for name in dirnames if not name.startswith('.')]
+                dirnames[:] = [name
+                               for name in dirnames if not name.startswith('.')]
                 for name in filenames:
                     if name.startswith('.'):
                         # skip files that start with a period as well
@@ -199,6 +212,7 @@ class FileRepo(Repo):
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
         Avoid using this method with the 'pkgs' kind as it might return a
         really large blob of data.'''
+        resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
             fileref = open(repo_filepath)
@@ -215,7 +229,9 @@ class FileRepo(Repo):
         of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
         local_file_path.'''
+        resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
+        local_file_path = unicodeize(local_file_path)
         try:
             shutil.copyfile(repo_filepath, local_file_path)
         except (OSError, IOError), err:
@@ -226,6 +242,7 @@ class FileRepo(Repo):
         For a file-backed repo, a resource_identifier of
         'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
         saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
         dir_path = os.path.dirname(repo_filepath)
         if not os.path.exists(dir_path):
@@ -242,7 +259,9 @@ class FileRepo(Repo):
         resource_identifier. For a file-backed repo, a resource_identifier
         of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
         being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
+        local_file_path = unicodeize(local_file_path)
         if local_file_path == repo_filepath:
             # nothing to do!
             return
@@ -259,9 +278,9 @@ class FileRepo(Repo):
         For a file-backed repo, a resource_identifier of
         'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
         <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.'''
+        resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
             os.remove(repo_filepath)
         except (OSError, IOError), err:
             raise RepoError(err)
-        
