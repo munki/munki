@@ -859,9 +859,6 @@ Extended Options: (makepkginfo options)
                         '%s is an unknown type.' % uninstaller_item)
                     cleanup_and_exit(-1)
                 else:
-                    # Strip trailing '/' from uninstaller_item
-                    uninstaller_item = uninstaller_item.rstrip('/')
-
                     # we need to convert to dmg
                     dmg_path = make_dmg(uninstaller_item)
                     if dmg_path:
