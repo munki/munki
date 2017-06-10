@@ -128,11 +128,21 @@ class StartOSInstallRunner(object):
         # key (via munkilib.authrestart methods)
         if (authrestartd.verify_can_attempt_auth_restart() or
                 authrestart.can_attempt_auth_restart()):
+            #
             # set a secret preference to tell the osinstaller process to exit
             # instead of restart
             # this is the equivalent of:
             # `defaults write /Library/Preferences/.GlobalPreferences
             #                 IAQuitInsteadOfReboot -bool YES`
+            #
+            # This preference is referred to in a framework inside the
+            # Install macOS.app:
+            # Contents/Frameworks/OSInstallerSetup.framework/Versions/A/
+            #     Frameworks/OSInstallerSetupInternal.framework/Versions/A/
+            #     OSInstallerSetupInternal
+            #
+            # It might go away in future versions of the macOS installer.
+            #
             CFPreferencesSetValue(
                 'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
