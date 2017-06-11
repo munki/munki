@@ -210,21 +210,6 @@ def process_pkgsinfo(repo, icons, force=False):
             if key.startswith('_'):
                 del pkginfo[key]
 
-        if icons:
-            if pkginfo.get('icon_name'):
-                iconhash = (icons.get(pkginfo['icon_name']) or
-                            icons.get(pkginfo['icon_name'] + '.png'))
-                if not iconhash:
-                    errors.append(
-                        "WARNING: icon_name specified in %s but it does not "
-                        "exist" % pkginfo_ref)
-            else:
-                iconhash = icons.get(pkginfo['name'] + '.png')
-
-            if iconhash is not None:
-                pkginfo['icon_hash'] = iconhash
-                iconhash = None
-
         #sanity checking
         verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
         if not verified and not force:
@@ -266,7 +251,8 @@ def makecatalogs(repo, options):
     exit_code = 0
     icons, errors = hash_icons(repo)
 
-    catalogs, catalog_errors = process_pkgsinfo(repo, icons, force=options.force)
+    catalogs, catalog_errors = process_pkgsinfo(
+        repo, icons, force=options.force)
 
     errors.extend(catalog_errors)
 
@@ -306,6 +292,16 @@ def makecatalogs(repo, options):
             print_err_utf8(
                 "WARNING: Did not create catalog %s because it is empty" % key)
             exit_code = -1
+
+    if icons:
+        icon_hashes_plist = os.path.join("icons", "_icon_hashes.plist")
+        icon_hashes = plistlib.writePlistToString(icons)
+        try:
+            repo.put(icon_hashes_plist, icon_hashes)
+            print "Created %s..." % (icon_hashes_plist)
+        except munkirepo.RepoError, err:
+            print_err_utf8(
+                u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
 
     # Exit with "exit_code" if we got this far. This will be -1 if there were
     # any errors that prevented the catalogs to be written.
