@@ -36,6 +36,7 @@ from .. import keychain
 from .. import munkilog
 from .. import munkistatus
 from .. import osutils
+from .. import powermgr
 from .. import prefs
 from .. import processes
 from .. import reports
@@ -81,6 +82,12 @@ def check(client_id='', localmanifestpath=None):
 
         if processes.stop_requested():
             return 0
+
+        # prevent idle sleep only if we are on AC power
+        caffeinator = None
+        if powermgr.onACPower():
+            caffeinator = powermgr.Caffeinator(
+                'Munki is checking for new software')
 
         # initialize our installinfo record
         installinfo['processed_installs'] = []
