@@ -667,8 +667,12 @@ def run(only_unattended=False):
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
-    # prevent sleep when idle so our installs complete
+    # pylint: disable=unused-variable
+    # prevent sleep when idle so our installs complete. The Caffeinator class
+    # automatically releases the Power Manager assertion when the variable
+    # goes out of scope, so we only need to create it and hold a reference
     caffeinator = powermgr.Caffeinator()
+    # pylint: enable=unused-variable
 
     managedinstallbase = prefs.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
