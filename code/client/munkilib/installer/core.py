@@ -667,8 +667,8 @@ def run(only_unattended=False):
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
-    # hold onto the assertionID so we can release it later
-    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
+    # prevent sleep when idle so our installs complete
+    caffeinator = powermgr.Caffeinator()
 
     managedinstallbase = prefs.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
@@ -784,7 +784,6 @@ def run(only_unattended=False):
         munkilog.log("###    End managed installer session    ###")
 
     reports.savereport()
-    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
     return removals_need_restart or installs_need_restart
 
 
