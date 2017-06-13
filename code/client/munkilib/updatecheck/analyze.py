@@ -183,8 +183,18 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             iteminfo[key] = item_pl[key]
     iteminfo['installed'] = is_currently_installed
     if iteminfo['installed']:
-        iteminfo['needs_update'] = (
-            installationstate.installed_state(item_pl) == 0)
+        if 'installcheck_script' in item_pl:
+            # installcheck_scripts can be expensive and only tell us if
+            # an item is installed or not. So if iteminfo['installed'] is
+            # True, and we're using an installcheck_script,
+            # installationstate.installed_state is going to return 1
+            # (which does not equal 0), so we can avoid running it again.
+            # We should really revisit all of this in the future to avoid
+            # repeated checks of the same data.
+            iteminfo['needs_update'] = False
+        else:
+            iteminfo['needs_update'] = (
+                installationstate.installed_state(item_pl) == 0)
     iteminfo['licensed_seat_info_available'] = item_pl.get(
         'licensed_seat_info_available', False)
     iteminfo['uninstallable'] = (
