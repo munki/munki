@@ -183,7 +183,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             iteminfo[key] = item_pl[key]
     iteminfo['installed'] = is_currently_installed
     if iteminfo['installed']:
-        if 'installcheck_script' in item_pl:
+        if 'OnDemand' not in item_pl and 'installcheck_script' in item_pl:
             # installcheck_scripts can be expensive and only tell us if
             # an item is installed or not. So if iteminfo['installed'] is
             # True, and we're using an installcheck_script,
