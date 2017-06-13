@@ -337,7 +337,6 @@ def main():
             options.repo_url = pref('repo_url')
             options.plugin = pref('plugin')
         elif pref('repo_path'):
-            # backwards compatibilty
             options.repo_url = path2url(pref('repo_path'))
 
     if not options.repo_url:
