@@ -189,9 +189,18 @@ def updatesContainNonUserSelectedItems():
 def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
        make the effective list of updates'''
-    # this was more complex in the past, but caused some edge case issues
-    # so we're going to simplify
-    return getUpdateList()
+    # get pending optional items seperately since OptionalItems have
+    # extra details/attribbutes
+    optional_installs = getOptionalWillBeInstalledItems()
+    optional_removals = getOptionalWillBeRemovedItems()
+    optional_item_names = [item['name']
+                           for item in optional_installs + optional_removals]
+    # filter out pending optional items from the list of all pending updates
+    # so we can add in the items with additional optional detail
+    mandatory_updates = [item for item in getUpdateList()
+                         if item['name'] not in optional_item_names]
+
+    return mandatory_updates + optional_installs + optional_removals
 
 
 def getMyItemsList():
