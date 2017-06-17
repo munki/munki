@@ -201,7 +201,12 @@ class FileRepo(Repo):
                     abs_path = os.path.join(dirpath, name)
                     rel_path = abs_path[len(search_dir):].lstrip("/")
                     file_list.append(rel_path)
-            return file_list
+            '''Different filesystems return items in different orders, so sort
+            before returning them to produce consisten results.  For example,
+            items are generally returned in an ascending order on an HFS+
+            volume, but are returned in a somewhat random, descending, and
+            unpredictable order on AFPS.'''
+            return sorted(file_list)
         except (OSError, IOError), err:
             raise RepoError(err)
 
