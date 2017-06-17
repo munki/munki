@@ -50,6 +50,9 @@ def hash_icons(repo):
     icons = {}
     print_utf8("Getting list of icons...")
     icon_list = repo.itemlist('icons')
+    # Don't hash the hashes, they aren't icons.
+    if '_icon_hashes.plist' in icon_list:
+        icon_list.remove('_icon_hashes.plist')
     for icon_ref in icon_list:
         print_utf8("Hashing %s..." % (icon_ref))
         # Try to read the icon file
