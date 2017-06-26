@@ -11,12 +11,16 @@
 #
 
 from objc import YES, NO, IBAction, IBOutlet
+## pylint: disable=wildcard-import
+## pylint: disable=unused-wildcard-import
+## pylint: disable=redefined-builtin
+#from Foundation import *
+#from AppKit import *
+## pylint: enable=redefined-builtin
+## pylint: enable=wildcard-import
+
 # pylint: disable=wildcard-import
-# pylint: disable=unused-wildcard-import
-# pylint: disable=redefined-builtin
-from Foundation import *
-from AppKit import *
-# pylint: enable=redefined-builtin
+from CocoaWrapper import *
 # pylint: enable=wildcard-import
 
 import munki
