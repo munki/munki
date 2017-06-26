@@ -18,9 +18,13 @@
 
 
 from objc import YES, IBOutlet, nil
-from Foundation import *
-from AppKit import *
 from PyObjCTools import AppHelper
+#from Foundation import *
+#from AppKit import *
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
 
 import munki
 import msclog
