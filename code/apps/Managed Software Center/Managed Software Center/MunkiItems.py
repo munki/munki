@@ -27,10 +27,17 @@ import munki
 from operator import itemgetter
 from HTMLParser import HTMLParser, HTMLParseError
 
-# Disable PyLint complaining about wildcard imports and unused symbols
-# pylint: disable=W0401,W0614
-from Foundation import *
-from AppKit import *
+## pylint: disable=wildcard-import
+## pylint: disable=unused-wildcard-import
+## pylint: disable=redefined-builtin
+#from Foundation import *
+#from AppKit import *
+## pylint: enable=redefined-builtin
+## pylint: enable=wildcard-import
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
 
 import FoundationPlist
 

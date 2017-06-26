@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		650B29A419B69FC800A5E946 /* MSCToolbar.py in Resources */ = {isa = PBXBuildFile; fileRef = 650B29A319B69FC800A5E946 /* MSCToolbar.py */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C00F67571F016C9F00D9007D /* CocoaWrapper.py in Resources */ = {isa = PBXBuildFile; fileRef = C00F67561F016C9F00D9007D /* CocoaWrapper.py */; };
 		C01B396D1EEA6A9000DFBA3B /* libpython2.7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */; };
 		C01FBD311EA64CD600AE97EE /* passwdutil.py in Resources */ = {isa = PBXBuildFile; fileRef = C01FBD301EA64CD600AE97EE /* passwdutil.py */; };
 		C02C98891911B81D00425167 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C02C98871911B81D00425167 /* Localizable.strings */; };
@@ -69,6 +70,7 @@
 /* Begin PBXFileReference section */
 		650B29A319B69FC800A5E946 /* MSCToolbar.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCToolbar.py; sourceTree = "<group>"; };
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C00F67561F016C9F00D9007D /* CocoaWrapper.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = CocoaWrapper.py; sourceTree = "<group>"; };
 		C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.7.dylib; path = ../../../../../../../../../System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/libpython2.7.dylib; sourceTree = SDKROOT; };
 		C01E26911B4DADDC005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C01E26921B4DADE4005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -251,6 +253,7 @@
 				C01FBD301EA64CD600AE97EE /* passwdutil.py */,
 				650B29A319B69FC800A5E946 /* MSCToolbar.py */,
 				C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */,
+				C00F67561F016C9F00D9007D /* CocoaWrapper.py */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -427,6 +430,7 @@
 				C02C98891911B81D00425167 /* Localizable.strings in Resources */,
 				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
 				C049C9951AEC77DD00251D45 /* updatesTemplate.png in Resources */,
+				C00F67571F016C9F00D9007D /* CocoaWrapper.py in Resources */,
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C0E098BC1857A3C80045DEEB /* msclib.py in Resources */,
 				C042CA151EAD86DE006CC681 /* MSCPasswordAlertController.py in Resources */,
