@@ -249,7 +249,8 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             reports.savereport()
             # install macOS
             try:
-                success = osinstaller.run(finishing_tasks=doFinishingTasks)
+                success = osinstaller.run(finishing_tasks=doFinishingTasks(
+                    runtype='osinstall'))
             except:
                 display.display_error(
                     'Unexpected error in munkilib.osinstaller:')
@@ -276,7 +277,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
     return munki_need_to_restart or apple_need_to_restart
 
 
-def doFinishingTasks():
+def doFinishingTasks(runtype):
     '''A collection of tasks to do as we finish up'''
     # finish our report
     reports.report['EndTime'] = reports.format_time()
@@ -992,7 +993,7 @@ def main():
                 os.unlink(checkandinstallatstartupflag)
 
     display.display_status_major('Finishing...')
-    doFinishingTasks()
+    doFinishingTasks(runtype)
     sendDockUpdateNotification()
     sendEndNotification()
 
