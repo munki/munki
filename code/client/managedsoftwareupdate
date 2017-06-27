@@ -276,7 +276,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
     return munki_need_to_restart or apple_need_to_restart
 
 
-def doFinishingTasks():
+def doFinishingTasks(runtype=None):
     '''A collection of tasks to do as we finish up'''
     # finish our report
     reports.report['EndTime'] = reports.format_time()
@@ -298,12 +298,8 @@ def doFinishingTasks():
     # run the postflight script if it exists
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     postflightscript = os.path.join(scriptdir, 'postflight')
-    try:
-        localruntype = runtype
-    except NameError:
-        # runtype is not defined -- we're being called by osinstall
-        localruntype = 'osinstall'
-    runScript(postflightscript, 'postflight', localruntype)
+    # if runtype is not defined -- we're being called by osinstall
+    runScript(postflightscript, 'postflight', runtype or 'osinstall')
     # we ignore the result of the postflight
 
 
@@ -992,7 +988,7 @@ def main():
                 os.unlink(checkandinstallatstartupflag)
 
     display.display_status_major('Finishing...')
-    doFinishingTasks()
+    doFinishingTasks(runtype=runtype)
     sendDockUpdateNotification()
     sendEndNotification()
 
