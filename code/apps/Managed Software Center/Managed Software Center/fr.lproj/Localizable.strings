@@ -456,3 +456,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Votre logiciel est à jour.";
+
+/* Item requires a higher OS */
+"Requires macOS version %s" = "Nécessite la version %s de macOS"
