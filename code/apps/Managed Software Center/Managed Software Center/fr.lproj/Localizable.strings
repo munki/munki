@@ -290,7 +290,7 @@
 "Required" = "obligatoire";
 
 /* Item requires a higher OS version text */
-"Requires macOS version %s" = "Nécessite la version %s de macOS"
+"Requires macOS version %s" = "Nécessite la version %s de macOS";
 
 /* Restart button title */
 "Restart" = "Redémarrer";
