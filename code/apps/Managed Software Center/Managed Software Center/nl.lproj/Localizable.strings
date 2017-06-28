@@ -289,8 +289,8 @@
 /* Install Required action text */
 "Required" = "Benodigd";
 
-+/* Item requires a higher OS */
-+"Requires macOS version %s" = "macOS versie %s benodigd"
+/* Item requires a higher OS version text */
+"Requires macOS version %s" = "macOS versie %s benodigd"
 
 /* Restart button title */
 "Restart" = "Herstarten";
