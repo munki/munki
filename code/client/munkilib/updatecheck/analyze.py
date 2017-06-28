@@ -157,7 +157,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                 manifestitemname)
             return
 
-    item_pl = catalogs.get_item_detail(manifestitem, cataloglist)
+    item_pl = catalogs.get_item_detail(manifestitem, cataloglist,
+                                       is_optional_item=True)
     if not item_pl:
         display.display_warning(
             'Could not process item %s for optional install. No pkginfo found '
@@ -204,7 +205,11 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
         'installer_item_size', iteminfo['installer_item_size'])
-    if (not iteminfo['installed']) or (iteminfo.get('needs_update')):
+    if item_pl.get('note'):
+        # catalogs.get_item_detail() passed us a note about this item;
+        # pass it along
+        iteminfo['note'] = item_pl['note']
+    elif (not iteminfo['installed']) or (iteminfo.get('needs_update')):
         if not download.enough_disk_space(
                 item_pl, installinfo.get('managed_installs', []), warn=False):
             iteminfo['note'] = (

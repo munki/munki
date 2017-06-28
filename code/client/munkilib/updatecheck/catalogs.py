@@ -414,7 +414,7 @@ def analyze_installed_pkgs():
     return pkgdata
 
 
-def get_item_detail(name, cataloglist, vers=''):
+def get_item_detail(name, cataloglist, vers='', is_optional_item=False):
     """Searches the catalogs in list for an item matching the given name that
     can be installed on the current hardware/OS
 
@@ -454,12 +454,13 @@ def get_item_detail(name, cataloglist, vers=''):
                 return False
         return True
 
-    def os_version_ok(item):
+    def os_version_ok(item, skip_min_os_check=False):
         '''Returns a boolean to indicate if the item is ok to install under
         the current OS. If not, also adds the failure reason to the
-        rejected_items list.'''
+        rejected_items list. If skip_min_os_check is True, skips the minimum os
+        version check.'''
         # Is the current OS version >= minimum_os_version for the item?
-        if item.get('minimum_os_version'):
+        if item.get('minimum_os_version') and not skip_min_os_check:
             min_os_vers = item['minimum_os_version']
             display.display_debug1(
                 'Considering item %s, version %s '
@@ -582,12 +583,37 @@ def get_item_detail(name, cataloglist, vers=''):
                 # version first, looking for one that passes all the conditional
                 # tests (if any)
                 item = _CATALOG[catalogname]['items'][index]
-                if (munki_version_ok(item) and os_version_ok(item) and
-                        cpu_arch_ok(item) and installable_condition_ok(item)):
+                if (munki_version_ok(item) and
+                        os_version_ok(item) and
+                        cpu_arch_ok(item) and
+                        installable_condition_ok(item)):
                     display.display_debug1(
                         'Found %s, version %s in catalog %s',
                         item['name'], item['version'], catalogname)
                     return item
+
+            # if we're here, we didn't find an item that matches our machine
+            # restraints. if we are checking for optional installs, check again,
+            # this time returning an item that requires a higher os version
+            # that we can use to incentivize people to update their os
+            if is_optional_item:
+                for index in indexlist:
+                    # iterate through list of items with matching name, highest
+                    # version first, looking for one that passes all the
+                    # conditional tests (if any)
+                    item = _CATALOG[catalogname]['items'][index]
+                    if (munki_version_ok(item) and
+                            os_version_ok(item, skip_min_os_check=True) and
+                            cpu_arch_ok(item) and
+                            installable_condition_ok(item)):
+                        display.display_debug1(
+                            'Found %s, version %s in catalog %s that requires '
+                            'a higher os version',
+                            item['name'], item['version'], catalogname)
+                        # insert a note
+                        item['note'] = ('Requires macOS version %s.'
+                                        % item['minimum_os_version'])
+                        return item
 
     # if we got this far, we didn't find it.
     display.display_debug1('Not found')
