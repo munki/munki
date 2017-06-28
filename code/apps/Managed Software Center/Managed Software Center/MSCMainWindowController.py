@@ -133,7 +133,7 @@ class MSCMainWindowController(NSWindowController):
             u"%@", alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window(), self,
-            self.updateAlertDidEnd_returnCode_contextInfo_, objc.nil)
+            self.updateAlertDidEnd_returnCode_contextInfo_, nil)
 
     @AppHelper.endSheetMethod
     def updateAlertDidEnd_returnCode_contextInfo_(
