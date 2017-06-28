@@ -602,10 +602,12 @@ class GenericItem(dict):
                 'Insufficient disk space to download and install.'):
             return NSLocalizedString(u"Not enough disk space",
                                      u"Not Enough Disk Space display text")
-        if self.get('note').startswith('Requires macOS version '):
-            return self['note']
-            #return NSLocalizedString(u"Not enough disk space",
-            #                         u"Not Enough Disk Space display text")
+        if self.get('note', '').startswith('Requires macOS version '):
+            base_string = NSLocalizedString(u"Requires macOS version %s",
+                                            u"Requires macOS version %s")
+            # this is a bit of a cheat; we should probably store the
+            # minimum_os_version with the install info
+            return base_string % self['note'].split()[-1]
         # return generic reason
         return NSLocalizedString(u"Not currently available",
                                  u"Not Currently Available display text")
