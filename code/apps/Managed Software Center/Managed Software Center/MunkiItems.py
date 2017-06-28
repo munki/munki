@@ -603,8 +603,9 @@ class GenericItem(dict):
             return NSLocalizedString(u"Not enough disk space",
                                      u"Not Enough Disk Space display text")
         if self.get('note', '').startswith('Requires macOS version '):
-            base_string = NSLocalizedString(u"Requires macOS version %s",
-                                            u"Requires macOS version %s")
+            base_string = NSLocalizedString(
+                u"Requires macOS version %s",
+                u"Item requires a higher OS version text")
             # this is a bit of a cheat; we should probably store the
             # minimum_os_version with the install info
             return base_string % self['note'].split()[-1]
