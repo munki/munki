@@ -289,6 +289,9 @@
 /* Install Required action text */
 "Required" = "obligatoire";
 
+/* Item requires a higher OS */
+"Requires macOS version %s" = "Nécessite la version %s de macOS"
+
 /* Restart button title */
 "Restart" = "Redémarrer";
 
