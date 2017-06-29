@@ -465,6 +465,52 @@ def unmanage(item):
     user_removal_selections.discard(item['name'])
 
 
+def getLocalizedShortNoteForItem(item, is_update=False):
+    '''Attempt to localize a note. Currently handle only two types.'''
+    note = item.get('note')
+    if is_update:
+        return NSLocalizedString(u"Update available",
+                                 u"Update available display text")
+    if note.startswith('Insufficient disk space to download and install'):
+        return NSLocalizedString(u"Not enough disk space",
+                                 u"Not Enough Disk Space display text")
+    if note.startswith('Requires macOS version '):
+        return NSLocalizedString(u"macOS update required",
+                                 u"macOS update required text")
+    # we don't know how to localize this note, return None
+    return None
+
+
+def getLocalizedLongNoteForItem(item, is_update=False):
+    '''Attempt to localize a note. Currently handle only two types.'''
+    note = item.get('note')
+    if note.startswith('Insufficient disk space to download and install'):
+        if is_update:
+            return NSLocalizedString(
+                u"An older version is currently installed. There is not enough "
+                "disk space to download and install this update.",
+                u"Long Not Enough Disk Space For Update display text")
+        else:
+            return NSLocalizedString(
+                u"There is not enough disk space to download and install this "
+                "item.",
+                u"Long Not Enough Disk Space display text")
+    if note.startswith('Requires macOS version '):
+        if is_update:
+            base_string = NSLocalizedString(
+                u"An older version is currently installed. You must upgrade to "
+                "macOS version %s or higher to be able to install this update.",
+                u"Long update requires a higher OS version text")
+        else:
+            base_string = NSLocalizedString(
+                u"You must upgrade to macOS version %s to be able to "
+                "install this item.",
+                u"Long item requires a higher OS version text")
+        os_version = item.get('minimum_os_version', 'UNKNOWN')
+        return base_string % os_version
+    # we don't know how to localize this note, return None
+    return None
+
 class GenericItem(dict):
     '''Base class for our types of Munki items'''
 
@@ -591,24 +637,16 @@ class GenericItem(dict):
         # use the Generic package icon
         return 'static/Generic.png'
 
-    def unavailable_reason_text(self):
+    def unavailable_reason_text(self, is_update=False):
         '''There are several reasons an item might be unavailable for install.
            Return the relevent reason'''
         if ('licensed_seats_available' in self
                 and not self['licensed_seats_available']):
             return NSLocalizedString(u"No licenses available",
                                      u"No Licenses Available display text")
-        if (self.get('note') ==
-                'Insufficient disk space to download and install.'):
-            return NSLocalizedString(u"Not enough disk space",
-                                     u"Not Enough Disk Space display text")
-        if self.get('note', '').startswith('Requires macOS version '):
-            base_string = NSLocalizedString(
-                u"Requires macOS version %s",
-                u"Item requires a higher OS version text")
-            # this is a bit of a cheat; we should probably store the
-            # minimum_os_version with the install info
-            return base_string % self['note'].split()[-1]
+        localizedNote = getLocalizedShortNoteForItem(self, is_update=is_update)
+        if localizedNote:
+            return '<span class="warning">' + localizedNote + '</span>'
         # return generic reason
         return NSLocalizedString(u"Not currently available",
                                  u"Not Currently Available display text")
@@ -617,6 +655,9 @@ class GenericItem(dict):
         '''Return localized status display text'''
         if self['status'] == 'unavailable':
             return self.unavailable_reason_text()
+        if (self['status'] in ['installed', 'installed-not-removable'] and
+                self.get('note')):
+            return self.unavailable_reason_text(is_update=True)
         text_map = {
             'install-error':
                 NSLocalizedString(u"Installation Error",
@@ -1008,9 +1049,12 @@ class OptionalItem(GenericItem):
             start_text += ('<span class="warning">%s</span><br/><br/>'
                            % filtered_html(warning_text))
         if self.get('note'):
-            # some other note. Probably won't be localized, but we can try
-            warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
-                self['note'], self['note'], None)
+            is_update = self['status'] in ['installed', 'installed-not-removable']
+            warning_text = getLocalizedLongNoteForItem(self, is_update=is_update)
+            if not warning_text:
+                # some other note. Probably won't be localized, but we can try
+                warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
+                    self['note'], self['note'], None)
             start_text += ('<span class="warning">%s</span><br/><br/>'
                            % filtered_html(warning_text))
         if self.get('dependent_items'):

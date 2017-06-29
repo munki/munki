@@ -414,9 +414,10 @@ def analyze_installed_pkgs():
     return pkgdata
 
 
-def get_item_detail(name, cataloglist, vers='', is_optional_item=False):
+def get_item_detail(name, cataloglist, vers='', skip_min_os_check=False):
     """Searches the catalogs in list for an item matching the given name that
-    can be installed on the current hardware/OS
+    can be installed on the current hardware/OS (optionally skipping the
+    minimum OS check so we can return an item that requires a higher OS)
 
     If no version is supplied, but the version is appended to the name
     ('TextWrangler--2.3.0.0.0') that version is used.
@@ -580,40 +581,18 @@ def get_item_detail(name, cataloglist, vers='', is_optional_item=False):
                     (len(indexlist), name, catalogname))
             for index in indexlist:
                 # iterate through list of items with matching name, highest
-                # version first, looking for one that passes all the conditional
-                # tests (if any)
+                # version first, looking for first one that passes all the
+                # conditional tests (if any)
                 item = _CATALOG[catalogname]['items'][index]
                 if (munki_version_ok(item) and
-                        os_version_ok(item) and
+                        os_version_ok(item,
+                                      skip_min_os_check=skip_min_os_check) and
                         cpu_arch_ok(item) and
                         installable_condition_ok(item)):
                     display.display_debug1(
                         'Found %s, version %s in catalog %s',
                         item['name'], item['version'], catalogname)
                     return item
-
-            # if we're here, we didn't find an item that matches our machine
-            # restraints. if we are checking for optional installs, check again,
-            # this time returning an item that requires a higher os version
-            # that we can use to incentivize people to update their os
-            if is_optional_item:
-                for index in indexlist:
-                    # iterate through list of items with matching name, highest
-                    # version first, looking for one that passes all the
-                    # conditional tests (if any)
-                    item = _CATALOG[catalogname]['items'][index]
-                    if (munki_version_ok(item) and
-                            os_version_ok(item, skip_min_os_check=True) and
-                            cpu_arch_ok(item) and
-                            installable_condition_ok(item)):
-                        display.display_debug1(
-                            'Found %s, version %s in catalog %s that requires '
-                            'a higher os version',
-                            item['name'], item['version'], catalogname)
-                        # insert a note
-                        item['note'] = ('Requires macOS version %s.'
-                                        % item['minimum_os_version'])
-                        return item
 
     # if we got this far, we didn't find it.
     display.display_debug1('Not found')

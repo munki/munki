@@ -237,11 +237,13 @@ def check(client_id='', localmanifestpath=None):
 
             # build list of items in the optional_installs list
             # that have not exceeded available seats
+            # and don't have notes (indicating why they can't be installed)
             available_optional_installs = [
                 item['name']
                 for item in installinfo.get('optional_installs', [])
-                if (not 'licensed_seats_available' in item
-                    or item['licensed_seats_available'])]
+                if (not 'note' in item and
+                    (not 'licensed_seats_available' in item or
+                     item['licensed_seats_available']))]
             if selfserveinstalls:
                 # filter the list, removing any items not in the current list
                 # of available self-serve installs
