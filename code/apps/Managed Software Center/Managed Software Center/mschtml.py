@@ -534,9 +534,21 @@ def build_updates_page():
 
     item_list = MunkiItems.getEffectiveUpdateList()
 
+    # find any optional installs with update available
     other_updates = [
         item for item in MunkiItems.getOptionalInstallItems()
         if item['status'] == 'update-available']
+
+    # find any listed optional install updates that require a higher OS
+    # or have insufficent disk space or other blockers (because they have a
+    # note)
+    higher_os_updates = [
+        item for item in MunkiItems.getOptionalInstallItems()
+        if item['status'] == 'installed' and item.get('note')]
+    for item in higher_os_updates:
+        item['hide_cancel_button'] = u'hidden'
+
+    other_updates.extend(higher_os_updates)
 
     page = {}
     page['update_rows'] = u''

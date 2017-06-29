@@ -157,19 +157,65 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                 manifestitemname)
             return
 
-    item_pl = catalogs.get_item_detail(manifestitem, cataloglist,
-                                       is_optional_item=True)
+    item_pl = catalogs.get_item_detail(manifestitem, cataloglist)
     if not item_pl:
-        display.display_warning(
-            'Could not process item %s for optional install. No pkginfo found '
-            'in catalogs: %s ', manifestitem, ', '.join(cataloglist))
-        return
+        # could not find an item valid for the current OS and hardware
+        # try again to see if there is an item for a higher OS
+        item_pl = catalogs.get_item_detail(
+            manifestitem, cataloglist, skip_min_os_check=True)
+        if item_pl:
+            # found an item that requires a higher OS version
+            display.display_debug1(
+                'Found %s, version %s that requires a higher os version',
+                item_pl['name'], item_pl['version'])
+            # insert a note about the OS version requirement
+            item_pl['note'] = ('Requires macOS version %s.'
+                               % item_pl['minimum_os_version'])
+            item_pl['update_available'] = True
+        else:
+            # could not find anything!
+            display.display_warning(
+                'Could not process item %s for optional install. No pkginfo '
+                'found in catalogs: %s ', manifestitem, ', '.join(cataloglist))
+            return
 
     is_currently_installed = installationstate.some_version_installed(item_pl)
-    if is_currently_installed and unused_software.should_be_removed(item_pl):
-        process_removal(manifestitem, cataloglist, installinfo)
-        installer.remove_from_selfserve_installs(manifestitem)
-        return
+    needs_update = False
+    if is_currently_installed:
+        if unused_software.should_be_removed(item_pl):
+            process_removal(manifestitem, cataloglist, installinfo)
+            installer.remove_from_selfserve_installs(manifestitem)
+            return
+        if not item_pl.get('OnDemand') and 'installcheck_script' not in item_pl:
+            # installcheck_scripts can be expensive and only tell us if
+            # an item is installed or not. So if iteminfo['installed'] is
+            # True, and we're using an installcheck_script,
+            # installationstate.installed_state is going to return 1
+            # (which does not equal 0), so we can avoid running it again.
+            # We should really revisit all of this in the future to avoid
+            # repeated checks of the same data.
+            needs_update = False
+        else:
+            needs_update = installationstate.installed_state(item_pl) == 0
+        if not needs_update:
+            # the version we have installed is the newest for the current OS.
+            # check again to see if there is a newer version for a higher OS
+            display.display_debug1(
+                'Checking for versions of %s that require a higher OS version',
+                manifestitem)
+            another_item_pl = catalogs.get_item_detail(
+                manifestitem, cataloglist, skip_min_os_check=True)
+            if another_item_pl != item_pl:
+                # we found a different item. Replace the one we found
+                # previously with this one.
+                item_pl = another_item_pl
+                display.display_debug1(
+                    'Found %s, version %s that requires a higher os version',
+                    item_pl['name'], item_pl['version'])
+                # insert a note about the OS version requirement
+                item_pl['note'] = ('Requires macOS version %s.'
+                                   % item_pl['minimum_os_version'])
+                item_pl['update_available'] = True
 
     # if we get to this point we can add this item
     # to the list of optional installs
@@ -183,19 +229,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
         if key in item_pl:
             iteminfo[key] = item_pl[key]
     iteminfo['installed'] = is_currently_installed
-    if iteminfo['installed']:
-        if not item_pl.get('OnDemand') and 'installcheck_script' in item_pl:
-            # installcheck_scripts can be expensive and only tell us if
-            # an item is installed or not. So if iteminfo['installed'] is
-            # True, and we're using an installcheck_script,
-            # installationstate.installed_state is going to return 1
-            # (which does not equal 0), so we can avoid running it again.
-            # We should really revisit all of this in the future to avoid
-            # repeated checks of the same data.
-            iteminfo['needs_update'] = False
-        else:
-            iteminfo['needs_update'] = (
-                installationstate.installed_state(item_pl) == 0)
+    iteminfo['needs_update'] = needs_update
     iteminfo['licensed_seat_info_available'] = item_pl.get(
         'licensed_seat_info_available', False)
     iteminfo['uninstallable'] = (
@@ -209,15 +243,20 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
         # catalogs.get_item_detail() passed us a note about this item;
         # pass it along
         iteminfo['note'] = item_pl['note']
-    elif (not iteminfo['installed']) or (iteminfo.get('needs_update')):
+    elif needs_update or not is_currently_installed:
         if not download.enough_disk_space(
                 item_pl, installinfo.get('managed_installs', []), warn=False):
             iteminfo['note'] = (
                 'Insufficient disk space to download and install.')
+            if needs_update:
+                iteminfo['needs_update'] = False
+                iteminfo['update_available'] = True
     optional_keys = ['preinstall_alert',
                      'preuninstall_alert',
                      'preupgrade_alert',
-                     'OnDemand']
+                     'OnDemand',
+                     'minimum_os_version',
+                     'update_available']
     for key in optional_keys:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
