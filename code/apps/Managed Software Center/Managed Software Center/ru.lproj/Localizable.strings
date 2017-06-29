@@ -289,6 +289,9 @@
 /* Install Required action text */
 "Required" = "Обязательное";
 
+/* Item requires a higher OS version text */
+"Requires macOS version %s" = "требует версию Х macOS";
+
 /* Restart button title */
 "Restart" = "Перезагрузить";
 
