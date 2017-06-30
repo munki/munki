@@ -414,7 +414,8 @@ def analyze_installed_pkgs():
     return pkgdata
 
 
-def get_item_detail(name, cataloglist, vers='', skip_min_os_check=False):
+def get_item_detail(name, cataloglist, vers='',
+                    skip_min_os_check=False, suppress_warnings=False):
     """Searches the catalogs in list for an item matching the given name that
     can be installed on the current hardware/OS (optionally skipping the
     minimum OS check so we can return an item that requires a higher OS)
@@ -557,8 +558,13 @@ def get_item_detail(name, cataloglist, vers='', skip_min_os_check=False):
         else:
             vers = 'latest'
 
-    display.display_debug1(
-        'Looking for detail for: %s, version %s...', name, vers)
+    if skip_min_os_check:
+        display.display_debug1(
+            'Looking for detail for: %s, version %s, '
+            'ignoring minimum_os_version...', name, vers),
+    else:
+        display.display_debug1(
+            'Looking for detail for: %s, version %s...', name, vers)
 
     for catalogname in cataloglist:
         # is name in the catalog?
@@ -597,7 +603,10 @@ def get_item_detail(name, cataloglist, vers='', skip_min_os_check=False):
     # if we got this far, we didn't find it.
     display.display_debug1('Not found')
     for reason in rejected_items:
-        display.display_warning(reason)
+        if suppress_warnings:
+            display.display_debug1(reason)
+        else:
+            display.display_warning(reason)
     return None
 
 

@@ -157,12 +157,14 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                 manifestitemname)
             return
 
-    item_pl = catalogs.get_item_detail(manifestitem, cataloglist)
+    item_pl = catalogs.get_item_detail(manifestitem, cataloglist,
+                                       suppress_warnings=True)
     if not item_pl:
         # could not find an item valid for the current OS and hardware
         # try again to see if there is an item for a higher OS
         item_pl = catalogs.get_item_detail(
-            manifestitem, cataloglist, skip_min_os_check=True)
+            manifestitem, cataloglist, skip_min_os_check=True,
+            suppress_warnings=True)
         if item_pl:
             # found an item that requires a higher OS version
             display.display_debug1(
@@ -204,7 +206,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                 'Checking for versions of %s that require a higher OS version',
                 manifestitem)
             another_item_pl = catalogs.get_item_detail(
-                manifestitem, cataloglist, skip_min_os_check=True)
+                manifestitem, cataloglist, skip_min_os_check=True,
+                suppress_warnings=True)
             if another_item_pl != item_pl:
                 # we found a different item. Replace the one we found
                 # previously with this one.
