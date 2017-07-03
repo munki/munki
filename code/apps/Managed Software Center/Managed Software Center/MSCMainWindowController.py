@@ -164,7 +164,7 @@ class MSCMainWindowController(NSWindowController):
         '''Called by app delegate from applicationDidFinishLaunching:'''
         self.enableOrDisableSoftwareViewControls()
         optional_items = MunkiItems.getOptionalInstallItems()
-        if not optional_items or self.getUpdateCount():
+        if not optional_items or self.getUpdateCount() or MunkiItems.getProblemItems():
             self.loadUpdatesPage_(self)
         else:
             self.loadAllSoftwarePage_(self)

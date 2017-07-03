@@ -91,6 +91,18 @@ def getOptionalInstallItems():
     return _cache['optional_install_items']
 
 
+def getProblemItems():
+    if not 'problem_items' in _cache:
+        problem_items = getInstallInfo().get('problem_items', [])
+        for item in problem_items:
+            item['status'] = 'problem-item'
+        _cache['problem_items'] = sorted(
+            [UpdateItem(item) for item in problem_items],
+            key=itemgetter(
+               'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
+    return _cache['problem_items']
+
+
 def updateCheckNeeded():
     '''Returns True if any item in optional installs list has
     'updatecheck_needed' == True'''
@@ -152,6 +164,12 @@ def _build_update_list():
         item['status'] = u'will-be-removed'
     # TO-DO: handle the case where removal detail is suppressed
     update_items.extend(removal_items)
+
+#    problem_items = install_info.get('problem_items', [])
+#    for item in problem_items:
+#        item['status'] = u'problem-item'
+#    update_items.extend(problem_items)
+
     # use our list to make UpdateItems
     update_list = [UpdateItem(item) for item in update_items]
     # sort it and return it
@@ -1123,7 +1141,7 @@ class UpdateItem(GenericItem):
         identifier = (self.get('name', '') + '--version-'
                       + self.get('version_to_install', ''))
         self['detail_link'] = 'updatedetail-%s.html' % quote(identifier)
-        if not self['status'] == 'will-be-removed':
+        if not self.get('status') == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
                 self['type'] = NSLocalizedString(
@@ -1137,8 +1155,7 @@ class UpdateItem(GenericItem):
         self['dependent_items'] = dependentItems(self['name'])
 
     def description(self):
-        warning = ''
-        dependent_items = ''
+        start_text = ''
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
@@ -1154,10 +1171,37 @@ class UpdateItem(GenericItem):
                     forced_date_text = NSLocalizedString(
                         u"This item must be installed by %s",
                         u"Forced Date warning")
-                    warning = ('<span class="warning">'
-                               + forced_date_text % date_str
-                               + '</span><br><br>')
+                    start_text += ('<span class="warning">'
+                                   + forced_date_text % date_str
+                                   + '</span><br><br>')
+            elif self['status'] == 'problem-item':
+                if self.get('install_error'):
+                    warning_text = NSLocalizedString(
+                        u"An installation attempt failed. "
+                        "Installation will be attempted again.\n"
+                        "If this situation continues, contact your systems "
+                        "administrator.",
+                        u"Install Error message")
+                    start_text += ('<span class="warning">%s</span><br/><br/>'
+                                   % filtered_html(warning_text))
+                elif self.get('removal_error'):
+                    warning_text = NSLocalizedString(
+                        u"A removal attempt failed. "
+                        "Removal will be attempted again.\n"
+                        "If this situation continues, contact your systems "
+                        "administrator.",
+                        u"Removal Error message")
+                    start_text += ('<span class="warning">%s</span><br/><br/>'
+                                   % filtered_html(warning_text))
+                elif self.get('note'):
+                    warning_text = getLocalizedLongNoteForItem(self)
+                    if not warning_text:
+                        # some other note. Probably won't be localized, but we can try
+                        warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
+                            self['note'], self['note'], None)
+                    start_text += ('<span class="warning">%s</span><br/><br/>'
+                                   % filtered_html(warning_text))
             if self.get('dependent_items'):
-                dependent_items = self.dependency_description()
+                start_text += self.dependency_description()
 
-        return warning + dependent_items + self['raw_description']
+        return start_text + self['raw_description']
