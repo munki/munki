@@ -74,7 +74,8 @@ def make_dmg(pkgpath):
     print 'Making disk image containing %s...' % pkgname
     diskimagename = os.path.splitext(pkgname)[0] + '.dmg'
     diskimagepath = os.path.join(osutils.tmpdir(), diskimagename)
-    cmd = ['/usr/bin/hdiutil', 'create', '-srcfolder', pkgpath, diskimagepath]
+    cmd = ['/usr/bin/hdiutil', 'create', '-fs', 'HFS+',
+           '-srcfolder', pkgpath, diskimagepath]
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
