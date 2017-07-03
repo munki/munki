@@ -524,9 +524,12 @@ def process_install(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            for key in ['developer', 'icon_name']:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            if manifestitemname in installinfo['processed_installs']:
-                installinfo['processed_installs'].remove(manifestitemname)
+            #if manifestitemname in installinfo['processed_installs']:
+            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except (fetch.GurlError, fetch.GurlDownloadError), errmsg:
             display.display_warning(
@@ -534,9 +537,12 @@ def process_install(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = u'Download failed (%s)' % errmsg
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            for key in ['developer', 'icon_name']:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            if manifestitemname in installinfo['processed_installs']:
-                installinfo['processed_installs'].remove(manifestitemname)
+            #if manifestitemname in installinfo['processed_installs']:
+            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.Error, errmsg:
             display.display_warning(
@@ -544,9 +550,12 @@ def process_install(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            for key in ['developer', 'icon_name']:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            if manifestitemname in installinfo['processed_installs']:
-                installinfo['processed_installs'].remove(manifestitemname)
+            #if manifestitemname in installinfo['processed_installs']:
+            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
     else:
         iteminfo['installed'] = True

@@ -349,6 +349,7 @@ def check(client_id='', localmanifestpath=None):
         item_list = list(installinfo.get('optional_installs', []))
         item_list.extend(installinfo['managed_installs'])
         item_list.extend(installinfo['removals'])
+        item_list.extend(installinfo['problem_items'])
         download.download_icons(item_list)
 
         # get any custom client resources
