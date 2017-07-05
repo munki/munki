@@ -557,6 +557,7 @@ def build_updates_page():
     page = {}
     page['update_rows'] = u''
     page['hide_progress_spinner'] = u'hidden'
+    page['hide_problem_updates'] = u'hidden'
     page['hide_other_updates'] = u'hidden'
     page['install_all_button_classes'] = u''
     
@@ -623,6 +624,7 @@ def build_update_status_page():
     page = {}
     page['update_rows'] = u''
     page['hide_progress_spinner'] = u''
+    page['hide_problem_updates'] = u'hidden'
     page['hide_other_updates'] = u'hidden'
     page['other_updates_header_message'] = u''
     page['other_update_rows'] = u''
