@@ -157,25 +157,26 @@ def pref(pref_name):
         - default_prefs defined here.
     """
     default_prefs = {
-        'ManagedInstallDir': '/Library/Managed Installs',
-        'SoftwareRepoURL': 'http://munki/repo',
+        'AppleSoftwareUpdatesOnly': False,
         'ClientIdentifier': '',
+        'DaysBetweenNotifications': 1,
+        'FollowHTTPRedirects': 'none',
+        'InstallAppleSoftwareUpdates': False,
+        'LastNotifiedDate': NSDate.dateWithTimeIntervalSince1970_(0),
         'LogFile': '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log',
         'LoggingLevel': 1,
         'LogToSyslog': False,
-        'InstallAppleSoftwareUpdates': False,
-        'AppleSoftwareUpdatesOnly': False,
+        'ManagedInstallDir': '/Library/Managed Installs',
+        'PackageVerificationMode': 'hash',
+        'PerformAuthRestarts': False,
+        'ShowOptionalInstallsForHigherOSVersions': False,
+        'SoftwareRepoURL': 'http://munki/repo',
         'SoftwareUpdateServerURL': '',
-        'DaysBetweenNotifications': 1,
-        'LastNotifiedDate': NSDate.dateWithTimeIntervalSince1970_(0),
-        'UseClientCertificate': False,
-        'SuppressUserNotification': False,
         'SuppressAutoInstall': False,
         'SuppressStopButtonOnInstall': False,
-        'PackageVerificationMode': 'hash',
-        'FollowHTTPRedirects': 'none',
+        'SuppressUserNotification': False,
         'UnattendedAppleUpdates': False,
-        'PerformAuthRestarts': False,
+        'UseClientCertificate': False,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value is None:

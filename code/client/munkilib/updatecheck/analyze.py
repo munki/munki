@@ -35,6 +35,7 @@ from .. import fetch
 from .. import info
 from .. import installer
 from .. import munkilog
+from .. import prefs
 from .. import processes
 
 
@@ -159,7 +160,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
 
     item_pl = catalogs.get_item_detail(manifestitem, cataloglist,
                                        suppress_warnings=True)
-    if not item_pl:
+    if not item_pl and prefs.pref('ShowOptionalInstallsForHigherOSVersions'):
         # could not find an item valid for the current OS and hardware
         # try again to see if there is an item for a higher OS
         item_pl = catalogs.get_item_detail(
@@ -174,12 +175,12 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             item_pl['note'] = ('Requires macOS version %s.'
                                % item_pl['minimum_os_version'])
             item_pl['update_available'] = True
-        else:
-            # could not find anything!
-            display.display_warning(
-                'Could not process item %s for optional install. No pkginfo '
-                'found in catalogs: %s ', manifestitem, ', '.join(cataloglist))
-            return
+    if not item_pl:
+        # could not find anything that matches and is applicable
+        display.display_warning(
+            'Could not process item %s for optional install. No pkginfo '
+            'found in catalogs: %s ', manifestitem, ', '.join(cataloglist))
+        return
 
     is_currently_installed = installationstate.some_version_installed(item_pl)
     needs_update = False
@@ -199,7 +200,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             needs_update = False
         else:
             needs_update = installationstate.installed_state(item_pl) == 0
-        if not needs_update:
+        if (not needs_update and
+                prefs.pref('ShowOptionalInstallsForHigherOSVersions')):
             # the version we have installed is the newest for the current OS.
             # check again to see if there is a newer version for a higher OS
             display.display_debug1(
