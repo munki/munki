@@ -49,6 +49,7 @@ from .. import scriptutils
 from .. import FoundationPlist
 
 from ..updatecheck import catalogs
+from ..updatecheck import manifestutils
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -340,7 +341,7 @@ def install_with_info(
         # if install was successful and this is a SelfService OnDemand install
         # remove the item from the SelfServeManifest's managed_installs
         if retcode == 0 and item.get('OnDemand'):
-            remove_from_selfserve_installs(item['name'])
+            manifestutils.remove_from_selfserve_installs(item['name'])
 
         # record install success/failure
         if not 'InstallResults' in reports.report:
@@ -597,7 +598,7 @@ def process_removals(removallist, only_unattended=False):
         if retcode == 0:
             success_msg = "Removal of %s: SUCCESSFUL" % display_name
             munkilog.log(success_msg, "Install.log")
-            remove_from_selfserve_uninstalls(item['name'])
+            manifestutils.remove_from_selfserve_uninstalls(item['name'])
         else:
             failure_msg = "Removal of %s: " % display_name + \
                           " FAILED with return code: %s" % retcode
@@ -615,50 +616,6 @@ def process_removals(removallist, only_unattended=False):
         reports.report['RemovalResults'].append(removal_result)
 
     return (restart_flag, skipped_removals)
-
-
-def remove_from_selfserve_section(itemname, section):
-    """Remove the given itemname from the self-serve manifest's
-    managed_uninstalls list"""
-    display.display_debug1(
-        "Removing %s from SelfSeveManifest's %s...", itemname, section)
-    selfservemanifest = os.path.join(
-        prefs.pref('ManagedInstallDir'), 'manifests', 'SelfServeManifest')
-    if not os.path.exists(selfservemanifest):
-        # SelfServeManifest doesn't exist, bail
-        display.display_debug1("%s doesn't exist.", selfservemanifest)
-        return
-    try:
-        plist = FoundationPlist.readPlist(selfservemanifest)
-    except FoundationPlist.FoundationPlistException, err:
-        # SelfServeManifest is broken, bail
-        display.display_debug1(
-            "Error reading %s: %s", selfservemanifest, err)
-        return
-    # make sure the section is in the plist
-    if section in plist:
-        # filter out our item
-        plist[section] = [
-            item for item in plist[section] if item != itemname
-        ]
-        try:
-            FoundationPlist.writePlist(plist, selfservemanifest)
-        except FoundationPlist.FoundationPlistException, err:
-            display.display_debug1(
-                "Error writing %s: %s", selfservemanifest, err)
-
-
-def remove_from_selfserve_installs(itemname):
-    """Remove the given itemname from the self-serve manifest's
-    managed_installs list"""
-    remove_from_selfserve_section(itemname, 'managed_installs')
-
-
-def remove_from_selfserve_uninstalls(itemname):
-    """Remove the given itemname from the self-serve manifest's
-    managed_uninstalls list"""
-    # pylint: disable=invalid-name
-    remove_from_selfserve_section(itemname, 'managed_uninstalls')
 
 
 def run(only_unattended=False):

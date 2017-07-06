@@ -33,7 +33,6 @@ from . import unused_software
 from .. import display
 from .. import fetch
 from .. import info
-from .. import installer
 from .. import munkilog
 from .. import prefs
 from .. import processes
@@ -187,7 +186,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     if is_currently_installed:
         if unused_software.should_be_removed(item_pl):
             process_removal(manifestitem, cataloglist, installinfo)
-            installer.remove_from_selfserve_installs(manifestitem)
+            manifestutils.remove_from_selfserve_installs(manifestitem)
             return
         if not item_pl.get('OnDemand') and 'installcheck_script' not in item_pl:
             # installcheck_scripts can be expensive and only tell us if
