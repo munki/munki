@@ -33,7 +33,6 @@ from . import unused_software
 from .. import display
 from .. import fetch
 from .. import info
-from .. import installer
 from .. import munkilog
 from .. import processes
 
@@ -167,7 +166,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     is_currently_installed = installationstate.some_version_installed(item_pl)
     if is_currently_installed and unused_software.should_be_removed(item_pl):
         process_removal(manifestitem, cataloglist, installinfo)
-        installer.remove_from_selfserve_installs(manifestitem)
+        manifestutils.remove_from_selfserve_installs(manifestitem)
         return
 
     # if we get to this point we can add this item
