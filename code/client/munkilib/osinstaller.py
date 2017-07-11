@@ -67,7 +67,7 @@ def boot_volume_is_cs_converting():
         # diskutil cs info returns error if volume is not CoreStorage
         return False
     try:
-        csinfo_plist = FoundationPlist.readPlist(output)
+        csinfo_plist = FoundationPlist.readPlistFromString(output)
     except FoundationPlist.FoundationPlistException:
         return False
     conversion_state = csinfo_plist.get(
