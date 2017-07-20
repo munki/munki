@@ -236,11 +236,6 @@ def get_config_level(pref_name, value):
          'user': kCFPreferencesCurrentUser,
          'host': kCFPreferencesAnyHost
         },
-        {'file': '/Library/Preferences/ManagedInstalls.plist',
-         'domain': BUNDLE_ID,
-         'user': kCFPreferencesAnyUser,
-         'host': kCFPreferencesCurrentHost
-        },
         {'file': ('/var/root/Library/Preferences/ByHost/'
                   '.GlobalPreferences.xxxx.plist'),
          'domain': '.GlobalPreferences',
@@ -251,6 +246,11 @@ def get_config_level(pref_name, value):
          'domain': '.GlobalPreferences',
          'user': kCFPreferencesCurrentUser,
          'host': kCFPreferencesAnyHost
+        },
+        {'file': '/Library/Preferences/ManagedInstalls.plist',
+         'domain': BUNDLE_ID,
+         'user': kCFPreferencesAnyUser,
+         'host': kCFPreferencesCurrentHost
         },
         {'file': '/Library/Preferences/.GlobalPreferences.plist',
          'domain': '.GlobalPreferences',
