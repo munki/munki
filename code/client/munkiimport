@@ -770,6 +770,13 @@ Extended Options: (makepkginfo options)
         if repo_path:
             options.repo_url = path2url(repo_path)
 
+    if not options.repo_url:
+        print >> sys.stderr, ('No repo URL found. Please run this tool with ' 
+                              'the --configure option, or use the --repo-url '
+                              'option.')
+        parser.print_help()
+        exit(-1)
+
     if not options.plugin:
         options.plugin = 'FileRepo'
 
