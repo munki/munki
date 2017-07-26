@@ -75,7 +75,7 @@ else:
             try:
                 pref.cache = plistlib.readPlist(PREFSPATH)
             except (IOError, OSError, ExpatError):
-                pass
+                pref.cache = {}
         if prefname in pref.cache:
             return pref.cache[prefname]
         else:
