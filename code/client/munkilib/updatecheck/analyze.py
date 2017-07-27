@@ -441,7 +441,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                     iteminfo['unattended_install'] = True
 
             # optional keys to copy if they exist
-            optional_keys = ['allow_untrusted',
+            optional_keys = ['additional_startosinstall_options',
+                             'allow_untrusted',
                              'suppress_bundle_relocation',
                              'installer_choices_xml',
                              'installer_environment',

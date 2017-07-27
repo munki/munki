@@ -261,6 +261,10 @@ class StartOSInstallRunner(object):
                     '--pidtosignal', str(os.getpid()),
                     '--nointeraction'])
 
+        if (self.installinfo and
+                'additional_startosinstall_options' in self.installinfo):
+            cmd.extend(self.installinfo['additional_startosinstall_options'])
+
         if pkgutils.MunkiLooseVersion(
                 os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
