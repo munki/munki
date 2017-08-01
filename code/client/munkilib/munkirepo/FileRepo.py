@@ -190,7 +190,8 @@ class FileRepo(Repo):
         search_dir = os.path.join(self.root, kind)
         file_list = []
         try:
-            for (dirpath, dirnames, filenames) in os.walk(search_dir):
+            for (dirpath, dirnames, filenames) in os.walk(search_dir,
+                                                          followlinks=True):
                 # don't recurse into directories that start with a period.
                 dirnames[:] = [name
                                for name in dirnames if not name.startswith('.')]
