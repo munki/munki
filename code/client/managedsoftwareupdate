@@ -283,6 +283,8 @@ def doFinishingTasks(runtype=None):
     reports.report['ManagedInstallVersion'] = info.get_version()
     reports.report['AvailableDiskSpace'] = info.available_disk_space()
     reports.report['ConsoleUser'] = osutils.getconsoleuser() or '<None>'
+    if len(reports.report['Errors']) == 0:
+        reports.report['LastSuccessfulRun'] = reports.report['EndTime']
     reports.savereport()
 
     # store the current pending update count and other data for munki-notifier
