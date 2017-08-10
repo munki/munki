@@ -36,6 +36,7 @@ from .. import keychain
 from .. import munkilog
 from .. import munkistatus
 from .. import osutils
+from .. import powermgr
 from .. import prefs
 from .. import processes
 from .. import reports
@@ -81,6 +82,12 @@ def check(client_id='', localmanifestpath=None):
 
         if processes.stop_requested():
             return 0
+
+        # prevent idle sleep only if we are on AC power
+        caffeinator = None
+        if powermgr.onACPower():
+            caffeinator = powermgr.Caffeinator(
+                'Munki is checking for new software')
 
         # initialize our installinfo record
         installinfo['processed_installs'] = []
@@ -230,11 +237,13 @@ def check(client_id='', localmanifestpath=None):
 
             # build list of items in the optional_installs list
             # that have not exceeded available seats
+            # and don't have notes (indicating why they can't be installed)
             available_optional_installs = [
                 item['name']
                 for item in installinfo.get('optional_installs', [])
-                if (not 'licensed_seats_available' in item
-                    or item['licensed_seats_available'])]
+                if (not 'note' in item and
+                    (not 'licensed_seats_available' in item or
+                     item['licensed_seats_available']))]
             if selfserveinstalls:
                 # filter the list, removing any items not in the current list
                 # of available self-serve installs
@@ -340,6 +349,7 @@ def check(client_id='', localmanifestpath=None):
         item_list = list(installinfo.get('optional_installs', []))
         item_list.extend(installinfo['managed_installs'])
         item_list.extend(installinfo['removals'])
+        item_list.extend(installinfo['problem_items'])
         download.download_icons(item_list)
 
         # get any custom client resources

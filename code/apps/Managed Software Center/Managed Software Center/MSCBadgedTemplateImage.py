@@ -21,8 +21,12 @@
 # builtin super doesn't work with Cocoa classes in recent PyObjC releases.
 from objc import super
 
-from Foundation import *
-from AppKit import *
+#from Foundation import *
+#from AppKit import *
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
 
 class MSCBadgedTemplateImage(NSImage):
     '''Subclass to handle our updates template image with a badge showing the count

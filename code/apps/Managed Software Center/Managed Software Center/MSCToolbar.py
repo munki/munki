@@ -10,8 +10,12 @@
 from objc import super
 
 from objc import YES, NO, nil
-from Foundation import *
-from AppKit import *
+#from Foundation import *
+#from AppKit import *
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
 
 
 class MSCToolbarButton(NSButton):

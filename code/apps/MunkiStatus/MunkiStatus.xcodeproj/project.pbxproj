@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE21913F6D6003DD155 /* Localizable.strings */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C00F67551F01680A00D9007D /* CocoaWrapper.py in Resources */ = {isa = PBXBuildFile; fileRef = C00F67541F01680A00D9007D /* CocoaWrapper.py */; };
 		C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE01913F6D6003DD155 /* MainMenu.strings */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
@@ -47,6 +48,7 @@
 		C005C5BF1913F7660074AF82 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C005C5C01913F7660074AF82 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C00F67541F01680A00D9007D /* CocoaWrapper.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = CocoaWrapper.py; sourceTree = "<group>"; };
 		C02A5D4D1B4DAF8800A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ja; path = ja.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C02A5D4E1B4DAF8F00A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C02A5D4F1B4DAF9400A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 				C090050916CDD84E00BE34CE /* MainMenu.xib */,
 				C09004FA16CDD84E00BE34CE /* Supporting Files */,
 				C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */,
+				C00F67541F01680A00D9007D /* CocoaWrapper.py */,
 			);
 			path = MunkiStatus;
 			sourceTree = "<group>";
@@ -295,6 +298,7 @@
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */,
+				C00F67551F01680A00D9007D /* CocoaWrapper.py in Resources */,
 				C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */,
 				C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,

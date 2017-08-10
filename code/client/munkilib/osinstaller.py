@@ -56,6 +56,25 @@ CHECKANDINSTALLATSTARTUPFLAG = \
            '/Users/Shared/.com.googlecode.munki.checkandinstallatstartup'
 
 
+def boot_volume_is_cs_converting():
+    '''Returns True if the boot volume is in the middle of a CoreStorage
+    conversion from encypted to decrypted or vice-versa. macOS installs fail
+    in this state.'''
+    try:
+        output = subprocess.check_output(
+            ['/usr/sbin/diskutil', 'cs', 'info', '-plist', '/'])
+    except subprocess.CalledProcessError:
+        # diskutil cs info returns error if volume is not CoreStorage
+        return False
+    try:
+        csinfo_plist = FoundationPlist.readPlistFromString(output)
+    except FoundationPlist.FoundationPlistException:
+        return False
+    conversion_state = csinfo_plist.get(
+        'CoreStorageLogicalVolumeConversionState')
+    return conversion_state == 'Converting'
+
+
 def find_install_macos_app(dir_path):
     '''Returns the path to the first Install macOS.app found the top level of
     dir_path, or None'''
@@ -185,6 +204,11 @@ class StartOSInstallRunner(object):
         Therefore this must be done at the end of all other actions that Munki
         performs during a managedsoftwareupdate run.'''
 
+        if boot_volume_is_cs_converting():
+            raise StartOSInstallError(
+                'Skipping macOS upgrade because the boot volume is in the '
+                'middle of a CoreStorage conversion.')
+
         if self.installinfo and 'preinstall_script' in self.installinfo:
             # run the postinstall_script
             retcode = scriptutils.run_embedded_script(
@@ -236,6 +260,10 @@ class StartOSInstallRunner(object):
                     '--rebootdelay', '300',
                     '--pidtosignal', str(os.getpid()),
                     '--nointeraction'])
+
+        if (self.installinfo and
+                'additional_startosinstall_options' in self.installinfo):
+            cmd.extend(self.installinfo['additional_startosinstall_options'])
 
         if pkgutils.MunkiLooseVersion(
                 os_version) < pkgutils.MunkiLooseVersion('10.12.4'):

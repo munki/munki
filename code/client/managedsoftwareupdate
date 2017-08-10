@@ -573,6 +573,8 @@ def main():
                  'packages.')
     p.add_option('--munkipkgsonly', action='store_true',
                  help='Only check/install Munki packages, skip Apple SUS.')
+    p.add_option('--show-config', action='store_true',
+                 help='Print the current configuration and exit.')
     p.add_option('--version', '-V', action='store_true',
                  help='Print the version of the munki tools and exit.')
 
@@ -586,6 +588,10 @@ def main():
     if os.geteuid() != 0:
         print >> sys.stderr, 'You must run this as root!'
         exit(constants.EXIT_STATUS_ROOT_REQUIRED)
+
+    if options.show_config:
+        prefs.print_config()
+        exit(0)
 
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])

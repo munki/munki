@@ -55,6 +55,23 @@
                              </table>
                         </div>
                     </div>
+                    <div id="problem-updates"
+                        class="lockup-container installations updates ${hide_problem_updates}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="3">
+                                        <div class="non-scan-progress">
+                                            ${problem_updates_header_message}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="problem-updates-table">
+                                ${problem_update_rows}
+                            </tbody>
+                        </table>
+                    </div>
                     <div id="other-updates"
                          class="lockup-container installations updates ${hide_other_updates}">
                         <table>
@@ -72,7 +89,6 @@
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>

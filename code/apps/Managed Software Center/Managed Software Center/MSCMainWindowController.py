@@ -33,11 +33,20 @@ from MSCBadgedTemplateImage import MSCBadgedTemplateImage
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
 
-# Disable PyLint complaining about wildcard imports and unused symbols
-# pylint: disable=W0401,W0614
-from Foundation import *
-from AppKit import *
-from WebKit import *
+## pylint: disable=wildcard-import
+## pylint: disable=unused-wildcard-import
+## pylint: disable=redefined-builtin
+#from Foundation import *
+#from AppKit import *
+## pylint: enable=redefined-builtin
+## pylint: enable=wildcard-import
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
+#from WebKit import *
+from WebKit import WebView, WebPreferences
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
@@ -155,7 +164,7 @@ class MSCMainWindowController(NSWindowController):
         '''Called by app delegate from applicationDidFinishLaunching:'''
         self.enableOrDisableSoftwareViewControls()
         optional_items = MunkiItems.getOptionalInstallItems()
-        if not optional_items or self.getUpdateCount():
+        if not optional_items or self.getUpdateCount() or MunkiItems.getProblemItems():
             self.loadUpdatesPage_(self)
         else:
             self.loadAllSoftwarePage_(self)

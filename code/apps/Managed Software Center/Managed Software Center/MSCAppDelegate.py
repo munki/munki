@@ -24,8 +24,12 @@ from urlparse import urlparse
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 import PyObjCTools
-from Foundation import *
-from AppKit import *
+#from Foundation import *
+#from AppKit import *
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
 
 from MSCStatusController import MSCStatusController
 
