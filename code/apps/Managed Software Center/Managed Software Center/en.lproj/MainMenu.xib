@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="16E195" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <development version="6300" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="10117"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="12120"/>
+        <capability name="box content view" minToolsVersion="7.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -124,7 +125,7 @@
                             </menuItem>
                             <menuItem title="Reload Page" keyEquivalent="r" id="Afg-mB-WlJ">
                                 <connections>
-                                    <action selector="reload:" target="S5Y-lq-2nB" id="pCf-RP-OGr"/>
+                                    <action selector="reloadPage:" target="KMl-S0-0FF" id="dj6-JD-aMq"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Search" keyEquivalent="f" id="1XY-pX-Pwv">
@@ -305,10 +306,10 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="150" height="30"/>
                         <size key="maxSize" width="150" height="30"/>
-                        <box key="view" autoresizesSubviews="NO" transparent="YES" borderWidth="0.0" boxType="custom" borderType="none" titlePosition="noTitle" id="E6X-hz-53x">
+                        <box key="view" autoresizesSubviews="NO" boxType="custom" borderType="none" borderWidth="0.0" titlePosition="noTitle" transparent="YES" id="E6X-hz-53x">
                             <rect key="frame" x="0.0" y="14" width="150" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <view key="contentView">
+                            <view key="contentView" id="kru-wE-63g">
                                 <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
@@ -340,7 +341,6 @@
                                     </button>
                                 </subviews>
                             </view>
-                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                             <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </box>
                     </toolbarItem>
@@ -348,14 +348,14 @@
                         <nil key="toolTip"/>
                         <size key="minSize" width="150" height="30"/>
                         <size key="maxSize" width="150" height="30"/>
-                        <box key="view" autoresizesSubviews="NO" transparent="YES" borderWidth="0.0" boxType="custom" borderType="none" titlePosition="noTitle" id="KHk-ld-jkr">
+                        <box key="view" autoresizesSubviews="NO" boxType="custom" borderType="none" borderWidth="0.0" titlePosition="noTitle" transparent="YES" id="KHk-ld-jkr">
                             <rect key="frame" x="0.0" y="14" width="150" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <view key="contentView">
+                            <view key="contentView" id="jlI-OI-XM8">
                                 <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="gLI-O8-siB">
+                                    <searchField wantsLayer="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="gLI-O8-siB">
                                         <rect key="frame" x="0.0" y="1" width="150" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="Rxm-nO-bmO">
@@ -369,7 +369,6 @@
                                     </searchField>
                                 </subviews>
                             </view>
-                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                             <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </box>
                     </toolbarItem>
@@ -456,10 +455,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="rwq-IA-IvG">
                             <rect key="frame" x="1" y="1" width="512" height="447"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <subviews>
                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="UAy-M3-yRr">
-                                    <rect key="frame" x="0.0" y="0.0" width="512" height="17"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="512" height="447"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -493,7 +492,6 @@
                                     </tableColumns>
                                 </tableView>
                             </subviews>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </clipView>
                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="jbz-w3-Ald">
                             <rect key="frame" x="1" y="427" width="630" height="16"/>
@@ -504,7 +502,7 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
-                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="N3t-et-cTX">
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="N3t-et-cTX">
                         <rect key="frame" x="301" y="452" width="200" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Nc2-ny-iaV">
@@ -536,7 +534,7 @@
             <rect key="frame" x="0.0" y="0.0" width="317" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <secureTextField wantsLayer="YES" verticalHuggingPriority="750" id="RBe-5Z-jso">
+                <secureTextField wantsLayer="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="RBe-5Z-jso">
                     <rect key="frame" x="75" y="0.0" width="242" height="22"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                     <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="675-6Y-zrc">
@@ -548,7 +546,7 @@
                         </allowedInputSourceLocales>
                     </secureTextFieldCell>
                 </secureTextField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="X5P-3t-HRa">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="X5P-3t-HRa">
                     <rect key="frame" x="1" y="3" width="76" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Password:" id="Ef8-fO-Dm6">
