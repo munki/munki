@@ -416,6 +416,13 @@ class MSCMainWindowController(NSWindowController):
         else:
             self.munkiStatusSessionEnded_(2)
 
+    @IBAction
+    def reloadPage_(self, sender):
+        '''User selected Reload page menu item. Reload the page and kick off an updatecheck'''
+        msclog.log('user', 'reload_page_menu_item_selected')
+        self.checkForUpdates()
+        self.webView.reload_(sender)
+
     def kickOffInstallSession(self):
         '''start an update install/removal session'''
         # check for need to logout, restart, firmware warnings
