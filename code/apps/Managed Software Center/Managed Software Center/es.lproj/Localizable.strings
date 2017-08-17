@@ -43,6 +43,12 @@
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Una instalación ha fallado. Se volverá a intentar.\nSi esta situación continua, contacta con el administrador de sistemas.";
 
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update.";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaciones en uso por otros";
 
@@ -268,6 +274,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Preparando desinstalación";
 
+/* Problm Updates label */
+"Problem updates" = "Problem updates";
+
 /* Quit button title */
 "Quit" = "Salir";
 
@@ -288,9 +297,6 @@
 
 /* Install Required action text */
 "Required" = "Requerida";
-
-/* Item requires a higher OS version text */
-"Requires macOS version %s" = "Requiere la versión macOS %s”";
 
 /* Restart button title */
 "Restart" = "Reiniciar";
@@ -367,6 +373,9 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "No hay actualizaciones de software disponibles.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Requerido por:";
 
@@ -406,7 +415,7 @@
 /* Update Required long action text */
 "Update Required" = "Requiere una actualización";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Actualización disponible";
 
 /* Update Check Failed title */
@@ -451,6 +460,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "You must upgrade to macOS version %s to be able to install this item.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "El equipo no está conectado a una fuente de alimentación.";
 
@@ -459,3 +471,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Tus aplicaciones están actualizadas.";
+
+/* macOS update required text */
+"macOS update required" = "macOS update required";
