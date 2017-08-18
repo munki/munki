@@ -44,10 +44,11 @@
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Une tentative d'installation a échoué. L'installation sera tentée à nouveau.\nSi cette situation perdure, contactez votre administrateur système.";
 
 /* Long Not Enough Disk Space For Update display text */
-"An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
+"An older version is currently installed. There is not enough disk space to download and install this update." = "Une ancienne version est actuellement installée. Il n'y a pas assez d'espace disque pour télécharger et installer cette mise à jour.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update.";
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Une ancienne version est actuellement installée. Vous devez mettre à jour vers une version macOS
+%s ou plus pour pouvoir installer cette mise à jour.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Application utilisée par d'autres";
@@ -275,7 +276,7 @@
 "Preparing removal" = "Préparation de la suppression";
 
 /* Problm Updates label */
-"Problem updates" = "Problem updates";
+"Problem updates" = "Mises à jour problématiques";
 
 /* Quit button title */
 "Quit" = "Quitter";
@@ -374,7 +375,7 @@
 "There is no new software for your computer at this time." = "Il n'y a pas de nouveau logiciel pour votre ordinateur.";
 
 /* Long Not Enough Disk Space display text */
-"There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
+"There is not enough disk space to download and install this item." = "Il n'y a pas assez d'espace disque pour télécharger et installer cet élément.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Cet article est requis avant:";
@@ -461,7 +462,7 @@
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Vous devez quitter les logiciels suivants avant de les installer ou de les supprimer:\n\n%s";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "You must upgrade to macOS version %s to be able to install this item.";
+"You must upgrade to macOS version %s to be able to install this item." = "Vous devez mettre à jour vers une version macOS %s pour pouvoir installer cet élément.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Votre ordinateur n'est pas branché à une prise de courant.";
@@ -473,4 +474,4 @@
 "Your software is up to date." = "Votre logiciel est à jour.";
 
 /* macOS update required text */
-"macOS update required" = "macOS update required";
+"macOS update required" = "Mise à jour MacOS requise";
