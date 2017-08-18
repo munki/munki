@@ -188,7 +188,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             process_removal(manifestitem, cataloglist, installinfo)
             manifestutils.remove_from_selfserve_installs(manifestitem)
             return
-        if not item_pl.get('OnDemand') and 'installcheck_script' not in item_pl:
+        if not 'installcheck_script' in item_pl:
             # installcheck_scripts can be expensive and only tell us if
             # an item is installed or not. So if iteminfo['installed'] is
             # True, and we're using an installcheck_script,
@@ -196,9 +196,13 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             # (which does not equal 0), so we can avoid running it again.
             # We should really revisit all of this in the future to avoid
             # repeated checks of the same data.
-            needs_update = False
-        else:
+            # (installcheck_script isn't called if OnDemand is True, but if
+            # OnDemand is true, is_currently_installed would be False, and
+            # therefore we would not be here!)
+            #
+            # TL;DR: only check installed_state if no installcheck_script
             needs_update = installationstate.installed_state(item_pl) == 0
+
         if (not needs_update and
                 prefs.pref('ShowOptionalInstallsForHigherOSVersions')):
             # the version we have installed is the newest for the current OS.
