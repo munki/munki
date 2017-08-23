@@ -318,7 +318,7 @@ def main():
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
     parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
-                      help='Skip check of pkg infos. Useful'
+                      help='Skip checking of pkg existence. Useful'
                            'when pkgs aren\'t on the same server'
                            'as pkginfo, catalogs and manifests.')
     parser.add_option('--repo_url', '--repo-url',
