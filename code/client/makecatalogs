@@ -146,6 +146,8 @@ def makecatalogs(repo, options):
             do_pkg_check = False
         if pkginfo.get('PackageURL'):
             do_pkg_check = False
+        if options.skip_payload_check:
+            do_pkg_check = False
 
 
         if do_pkg_check:
@@ -315,13 +317,17 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
+    parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
+                      help='Skip check of pkg infos. Usefull'
+                           'when pkgs aren\'t on the same server'
+                           'as pkginfo, catalogs and manifests.')
     parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
     parser.add_option('--plugin',
                       help='Specify a custom plugin to connect to repo.')
-    parser.set_defaults(force=False)
+    parser.set_defaults(force=False, skip_payload_check=False)
     options, arguments = parser.parse_args()
 
     if options.version:
