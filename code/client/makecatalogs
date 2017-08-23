@@ -162,7 +162,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
     return True
 
 
-def process_pkgsinfo(repo, icons, force=False):
+def process_pkgsinfo(repo, icons, force=False, skip_payload_check=False):
     '''Processes pkginfo files and returns a dictionary of catalogs'''
     errors = []
     catalogs = {}
@@ -214,10 +214,11 @@ def process_pkgsinfo(repo, icons, force=False):
                 del pkginfo[key]
 
         #sanity checking
-        verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
-        if not verified and not force:
-            # Skip this pkginfo unless we're running with force flag
-            continue
+        if not skip_payload_check:
+			verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
+			if not verified and not force:
+				# Skip this pkginfo unless we're running with force flag
+				continue
 
         # append the pkginfo to the relevant catalogs
         catalogs['all'].append(pkginfo)
@@ -255,7 +256,7 @@ def makecatalogs(repo, options):
     icons, errors = hash_icons(repo)
 
     catalogs, catalog_errors = process_pkgsinfo(
-        repo, icons, force=options.force)
+        repo, icons, force=options.force, skip_payload_check=options.skip_payload_check)
 
     errors.extend(catalog_errors)
 
@@ -319,13 +320,17 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
+    parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
+                      help='Skip checking of pkg existence. Useful'
+                           'when pkgs aren\'t on the same server'
+                           'as pkginfo, catalogs and manifests.')
     parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
     parser.add_option('--plugin',
                       help='Specify a custom plugin to connect to repo.')
-    parser.set_defaults(force=False)
+    parser.set_defaults(force=False, skip_payload_check=False)
     options, arguments = parser.parse_args()
 
     if options.version:
