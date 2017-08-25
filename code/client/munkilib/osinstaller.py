@@ -333,11 +333,10 @@ class StartOSInstallRunner(object):
                                  'If you do not agree,')):
                 # annoying legalese
                 pass
-            elif msg.startswith('Helper tool creashed'):
+            elif msg.startswith('Helper tool cr'):
                 # no need to print that stupid message to screen!
-                # yes, 'creashed' is misspelled. This is not a Munki bug/typo,
-                # this is an Apple typo. But we have to match against what
-                # Apple outputs.
+                # 10.12: 'Helper tool creashed'
+                # 10.13: 'Helper tool crashed'
                 munkilog.log(msg)
             elif msg.startswith(
                     ('Signaling PID:', 'Waiting to reboot',
