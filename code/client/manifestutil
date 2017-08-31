@@ -625,20 +625,14 @@ def add_pkg(repo, args):
 
 
 def uninstall_pkg(repo, args):
-    '''Moves a package from one section to managed_uninstalls in a manifest.'''
+    '''Moves a package from managed_installs to managed_uninstalls in a manifest.'''
     parser = MyOptionParser()
     parser.set_usage(
-        '''uninstall-pkg PKGNAME --manifest MANIFESTNAME [--section SECTIONNAME]
-       Moves a package from one section to managed_uninstalls in a manifest. Package is removed from
-       managed_installs unless a different manifest section is specified with
-       the --section option''')
+        '''uninstall-pkg PKGNAME --manifest MANIFESTNAME
+       Moves a package from managed_installs to managed_uninstalls in a manifest.''')
     parser.add_option('--manifest',
                       metavar='MANIFESTNAME',
                       help='''name of manifest on which to operate''')
-    parser.add_option('--section', default='managed_installs',
-                      metavar='SECTIONNAME',
-                      help=('manifest section from which to move the '
-                            'package to. Defaults to managed_uninstalls.'))
     try:
         options, arguments = parser.parse_args(args)
     except MyOptParseError, errmsg:
@@ -662,22 +656,25 @@ def uninstall_pkg(repo, args):
     manifest = get_manifest(repo, options.manifest)
     if not manifest:
         return 2 # No such file or directory
-    if not options.section in manifest:
-        print >> sys.stderr, ('Section %s is not in manifest %s.'
-                              % (options.section, manifest))
-        return 1 # Operation not permitted
-    if pkgname not in manifest[options.section]:
-        print >> sys.stderr, ('Package %s is not in section %s '
-                              'of manifest %s.'
-                              % (pkgname, options.section, options.manifest))
-        return 1 # Operation not permitted
     else:
-        manifest[options.section].remove(pkgname)
-        manifest['managed_uninstalls'].append(pkgname)
+        if pkgname in manifest['managed_installs']:
+            manifest['managed_installs'].remove(pkgname)
+            print ('Removed %s from section %s of mainfest %s' % (pkgname, 'managed_installs', options.manifest))
+        else:
+            print >> sys.stderr, ('WARNING: Package %s is not in section %s '
+                                  'of manifest %s. No changes made.'
+                                  % (pkgname, 'managed_installs', options.manifest))
+            return 1 # Operation not permitted
+        if pkgname in manifest['managed_uninstalls']:
+            print ('%s is already in section managed_uninstalls of manifest %s.'
+                   % (pkgname, options.manifest))
+        else:
+            manifest['managed_uninstalls'].append(pkgname)
+            print ('Added %s to section managed_uninstalls of manifest %s.'
+                   % (pkgname, options.manifest))
+
         if save_manifest(repo, manifest, options.manifest,
                          overwrite_existing=True):
-            print ('Removed %s from section %s and added to section managed_uninstalls of manifest %s.'
-                   % (pkgname, options.section, options.manifest))
             return 0
         else:
             return 1 # Operation not permitted
@@ -723,7 +720,7 @@ def remove_pkg(repo, args):
         return 2 # No such file or directory
     if not options.section in manifest:
         print >> sys.stderr, ('Section %s is not in manifest %s.'
-                              % (options.section, manifest))
+                              % (options.section, options.manifest))
         return 1 # Operation not permitted
     if pkgname not in manifest[options.section]:
         print >> sys.stderr, ('Package %s is not in section %s '
