@@ -40,6 +40,7 @@ import munkilib.authrestart.client as authrestartd
 
 from . import FoundationPlist
 from . import authrestart
+from . import bootstrapping
 from . import display
 from . import dmgutils
 from . import launchd
@@ -50,10 +51,6 @@ from . import pkgutils
 from . import prefs
 from . import processes
 from . import scriptutils
-
-
-CHECKANDINSTALLATSTARTUPFLAG = \
-           '/Users/Shared/.com.googlecode.munki.checkandinstallatstartup'
 
 
 def boot_volume_is_cs_converting():
@@ -132,11 +129,11 @@ class StartOSInstallRunner(object):
             self.finishing_tasks()
         # set Munki to run at boot after the OS upgrade is complete
         try:
-            open(CHECKANDINSTALLATSTARTUPFLAG, 'w').close()
-        except (OSError, IOError), err:
+            bootstrapping.set_bootstrap_mode()
+        except bootstrapping.SetupError, err:
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
-                "%s", err)
+                '%s', err)
         if pkgutils.hasValidDiskImageExt(self.installer):
             # remove the diskimage to free up more space for the actual install
             try:
