@@ -44,12 +44,14 @@ class SetupError(Exception):
 def disable_fde_autologin():
     '''Disables autologin to the unlocking user's account on a FileVault-
     encrypted machines.'''
+    
+    # See https://support.apple.com/en-us/HT202842
     # We attempt to store the original value of com.apple.loginwindow
     # DisableFDEAutoLogin so if the local admin has set it to True for #reasons
     # we don't inadvertently clear it when clearing bootstrap mode
 
     # is OriginalDisableFDEAutoLogin already set? If so, bootstrap mode was
-    # already enabled. Don't stomp on it.
+    # already enabled, and never properly cleared. Don't stomp on it.
     original_value = CFPreferencesCopyValue(
         'OriginalDisableFDEAutoLogin', 'com.apple.loginwindow',
         kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
