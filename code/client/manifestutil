@@ -624,11 +624,11 @@ def add_pkg(repo, args):
         return 1 # Operation not permitted
 
 
-def uninstall_pkg(repo, args):
+def move_install_to_uninstall(repo, args):
     '''Moves a package from managed_installs to managed_uninstalls in a manifest.'''
     parser = MyOptionParser()
     parser.set_usage(
-        '''uninstall-pkg PKGNAME --manifest MANIFESTNAME
+        '''move-install-to-uninstall PKGNAME --manifest MANIFESTNAME
        Moves a package from managed_installs to managed_uninstalls in a manifest.''')
     parser.add_option('--manifest',
                       metavar='MANIFESTNAME',
@@ -1091,7 +1091,7 @@ def main():
             'add-catalog':               'catalogs',
             'add-included-manifest':     'manifests',
             'remove-pkg':                'pkgs',
-            'uninstall-pkg':             'pkgs',
+            'move-install-to-uninstall': 'pkgs',
             'remove-catalog':            'catalogs',
             'remove-included-manifest':  'manifests',
             'list-manifests':            'manifests',
