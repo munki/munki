@@ -44,10 +44,10 @@
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "インストールに失敗しました。再度インストールを試みます。\nインストールの失敗が続くようであれば、システム管理者に連絡してください。";
 
 /* Long Not Enough Disk Space For Update display text */
-"An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
+"An older version is currently installed. There is not enough disk space to download and install this update." = "旧バージョンがインストールされています。このアップデートをダウンロードしてインストールするには空き領域が不足しています。";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update.";
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %s 以降にアップグレードする必要があります。";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
@@ -275,7 +275,7 @@
 "Preparing removal" = "削除準備中です";
 
 /* Problm Updates label */
-"Problem updates" = "Problem updates";
+"Problem updates" = "問題のアップデート";
 
 /* Quit button title */
 "Quit" = "終了";
@@ -374,7 +374,7 @@
 "There is no new software for your computer at this time." = "このコンピューターのソフトウェアを更新する必要はありません";
 
 /* Long Not Enough Disk Space display text */
-"There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
+"There is not enough disk space to download and install this item." = "このアイテムをダウンロードしてインストールするには空き領域が不足しています。";
 
 /* Dependency List prologue text */
 "This item is required by:" = "関連アイテム:";
@@ -461,7 +461,7 @@
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%s";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "You must upgrade to macOS version %s to be able to install this item.";
+"You must upgrade to macOS version %s to be able to install this item." = "このアイテムをインストールするにはmacOS %s 以降にアップグレードする必要があります。";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "このコンピューターは電源に接続されていません";
@@ -473,4 +473,4 @@
 "Your software is up to date." = "ソフトウェアは最新です";
 
 /* macOS update required text */
-"macOS update required" = "macOS update required";
+"macOS update required" = "macOSアップデートが必要";
