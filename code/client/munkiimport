@@ -416,18 +416,28 @@ class CatalogDBException(Exception):
     pass
 
 
+class CatalogReadException(CatalogDBException):
+    '''Exception to throw if we can't read the all catalog'''
+    pass
+
+
+class CatalogDecodeException(CatalogDBException):
+    '''Exception to throw if we can't decode the all catalog'''
+    pass
+
+
 def make_catalog_db(repo):
     """Returns a dict we can use like a database"""
 
     try:
         plist = repo.get('catalogs/all')
     except munkirepo.RepoError, err:
-        raise CatalogDBException(err)
+        raise CatalogReadException(err)
 
     try:
         catalogitems = FoundationPlist.readPlistFromString(plist)
     except FoundationPlist.NSPropertyListSerializationException, err:
-        raise CatalogDBException(err)
+        raise CatalogDecodeException(err)
 
     pkgid_table = {}
     app_table = {}
@@ -525,7 +535,18 @@ def find_matching_pkginfo(repo, pkginfo):
 
     try:
         catdb = make_catalog_db(repo)
+    except CatalogReadException, err:
+        # could not retreive catalogs/all
+        # do we have any existing pkgsinfo items?
+        pkgsinfo_items = repo.itemlist('pkgsinfo')
+        if len(pkgsinfo_items):
+            # there _are_ existing pkgsinfo items.
+            # warn about the problem since we can't seem to read catalogs/all
+            print (u'Could not get a list of existing items from the repo: %s'
+                   % unicode(err))
+        return {}
     except CatalogDBException, err:
+        # other error while processing catalogs/all
         print (u'Could not get a list of existing items from the repo: %s'
                % unicode(err))
         return {}
@@ -771,7 +792,7 @@ Extended Options: (makepkginfo options)
             options.repo_url = path2url(repo_path)
 
     if not options.repo_url:
-        print >> sys.stderr, ('No repo URL found. Please run this tool with ' 
+        print >> sys.stderr, ('No repo URL found. Please run this tool with '
                               'the --configure option, or use the --repo-url '
                               'option.')
         parser.print_help()
