@@ -376,23 +376,29 @@ class StartOSInstallRunner(object):
             display.display_error("-"*78)
             raise StartOSInstallError(
                 'startosinstall failed with return code %s' % retcode)
-        if self.got_sigusr1:
+        elif self.got_sigusr1:
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
             munkilog.log(
                 'Starting macOS install of %s: SUCCESSFUL' % os_version,
                 'Install.log')
-            if retcode == 255:
-                munkilog.log('startosinstall quit instead of rebooted; we will '
-                             'do restart.')
-                # clear our special secret InstallAssistant preference
-                CFPreferencesSetValue(
-                    'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
-                    kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
-                # attempt to do an auth restart, or regular restart
-                if not authrestartd.restart():
-                    authrestart.do_authorized_or_normal_restart()
+            # previously we checked if retcode == 255:
+            # that may have been something specific to 10.12's startosinstall
+            # if startosinstall exited after sending us sigusr1 we should
+            # handle the restart.
+            if retcode not in (0, 255):
+                # some logging for possible investigation in the future
+                munkilog.log('startosinstall exited %s' % retcode)
+            munkilog.log('startosinstall quit instead of rebooted; we will '
+                         'do restart.')
+            # clear our special secret InstallAssistant preference
+            CFPreferencesSetValue(
+                'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+            # attempt to do an auth restart, or regular restart
+            if not authrestartd.restart():
+                authrestart.do_authorized_or_normal_restart()
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
