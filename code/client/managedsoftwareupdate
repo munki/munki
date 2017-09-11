@@ -251,15 +251,28 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             # install macOS
             try:
                 success = osinstaller.run(finishing_tasks=doFinishingTasks)
-            except:
+            except SystemExit:
+                # we _expect_ this since startosinstall or osinstaller will
+                # initiate a restart after successfully setting up a macOS
+                # install.
+                pass
+            except Exception:
+                # some other non-system-exiting exception occurred
                 display.display_error(
                     'Unexpected error in munkilib.osinstaller:')
                 munkilog.log(traceback.format_exc())
                 reports.savereport()
                 raise
             if success:
-                # startosinstall will be restarting; get out of the way
-                sys.exit()
+                # we really should not get here. If successful, either
+                # startosinstall or osinstaller.run should have initiated a
+                # restart.
+                # Print a warning, and restart anyway.
+                display.display_warning(
+                    'Restart not initiated by startosinstall; will initiate '
+                    'restart ourselves')
+                if not authrestartd.restart():
+                    authrestart.do_authorized_or_normal_restart()
 
     if do_apple_updates:
         # install Apple updates

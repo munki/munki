@@ -359,8 +359,10 @@ class StartOSInstallRunner(object):
         # startosinstall exited
         munkistatus.percent(100)
         retcode = job.returncode()
-        if self.dmg_mountpoint:
-            dmgutils.unmountdmg(self.dmg_mountpoint)
+        # previously we unmounted the disk image, but since we're going to
+        # restart very very soon, don't bother
+        #if self.dmg_mountpoint:
+        #    dmgutils.unmountdmg(self.dmg_mountpoint)
 
         if retcode and not (retcode == 255 and self.got_sigusr1):
             # append stderr to our startosinstall_output
