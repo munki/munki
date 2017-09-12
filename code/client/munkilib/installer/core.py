@@ -303,7 +303,7 @@ def install_with_info(
                     retcode = -1
             # nopkg (Packageless) install
             elif installer_type == "nopkg":
-                restartflag = requires_restart(item)
+                restartflag |= requires_restart(item)
             # unknown installer_type
             elif installer_type != "":
                 # we've encountered an installer type
