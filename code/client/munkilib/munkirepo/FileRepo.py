@@ -66,11 +66,21 @@ def unicodeize(path):
 
 def mount_share(share_url):
     '''Mounts a share at /Volumes, returns the mount point or raises an error'''
+    # Uses some constants defined in NetFS.h
+    # /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/
+    #    Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/NetFS.framework/
+    #    Versions/A/Headers/NetFS.h
     sh_url = CFURLCreateWithString(None, share_url, None)
     # Set UI to reduced interaction
-    open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+    #open_options = {NetFS.kNAUIOptionKey: NetFS.kNAUIOptionNoUI}
+    # can't look up the values for those constants in 10.13, so we'll just
+    # hardcode them
+    open_options = {'UIOption': 'NoUI'}
     # Allow mounting sub-directories of root shares
-    mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
+    #mount_options = {NetFS.kNetFSAllowSubMountsKey: True}
+    # can't look up the values for those constants in 10.13, so we'll just
+    # hardcode them
+    mount_options = {'AllowSubMounts': True}
     # Mount!
     result, mountpoints = NetFS.NetFSMountURLSync(
         sh_url, None, None, None, open_options, mount_options, None)
