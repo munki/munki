@@ -1243,7 +1243,8 @@ span.removal-error,
 span.will-be-installed, 
 span.will-be-removed,
 span.update-will-be-installed, 
-span.update-available {
+span.update-available, 
+span.warning {
     visibility: visible !important;
     color: #CC0000 !important;
 }

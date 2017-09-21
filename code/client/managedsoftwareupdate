@@ -57,6 +57,7 @@ except ImportError:
 else:
     from munkilib import appleupdates
     from munkilib import authrestart
+    from munkilib import bootstrapping
     from munkilib import constants
     from munkilib import display
     from munkilib import info
@@ -250,15 +251,28 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             # install macOS
             try:
                 success = osinstaller.run(finishing_tasks=doFinishingTasks)
-            except:
+            except SystemExit:
+                # we _expect_ this since startosinstall or osinstaller will
+                # initiate a restart after successfully setting up a macOS
+                # install.
+                pass
+            except Exception:
+                # some other non-system-exiting exception occurred
                 display.display_error(
                     'Unexpected error in munkilib.osinstaller:')
                 munkilog.log(traceback.format_exc())
                 reports.savereport()
                 raise
             if success:
-                # startosinstall will be restarting; get out of the way
-                sys.exit()
+                # we really should not get here. If successful, either
+                # startosinstall or osinstaller.run should have initiated a
+                # restart.
+                # Print a warning, and restart anyway.
+                display.display_warning(
+                    'Restart not initiated by startosinstall; will initiate '
+                    'restart ourselves')
+                if not authrestartd.restart():
+                    authrestart.do_authorized_or_normal_restart()
 
     if do_apple_updates:
         # install Apple updates
@@ -537,44 +551,86 @@ def main():
     # save this for later
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 
-    p = optparse.OptionParser()
-    p.set_usage('Usage: %prog [options]')
-    p.add_option('--auto', '-a', action='store_true',
-                 help='Used by launchd LaunchAgent for scheduled runs. '
-                 'No user feedback or intervention. Not tested or supported '
-                 'with other options.')
-    p.add_option('--logoutinstall', '-l', action='store_true',
-                 help='Used by launchd LaunchAgent when running at the '
-                 'loginwindow.')
-    p.add_option('--installwithnologout', action='store_true',
-                 help='Used by Managed Software Center.app when user '
-                 'triggers an install without logging out.')
-    p.add_option('--manualcheck', action='store_true',
-                 help='Used by launchd LaunchAgent when checking manually.')
-    p.add_option('--munkistatusoutput', '-m', action='store_true',
-                 help='Uses MunkiStatus.app for progress feedback when '
-                 'installing.')
-    p.add_option('--id', default='',
-                 help='Alternate identifier for manifest retrieval')
-    p.add_option('--quiet', '-q', action='store_true',
-                 help='Quiet mode. Logs messages, but nothing to stdout. '
-                 '--verbose is ignored if --quiet is used.')
-    p.add_option('--verbose', '-v', action='count', default=1,
-                 help='More verbose output. May be specified multiple times.')
-    p.add_option('--checkonly', action='store_true',
-                 help='Check for updates, but don\'t install them. This is '
-                 'the default behavior.')
-    p.add_option('--installonly', action='store_true',
-                 help='Skip checking and install any pending updates.')
-    p.add_option('--applesuspkgsonly', action='store_true',
-                 help='Only check/install Apple SUS packages, skip Munki '
-                 'packages.')
-    p.add_option('--munkipkgsonly', action='store_true',
-                 help='Only check/install Munki packages, skip Apple SUS.')
-    p.add_option('--version', '-V', action='store_true',
-                 help='Print the version of the munki tools and exit.')
+    parser = optparse.OptionParser()
+    parser.set_usage('Usage: %prog [options]')
+    parser.add_option('--version', '-V', action='store_true',
+                      help='Print the version of the munki tools and exit.')
 
-    options, dummy_arguments = p.parse_args()
+    # commonnly-used options
+    common_options = optparse.OptionGroup(
+        parser, 'Common Options', 'Commonly used options')
+    common_options.add_option(
+        '--verbose', '-v', action='count', default=1,
+        help='More verbose output. May be specified multiple times.')
+    common_options.add_option(
+        '--checkonly', action='store_true',
+        help='Check for updates, but don\'t install them. This is the default '
+        'behavior when no other options are specified.')
+    common_options.add_option(
+        '--installonly', action='store_true',
+        help='Skip checking and install all pending updates. No safety checks.')
+    common_options.add_option(
+        '--applesuspkgsonly', action='store_true',
+        help='Only check/install Apple SUS packages, skip Munki packages.')
+    common_options.add_option(
+        '--munkipkgsonly', action='store_true',
+        help='Only check/install Munki packages, skip Apple SUS.')
+    parser.add_option_group(common_options)
+
+    # configuration options
+    config_options = optparse.OptionGroup(
+        parser, 'Configuration Options',
+        'Options that show or control managedsoftwareupdate\'s configuration')
+    config_options.add_option(
+        '--show-config', action='store_true',
+        help='Print the current configuration and exit.')
+    config_options.add_option(
+        '--id', default='',
+        help='String to use as ClientIdentifier for this run only.')
+    config_options.add_option(
+        '--set-bootstrap-mode', action='store_true',
+        help='Set up \'bootstrapping\' mode for  managedsoftwareupdate and '
+        'exit. See the Munki wiki for details on \'bootstrapping\' mode.')
+    config_options.add_option(
+        '--clear-bootstrap-mode', action='store_true',
+        help='Clear \'bootstrapping\' mode for managedsoftwareupdate and exit.')
+    parser.add_option_group(config_options)
+
+    # Other options
+    other_options = optparse.OptionGroup(
+        parser, 'Other Options',
+        'Options intended for use by LaunchAgents and LaunchDaemons')
+    other_options.add_option(
+        '--auto', '-a', action='store_true',
+        help='Used by launchd LaunchDaemon for scheduled/background runs. No '
+        'user feedback or interaction. Not tested or supported with any other '
+        'option. This is a safer option to use than --installonly when using '
+        'managedsoftwareupdate to install pending updates, since only '
+        'unattended updates are installed if there is an active user. There is '
+        'no progress feedback at the command-line.')
+    other_options.add_option(
+        '--logoutinstall', '-l', action='store_true',
+        help='Used by launchd LaunchAgent when running at the loginwindow. '
+        'Not for general use.')
+    other_options.add_option(
+        '--installwithnologout', action='store_true',
+        help='Used by Managed Software Center.app when user triggers an '
+        'install without logging out. Not for general use.')
+    other_options.add_option(
+        '--manualcheck', action='store_true',
+        help='Used by launchd LaunchAgent when checking manually. Not for '
+        'general use.')
+    other_options.add_option(
+        '--munkistatusoutput', '-m', action='store_true',
+        help='Uses MunkiStatus.app for progress feedback when installing. '
+        'Not for general use.')
+    other_options.add_option(
+        '--quiet', '-q', action='store_true',
+        help='Quiet mode. Logs messages, but nothing to stdout. --verbose is '
+        'ignored if --quiet is used.')
+    parser.add_option_group(other_options)
+
+    options, dummy_arguments = parser.parse_args()
 
     if options.version:
         print info.get_version()
@@ -584,6 +640,28 @@ def main():
     if os.geteuid() != 0:
         print >> sys.stderr, 'You must run this as root!'
         exit(constants.EXIT_STATUS_ROOT_REQUIRED)
+
+    if options.show_config:
+        prefs.print_config()
+        exit(0)
+
+    if options.set_bootstrap_mode:
+        try:
+            bootstrapping.set_bootstrap_mode()
+            print 'Bootstrap mode is set.'
+            exit(0)
+        except bootstrapping.SetupError, err:
+            print >> sys.stderr, err
+            exit(-1)
+
+    if options.clear_bootstrap_mode:
+        try:
+            bootstrapping.clear_bootstrap_mode()
+            print 'Bootstrap mode cleared.'
+            exit(0)
+        except bootstrapping.SetupError, err:
+            print >> sys.stderr, err
+            exit(-1)
 
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])
@@ -602,12 +680,6 @@ def main():
         exit(0)
 
     runtype = 'custom'
-
-    checkandinstallatstartupflag = \
-               '/Users/Shared/.com.googlecode.munki.checkandinstallatstartup'
-    installatstartupflag = \
-               '/Users/Shared/.com.googlecode.munki.installatstartup'
-    installatlogoutflag = '/private/tmp/com.googlecode.munki.installatlogout'
 
     if options.auto:
         # typically invoked by a launch daemon periodically.
@@ -630,13 +702,13 @@ def main():
         # triggered the update before logging out, or we triggered it before
         # restarting.
         user_triggered = False
-        flagfiles = [checkandinstallatstartupflag,
-                     installatstartupflag,
-                     installatlogoutflag]
+        flagfiles = [constants.CHECKANDINSTALLATSTARTUPFLAG,
+                     constants.INSTALLATSTARTUPFLAG,
+                     constants.INSTALLATLOGOUTFLAG]
         for filename in flagfiles:
             if os.path.exists(filename):
                 user_triggered = True
-                if filename == checkandinstallatstartupflag:
+                if filename == constants.CHECKANDINSTALLATSTARTUPFLAG:
                     runtype = 'checkandinstallatstartup'
                     options.installonly = False
                     options.auto = True
@@ -982,10 +1054,12 @@ def main():
         if options.installonly and not options.quiet:
             print 'Nothing to install or remove.'
         if runtype == 'checkandinstallatstartup':
-            # we have nothing to do, so remove the checkandinstallatstartupflag
-            # file so we'll stop running at startup/logout
-            if os.path.exists(checkandinstallatstartupflag):
-                os.unlink(checkandinstallatstartupflag)
+            # we have nothing to do, clear the bootstrapping mode
+            # so we'll stop running at startup/logout
+            try:
+                bootstrapping.clear_bootstrap_mode()
+            except bootstrapping.SetupError, err:
+                display.display_error(err)
 
     display.display_status_major('Finishing...')
     doFinishingTasks(runtype=runtype)
@@ -1026,7 +1100,7 @@ def main():
         munkistatus.quit_app()
 
     if runtype == 'checkandinstallatstartup' and not mustrestart:
-        if os.path.exists(checkandinstallatstartupflag):
+        if os.path.exists(constants.CHECKANDINSTALLATSTARTUPFLAG):
             # we installed things but did not need to restart; we need to run
             # again to check for more updates.
             if not osutils.currentGUIusers():
@@ -1044,11 +1118,11 @@ def main():
                     # to prevent automatic relaunch.
                     munkilog.log(
                         'System not idle -- '
-                        'removing trigger file to prevent relaunch')
+                        'clearing bootstrap mode to prevent relaunch')
                     try:
-                        os.unlink(checkandinstallatstartupflag)
-                    except OSError:
-                        pass
+                        bootstrapping.clear_bootstrap_mode()
+                    except bootstrapping.SetupError, err:
+                        display.display_error(err)
 
 
 if __name__ == '__main__':

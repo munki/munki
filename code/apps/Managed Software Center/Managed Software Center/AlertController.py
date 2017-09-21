@@ -12,7 +12,6 @@ import authrestart
 import munki
 import msclog
 import MunkiItems
-from MSCPasswordAlertController import MSCPasswordAlertController
 
 from objc import nil
 from AppKit import *
@@ -36,7 +35,7 @@ class AlertController(NSObject):
         if (MunkiItems.updatesRequireRestart() and
                 authrestart.verify_user(username) and
                 not authrestart.verify_recovery_key_present()):
-            # FV is on and user is in list of FV users, so they can 
+            # FV is on and user is in list of FV users, so they can
             # authrestart, and we do not have a stored FV recovery
             # key/password. So we should prompt the user for a password
             # we can use for fdesetup authrestart
@@ -360,8 +359,7 @@ class AlertController(NSObject):
         firmware_alert_info = self.getFirmwareAlertInfo()
         if not firmware_alert_info:
             return False
-        power_info = munki.getPowerInfo()
-        on_battery_power = (power_info.get('PowerSource') == 'Battery Power')
+        on_battery_power = munki.onBatteryPower()
         for item in firmware_alert_info:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 item['name'],
@@ -392,9 +390,7 @@ class AlertController(NSObject):
     def alertedToRunningOnBatteryAndCancelled(self):
         '''Returns True if we are running on battery and user clicks
         the Cancel button'''
-        power_info = munki.getPowerInfo()
-        if (power_info.get('PowerSource') == 'Battery Power'
-                and power_info.get('BatteryCharge', 0) < 50):
+        if munki.onBatteryPower() and munki.getBatteryPercentage() < 50:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(
                     u"Your computer is not connected to a power source.",

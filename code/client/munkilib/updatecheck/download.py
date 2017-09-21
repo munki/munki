@@ -33,6 +33,10 @@ from .. import munkihash
 from .. import osutils
 from .. import prefs
 from .. import reports
+from .. import FoundationPlist
+
+
+ICON_HASHES_PLIST_NAME = '_icon_hashes.plist'
 
 
 def enough_disk_space(item_pl, installlist=None, uninstalling=False, warn=True):
@@ -162,6 +166,7 @@ def clean_up_icons_dir(icons_to_keep):
     '''Remove any cached/downloaded icons that aren't in the list of ones to
     keep'''
     # remove no-longer needed icons from the local directory
+    icons_to_keep.append(ICON_HASHES_PLIST_NAME)
     icon_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'icons')
     for (dirpath, dummy_dirnames, filenames) in os.walk(
             icon_dir, topdown=False):
@@ -182,6 +187,21 @@ def clean_up_icons_dir(icons_to_keep):
                 pass
 
 
+def get_icon_hashes(icon_base_url):
+    '''Attempts to download the list of compiled icon hashes'''
+    icon_hashes = None
+    icon_hashes_url = icon_base_url + ICON_HASHES_PLIST_NAME
+    icon_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'icons')
+    icon_hashes_plist = os.path.join(icon_dir, ICON_HASHES_PLIST_NAME)
+    try:
+        fetch.munki_resource(icon_hashes_url, icon_hashes_plist,
+                             message="Getting list of available icons")
+        icon_hashes = FoundationPlist.readPlist(icon_hashes_plist)
+    except (fetch.Error, FoundationPlist.FoundationPlistException):
+        pass
+    return icon_hashes
+
+
 def download_icons(item_list):
     '''Attempts to download icons (actually image files) for items in
        item_list'''
@@ -194,11 +214,15 @@ def download_icons(item_list):
     icon_base_url = icon_base_url.rstrip('/') + '/'
     display.display_debug2('Icon base URL is: %s', icon_base_url)
     icon_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'icons')
+    icon_hashes = get_icon_hashes(icon_base_url)
+
     for item in item_list:
         icon_name = item.get('icon_name') or item['name']
-        pkginfo_icon_hash = item.get('icon_hash')
         if not os.path.splitext(icon_name)[1] in icon_known_exts:
             icon_name += '.png'
+        server_icon_hash = item.get('icon_hash')
+        if not server_icon_hash and icon_hashes:
+            server_icon_hash = icon_hashes.get(icon_name)
         icons_to_keep.append(icon_name)
         icon_path = os.path.join(icon_dir, icon_name)
         if os.path.isfile(icon_path):
@@ -216,8 +240,13 @@ def download_icons(item_list):
             except OSError, err:
                 display.display_error('Could not create %s' % icon_subdir)
                 return
-        if pkginfo_icon_hash != local_hash:
+        if server_icon_hash != local_hash:
             # hashes don't match, so download the icon
+            if icon_hashes and icon_name not in icon_hashes:
+                # if we have a list of icon hashes, and the icon name is not
+                # in that list, then there's no point in attempting to
+                # download this icon
+                continue
             item_name = item.get('display_name') or item['name']
             message = 'Getting icon %s for %s...' % (icon_name, item_name)
             icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))

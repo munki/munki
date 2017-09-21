@@ -40,6 +40,7 @@ import munkilib.authrestart.client as authrestartd
 
 from . import FoundationPlist
 from . import authrestart
+from . import bootstrapping
 from . import display
 from . import dmgutils
 from . import launchd
@@ -52,8 +53,23 @@ from . import processes
 from . import scriptutils
 
 
-CHECKANDINSTALLATSTARTUPFLAG = \
-           '/Users/Shared/.com.googlecode.munki.checkandinstallatstartup'
+def boot_volume_is_cs_converting():
+    '''Returns True if the boot volume is in the middle of a CoreStorage
+    conversion from encypted to decrypted or vice-versa. macOS installs fail
+    in this state.'''
+    try:
+        output = subprocess.check_output(
+            ['/usr/sbin/diskutil', 'cs', 'info', '-plist', '/'])
+    except subprocess.CalledProcessError:
+        # diskutil cs info returns error if volume is not CoreStorage
+        return False
+    try:
+        csinfo_plist = FoundationPlist.readPlistFromString(output)
+    except FoundationPlist.FoundationPlistException:
+        return False
+    conversion_state = csinfo_plist.get(
+        'CoreStorageLogicalVolumeConversionState')
+    return conversion_state == 'Converting'
 
 
 def find_install_macos_app(dir_path):
@@ -67,6 +83,15 @@ def find_install_macos_app(dir_path):
             return item_path
     # if we get here we didn't find one
     return None
+
+
+def install_macos_app_is_stub(app_path):
+    '''High Sierra downloaded installer is sometimes a "stub" application that
+    does not contain the InstallESD.dmg. Retune True if the given app path is
+    missing the InstallESD.dmg'''
+    installesd_dmg = os.path.join(
+        app_path, 'Contents/SharedSupport/InstallESD.dmg')
+    return not os.path.exists(installesd_dmg)
 
 
 def get_os_version(app_path):
@@ -113,11 +138,11 @@ class StartOSInstallRunner(object):
             self.finishing_tasks()
         # set Munki to run at boot after the OS upgrade is complete
         try:
-            open(CHECKANDINSTALLATSTARTUPFLAG, 'w').close()
-        except (OSError, IOError), err:
+            bootstrapping.set_bootstrap_mode()
+        except bootstrapping.SetupError, err:
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
-                "%s", err)
+                '%s', err)
         if pkgutils.hasValidDiskImageExt(self.installer):
             # remove the diskimage to free up more space for the actual install
             try:
@@ -185,6 +210,11 @@ class StartOSInstallRunner(object):
         Therefore this must be done at the end of all other actions that Munki
         performs during a managedsoftwareupdate run.'''
 
+        if boot_volume_is_cs_converting():
+            raise StartOSInstallError(
+                'Skipping macOS upgrade because the boot volume is in the '
+                'middle of a CoreStorage conversion.')
+
         if self.installinfo and 'preinstall_script' in self.installinfo:
             # run the postinstall_script
             retcode = scriptutils.run_embedded_script(
@@ -236,6 +266,10 @@ class StartOSInstallRunner(object):
                     '--rebootdelay', '300',
                     '--pidtosignal', str(os.getpid()),
                     '--nointeraction'])
+
+        if (self.installinfo and
+                'additional_startosinstall_options' in self.installinfo):
+            cmd.extend(self.installinfo['additional_startosinstall_options'])
 
         if pkgutils.MunkiLooseVersion(
                 os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
@@ -305,11 +339,10 @@ class StartOSInstallRunner(object):
                                  'If you do not agree,')):
                 # annoying legalese
                 pass
-            elif msg.startswith('Helper tool creashed'):
+            elif msg.startswith('Helper tool cr'):
                 # no need to print that stupid message to screen!
-                # yes, 'creashed' is misspelled. This is not a Munki bug/typo,
-                # this is an Apple typo. But we have to match against what
-                # Apple outputs.
+                # 10.12: 'Helper tool creashed'
+                # 10.13: 'Helper tool crashed'
                 munkilog.log(msg)
             elif msg.startswith(
                     ('Signaling PID:', 'Waiting to reboot',
@@ -326,8 +359,10 @@ class StartOSInstallRunner(object):
         # startosinstall exited
         munkistatus.percent(100)
         retcode = job.returncode()
-        if self.dmg_mountpoint:
-            dmgutils.unmountdmg(self.dmg_mountpoint)
+        # previously we unmounted the disk image, but since we're going to
+        # restart very very soon, don't bother
+        #if self.dmg_mountpoint:
+        #    dmgutils.unmountdmg(self.dmg_mountpoint)
 
         if retcode and not (retcode == 255 and self.got_sigusr1):
             # append stderr to our startosinstall_output
@@ -341,23 +376,29 @@ class StartOSInstallRunner(object):
             display.display_error("-"*78)
             raise StartOSInstallError(
                 'startosinstall failed with return code %s' % retcode)
-        if self.got_sigusr1:
+        elif self.got_sigusr1:
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
             munkilog.log(
                 'Starting macOS install of %s: SUCCESSFUL' % os_version,
                 'Install.log')
-            if retcode == 255:
-                munkilog.log('startosinstall quit instead of rebooted; we will '
-                             'do restart.')
-                # clear our special secret InstallAssistant preference
-                CFPreferencesSetValue(
-                    'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
-                    kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
-                # attempt to do an auth restart, or regular restart
-                if not authrestartd.restart():
-                    authrestart.do_authorized_or_normal_restart()
+            # previously we checked if retcode == 255:
+            # that may have been something specific to 10.12's startosinstall
+            # if startosinstall exited after sending us sigusr1 we should
+            # handle the restart.
+            if retcode not in (0, 255):
+                # some logging for possible investigation in the future
+                munkilog.log('startosinstall exited %s' % retcode)
+            munkilog.log('startosinstall quit instead of rebooted; we will '
+                         'do restart.')
+            # clear our special secret InstallAssistant preference
+            CFPreferencesSetValue(
+                'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+            # attempt to do an auth restart, or regular restart
+            if not authrestartd.restart():
+                authrestart.do_authorized_or_normal_restart()
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '

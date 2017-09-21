@@ -534,23 +534,41 @@ def build_updates_page():
 
     item_list = MunkiItems.getEffectiveUpdateList()
 
+    problem_updates = MunkiItems.getProblemItems()
+    for item in problem_updates:
+        item['hide_cancel_button'] = u'hidden'
+
+    # find any optional installs with update available
     other_updates = [
         item for item in MunkiItems.getOptionalInstallItems()
         if item['status'] == 'update-available']
 
+    # find any listed optional install updates that require a higher OS
+    # or have insufficent disk space or other blockers (because they have a
+    # note)
+    blocked_optional_updates = [
+        item for item in MunkiItems.getOptionalInstallItems()
+        if item['status'] == 'installed' and item.get('note')]
+    for item in blocked_optional_updates:
+        item['hide_cancel_button'] = u'hidden'
+
+    other_updates.extend(blocked_optional_updates)
+
     page = {}
     page['update_rows'] = u''
     page['hide_progress_spinner'] = u'hidden'
+    page['hide_problem_updates'] = u'hidden'
     page['hide_other_updates'] = u'hidden'
     page['install_all_button_classes'] = u''
     
     item_template = get_template('update_row_template.html')
 
+    # build pending updates table
     if item_list:
         for item in item_list:
             escapeAndQuoteCommonFields(item)
             page['update_rows'] += item_template.safe_substitute(item)
-    elif not other_updates:
+    elif not other_updates and not problem_updates:
         status_results_template = get_template('status_results_template.html')
         alert = {}
         alert['primary_status_text'] = NSLocalizedString(
@@ -562,11 +580,24 @@ def build_updates_page():
         alert['progress_bar_value'] = u''
         page['update_rows'] = status_results_template.safe_substitute(alert)
 
-    count = len(item_list)
+    count = len([item for item in item_list if item['status'] != 'problem-item'])
     page['update_count'] = msclib.updateCountMessage(count)
     page['install_btn_label'] = msclib.getInstallAllButtonTextForCount(count)
     page['warning_text'] = get_warning_text()
 
+    # build problem updates table
+    page['problem_updates_header_message'] = NSLocalizedString(
+        u"Problem updates",
+        u"Problm Updates label")
+    page['problem_update_rows'] = u''
+
+    if problem_updates:
+        page['hide_problem_updates'] = u''
+        for item in problem_updates:
+            escapeAndQuoteCommonFields(item)
+            page['problem_update_rows'] += item_template.safe_substitute(item)
+
+    # build other available updates table
     page['other_updates_header_message'] = NSLocalizedString(
         u"Other available updates",
         u"Other Available Updates label")
@@ -593,6 +624,7 @@ def build_update_status_page():
     page = {}
     page['update_rows'] = u''
     page['hide_progress_spinner'] = u''
+    page['hide_problem_updates'] = u'hidden'
     page['hide_other_updates'] = u'hidden'
     page['other_updates_header_message'] = u''
     page['other_update_rows'] = u''
@@ -667,7 +699,7 @@ def get_warning_text():
 
 def build_updatedetail_page(identifier):
     '''Build detail page for a non-optional update'''
-    items = MunkiItems.getUpdateList()
+    items = MunkiItems.getUpdateList() + MunkiItems.getProblemItems()
     page_name = u'updatedetail-%s.html' % identifier
     name, sep, version = identifier.partition('--version-')
     for item in items:

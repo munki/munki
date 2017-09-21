@@ -126,7 +126,7 @@ def get_auth_restart_key(quiet=False):
             display.display_error(
                 'We had trouble getting info from %s...', recoverykeyplist)
         return ''
-    except KeyError:
+    except (KeyError, ValueError):
         if not quiet:
             display.display_error(
                 'Problem with key: RecoveryKey in %s...', recoverykeyplist)

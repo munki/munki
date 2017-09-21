@@ -303,7 +303,7 @@ def install_with_info(
                     retcode = -1
             # nopkg (Packageless) install
             elif installer_type == "nopkg":
-                restartflag = requires_restart(item)
+                restartflag = restartflag or requires_restart(item)
             # unknown installer_type
             elif installer_type != "":
                 # we've encountered an installer type
@@ -624,8 +624,12 @@ def run(only_unattended=False):
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
-    # hold onto the assertionID so we can release it later
-    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
+    # pylint: disable=unused-variable
+    # prevent sleep when idle so our installs complete. The Caffeinator class
+    # automatically releases the Power Manager assertion when the variable
+    # goes out of scope, so we only need to create it and hold a reference
+    caffeinator = powermgr.Caffeinator()
+    # pylint: enable=unused-variable
 
     managedinstallbase = prefs.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
@@ -741,7 +745,6 @@ def run(only_unattended=False):
         munkilog.log("###    End managed installer session    ###")
 
     reports.savereport()
-    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
     return removals_need_restart or installs_need_restart
 
 
