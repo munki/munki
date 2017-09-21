@@ -32,7 +32,7 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-b]"
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
@@ -40,12 +40,12 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
-
+    -b          Enable munki bootstrap mode (will fire as soon as DEP release the Mac to the LoginWindow, to use with scenario where the Mac is bound to a domain during DEP)
 EOF
 }
 
 
-while getopts "i:r:o:c:s:h" option
+while getopts "i:r:o:c:s:hb" option
 do
     case $option in
         "i")
@@ -62,6 +62,9 @@ do
             ;;
         "s")
             SIGNINGCERT="$OPTARG"
+            ;;
+        "b")
+            BOOTSTRAPMODE=1
             ;;
         "h" | *)
             usage
@@ -329,6 +332,13 @@ if [ "$SVNREV" -lt "1302" ]; then
     echo $SVNREV > "$COREROOT/usr/local/munki/munkilib/svnversion"
 fi
 
+# Enable bootstrap features if requested
+if [ "$BOOTSTRAPMODE" -eq "1" ]; then
+    echo "Enabling bootstrap mode..."
+    mkdir -p "$COREROOT/Users/Shared/"
+    touch "$COREROOT/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
+fi
+
 # add Build Number and Git Revision to version.plist
 /usr/libexec/PlistBuddy -c "Delete :BuildNumber" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
 /usr/libexec/PlistBuddy -c "Add :BuildNumber string $SVNREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
@@ -588,6 +598,7 @@ echo "Setting ownership to root..."
 sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
+sudo chown -hR root:admin "$COREROOT/Users"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"

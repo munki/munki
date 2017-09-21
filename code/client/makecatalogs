@@ -39,8 +39,8 @@ from munkilib import munkirepo
 
 
 def list_items_of_kind(repo, kind):
-    '''Returns a list of items of kind. Relative pathnames are prepended
-    with kind. (example: ['icons/Bar.png', 'icons/Foo.png'])'''
+    '''Returns a list of items of kind. Relative pathnames are prepended with
+    kind. (example: ['pkgsinfo/apps/Bar.plist', 'pkgsinfo/apps/Foo.plist'])'''
     return [os.path.join(kind, item) for item in repo.itemlist(kind)]
 
 
@@ -48,7 +48,11 @@ def hash_icons(repo):
     '''Builds a dictionary containing hashes for all our repo icons'''
     errors = []
     icons = {}
+    print_utf8("Getting list of icons...")
     icon_list = repo.itemlist('icons')
+    # Don't hash the hashes, they aren't icons.
+    if '_icon_hashes.plist' in icon_list:
+        icon_list.remove('_icon_hashes.plist')
     for icon_ref in icon_list:
         print_utf8("Hashing %s..." % (icon_ref))
         # Try to read the icon file
@@ -64,18 +68,106 @@ def hash_icons(repo):
     return icons, errors
 
 
-def makecatalogs(repo, options):
-    '''Assembles all pkginfo files into catalogs.
-    Assumes a pkgsinfo directory under repopath.
-    User calling this needs to be able to write to the repo/catalogs
-    directory.'''
+def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
+    '''Returns True if referenced installer items are present,
+    False otherwise. Adds errors/warnings to the errors list'''
+    installer_type = pkginfo.get('installer_type')
+    if installer_type in ['nopkg', 'apple_update_metadata']:
+        # no associated installer item (pkg) for these types
+        return True
+    if pkginfo.get('PackageCompleteURL') or pkginfo.get('PackageURL'):
+        # installer item may be on a different server
+        return True
 
-    exit_code = 0
-    icons, errors = hash_icons(repo)
-    if errors:
-        exit_code = -1
+    if not 'installer_item_location' in pkginfo:
+        errors.append("WARNING: %s is missing installer_item_location"
+                      % pkginfo_ref)
+        return False
 
+    # Try to form a path and fail if the
+    # installer_item_location is not a valid type
+    try:
+        installeritempath = os.path.join(
+            "pkgs", pkginfo['installer_item_location'])
+    except TypeError:
+        errors.append("WARNING: invalid installer_item_location in %s"
+                      % pkginfo_ref)
+        return False
+
+    # Check if the installer item actually exists
+    if not installeritempath in pkgs_list:
+        # do a case-insenstive comparison
+        found_caseinsensitive_match = False
+        for repo_pkg in pkgs_list:
+            if installeritempath.lower() == repo_pkg.lower():
+                errors.append(
+                    "WARNING: %s refers to installer item: %s. "
+                    "The pathname of the item in the repo has "
+                    "different case: %s. This may cause issues "
+                    "depending on the case-sensitivity of the "
+                    "underlying filesystem."
+                    % (pkginfo_ref,
+                       pkginfo['installer_item_location'], repo_pkg))
+                found_caseinsensitive_match = True
+                break
+        if not found_caseinsensitive_match:
+            errors.append(
+                "WARNING: %s refers to missing installer item: %s"
+                % (pkginfo_ref, pkginfo['installer_item_location']))
+            return False
+
+    #uninstaller sanity checking
+    uninstaller_type = pkginfo.get('uninstall_method')
+    if uninstaller_type in ['AdobeCCPUninstaller']:
+        # uninstaller_item_location is required
+        if not 'uninstaller_item_location' in pkginfo:
+            errors.append(
+                "WARNING: %s is missing uninstaller_item_location"
+                % pkginfo_ref)
+            return False
+
+    # if an uninstaller_item_location is specified, sanity-check it
+    if 'uninstaller_item_location' in pkginfo:
+        try:
+            uninstalleritempath = os.path.join(
+                "pkgs", pkginfo['uninstaller_item_location'])
+        except TypeError:
+            errors.append("WARNING: invalid uninstaller_item_location "
+                          "in %s" % pkginfo_ref)
+            return False
+
+        # Check if the uninstaller item actually exists
+        if not uninstalleritempath in pkgs_list:
+            # do a case-insenstive comparison
+            found_caseinsensitive_match = False
+            for repo_pkg in pkgs_list:
+                if uninstalleritempath.lower() == repo_pkg.lower():
+                    errors.append(
+                        "WARNING: %s refers to uninstaller item: %s. "
+                        "The pathname of the item in the repo has "
+                        "different case: %s. This may cause issues "
+                        "depending on the case-sensitivity of the "
+                        "underlying filesystem."
+                        % (pkginfo_ref,
+                           pkginfo['uninstaller_item_location'], repo_pkg))
+                    found_caseinsensitive_match = True
+                    break
+            if not found_caseinsensitive_match:
+                errors.append(
+                    "WARNING: %s refers to missing uninstaller item: %s"
+                    % (pkginfo_ref, pkginfo['uninstaller_item_location']))
+                return False
+
+    # if we get here we passed all the checks
+    return True
+
+
+def process_pkgsinfo(repo, icons, force=False, skip_payload_check=False):
+    '''Processes pkginfo files and returns a dictionary of catalogs'''
+    errors = []
+    catalogs = {}
     # get a list of pkgsinfo items
+    print_utf8("Getting list of pkgsinfo...")
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
     except munkirepo.RepoError, err:
@@ -84,6 +176,7 @@ def makecatalogs(repo, options):
         exit(-1)
 
     # get a list of pkgs items
+    print_utf8("Getting list of pkgs...")
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
     except munkirepo.RepoError, err:
@@ -102,11 +195,9 @@ def makecatalogs(repo, options):
             pkginfo = plistlib.readPlistFromString(data)
         except IOError, err:
             errors.append("IO error for %s: %s" % (pkginfo_ref, err))
-            exit_code = -1
             continue
         except BaseException, err:
             errors.append("Unexpected error for %s: %s" % (pkginfo_ref, err))
-            exit_code = -1
             continue
 
         if not 'name' in pkginfo:
@@ -122,133 +213,19 @@ def makecatalogs(repo, options):
             if key.startswith('_'):
                 del pkginfo[key]
 
-        if icons:
-            if pkginfo.get('icon_name'):
-                iconhash = (icons.get(pkginfo['icon_name']) or
-                            icons.get(pkginfo['icon_name'] + '.png'))
-                if not iconhash:
-                    errors.append(
-                        "WARNING: icon_name specified in %s but it does not "
-                        "exist" % pkginfo_ref)
-            else:
-                iconhash = icons.get(pkginfo['name'] + '.png')
+        #sanity checking
+        if not skip_payload_check:
+			verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
+			if not verified and not force:
+				# Skip this pkginfo unless we're running with force flag
+				continue
 
-            if iconhash is not None:
-                pkginfo['icon_hash'] = iconhash
-                iconhash = None
-
-        #simple sanity checking
-        do_pkg_check = True
-        installer_type = pkginfo.get('installer_type')
-        if installer_type in ['nopkg', 'apple_update_metadata']:
-            do_pkg_check = False
-        if pkginfo.get('PackageCompleteURL'):
-            do_pkg_check = False
-        if pkginfo.get('PackageURL'):
-            do_pkg_check = False
-
-
-        if do_pkg_check:
-            if not 'installer_item_location' in pkginfo:
-                errors.append(
-                    "WARNING: %s is missing installer_item_location"
-                    % pkginfo_ref)
-                # Skip this pkginfo unless we're running with force flag
-                if not options.force:
-                    exit_code = -1
-                    continue
-
-            # Try to form a path and fail if the
-            # installer_item_location is not a valid type
-            try:
-                installeritempath = os.path.join(
-                    "pkgs", pkginfo['installer_item_location'])
-            except TypeError:
-                errors.append("WARNING: invalid installer_item_location "
-                              "in %s" % pkginfo_ref)
-                exit_code = -1
-                continue
-
-            # Check if the installer item actually exists
-            if not installeritempath in pkgs_list:
-                # do a case-insenstive comparison
-                found_caseinsensitive_match = False
-                for repo_pkg in pkgs_list:
-                    if installeritempath.lower() == repo_pkg.lower():
-                        errors.append(
-                            "WARNING: %s refers to installer item: %s. "
-                            "The pathname of the item in the repo has "
-                            "different case: %s. This may cause issues "
-                            "depending on the case-sensitivity of the "
-                            "underlying filesystem."
-                            % (pkginfo_ref,
-                               pkginfo['installer_item_location'], repo_pkg))
-                        found_caseinsensitive_match = True
-                        break
-                if not found_caseinsensitive_match:
-                    errors.append(
-                        "WARNING: %s refers to missing installer item: %s"
-                        % (pkginfo_ref, pkginfo['installer_item_location']))
-                    # Skip this pkginfo unless we're running with force flag
-                    if not options.force:
-                        exit_code = -1
-                        continue
-
-        #uninstaller sanity checking
-        uninstaller_type = pkginfo.get('uninstall_method')
-        if uninstaller_type in ['AdobeCCPUninstaller']:
-            # uninstaller_item_location is required
-            if not 'uninstaller_item_location' in pkginfo:
-                errors.append(
-                    "WARNING: %s is missing uninstaller_item_location"
-                    % pkginfo_ref)
-                # Skip this pkginfo unless we're running with force flag
-                if not options.force:
-                    exit_code = -1
-                    continue
-
-        # if an uninstaller_item_location is specified, sanity-check it
-        if 'uninstaller_item_location' in pkginfo:
-            try:
-                uninstalleritempath = os.path.join(
-                    "pkgs", pkginfo['uninstaller_item_location'])
-            except TypeError:
-                errors.append("WARNING: invalid uninstaller_item_location "
-                              "in %s" % pkginfo_ref)
-                exit_code = -1
-                continue
-
-            # Check if the uninstaller item actually exists
-            if not uninstalleritempath in pkgs_list:
-                # do a case-insenstive comparison
-                found_caseinsensitive_match = False
-                for repo_pkg in pkgs_list:
-                    if uninstalleritempath.lower() == repo_pkg.lower():
-                        errors.append(
-                            "WARNING: %s refers to uninstaller item: %s. "
-                            "The pathname of the item in the repo has "
-                            "different case: %s. This may cause issues "
-                            "depending on the case-sensitivity of the "
-                            "underlying filesystem."
-                            % (pkginfo_ref,
-                               pkginfo['uninstaller_item_location'], repo_pkg))
-                        found_caseinsensitive_match = True
-                        break
-                if not found_caseinsensitive_match:
-                    errors.append(
-                        "WARNING: %s refers to missing uninstaller item: %s"
-                        % (pkginfo_ref, pkginfo['uninstaller_item_location']))
-                    # Skip this pkginfo unless we're running with force flag
-                    if not options.force:
-                        exit_code = -1
-                        continue
-
+        # append the pkginfo to the relevant catalogs
         catalogs['all'].append(pkginfo)
         for catalogname in pkginfo.get("catalogs", []):
             if not catalogname:
                 errors.append("WARNING: %s has an empty catalogs array!"
                               % pkginfo_ref)
-                exit_code = -1
                 continue
             if not catalogname in catalogs:
                 catalogs[catalogname] = []
@@ -266,11 +243,29 @@ def makecatalogs(repo, options):
                       "sensitivity of the underlying filesystem: %s"
                       % duplicate_catalogs)
 
+    return catalogs, errors
+
+
+def makecatalogs(repo, options):
+    '''Assembles all pkginfo files into catalogs.
+    Assumes a pkgsinfo directory under repopath.
+    User calling this needs to be able to write to the repo/catalogs
+    directory.'''
+
+    exit_code = 0
+    icons, errors = hash_icons(repo)
+
+    catalogs, catalog_errors = process_pkgsinfo(
+        repo, icons, force=options.force, skip_payload_check=options.skip_payload_check)
+
+    errors.extend(catalog_errors)
+
     if errors:
         # group all errors at the end for better visibility
         print
         for error in errors:
             print_err_utf8(error)
+        exit_code = -1
 
     # clear out old catalogs
     try:
@@ -302,6 +297,16 @@ def makecatalogs(repo, options):
                 "WARNING: Did not create catalog %s because it is empty" % key)
             exit_code = -1
 
+    if icons:
+        icon_hashes_plist = os.path.join("icons", "_icon_hashes.plist")
+        icon_hashes = plistlib.writePlistToString(icons)
+        try:
+            repo.put(icon_hashes_plist, icon_hashes)
+            print "Created %s..." % (icon_hashes_plist)
+        except munkirepo.RepoError, err:
+            print_err_utf8(
+                u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
+
     # Exit with "exit_code" if we got this far. This will be -1 if there were
     # any errors that prevented the catalogs to be written.
     exit(exit_code)
@@ -315,13 +320,17 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
+    parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
+                      help='Skip checking of pkg existence. Useful'
+                           'when pkgs aren\'t on the same server'
+                           'as pkginfo, catalogs and manifests.')
     parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL that takes precedence '
                            'over the default repo_url specified via '
                            '--configure.')
     parser.add_option('--plugin',
                       help='Specify a custom plugin to connect to repo.')
-    parser.set_defaults(force=False)
+    parser.set_defaults(force=False, skip_payload_check=False)
     options, arguments = parser.parse_args()
 
     if options.version:

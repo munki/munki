@@ -9,12 +9,17 @@
 '''Controller for our custom alert that prompts for password'''
 
 from objc import IBAction, IBOutlet, nil
-from AppKit import *
-from Foundation import *
 from PyObjCTools import AppHelper
 from Quartz import CAKeyframeAnimation, CGPathCreateMutable
 from Quartz import CGPathAddLineToPoint, CGPathMoveToPoint
 from Quartz import CGPathCloseSubpath
+#from Foundation import *
+#from AppKit import *
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
 
 import authrestart
 import msclog

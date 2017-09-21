@@ -34,17 +34,22 @@ EXIT_STATUS_INVALID_PARAMETERS = 200
 EXIT_STATUS_ROOT_REQUIRED = 201
 
 BUNDLE_ID = 'ManagedInstalls'
-# the following two items are not used internally by munki
+# the following two items are not used internally by Munki
 # any longer, but remain for backwards compatibility with
 # pre and postflight script that might access these files directly
-MANAGED_INSTALLS_PLIST_PATH = "/Library/Preferences/" + BUNDLE_ID + ".plist"
+MANAGED_INSTALLS_PLIST_PATH = '/Library/Preferences/' + BUNDLE_ID + '.plist'
 SECURE_MANAGED_INSTALLS_PLIST_PATH = \
-    "/private/var/root/Library/Preferences/" + BUNDLE_ID + ".plist"
+    '/private/var/root/Library/Preferences/' + BUNDLE_ID + '.plist'
 
 ADDITIONAL_HTTP_HEADERS_KEY = 'AdditionalHttpHeaders'
 
 LOGINWINDOW = (
-    "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow")
+    '/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow')
+
+CHECKANDINSTALLATSTARTUPFLAG = (
+    '/Users/Shared/.com.googlecode.munki.checkandinstallatstartup')
+INSTALLATSTARTUPFLAG = '/Users/Shared/.com.googlecode.munki.installatstartup'
+INSTALLATLOGOUTFLAG = '/private/tmp/com.googlecode.munki.installatlogout'
 
 
 if __name__ == '__main__':

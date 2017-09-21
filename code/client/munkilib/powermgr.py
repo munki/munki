@@ -15,63 +15,108 @@
 # limitations under the License.
 """
 powermgr.py
-munki module to toggle IOKit/PowerManager idle sleep assertions.
+Munki module to handle Power Manager tasks
 """
 
-# pylint: disable=E0611
-# stuff for IOKit/PowerManager, courtesy Michael Lynn, pudquick@github
-from ctypes import c_uint32, cdll, c_void_p, POINTER, byref
-from CoreFoundation import CFStringCreateWithCString
-from CoreFoundation import kCFStringEncodingASCII
-from objc import pyobjc_id
-# pylint: enable=E0611
+from . import display
+
+import objc
+
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=no-name-in-module
+from Foundation import NSBundle
+# pylint:enable=no-name-in-module
 
 # lots of camelCase names
-# pylint: disable=C0103
+# pylint: disable=invalid-name
 
-libIOKit = cdll.LoadLibrary('/System/Library/Frameworks/IOKit.framework/IOKit')
-libIOKit.IOPMAssertionCreateWithName.argtypes = [
-    c_void_p, c_uint32, c_void_p, POINTER(c_uint32)]
-libIOKit.IOPMAssertionRelease.argtypes = [c_uint32]
+# See http://michaellynn.github.io/2015/08/08/learn-you-a-better-pyobjc-bridgesupport-signature/
+# for a primer on the bridging techniques used here
+#
+
+# https://developer.apple.com/documentation/iokit/iopowersources.h?language=objc
+IOKit = NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
+
+functions = [("IOPMAssertionCreateWithName", b"i@i@o^i"),
+             ("IOPMAssertionRelease", b"vi"),
+             ("IOPSGetPowerSourceDescription", b"@@@"),
+             ("IOPSCopyPowerSourcesInfo", b"@"),
+             ("IOPSCopyPowerSourcesList", b"@@"),
+             ("IOPSGetProvidingPowerSourceType", b"@@"),
+            ]
+
+# No idea why PyLint complains about objc.loadBundleFunctions
+# pylint: disable=no-member
+objc.loadBundleFunctions(IOKit, globals(), functions)
+# pylint: enable=no-member
+
+def onACPower():
+    """Returns a boolean to indicate if the machine is on AC power"""
+    # pylint: disable=undefined-variable
+    power_source = IOPSGetProvidingPowerSourceType(IOPSCopyPowerSourcesInfo())
+    # pylint: enable=undefined-variable
+    return power_source == 'AC Power'
 
 
-def _CFSTR(py_string):
-    """Returns a CFString given a Python string."""
-    return CFStringCreateWithCString(None, py_string, kCFStringEncodingASCII)
+def onBatteryPower():
+    """Returns a boolean to indicate if the machine is on battery power"""
+    # pylint: disable=undefined-variable
+    power_source = IOPSGetProvidingPowerSourceType(IOPSCopyPowerSourcesInfo())
+    # pylint: enable=undefined-variable
+    return power_source == 'Battery Power'
 
 
-def _rawPointer(pyobjc_string):
-    """Returns a pointer to a CFString."""
-    return pyobjc_id(pyobjc_string.nsstring())
+def getBatteryPercentage():
+    """Returns battery charge percentage"""
+    # pylint: disable=undefined-variable
+    ps_blob = IOPSCopyPowerSourcesInfo()
+    power_sources = IOPSCopyPowerSourcesList(ps_blob)
+    for source in power_sources:
+        description = IOPSGetPowerSourceDescription(ps_blob, source)
+        if description.get('Type') == 'InternalBattery':
+            return description.get('Current Capacity', 0)
+    return 0
 
 
-def _IOPMAssertionCreateWithName(assert_name, assert_level, assert_msg):
-    """Creaes a PowerManager assertion."""
-    assertID = c_uint32(0)
-    p_assert_name = _rawPointer(_CFSTR(assert_name))
-    p_assert_msg = _rawPointer(_CFSTR(assert_msg))
-    errcode = libIOKit.IOPMAssertionCreateWithName(
-        p_assert_name, assert_level, p_assert_msg, byref(assertID))
-    return (errcode, assertID)
-
-
-def assertNoIdleSleep():
+def assertNoIdleSleep(reason=None):
     """Uses IOKit functions to prevent idle sleep."""
-    # based on code by Michael Lynn, pudquick@github
     kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
     kIOPMAssertionLevelOn = 255
-    reason = "Munki is installing software"
-
-    dummy_errcode, assertID = _IOPMAssertionCreateWithName(
+    display.display_info('Preventing idle sleep')
+    if not reason:
+        reason = 'Munki is installing software'
+    # pylint: disable=undefined-variable
+    errcode, assertID = IOPMAssertionCreateWithName(
         kIOPMAssertionTypeNoIdleSleep,
         kIOPMAssertionLevelOn,
-        reason)
+        reason, None)
+    # pylint: enable=undefined-variable
+    if errcode:
+        return None
     return assertID
 
 
 def removeNoIdleSleepAssertion(assertion_id):
     """Uses IOKit functions to remove a "no idle sleep" assertion."""
-    return libIOKit.IOPMAssertionRelease(assertion_id)
+    if assertion_id:
+        display.display_info('Allowing idle sleep')
+        # pylint: disable=undefined-variable
+        IOPMAssertionRelease(assertion_id)
+
+
+class Caffeinator(object):
+    """A simple object that prevents idle sleep and automagically
+    removes the assertion when the object goes out of scope"""
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, reason=None):
+        """Make Power Manager assertion and store the assertion_id"""
+        self.assertion_id = assertNoIdleSleep(reason=reason)
+
+    def __del__(self):
+        """Remove our Power Manager assertion"""
+        removeNoIdleSleepAssertion(self.assertion_id)
 
 
 if __name__ == '__main__':
