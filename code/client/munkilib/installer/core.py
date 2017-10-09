@@ -301,6 +301,8 @@ def install_with_info(
                 identifier = item.get('PayloadIdentifier')
                 if not profiles.install_profile(itempath, identifier):
                     retcode = -1
+                if retcode == 0 and requires_restart(item):
+                    restartflag = True
             # nopkg (Packageless) install
             elif installer_type == "nopkg":
                 restartflag = restartflag or requires_restart(item)
