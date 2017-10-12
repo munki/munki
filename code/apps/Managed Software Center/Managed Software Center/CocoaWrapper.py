@@ -29,6 +29,7 @@ from Foundation import (
     NSFileHandle,
     NSFileManager,
     NSInsetRect,
+    NSLocale,
     NSLocalizedString,
     NSLog,
     NSMakePoint,

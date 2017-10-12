@@ -264,7 +264,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                      'preupgrade_alert',
                      'OnDemand',
                      'minimum_os_version',
-                     'update_available']
+                     'update_available',
+                     'localized_strings']
     for key in optional_keys:
         if key in item_pl:
             iteminfo[key] = item_pl[key]

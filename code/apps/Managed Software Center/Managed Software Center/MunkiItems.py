@@ -946,6 +946,19 @@ class OptionalItem(GenericItem):
         '''Initialize an OptionalItem from a item dict from the
         InstallInfo.plist optional_installs array'''
         super(OptionalItem, self).__init__(*arg, **kw)
+        if self.get('localized_strings'):
+            language_code = NSLocale.currentLocale().languageCode()
+            locale_dict = self['localized_strings'].get(language_code)
+            if locale_dict:
+                localized_keys = ['category',
+                                  'description',
+                                  'display_name',
+                                  'preinstall_alert',
+                                  'preuninstall_alert',
+                                  'preupgrade_alert']
+                for key in localized_keys:
+                    if key in locale_dict:
+                        self[key] = locale_dict[key]
         if 'category' not in self:
             self['category'] = NSLocalizedString(u"Uncategorized",
                                                  u"No Category name")
