@@ -41,7 +41,7 @@
 "1B8-Pq-rf7.title" = "Vis log";
 
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Managed Software Update";
+"1Nd-E7-vfR.title" = "Managed Software Center";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
 "202.title" = "Slet";
