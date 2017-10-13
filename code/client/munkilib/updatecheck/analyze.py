@@ -371,6 +371,9 @@ def process_install(manifestitem, cataloglist, installinfo,
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
 
+    if(item_pl.get('localized_strings')):
+        iteminfo['localized_strings'] = item_pl['localized_strings']
+
     if not dependencies_met:
         display.display_warning(
             'Didn\'t attempt to install %s because could not resolve all '
