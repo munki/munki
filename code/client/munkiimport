@@ -959,7 +959,8 @@ Extended Options: (makepkginfo options)
                             'category',
                             'developer',
                             'icon_name',
-                            'unused_software_removal_info']:
+                            'unused_software_removal_info',
+                            'localized_strings']:
                     if key in matchingpkginfo:
                         print 'Copying %s: %s' % (key, matchingpkginfo[key])
                         pkginfo[key] = matchingpkginfo[key]
