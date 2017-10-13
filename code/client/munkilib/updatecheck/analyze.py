@@ -264,7 +264,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                      'preupgrade_alert',
                      'OnDemand',
                      'minimum_os_version',
-                     'update_available']
+                     'update_available',
+                     'localized_strings']
     for key in optional_keys:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
@@ -369,6 +370,9 @@ def process_install(manifestitem, cataloglist, installinfo,
     iteminfo['name'] = item_pl.get('name', '')
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
+
+    if(item_pl.get('localized_strings')):
+        iteminfo['localized_strings'] = item_pl['localized_strings']
 
     if not dependencies_met:
         display.display_warning(
