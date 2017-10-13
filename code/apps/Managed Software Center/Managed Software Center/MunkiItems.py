@@ -534,6 +534,8 @@ class GenericItem(dict):
 
     def __init__(self, *arg, **kw):
         super(GenericItem, self).__init__(*arg, **kw)
+        if self.get('localized_strings'):
+            self.add_localizations()
         # now normalize values
         if not self.get('display_name'):
             self['display_name'] = self['name']
@@ -938,6 +940,30 @@ class GenericItem(dict):
     def more_link_text(self):
         return NSLocalizedString(u"More", u"More link text")
 
+    def add_localizations(self):
+        available_locales = list(self['localized_strings'])
+        fallback_locale = self['localized_strings'].get('fallback_locale')
+        if fallback_locale:
+            available_locales.remove('fallback_locale')
+            available_locales.append(fallback_locale)
+        language_code = self._get_preferred_locale(available_locales)
+        if language_code != fallback_locale:
+            locale_dict = self['localized_strings'].get(language_code)
+            if locale_dict:
+                localized_keys = ['category',
+                                  'description',
+                                  'display_name',
+                                  'preinstall_alert',
+                                  'preuninstall_alert',
+                                  'preupgrade_alert']
+                for key in localized_keys:
+                    if key in locale_dict:
+                        self[key] = locale_dict[key]
+
+    def _get_preferred_locale(self, available_locales):
+        code = NSBundle.preferredLocalizationsFromArray_forPreferences_(
+                    available_locales, None)
+        return code[0]
 
 class OptionalItem(GenericItem):
     '''Dictionary subclass that models a given optional install item'''
