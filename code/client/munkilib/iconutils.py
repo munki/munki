@@ -73,13 +73,13 @@ def convertIconToPNG(icon_path, destination_path,
             height = int(properties.get(kCGImagePropertyPixelHeight, 0))
             if (not candidate or
                     (height < desired_pixel_height and
-                        height > candidate['height']) or
+                     height > candidate['height']) or
                     (height >= desired_pixel_height and
-                        height < candidate['height']) or
+                     height < candidate['height']) or
                     (height == candidate['height'] and dpi == desired_dpi)):
                 candidate = {'index': index, 'dpi': dpi, 'height': height}
                 selected_index = index
-        except ValueError, err:
+        except ValueError:
             pass
 
     image = CGImageSourceCreateImageAtIndex(image_source, selected_index, None)
