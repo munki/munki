@@ -27,17 +27,19 @@ import munki
 from operator import itemgetter
 from HTMLParser import HTMLParser, HTMLParseError
 
-## pylint: disable=wildcard-import
-## pylint: disable=unused-wildcard-import
-## pylint: disable=redefined-builtin
-#from Foundation import *
-#from AppKit import *
-## pylint: enable=redefined-builtin
-## pylint: enable=wildcard-import
-
 # pylint: disable=wildcard-import
 from CocoaWrapper import *
 # pylint: enable=wildcard-import
+
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=no-name-in-module
+from Quartz import (CGImageSourceCreateWithURL, CGImageSourceCreateImageAtIndex,
+                    CGImageDestinationCreateWithURL, CGImageDestinationAddImage,
+                    CGImageDestinationFinalize,
+                    CGImageSourceGetCount, CGImageSourceCopyPropertiesAtIndex,
+                    kCGImagePropertyDPIHeight, kCGImagePropertyPixelHeight)
+# pylint: enable=no-name-in-module
 
 import FoundationPlist
 
@@ -98,8 +100,8 @@ def getProblemItems():
             item['status'] = 'problem-item'
         _cache['problem_items'] = sorted(
             [UpdateItem(item) for item in problem_items],
-            key=itemgetter(
-               'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
+            key=itemgetter('due_date_sort', 'restart_sort',
+                           'developer_sort', 'size_sort'))
     return _cache['problem_items']
 
 
@@ -262,16 +264,20 @@ def convertIconToPNG(app_name, destination_path, desired_size):
     '''Converts an application icns file to a png file, choosing the
     representation closest to (but >= than if possible) the desired_size.
     Returns True if successful, False otherwise'''
+    # find the application
     app_path = os.path.join('/Applications', app_name + '.app')
     if not os.path.exists(app_path):
         return False
     try:
+        # read the Info.plist
         info = FoundationPlist.readPlist(
             os.path.join(app_path, 'Contents/Info.plist'))
     except FoundationPlist.FoundationPlistException:
         info = {}
     try:
         try:
+            # look for an icon name in the Info.plist, falling back to the
+            # appname
             icon_filename = info.get('CFBundleIconFile', app_name)
         except AttributeError:
             icon_filename = app_name
@@ -280,20 +286,47 @@ def convertIconToPNG(app_name, destination_path, desired_size):
             # no file extension, so add '.icns'
             icon_path += u'.icns'
         if os.path.exists(icon_path):
-            image_data = NSData.dataWithContentsOfFile_(icon_path)
-            bitmap_reps = NSBitmapImageRep.imageRepsWithData_(image_data)
-            chosen_rep = None
-            for bitmap_rep in bitmap_reps:
-                if not chosen_rep:
-                    chosen_rep = bitmap_rep
-                elif (bitmap_rep.pixelsHigh() >= desired_size
-                      and bitmap_rep.pixelsHigh() < chosen_rep.pixelsHigh()):
-                    chosen_rep = bitmap_rep
-            if chosen_rep:
-                png_data = chosen_rep.representationUsingType_properties_(
-                    NSPNGFileType, None)
-                png_data.writeToFile_atomically_(destination_path, False)
-                return True
+            # we found an icns file, convert to png
+            icns_url = NSURL.fileURLWithPath_(icon_path)
+            png_url = NSURL.fileURLWithPath_(destination_path)
+            desired_dpi = 72
+
+            image_source = CGImageSourceCreateWithURL(icns_url, None)
+            if not image_source:
+                return False
+            number_of_images = CGImageSourceGetCount(image_source)
+            if number_of_images == 0:
+                return False
+
+            selected_index = 0
+            candidate = {}
+            # iterate through the individual icon sizes to find the "best" one
+            for index in range(number_of_images):
+                try:
+                    properties = CGImageSourceCopyPropertiesAtIndex(
+                        image_source, index, None)
+                    dpi = int(properties.get(kCGImagePropertyDPIHeight, 0))
+                    height = int(properties.get(kCGImagePropertyPixelHeight, 0))
+                    if (not candidate or
+                            (height < desired_size and
+                             height > candidate['height']) or
+                            (height >= desired_size and
+                             height < candidate['height']) or
+                            (height == candidate['height'] and
+                             dpi == desired_dpi)):
+                        candidate = {'index': index, 'dpi': dpi,
+                                     'height': height}
+                        selected_index = index
+                except ValueError:
+                    pass
+
+            image = CGImageSourceCreateImageAtIndex(
+                image_source, selected_index, None)
+            image_dest = CGImageDestinationCreateWithURL(
+                png_url, 'public.png', 1, None)
+            CGImageDestinationAddImage(image_dest, image, None)
+            return CGImageDestinationFinalize(image_dest)
+
     except Exception:
         return False
 
@@ -962,7 +995,7 @@ class GenericItem(dict):
 
     def _get_preferred_locale(self, available_locales):
         code = NSBundle.preferredLocalizationsFromArray_forPreferences_(
-                    available_locales, None)
+            available_locales, None)
         return code[0]
 
 class OptionalItem(GenericItem):
