@@ -549,6 +549,7 @@ class GenericItem(dict):
             del self['description']
         if not 'raw_description' in self:
             self['raw_description'] = u''
+            del self['description']
         self['icon'] = self.getIcon()
         self['due_date_sort'] = NSDate.distantFuture()
         # sort items that need restart highest, then logout, then other
