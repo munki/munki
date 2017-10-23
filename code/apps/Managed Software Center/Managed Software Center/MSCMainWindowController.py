@@ -1035,7 +1035,9 @@ class MSCMainWindowController(NSWindowController):
         else:
             btn.setInnerText_(item['short_action_text'])
         if status_text_span:
-            status_text_span.setInnerText_(item['status_text'])
+            # use setInnerHTML_ instead of setInnerText_ because sometimes the status
+            # text contains html, like '<span class="warning">Some warning</span>'
+            status_text_span.setInnerHTML_(item['status_text'])
         status_line.setClassName_(item['status'])
 
     def actionButtonClicked_(self, item_name):
