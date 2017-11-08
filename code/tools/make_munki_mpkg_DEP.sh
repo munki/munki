@@ -585,6 +585,7 @@ function requirerestart() {
     <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusionScript="requirerestart()">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGEIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
     $CONFREF
+    <product id="$PKGID" version="$VERSION" />
 </installer-script>
 EOF
 
