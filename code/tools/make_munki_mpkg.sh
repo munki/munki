@@ -561,9 +561,10 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$APPSVERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusion="RequireRestart">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$LAUNCHDVERSION" auth="Root" onConclusion="RequireRestart">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGEIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
     $CONFREF
+    <product id="$PKGID" version="$VERSION" />
 </installer-script>
 EOF
 
