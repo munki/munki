@@ -114,13 +114,20 @@ void launchMSCapp()
         if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
             oldestUpdateDays = [(NSNumber *)CFBridgingRelease(plistRef) floatValue];
         }
-        // use CFPreferencesCopyAppValue so we can respect managed preferences
-        // and also search /var/root preferences
-        plistRef = CFPreferencesCopyAppValue(
-            CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"));
+        if (CFPreferencesAppValueIsForced(CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"))) {
+            // use CFPreferencesCopyAppValue so we can respect managed preferences
+            plistRef = CFPreferencesCopyAppValue(
+                CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"));
+        } else {
+            // preference not managed, read from /Library/Preferences (ignoring user-level preferences)
+            plistRef = CFPreferencesCopyValue(
+                CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"),
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
+        }
         if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
             useNotificationCenterDays = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
         }
+        //NSLog(@"UseNotificationCenterDays: %ld", useNotificationCenterDays);
         plistRef = CFPreferencesCopyValue(
              CFSTR("ForcedUpdateDueDate"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
         if (plistRef && CFGetTypeID(plistRef) == CFDateGetTypeID()) {
