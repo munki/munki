@@ -430,6 +430,12 @@ def main():
         help=('Indicates this pkginfo should have an \'installer_type\' of '
               '\'nopkg\'. Ignored if a package or dmg argument is supplied.')
         )
+    # secret option!
+    additional_options.add_option(
+        '--print-warnings',
+        action='store_true', default=True,
+        help=optparse.SUPPRESS_HELP
+        )
     parser.add_option_group(additional_options)
 
     sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
@@ -497,8 +503,7 @@ def main():
     else:
         installeritem = None
     try:
-        pkginfo = pkginfolib.makepkginfo(
-            installeritem, options, print_warnings=True)
+        pkginfo = pkginfolib.makepkginfo(installeritem, options)
     except pkginfolib.PkgInfoGenerationError, err:
         print >> sys.stderr, err
         exit(-1)
