@@ -21,6 +21,7 @@ Routines used by makepkginfo to create pkginfo files
 """
 
 # standard libs
+import optparse
 import os
 import re
 import sys
@@ -390,7 +391,7 @@ class AtttributeDict(dict):
         '''Allow access to dictionary keys as attribute names.'''
         try:
             return super(AtttributeDict, self).__getattr__(name)
-        except AttributeError, err:
+        except AttributeError:
             try:
                 return self[name]
             except KeyError:
@@ -718,3 +719,372 @@ def makepkginfo(installeritem, options):
 
     # return the info
     return pkginfo
+
+
+def check_mode(option, opt, value, parser):
+    '''Callback to check --mode options'''
+    modes = value.lower().replace(',', ' ').split()
+    value = None
+    rex = re.compile("[augo]+[=+-][rstwxXugo]+")
+    for mode in modes:
+        if rex.match(mode):
+            value = mode if not value else (value + "," + mode)
+        else:
+            raise optparse.OptionValueError(
+                "option %s: invalid mode: %s" % (opt, mode))
+    setattr(parser.values, option.dest, value)
+
+
+def add_option_groups(parser):
+    '''Adds our (many) option groups to the options parser'''
+
+    # Default override options
+    default_override_options = optparse.OptionGroup(
+        parser, 'Default Override Options',
+        ('Options specified will override information automatically derived '
+         'from the package.'))
+    default_override_options.add_option(
+        '--name',
+        metavar='NAME',
+        help='Name of the package.'
+        )
+    default_override_options.add_option(
+        '--displayname',
+        metavar='DISPLAY_NAME',
+        help='Display name of the package.'
+        )
+    default_override_options.add_option(
+        '--description',
+        metavar='STRING|PATH',
+        help=('Description of the package. '
+              'Can be a PATH to a file (plain text or html).')
+        )
+    default_override_options.add_option(
+        '--pkgvers',
+        metavar='PACKAGE_VERSION',
+        help='Version of the package.'
+        )
+    default_override_options.add_option(
+        '--RestartAction',
+        metavar='ACTION',
+        help=('Specify a \'RestartAction\' for the package. '
+              'Supported actions: RequireRestart, RequireLogout, or '
+              'RecommendRestart')
+        )
+    default_override_options.add_option(
+        '--uninstall_method', '--uninstall-method',
+        metavar='METHOD|PATH',
+        help=('Specify an \'uninstall_method\' for the package. '
+              'Default method depends on the package type: i.e. '
+              'drag-n-drop, Apple package, or an embedded uninstall script. '
+              'Can be a path to a script on the client computer.')
+        )
+    parser.add_option_group(default_override_options)
+
+    # Script options
+    script_options = optparse.OptionGroup(
+        parser, 'Script Options',
+        'All scripts are read and embedded into the pkginfo.')
+    script_options.add_option(
+        '--installcheck_script', '--installcheck-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional installcheck script to be '
+              'run to determine if item should be installed. '
+              'An exit code of 0 indicates installation should occur. '
+              'Takes precedence over installs items and receipts.')
+        )
+    script_options.add_option(
+        '--uninstallcheck_script', '--uninstallcheck-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional uninstallcheck script to be '
+              'run to determine if item should be uninstalled. '
+              'An exit code of 0 indicates uninstallation should occur. '
+              'Takes precedence over installs items and receipts.')
+        )
+    script_options.add_option(
+        '--preinstall_script', '--preinstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional preinstall script to be '
+              'run before installation of the item.')
+        )
+    script_options.add_option(
+        '--postinstall_script', '--postinstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional postinstall script to be '
+              'run after installation of the item.')
+        )
+    script_options.add_option(
+        '--preuninstall_script', '--preuninstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional preuninstall script to be run '
+              'before removal of the item.')
+        )
+    script_options.add_option(
+        '--postuninstall_script', '--postuninstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an optional postuninstall script to be run '
+              'after removal of the item.')
+        )
+    script_options.add_option(
+        '--uninstall_script', '--uninstall-script',
+        metavar='SCRIPT_PATH',
+        help=('Path to an uninstall script to be run in order '
+              'to uninstall this item.')
+        )
+    parser.add_option_group(script_options)
+
+    # Drag-n-Drop options
+    dragdrop_options = optparse.OptionGroup(
+        parser, 'Drag-n-Drop Options',
+        ('These options apply to installer items that are "drag-n-drop" '
+         'disk images.')
+        )
+    dragdrop_options.add_option(
+        '--itemname', '-i', '--appname', '-a',
+        metavar='ITEM',
+        dest='item',
+        help=('Name or relative path of the item to be installed. '
+              'Useful if there is more than one item at the root of the dmg '
+              'or the item is located in a subdirectory. '
+              'Absolute paths can be provided as well but they '
+              'must point to an item located within the dmg.')
+        )
+    dragdrop_options.add_option(
+        '--destinationpath', '-d',
+        metavar='PATH',
+        help=('Path to which the item should be copied. Defaults to '
+              '"/Applications".')
+        )
+    dragdrop_options.add_option(
+        '--destinationitemname', '--destinationitem',
+        metavar='NAME',
+        dest='destitemname',
+        help=('Alternate name for which the item should be copied as. '
+              'Specifying this option also alters the corresponding '
+              '"installs" item\'s path with the provided name.')
+        )
+    dragdrop_options.add_option(
+        '-o', '--owner',
+        metavar='USER',
+        dest='user',
+        help=('Sets the owner of the copied item. '
+              'The owner may be either a UID or a symbolic name. '
+              'The owner will be set recursively on the item.')
+        )
+    dragdrop_options.add_option(
+        '-g', '--group',
+        metavar='GROUP',
+        dest='group',
+        help=('Sets the group of the copied item. '
+              'The group may be either a GID or a symbolic name. '
+              'The group will be set recursively on the item.')
+        )
+    dragdrop_options.add_option(
+        '-m', '--mode',
+        metavar='MODE',
+        dest='mode',
+        action='callback',
+        type='string',
+        callback=check_mode,
+        help=('Sets the mode of the copied item. '
+              'The specified mode must be in symbolic form. '
+              'See the manpage for chmod(1) for more information. '
+              'The mode is applied recursively.')
+        )
+    parser.add_option_group(dragdrop_options)
+
+    # Apple package specific options
+    apple_options = optparse.OptionGroup(parser, 'Apple Package Options')
+    apple_options.add_option(
+        '--pkgname', '-p',
+        help=('If the installer item is a disk image containing multiple '
+              'packages, or the package to be installed is not at the root '
+              'of the mounted disk image, PKGNAME is a relative path from '
+              'the root of the mounted disk image to the specific package to '
+              'be installed.'
+              'If the installer item is a disk image containing an Adobe '
+              'CS4 Deployment Toolkit installation, PKGNAME is the name of '
+              'an Adobe CS4 Deployment Toolkit installer package folder at '
+              'the top level of the mounted dmg.'
+              'If this flag is missing, the AdobeUber* files should be at '
+              'the top level of the mounted dmg.')
+        )
+    apple_options.add_option(
+        '--installer_choices_xml', '--installer-choices-xml',
+        action='store_true',
+        help=('Generate installer choices for metapackages. '
+              'Note: Requires Mac OS X 10.6.6 or later.')
+        )
+    apple_options.add_option(
+        '--installer_environment', '--installer-environment', '-E',
+        action="append",
+        metavar='KEY=VALUE',
+        help=('Specifies key/value pairs to set environment variables for use '
+              'by /usr/sbin/installer. A key/value pair of '
+              'USER=CURRENT_CONSOLE_USER indicates that USER be set to the '
+              'GUI user, otherwise root. Can be specified multiple times.')
+        )
+    parser.add_option_group(apple_options)
+
+    # Adobe package specific options
+    adobe_options = optparse.OptionGroup(parser, 'Adobe-specific Options')
+    adobe_options.add_option(
+        '--uninstallerdmg', '--uninstallerpkg', '--uninstallpkg', '-U',
+        metavar='UNINSTALLERITEM', dest='uninstalleritem',
+        help=('If the installer item is a disk image containing an Adobe CS4 '
+              'Deployment Toolkit installation package or Adobe CS3 deployment '
+              'package, UNINSTALLERITEM is a path to a disk image containing '
+              'an AdobeUberUninstaller for this item.\n'
+              'If the installer item is a Creative Cloud Packager install '
+              'package, UNINSTALLERITEM is a path to the matching Creative '
+              'Cloud Packager uninstall package.')
+        )
+    parser.add_option_group(adobe_options)
+
+    # Forced/Unattended (install) options
+    forced_unattended_options = optparse.OptionGroup(
+        parser, 'Forced/Unattended Options')
+    forced_unattended_options.add_option(
+        '--unattended_install', '--unattended-install',
+        action='store_true',
+        help='Item can be installed without notifying the user.')
+    forced_unattended_options.add_option(
+        '--unattended_uninstall', '--unattended-uninstall',
+        action='store_true',
+        help='Item can be uninstalled without notifiying the user.')
+    forced_unattended_options.add_option(
+        '--force_install_after_date', '--force-install-after-date',
+        metavar='DATE',
+        help=('Specify a date, in local time, after which the package will '
+              'be forcefully installed. DATE format: yyyy-mm-ddThh:mm:ssZ '
+              'Example: \'2011-08-11T12:55:00Z\' equates to 11 August 2011 '
+              'at 12:55 PM local time.')
+        )
+    parser.add_option_group(forced_unattended_options)
+
+    # 'installs' generation options
+    # (by itself since no installer_item needs to be specified)
+    gen_installs_options = optparse.OptionGroup(
+        parser, 'Generating \'installs\' items')
+    gen_installs_options.add_option(
+        '--file', '-f',
+        action="append",
+        metavar='PATH',
+        help=('Path to a filesystem item installed by this package, typically '
+              'an application. This generates an "installs" item for the '
+              'pkginfo, to be used to determine if this software has been '
+              'installed. Can be specified multiple times.')
+        )
+    parser.add_option_group(gen_installs_options)
+
+    # Apple update metadata pkg options
+    # (by itself since no installer_item needs to be specified)
+    apple_update_metadata_options = optparse.OptionGroup(
+        parser, 'Generating Apple update metadata items')
+    apple_update_metadata_options.add_option(
+        '--apple_update', '--apple-update',
+        metavar='PRODUCTKEY',
+        help=('Specify an Apple update \'productKey\' used to manipulate '
+              'the behavior of a pending Apple software update. '
+              'For example, a \'force_install_after_date\' key could be added '
+              'as opposed to importing the update into the munki repo.')
+        )
+    parser.add_option_group(apple_update_metadata_options)
+
+    # Additional options - misc. options that don't fit into other categories,
+    # and don't necessarily warrant the creation of their own option group
+    additional_options = optparse.OptionGroup(parser, 'Additional Options')
+    additional_options.add_option(
+        '--autoremove',
+        action='store_true',
+        help=('Indicates this package should be automatically removed if it is '
+              'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
+        '--OnDemand',
+        action='store_true',
+        help=('Indicates this package should be an OnDemand package '
+              'not listed in any applicable \'managed_installs\'.')
+        )
+    additional_options.add_option(
+        '--minimum_munki_version', '--minimum-munki-version',
+        metavar='VERSION',
+        help=('Minimum version of munki required to perform installation. '
+              'Uses format produced by \'--version\' query from any munki '
+              'utility.')
+        )
+    additional_options.add_option(
+        '--minimum_os_version', '--minimum-os-version', '--min-os-ver',
+        metavar='VERSION',
+        help='Minimum OS version for the installer item.'
+        )
+    additional_options.add_option(
+        '--maximum_os_version', '--maximum-os-version', '--max-os-ver',
+        metavar='VERSION',
+        help='Maximum OS version for the installer item.'
+        )
+    additional_options.add_option(
+        '--update_for', '--update-for', '-u',
+        action="append",
+        metavar='PKG_NAME',
+        help=('Specifies a package for which the current package is an update. '
+              'Can be specified multiple times to build an array of packages.')
+        )
+    additional_options.add_option(
+        '--requires', '-r',
+        action="append",
+        metavar='PKG_NAME',
+        help=('Specifies a package required by the current package. Can be '
+              'specified multiple times to build an array of required '
+              'packages.')
+        )
+    additional_options.add_option(
+        '--blocking_application', '--blocking-application', '-b',
+        action="append",
+        metavar='APP_NAME',
+        help=('Specifies an application that blocks installation. Can be '
+              'specified multiple times to build an array of blocking '
+              'applications.')
+        )
+    additional_options.add_option(
+        '--catalog', '-c',
+        action="append",
+        metavar='CATALOG_NAME',
+        help=('Specifies in which catalog the item should appear. The default '
+              'is \'testing\'. Can be specified multiple times to add the item '
+              'to multiple catalogs.')
+        )
+    additional_options.add_option(
+        '--category',
+        metavar='CATEGORY',
+        help='Category for display in Managed Software Center.'
+        )
+    additional_options.add_option(
+        '--developer',
+        metavar='DEVELOPER',
+        help='Developer name for display in Managed Software Center.'
+        )
+    additional_options.add_option(
+        '--icon', '--iconname', '--icon-name', '--icon_name',
+        metavar='ICONNAME',
+        help='Name of icon file for display in Managed Software Center.'
+        )
+    additional_options.add_option(
+        '--notes',
+        metavar='STRING|PATH',
+        help=('Specifies administrator provided notes to be embedded into the '
+              'pkginfo. Can be a PATH to a file.')
+        )
+    additional_options.add_option(
+        '--nopkg',
+        action='store_true',
+        help=('Indicates this pkginfo should have an \'installer_type\' of '
+              '\'nopkg\'. Ignored if a package or dmg argument is supplied.')
+        )
+    # secret option!
+    additional_options.add_option(
+        '--print-warnings',
+        action='store_true', default=True,
+        help=optparse.SUPPRESS_HELP
+        )
+    parser.add_option_group(additional_options)
