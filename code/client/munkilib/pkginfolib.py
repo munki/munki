@@ -51,6 +51,11 @@ from .adobeutils import adobeinfo
 os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
 
 
+class PkgInfoGenerationError(Exception):
+    '''Error to raise if there is a fatal error when generating pkginfo'''
+    pass
+
+
 def make_pkginfo_metadata():
     '''Records information about the environment in which the pkginfo was
 created so we have a bit of an audit trail. Returns a dictionary.'''
@@ -115,6 +120,11 @@ def get_catalog_info_from_path(pkgpath, options):
     return cataloginfo
 
 
+class ProfileMetadataGenerationError(PkgInfoGenerationError):
+    '''Error to raise when we can't generate config profile metadata'''
+    pass
+
+
 def get_catalog_info_for_profile(profile_path):
     '''Populates some metadata for profile pkginfo'''
     cataloginfo = {}
@@ -138,7 +148,7 @@ def get_catalog_info_for_profile(profile_path):
         cataloginfo['minimum_os_version'] = '10.7'
         cataloginfo['minimum_munki_version'] = '2.2'
     else:
-        print >> sys.stderr, (
+        raise ProfileMetadataGenerationError(
             'Profile PayloadType is %s' % profile.get('PayloadType'))
     return cataloginfo
 
@@ -155,8 +165,7 @@ def get_catalog_info_from_dmg(dmgpath, options):
     was_already_mounted = dmgutils.diskImageIsMounted(dmgpath)
     mountpoints = dmgutils.mountdmg(dmgpath, use_existing_mounts=True)
     if not mountpoints:
-        print >> sys.stderr, "Could not mount %s!" % dmgpath
-        exit(-1)
+        raise PkgInfoGenerationError("Could not mount %s!" % dmgpath)
 
     if options.pkgname:
         pkgpath = os.path.join(mountpoints[0], options.pkgname)
@@ -180,7 +189,7 @@ def get_catalog_info_from_dmg(dmgpath, options):
     if not cataloginfo:
         # could be a wrapped Install macOS.app
         install_macos_app = osinstaller.find_install_macos_app(mountpoints[0])
-        if (install_macos_app and
+        if (install_macos_app and options.print_warnings and
                 osinstaller.install_macos_app_is_stub(install_macos_app)):
             print >> sys.stderr, (
                 'WARNING: %s appears to be an Install macOS application, but '
@@ -208,8 +217,10 @@ def get_catalog_info_from_dmg(dmgpath, options):
             if os.path.exists(itempath) and itempath.startswith(mountpoints[0]):
                 iteminfo = getiteminfo(itempath)
             else:
-                print >> sys.stderr, \
-                    "%s not found on disk image." % item
+                if not was_already_mounted:
+                    dmgutils.unmountdmg(mountpoints[0])
+                raise PkgInfoGenerationError(
+                    "%s not found on disk image." % item)
         else:
             # no item specified; look for an application at root of
             # mounted dmg
@@ -332,8 +343,8 @@ def getiteminfo(itempath):
             infodict['minosversion'] = \
                 plist['SystemVersionCheck:MinimumSystemVersion']
 
-    elif os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or \
-         os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist')):
+    elif (os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or
+          os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist'))):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
         plist = pkgutils.getBundleInfo(itempath)
@@ -341,8 +352,7 @@ def getiteminfo(itempath):
             if key in plist:
                 infodict[key] = plist[key]
 
-    elif itempath.endswith("Info.plist") or \
-         itempath.endswith("version.plist"):
+    elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
         infodict['path'] = itempath
         try:
@@ -374,7 +384,8 @@ def getiteminfo(itempath):
 
 
 class AtttributeDict(dict):
-    '''Class that allow us to access foo['bar'] as foo.bar'''
+    '''Class that allow us to access foo['bar'] as foo.bar, and return None
+    if foo.bar is not defined.'''
     def __getattr__(self, name):
         '''Allow access to dictionary keys as attribute names.'''
         try:
@@ -383,15 +394,10 @@ class AtttributeDict(dict):
             try:
                 return self[name]
             except KeyError:
-                raise AttributeError(err)
+                return None
 
 
-class PkgInfoGenerationError(Exception):
-    '''Error to raise if there is a fatal error when generating pkginfo'''
-    pass
-
-
-def makepkginfo(installeritem, options, print_warnings=False):
+def makepkginfo(installeritem, options):
     '''Return a pkginfo dictionary for item'''
 
     if isinstance(options, dict):
@@ -414,7 +420,7 @@ def makepkginfo(installeritem, options, print_warnings=False):
             itemhash = munkihash.getsha256hash(installeritem)
 
         if pkgutils.hasValidDiskImageExt(installeritem):
-            if dmgutils.DMGisWritable(installeritem) and print_warnings:
+            if dmgutils.DMGisWritable(installeritem) and options.print_warnings:
                 print >> sys.stderr, (
                     "WARNING: %s is a writable disk image. "
                     "Checksum verification is not supported." % installeritem)
@@ -442,7 +448,7 @@ def makepkginfo(installeritem, options, print_warnings=False):
                 raise PkgInfoGenerationError(
                     "%s doesn't appear to be a valid installer item!"
                     % installeritem)
-            if os.path.isdir(installeritem) and print_warnings:
+            if os.path.isdir(installeritem) and options.print_warnings:
                 print >> sys.stderr, (
                     "WARNING: %s is a bundle-style package!\n"
                     "To use it with Munki, you should encapsulate it "
@@ -457,8 +463,10 @@ def makepkginfo(installeritem, options, print_warnings=False):
                 itemsize = int(itemsize/1024)
 
         elif pkgutils.hasValidConfigProfileExt(installeritem):
-            pkginfo = get_catalog_info_for_profile(installeritem)
-            if not pkginfo:
+            try:
+                pkginfo = get_catalog_info_for_profile(installeritem)
+            except ProfileMetadataGenerationError, err:
+                print >> sys.stderr, err
                 raise PkgInfoGenerationError(
                     "%s doesn't appear to be a supported configuration "
                     "profile!" % installeritem)
@@ -487,7 +495,7 @@ def makepkginfo(installeritem, options, print_warnings=False):
 
         # ADOBE STUFF - though maybe generalizable in the future?
         if (pkginfo.get('installer_type') == "AdobeCCPInstaller" and
-                not options.uninstalleritem) and print_warnings:
+                not options.uninstalleritem) and options.print_warnings:
             print >> sys.stderr, (
                 "WARNING: This item appears to be an Adobe Creative "
                 "Cloud product install.\n"
@@ -519,7 +527,7 @@ def makepkginfo(installeritem, options, print_warnings=False):
                 pkginfo['uninstaller_item_size'] = int(itemsize/1024)
                 pkginfo['uninstaller_item_hash'] = itemhash
             else:
-                print >> sys.stderr, (
+                raise PkgInfoGenerationError(
                     "No uninstaller item at %s" % uninstallerpath)
 
         # if we have receipts, assume we can uninstall using them
@@ -565,8 +573,9 @@ def makepkginfo(installeritem, options, print_warnings=False):
             fitem = fitem.rstrip('/')
             if fitem.startswith('/Library/Receipts'):
                 # no receipts, please!
-                print >> sys.stderr, (
-                    "Item %s appears to be a receipt. Skipping." % fitem)
+                if options.print_warnings:
+                    print >> sys.stderr, (
+                        "Item %s appears to be a receipt. Skipping." % fitem)
                 continue
             if os.path.exists(fitem):
                 iteminfodict = getiteminfo(fitem)
@@ -577,7 +586,7 @@ def makepkginfo(installeritem, options, print_warnings=False):
                             pkgutils.MunkiLooseVersion(maxfileversion)):
                         maxfileversion = thisitemversion
                 installs.append(iteminfodict)
-            else:
+            elif options.print_warnings:
                 print >> sys.stderr, (
                     "Item %s doesn't exist. Skipping." % fitem)
 
