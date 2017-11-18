@@ -22,13 +22,14 @@ Created by Greg Neagle on 2010-09-29.
 
 Assists with importing installer items into the munki repo
 """
+# std lib imports
+import optparse
 import os
 import subprocess
 import sys
 import tempfile
 
-from optparse import OptionParser, BadOptionError, AmbiguousOptionError
-
+# our lib imports
 from munkilib.cliutils import ConfigurationSaveError
 from munkilib.cliutils import configure as _configure
 from munkilib.cliutils import pref, path2url
@@ -42,28 +43,9 @@ from munkilib import munkihash
 from munkilib import munkirepo
 from munkilib import osinstaller
 from munkilib import osutils
+from munkilib import pkginfolib
 from munkilib import pkgutils
 from munkilib import FoundationPlist
-
-
-class PassThroughOptionParser(OptionParser):
-    """
-    An unknown option pass-through implementation of OptionParser.
-    When unknown arguments are encountered, bundle with largs and try again,
-    until rargs is depleted.
-    sys.exit(status) will still be called if a known argument is passed
-    incorrectly (e.g. missing arguments or bad argument types, etc.)
-    """
-    def _process_args(self, largs, rargs, values):
-        while rargs:
-            try:
-                OptionParser._process_args(self, largs, rargs, values)
-            except (BadOptionError, AmbiguousOptionError), err:
-                largs.append(err.opt_str)
-    def format_epilog(self, formatter):
-        if not self.epilog:
-            self.epilog = ""
-        return self.epilog
 
 
 def make_dmg(pkgpath):
@@ -614,51 +596,6 @@ def find_matching_pkginfo(repo, pkginfo):
     return {}
 
 
-def make_pkginfo(options=None, test_mode=False):
-    """Calls makepkginfo to generate the pkginfo for item_path."""
-    # first look for a makepkginfo in the same dir as us
-    mydir = os.path.dirname(os.path.abspath(__file__))
-    makepkginfo_path = os.path.join(mydir, 'makepkginfo')
-    if not os.path.exists(makepkginfo_path):
-        # didn't find it; assume the default install path
-        makepkginfo_path = '/usr/local/munki/makepkginfo'
-    if test_mode:
-        # prepend verification option if in test mode
-        options = ['--verify-options-only'] + options
-    # build makepkginfo command from discovered path and options
-    cmd = [makepkginfo_path] + options
-    proc = subprocess.Popen(cmd,
-                            bufsize=-1, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (stdout, stderr) = proc.communicate()
-    if test_mode:
-        if proc.returncode == 2:
-            # option syntax error or unknown option
-            syntax_error = [error for error in stderr.splitlines()
-                            if 'error' in error]
-            print >> sys.stderr, ('Option syntax error: %s' %
-                                  syntax_error[-1].split(': ', 2)[-1])
-            print >> sys.stderr, ('See \'%s --help\' for valid options that '
-                                  'can be used with munkiimport.'
-                                  % makepkginfo_path)
-            exit(-1)
-        elif proc.returncode:
-            # catch-all for any other error
-            if stderr:
-                print >> sys.stderr, stderr.rstrip('\n')
-            return {}
-        else:
-            return stdout.rstrip('\n')
-    if proc.returncode:
-        print >> sys.stderr, stderr.rstrip('\n')
-        return {}
-    if stderr:
-        # just warnings if returncode is 0
-        print >> sys.stderr, stderr.rstrip('\n')
-
-    return FoundationPlist.readPlistFromString(stdout)
-
-
 def make_catalogs(repo, options):
     """Calls makecatalogs to rebuild our catalogs"""
     # first look for a makecatalogs in the same dir as us
@@ -739,15 +676,7 @@ def main():
        munkiimport --subdirectory apps /path/to/installer_item
        """
 
-    epilog = """
-Extended Options: (makepkginfo options)
-    In addition to the options described above, options used with 'makepkginfo'
-    may also be specified to customize the resulting pkginfo file.
-    Example:
-    munkiimport --subdirectory apps -c production --minimum_os_vers 10.6.8 /path/to/installer_item
-"""
-
-    parser = PassThroughOptionParser(usage=usage, epilog=epilog)
+    parser = optparse.OptionParser(usage=usage)
 
     parser.add_option('--configure', action='store_true',
                       help='Configure munkiimport with details about your '
@@ -774,6 +703,15 @@ Extended Options: (makepkginfo options)
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--verbose', '-v', action='store_true',
                       help='Print more output.')
+
+    # add a header for Pkginfo Options
+    pkginfo_options = optparse.OptionGroup(
+        parser, 'Pkginfo Options',
+        'The following options are shared with makepkginfo and affect the '
+        'generated pkginfo data.')
+    parser.add_option_group(pkginfo_options)
+    # now add all the shared makepkginfo options
+    pkginfolib.add_option_groups(parser)
 
     sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
@@ -805,31 +743,20 @@ Extended Options: (makepkginfo options)
         print >> sys.stderr, ('The specified icon file does not exist.')
         exit(-1)
 
-    if len(arguments) == 0:
+    if (options.apple_update and len(arguments) > 0) or len(arguments) > 1:
         parser.print_usage()
         exit(0)
 
     # Verify that arguments -- presumed to be for 'makepkginfo' -- are valid
     # and return installer_item
-    return_dict = make_pkginfo(options=arguments, test_mode=True)
-    try:
-        return_dict = FoundationPlist.readPlistFromString(return_dict)
-    except FoundationPlist.FoundationPlistException, err:
-        print >> sys.stderr, (
-            'Error getting info from makepkginfo: %s' % err)
-        cleanup_and_exit(-1)
-    installer_item = return_dict.get('installeritem')
-    uninstaller_item = return_dict.get('uninstalleritem')
-    is_applemetadata = return_dict.get(
-        'installer_type') == 'apple_update_metadata'
+    installer_item = arguments[0]
+    uninstaller_item = options.uninstalleritem
+    is_applemetadata = options.apple_update
 
     if not installer_item and not is_applemetadata:
         cleanup_and_exit(-1)
 
     if not is_applemetadata:
-        # Remove the installer_item from arguments
-        arguments.remove(installer_item)
-
         # Strip trailing '/' from installer_item
         installer_item = installer_item.rstrip('/')
 
@@ -873,10 +800,6 @@ Extended Options: (makepkginfo options)
                         % installer_item)
                     cleanup_and_exit(-1)
 
-        # re-append the installer_item to arguments which
-        # may have changed if bundle was wrapped into dmg
-        arguments.append(installer_item)
-
         if uninstaller_item:
             # Strip trailing '/' from uninstaller_item
             uninstaller_item = uninstaller_item.rstrip('/')
@@ -897,18 +820,23 @@ Extended Options: (makepkginfo options)
                             'Could not convert %s to a disk image.'
                             % uninstaller_item)
                         cleanup_and_exit(-1)
+                options.uninstalleritem = uninstaller_item
 
     # if catalog/catalogs have not been explictly specified via command-line,
-    # append our default catalog
-    if not '--catalog' in arguments and not '-c' in arguments:
+    # add our default catalog
+    if not options.catalog:
         default_catalog = pref('default_catalog') or 'testing'
-        arguments.extend(['--catalog', default_catalog])
-    # call makepkginfo to make a pkginfo!
-    pkginfo = make_pkginfo(arguments)
-    if not pkginfo:
+        options.catalog = [default_catalog]
+
+    # make a pkginfo!
+    try:
+        pkginfo = pkginfolib.makepkginfo(installer_item, options)
+    except pkginfolib.PkgInfoGenerationError, err:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
+        print >> sys.stderr, err
         cleanup_and_exit(-1)
+
     if not options.nointeractive:
         # try to find existing pkginfo items that match this one
         matchingpkginfo = find_matching_pkginfo(repo, pkginfo)
