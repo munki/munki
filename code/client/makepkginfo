@@ -40,8 +40,8 @@ import re
 # our libs
 from munkilib import info
 from munkilib import osutils
-from munkilib import pkginfolib
 from munkilib import FoundationPlist
+from munkilib.admin import pkginfolib
 
 
 def has_valid_install_critieria(pkginfo):

@@ -38,12 +38,12 @@ from munkilib.cliutils import raw_input_with_default
 from munkilib import info
 from munkilib import dmgutils
 from munkilib import munkihash
-from munkilib import munkiimportlib
 from munkilib import munkirepo
 from munkilib import osutils
-from munkilib import pkginfolib
 from munkilib import pkgutils
 from munkilib import FoundationPlist
+from munkilib.admin import munkiimportlib
+from munkilib.admin import pkginfolib
 
 
 def make_dmg(pkgpath):
