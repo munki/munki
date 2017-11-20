@@ -42,6 +42,8 @@ from munkilib import munkirepo
 from munkilib import osutils
 from munkilib import pkgutils
 from munkilib import FoundationPlist
+
+from munkilib.admin import makecatalogslib
 from munkilib.admin import munkiimportlib
 from munkilib.admin import pkginfolib
 
@@ -151,40 +153,24 @@ def prompt_for_subdirectory(repo, subdirectory):
     return newdir
 
 
+def print_fn(text):
+    '''Wraps print in a function for make_catalogs'''
+    print text
+
+
 def make_catalogs(repo, options):
-    """Calls makecatalogs to rebuild our catalogs"""
-    # first look for a makecatalogs in the same dir as us
-    if hasattr(repo, 'authtoken'):
-        # Build an environment dict so we can put the authtoken
-        # into makecatalogs' environment
-        env = {'MUNKIREPO_AUTHTOKEN': repo.authtoken}
-    else:
-        env = None
-    mydir = os.path.dirname(os.path.abspath(__file__))
-    makecatalogs_path = os.path.join(mydir, 'makecatalogs')
-    if not os.path.exists(makecatalogs_path):
-        # didn't find it; assume the default install path
-        makecatalogs_path = '/usr/local/munki/makecatalogs'
+    """Rebuild our catalogs"""
     if not options.verbose:
         print 'Rebuilding catalogs at %s...' % options.repo_url
-    cmd = [makecatalogs_path]
-    cmd.append('--repo-url')
-    cmd.append(options.repo_url)
-    cmd.append('--plugin')
-    cmd.append(options.plugin)
-    proc = subprocess.Popen(cmd, bufsize=-1, env=env, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    while True:
-        output = proc.stdout.readline()
-        if not output and (proc.poll() != None):
-            break
-        if options.verbose:
-            print output.rstrip('\n').decode('UTF-8')
+        output_fn = None
+    else:
+        output_fn = print_fn
 
-    errors = proc.stderr.read()
+    errors = makecatalogslib.makecatalogs(repo, {}, output_fn=output_fn)
     if errors:
         print '\nThe following issues occurred while building catalogs:\n'
-        print errors
+        for error in errors:
+            print error
 
 
 def cleanup_and_exit(exitcode):
