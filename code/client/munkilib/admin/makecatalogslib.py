@@ -20,9 +20,13 @@ Created by Greg Neagle on 2017-11-19.
 Routines used by makecatalogs
 """
 
+# std libs
 import hashlib
 import os
 import plistlib
+
+# our libs
+from .common import list_items_of_kind, AttributeDict
 
 from .. import munkirepo
 
@@ -30,12 +34,6 @@ from .. import munkirepo
 class MakeCatalogsError(Exception):
     '''Error to raise when there is problem making catalogs'''
     pass
-
-
-def list_items_of_kind(repo, kind):
-    '''Returns a list of items of kind. Relative pathnames are prepended with
-    kind. (example: ['pkgsinfo/apps/Bar.plist', 'pkgsinfo/apps/Foo.plist'])'''
-    return [os.path.join(kind, item) for item in repo.itemlist(kind)]
 
 
 def hash_icons(repo, output_fn=None):
@@ -210,7 +208,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
             if key.startswith('_'):
                 del pkginfo[key]
 
-        #sanity checking
+        # sanity checking
         if not options.skip_payload_check:
             verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
             if not verified and not options.force:
@@ -248,6 +246,9 @@ def makecatalogs(repo, options, output_fn=None):
     '''Assembles all pkginfo files into catalogs.
     User calling this needs to be able to write to the repo/catalogs
     directory.'''
+
+    if isinstance(options, dict):
+        options = AttributeDict(options)
 
     icons, errors = hash_icons(repo, output_fn=output_fn)
 

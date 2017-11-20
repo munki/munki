@@ -35,6 +35,8 @@ from Foundation import NSDate, NSUserName
 # pylint: enable=E0611
 
 # our libs
+from .common import AttributeDict
+
 from .. import dmgutils
 from .. import info
 from .. import munkihash
@@ -42,7 +44,6 @@ from .. import osinstaller
 from .. import osutils
 from .. import pkgutils
 from .. import profiles
-
 from .. import FoundationPlist
 
 from ..adobeutils import adobeinfo
@@ -384,25 +385,11 @@ def getiteminfo(itempath):
     return infodict
 
 
-class AtttributeDict(dict):
-    '''Class that allow us to access foo['bar'] as foo.bar, and return None
-    if foo.bar is not defined.'''
-    def __getattr__(self, name):
-        '''Allow access to dictionary keys as attribute names.'''
-        try:
-            return super(AtttributeDict, self).__getattr__(name)
-        except AttributeError:
-            try:
-                return self[name]
-            except KeyError:
-                return None
-
-
 def makepkginfo(installeritem, options):
     '''Return a pkginfo dictionary for item'''
 
     if isinstance(options, dict):
-        options = AtttributeDict(options)
+        options = AttributeDict(options)
 
     pkginfo = {}
     installs = []

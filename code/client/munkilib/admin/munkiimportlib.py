@@ -25,6 +25,7 @@ import os
 import sys
 
 # our lib imports
+from .common import list_items_of_kind
 from .. import iconutils
 from .. import dmgutils
 from .. import munkihash
@@ -33,19 +34,12 @@ from .. import osinstaller
 from .. import osutils
 from .. import pkgutils
 from .. import FoundationPlist
-
 from ..cliutils import pref
 
 
 class RepoCopyError(Exception):
     '''Exception raised when copying a file to the repo fails'''
     pass
-
-
-def list_items_of_kind(repo, kind):
-    '''Returns a list of items of kind. Relative pathnames are prepended
-    with kind. (example: ['icons/Bar.png', 'icons/Foo.png'])'''
-    return [os.path.join(kind, item) for item in repo.itemlist(kind)]
 
 
 def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
