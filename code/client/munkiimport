@@ -555,7 +555,7 @@ def main():
 
         # adjust the installer_item_location to match
         # the actual location and name
-        pkginfo['installer_item_location'] = uploaded_pkgpath
+        pkginfo['installer_item_location'] = uploaded_pkgpath.partition('/')[2]
 
         if uninstaller_item:
             try:
@@ -572,7 +572,8 @@ def main():
 
             # adjust the uninstaller_item_location to match
             # the actual location and name; update size and hash
-            pkginfo['uninstaller_item_location'] = uploaded_pkgpath
+            pkginfo['uninstaller_item_location'] = (
+                uploaded_pkgpath.partition('/')[2])
             itemsize = int(os.path.getsize(uninstaller_item))
             itemhash = munkihash.getsha256hash(uninstaller_item)
             pkginfo['uninstaller_item_size'] = int(itemsize/1024)
