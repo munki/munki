@@ -66,21 +66,19 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
         raise RepoCopyError(u'Unable to get list of current pkgs: %s'
                             % unicode(err))
     while destination_path_name in pkgs_list:
-        print 'File %s already exists...' % destination_path_name
+        #print 'File %s already exists...' % destination_path_name
         # try appending numbers until we have a unique name
         index += 1
         item_name = '%s__%s%s' % (name, index, ext)
         destination_path_name = os.path.join(destination_path, item_name)
 
-    print 'Copying %s to %s...' % (os.path.basename(itempath),
-                                   destination_path_name)
     try:
         repo.put_from_local_file(destination_path_name, itempath)
     except munkirepo.RepoError, err:
         raise RepoCopyError(u'Unable to copy %s to %s: %s'
                             % (itempath, destination_path_name, unicode(err)))
     else:
-        return os.path.join(subdirectory, item_name)
+        return destination_path_name
 
 
 def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
@@ -106,13 +104,13 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
                                         index, pkginfo_ext)
         pkginfo_path = os.path.join(destination_path, pkginfo_name)
 
-    print 'Saving pkginfo to %s...' % pkginfo_path
     try:
         pkginfo_str = FoundationPlist.writePlistToString(pkginfo)
     except FoundationPlist.NSPropertyListWriteException, errmsg:
         raise RepoCopyError(errmsg)
     try:
         repo.put(pkginfo_path, pkginfo_str)
+        return pkginfo_path
     except munkirepo.RepoError, err:
         raise RepoCopyError('Unable to save pkginfo to %s: %s'
                             % (pkginfo_path, unicode(err)))
@@ -349,22 +347,28 @@ def add_icon_hash_to_pkginfo(pkginfo):
 
 def generate_png_from_startosinstall_item(repo, dmg_path, pkginfo):
     '''Generates a product icon from a startosinstall item
-    and uploads to the repo'''
+    and uploads to the repo. Returns repo path to icon or None'''
     mountpoints = dmgutils.mountdmg(dmg_path)
     if mountpoints:
         mountpoint = mountpoints[0]
         app_path = osinstaller.find_install_macos_app(mountpoint)
         icon_path = iconutils.findIconForApp(app_path)
         if icon_path:
-            convert_and_install_icon(repo, pkginfo, icon_path)
-        else:
-            print 'No application icons found.'
+            try:
+                repo_icon_path = convert_and_install_icon(
+                    repo, pkginfo, icon_path)
+                dmgutils.unmountdmg(mountpoint)
+                return repo_icon_path
+            except RepoCopyError:
+                dmgutils.unmountdmg(mountpoint)
+                raise
         dmgutils.unmountdmg(mountpoint)
+        return None
 
 
 def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
     '''Generates a product icon from a copy_from_dmg item
-    and uploads to the repo'''
+    and uploads to the repo. Returns repo path to icon or None'''
     mountpoints = dmgutils.mountdmg(dmg_path)
     if mountpoints:
         mountpoint = mountpoints[0]
@@ -374,17 +378,21 @@ def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
             app_path = os.path.join(mountpoint, apps[0]['source_item'])
             icon_path = iconutils.findIconForApp(app_path)
             if icon_path:
-                convert_and_install_icon(repo, pkginfo, icon_path)
-            else:
-                print 'No application icons found.'
-        else:
-            print 'No application icons found.'
+                try:
+                    repo_icon_path = convert_and_install_icon(
+                        repo, pkginfo, icon_path)
+                    dmgutils.unmountdmg(mountpoint)
+                    return repo_icon_path
+                except RepoCopyError:
+                    dmgutils.unmountdmg(mountpoint)
+                    raise
         dmgutils.unmountdmg(mountpoint)
+    return None
 
 
-def generate_pngs_from_pkg(repo, item_path, pkginfo):
+def generate_pngs_from_pkg(repo, item_path, pkginfo, import_multiple=True):
     '''Generates a product icon (or candidate icons) from an installer pkg
-    and uploads to the repo'''
+    and uploads to the repo. Returns repo path to icon or None'''
     icon_paths = []
     mountpoint = None
     pkg_path = None
@@ -413,18 +421,24 @@ def generate_pngs_from_pkg(repo, item_path, pkginfo):
         dmgutils.unmountdmg(mountpoint)
 
     if len(icon_paths) == 1:
-        convert_and_install_icon(repo, pkginfo, icon_paths[0])
-    elif len(icon_paths) > 1:
+        return convert_and_install_icon(repo, pkginfo, icon_paths[0])
+    elif len(icon_paths) > 1 and import_multiple:
         index = 1
+        imported_paths = []
         for icon_path in icon_paths:
-            convert_and_install_icon(repo, pkginfo, icon_path, index=index)
+            imported_path = convert_and_install_icon(
+                repo, pkginfo, icon_path, index=index)
+            if imported_path:
+                imported_paths.append(imported_path)
             index += 1
+        return "\n\t".join(imported_paths)
     else:
-        print 'No application icons found.'
+        return None
 
 
 def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
-    '''Convert icon file to png and save to repo icon path'''
+    '''Convert icon file to png and save to repo icon path.
+       Returns resource path to icon in repo'''
     destination_path = 'icons'
     if index is not None:
         destination_name = pkginfo['name'] + '_' + str(index)
@@ -438,16 +452,16 @@ def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
     if result:
         try:
             repo.put_from_local_file(repo_png_path, local_png_tmp)
-            print 'Created icon: %s' % repo_png_path
+            return repo_png_path
         except munkirepo.RepoError, err:
-            print >> sys.stderr, (u'Error uploading icon to %s: %s'
-                                  % (repo_png_path, unicode(err)))
+            raise RepoCopyError(u'Error uploading icon to %s: %s'
+                                % (repo_png_path, unicode(err)))
     else:
-        print >> sys.stderr, u'Error converting %s to png.' % icon_path
+        raise RepoCopyError(u'Error converting %s to png.' % icon_path)
 
 
 def copy_icon_to_repo(repo, iconpath):
-    """Saves a product icon to the repo"""
+    """Saves a product icon to the repo. Returns repo path."""
     destination_path = 'icons'
     icon_name = os.path.basename(iconpath)
     destination_path_name = os.path.join(destination_path, icon_name)
@@ -467,22 +481,23 @@ def copy_icon_to_repo(repo, iconpath):
     print 'Copying %s to %s...' % (icon_name, destination_path_name)
     try:
         repo.put_from_local_file(destination_path_name, iconpath)
+        return destination_path_name
     except munkirepo.RepoError, err:
         raise RepoCopyError('Unable to copy %s to %s: %s'
                             % (iconpath, destination_path_name, unicode(err)))
 
 
-def extract_and_copy_icon(repo, installer_item, pkginfo):
+def extract_and_copy_icon(repo, installer_item, pkginfo, import_multiple=True):
     '''Extracts an icon from an installer item, converts it to a png, and
-    copies to repo'''
+    copies to repo. Returns repo path to imported icon'''
     installer_type = pkginfo.get('installer_type')
     if installer_type == 'copy_from_dmg':
-        generate_png_from_dmg_item(repo, installer_item, pkginfo)
+        return generate_png_from_dmg_item(repo, installer_item, pkginfo)
     elif installer_type == 'startosinstall':
-        generate_png_from_startosinstall_item(repo, installer_item, pkginfo)
+        return generate_png_from_startosinstall_item(
+            repo, installer_item, pkginfo)
     elif installer_type in [None, '']:
-        generate_pngs_from_pkg(repo, installer_item, pkginfo)
-    else:
-        print >> sys.stderr, (
-            'WARNING: Can\'t generate icons from installer_type: %s.'
-            % installer_type)
+        return generate_pngs_from_pkg(
+            repo, installer_item, pkginfo, import_multiple=import_multiple)
+    raise RepoCopyError(
+        'Can\'t generate icons from installer_type: %s.' % installer_type)
