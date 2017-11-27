@@ -292,8 +292,6 @@ def main():
         parser.print_usage()
         exit(0)
 
-    # Verify that arguments -- presumed to be for 'makepkginfo' -- are valid
-    # and return installer_item
     installer_item = arguments[0]
     uninstaller_item = options.uninstalleritem
     is_applemetadata = options.apple_update
@@ -514,8 +512,8 @@ def main():
         try:
             munkiimportlib.convert_and_install_icon(repo, pkginfo,
                                                     options.icon_path)
-        except munkiimportlib.RepoCopyError, errmsg:
-            print >> sys.stderr, errmsg
+        except munkiimportlib.RepoCopyError, err:
+            print >> sys.stderr, err
     elif options.extract_icon:
         pass
     elif (not options.nointeractive and
@@ -529,7 +527,15 @@ def main():
             options.extract_icon = True
 
     if options.extract_icon:
-        munkiimportlib.extract_and_copy_icon(repo, installer_item, pkginfo)
+        try:
+            imported_paths = munkiimportlib.extract_and_copy_icon(
+                repo, installer_item, pkginfo)
+            if imported_paths:
+                print 'Imported %s.' % imported_paths
+            else:
+                print 'No icons found for import.'
+        except munkiimportlib.RepoCopyError, err:
+            print >> sys.stderr, err
 
     # fix in case user accidentally starts subdirectory with a slash
     if options.subdirectory.startswith('/'):
@@ -537,9 +543,12 @@ def main():
 
     if not is_applemetadata:
         try:
+            print 'Copying %s to repo...' % os.path.basename(installer_item)
             uploaded_pkgpath = munkiimportlib.copy_item_to_repo(
                 repo, installer_item, pkginfo.get('version'),
                 options.subdirectory)
+            print 'Copied %s to %s.' % (os.path.basename(installer_item),
+                                          uploaded_pkgpath)
         except munkiimportlib.RepoCopyError, errmsg:
             print >> sys.stderr, errmsg
             cleanup_and_exit(-1)
@@ -550,9 +559,13 @@ def main():
 
         if uninstaller_item:
             try:
+                print 'Copying %s to repo...' % os.path.basename(
+                    uninstaller_item)
                 uploaded_pkgpath = munkiimportlib.copy_item_to_repo(
                     repo, uninstaller_item, pkginfo.get('version'),
                     options.subdirectory)
+                print 'Copied %s to %s.' % (
+                    os.path.basename(uninstaller_item), uploaded_pkgpath)
             except munkiimportlib.RepoCopyError, errmsg:
                 print >> sys.stderr, errmsg
                 cleanup_and_exit(-1)
@@ -573,7 +586,8 @@ def main():
         # possibly edit the pkginfo file in the user's editor
         pkginfo = edit_pkginfo_in_editor(pkginfo)
     try:
-        munkiimportlib.copy_pkginfo_to_repo(repo, pkginfo, options.subdirectory)
+        pkginfo_path = munkiimportlib.copy_pkginfo_to_repo(repo, pkginfo, options.subdirectory)
+        print 'Saved pkginfo to %s.' % pkginfo_path
     except munkiimportlib.RepoCopyError, errmsg:
         print >> sys.stderr, errmsg
         cleanup_and_exit(-1)
