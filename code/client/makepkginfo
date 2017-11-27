@@ -35,7 +35,6 @@ Usage: makepkginfo /path/to/package_or_dmg [-f /path/to/item/it/installs ...]
 # standard libs
 import optparse
 import sys
-import re
 
 # our libs
 from munkilib import info
@@ -63,11 +62,6 @@ def main():
        %prog --help for more information."""
     parser = optparse.OptionParser(usage=usage)
     parser.add_option(
-        '--verify-options-only',
-        action="store_true",
-        help=optparse.SUPPRESS_HELP
-        )
-    parser.add_option(
         '--version', '-V',
         action='store_true',
         help='Print the version of the munki tools and exit.'
@@ -80,27 +74,6 @@ def main():
 
     if options.version:
         print info.get_version()
-        exit(0)
-
-    if options.verify_options_only:
-        if (len(arguments) == 0 and not options.apple_update and
-                not options.nopkg):
-            print >> sys.stderr, 'makepkginfo options FAILED verification'
-            print >> sys.stderr, 'No installer item was provided.'
-            exit(1)
-        if len(arguments) > 1:
-            print >> sys.stderr, 'makepkginfo options FAILED verification'
-            print >> sys.stderr, \
-                'Can process only one installer item at a time.'
-            exit(3)
-        return_dict = {}
-        if options.uninstalleritem:
-            return_dict['uninstalleritem'] = options.uninstalleritem
-        if arguments:
-            return_dict['installeritem'] = arguments[0]
-        if options.apple_update:
-            return_dict['installer_type'] = 'apple_update_metadata'
-        print >> sys.stdout, FoundationPlist.writePlistToString(return_dict)
         exit(0)
 
     if (len(arguments) == 0 and
