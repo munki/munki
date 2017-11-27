@@ -268,7 +268,7 @@ def makecatalogs(repo, options, output_fn=None):
             try:
                 repo.delete(catalog_ref)
             except munkirepo.RepoError:
-                errors.extend('Could not delete catalog %s' % catalog_name)
+                errors.append('Could not delete catalog %s' % catalog_name)
 
     # write the new catalogs
     for key in catalogs:
@@ -280,10 +280,10 @@ def makecatalogs(repo, options, output_fn=None):
                 if output_fn:
                     output_fn("Created %s..." % catalogpath)
             except munkirepo.RepoError, err:
-                errors.extend(
+                errors.append(
                     u'Failed to create catalog %s: %s' % (key, unicode(err)))
         else:
-            errors.extend(
+            errors.append(
                 "WARNING: Did not create catalog %s because it is empty" % key)
 
     if icons:
@@ -293,7 +293,7 @@ def makecatalogs(repo, options, output_fn=None):
             repo.put(icon_hashes_plist, icon_hashes)
             print "Created %s..." % (icon_hashes_plist)
         except munkirepo.RepoError, err:
-            errors.extend(
+            errors.append(
                 u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
 
     # Return and errors
