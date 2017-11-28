@@ -386,7 +386,8 @@ def get_installed_version(item_plist):
                                             'Contents', 'Info.plist')
                     plist = FoundationPlist.readPlist(filepath)
                     return plist.get('CFBundleShortVersionString', 'UNKNOWN')
-                except FoundationPlist.NSPropertyListSerializationException:
+                except (KeyError,
+                        FoundationPlist.NSPropertyListSerializationException):
                     # that didn't work, fall through to the slow way
                     appinfo = []
                     appdata = info.app_data()
