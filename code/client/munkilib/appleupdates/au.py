@@ -862,7 +862,7 @@ class AppleUpdates(object):
             'RequireLogout': ['RequireRestart', 'RecommendRestart',
                               'RequireLogout'],
             'None': ['RequireRestart', 'RecommendRestart',
-                     'RequireLogout']
+                     'RequireLogout', 'None']
         }
 
         for key in metadata:
