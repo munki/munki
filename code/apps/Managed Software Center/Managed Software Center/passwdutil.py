@@ -10,7 +10,7 @@
 
 
 import OpenDirectory as OD
-
+from Foundation import NSLog
 
 def findODuserRecords(username, nodename='/Search'):
     '''Uses OpenDirectory methods to find user records for username'''
