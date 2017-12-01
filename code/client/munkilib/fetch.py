@@ -414,8 +414,13 @@ def munki_resource(
     #   <string>Key-With-Optional-Dashes: Foo Value</string>
     #   <string>another-custom-header: bar value</string>
     # </array>
-    custom_headers = prefs.pref(constants.ADDITIONAL_HTTP_HEADERS_KEY)
-
+    custom_headers = []
+    serial_number = info.getMachineFacts()['serial_number']
+    if serial_number != "UNKNOWN":
+        custom_headers.append("X-Munki-Serial-Number: %s" % serial_number)
+    additional_headers = prefs.pref(constants.ADDITIONAL_HTTP_HEADERS_KEY)
+    if additional_headers:
+        custom_headers.extend(additional_headers)
     return getResourceIfChangedAtomically(url,
                                           destinationpath,
                                           custom_headers=custom_headers,
