@@ -20,7 +20,7 @@ app_usage_monitor
 Created by Greg Neagle 14 Feb 2017
 
 A tool to monitor application usage and record it to a database.
-Borrowing lots of code and ideas from the crankd project, part of pyamcadmin:
+Borrowing lots of code and ideas from the crankd project, part of pymacadmin:
     https://github.com/MacSysadmin/pymacadmin
 and the application_usage scripts created by Google MacOps:
     https://github.com/google/macops/tree/master/crankd
