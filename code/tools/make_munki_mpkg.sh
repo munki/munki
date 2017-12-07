@@ -7,10 +7,10 @@
 PKGID="com.googlecode.munki"
 MUNKIROOT="."
 # Convert to absolute path.
-MUNKIROOT=`cd "$MUNKIROOT"; pwd`
+MUNKIROOT=$(cd "$MUNKIROOT"; "pwd")
 OUTPUTDIR="."
 # Convert to absolute path.
-OUTPUTDIR=`cd "$OUTPUTDIR"; pwd`
+OUTPUTDIR=$(cd "$OUTPUTDIR"; "pwd")
 CONFPKG=""
 # add this number to Git revision index to get "build" number
 # consistent with old SVN repo
@@ -19,7 +19,7 @@ MAGICNUMBER=482
 # try to automagically find munki source root
 TOOLSDIR=$(dirname "$0")
 # Convert to absolute path.
-TOOLSDIR=$(cd $TOOLSDIR; "pwd")
+TOOLSDIR=$(cd "${TOOLSDIR}"; "pwd")
 PARENTDIR=$(dirname "${TOOLSDIR}")
 PARENTDIRNAME=$(basename "${PARENTDIR}")
 if [ "${PARENTDIRNAME}" == "code" ]; then
