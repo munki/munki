@@ -17,16 +17,16 @@ CONFPKG=""
 MAGICNUMBER=482
 
 # try to automagically find munki source root
-TOOLSDIR=`dirname $0`
+TOOLSDIR=$(dirname "$0")
 # Convert to absolute path.
-TOOLSDIR=`cd "$TOOLSDIR"; pwd`
-PARENTDIR=`dirname $TOOLSDIR`
-PARENTDIRNAME=`basename $PARENTDIR`
-if [ "$PARENTDIRNAME" == "code" ]; then
-    GRANDPARENTDIR=`dirname $PARENTDIR`
-    GRANDPARENTDIRNAME=`basename $GRANDPARENTDIR`
+TOOLSDIR=$(cd $TOOLSDIR; "pwd")
+PARENTDIR=$(dirname "${TOOLSDIR}")
+PARENTDIRNAME=$(basename "${PARENTDIR}")
+if [ "${PARENTDIRNAME}" == "code" ]; then
+    GRANDPARENTDIR=$(dirname "${PARENTDIR}")
+    GRANDPARENTDIRNAME=$(basename "${GRANDPARENTDIR}")
     if [ "$GRANDPARENTDIRNAME" == "Munki2" ]; then
-        MUNKIROOT="$GRANDPARENTDIR"
+        MUNKIROOT="${GRANDPARENTDIR}"
     fi
 fi
 

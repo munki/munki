@@ -57,7 +57,7 @@ if [ $# -ne 0 ]; then
     exit 1
 fi
 
-MUNKIDIR=`pwd`/"munki-git"
+MUNKIDIR="`pwd`/munki-git"
 
 # Sanity checks.
 GIT=`which git`
