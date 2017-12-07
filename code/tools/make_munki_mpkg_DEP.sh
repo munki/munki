@@ -6,6 +6,7 @@
 # Defaults.
 PKGID="com.googlecode.munki"
 MUNKIROOT="."
+BOOTSTRAPMODE=0 #off by default
 # Convert to absolute path.
 MUNKIROOT=$(cd "$MUNKIROOT"; "pwd")
 OUTPUTDIR="."
