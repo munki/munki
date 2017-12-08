@@ -92,7 +92,7 @@ def get_manifest(manifest_name, suppress_errors=False):
 
     display.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     display.display_detail('Getting manifest %s...', manifest_name)
-    manifestpath = os.path.join(manifest_dir, manifest_name)
+    manifestpath = os.path.join(manifest_dir, manifest_name.lstrip('/'))
 
     # Create the folder the manifest shall be stored in
     destinationdir = os.path.dirname(manifestpath)
