@@ -183,7 +183,7 @@ void launchMSCapp()
         NSString *subtitle = @"";
         NSString *message  = updateCountMessage;
         if (deadlineMessage) {
-            subtitle = updateCountMessage;
+            //subtitle = updateCountMessage;
             message = deadlineMessage;
         }
 
