@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE21913F6D6003DD155 /* Localizable.strings */; };
 		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
-		C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */; };
+		C00F67551F01680A00D9007D /* CocoaWrapper.py in Resources */ = {isa = PBXBuildFile; fileRef = C00F67541F01680A00D9007D /* CocoaWrapper.py */; };
 		C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = C002ECE01913F6D6003DD155 /* MainMenu.strings */; };
 		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
 		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
@@ -22,6 +22,7 @@
 		C094B6D61891826700E06897 /* BorderlessWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D31891826700E06897 /* BorderlessWindow.m */; };
 		C094B6D71891826700E06897 /* ScaledImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C094B6D51891826700E06897 /* ScaledImageView.m */; };
 		C0AE8658186D2DF900C87AE7 /* MunkiStatus.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */; };
+		C0CC54681EEADDB40064A100 /* libpython2.7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0CC54671EEADDB40064A100 /* libpython2.7.dylib */; };
 		C0D67B581CC55BFD009E8C2F /* MSULogWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */; };
 /* End PBXBuildFile section */
 
@@ -47,11 +48,11 @@
 		C005C5BF1913F7660074AF82 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C005C5C01913F7660074AF82 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C00F67541F01680A00D9007D /* CocoaWrapper.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = CocoaWrapper.py; sourceTree = "<group>"; };
 		C02A5D4D1B4DAF8800A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ja; path = ja.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C02A5D4E1B4DAF8F00A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C02A5D4F1B4DAF9400A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C02A5D501B4DAF9900A929F4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.6.dylib; path = ../../../../../../System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config/libpython2.6.dylib; sourceTree = "<group>"; };
 		C04626191A00014800AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C046261A1A00015600AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C046261C1A00016200AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -92,6 +93,7 @@
 		C094B6D41891826700E06897 /* ScaledImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaledImageView.h; sourceTree = "<group>"; };
 		C094B6D51891826700E06897 /* ScaledImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScaledImageView.m; sourceTree = "<group>"; };
 		C0AE8657186D2DF900C87AE7 /* MunkiStatus.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MunkiStatus.icns; sourceTree = "<group>"; };
+		C0CC54671EEADDB40064A100 /* libpython2.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.7.dylib; path = /System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/libpython2.7.dylib; sourceTree = "<group>"; };
 		C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSULogWindowController.py; sourceTree = "<group>"; };
 		E65810B31993C96E00E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E65810B51993C97500E53A48 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -113,7 +115,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */,
-				C035275018A9C5BC004A5AE4 /* libpython2.6.dylib in Frameworks */,
+				C0CC54681EEADDB40064A100 /* libpython2.7.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,7 +128,7 @@
 				C09004F916CDD84E00BE34CE /* MunkiStatus */,
 				C09004F016CDD84E00BE34CE /* Frameworks */,
 				C09004EE16CDD84E00BE34CE /* Products */,
-				C035274F18A9C5BC004A5AE4 /* libpython2.6.dylib */,
+				C0CC54671EEADDB40064A100 /* libpython2.7.dylib */,
 			);
 			sourceTree = "<group>";
 		};
@@ -173,6 +175,7 @@
 				C090050916CDD84E00BE34CE /* MainMenu.xib */,
 				C09004FA16CDD84E00BE34CE /* Supporting Files */,
 				C0D67B571CC55BFD009E8C2F /* MSULogWindowController.py */,
+				C00F67541F01680A00D9007D /* CocoaWrapper.py */,
 			);
 			path = MunkiStatus;
 			sourceTree = "<group>";
@@ -225,9 +228,9 @@
 		C09004E416CDD84E00BE34CE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				CLASSPREFIX = MT;
+				CLASSPREFIX = MSC;
 				LastUpgradeCheck = 0450;
-				ORGANIZATIONNAME = MacTech;
+				ORGANIZATIONNAME = "The Munki Project";
 			};
 			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "MunkiStatus" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -295,6 +298,7 @@
 				C090050616CDD84E00BE34CE /* main.py in Resources */,
 				C090050816CDD84E00BE34CE /* MSUAppDelegate.py in Resources */,
 				C094B6D1188F7CE100E06897 /* MSUStatusWindowController.py in Resources */,
+				C00F67551F01680A00D9007D /* CocoaWrapper.py in Resources */,
 				C002ECE51913F6D6003DD155 /* Localizable.strings in Resources */,
 				C046261E1A00019800AF1E48 /* MainMenu.strings in Resources */,
 				C05C3CEF188391F200095E65 /* munki.py in Resources */,
@@ -509,8 +513,9 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = MunkiStatus;
 				WRAPPER_EXTENSION = app;
@@ -532,8 +537,9 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = MunkiStatus;
 				WRAPPER_EXTENSION = app;
 			};

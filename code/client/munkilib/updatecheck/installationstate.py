@@ -27,6 +27,7 @@ from . import catalogs
 from . import compare
 
 from .. import display
+from .. import osutils
 from .. import profiles
 from .. import scriptutils
 from .. import utils
@@ -77,6 +78,19 @@ def installed_state(item_pl):
     #            item_pl['softwareupdatename'])
     #        # return 1 so we're marked as not needing to be installed
     #        return 1
+
+    if item_pl.get('installer_type') == 'startosinstall':
+        current_os_vers = osutils.getOsVersion()
+        item_os_vers = item_pl.get('version')
+        # need just major.minor part of the version -- 10.12 and not 10.12.4
+        item_os_vers = '.'.join(item_os_vers.split('.')[0:2])
+        comparison = compare.compare_versions(current_os_vers, item_os_vers)
+        if comparison == compare.VERSION_IS_LOWER:
+            return 0
+        if comparison == compare.VERSION_IS_HIGHER:
+            return 2
+        # version is the same
+        return 1
 
     if item_pl.get('installer_type') == 'profile':
         identifier = item_pl.get('PayloadIdentifier')
@@ -155,6 +169,10 @@ def some_version_installed(item_pl):
         # that an install is not needed. We hope it's the latter.
         return True
 
+    if item_pl.get('installer_type') == 'startosinstall':
+        # Some version of macOS is always installed!
+        return True
+
     if item_pl.get('installer_type') == 'profile':
         identifier = item_pl.get('PayloadIdentifier')
         return profiles.profile_is_installed(identifier)
@@ -231,6 +249,10 @@ def evidence_this_is_installed(item_pl):
             return False
         # non-zero could be an error or successfully indicating
         # that an install is not needed
+        return True
+
+    if item_pl.get('installer_type') == 'startosinstall':
+        # Some version of macOS is always installed!
         return True
 
     if item_pl.get('installer_type') == 'profile':

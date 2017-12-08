@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Un redémarrage est nécessaire après la mise à jour. Soyez patient car il peut y avoir un petit délai lors de la reconnexion. Déconnecter et mettre à jour maintenant ?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Un problème de configuration du système empêche le Centre de gestion des logiciels de fonctionner correctement. Le problème signalé est: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Mises à jour supplémentaires en attente";
 
@@ -34,8 +37,18 @@
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Toutes les mises à jour en attente vont être installées. Les travaux non sauvegardés seront perdus.\nPour éviter cela fermer maintenant votre session.";
 
+/* Allow button text */
+"Allow" = "Autoriser";
+
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Une tentative d'installation a échoué. L'installation sera tentée à nouveau.\nSi cette situation perdure, contactez votre administrateur système.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "Une ancienne version est actuellement installée. Il n'y a pas assez d'espace disque pour télécharger et installer cette mise à jour.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Une ancienne version est actuellement installée. Vous devez mettre à jour vers une version macOS
+%s ou plus pour pouvoir installer cette mise à jour.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Application utilisée par d'autres";
@@ -91,6 +104,9 @@
 /* Unavailable long action text */
 "Currently Unavailable" = "Actuellement non disponible";
 
+/* Deny button text */
+"Deny" = "Refuser";
+
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Vérification des éléments à supprimer";
 
@@ -108,6 +124,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Dû:";
+
+/* FeaturedLabel */
+"Featured" = "En vedette";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Articles en vedette";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Finalisation...";
@@ -172,6 +194,9 @@
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Le Centre de gestion des logiciels ne peut contacter le serveur de mise à jour.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
 
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Le Centre de gestion des logiciels doit déverrouiller votre disque de démarrage au prochain redémarrage afin de terminer les mises à jour en attente.";
+
 /* Managed Update type */
 "Managed Update" = "Mise à jour gérée";
 
@@ -235,6 +260,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Paquet supprimé avec succès.";
 
+/* Password label */
+"Password:" = "Mot de passe :";
+
 /* Pending Updates alert title */
 "Pending updates" = "Mises à jour en attente";
 
@@ -246,6 +274,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Préparation de la suppression";
+
+/* Problm Updates label */
+"Problem updates" = "Mises à jour problématiques";
 
 /* Quit button title */
 "Quit" = "Quitter";
@@ -310,6 +341,9 @@
 /* Sidebar Status label */
 "Status:" = "État:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "Problème de configuration du système";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Le logiciel a été installé avec succès.";
 
@@ -340,11 +374,17 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Il n'y a pas de nouveau logiciel pour votre ordinateur.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Il n'y a pas assez d'espace disque pour télécharger et installer cet élément.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Cet article est requis avant:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Cet article doit être installé avant le %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Pour autoriser cette opération, veuillez entrer votre mot de passe.";
 
 /* No Items secondary text */
 "Try again later." = "Essayez plus tard.";
@@ -376,7 +416,7 @@
 /* Update Required long action text */
 "Update Required" = "Mise à jour obligatoire";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Mise à jour disponible";
 
 /* Update Check Failed title */
@@ -421,6 +461,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Vous devez quitter les logiciels suivants avant de les installer ou de les supprimer:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Vous devez mettre à jour vers une version macOS %s pour pouvoir installer cet élément.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Votre ordinateur n'est pas branché à une prise de courant.";
 
@@ -429,3 +472,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Votre logiciel est à jour.";
+
+/* macOS update required text */
+"macOS update required" = "Mise à jour MacOS requise";

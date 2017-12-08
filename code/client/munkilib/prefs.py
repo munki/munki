@@ -25,10 +25,13 @@ Preferences functions and classes used by the munki tools.
 # pylint: disable=E0611
 from Foundation import NSDate
 from Foundation import CFPreferencesAppSynchronize
+from Foundation import CFPreferencesAppValueIsForced
 from Foundation import CFPreferencesCopyAppValue
 from Foundation import CFPreferencesCopyKeyList
+from Foundation import CFPreferencesCopyValue
 from Foundation import CFPreferencesSetValue
 from Foundation import kCFPreferencesAnyUser
+from Foundation import kCFPreferencesAnyHost
 from Foundation import kCFPreferencesCurrentUser
 from Foundation import kCFPreferencesCurrentHost
 # pylint: enable=E0611
@@ -38,6 +41,49 @@ from .constants import BUNDLE_ID
 #####################################################
 # managed installs preferences/metadata
 #####################################################
+
+DEFAULT_PREFS = {
+    'AdditionalHttpHeaders': None,
+    'AppleSoftwareUpdatesOnly': False,
+    'CatalogURL': None,
+    'ClientCertificatePath': None,
+    'ClientIdentifier': '',
+    'ClientKeyPath': None,
+    'ClientResourcesFilename': None,
+    'ClientResourceURL': None,
+    'DaysBetweenNotifications': 1,
+    'FollowHTTPRedirects': 'none',
+    'HelpURL': None,
+    'IconURL': None,
+    'IgnoreSystemProxies': False,
+    'InstallRequiresLogout': False,
+    'InstallAppleSoftwareUpdates': False,
+    'LastNotifiedDate': NSDate.dateWithTimeIntervalSince1970_(0),
+    'LocalOnlyManifest': None,
+    'LogFile': '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log',
+    'LoggingLevel': 1,
+    'LogToSyslog': False,
+    'ManagedInstallDir': '/Library/Managed Installs',
+    'ManifestURL': None,
+    'PackageURL': None,
+    'PackageVerificationMode': 'hash',
+    'PerformAuthRestarts': False,
+    'RecoveryKeyFile': None,
+    'ShowOptionalInstallsForHigherOSVersions': False,
+    'SoftwareRepoCACertificate': None,
+    'SoftwareRepoCAPath': None,
+    'SoftwareRepoURL': 'http://munki/repo',
+    'SoftwareUpdateServerURL': None,
+    'SuppressAutoInstall': False,
+    'SuppressLoginwindowInstall': False,
+    'SuppressStopButtonOnInstall': False,
+    'SuppressUserNotification': False,
+    'UnattendedAppleUpdates': False,
+    'UseClientCertificate': False,
+    'UseClientCertificateCNAsClientIdentifier': False,
+    'UseNotificationCenterDays': 3,
+}
+
 
 class Preferences(object):
     """Class which directly reads/writes Apple CF preferences."""
@@ -150,43 +196,93 @@ def set_pref(pref_name, pref_value):
 def pref(pref_name):
     """Return a preference. Since this uses CFPreferencesCopyAppValue,
     Preferences can be defined several places. Precedence is:
-        - MCX
+        - MCX/configuration profile
+        - /var/root/Library/Preferences/ByHost/ManagedInstalls.XXXXXX.plist
         - /var/root/Library/Preferences/ManagedInstalls.plist
         - /Library/Preferences/ManagedInstalls.plist
+        - .GlobalPreferences defined at various levels (ByHost, user, system)
         - default_prefs defined here.
     """
-    default_prefs = {
-        'ManagedInstallDir': '/Library/Managed Installs',
-        'SoftwareRepoURL': 'http://munki/repo',
-        'ClientIdentifier': '',
-        'LogFile': '/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log',
-        'LoggingLevel': 1,
-        'LogToSyslog': False,
-        'InstallAppleSoftwareUpdates': False,
-        'AppleSoftwareUpdatesOnly': False,
-        'SoftwareUpdateServerURL': '',
-        'DaysBetweenNotifications': 1,
-        'LastNotifiedDate': NSDate.dateWithTimeIntervalSince1970_(0),
-        'UseClientCertificate': False,
-        'SuppressUserNotification': False,
-        'SuppressAutoInstall': False,
-        'SuppressStopButtonOnInstall': False,
-        'PackageVerificationMode': 'hash',
-        'FollowHTTPRedirects': 'none',
-        'UnattendedAppleUpdates': False,
-        'PerformAuthRestarts': False,
-    }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
     if pref_value is None:
-        pref_value = default_prefs.get(pref_name)
+        pref_value = DEFAULT_PREFS.get(pref_name)
         # we're using a default value. We'll write it out to
         # /Library/Preferences/<BUNDLE_ID>.plist for admin
         # discoverability
-        set_pref(pref_name, pref_value)
+        if pref_value is not None:
+            set_pref(pref_name, pref_value)
     if isinstance(pref_value, NSDate):
         # convert NSDate/CFDates to strings
         pref_value = str(pref_value)
     return pref_value
+
+
+def get_config_level(pref_name, value):
+    '''Returns a string indicating where the given preference is defined'''
+    if value is None:
+        return '[not set]'
+    if CFPreferencesAppValueIsForced(pref_name, BUNDLE_ID):
+        return '[MANAGED]'
+    # define all the places we need to search, in priority order
+    levels = [
+        {'file': ('/var/root/Library/Preferences/ByHost/'
+                  'ManagedInstalls.xxxx.plist'),
+         'domain': BUNDLE_ID,
+         'user': kCFPreferencesCurrentUser,
+         'host': kCFPreferencesCurrentHost
+        },
+        {'file': '/var/root/Library/Preferences/ManagedInstalls.plist',
+         'domain': BUNDLE_ID,
+         'user': kCFPreferencesCurrentUser,
+         'host': kCFPreferencesAnyHost
+        },
+        {'file': ('/var/root/Library/Preferences/ByHost/'
+                  '.GlobalPreferences.xxxx.plist'),
+         'domain': '.GlobalPreferences',
+         'user': kCFPreferencesCurrentUser,
+         'host': kCFPreferencesCurrentHost
+        },
+        {'file': '/var/root/Library/Preferences/.GlobalPreferences.plist',
+         'domain': '.GlobalPreferences',
+         'user': kCFPreferencesCurrentUser,
+         'host': kCFPreferencesAnyHost
+        },
+        {'file': '/Library/Preferences/ManagedInstalls.plist',
+         'domain': BUNDLE_ID,
+         'user': kCFPreferencesAnyUser,
+         'host': kCFPreferencesCurrentHost
+        },
+        {'file': '/Library/Preferences/.GlobalPreferences.plist',
+         'domain': '.GlobalPreferences',
+         'user': kCFPreferencesAnyUser,
+         'host': kCFPreferencesCurrentHost
+        },
+    ]
+    for level in levels:
+        if (value == CFPreferencesCopyValue(
+                pref_name, level['domain'], level['user'], level['host'])):
+            return '[%s]' % level['file']
+    if value == DEFAULT_PREFS.get(pref_name):
+        return '[default]'
+    return '[unknown]'
+
+
+def print_config():
+    '''Prints the current Munki configuration'''
+    print 'Current configuration:'
+    max_pref_name_len = max(
+        [len(pref_name) for pref_name in DEFAULT_PREFS.keys()])
+    for pref_name in sorted(DEFAULT_PREFS.keys()):
+        if pref_name == 'LastNotifiedDate':
+            # skip it
+            continue
+        value = pref(pref_name)
+        where = get_config_level(pref_name, value)
+        repr_value = value
+        if isinstance(value, basestring):
+            repr_value = repr(value)
+        print ('%' + str(max_pref_name_len) + 's: %5s %s ') % (
+            pref_name, repr_value, where)
 
 
 if __name__ == '__main__':

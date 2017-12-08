@@ -27,139 +27,160 @@ User calling this needs to be able to write to repo/catalogs.
 
 """
 
-import sys
+import hashlib
 import os
 import optparse
-import hashlib
+import plistlib
+import sys
 
-try:
-    from munkilib import FoundationPlist as plistlib
-    LOCAL_PREFS_SUPPORT = True
-except ImportError:
-    try:
-        import FoundationPlist as plistlib
-        LOCAL_PREFS_SUPPORT = True
-    except ImportError:
-        # maybe we're not on an OS X machine...
-        print >> sys.stderr, ("Note: FoundationPlist is not available, "
-                              "using plistlib instead.")
-        import plistlib
-        LOCAL_PREFS_SUPPORT = False
-
-try:
-    from munkilib.munkicommon import listdir, get_version
-except ImportError:
-    # munkilib is not available
-    def listdir(path):
-        """OS X HFS+ string encoding safe listdir().
-
-        Args:
-            path: path to list contents of
-        Returns:
-            list of contents, items as str or unicode types
-        """
-        # if os.listdir() is supplied a unicode object for the path,
-        # it will return unicode filenames instead of their raw fs-dependent
-        # version, which is decomposed utf-8 on OS X.
-        #
-        # we use this to our advantage here and have Python do the decoding
-        # work for us, instead of decoding each item in the output list.
-        #
-        # references:
-        # https://docs.python.org/howto/unicode.html#unicode-filenames
-        # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
-        # http://lists.zerezo.com/git/msg643117.html
-        # http://unicode.org/reports/tr15/    section 1.2
-        if type(path) is str:
-            path = unicode(path, 'utf-8')
-        elif type(path) is not unicode:
-            path = unicode(path)
-        return os.listdir(path)
-
-    def get_version():
-        '''Placeholder if munkilib is not available'''
-        return 'UNKNOWN'
+from munkilib.cliutils import pref, path2url, print_utf8, print_err_utf8
+from munkilib.cliutils import get_version
+from munkilib import munkirepo
 
 
-def print_utf8(text):
-    '''Print Unicode text as UTF-8'''
-    print text.encode('UTF-8')
-
-def print_err_utf8(text):
-    '''Print Unicode text to stderr as UTF-8'''
-    print >> sys.stderr, text.encode('UTF-8')
+def list_items_of_kind(repo, kind):
+    '''Returns a list of items of kind. Relative pathnames are prepended with
+    kind. (example: ['pkgsinfo/apps/Bar.plist', 'pkgsinfo/apps/Foo.plist'])'''
+    return [os.path.join(kind, item) for item in repo.itemlist(kind)]
 
 
-def makecatalogs(repopath, options):
-    '''Assembles all pkginfo files into catalogs.
-    Assumes a pkgsinfo directory under repopath.
-    User calling this needs to be able to write to the repo/catalogs
-    directory.'''
-
-    # start with no errors!
+def hash_icons(repo):
+    '''Builds a dictionary containing hashes for all our repo icons'''
     errors = []
-    exit_code = 0
+    icons = {}
+    print_utf8("Getting list of icons...")
+    icon_list = repo.itemlist('icons')
+    # Don't hash the hashes, they aren't icons.
+    if '_icon_hashes.plist' in icon_list:
+        icon_list.remove('_icon_hashes.plist')
+    for icon_ref in icon_list:
+        print_utf8("Hashing %s..." % (icon_ref))
+        # Try to read the icon file
+        try:
+            icondata = repo.get('icons/' + icon_ref)
+            icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
+        except munkirepo.RepoError, err:
+            errors.append(u'RepoError for %s: %s' % (icon_ref, unicode(err)))
+        except IOError, err:
+            errors.append(u'IO error for %s: %s' % (icon_ref, err))
+        except BaseException, err:
+            errors.append(u'Unexpected error for %s: %s' % (icon_ref, err))
+    return icons, errors
 
-    # Make sure the icons directory exists
-    iconspath = os.path.join(repopath, 'icons')
-    # make sure iconspath is Unicode so that os.walk later gives us
-    # Unicode names back.
-    if type(iconspath) is str:
-        iconspath = unicode(iconspath, 'utf-8')
-    elif type(iconspath) is not unicode:
-        iconspath = unicode(iconspath)
 
-    if not os.path.exists(iconspath):
-        print_err_utf8("icons path %s doesn't exist, skipping hashing!"
-                       % iconspath)
-        iconhashing = False
-        # exit(-1) don't exit so we don't break when no icons dir
-    else:
-        icons = {}
-        iconhashing = True
+def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
+    '''Returns True if referenced installer items are present,
+    False otherwise. Adds errors/warnings to the errors list'''
+    installer_type = pkginfo.get('installer_type')
+    if installer_type in ['nopkg', 'apple_update_metadata']:
+        # no associated installer item (pkg) for these types
+        return True
+    if pkginfo.get('PackageCompleteURL') or pkginfo.get('PackageURL'):
+        # installer item may be on a different server
+        return True
 
-        # Walk through the icon files
-        for dirpath, dirnames, filenames in os.walk(iconspath):
-            for dirname in dirnames:
-                # don't recurse into directories that start
-                # with a period.
-                if dirname.startswith('.'):
-                    dirnames.remove(dirname)
-            for filename in filenames:
-                if filename.startswith('.'):
-                    # skip files that start with a period as well
-                    continue
+    if not 'installer_item_location' in pkginfo:
+        errors.append("WARNING: %s is missing installer_item_location"
+                      % pkginfo_ref)
+        return False
 
-                filepath = os.path.join(dirpath, filename)
+    # Try to form a path and fail if the
+    # installer_item_location is not a valid type
+    try:
+        installeritempath = os.path.join(
+            "pkgs", pkginfo['installer_item_location'])
+    except TypeError:
+        errors.append("WARNING: invalid installer_item_location in %s"
+                      % pkginfo_ref)
+        return False
 
-                iconpath = filepath.rsplit(iconspath + os.path.sep, 1)[1]
+    # Check if the installer item actually exists
+    if not installeritempath in pkgs_list:
+        # do a case-insenstive comparison
+        found_caseinsensitive_match = False
+        for repo_pkg in pkgs_list:
+            if installeritempath.lower() == repo_pkg.lower():
+                errors.append(
+                    "WARNING: %s refers to installer item: %s. "
+                    "The pathname of the item in the repo has "
+                    "different case: %s. This may cause issues "
+                    "depending on the case-sensitivity of the "
+                    "underlying filesystem."
+                    % (pkginfo_ref,
+                       pkginfo['installer_item_location'], repo_pkg))
+                found_caseinsensitive_match = True
+                break
+        if not found_caseinsensitive_match:
+            errors.append(
+                "WARNING: %s refers to missing installer item: %s"
+                % (pkginfo_ref, pkginfo['installer_item_location']))
+            return False
 
-                # Try to read the icon file
-                try:
-                    print_utf8("Hashing %s..." % (iconpath))
-                    icons[iconpath] = (
-                        hashlib.sha256(open(filepath, 'rb').read()).hexdigest())
-                except IOError, inst:
-                    errors.append("IO error for %s: %s" % (filepath, inst))
-                    exit_code = -1
-                    continue
-                except BaseException, inst:
-                    errors.append("Unexpected error for %s: %s"
-                                  % (filepath, inst))
-                    exit_code = -1
-                    continue
+    #uninstaller sanity checking
+    uninstaller_type = pkginfo.get('uninstall_method')
+    if uninstaller_type in ['AdobeCCPUninstaller']:
+        # uninstaller_item_location is required
+        if not 'uninstaller_item_location' in pkginfo:
+            errors.append(
+                "WARNING: %s is missing uninstaller_item_location"
+                % pkginfo_ref)
+            return False
 
-    # Make sure the pkgsinfo directory exists
-    pkgsinfopath = os.path.join(repopath, 'pkgsinfo')
-    # make sure pkgsinfopath is Unicode so that os.walk later gives us
-    # Unicode names back.
-    if type(pkgsinfopath) is str:
-        pkgsinfopath = unicode(pkgsinfopath, 'utf-8')
-    elif type(pkgsinfopath) is not unicode:
-        pkgsinfopath = unicode(pkgsinfopath)
+    # if an uninstaller_item_location is specified, sanity-check it
+    if 'uninstaller_item_location' in pkginfo:
+        try:
+            uninstalleritempath = os.path.join(
+                "pkgs", pkginfo['uninstaller_item_location'])
+        except TypeError:
+            errors.append("WARNING: invalid uninstaller_item_location "
+                          "in %s" % pkginfo_ref)
+            return False
 
-    if not os.path.exists(pkgsinfopath):
-        print_err_utf8("pkgsinfo path %s doesn't exist!" % pkgsinfopath)
+        # Check if the uninstaller item actually exists
+        if not uninstalleritempath in pkgs_list:
+            # do a case-insenstive comparison
+            found_caseinsensitive_match = False
+            for repo_pkg in pkgs_list:
+                if uninstalleritempath.lower() == repo_pkg.lower():
+                    errors.append(
+                        "WARNING: %s refers to uninstaller item: %s. "
+                        "The pathname of the item in the repo has "
+                        "different case: %s. This may cause issues "
+                        "depending on the case-sensitivity of the "
+                        "underlying filesystem."
+                        % (pkginfo_ref,
+                           pkginfo['uninstaller_item_location'], repo_pkg))
+                    found_caseinsensitive_match = True
+                    break
+            if not found_caseinsensitive_match:
+                errors.append(
+                    "WARNING: %s refers to missing uninstaller item: %s"
+                    % (pkginfo_ref, pkginfo['uninstaller_item_location']))
+                return False
+
+    # if we get here we passed all the checks
+    return True
+
+
+def process_pkgsinfo(repo, icons, force=False, skip_payload_check=False):
+    '''Processes pkginfo files and returns a dictionary of catalogs'''
+    errors = []
+    catalogs = {}
+    # get a list of pkgsinfo items
+    print_utf8("Getting list of pkgsinfo...")
+    try:
+        pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
+    except munkirepo.RepoError, err:
+        print_err_utf8(
+            "Error getting list of pkgsinfo items: %s" % unicode(err))
+        exit(-1)
+
+    # get a list of pkgs items
+    print_utf8("Getting list of pkgs...")
+    try:
+        pkgs_list = list_items_of_kind(repo, 'pkgs')
+    except munkirepo.RepoError, err:
+        print_err_utf8("Error getting list of pkgs items: %s" % unicode(err))
         exit(-1)
 
     # start with empty catalogs dict
@@ -167,217 +188,130 @@ def makecatalogs(repopath, options):
     catalogs['all'] = []
 
     # Walk through the pkginfo files
-    for dirpath, dirnames, filenames in os.walk(pkgsinfopath, followlinks=True):
-        for dirname in dirnames:
-            # don't recurse into directories that start
-            # with a period.
-            if dirname.startswith('.'):
-                dirnames.remove(dirname)
-        for filename in filenames:
-            if filename.startswith('.'):
-                # skip files that start with a period as well
+    for pkginfo_ref in pkgsinfo_list:
+        # Try to read the pkginfo file
+        try:
+            data = repo.get(pkginfo_ref)
+            pkginfo = plistlib.readPlistFromString(data)
+        except IOError, err:
+            errors.append("IO error for %s: %s" % (pkginfo_ref, err))
+            continue
+        except BaseException, err:
+            errors.append("Unexpected error for %s: %s" % (pkginfo_ref, err))
+            continue
+
+        if not 'name' in pkginfo:
+            errors.append("WARNING: %s is missing name" % pkginfo_ref)
+            continue
+
+        # don't copy admin notes to catalogs.
+        if pkginfo.get('notes'):
+            del pkginfo['notes']
+        # strip out any keys that start with "_"
+        # (example: pkginfo _metadata)
+        for key in pkginfo.keys():
+            if key.startswith('_'):
+                del pkginfo[key]
+
+        #sanity checking
+        if not skip_payload_check:
+			verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
+			if not verified and not force:
+				# Skip this pkginfo unless we're running with force flag
+				continue
+
+        # append the pkginfo to the relevant catalogs
+        catalogs['all'].append(pkginfo)
+        for catalogname in pkginfo.get("catalogs", []):
+            if not catalogname:
+                errors.append("WARNING: %s has an empty catalogs array!"
+                              % pkginfo_ref)
                 continue
+            if not catalogname in catalogs:
+                catalogs[catalogname] = []
+            catalogs[catalogname].append(pkginfo)
+            print_utf8("Adding %s to %s..." % (pkginfo_ref, catalogname))
 
-            filepath = os.path.join(dirpath, filename)
+    # look for catalog names that differ only in case
+    duplicate_catalogs = []
+    for key in catalogs:
+        if key.lower() in [item.lower() for item in catalogs if item != key]:
+            duplicate_catalogs.append(key)
+    if duplicate_catalogs:
+        errors.append("WARNING: There are catalogs with names that differ only "
+                      "by case. This may cause issues depending on the case-"
+                      "sensitivity of the underlying filesystem: %s"
+                      % duplicate_catalogs)
 
-            # Try to read the pkginfo file
-            try:
-                pkginfo = plistlib.readPlist(filepath)
-            except IOError, inst:
-                errors.append("IO error for %s: %s" % (filepath, inst))
-                exit_code = -1
-                continue
-            except BaseException, inst:
-                errors.append("Unexpected error for %s: %s" % (filepath, inst))
-                exit_code = -1
-                continue
-
-            if not 'name' in pkginfo:
-                errors.append(
-                    "WARNING: file %s is missing name"
-                    % filepath[len(pkgsinfopath)+1:])
-                continue
-
-            # don't copy admin notes to catalogs.
-            if pkginfo.get('notes'):
-                del pkginfo['notes']
-            # strip out any keys that start with "_"
-            # (example: pkginfo _metadata)
-            for key in pkginfo.keys():
-                if key.startswith('_'):
-                    del pkginfo[key]
-
-            if iconhashing:
-
-                name = pkginfo.get('name')
-
-                if pkginfo.get('icon_name'):
-                    iconhash = (icons.get(pkginfo['icon_name']) or
-                                icons.get(pkginfo['icon_name'] + '.png'))
-                    if not iconhash:
-                        errors.append("WARNING: icon_name specified"
-                                      " in info file %s but it does not exist"
-                                      % filepath[len(pkgsinfopath) + 1:])
-                else:
-                    iconhash = icons.get(name + '.png')
-
-                if iconhash is not None:
-                    pkginfo['icon_hash'] = iconhash
-                    iconhash = None
-
-            #simple sanity checking
-            do_pkg_check = True
-            installer_type = pkginfo.get('installer_type')
-            if installer_type in ['nopkg', 'apple_update_metadata']:
-                do_pkg_check = False
-            if pkginfo.get('PackageCompleteURL'):
-                do_pkg_check = False
-            if pkginfo.get('PackageURL'):
-                do_pkg_check = False
+    return catalogs, errors
 
 
-            if do_pkg_check:
-                if not 'installer_item_location' in pkginfo:
-                    errors.append(
-                        "WARNING: file %s is missing installer_item_location"
-                        % filepath[len(pkgsinfopath)+1:])
-                    # Skip this pkginfo unless we're running with force flag
-                    if not options.force:
-                        exit_code = -1
-                        continue
+def makecatalogs(repo, options):
+    '''Assembles all pkginfo files into catalogs.
+    Assumes a pkgsinfo directory under repopath.
+    User calling this needs to be able to write to the repo/catalogs
+    directory.'''
 
-                # Try to form a path and fail if the
-                # installer_item_location is not a valid type
-                try:
-                    installeritempath = os.path.join(
-                        repopath, "pkgs", pkginfo['installer_item_location'])
-                except TypeError:
-                    errors.append("WARNING: invalid installer_item_location "
-                                  "in info file %s"
-                                  % filepath[len(pkgsinfopath)+1:])
-                    exit_code = -1
-                    continue
+    exit_code = 0
+    icons, errors = hash_icons(repo)
 
-                # Check if the installer item actually exists
-                if not os.path.exists(installeritempath):
-                    errors.append("WARNING: Info file %s refers to "
-                                  "missing installer item: %s" %
-                                  (filepath[len(pkgsinfopath)+1:],
-                                   pkginfo['installer_item_location']))
-                    # Skip this pkginfo unless we're running with force flag
-                    if not options.force:
-                        exit_code = -1
-                        continue
+    catalogs, catalog_errors = process_pkgsinfo(
+        repo, icons, force=options.force, skip_payload_check=options.skip_payload_check)
 
-            #uninstaller sanity checking
-            uninstaller_type = pkginfo.get('uninstall_method')
-            if uninstaller_type in ['AdobeCCPUninstaller']:
-                # uninstaller_item_location is required
-                if not 'uninstaller_item_location' in pkginfo:
-                   errors.append(
-                       "WARNING: file %s is missing uninstaller_item_location"
-                       % filepath[len(pkgsinfopath)+1:])
-                   # Skip this pkginfo unless we're running with force flag
-                   if not options.force:
-                       exit_code = -1
-                       continue
-
-            # if an uninstaller_item_location is specified, sanity-check it
-            if 'uninstaller_item_location' in pkginfo:
-                try:
-                    uninstalleritempath = os.path.join(
-                        repopath, "pkgs", pkginfo['uninstaller_item_location'])
-                except TypeError:
-                    errors.append("WARNING: invalid uninstaller_item_location "
-                                  "in info file %s"
-                                  % filepath[len(pkgsinfopath)+1:])
-                    exit_code = -1
-                    continue
-
-                # Check if the uninstaller item actually exists
-                if not os.path.exists(uninstalleritempath):
-                    errors.append("WARNING: Info file %s refers to "
-                                  "missing uninstaller item: %s" %
-                                  (filepath[len(pkgsinfopath)+1:],
-                                   pkginfo['uninstaller_item_location']))
-                    # Skip this pkginfo unless we're running with force flag
-                    if not options.force:
-                        exit_code = -1
-                        continue
-
-            catalogs['all'].append(pkginfo)
-            for catalogname in pkginfo.get("catalogs", []):
-                infofilename = filepath[len(pkgsinfopath)+1:]
-                if not catalogname:
-                    errors.append("WARNING: Info file %s has an empty "
-                                  "catalog name!" % infofilename)
-                    exit_code = -1
-                    continue
-                if not catalogname in catalogs:
-                    catalogs[catalogname] = []
-                catalogs[catalogname].append(pkginfo)
-                print_utf8("Adding %s to %s..." % (infofilename, catalogname))
+    errors.extend(catalog_errors)
 
     if errors:
         # group all errors at the end for better visibility
         print
         for error in errors:
             print_err_utf8(error)
+        exit_code = -1
 
     # clear out old catalogs
-    catalogpath = os.path.join(repopath, "catalogs")
-    if not os.path.exists(catalogpath):
-        os.mkdir(catalogpath)
-    else:
-        for item in listdir(catalogpath):
-            itempath = os.path.join(catalogpath, item)
-            if os.path.isfile(itempath):
-                os.remove(itempath)
+    try:
+        catalog_list = repo.itemlist('catalogs')
+    except munkirepo.RepoError:
+        catalog_list = []
+    for catalog_name in catalog_list:
+        if catalog_name not in catalogs.keys():
+            catalog_ref = os.path.join('catalogs', catalog_name)
+            try:
+                repo.delete(catalog_ref)
+            except munkirepo.RepoError:
+                print_err_utf8('Could not delete catalog %s' % catalog_name)
 
     # write the new catalogs
     print
-    for key in catalogs.keys():
-        catalogpath = os.path.join(repopath, "catalogs", key)
-        if os.path.exists(catalogpath):
-            print_err_utf8(
-                "WARNING: catalog %s already exists at %s. "
-                "Perhaps this is a non-case sensitive filesystem and you "
-                "have catalogs with names differing only in case?"
-                % (key, catalogpath))
-            exit_code = -1
-        elif len(catalogs[key]) != 0:
-            plistlib.writePlist(catalogs[key], catalogpath)
-            print "Created catalog %s..." % (catalogpath)
+    for key in catalogs:
+        catalogpath = os.path.join("catalogs", key)
+        if len(catalogs[key]):
+            catalog_data = plistlib.writePlistToString(catalogs[key])
+            try:
+                repo.put(catalogpath, catalog_data)
+                print "Created %s..." % (catalogpath)
+            except munkirepo.RepoError, err:
+                print_err_utf8(
+                    u'Failed to create catalog %s: %s' % (key, unicode(err)))
         else:
             print_err_utf8(
-                "WARNING: Did not create catalog %s "
-                "because it is empty "
-                % (key))
+                "WARNING: Did not create catalog %s because it is empty" % key)
             exit_code = -1
 
-    # Exit with "exit_code" if we got this far.
-    # This will be -1 if there were any errors
-    # that prevented the catalogs to be written.
+    if icons:
+        icon_hashes_plist = os.path.join("icons", "_icon_hashes.plist")
+        icon_hashes = plistlib.writePlistToString(icons)
+        try:
+            repo.put(icon_hashes_plist, icon_hashes)
+            print "Created %s..." % (icon_hashes_plist)
+        except munkirepo.RepoError, err:
+            print_err_utf8(
+                u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
+
+    # Exit with "exit_code" if we got this far. This will be -1 if there were
+    # any errors that prevented the catalogs to be written.
     exit(exit_code)
 
 
-def pref(prefname):
-    """Returns a preference for prefname"""
-    if not LOCAL_PREFS_SUPPORT:
-        return None
-    try:
-        _prefs = plistlib.readPlist(PREFSPATH)
-    except BaseException:
-        return None
-    if prefname in _prefs:
-        return _prefs[prefname]
-    else:
-        return None
-
-
-PREFSNAME = 'com.googlecode.munki.munkiimport.plist'
-PREFSPATH = os.path.expanduser(os.path.join('~/Library/Preferences',
-                                            PREFSNAME))
 def main():
     '''Main'''
     usage = "usage: %prog [options] [/path/to/repo_root]"
@@ -386,33 +320,47 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    parser.set_defaults(force=False)
+    parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
+                      help='Skip checking of pkg existence. Useful'
+                           'when pkgs aren\'t on the same server'
+                           'as pkginfo, catalogs and manifests.')
+    parser.add_option('--repo_url', '--repo-url',
+                      help='Optional repo URL that takes precedence '
+                           'over the default repo_url specified via '
+                           '--configure.')
+    parser.add_option('--plugin',
+                      help='Specify a custom plugin to connect to repo.')
+    parser.set_defaults(force=False, skip_payload_check=False)
     options, arguments = parser.parse_args()
 
     if options.version:
         print get_version()
         exit(0)
 
-    # Make sure we have a path to work with
-    repopath = None
-    if len(arguments) == 0:
-        repopath = pref('repo_path')
-        if not repopath:
-            print_err_utf8("Need to specify a path to the repo root!")
-            exit(-1)
-        else:
-            print_utf8("Using repo path: %s" % repopath)
-    else:
-        repopath = arguments[0].rstrip("/")
+    # backwards compatibility
+    if not options.repo_url and not options.plugin:
+        if arguments:
+            options.repo_url = path2url(arguments[0])
+        elif pref('repo_url'):
+            options.repo_url = pref('repo_url')
+            options.plugin = pref('plugin')
+        elif pref('repo_path'):
+            options.repo_url = path2url(pref('repo_path'))
 
-    # Make sure the repo path exists
-    if not os.path.exists(repopath):
-        print_err_utf8("Repo root path %s doesn't exist!" % repopath)
+    if not options.repo_url:
+        parser.print_usage()
+        exit(-1)
+
+    # Connect to the repo
+    try:
+        repo = munkirepo.connect(options.repo_url, options.plugin)
+    except munkirepo.RepoError, err:
+        print >> sys.stderr, (u'Could not connect to munki repo: %s'
+                              % unicode(err))
         exit(-1)
 
     # Make the catalogs
-    makecatalogs(repopath, options)
+    makecatalogs(repo, options)
 
 if __name__ == '__main__':
     main()
-

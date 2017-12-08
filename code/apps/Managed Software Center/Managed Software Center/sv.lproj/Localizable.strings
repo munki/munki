@@ -8,7 +8,7 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Det krävs en utloggning före uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Du kommer tvingas att loggas ut om cirka. %s.";
+"A logout will be forced at approximately %s." = "Du kommer tvingas att loggas ut om cirka %s.";
 
 /* Logout warning string when logout is in < 60 minutes */
 "A logout will be forced in less than %s minutes." = "Du kommer tvingas att loggas ut om cirka %s minuter.";
@@ -20,7 +20,10 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Avinstallationen misslyckades. Ytterligare försök att avinstallera kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart krävs efter uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu ? ";
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart krävs efter uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Ett problem med systemkonfigurationen hindrar Managed Software Center från att fungera korrekt. Det rapporterade felet är: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Ytterligare uppdateringar";
@@ -34,8 +37,17 @@
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alla väntande uppdateringar kommer att installeras. Ej sparat arbete kommer att förloras!\nDu kan undgå detta genom att logga ut nu.";
 
+/* Allow button text */
+"Allow" = "Tillåt";
+
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installationen misslyckades. Ytterligare installationsförsök kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Andra användare på datorn har programmet öppet";
@@ -91,6 +103,9 @@
 /* Unavailable long action text */
 "Currently Unavailable" = "Inte tillgänglig just nu";
 
+/* Deny button text */
+"Deny" = "Avbryt";
+
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Bestämmer vad som ska tas bort";
 
@@ -108,6 +123,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Dags:";
+
+/* FeaturedLabel */
+"Featured" = "I blickfånget";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "I blickfånget";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Avslutar...";
@@ -172,6 +193,9 @@
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte kontakta den uppdateringsservern just nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
 
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center behöver låsa upp startskivan efter omstart för att slutföra alla uppdateringar.";
+
 /* Managed Update type */
 "Managed Update" = "Hanterad uppdatering";
 
@@ -235,6 +259,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Paketet borttaget.";
 
+/* Password label */
+"Password:" = "Lösenord:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Väntande uppdateringar";
 
@@ -246,6 +273,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Förbereder borttagning";
+
+/* Problm Updates label */
+"Problem updates" = "Problem updates";
 
 /* Quit button title */
 "Quit" = "Avsluta";
@@ -310,6 +340,9 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "Problem med systemkonfiguration";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Programvaran installerades.";
 
@@ -340,11 +373,17 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Det finns inga uppdateringar för närvarande.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Krävs av:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Måste installeras senast %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Ange ditt inloggningslösenord för att tillåta detta.";
 
 /* No Items secondary text */
 "Try again later." = "Försök igen senare.";
@@ -376,7 +415,7 @@
 /* Update Required long action text */
 "Update Required" = "Uppdatering krävs";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Uppdatering tillgänglig";
 
 /* Update Check Failed title */
@@ -421,6 +460,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "You must upgrade to macOS version %s to be able to install this item.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Datorn är inte ansluten till en strömkälla.";
 
@@ -429,3 +471,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
+
+/* macOS update required text */
+"macOS update required" = "macOS update required";

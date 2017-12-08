@@ -26,13 +26,18 @@ import os
 import munki
 import FoundationPlist
 
+## pylint: disable=wildcard-import
+## pylint: disable=unused-wildcard-import
+## pylint: disable=redefined-builtin
+#from Foundation import *
+#from AppKit import *
+## pylint: enable=redefined-builtin
+## pylint: enable=wildcard-import
+
 # pylint: disable=wildcard-import
-# pylint: disable=unused-wildcard-import
-# pylint: disable=redefined-builtin
-from Foundation import *
-from AppKit import *
-# pylint: enable=redefined-builtin
+from CocoaWrapper import *
 # pylint: enable=wildcard-import
+
 
 # lots of camelCase names, following Cocoa convention
 # pylint: disable=invalid-name
@@ -453,58 +458,74 @@ def more_localized_strings():
     them'''
     dummy = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
     dummy = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Performing preflight tasks...",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Performing postflight tasks...",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Performing preflight tasks...", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Performing postflight tasks...", "managedsoftwareupdate message")
 
-    dummy = NSLocalizedString(u"Checking for available updates...",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Checking for additional changes...",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Checking for available updates...", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Checking for additional changes...", "managedsoftwareupdate message")
     dummy = NSLocalizedString(
         u"Software installed or removed requires a restart.",
         "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Waiting for network...",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Waiting for network...", "managedsoftwareupdate message")
     dummy = NSLocalizedString(u"Done.", "managedsoftwareupdate message")
 
     dummy = NSLocalizedString(
         u"Retrieving list of software for this machine...",
         "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Verifying package integrity...",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Verifying package integrity...", "managedsoftwareupdate message")
 
-    dummy = NSLocalizedString(u"The software was successfully installed.",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"The software was successfully installed.",
+        "managedsoftwareupdate message")
 
-    dummy = NSLocalizedString(u"Gathering information on installed packages",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Determining which filesystem items to remove",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Removing receipt info",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Nothing to remove.",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Package removal complete.",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Gathering information on installed packages",
+        "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Determining which filesystem items to remove",
+        "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Removing receipt info", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Nothing to remove.", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Package removal complete.", "managedsoftwareupdate message")
 
+    # apple update messages
     dummy = NSLocalizedString(
         u"Checking for available Apple Software Updates...",
         "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Checking Apple Software Update catalog...",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Checking Apple Software Update catalog...",
+        "managedsoftwareupdate message")
     dummy = NSLocalizedString(
         u"Downloading available Apple Software Updates...",
         "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Installing available Apple Software Updates...",
-                              "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Installing available Apple Software Updates...",
+        "managedsoftwareupdate message")
 
-    dummy = NSLocalizedString(u"Running Adobe Setup",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Running Adobe Uninstall",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Starting Adobe installer...",
-                              "managedsoftwareupdate message")
-    dummy = NSLocalizedString(u"Running Adobe Patch Installer",
-                              "managedsoftwareupdate message")
+    # Adobe install/uninstall messages
+    dummy = NSLocalizedString(
+        u"Running Adobe Setup", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Running Adobe Uninstall", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Starting Adobe installer...", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Running Adobe Patch Installer", "managedsoftwareupdate message")
+
+    # macOS install/upgrade messages
+    dummy = NSLocalizedString(
+        u"Starting macOS upgrade...", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"Preparing to run macOS Installer...", "managedsoftwareupdate message")
+    dummy = NSLocalizedString(
+        u"System will restart and begin upgrade of macOS.",
+        "managedsoftwareupdate message")

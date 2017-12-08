@@ -1,4 +1,4 @@
-﻿/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "Hjälp";
 
 /* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
@@ -37,6 +37,9 @@
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
 "199.title" = "Klipp ut";
 
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
+"1B8-Pq-rf7.title" = "Visa logg";
+
 /* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
 "1Nd-E7-vfR.title" = "Managed Software Center";
 
@@ -64,9 +67,6 @@
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "Zooma";
 
-/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
-"1B8-Pq-rf7.title" = "Visa logg";
-
 /* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
 "24.title" = "Fönster";
 
@@ -82,11 +82,20 @@
 /* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
 "58.title" = "Om MunkiStatus";
 
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "8Nl-My-27d"; */
+"8Nl-My-27d.title" = "Text Cell";
+
+/* Class = "NSWindow"; title = "Log"; ObjectID = "LgH-P6-zEw"; */
+"LgH-P6-zEw.title" = "Log";
+
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
 "M20-JG-Pmr.title" = "Stopp";
 
-/* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
+/* Class = "NSWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
 "VCy-58-vwp.title" = "BackdropWindow";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
 "bd5-IY-BXv.title" = "Stäng";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "nGI-3K-7Wv"; */
+"nGI-3K-7Wv.title" = "Text Cell";

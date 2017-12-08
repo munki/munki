@@ -23,22 +23,30 @@ import munki
 import mschtml
 import msclib
 import msclog
-#import FoundationPlist
-import MSCBadgedTemplateImage
 import MunkiItems
 
 from urlparse import urlparse
 
 from AlertController import AlertController
+from MSCBadgedTemplateImage import MSCBadgedTemplateImage
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 from PyObjCTools import AppHelper
 
-# Disable PyLint complaining about wildcard imports and unused symbols
-# pylint: disable=W0401,W0614
-from Foundation import *
-from AppKit import *
-from WebKit import *
+## pylint: disable=wildcard-import
+## pylint: disable=unused-wildcard-import
+## pylint: disable=redefined-builtin
+#from Foundation import *
+#from AppKit import *
+## pylint: enable=redefined-builtin
+## pylint: enable=wildcard-import
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
+#from WebKit import *
+from WebKit import WebView, WebPreferences
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
@@ -66,7 +74,8 @@ class MSCMainWindowController(NSWindowController):
     myItemsToolbarButton = IBOutlet()
     updatesToolbarButton = IBOutlet()
     webView = IBOutlet()
-    navigationBtn = IBOutlet()
+    navigateBackBtn = IBOutlet()
+    navigateForwardBtn = IBOutlet()
     progressSpinner = IBOutlet()
     searchField = IBOutlet()
     updateButtonCell = IBOutlet()
@@ -133,7 +142,7 @@ class MSCMainWindowController(NSWindowController):
             u"%@", alertDetail)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.window(), self,
-            self.updateAlertDidEnd_returnCode_contextInfo_, objc.nil)
+            self.updateAlertDidEnd_returnCode_contextInfo_, nil)
 
     @AppHelper.endSheetMethod
     def updateAlertDidEnd_returnCode_contextInfo_(
@@ -151,22 +160,11 @@ class MSCMainWindowController(NSWindowController):
             self.updateNow()
             self.loadUpdatesPage_(self)
 
-    ### no longer needed now that we are using a "real" NSToolbar ###
-    #def window_willPositionSheet_usingRect_(self, window, sheet, rect):
-    #    '''NSWindowDelegate method that allows us to modify the
-    #    position sheets appear attached to a window'''
-    #    # move the anchor point of our sheets to below our toolbar
-    #    # (or really, to the top of the web view)
-    #    webViewRect = self.webView.frame()
-    #    return NSMakeRect(webViewRect.origin.x,
-    #                      webViewRect.origin.y + webViewRect.size.height,
-    #                      webViewRect.size.width, 0)
-
     def loadInitialView(self):
         '''Called by app delegate from applicationDidFinishLaunching:'''
         self.enableOrDisableSoftwareViewControls()
         optional_items = MunkiItems.getOptionalInstallItems()
-        if not optional_items or self.getUpdateCount():
+        if not optional_items or self.getUpdateCount() or MunkiItems.getProblemItems():
             self.loadUpdatesPage_(self)
         else:
             self.loadAllSoftwarePage_(self)
@@ -344,7 +342,6 @@ class MSCMainWindowController(NSWindowController):
         '''Our window was deactivated, make sure controls enabled as needed'''
         self.enableOrDisableToolbarButtons_(NO)
 
-
     def configureFullScreenMenuItem(self):
         '''check to see if NSWindow's toggleFullScreen: selector is implemented.
         if so, unhide the menu items for going full screen'''
@@ -418,6 +415,13 @@ class MSCMainWindowController(NSWindowController):
             self.markRequestedItemsAsProcessing()
         else:
             self.munkiStatusSessionEnded_(2)
+
+    @IBAction
+    def reloadPage_(self, sender):
+        '''User selected Reload page menu item. Reload the page and kick off an updatecheck'''
+        msclog.log('user', 'reload_page_menu_item_selected')
+        self.checkForUpdates()
+        self.webView.reload_(sender)
 
     def kickOffInstallSession(self):
         '''start an update install/removal session'''
@@ -619,6 +623,10 @@ class MSCMainWindowController(NSWindowController):
             NSURL.fileURLWithPath_(html_file),
             NSURLRequestReloadIgnoringLocalCacheData, 10)
         self.webView.mainFrame().loadRequest_(request)
+        if url_fragment == 'updates.html':
+            # clear all earlier update notifications
+            NSUserNotificationCenter.defaultUserNotificationCenter(
+                ).removeAllDeliveredNotifications()
 
     def setNoPageCache(self):
         '''We disable the back/forward page cache because
@@ -709,9 +717,8 @@ class MSCMainWindowController(NSWindowController):
     def webView_didFinishLoadForFrame_(self, view, frame):
         '''Stop progress spinner and update state of back/forward buttons'''
         self.progressSpinner.stopAnimation_(self)
-        self.navigationBtn.setEnabled_forSegment_(self.webView.canGoBack(), 0)
-        self.navigationBtn.setEnabled_forSegment_(
-            self.webView.canGoForward(), 1)
+        self.navigateBackBtn.setEnabled_(self.webView.canGoBack())
+        self.navigateForwardBtn.setEnabled_(self.webView.canGoForward())
 
     def webView_didFailProvisionalLoadWithError_forFrame_(
             self, view, error, frame):
@@ -769,6 +776,9 @@ class MSCMainWindowController(NSWindowController):
             self.checkForUpdates()
         else:
             # must say "Update"
+            # we're on the Updates page, so users can see all the pending/
+            # outstanding updates
+            self._alertedUserToOutstandingUpdates = True
             self.updateNow()
 
     def showUpdateProgressSpinner(self):
@@ -1025,7 +1035,9 @@ class MSCMainWindowController(NSWindowController):
         else:
             btn.setInnerText_(item['short_action_text'])
         if status_text_span:
-            status_text_span.setInnerText_(item['status_text'])
+            # use setInnerHTML_ instead of setInnerText_ because sometimes the status
+            # text contains html, like '<span class="warning">Some warning</span>'
+            status_text_span.setInnerHTML_(item['status_text'])
         status_line.setClassName_(item['status'])
 
     def actionButtonClicked_(self, item_name):
@@ -1144,7 +1156,8 @@ class MSCMainWindowController(NSWindowController):
         changes the category selected in the sidebar popup'''
         all_categories_label = NSLocalizedString(
             u"All Categories", u"AllCategoriesLabel")
-        if category == all_categories_label:
+        featured_label = NSLocalizedString(u"Featured", u"FeaturedLabel")
+        if category in [all_categories_label, featured_label]:
             category = u'all'
         self.load_page('category-%s.html' % category)
 
@@ -1180,15 +1193,15 @@ class MSCMainWindowController(NSWindowController):
                 u"%@", alertDetail)
             result = alert.runModal()
 
+    @IBAction
+    def navigateBackBtnClicked_(self, sender):
+        '''Handle WebView back button'''
+        self.webView.goBack_(self)
 
     @IBAction
-    def navigationBtnClicked_(self, sender):
-        '''Handle WebView forward/back buttons'''
-        segment = sender.selectedSegment()
-        if segment == 0:
-            self.webView.goBack_(self)
-        if segment == 1:
-            self.webView.goForward_(self)
+    def navigateForwardBtnClicked_(self, sender):
+        '''Handle WebView forward button'''
+        self.webView.goForward_(self)
 
     @IBAction
     def loadAllSoftwarePage_(self, sender):

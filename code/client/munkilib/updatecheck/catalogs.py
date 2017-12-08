@@ -414,9 +414,11 @@ def analyze_installed_pkgs():
     return pkgdata
 
 
-def get_item_detail(name, cataloglist, vers=''):
+def get_item_detail(name, cataloglist, vers='',
+                    skip_min_os_check=False, suppress_warnings=False):
     """Searches the catalogs in list for an item matching the given name that
-    can be installed on the current hardware/OS
+    can be installed on the current hardware/OS (optionally skipping the
+    minimum OS check so we can return an item that requires a higher OS)
 
     If no version is supplied, but the version is appended to the name
     ('TextWrangler--2.3.0.0.0') that version is used.
@@ -454,12 +456,13 @@ def get_item_detail(name, cataloglist, vers=''):
                 return False
         return True
 
-    def os_version_ok(item):
+    def os_version_ok(item, skip_min_os_check=False):
         '''Returns a boolean to indicate if the item is ok to install under
         the current OS. If not, also adds the failure reason to the
-        rejected_items list.'''
+        rejected_items list. If skip_min_os_check is True, skips the minimum os
+        version check.'''
         # Is the current OS version >= minimum_os_version for the item?
-        if item.get('minimum_os_version'):
+        if item.get('minimum_os_version') and not skip_min_os_check:
             min_os_vers = item['minimum_os_version']
             display.display_debug1(
                 'Considering item %s, version %s '
@@ -535,12 +538,12 @@ def get_item_detail(name, cataloglist, vers=''):
         the rejected_items list.'''
 
         if item.get('installable_condition'):
-            if not info.predicate_evaluates_as_true(item['installable_condition']):
-                reason = (
+            if not info.predicate_evaluates_as_true(
+                    item['installable_condition']):
+                rejected_items.append(
                     'Rejected item %s, version %s with installable_condition: '
                     '%s.' % (item['name'], item['version'],
                              item['installable_condition']))
-                rejected_items.append(reason)
                 return False
         return True
 
@@ -548,16 +551,20 @@ def get_item_detail(name, cataloglist, vers=''):
         vers = 'latest'
     else:
         (name, includedversion) = split_name_and_version(name)
-        if vers == '':
-            if includedversion:
-                vers = includedversion
+        if includedversion and vers == '':
+            vers = includedversion
         if vers:
             vers = pkgutils.trim_version_string(vers)
         else:
             vers = 'latest'
 
-    display.display_debug1(
-        'Looking for detail for: %s, version %s...', name, vers)
+    if skip_min_os_check:
+        display.display_debug1(
+            'Looking for detail for: %s, version %s, '
+            'ignoring minimum_os_version...', name, vers),
+    else:
+        display.display_debug1(
+            'Looking for detail for: %s, version %s...', name, vers)
 
     for catalogname in cataloglist:
         # is name in the catalog?
@@ -580,11 +587,14 @@ def get_item_detail(name, cataloglist, vers=''):
                     (len(indexlist), name, catalogname))
             for index in indexlist:
                 # iterate through list of items with matching name, highest
-                # version first, looking for one that passes all the conditional
-                # tests (if any)
+                # version first, looking for first one that passes all the
+                # conditional tests (if any)
                 item = _CATALOG[catalogname]['items'][index]
-                if (munki_version_ok(item) and os_version_ok(item) and
-                        cpu_arch_ok(item) and installable_condition_ok(item)):
+                if (munki_version_ok(item) and
+                        os_version_ok(item,
+                                      skip_min_os_check=skip_min_os_check) and
+                        cpu_arch_ok(item) and
+                        installable_condition_ok(item)):
                     display.display_debug1(
                         'Found %s, version %s in catalog %s',
                         item['name'], item['version'], catalogname)
@@ -593,7 +603,10 @@ def get_item_detail(name, cataloglist, vers=''):
     # if we got this far, we didn't find it.
     display.display_debug1('Not found')
     for reason in rejected_items:
-        display.display_warning(reason)
+        if suppress_warnings:
+            display.display_debug1(reason)
+        else:
+            display.display_warning(reason)
     return None
 
 

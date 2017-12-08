@@ -17,10 +17,13 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "U wordt binnen een minuut automatisch uitgelogd.\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder.";
 
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Het is nodig te herstarten na het bijwerken. Nadat het login window verschijnt kan het een ogenblik duren voordat bijwerken begint. Wilt U nu uitloggen en bijwerken?";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Een probleem met de systeemconfiguratie verhindert het correct functioneren van Managed Software Center. Het probleem is: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Additionele Wachtende Updates";
@@ -34,8 +37,17 @@
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.\nU kunt dit voorkomen door nu zelf uit te loggen.";
 
+/* Allow button text */
+"Allow" = "Sta toe";
+
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een installatiepoging is niet geslaagd. Installatie wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "Een oudere versie is op dit moment geïnstalleerd. Er is onvoldoende schijfruimte om deze update te downloaden en installeren.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Een oudere versie is op dit moment geïnstalleerd. Upgrade eerst naar macOS versie %s of hoger zodat de update geïnstalleerd kan worden.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaties in gebruik door anderen";
@@ -91,6 +103,9 @@
 /* Unavailable long action text */
 "Currently Unavailable" = "Op dit moment niet beschikbaar";
 
+/* Deny button text */
+"Deny" = "Nee";
+
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Bepalen welke bestandssysteem onderdelen te verwijderen";
 
@@ -108,6 +123,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Vervaldatum:";
+
+/* FeaturedLabel */
+"Featured" = "Uitgelicht";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Uitgelicht";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Afronden...";
@@ -172,6 +193,9 @@
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan de update server op dit moment niet bereiken.\nProbeer later nog eens. Als deze situatie niet verandert, neem contact op met uw systeembeheerder.";
 
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wil de opstartschijf ontgrendelen na herstart zodat alle nog wachtende updates uitgevoerd kunnen worden.";
+
 /* Managed Update type */
 "Managed Update" = "Beheerde Update";
 
@@ -235,6 +259,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Verwijderen van pakket voltooid.";
 
+/* Password label */
+"Password:" = "Wachtwoord:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Wachtende updates";
 
@@ -246,6 +273,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Verwijderen voorbereiden";
+
+/* Problm Updates label */
+"Problem updates" = "Problematische updates";
 
 /* Quit button title */
 "Quit" = "Afsluiten";
@@ -310,6 +340,9 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "Probleem met de systeemconfiguratie";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "De software is succesvol geïnstalleerd.";
 
@@ -340,11 +373,17 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor uw computer.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Er is onvoldoende schijfruimte om dit onderdeel te downloaden en installeren.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Dit item is benodigd voor:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Dit item moet geïnstalleerd zijn voor %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Om dit toe te staan, vul je loginwachtwoord in.";
 
 /* No Items secondary text */
 "Try again later." = "Probeer later nog eens.";
@@ -376,7 +415,7 @@
 /* Update Required long action text */
 "Update Required" = "Update benodigd";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Update beschikbaar";
 
 /* Update Check Failed title */
@@ -421,6 +460,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "De volgende applicaties dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Upgrade eerst naar macOS versie %s of hoger zodat dit onderdeel geïnstalleerd kan worden.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Uw computer is niet aangesloten op het lichtnet.";
 
@@ -429,3 +471,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is up to date.";
+
+/* macOS update required text */
+"macOS update required" = "macOS update vereist";

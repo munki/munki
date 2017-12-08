@@ -1,25 +1,3 @@
-﻿
-/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "ウィンドウ";
-
-/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "しまう";
-
-/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "ウィンドウ";
-
-/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMainMenu";
-
-/* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
-"56.title" = "MunkiStatus";
-
-/* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
-"57.title" = "MunkiStatus";
-
-/* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
-"58.title" = "MunkiStatusについて";
-
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
 "103.title" = "ヘルプ";
 
@@ -47,6 +25,9 @@
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
 "150.title" = "すべてを表示";
 
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "ウィンドウ";
+
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
 "197.title" = "コピー";
 
@@ -55,6 +36,12 @@
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
 "199.title" = "カット";
+
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
+"1B8-Pq-rf7.title" = "ログを表示";
+
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
+"1Nd-E7-vfR.title" = "Managed Software Center";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
 "202.title" = "削除";
@@ -65,23 +52,50 @@
 /* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
 "205.title" = "編集";
 
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Undo";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Redo";
+
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
 "217.title" = "編集";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "しまう";
 
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
 "239.title" = "ズーム";
 
-/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
-"1B8-Pq-rf7.title" = "ログを表示";
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "ウィンドウ";
 
-/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
-"1Nd-E7-vfR.title" = "Managed Software Center";
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
+"56.title" = "MunkiStatus";
+
+/* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
+"57.title" = "MunkiStatus";
+
+/* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
+"58.title" = "MunkiStatusについて";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "8Nl-My-27d"; */
+"8Nl-My-27d.title" = "Text Cell";
+
+/* Class = "NSWindow"; title = "Log"; ObjectID = "LgH-P6-zEw"; */
+"LgH-P6-zEw.title" = "Log";
 
 /* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
 "M20-JG-Pmr.title" = "停止";
 
-/* Class = "BorderlessWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
+/* Class = "NSWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
 "VCy-58-vwp.title" = "BackdropWindow";
 
 /* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
 "bd5-IY-BXv.title" = "閉じる";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "nGI-3K-7Wv"; */
+"nGI-3K-7Wv.title" = "Text Cell";

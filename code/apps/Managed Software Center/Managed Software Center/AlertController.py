@@ -7,8 +7,8 @@
 #
 
 import os
-#import sys
 
+import authrestart
 import munki
 import msclog
 import MunkiItems
@@ -28,6 +28,19 @@ class AlertController(NSObject):
     def setWindow_(self, the_window):
         '''Store our parent window'''
         self.window = the_window
+
+    def handlePossibleAuthRestart(self):
+        '''Ask for and store a password for auth restart if needed/possible'''
+        username = NSUserName()
+        if (MunkiItems.updatesRequireRestart() and
+                authrestart.verify_user(username) and
+                not authrestart.verify_recovery_key_present()):
+            # FV is on and user is in list of FV users, so they can
+            # authrestart, and we do not have a stored FV recovery
+            # key/password. So we should prompt the user for a password
+            # we can use for fdesetup authrestart
+            NSApp.delegate(
+                ).passwordAlertController.promptForPasswordForAuthRestart()
 
     def forcedLogoutWarning(self, notification_obj):
         '''Display a forced logout warning'''
@@ -105,6 +118,7 @@ class AlertController(NSObject):
         btn_pressed = self._force_warning_btns.get(returncode)
         if btn_pressed == self._force_warning_logout_btn:
             msclog.log("user", "install_with_logout")
+            self.handlePossibleAuthRestart()
             result = munki.logoutAndUpdate()
         elif btn_pressed == self._force_warning_ok_btn:
             msclog.log("user", "dismissed_forced_logout_warning")
@@ -193,6 +207,7 @@ class AlertController(NSObject):
                 msclog.log("user", "alerted_on_battery_power_and_cancelled")
                 return
             msclog.log("user", "install_with_logout")
+            self.handlePossibleAuthRestart()
             result = munki.logoutAndUpdate()
             if result:
                 self.installSessionErrorAlert()
@@ -344,13 +359,13 @@ class AlertController(NSObject):
         firmware_alert_info = self.getFirmwareAlertInfo()
         if not firmware_alert_info:
             return False
-        power_info = munki.getPowerInfo()
-        on_battery_power = (power_info.get('PowerSource') == 'Battery Power')
+        on_battery_power = munki.onBatteryPower()
         for item in firmware_alert_info:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 item['name'],
                 NSLocalizedString(u"Continue", u"Continue button text"),
-                NSLocalizedString(u"Cancel", u"Cancel button title/short action text"),
+                NSLocalizedString(
+                    u"Cancel", u"Cancel button title/short action text"),
                 nil,
                 u"")
             if on_battery_power:
@@ -375,9 +390,7 @@ class AlertController(NSObject):
     def alertedToRunningOnBatteryAndCancelled(self):
         '''Returns True if we are running on battery and user clicks
         the Cancel button'''
-        power_info = munki.getPowerInfo()
-        if (power_info.get('PowerSource') == 'Battery Power'
-                and power_info.get('BatteryCharge', 0) < 50):
+        if munki.onBatteryPower() and munki.getBatteryPercentage() < 50:
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
                 NSLocalizedString(
                     u"Your computer is not connected to a power source.",

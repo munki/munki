@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Computeren skal genstartes efter opdatering. Vent et øjeblik da der kan være en kort forsinkelse ved log ind-vinduet. Log ud og opdater nu?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "En fejl i systemkonfigurationen forhindrer Managed Software Center i at fungere korrekt. Den rapporterede fejl er: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Flere ventende opdateringer";
 
@@ -34,8 +37,17 @@
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
 
+/* Allow button text */
+"Allow" = "Tillad";
+
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Forsøg på installering mislykkedes. Installering bliver forsøgt igen.\nHvis problemet består, skal du kontakte systemadministratoren.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "En ældre version er installeret. Der er ikke nok ledig plads på disken til at downloade og installere denne opdatering.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "En ældre version er installeret. Du skal opgradere til macOS version %s eller nyere for at installere denne opdatering.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer i brug af andre";
@@ -91,6 +103,9 @@
 /* Unavailable long action text */
 "Currently Unavailable" = "Ikke tilgængelig";
 
+/* Deny button text */
+"Deny" = "Afvis";
+
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Undersøger hvilke elementer, der skal fjernes";
 
@@ -108,6 +123,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Forfalder:";
+
+/* FeaturedLabel */
+"Featured" = "Udvalgte";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Udvalgt software";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Afslutter...";
@@ -172,6 +193,9 @@
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan ikke kontakte opdateringsserveren.\nPrøv igen senere. Hvis problemet består, skal du kontakte systemadministratoren.";
 
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center skal låse startdisken op efter genstart for at færdiggøre alle ventende opdateringer.";
+
 /* Managed Update type */
 "Managed Update" = "Administreret opdatering";
 
@@ -235,6 +259,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Fjernelse af software er gennemført.";
 
+/* Password label */
+"Password:" = "Adgangskode:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Ventende opdateringer";
 
@@ -246,6 +273,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Forbereder fjernelse";
+
+/* Problm Updates label */
+"Problem updates" = "Problematiske opdateringer";
 
 /* Quit button title */
 "Quit" = "Slut";
@@ -310,6 +340,9 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "Problem med systemkonfigurationen";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installation af software er gennemført.";
 
@@ -340,11 +373,17 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Der er ingen nye opdateringer lige nu.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Der er ikke nok ledig plads på disken til at downloade og installere dette emne.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Dette emne kræves af:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Dette emne skal installeres senest %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "For at tillade dette, skal du skrive din log ind-adgangskode.";
 
 /* No Items secondary text */
 "Try again later." = "Prøv igen senere.";
@@ -376,7 +415,7 @@
 /* Update Required long action text */
 "Update Required" = "Opdatering kræves";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Kan opdateres";
 
 /* Update Check Failed title */
@@ -421,6 +460,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Du skal opgradere til macOS version %s for at installere dette emne.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Computeren er ikke sluttet til strømforsyningen.";
 
@@ -429,3 +471,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
+
+/* macOS update required text */
+"macOS update required" = "Kræver macOS-opdatering";

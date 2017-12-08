@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Järjestelmän määritysvirhe estää Managed Software Center -ohjelman toiminnan. Raportoitu ongelma on: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Muut odottavat päivitykset";
 
@@ -34,8 +37,17 @@
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Kaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.\nVoit ohittaa pakotetun uloskirjaamisen kirjautumalla ulos nyt.";
 
+/* Allow button text */
+"Allow" = "Salli";
+
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Asennus epäonnistui mutta sitä yritetään uudelleen.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "Vanhempi versio on asennettu. Päivityksen lataamiseen ja asentamiseen ei ole riittävästi levytilaa.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Vanhempi versio on asennettu. Päivityksen asentamiseen tarvitaan macOS %s tai uudempi.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
@@ -91,6 +103,9 @@
 /* Unavailable long action text */
 "Currently Unavailable" = "Ei saatavilla tällä hetkellä";
 
+/* Deny button text */
+"Deny" = "Kiellä";
+
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Määritetään poistettavia kohteita";
 
@@ -108,6 +123,12 @@
 
 /* Sidebar Due label */
 "Due:" = "Asennettava:";
+
+/* FeaturedLabel */
+"Featured" = "Esittelyssä";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Esittelyssä";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Viimeistellään...";
@@ -172,6 +193,9 @@
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei saa yhteyttä palvelimeen juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center haluaa avata käynnistyslevyn lukituksen seuraavalla käynnistyskerralla jatkaakseen päivitysten asentamista.";
+
 /* Managed Update type */
 "Managed Update" = "Hallittu päivitys";
 
@@ -235,6 +259,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Paketin poisto valmis.";
 
+/* Password label */
+"Password:" = "Salasana:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Odottavat päivitykset";
 
@@ -246,6 +273,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Valmistellaan poistoa";
+
+/* Problm Updates label */
+"Problem updates" = "Epäonnistuneet päivitykset";
 
 /* Quit button title */
 "Quit" = "Lopeta";
@@ -310,6 +340,9 @@
 /* Sidebar Status label */
 "Status:" = "Tila:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "Järjestelmän määritysvirhe";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Ohjelmiston asennus onnistui.";
 
@@ -340,11 +373,17 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "Tietokoneelle ei ole tällä hetkellä saatavilla uusia ohjelmistopäivityksiä.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Päivityksen lataamiseen ja asentamiseen ei ole riittävästi levytilaa.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Tämän kohteen vaatii:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Asennettava ennen %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Salli lukituksen avaaminen syöttämällä salasana.";
 
 /* No Items secondary text */
 "Try again later." = "Yritä myöhemmin uudelleen.";
@@ -376,7 +415,7 @@
 /* Update Required long action text */
 "Update Required" = "Pakollinen päivitys";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Päivitys saatavilla";
 
 /* Update Check Failed title */
@@ -421,6 +460,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Päivityksen asentamiseen tarvitaan macOS %@.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Tietokonetta ei ole liitetty virtalähteeseen.";
 
@@ -429,3 +471,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ohjelmisto on ajan tasalla.";
+
+/* macOS update required text */
+"macOS update required" = "macOS-päivitys vaaditaan";

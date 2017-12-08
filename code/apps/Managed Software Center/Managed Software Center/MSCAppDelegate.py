@@ -24,8 +24,12 @@ from urlparse import urlparse
 
 from objc import YES, NO, IBAction, IBOutlet, nil
 import PyObjCTools
-from Foundation import *
-from AppKit import *
+#from Foundation import *
+#from AppKit import *
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
 
 from MSCStatusController import MSCStatusController
 
@@ -38,6 +42,7 @@ class MSCAppDelegate(NSObject):
 
     mainWindowController = IBOutlet()
     statusController = IBOutlet()
+    passwordAlertController = IBOutlet()
 
     def applicationShouldTerminate_(self, sender):
         '''Called if user selects 'Quit' from menu'''
@@ -45,6 +50,7 @@ class MSCAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         '''NSApplication delegate method called at launch'''
+        NSLog("Finished launching")
         # setup client logging
         msclog.setup_logging()
         
@@ -144,7 +150,7 @@ class MSCAppDelegate(NSObject):
         '''User clicked on a Notification Center alert'''
         user_info = notification.userInfo()
         if user_info.get('action') == 'open_url':
-            url = user_info.get('value')
+            url = user_info.get('value', 'munki://updates')
             msclog.log("MSU", "Got user notification to open %s" % url)
             self.openMunkiURL(url)
             center.removeDeliveredNotification_(notification)

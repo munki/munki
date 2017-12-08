@@ -24,9 +24,12 @@ import os
 import subprocess
 import FoundationPlist
 
+import objc
+
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
+from Foundation import NSBundle
 from Foundation import NSDate
 from Foundation import NSFileManager
 from Foundation import CFPreferencesCopyAppValue
@@ -38,8 +41,27 @@ from Foundation import kCFDateFormatterShortStyle
 from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 # pylint: enable=E0611
 
+# See http://michaellynn.github.io/2015/08/08/learn-you-a-better-pyobjc-bridgesupport-signature/
+# for a primer on the bridging techniques used here
+#
+
+# https://developer.apple.com/documentation/iokit/iopowersources.h?language=objc
+IOKit = NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
+
+functions = [("IOPSGetPowerSourceDescription", b"@@@"),
+             ("IOPSCopyPowerSourcesInfo", b"@"),
+             ("IOPSCopyPowerSourcesList", b"@@"),
+             ("IOPSGetProvidingPowerSourceType", b"@@"),
+            ]
+
+# No idea why PyLint complains about objc.loadBundleFunctions
+# pylint: disable=no-member
+objc.loadBundleFunctions(IOKit, globals(), functions)
+# pylint: enable=no-member
+
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
+
 
 INSTALLATLOGOUTFILE = "/private/tmp/com.googlecode.munki.installatlogout"
 UPDATECHECKLAUNCHFILE = \
@@ -102,7 +124,7 @@ def pref(pref_name):
         'CheckResultsCacheSeconds': DEFAULT_GUI_CACHE_AGE_SECS,
     }
     pref_value = CFPreferencesCopyAppValue(pref_name, BUNDLE_ID)
-    if pref_value == None:
+    if pref_value is None:
         pref_value = default_prefs.get(pref_name)
     #if type(pref_value).__name__ in ['__NSCFDate', '__NSDate', '__CFDate']:
         # convert NSDate/CFDates to strings
@@ -338,7 +360,7 @@ def trimVersionString(version_string):
       10.0.0-abc1 -> 10.0.0-abc1
       10.0.0-abc1.0 -> 10.0.0-abc1
     """
-    if version_string == None or version_string == '':
+    if version_string is None or version_string == '':
         return ''
     version_parts = version_string.split('.')
     # strip off all trailing 0's in the version, while over 2 parts.
@@ -546,63 +568,29 @@ def getRunningBlockingApps(appnames):
     return running_apps
 
 
-def getPowerInfo():
-    '''Returns power info in a dictionary'''
-    power_dict = {}
-    power_dict['PowerSource'] = 'Unknown Power'
-    power_dict['BatteryCharge'] = -1
-    power_dict['ChargingStatus'] = 'unknown'
-    power_dict['TimeRemaining'] = -1
-    cmd = ['/usr/bin/pmset', '-g', 'ps']
-    proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (output, dummy_error) = proc.communicate()
-    if proc.returncode:
-        # handle error
-        return power_dict
-    #
-    # output from `pmset -g ps` looks like:
-    #
-    # Currently drawing from 'AC Power'
-    # -InternalBattery-0    100%; charged; 0:00 remaining
-    #
-    # or
-    #
-    # Currently drawing from 'AC Power'
-    # -InternalBattery-0    98%; charging; 0:08 remaining
-    #
-    # or
-    #
-    # Currently drawing from 'Battery Power'
-    # -InternalBattery-0    100%; discharging; (no estimate)
-    #
-    # or
-    #
-    # Currently drawing from 'Battery Power'
-    # -InternalBattery-0    100%; discharging; 5:55 remaining
-    #
-    line = output.splitlines()
-    if 'AC Power' in line[0]:
-        power_dict['PowerSource'] = 'AC Power'
-        power_dict['ChargingStatus'] = 'not applicable'
-    if 'Battery Power' in line[0]:
-        power_dict['PowerSource'] = 'Battery Power'
-        if len(line) > 1:
-            part = line[1].split()
-            try:
-                power_dict['BatteryCharge'] = int(part[1].rstrip('%;'))
-            except (IndexError, ValueError):
-                pass
-            try:
-                power_dict['ChargingStatus'] = part[2].rstrip(';')
-            except IndexError:
-                pass
-            try:
-                time_remaining_text = part[3]
-                time_part = time_remaining_text.split(':')
-                minutes = 60 * int(time_part[0]) + int(time_part[1])
-                power_dict['TimeRemaining'] = minutes
-            except (IndexError, ValueError):
-                pass
+def onACPower():
+    """Returns a boolean to indicate if the machine is on AC power"""
+    # pylint: disable=undefined-variable
+    power_source = IOPSGetProvidingPowerSourceType(IOPSCopyPowerSourcesInfo())
+    # pylint: enable=undefined-variable
+    return power_source == 'AC Power'
 
-    return power_dict
+
+def onBatteryPower():
+    """Returns a boolean to indicate if the machine is on battery power"""
+    # pylint: disable=undefined-variable
+    power_source = IOPSGetProvidingPowerSourceType(IOPSCopyPowerSourcesInfo())
+    # pylint: enable=undefined-variable
+    return power_source == 'Battery Power'
+
+
+def getBatteryPercentage():
+    """Returns battery charge percentage"""
+    # pylint: disable=undefined-variable
+    ps_blob = IOPSCopyPowerSourcesInfo()
+    power_sources = IOPSCopyPowerSourcesList(ps_blob)
+    for source in power_sources:
+        description = IOPSGetPowerSourceDescription(ps_blob, source)
+        if description.get('Type') == 'InternalBattery':
+            return description.get('Current Capacity', 0)
+    return 0

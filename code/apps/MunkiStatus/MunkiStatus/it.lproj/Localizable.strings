@@ -1,4 +1,4 @@
-﻿/* managedsoftwareupdate message */
+/* managedsoftwareupdate message */
 "Checking Apple Software Update catalog..." = "Controllo catalogo Aggiornamenti Software Apple...";
 
 /* managedsoftwareupdate message */
@@ -41,13 +41,16 @@
 "Performing preflight tasks..." = "Controllo pre-installazione in corso...";
 
 /* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Preparazione all'avvio di macOS Installer...";
+
+/* managedsoftwareupdate message */
 "Removing receipt info" = "Rimozione info in corso";
 
 /* No comment provided by engineer. */
 "Restart" = "Riavvio";
 
 /* No comment provided by engineer. */
-"Restart Required" = "Restart Required";
+"Restart Required" = "Riavvio Necessario";
 
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Recupero la lista delle applicazioni per questo mac...";
@@ -71,10 +74,16 @@
 "Starting Adobe installer..." = "Avvio Adobe installer...";
 
 /* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Inizio aggiornamento macOS...";
+
+/* managedsoftwareupdate message */
 "Starting..." = "Avvio...";
 
 /* No comment provided by engineer. */
 "Starting…" = "Avvio…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Il sistema si riavvierà e inizierà l'aggiornamento di macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "L'applicazione è stata installata con successo.";
@@ -84,4 +93,3 @@
 
 /* managedsoftwareupdate message */
 "Waiting for network..." = "In attesa del network...";
-

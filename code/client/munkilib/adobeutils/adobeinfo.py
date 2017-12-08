@@ -562,6 +562,49 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                 if 'payloads' not in cataloginfo:
                     cataloginfo['payloads'] = []
                 cataloginfo['payloads'].extend(hd_app_infos)
+
+                # Calculate installed_size by counting packages in payloads
+                # in these indexed HD medias. installed_size may exist already
+                # if this package contained RIBS payloads, so try reading it
+                # and default to 0. This will typically include several very
+                # small packages (language or regional recommended settings)
+                # which would not actually get installed. These seem to be
+                # no larger than a few MB, so in practice it increases the
+                # 'installed_size' value by only ~1%.
+                installed_size = cataloginfo.get('installed_size', 0)
+                for hd_payload in hd_app_infos:
+                    for package in hd_payload['Packages']:
+                        # Generally, all app installs will include 1-3 'core'
+                        # packages and then additional language/settings/color
+                        # packages which are regional or language-specific.
+                        # If we filter this by including both unconditional
+                        # installs and those which are language/region specific,
+                        # we get a rough approximation of the total size of
+                        # supplemental packages, as their equivalents for other
+                        # languages are very close to the same size. We also
+                        # get one included language package which would be the
+                        # case for any install.
+                        #
+                        # Because InDesign CC 2017 is not like any other package
+                        # and contains a 'Condition' key but as an empty
+                        # string, we explicitly test this case as well.
+                        if ('Condition' not in package.keys() or
+                                package.get('Condition') == '' or
+                                '[installLanguage]==en_US' in
+                                package.get('Condition', '')):
+                            installed_size += package.get(
+                                'ExtractSize', 0) / 1024
+                            # We get much closer to Adobe's "HDSetup" calculated
+                            # install space requirement if we include both the
+                            # DownloadSize and ExtractSize data
+                            # (DownloadSize is just the zip file size)
+                            installed_size += package.get(
+                                'DownloadSize', 0) / 1024
+                # Add another 300MB for the CC app and plumbing in case they've
+                # never been installed on the system
+                installed_size += 307200
+                cataloginfo['installed_size'] = installed_size
+
                 uninstalldir = (
                     '/Library/Application Support/Adobe/Installers/uninstallXml'
                 )

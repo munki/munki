@@ -22,11 +22,13 @@ Functions for removing unused optional install items
 """
 
 # Apple frameworks via PyObjC
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
 from AppKit import NSWorkspace
+# pylint: enable=E0611
 
 # our libs
-from . import installationstate
-
 from .. import app_usage
 from .. import display
 

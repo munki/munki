@@ -28,7 +28,6 @@ Much code lifted from the application_usage scripts created by Google MacOps:
 import logging
 import os
 import sqlite3
-import tempfile
 import time
 
 # our libs
@@ -480,7 +479,7 @@ class ApplicationUsageQuery(object):
             return None
 
     def days_since_last_install_event(self, event, item_name):
-        '''Perform db query and return the number of days since the last 
+        '''Perform db query and return the number of days since the last
         install request event occurred for item_name.
         Returns None if database is missing or broken;
         Returns -1 if there are no matching records for the item_name

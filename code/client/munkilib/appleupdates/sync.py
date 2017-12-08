@@ -27,6 +27,7 @@ import subprocess
 import time
 import urllib2
 import urlparse
+import xattr
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -64,6 +65,9 @@ DEFAULT_CATALOG_URLS = {
               '.merged-1.sucatalog'),
     '10.12': ('https://swscan.apple.com/content/catalogs/others/'
               'index-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard'
+              '-leopard.merged-1.sucatalog'),
+    '10.13': ('https://swscan.apple.com/content/catalogs/others/'
+              'index-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard'
               '-leopard.merged-1.sucatalog')
 }
 
@@ -80,11 +84,6 @@ APPLE_DOWNLOAD_CATALOG_NAME = 'apple.sucatalog'
 # The pristine, untouched, and extracted catalog.
 APPLE_EXTRACTED_CATALOG_NAME = 'apple_index.sucatalog'
 
-# The catalog containing only applicable updates
-# This is used to replicate a subset of the software update
-# server data to our local cache.
-FILTERED_CATALOG_NAME = 'filtered_index.sucatalog'
-
 # The catalog containing only updates to be downloaded and installed.
 # We use this one when downloading Apple updates.
 # In this case package URLs are still pointing to the
@@ -97,6 +96,10 @@ LOCAL_DOWNLOAD_CATALOG_NAME = 'local_download.sucatalog'
 # This causes softwareupdate -i -a to fail cleanly if we don't
 # have the required packages already downloaded.
 LOCAL_CATALOG_NAME = 'local_install.sucatalog'
+
+# extended attribute name for storing the OS version when the sucatalog was
+# downloaded
+XATTR_OS_VERS = 'com.googlecode.munki.os_version'
 
 
 class Error(Exception):
@@ -150,8 +153,6 @@ class AppleUpdateSync(object):
         self.apple_download_catalog_path = os.path.join(
             self.temp_cache_dir, APPLE_DOWNLOAD_CATALOG_NAME)
 
-        self.filtered_catalog_path = os.path.join(
-            self.local_catalog_dir, FILTERED_CATALOG_NAME)
         self.local_catalog_path = os.path.join(
             self.local_catalog_dir, LOCAL_CATALOG_NAME)
         self.extracted_catalog_path = os.path.join(
@@ -228,6 +229,7 @@ class AppleUpdateSync(object):
           ReplicationError: there was an error making the cache directory.
           fetch.MunkiDownloadError: error downloading the catalog.
         """
+        os_vers = osutils.getOsVersion()
         try:
             catalog_url = self.get_apple_catalogurl()
         except CatalogNotFoundError as err:
@@ -238,10 +240,22 @@ class AppleUpdateSync(object):
                 os.makedirs(self.temp_cache_dir)
             except OSError as oserr:
                 raise ReplicationError(oserr)
+        if os.path.exists(self.apple_download_catalog_path):
+            stored_os_vers = fetch.getxattr(
+                self.apple_download_catalog_path, XATTR_OS_VERS)
+            if stored_os_vers != os_vers:
+                try:
+                    # remove the cached apple catalog
+                    os.unlink(self.apple_download_catalog_path)
+                except OSError as oserr:
+                    raise ReplicationError(oserr)
+
         display.display_detail('Caching CatalogURL %s', catalog_url)
         try:
             dummy_file_changed = self.get_su_resource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
+            xattr.setxattr(
+                self.apple_download_catalog_path, XATTR_OS_VERS, os_vers)
             self.copy_downloaded_catalog()
         except fetch.Error:
             raise
@@ -373,9 +387,14 @@ class AppleUpdateSync(object):
 
         for product_key in product_ids:
             if processes.stop_requested():
-                break
+                return
             display.display_status_minor(
                 'Caching metadata for product ID %s', product_key)
+            if product_key not in catalog['Products']:
+                display.display_warning(
+                    'Could not cache metadata for product ID %s'
+                    % product_key)
+                continue
             product = catalog['Products'][product_key]
             if 'ServerMetadataURL' in product:
                 self.retrieve_url_to_cache_dir(
@@ -383,7 +402,7 @@ class AppleUpdateSync(object):
 
             for package in product.get('Packages', []):
                 if processes.stop_requested():
-                    break
+                    return
                 if 'MetadataURL' in package:
                     display.display_status_minor(
                         'Caching package metadata for product ID %s',
@@ -400,7 +419,7 @@ class AppleUpdateSync(object):
             distributions = product['Distributions']
             for dist_lang in distributions.keys():
                 if processes.stop_requested():
-                    break
+                    return
                 display.display_status_minor(
                     'Caching %s distribution for product ID %s',
                     dist_lang, product_key)
@@ -412,9 +431,6 @@ class AppleUpdateSync(object):
                     display.display_warning(
                         'Could not cache %s distribution for product ID %s',
                         dist_lang, product_key)
-
-        if processes.stop_requested():
-            return
 
         if not os.path.exists(self.local_catalog_dir):
             try:
@@ -504,25 +520,10 @@ class AppleUpdateSync(object):
                         'Could not retrieve %s: %s', url, err)
         return None
 
-    def write_filtered_catalog(self, product_ids):
-        """Write out a sucatalog containing only the updates in product_ids.
-
-        Args:
-          product_ids: list of str, ProductIDs.
-          catalog_path: str, path of catalog to write.
-        """
-        catalog = FoundationPlist.readPlist(self.extracted_catalog_path)
-        product_ids = set(product_ids)  # convert to set for O(1) lookups.
-        for product_id in list(catalog.get('Products', [])):
-            if product_id not in product_ids:
-                del catalog['Products'][product_id]
-        FoundationPlist.writePlist(catalog, self.filtered_catalog_path)
-
     def clean_up_cache(self):
         """Clean up our cache dir"""
         content_cache = os.path.join(self.cache_dir, 'content')
         if os.path.exists(content_cache):
-            # TODO(unassigned): change this to Pythonic delete.
             dummy_retcode = subprocess.call(['/bin/rm', '-rf', content_cache])
 
 

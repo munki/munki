@@ -66,7 +66,7 @@ def main():
 
     # check to see if we're root
     if os.geteuid() != 0:
-        print sys.stderr, "You must run this as root!"
+        print >> sys.stderr, "You must run this as root!"
         exit(-1)
 
     # set the display globals
@@ -86,7 +86,7 @@ def main():
         noremovereceipts=options.noremovereceipts,
         noupdateapplepkgdb=options.noupdateapplepkgdb)
     if options.munkistatusoutput:
-        munkistatus.quit()
+        munkistatus.quit_app()
     exit(retcode)
 
 

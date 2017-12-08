@@ -39,7 +39,6 @@ from .. import display
 from .. import dmgutils
 from .. import munkistatus
 from .. import munkilog
-from .. import osutils
 from .. import pkgutils
 from .. import powermgr
 from .. import prefs
@@ -50,6 +49,7 @@ from .. import scriptutils
 from .. import FoundationPlist
 
 from ..updatecheck import catalogs
+from ..updatecheck import manifestutils
 
 # initialize our report fields
 # we do this here because appleupdates.installAppleUpdates()
@@ -147,6 +147,61 @@ def item_prereqs_in_skipped_items(item, skipped_items):
     return matched_prereqs
 
 
+def requires_restart(item):
+    '''Returns boolean to indicate if the item needs a restart'''
+    return (item.get("RestartAction") == "RequireRestart" or
+            item.get("RestartAction") == "RecommendRestart")
+
+
+def handle_apple_package_install(item, itempath):
+    '''Process an Apple package for install. Returns retcode, needs_restart'''
+    needs_restart = False
+    suppress_bundle_relocation = item.get("suppress_bundle_relocation", False)
+    display.display_debug1(
+        "suppress_bundle_relocation: %s", suppress_bundle_relocation)
+    if pkgutils.hasValidDiskImageExt(itempath):
+        display.display_status_minor(
+            "Mounting disk image %s" % item["installer_item"])
+        mount_with_shadow = suppress_bundle_relocation
+        # we need to mount the diskimage as read/write to be able to
+        # modify the package to suppress bundle relocation
+        mountpoints = dmgutils.mountdmg(itempath, use_shadow=mount_with_shadow)
+        if mountpoints == []:
+            display.display_error(
+                "No filesystems mounted from %s", item["installer_item"])
+            return (-99, False)
+        if processes.stop_requested():
+            dmgutils.unmountdmg(mountpoints[0])
+            return (-99, False)
+
+        retcode = -99 # in case we find nothing to install
+        needtorestart = False
+        if pkgutils.hasValidInstallerItemExt(item.get('package_path', '')):
+            # admin has specified the relative path of the pkg on the DMG
+            # this is useful if there is more than one pkg on the DMG,
+            # or the actual pkg is not at the root of the DMG
+            fullpkgpath = os.path.join(mountpoints[0], item['package_path'])
+            if os.path.exists(fullpkgpath):
+                (retcode, needtorestart) = pkg.install(fullpkgpath, item)
+        else:
+            # no relative path to pkg on dmg, so just install all
+            # pkgs found at the root of the first mountpoint
+            # (hopefully there's only one)
+            (retcode, needtorestart) = pkg.installall(mountpoints[0], item)
+        needs_restart = needtorestart or requires_restart(item)
+        dmgutils.unmountdmg(mountpoints[0])
+    elif pkgutils.hasValidPackageExt(itempath):
+        (retcode, needtorestart) = pkg.install(itempath, item)
+        needs_restart = needtorestart or requires_restart(item)
+    else:
+        # we didn't find anything we know how to install
+        munkilog.log(
+            "Found nothing we know how to install in %s" % itempath)
+        retcode = -99
+
+    return (retcode, needs_restart)
+
+
 def install_with_info(
         dirpath, installlist, only_unattended=False, applesus=False):
     """
@@ -160,19 +215,25 @@ def install_with_info(
         # Keep track of when this particular install started.
         utc_now = datetime.datetime.utcnow()
         itemindex = itemindex + 1
+
+        if item.get('installer_type') == 'startosinstall':
+            skipped_installs.append(item)
+            display.display_debug1(
+                'Skipping install of %s because it\'s a startosinstall item. '
+                'Will install later.' % item['name'])
+            continue
         if only_unattended:
             if not item.get('unattended_install'):
                 skipped_installs.append(item)
                 display.display_detail(
-                    ('Skipping install of %s because it\'s not unattended.'
-                     % item['name']))
+                    'Skipping install of %s because it\'s not unattended.'
+                    % item['name'])
                 continue
             elif processes.blocking_applications_running(item):
                 skipped_installs.append(item)
                 display.display_detail(
-                    'Skipping unattended install of %s because '
-                    'blocking application(s) running.'
-                    % item['name'])
+                    'Skipping unattended install of %s because blocking '
+                    'application(s) running.' % item['name'])
                 continue
 
         skipped_prereqs = item_prereqs_in_skipped_items(item, skipped_installs)
@@ -214,122 +275,55 @@ def install_with_info(
                 display.display_error(
                     "Installer item %s was not found.", item["installer_item"])
                 return restartflag, skipped_installs
-
+            # Adobe installs
             if installer_type.startswith("Adobe"):
                 retcode = adobeutils.do_adobe_install(item)
-                if retcode == 0:
-                    if (item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                        restartflag = True
+                if retcode == 0 and requires_restart(item):
+                    restartflag = True
                 if retcode == 8:
                     # Adobe Setup says restart needed.
                     restartflag = True
                     retcode = 0
+            # copy_from_dmg install
             elif installer_type == "copy_from_dmg":
-                retcode = dmg.copy_from_dmg(
-                    itempath, item.get('items_to_copy'))
-                if retcode == 0:
-                    if (item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                        restartflag = True
+                retcode = dmg.copy_from_dmg(itempath, item.get('items_to_copy'))
+                if retcode == 0 and requires_restart(item):
+                    restartflag = True
+            # appdmg install (depercated)
             elif installer_type == "appdmg":
                 display.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
                 retcode = dmg.copy_app_from_dmg(itempath)
+            # configuration profile install
             elif installer_type == 'profile':
                 # profiles.install_profile returns True/False
                 retcode = 0
                 identifier = item.get('PayloadIdentifier')
                 if not profiles.install_profile(itempath, identifier):
                     retcode = -1
-            elif installer_type == "nopkg": # Packageless install
-                if (item.get("RestartAction") == "RequireRestart" or
-                        item.get("RestartAction") == "RecommendRestart"):
+                if retcode == 0 and requires_restart(item):
                     restartflag = True
+            # nopkg (Packageless) install
+            elif installer_type == "nopkg":
+                restartflag = restartflag or requires_restart(item)
+            # unknown installer_type
             elif installer_type != "":
                 # we've encountered an installer type
                 # we don't know how to handle
                 display.display_error(
                     "Unsupported install type: %s" % installer_type)
                 retcode = -99
+            # better be Apple installer package
             else:
-                # better be Apple installer package
-                suppress_bundle_relocation = item.get(
-                    "suppress_bundle_relocation", False)
-                display.display_debug1(
-                    "suppress_bundle_relocation: %s",
-                    suppress_bundle_relocation)
-                if 'installer_choices_xml' in item:
-                    choices_xml_file = os.path.join(
-                        osutils.tmpdir(), 'choices.xml')
-                    FoundationPlist.writePlist(
-                        item['installer_choices_xml'], choices_xml_file)
-                else:
-                    choices_xml_file = ''
-                installer_environment = item.get('installer_environment')
-                if pkgutils.hasValidDiskImageExt(itempath):
-                    display.display_status_minor(
-                        "Mounting disk image %s" % item["installer_item"])
-                    mount_with_shadow = suppress_bundle_relocation
-                    # we need to mount the diskimage as read/write to
-                    # be able to modify the package to suppress bundle
-                    # relocation
-                    mountpoints = dmgutils.mountdmg(
-                        itempath, use_shadow=mount_with_shadow)
-                    if mountpoints == []:
-                        display.display_error(
-                            "No filesystems mounted from %s",
-                            item["installer_item"])
-                        return restartflag, skipped_installs
-                    if processes.stop_requested():
-                        dmgutils.unmountdmg(mountpoints[0])
-                        return restartflag, skipped_installs
+                (retcode, need_to_restart) = handle_apple_package_install(
+                    item, itempath)
+                if need_to_restart:
+                    restartflag = True
 
-                    retcode = -99 # in case we find nothing to install
-                    needtorestart = False
-                    if pkgutils.hasValidInstallerItemExt(
-                            item.get('package_path', '')):
-                        # admin has specified the relative path of the pkg
-                        # on the DMG
-                        # this is useful if there is more than one pkg on
-                        # the DMG, or the actual pkg is not at the root
-                        # of the DMG
-                        fullpkgpath = os.path.join(
-                            mountpoints[0], item['package_path'])
-                        if os.path.exists(fullpkgpath):
-                            (retcode, needtorestart) = pkg.install(
-                                fullpkgpath, display_name, choices_xml_file,
-                                suppress_bundle_relocation,
-                                installer_environment)
-                    else:
-                        # no relative path to pkg on dmg, so just install all
-                        # pkgs found at the root of the first mountpoint
-                        # (hopefully there's only one)
-                        (retcode, needtorestart) = pkg.installall(
-                            mountpoints[0], display_name, choices_xml_file,
-                            suppress_bundle_relocation, installer_environment)
-                    if (needtorestart or
-                            item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                        restartflag = True
-                    dmgutils.unmountdmg(mountpoints[0])
-                elif (pkgutils.hasValidPackageExt(itempath) or
-                      itempath.endswith(".dist")):
-                    (retcode, needtorestart) = pkg.install(
-                        itempath, display_name, choices_xml_file,
-                        suppress_bundle_relocation, installer_environment)
-                    if (needtorestart or
-                            item.get("RestartAction") == "RequireRestart" or
-                            item.get("RestartAction") == "RecommendRestart"):
-                        restartflag = True
+            if processes.stop_requested():
+                return restartflag, skipped_installs
 
-                else:
-                    # we didn't find anything we know how to install
-                    munkilog.log(
-                        "Found nothing we know how to install in %s"
-                        % itempath)
-                    retcode = -99
-
+        # install succeeded. Do we have a postinstall_script?
         if retcode == 0 and 'postinstall_script' in item:
             # only run embedded postinstall script if the install did not
             # return a failure code
@@ -349,7 +343,7 @@ def install_with_info(
         # if install was successful and this is a SelfService OnDemand install
         # remove the item from the SelfServeManifest's managed_installs
         if retcode == 0 and item.get('OnDemand'):
-            remove_from_selfserve_installs(item['name'])
+            manifestutils.remove_from_selfserve_installs(item['name'])
 
         # record install success/failure
         if not 'InstallResults' in reports.report:
@@ -426,16 +420,14 @@ def install_with_info(
             itempath = os.path.join(dirpath, current_installer_item)
             if os.path.exists(itempath):
                 if os.path.isdir(itempath):
-                    retcode = subprocess.call(
-                        ["/bin/rm", "-rf", itempath])
+                    retcode = subprocess.call(["/bin/rm", "-rf", itempath])
                 else:
                     # flat pkg or dmg
                     retcode = subprocess.call(["/bin/rm", itempath])
                     if pkgutils.hasValidDiskImageExt(itempath):
                         shadowfile = os.path.join(itempath, ".shadow")
                         if os.path.exists(shadowfile):
-                            retcode = subprocess.call(
-                                ["/bin/rm", shadowfile])
+                            retcode = subprocess.call(["/bin/rm", shadowfile])
 
     return (restartflag, skipped_installs)
 
@@ -520,14 +512,13 @@ def process_removals(removallist, only_unattended=False):
             uninstallmethod = item['uninstall_method']
             if uninstallmethod == "removepackages":
                 if 'packages' in item:
-                    if item.get('RestartAction') == "RequireRestart":
-                        restart_flag = True
+                    restart_flag = requires_restart(item)
                     retcode = rmpkgs.removepackages(item['packages'],
                                                     forcedeletebundles=True)
                     if retcode:
                         if retcode == -128:
-                            message = ("Uninstall of %s was "
-                                       "cancelled." % display_name)
+                            message = (
+                                "Uninstall of %s was cancelled." % display_name)
                         else:
                             message = "Uninstall of %s failed." % display_name
                         display.display_error(message)
@@ -542,6 +533,7 @@ def process_removals(removallist, only_unattended=False):
                 retcode = remove_copied_items(item.get('items_to_remove'))
 
             elif uninstallmethod == "remove_app":
+                # deprecated with appdmg!
                 remove_app_info = item.get('remove_app_info', None)
                 if remove_app_info:
                     path_to_remove = remove_app_info['path']
@@ -568,20 +560,19 @@ def process_removals(removallist, only_unattended=False):
                 else:
                     display.display_error(
                         "Profile removal info missing from %s", display_name)
+
             elif uninstallmethod == 'uninstall_script':
                 retcode = scriptutils.run_embedded_script(
                     'uninstall_script', item)
-                if (retcode == 0 and
-                        item.get('RestartAction') == "RequireRestart"):
+                if retcode == 0 and requires_restart(item):
                     restart_flag = True
 
-            elif os.path.exists(uninstallmethod) and \
-                 os.access(uninstallmethod, os.X_OK):
+            elif (os.path.exists(uninstallmethod) and
+                  os.access(uninstallmethod, os.X_OK)):
                 # it's a script or program to uninstall
                 retcode = scriptutils.run_script(
                     display_name, uninstallmethod, 'uninstall script')
-                if (retcode == 0 and
-                        item.get('RestartAction') == "RequireRestart"):
+                if retcode == 0 and requires_restart(item):
                     restart_flag = True
 
             else:
@@ -609,7 +600,7 @@ def process_removals(removallist, only_unattended=False):
         if retcode == 0:
             success_msg = "Removal of %s: SUCCESSFUL" % display_name
             munkilog.log(success_msg, "Install.log")
-            remove_from_selfserve_uninstalls(item['name'])
+            manifestutils.remove_from_selfserve_uninstalls(item['name'])
         else:
             failure_msg = "Removal of %s: " % display_name + \
                           " FAILED with return code: %s" % retcode
@@ -629,58 +620,18 @@ def process_removals(removallist, only_unattended=False):
     return (restart_flag, skipped_removals)
 
 
-def remove_from_selfserve_section(itemname, section):
-    """Remove the given itemname from the self-serve manifest's
-    managed_uninstalls list"""
-    display.display_debug1(
-        "Removing %s from SelfSeveManifest's %s...", itemname, section)
-    selfservemanifest = os.path.join(
-        prefs.pref('ManagedInstallDir'), 'manifests', 'SelfServeManifest')
-    if not os.path.exists(selfservemanifest):
-        # SelfServeManifest doesn't exist, bail
-        display.display_debug1("%s doesn't exist.", selfservemanifest)
-        return
-    try:
-        plist = FoundationPlist.readPlist(selfservemanifest)
-    except FoundationPlist.FoundationPlistException, err:
-        # SelfServeManifest is broken, bail
-        display.display_debug1(
-            "Error reading %s: %s", selfservemanifest, err)
-        return
-    # make sure the section is in the plist
-    if section in plist:
-        # filter out our item
-        plist[section] = [
-            item for item in plist[section] if item != itemname
-        ]
-        try:
-            FoundationPlist.writePlist(plist, selfservemanifest)
-        except FoundationPlist.FoundationPlistException, err:
-            display.display_debug1(
-                "Error writing %s: %s", selfservemanifest, err)
-
-
-def remove_from_selfserve_installs(itemname):
-    """Remove the given itemname from the self-serve manifest's
-    managed_installs list"""
-    remove_from_selfserve_section(itemname, 'managed_installs')
-
-
-def remove_from_selfserve_uninstalls(itemname):
-    """Remove the given itemname from the self-serve manifest's
-    managed_uninstalls list"""
-    # pylint: disable=invalid-name
-    remove_from_selfserve_section(itemname, 'managed_uninstalls')
-
-
 def run(only_unattended=False):
     """Runs the install/removal session.
 
     Args:
       only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     """
-    # hold onto the assertionID so we can release it later
-    no_idle_sleep_assertion_id = powermgr.assertNoIdleSleep()
+    # pylint: disable=unused-variable
+    # prevent sleep when idle so our installs complete. The Caffeinator class
+    # automatically releases the Power Manager assertion when the variable
+    # goes out of scope, so we only need to create it and hold a reference
+    caffeinator = powermgr.Caffeinator()
+    # pylint: enable=unused-variable
 
     managedinstallbase = prefs.pref('ManagedInstallDir')
     installdir = os.path.join(managedinstallbase, 'Cache')
@@ -796,7 +747,6 @@ def run(only_unattended=False):
         munkilog.log("###    End managed installer session    ###")
 
     reports.savereport()
-    powermgr.removeNoIdleSleepAssertion(no_idle_sleep_assertion_id)
     return removals_need_restart or installs_need_restart
 
 

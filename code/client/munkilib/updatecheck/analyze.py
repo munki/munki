@@ -33,8 +33,8 @@ from . import unused_software
 from .. import display
 from .. import fetch
 from .. import info
-from .. import installer
 from .. import munkilog
+from .. import prefs
 from .. import processes
 
 
@@ -69,6 +69,9 @@ def is_apple_item(item_pl):
     Apple. If we are installing or removing any Apple items in a check/install
     cycle, we skip checking/installing Apple updates from an Apple Software
     Update server so we don't stomp on each other"""
+    # is this a startosinstall item?
+    if item_pl.get('installer_type') == 'startosinstall':
+        return True
     # check receipts
     for receipt in item_pl.get('receipts', []):
         if receipt.get('packageid', '').startswith('com.apple.'):
@@ -82,6 +85,22 @@ def is_apple_item(item_pl):
     return False
 
 
+def already_processed(itemname, installinfo, sections):
+    '''Returns True if itemname has already been added to installinfo in one
+    of the given sections'''
+    description = {'processed_installs': 'install',
+                   'processed_uninstalls': 'uninstall',
+                   'managed_updates': 'update',
+                   'optional_installs': 'optional install'}
+    for section in sections:
+        if itemname in installinfo[section]:
+            display.display_debug1(
+                '%s has already been processed for %s.',
+                itemname, description[section])
+            return True
+    return False
+
+
 def process_managed_update(manifestitem, cataloglist, installinfo):
     """Process a managed_updates item to see if it is installed, and if so,
     if it needs an update.
@@ -90,20 +109,9 @@ def process_managed_update(manifestitem, cataloglist, installinfo):
     display.display_debug1(
         '* Processing manifest item %s for update', manifestitemname)
 
-    # check to see if item is already in the update list:
-    if manifestitemname in installinfo['managed_updates']:
-        display.display_debug1(
-            '%s has already been processed for update.', manifestitemname)
-        return
-    # check to see if item is already in the installlist:
-    if manifestitemname in installinfo['processed_installs']:
-        display.display_debug1(
-            '%s has already been processed for install.', manifestitemname)
-        return
-    # check to see if item is already in the removallist:
-    if manifestitemname in installinfo['processed_uninstalls']:
-        display.display_debug1(
-            '%s has already been processed for uninstall.', manifestitemname)
+    if already_processed(
+            manifestitemname, installinfo,
+            ['managed_updates', 'processed_installs', 'processed_uninstalls']):
         return
 
     item_pl = catalogs.get_item_detail(manifestitem, cataloglist)
@@ -134,19 +142,10 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     display.display_debug1(
         "* Processing manifest item %s for optional install" % manifestitemname)
 
-    # have we already processed this?
-    if manifestitemname in installinfo['optional_installs']:
-        display.display_debug1(
-            '%s has already been processed for optional install.',
-            manifestitemname)
-        return
-    elif manifestitemname in installinfo['processed_installs']:
-        display.display_debug1(
-            '%s has already been processed for install.', manifestitemname)
-        return
-    elif manifestitemname in installinfo['processed_uninstalls']:
-        display.display_debug1(
-            '%s has already been processed for uninstall.', manifestitemname)
+    if already_processed(
+            manifestitemname, installinfo,
+            ['optional_installs',
+             'processed_installs', 'processed_uninstalls']):
         return
 
     # check to see if item (any version) is already in the
@@ -158,18 +157,73 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                 manifestitemname)
             return
 
-    item_pl = catalogs.get_item_detail(manifestitem, cataloglist)
+    item_pl = catalogs.get_item_detail(manifestitem, cataloglist,
+                                       suppress_warnings=True)
+    if not item_pl and prefs.pref('ShowOptionalInstallsForHigherOSVersions'):
+        # could not find an item valid for the current OS and hardware
+        # try again to see if there is an item for a higher OS
+        item_pl = catalogs.get_item_detail(
+            manifestitem, cataloglist, skip_min_os_check=True,
+            suppress_warnings=True)
+        if item_pl:
+            # found an item that requires a higher OS version
+            display.display_debug1(
+                'Found %s, version %s that requires a higher os version',
+                item_pl['name'], item_pl['version'])
+            # insert a note about the OS version requirement
+            item_pl['note'] = ('Requires macOS version %s.'
+                               % item_pl['minimum_os_version'])
+            item_pl['update_available'] = True
     if not item_pl:
+        # could not find anything that matches and is applicable
         display.display_warning(
-            'Could not process item %s for optional install. No pkginfo found '
-            'in catalogs: %s ', manifestitem, ', '.join(cataloglist))
+            'Could not process item %s for optional install. No pkginfo '
+            'found in catalogs: %s ', manifestitem, ', '.join(cataloglist))
         return
-    
+
     is_currently_installed = installationstate.some_version_installed(item_pl)
-    if is_currently_installed and unused_software.should_be_removed(item_pl):
-        process_removal(manifestitem, cataloglist, installinfo)
-        installer.remove_from_selfserve_installs(manifestitem)
-        return
+    needs_update = False
+    if is_currently_installed:
+        if unused_software.should_be_removed(item_pl):
+            process_removal(manifestitem, cataloglist, installinfo)
+            manifestutils.remove_from_selfserve_installs(manifestitem)
+            return
+        if not 'installcheck_script' in item_pl:
+            # installcheck_scripts can be expensive and only tell us if
+            # an item is installed or not. So if iteminfo['installed'] is
+            # True, and we're using an installcheck_script,
+            # installationstate.installed_state is going to return 1
+            # (which does not equal 0), so we can avoid running it again.
+            # We should really revisit all of this in the future to avoid
+            # repeated checks of the same data.
+            # (installcheck_script isn't called if OnDemand is True, but if
+            # OnDemand is true, is_currently_installed would be False, and
+            # therefore we would not be here!)
+            #
+            # TL;DR: only check installed_state if no installcheck_script
+            needs_update = installationstate.installed_state(item_pl) == 0
+
+        if (not needs_update and
+                prefs.pref('ShowOptionalInstallsForHigherOSVersions')):
+            # the version we have installed is the newest for the current OS.
+            # check again to see if there is a newer version for a higher OS
+            display.display_debug1(
+                'Checking for versions of %s that require a higher OS version',
+                manifestitem)
+            another_item_pl = catalogs.get_item_detail(
+                manifestitem, cataloglist, skip_min_os_check=True,
+                suppress_warnings=True)
+            if another_item_pl != item_pl:
+                # we found a different item. Replace the one we found
+                # previously with this one.
+                item_pl = another_item_pl
+                display.display_debug1(
+                    'Found %s, version %s that requires a higher os version',
+                    item_pl['name'], item_pl['version'])
+                # insert a note about the OS version requirement
+                item_pl['note'] = ('Requires macOS version %s.'
+                                   % item_pl['minimum_os_version'])
+                item_pl['update_available'] = True
 
     # if we get to this point we can add this item
     # to the list of optional installs
@@ -178,14 +232,12 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     iteminfo['description'] = item_pl.get('description', '')
     iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
     iteminfo['display_name'] = item_pl.get('display_name', '')
-    for key in ['category', 'developer', 'icon_name', 'icon_hash',
+    for key in ['category', 'developer', 'featured', 'icon_name', 'icon_hash',
                 'requires', 'RestartAction']:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
     iteminfo['installed'] = is_currently_installed
-    if iteminfo['installed']:
-        iteminfo['needs_update'] = (
-            installationstate.installed_state(item_pl) == 0)
+    iteminfo['needs_update'] = needs_update
     iteminfo['licensed_seat_info_available'] = item_pl.get(
         'licensed_seat_info_available', False)
     iteminfo['uninstallable'] = (
@@ -195,15 +247,24 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
         'installer_item_size', iteminfo['installer_item_size'])
-    if (not iteminfo['installed']) or (iteminfo.get('needs_update')):
+    if item_pl.get('note'):
+        # catalogs.get_item_detail() passed us a note about this item;
+        # pass it along
+        iteminfo['note'] = item_pl['note']
+    elif needs_update or not is_currently_installed:
         if not download.enough_disk_space(
                 item_pl, installinfo.get('managed_installs', []), warn=False):
             iteminfo['note'] = (
                 'Insufficient disk space to download and install.')
+            if needs_update:
+                iteminfo['needs_update'] = False
+                iteminfo['update_available'] = True
     optional_keys = ['preinstall_alert',
                      'preuninstall_alert',
                      'preupgrade_alert',
-                     'OnDemand']
+                     'OnDemand',
+                     'minimum_os_version',
+                     'update_available']
     for key in optional_keys:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
@@ -214,7 +275,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
 
 
 def process_install(manifestitem, cataloglist, installinfo,
-                    is_managed_update=False):
+                    is_managed_update=False,
+                    is_optional_install=False):
     """Processes a manifest item for install. Determines if it needs to be
     installed, and if so, if any items it is dependent on need to
     be installed first.  Installation detail is added to
@@ -229,6 +291,7 @@ def process_install(manifestitem, cataloglist, installinfo,
         '* Processing manifest item %s for install', manifestitemname)
     (manifestitemname_withoutversion, includedversion) = (
         catalogs.split_name_and_version(manifestitemname))
+
     # have we processed this already?
     if manifestitemname in installinfo['processed_installs']:
         display.display_debug1(
@@ -252,7 +315,7 @@ def process_install(manifestitem, cataloglist, installinfo,
         # add it to the processed_installs list
         pass
     else:
-        # we found it, so add it to our list of procssed installs
+        # we found it, so add it to our list of processed installs
         # so we don't process it again in the future
         display.display_debug2(
             'Adding %s to list of processed installs' % manifestitemname)
@@ -381,8 +444,10 @@ def process_install(manifestitem, cataloglist, installinfo,
                 else:
                     iteminfo['unattended_install'] = True
 
-            # optional keys
-            optional_keys = ['suppress_bundle_relocation',
+            # optional keys to copy if they exist
+            optional_keys = ['additional_startosinstall_options',
+                             'allow_untrusted',
+                             'suppress_bundle_relocation',
                              'installer_choices_xml',
                              'installer_environment',
                              'adobe_install_info',
@@ -407,6 +472,12 @@ def process_install(manifestitem, cataloglist, installinfo,
                              'PayloadIdentifier',
                              'icon_hash',
                              'OnDemand']
+
+            if (is_optional_install and
+                    not installationstate.some_version_installed(item_pl)):
+                # For optional installs where no version is installed yet
+                # we do not enforce force_install_after_date
+                optional_keys.remove('force_install_after_date')
 
             for key in optional_keys:
                 if key in item_pl:
@@ -459,9 +530,12 @@ def process_install(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = 'Integrity check failed'
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            for key in ['developer', 'icon_name']:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            if manifestitemname in installinfo['processed_installs']:
-                installinfo['processed_installs'].remove(manifestitemname)
+            #if manifestitemname in installinfo['processed_installs']:
+            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except (fetch.GurlError, fetch.GurlDownloadError), errmsg:
             display.display_warning(
@@ -469,9 +543,12 @@ def process_install(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = u'Download failed (%s)' % errmsg
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            for key in ['developer', 'icon_name']:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            if manifestitemname in installinfo['processed_installs']:
-                installinfo['processed_installs'].remove(manifestitemname)
+            #if manifestitemname in installinfo['processed_installs']:
+            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.Error, errmsg:
             display.display_warning(
@@ -479,9 +556,12 @@ def process_install(manifestitem, cataloglist, installinfo,
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            for key in ['developer', 'icon_name']:
+                if key in item_pl:
+                    iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            if manifestitemname in installinfo['processed_installs']:
-                installinfo['processed_installs'].remove(manifestitemname)
+            #if manifestitemname in installinfo['processed_installs']:
+            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
     else:
         iteminfo['installed'] = True
@@ -606,6 +686,8 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             process_optional_install(item, cataloglist, installinfo)
         elif manifest_key == 'managed_uninstalls':
             dummy_result = process_removal(item, cataloglist, installinfo)
+        elif manifest_key == 'featured_items':
+            installinfo['featured_items'].append(item)
 
 
 def process_removal(manifestitem, cataloglist, installinfo):

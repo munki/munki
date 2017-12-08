@@ -17,15 +17,17 @@
 # limitations under the License.
 
 
-from objc import YES, NO, IBAction, IBOutlet, nil
-import os
-import time
+from objc import YES, IBOutlet, nil
+from PyObjCTools import AppHelper
+#from Foundation import *
+#from AppKit import *
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
+
 import munki
 import msclog
-import FoundationPlist
-from Foundation import *
-from AppKit import *
-from PyObjCTools import AppHelper
 
 debug = False
 
@@ -37,7 +39,7 @@ class MSCStatusController(NSObject):
     session_started = False
     got_status_update = False
     timer = None
-    
+
     _status_stopBtnDisabled = False
     _status_stopBtnHidden = False
     _status_message = u''
@@ -46,7 +48,7 @@ class MSCStatusController(NSObject):
     _status_stopBtnState = 0
 
     statusWindowController = IBOutlet()
-    
+
     def registerForNotifications(self):
         '''Register for notification messages'''
         notification_center = NSDistributedNotificationCenter.defaultCenter()
@@ -64,7 +66,7 @@ class MSCStatusController(NSObject):
         # set self.receiving_notifications to False so our process monitoring
         # thread will exit
         self.receiving_notifications = False
-    
+
     def startMunkiStatusSession(self):
         '''Initialize things for monitoring a managedsoftwareupdate session'''
         self.initStatusSession()
@@ -75,7 +77,7 @@ class MSCStatusController(NSObject):
         self.saw_process = False
         self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
             5.0, self, self.checkProcess_, None, YES)
-            
+
     def checkProcess_(self, timer):
         '''Monitors managedsoftwareupdate process for failure to start
         or unexpected exit, so we're not waiting around forever if
@@ -83,7 +85,7 @@ class MSCStatusController(NSObject):
         PYTHON_SCRIPT_NAME = u'managedsoftwareupdate'
         NEVER_STARTED = -2
         UNEXPECTEDLY_QUIT = -1
-        
+
         if self.session_started:
             if self.got_status_update:
                 # we got a status update since we last checked; no need to
@@ -104,7 +106,7 @@ class MSCStatusController(NSObject):
                     self.sessionEnded_(UNEXPECTEDLY_QUIT)
                 else:
                     self.sessionEnded_(NEVER_STARTED)
-    
+
     def sessionStarted(self):
         '''Accessor method'''
         return self.session_started
@@ -117,7 +119,7 @@ class MSCStatusController(NSObject):
         self.cleanUpStatusSession()
         # tell the window controller the update session is done
         self.statusWindowController.munkiStatusSessionEnded_(result)
-        
+
     def updateStatus_(self, notification):
         '''Got update status notification from managedsoftwareupdate'''
         msclog.debug_log('Got munkistatus update notification')
@@ -153,8 +155,7 @@ class MSCStatusController(NSObject):
             msclog.debug_log('Received command: %s' % command)
         if command == 'activate':
             pass
-            #NSApp.activateIgnoringOtherApps_(YES) #? do we really want to do this?
-            #self.statusWindowController.window().orderFrontRegardless()
+
         elif command == 'showRestartAlert':
             if self.session_started:
                 self.sessionEnded_(0)
@@ -203,10 +204,12 @@ class MSCStatusController(NSObject):
                         progress.removeAttribute_('style')
                     else:
                         progress.setClassName_('')
-                        progress.setAttribute__('style', 'width: %s%%' % percent)
+                        progress.setAttribute__(
+                            'style', 'width: %s%%' % percent)
 
     def doRestartAlert(self):
-        '''Display a restart alert -- some item just installed or removed requires a restart'''
+        '''Display a restart alert -- some item just installed or removed
+        requires a restart'''
         msclog.log("MSC", "restart_required")
         self._status_restartAlertDismissed = 0
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
@@ -216,14 +219,15 @@ class MSCStatusController(NSObject):
             nil,
             u"%@", NSLocalizedString(
                 u"Software installed or removed requires a restart. You will "
-                "have a chance to save open documents.", u"Restart Required alert detail"))
+                "have a chance to save open documents.",
+                u"Restart Required alert detail"))
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
             self.statusWindowController.window(),
             self, self.restartAlertDidEnd_returnCode_contextInfo_, nil)
 
     @AppHelper.endSheetMethod
     def restartAlertDidEnd_returnCode_contextInfo_(
-                                        self, alert, returncode, contextinfo):
+            self, alert, returncode, contextinfo):
         '''Called when restartAlert ends'''
         msclog.log("MSC", "restart_confirmed")
         self._status_restartAlertDismissed = 1
@@ -274,7 +278,8 @@ class MSCStatusController(NSObject):
         if document:
             spinner = document.getElementById_('updates-progress-spinner')
             if spinner: # we are displaying the updates status page
-                install_btn = document.getElementById_('install-all-button-text')
+                install_btn = document.getElementById_(
+                    'install-all-button-text')
                 if install_btn:
                     btn_classes = install_btn.className().split(' ')
                     if not 'hidden' in btn_classes:
@@ -284,13 +289,14 @@ class MSCStatusController(NSObject):
     def showStopButton(self):
         '''Show the stop button'''
         if self._status_stopBtnState:
-           return
+            return
         self._status_stopBtnHidden = False
         document = self.statusWindowController.webView.mainFrameDocument()
         if document:
             spinner = document.getElementById_('updates-progress-spinner')
             if spinner: # we are displaying the updates status page
-                install_btn = document.getElementById_('install-all-button-text')
+                install_btn = document.getElementById_(
+                    'install-all-button-text')
                 if install_btn:
                     btn_classes = install_btn.className().split(' ')
                     if 'hidden' in btn_classes:
@@ -306,7 +312,8 @@ class MSCStatusController(NSObject):
         if document:
             spinner = document.getElementById_('updates-progress-spinner')
             if spinner: # we are displaying the updates status page
-                install_btn = document.getElementById_('install-all-button-text')
+                install_btn = document.getElementById_(
+                    'install-all-button-text')
                 if install_btn:
                     btn_classes = install_btn.className().split(' ')
                     if 'disabled' in btn_classes:
@@ -322,7 +329,8 @@ class MSCStatusController(NSObject):
         if document:
             spinner = document.getElementById_('updates-progress-spinner')
             if spinner: # we are displaying the updates status page
-                install_btn = document.getElementById_('install-all-button-text')
+                install_btn = document.getElementById_(
+                    'install-all-button-text')
                 if install_btn:
                     btn_classes = install_btn.className().split(' ')
                     if not 'disabled' in btn_classes:
@@ -335,45 +343,61 @@ class MSCStatusController(NSObject):
 
 
 def more_localized_strings():
-    '''Some strings that are sent to us from managedsoftwareupdate. By putting them here,
-    the localize.py script will add them to the en.lproj/Localizable.strings file so localizers
-    will be able to discover them'''
-    foo = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Performing preflight tasks...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Performing postflight tasks...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Checking for available updates...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Checking for additional changes...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Software installed or removed requires a restart.",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Waiting for network...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Done.", "managedsoftwareupdate message")
+    '''Some strings that are sent to us from managedsoftwareupdate. By putting
+    them here, the localize.py script will add them to the
+    en.lproj/Localizable.strings file so localizers will be able to discover
+    them'''
+    _ = NSLocalizedString(u"Starting...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Finishing...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Performing preflight tasks...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Performing postflight tasks...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Checking for available updates...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Checking for additional changes...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Software installed or removed requires a restart.",
+        "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Waiting for network...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Done.", "managedsoftwareupdate message")
 
-    foo = NSLocalizedString(u"Retrieving list of software for this machine...",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Verifying package integrity...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Retrieving list of software for this machine...",
+        "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Verifying package integrity...", "managedsoftwareupdate message")
 
-    foo = NSLocalizedString(u"The software was successfully installed.",
-                            "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"The software was successfully installed.",
+                          "managedsoftwareupdate message")
 
-    foo = NSLocalizedString(u"Gathering information on installed packages",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Determining which filesystem items to remove",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Removing receipt info", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Nothing to remove.", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Package removal complete.", "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Gathering information on installed packages",
+                          "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Determining which filesystem items to remove",
+                          "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Removing receipt info", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Nothing to remove.", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Package removal complete.", "managedsoftwareupdate message")
 
-    foo = NSLocalizedString(u"Checking for available Apple Software Updates...",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Checking Apple Software Update catalog...",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Downloading available Apple Software Updates...",
-                            "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Installing available Apple Software Updates...",
-                            "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Checking for available Apple Software Updates...",
+                          "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Checking Apple Software Update catalog...",
+                          "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Downloading available Apple Software Updates...",
+                          "managedsoftwareupdate message")
+    _ = NSLocalizedString(u"Installing available Apple Software Updates...",
+                          "managedsoftwareupdate message")
 
-    foo = NSLocalizedString(u"Running Adobe Setup", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Running Adobe Uninstall", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Starting Adobe installer...", "managedsoftwareupdate message")
-    foo = NSLocalizedString(u"Running Adobe Patch Installer", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Running Adobe Setup", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Running Adobe Uninstall", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Starting Adobe installer...", "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        u"Running Adobe Patch Installer", "managedsoftwareupdate message")

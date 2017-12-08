@@ -32,19 +32,32 @@ The generated plist is printed to STDOUT.
 Usage: makepkginfo /path/to/package_or_dmg [-f /path/to/item/it/installs ...]
 """
 
-import sys
+# standard libs
 import os
-import re
 import optparse
+import re
+import sys
 import time
-from optparse import OptionValueError
 
-from munkilib import munkicommon
-from munkilib import FoundationPlist
+# our libs
+from munkilib import dmgutils
+from munkilib import info
+from munkilib import munkihash
+from munkilib import osinstaller
+from munkilib import osutils
+from munkilib import pkgutils
 from munkilib import profiles
+
+from munkilib import FoundationPlist
+
 from munkilib.adobeutils import adobeinfo
 
+# Apple frameworks via PyObjC
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0611
 from Foundation import NSDate, NSUserName
+# pylint: enable=E0611
 
 # circumvent cfprefsd plist scanning
 os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
@@ -56,39 +69,39 @@ created so we have a bit of an audit trail. Returns a dictionary.'''
     metadata = {}
     metadata['created_by'] = NSUserName()
     metadata['creation_date'] = NSDate.new()
-    metadata['munki_version'] = munkicommon.get_version()
-    metadata['os_version'] = munkicommon.getOsVersion(only_major_minor=False)
+    metadata['munki_version'] = info.get_version()
+    metadata['os_version'] = osutils.getOsVersion(only_major_minor=False)
     return metadata
 
 
-def convertDateStringToNSDate(datetime_string):
+def convert_date_string_to_nsdate(datetime_string):
     '''Converts a string in the "2013-04-25T20:00:00Z" format or
     "2013-04-25 20:00:00 +0000" format to an NSDate'''
-    NSDateFormat = '%Y-%m-%dT%H:%M:%SZ'
-    ISOFormat = '%Y-%m-%d %H:%M:%S +0000'
-    FallBackFormat = '%Y-%m-%d %H:%M:%S'
+    nsdate_format = '%Y-%m-%dT%H:%M:%SZ'
+    iso_format = '%Y-%m-%d %H:%M:%S +0000'
+    fallback_format = '%Y-%m-%d %H:%M:%S'
     try:
-        dt = time.strptime(datetime_string, NSDateFormat)
+        tobj = time.strptime(datetime_string, nsdate_format)
     except ValueError:
         try:
-            dt = time.strptime(datetime_string, ISOFormat)
+            tobj = time.strptime(datetime_string, iso_format)
         except ValueError:
             try:
-                dt = time.strptime(datetime_string, FallBackFormat)
+                tobj = time.strptime(datetime_string, fallback_format)
             except ValueError:
                 return None
-    iso_date_string = time.strftime(ISOFormat, dt)
+    iso_date_string = time.strftime(iso_format, tobj)
     return NSDate.dateWithString_(iso_date_string)
 
 
-def getCatalogInfoFromPath(pkgpath, options):
+def get_catalog_info_from_path(pkgpath, options):
     """Gets package metadata for the package at pathname.
     Returns cataloginfo"""
     cataloginfo = {}
     if os.path.exists(pkgpath):
-        cataloginfo = munkicommon.getPackageMetaData(pkgpath)
+        cataloginfo = pkgutils.getPackageMetaData(pkgpath)
         if options.installer_choices_xml:
-            installer_choices_xml = munkicommon.getChoiceChangesXML(pkgpath)
+            installer_choices_xml = pkgutils.getChoiceChangesXML(pkgpath)
             if installer_choices_xml:
                 cataloginfo['installer_choices_xml'] = installer_choices_xml
 
@@ -114,7 +127,7 @@ def getCatalogInfoFromPath(pkgpath, options):
     return cataloginfo
 
 
-def getCatalogInfoForProfile(profile_path):
+def get_catalog_info_for_profile(profile_path):
     '''Populates some metadata for profile pkginfo'''
     cataloginfo = {}
     profile = profiles.read_profile(profile_path)
@@ -142,7 +155,7 @@ def getCatalogInfoForProfile(profile_path):
     return cataloginfo
 
 
-def getCatalogInfoFromDmg(dmgpath, options):
+def get_catalog_info_from_dmg(dmgpath, options):
     """
     * Mounts a disk image if it's not already mounted
     * Gets catalog info for the first installer item found at the root level.
@@ -151,30 +164,41 @@ def getCatalogInfoFromDmg(dmgpath, options):
     To-do: handle multiple installer items on a disk image(?)
     """
     cataloginfo = None
-    dmgWasAlreadyMounted = munkicommon.diskImageIsMounted(dmgpath)
-    mountpoints = munkicommon.mountdmg(dmgpath, use_existing_mounts=True)
+    was_already_mounted = dmgutils.diskImageIsMounted(dmgpath)
+    mountpoints = dmgutils.mountdmg(dmgpath, use_existing_mounts=True)
     if not mountpoints:
         print >> sys.stderr, "Could not mount %s!" % dmgpath
         exit(-1)
 
     if options.pkgname:
         pkgpath = os.path.join(mountpoints[0], options.pkgname)
-        cataloginfo = getCatalogInfoFromPath(pkgpath, options)
+        cataloginfo = get_catalog_info_from_path(pkgpath, options)
         if cataloginfo:
             cataloginfo['package_path'] = options.pkgname
     elif not options.item:
         # search for first package at root
-        for fsitem in munkicommon.listdir(mountpoints[0]):
+        for fsitem in osutils.listdir(mountpoints[0]):
             itempath = os.path.join(mountpoints[0], fsitem)
-            if munkicommon.hasValidInstallerItemExt(itempath):
-                cataloginfo = getCatalogInfoFromPath(itempath, options)
+            if pkgutils.hasValidInstallerItemExt(itempath):
+                cataloginfo = get_catalog_info_from_path(itempath, options)
                 # get out of fsitem loop
                 break
 
     if not cataloginfo and not options.item:
         # look for one of the many possible Adobe installer/updaters
-        cataloginfo = adobeinfo.getAdobeCatalogInfo(mountpoints[0],
-                                                     options.pkgname or '')
+        cataloginfo = adobeinfo.getAdobeCatalogInfo(
+            mountpoints[0], options.pkgname or '')
+
+    if not cataloginfo:
+        # could be a wrapped Install macOS.app
+        install_macos_app = osinstaller.find_install_macos_app(mountpoints[0])
+        if (install_macos_app and
+                osinstaller.install_macos_app_is_stub(install_macos_app)):
+            print >> sys.stderr, (
+                'WARNING: %s appears to be an Install macOS application, but '
+                'it does not contain Contents/SharedSupport/InstallESD.dmg'
+                % os.path.basename(install_macos_app))
+        cataloginfo = osinstaller.get_catalog_info(mountpoints[0])
 
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
@@ -202,9 +226,9 @@ def getCatalogInfoFromDmg(dmgpath, options):
             # no item specified; look for an application at root of
             # mounted dmg
             item = ''
-            for itemname in munkicommon.listdir(mountpoints[0]):
+            for itemname in osutils.listdir(mountpoints[0]):
                 itempath = os.path.join(mountpoints[0], itemname)
-                if munkicommon.isApplication(itempath):
+                if pkgutils.isApplication(itempath):
                     item = itemname
                     iteminfo = getiteminfo(itempath)
                     if iteminfo:
@@ -215,8 +239,8 @@ def getCatalogInfoFromDmg(dmgpath, options):
             if os.path.isabs(item):
                 # Absolute path given
                 # Remove the mountpoint from item path
-                mountpointPattern = "^%s/" % mountpoints[0]
-                item = re.sub(mountpointPattern, '', item)
+                mountpoint_pattern = "^%s/" % mountpoints[0]
+                item = re.sub(mountpoint_pattern, '', item)
 
             if options.destitemname:
                 # An alternate 'destination_item' name has been specified
@@ -236,8 +260,8 @@ def getCatalogInfoFromDmg(dmgpath, options):
                 iteminfo['path'] = os.path.join(
                     "/Applications", dest_item_filename)
             cataloginfo = {}
-            cataloginfo['name'] = iteminfo.get('CFBundleName',
-                                            os.path.splitext(item)[0])
+            cataloginfo['name'] = iteminfo.get(
+                'CFBundleName', os.path.splitext(item)[0])
             version_comparison_key = iteminfo.get(
                 'version_comparison_key', "CFBundleShortVersionString")
             cataloginfo['version'] = \
@@ -245,8 +269,8 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo['installs'] = [iteminfo]
             cataloginfo['installer_type'] = "copy_from_dmg"
             item_to_copy['source_item'] = item
-            item_to_copy['destination_path'] = \
-                        options.destinationpath or "/Applications"
+            item_to_copy['destination_path'] = (
+                options.destinationpath or "/Applications")
             if options.user:
                 item_to_copy['user'] = options.user
             if options.group:
@@ -258,29 +282,9 @@ def getCatalogInfoFromDmg(dmgpath, options):
             cataloginfo['uninstall_method'] = "remove_copied_items"
 
     #eject the dmg
-    if not dmgWasAlreadyMounted:
-        munkicommon.unmountdmg(mountpoints[0])
+    if not was_already_mounted:
+        dmgutils.unmountdmg(mountpoints[0])
     return cataloginfo
-
-
-# TO-DO: delete this and use pkgutils.getBundleInfo() other places here
-def getBundleInfo(path):
-    """
-    Returns Info.plist data if available
-    for bundle at path
-    """
-    infopath = os.path.join(path, "Contents", "Info.plist")
-    if not os.path.exists(infopath):
-        infopath = os.path.join(path, "Resources", "Info.plist")
-
-    if os.path.exists(infopath):
-        try:
-            plist = FoundationPlist.readPlist(infopath)
-            return plist
-        except FoundationPlist.NSPropertyListSerializationException:
-            pass
-
-    return None
 
 
 # TO-DO: this (or a similar) function is defined several places. De-dupe.
@@ -296,7 +300,7 @@ def readfile(path):
         return ""
 
 
-def readFileOrString(option_value):
+def read_file_or_string(option_value):
     """
     If option_value is a path to a file,
     return contents of file.
@@ -319,10 +323,10 @@ def getiteminfo(itempath):
     directory and gets additional metadata for later comparison.
     """
     infodict = {}
-    if munkicommon.isApplication(itempath):
+    if pkgutils.isApplication(itempath):
         infodict['type'] = 'application'
         infodict['path'] = itempath
-        plist = getBundleInfo(itempath)
+        plist = pkgutils.getBundleInfo(itempath)
         for key in ['CFBundleName', 'CFBundleIdentifier',
                     'CFBundleShortVersionString', 'CFBundleVersion']:
             if key in plist:
@@ -333,7 +337,7 @@ def getiteminfo(itempath):
             # just grab the highest version if more than one is listed
             versions = [item[1] for item in
                         plist['LSMinimumSystemVersionByArchitecture'].items()]
-            highest_version = str(max([munkicommon.MunkiLooseVersion(version)
+            highest_version = str(max([pkgutils.MunkiLooseVersion(version)
                                        for version in versions]))
             infodict['minosversion'] = highest_version
         elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
@@ -344,7 +348,7 @@ def getiteminfo(itempath):
          os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist')):
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
-        plist = getBundleInfo(itempath)
+        plist = pkgutils.getBundleInfo(itempath)
         for key in ['CFBundleShortVersionString', 'CFBundleVersion']:
             if key in plist:
                 infodict[key] = plist[key]
@@ -365,19 +369,19 @@ def getiteminfo(itempath):
     # or doesn't start with a digit, and CFBundleVersion is there
     # use CFBundleVersion as the version_comparison_key
     if (not infodict.get('CFBundleShortVersionString') or
-        infodict['CFBundleShortVersionString'][0]
-        not in '0123456789'):
+            infodict['CFBundleShortVersionString'][0]
+            not in '0123456789'):
         if infodict.get('CFBundleVersion'):
             infodict['version_comparison_key'] = 'CFBundleVersion'
     elif 'CFBundleShortVersionString' in infodict:
         infodict['version_comparison_key'] = 'CFBundleShortVersionString'
 
-    if not 'CFBundleShortVersionString' in infodict and \
-       not 'CFBundleVersion' in infodict:
+    if ('CFBundleShortVersionString' not in infodict and
+            'CFBundleVersion' not in infodict):
         infodict['type'] = 'file'
         infodict['path'] = itempath
         if os.path.isfile(itempath):
-            infodict['md5checksum'] = munkicommon.getmd5hash(itempath)
+            infodict['md5checksum'] = munkihash.getmd5hash(itempath)
     return infodict
 
 
@@ -390,8 +394,8 @@ def check_mode(option, opt, value, parser):
         if rex.match(mode):
             value = mode if not value else (value + "," + mode)
         else:
-            raise OptionValueError("option %s: invalid mode: %s" %
-                                                            (opt, mode))
+            raise optparse.OptionValueError(
+                "option %s: invalid mode: %s" % (opt, mode))
     setattr(parser.values, option.dest, value)
 
 def has_valid_install_critieria(catinfo):
@@ -403,19 +407,20 @@ def has_valid_install_critieria(catinfo):
             or catinfo.get('receipts')
             or catinfo.get('installcheck_script')
             or catinfo.get('installer_type') == 'profile'
-            or catinfo.get('installer_type') == 'apple_update_metadata')
+            or catinfo.get('installer_type') == 'apple_update_metadata'
+            or catinfo.get('installer_type') == 'startosinstall')
 
 def main():
     '''Main routine'''
     usage = """usage: %prog [options] [/path/to/installeritem]
        %prog --help for more information."""
-    p = optparse.OptionParser(usage=usage)
-    p.add_option(
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option(
         '--verify-options-only',
         action="store_true",
         help=optparse.SUPPRESS_HELP
         )
-    p.add_option(
+    parser.add_option(
         '--version', '-V',
         action='store_true',
         help='Print the version of the munki tools and exit.'
@@ -423,7 +428,7 @@ def main():
 
     # Default override options
     default_override_options = optparse.OptionGroup(
-        p, 'Default Override Options',
+        parser, 'Default Override Options',
         ('Options specified will override information automatically derived '
          'from the package.'))
     default_override_options.add_option(
@@ -462,11 +467,11 @@ def main():
               'drag-n-drop, Apple package, or an embedded uninstall script. '
               'Can be a path to a script on the client computer.')
         )
-    p.add_option_group(default_override_options)
+    parser.add_option_group(default_override_options)
 
     # Script options
     script_options = optparse.OptionGroup(
-        p, 'Script Options',
+        parser, 'Script Options',
         'All scripts are read and embedded into the pkginfo.')
     script_options.add_option(
         '--installcheck_script', '--installcheck-script',
@@ -514,11 +519,11 @@ def main():
         help=('Path to an uninstall script to be run in order '
               'to uninstall this item.')
         )
-    p.add_option_group(script_options)
+    parser.add_option_group(script_options)
 
     # Drag-n-Drop options
     dragdrop_options = optparse.OptionGroup(
-        p, 'Drag-n-Drop Options',
+        parser, 'Drag-n-Drop Options',
         ('These options apply to installer items that are "drag-n-drop" '
          'disk images.')
         )
@@ -574,10 +579,10 @@ def main():
               'See the manpage for chmod(1) for more information. '
               'The mode is applied recursively.')
         )
-    p.add_option_group(dragdrop_options)
+    parser.add_option_group(dragdrop_options)
 
     # Apple package specific options
-    apple_options = optparse.OptionGroup(p, 'Apple Package Options')
+    apple_options = optparse.OptionGroup(parser, 'Apple Package Options')
     apple_options.add_option(
         '--pkgname', '-p',
         help=('If the installer item is a disk image containing multiple '
@@ -607,10 +612,10 @@ def main():
               'USER=CURRENT_CONSOLE_USER indicates that USER be set to the '
               'GUI user, otherwise root. Can be specified multiple times.')
         )
-    p.add_option_group(apple_options)
+    parser.add_option_group(apple_options)
 
     # Adobe package specific options
-    adobe_options = optparse.OptionGroup(p, 'Adobe-specific Options')
+    adobe_options = optparse.OptionGroup(parser, 'Adobe-specific Options')
     adobe_options.add_option(
         '--uninstallerdmg', '--uninstallerpkg', '--uninstallpkg', '-U',
         metavar='UNINSTALLERITEM', dest='uninstalleritem',
@@ -622,11 +627,11 @@ def main():
               'package, UNINSTALLERITEM is a path to the matching Creative '
               'Cloud Packager uninstall package.')
         )
-    p.add_option_group(adobe_options)
+    parser.add_option_group(adobe_options)
 
     # Forced/Unattended (install) options
     forced_unattended_options = optparse.OptionGroup(
-        p, 'Forced/Unattended Options')
+        parser, 'Forced/Unattended Options')
     forced_unattended_options.add_option(
         '--unattended_install', '--unattended-install',
         action='store_true',
@@ -643,12 +648,12 @@ def main():
               'Example: \'2011-08-11T12:55:00Z\' equates to 11 August 2011 '
               'at 12:55 PM local time.')
         )
-    p.add_option_group(forced_unattended_options)
+    parser.add_option_group(forced_unattended_options)
 
     # 'installs' generation options
     # (by itself since no installer_item needs to be specified)
     gen_installs_options = optparse.OptionGroup(
-        p, 'Generating \'installs\' items')
+        parser, 'Generating \'installs\' items')
     gen_installs_options.add_option(
         '--file', '-f',
         action="append",
@@ -658,12 +663,12 @@ def main():
               'pkginfo, to be used to determine if this software has been '
               'installed. Can be specified multiple times.')
         )
-    p.add_option_group(gen_installs_options)
+    parser.add_option_group(gen_installs_options)
 
     # Apple update metadata pkg options
     # (by itself since no installer_item needs to be specified)
     apple_update_metdata_options = optparse.OptionGroup(
-        p, 'Generating Apple update metadata items')
+        parser, 'Generating Apple update metadata items')
     apple_update_metdata_options.add_option(
         '--apple_update', '--apple-update',
         metavar='PRODUCTKEY',
@@ -672,11 +677,11 @@ def main():
               'For example, a \'force_install_after_date\' key could be added '
               'as opposed to importing the update into the munki repo.')
         )
-    p.add_option_group(apple_update_metdata_options)
+    parser.add_option_group(apple_update_metdata_options)
 
     # Additional options - misc. options that don't fit into other categories,
     # and don't necessarily warrant the creation of their own option group
-    additional_options = optparse.OptionGroup(p, 'Additional Options')
+    additional_options = optparse.OptionGroup(parser, 'Additional Options')
     additional_options.add_option(
         '--autoremove',
         action='store_true',
@@ -756,7 +761,7 @@ def main():
         '--notes',
         metavar='STRING|PATH',
         help=('Specifies administrator provided notes to be embedded into the '
-        'pkginfo. Can be a PATH to a file.')
+              'pkginfo. Can be a PATH to a file.')
         )
     additional_options.add_option(
         '--nopkg',
@@ -764,13 +769,13 @@ def main():
         help=('Indicates this pkginfo should have an \'installer_type\' of '
               '\'nopkg\'. Ignored if a package or dmg argument is supplied.')
         )
-    p.add_option_group(additional_options)
+    parser.add_option_group(additional_options)
 
     sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
-    options, arguments = p.parse_args()
+    options, arguments = parser.parse_args()
 
     if options.version:
-        print munkicommon.get_version()
+        print info.get_version()
         exit(0)
 
     if options.verify_options_only:
@@ -806,7 +811,7 @@ def main():
             not options.postuninstall_script and
             not options.uninstall_script and
             not options.apple_update):
-        p.print_usage()
+        parser.print_usage()
         exit(-1)
 
     if (options.minimum_os_version and
@@ -820,7 +825,7 @@ def main():
         print >> sys.stderr, 'Ignoring additional installer items:'
         print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
 
-    os_version = munkicommon.getOsVersion(
+    os_version = osutils.getOsVersion(
         only_major_minor=False, as_tuple=True)
     if options.installer_choices_xml:
         if os_version < (10, 6, 6):
@@ -833,28 +838,28 @@ def main():
         if item and os.path.exists(item):
 
             # Check if the item is a mount point for a disk image
-            if munkicommon.pathIsVolumeMountPoint(item):
+            if dmgutils.pathIsVolumeMountPoint(item):
                 # Get the disk image path for the mount point
                 # and use that instead of the original item
-                item = munkicommon.diskImageForMountPoint(item)
+                item = dmgutils.diskImageForMountPoint(item)
 
             # get size of installer item
             itemsize = 0
             itemhash = "N/A"
             if os.path.isfile(item):
                 itemsize = int(os.path.getsize(item))
-                itemhash = munkicommon.getsha256hash(item)
+                itemhash = munkihash.getsha256hash(item)
 
-            if munkicommon.hasValidDiskImageExt(item):
-                if munkicommon.DMGisWritable(item):
-                    print >> sys.stderr, ("WARNING: %s is a writable disk "
-                        "image. Checksum verification is not supported."
-                        % item)
-                    print >> sys.stderr, ("WARNING: Consider converting "
-                        "%s to a read-only disk image."
-                        % item)
+            if pkgutils.hasValidDiskImageExt(item):
+                if dmgutils.DMGisWritable(item):
+                    print >> sys.stderr, (
+                        "WARNING: %s is a writable disk image. "
+                        "Checksum verification is not supported." % item)
+                    print >> sys.stderr, (
+                        "WARNING: Consider converting %s to a read-only disk"
+                        "image." % item)
                     itemhash = "N/A"
-                catinfo = getCatalogInfoFromDmg(item, options)
+                catinfo = get_catalog_info_from_dmg(item, options)
                 if (catinfo and
                         catinfo.get('installer_type') == "AdobeCS5Installer"):
                     print >> sys.stderr, (
@@ -867,11 +872,11 @@ def main():
                 if not catinfo:
                     print >> sys.stderr, (
                         "Could not find a supported installer item in %s!"
-                         % item)
+                        % item)
                     exit(-1)
 
-            elif munkicommon.hasValidPackageExt(item):
-                catinfo = getCatalogInfoFromPath(item, options)
+            elif pkgutils.hasValidPackageExt(item):
+                catinfo = get_catalog_info_from_path(item, options)
                 if not catinfo:
                     print >> sys.stderr, (
                         "%s doesn't appear to be a valid installer item!"
@@ -891,8 +896,8 @@ def main():
                     # convert to kbytes
                     itemsize = int(itemsize/1024)
 
-            elif munkicommon.hasValidConfigProfileExt(item):
-                catinfo = getCatalogInfoForProfile(item)
+            elif pkgutils.hasValidConfigProfileExt(item):
+                catinfo = get_catalog_info_for_profile(item)
                 if not catinfo:
                     print >> sys.stderr, (
                         "%s doesn't appear to be a supported configuration "
@@ -951,7 +956,7 @@ def main():
                         location = os.path.split(uninstallerpath)[1]
                     catinfo['uninstaller_item_location'] = location
                     itemsize = int(os.path.getsize(uninstallerpath))
-                    itemhash = munkicommon.getsha256hash(uninstallerpath)
+                    itemhash = munkihash.getsha256hash(uninstallerpath)
                     catinfo['uninstaller_item_size'] = int(itemsize/1024)
                     catinfo['uninstaller_item_hash'] = itemhash
                 else:
@@ -971,7 +976,7 @@ def main():
     else:
         catinfo['catalogs'] = ['testing']
     if options.description:
-        catinfo['description'] = readFileOrString(options.description)
+        catinfo['description'] = read_file_or_string(options.description)
     if options.displayname:
         catinfo['display_name'] = options.displayname
     if options.name:
@@ -1001,16 +1006,16 @@ def main():
             fitem = fitem.rstrip('/')
             if fitem.startswith('/Library/Receipts'):
                 # no receipts, please!
-                print >> sys.stderr, \
-                    "Item %s appears to be a receipt. Skipping." % fitem
+                print >> sys.stderr, (
+                    "Item %s appears to be a receipt. Skipping." % fitem)
                 continue
             if os.path.exists(fitem):
                 iteminfodict = getiteminfo(fitem)
                 if 'CFBundleShortVersionString' in iteminfodict:
                     thisitemversion = \
                         iteminfodict['CFBundleShortVersionString']
-                    if (munkicommon.MunkiLooseVersion(thisitemversion) >
-                        munkicommon.MunkiLooseVersion(maxfileversion)):
+                    if (pkgutils.MunkiLooseVersion(thisitemversion) >
+                            pkgutils.MunkiLooseVersion(maxfileversion)):
                         maxfileversion = thisitemversion
                 installs.append(iteminfodict)
             else:
@@ -1023,15 +1028,16 @@ def main():
     # determine minimum_os_version from identified apps in the installs array
     if 'installs' in catinfo:
         # build a list of minosversions using a list comprehension
-        item_minosversions = [ munkicommon.MunkiLooseVersion(
-            item['minosversion']) \
-            for item in catinfo['installs'] if 'minosversion' in item ]
+        item_minosversions = [
+            pkgutils.MunkiLooseVersion(item['minosversion'])
+            for item in catinfo['installs']
+            if 'minosversion' in item]
         # add the default in case it's an empty list
         item_minosversions.append(
-            munkicommon.MunkiLooseVersion(default_minosversion))
+            pkgutils.MunkiLooseVersion(default_minosversion))
         if 'minimum_os_version' in catinfo:
             # handle case where value may have been set (e.g. flat package)
-            item_minosversions.append(munkicommon.MunkiLooseVersion(
+            item_minosversions.append(pkgutils.MunkiLooseVersion(
                 catinfo['minimum_os_version']))
         # get the maximum from the list and covert back to string
         catinfo['minimum_os_version'] = str(max(item_minosversions))
@@ -1088,7 +1094,8 @@ def main():
     if options.maximum_os_version:
         catinfo['maximum_os_version'] = options.maximum_os_version
     if options.force_install_after_date:
-        date_obj = convertDateStringToNSDate(options.force_install_after_date)
+        date_obj = convert_date_string_to_nsdate(
+            options.force_install_after_date)
         if date_obj:
             catinfo['force_install_after_date'] = date_obj
         else:
@@ -1096,8 +1103,8 @@ def main():
                 "Invalid date format %s for force_install_after_date"
                 % options.force_install_after_date)
     if options.RestartAction:
-        validActions = ['RequireRestart', 'RequireLogout', 'RecommendRestart']
-        if options.RestartAction in validActions:
+        valid_actions = ['RequireRestart', 'RequireLogout', 'RecommendRestart']
+        if options.RestartAction in valid_actions:
             catinfo['RestartAction'] = options.RestartAction
         elif 'restart' in options.RestartAction.lower():
             catinfo['RestartAction'] = 'RequireRestart'
@@ -1114,14 +1121,14 @@ def main():
     if options.installer_environment:
         try:
             installer_environment_dict = dict(
-                (k,v) for k,v in (
+                (k, v) for k, v in (
                     kv.split('=') for kv in options.installer_environment))
         except Exception:
             installer_environment_dict = {}
         if installer_environment_dict:
             catinfo['installer_environment'] = installer_environment_dict
     if options.notes:
-        catinfo['notes'] = readFileOrString(options.notes)
+        catinfo['notes'] = read_file_or_string(options.notes)
     if options.apple_update:
         # remove minimum_os_version as we don't include it for this option
         catinfo.pop('minimum_os_version')
@@ -1161,7 +1168,7 @@ def main():
     print FoundationPlist.writePlistToString(catinfo)
 
     # clean up
-    munkicommon.cleanUpTmpDir()
+    #osutils.cleanUpTmpDir()
 
 
 if __name__ == '__main__':

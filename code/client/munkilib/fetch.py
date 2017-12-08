@@ -60,14 +60,14 @@ XATTR_ETAG = 'com.googlecode.munki.etag'
 XATTR_SHA = 'com.googlecode.munki.sha256'
 
 # default value for User-Agent header
-machine = info.getMachineFacts()
+munki_version = info.get_version()
 darwin_version = os.uname()[2]
 #python_version = "%d.%d.%d" % sys.version_info[:3]
 #cfnetwork_version = FoundationPlist.readPlist(
 #  "/System/Library/Frameworks/CFNetwork.framework/Resources/Info.plist")[
 #       'CFBundleShortVersionString']
 DEFAULT_USER_AGENT = "managedsoftwareupdate/%s Darwin/%s" % (
-    machine['munki_version'], darwin_version)
+    munki_version, darwin_version)
 
 
 def import_middleware():
@@ -99,9 +99,9 @@ def import_middleware():
                         '%s does not have a %s function'
                         % (filepath, required_function_name))
                     display.display_warning('Ignoring %s' % filepath)
-            except:
-                    display.display_warning('Ignoring %s because of error importing module.'
-                                            % filepath)
+            except BaseException:
+                display.display_warning(
+                    'Ignoring %s because of error importing module.' % filepath)
     return
 
 

@@ -27,10 +27,17 @@ import munki
 from operator import itemgetter
 from HTMLParser import HTMLParser, HTMLParseError
 
-# Disable PyLint complaining about wildcard imports and unused symbols
-# pylint: disable=W0401,W0614
-from Foundation import *
-from AppKit import *
+## pylint: disable=wildcard-import
+## pylint: disable=unused-wildcard-import
+## pylint: disable=redefined-builtin
+#from Foundation import *
+#from AppKit import *
+## pylint: enable=redefined-builtin
+## pylint: enable=wildcard-import
+
+# pylint: disable=wildcard-import
+from CocoaWrapper import *
+# pylint: enable=wildcard-import
 
 import FoundationPlist
 
@@ -77,7 +84,23 @@ def getOptionalInstallItems():
         _cache['optional_install_items'] = [
             OptionalItem(item)
             for item in getInstallInfo().get('optional_installs', [])]
+        featured_items = getInstallInfo().get('featured_items', [])
+        for item in _cache['optional_install_items']:
+            if item['name'] in featured_items:
+                item['featured'] = True
     return _cache['optional_install_items']
+
+
+def getProblemItems():
+    if not 'problem_items' in _cache:
+        problem_items = getInstallInfo().get('problem_items', [])
+        for item in problem_items:
+            item['status'] = 'problem-item'
+        _cache['problem_items'] = sorted(
+            [UpdateItem(item) for item in problem_items],
+            key=itemgetter(
+               'due_date_sort', 'restart_sort', 'developer_sort', 'size_sort'))
+    return _cache['problem_items']
 
 
 def updateCheckNeeded():
@@ -141,6 +164,12 @@ def _build_update_list():
         item['status'] = u'will-be-removed'
     # TO-DO: handle the case where removal detail is suppressed
     update_items.extend(removal_items)
+
+#    problem_items = install_info.get('problem_items', [])
+#    for item in problem_items:
+#        item['status'] = u'problem-item'
+#    update_items.extend(problem_items)
+
     # use our list to make UpdateItems
     update_list = [UpdateItem(item) for item in update_items]
     # sort it and return it
@@ -184,17 +213,15 @@ def updatesContainNonUserSelectedItems():
 
 def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
-        make the effective list of updates'''
-    managed_update_names = getInstallInfo().get('managed_updates', [])
-    self_service_installs = SelfService().installs()
-    self_service_uninstalls = SelfService().uninstalls()
-    # items in the update_list that are part of optional_items
-    # could have their installation state changed; so filter those out
+       make the effective list of updates'''
+    # get pending optional items seperately since OptionalItems have
+    # extra details/attribbutes
     optional_installs = getOptionalWillBeInstalledItems()
     optional_removals = getOptionalWillBeRemovedItems()
     optional_item_names = [item['name']
                            for item in optional_installs + optional_removals]
-
+    # filter out pending optional items from the list of all pending updates
+    # so we can add in the items with additional optional detail
     mandatory_updates = [item for item in getUpdateList()
                          if item['name'] not in optional_item_names]
 
@@ -456,6 +483,52 @@ def unmanage(item):
     user_removal_selections.discard(item['name'])
 
 
+def getLocalizedShortNoteForItem(item, is_update=False):
+    '''Attempt to localize a note. Currently handle only two types.'''
+    note = item.get('note')
+    if is_update:
+        return NSLocalizedString(u"Update available",
+                                 u"Update available display text")
+    if note.startswith('Insufficient disk space to download and install'):
+        return NSLocalizedString(u"Not enough disk space",
+                                 u"Not Enough Disk Space display text")
+    if note.startswith('Requires macOS version '):
+        return NSLocalizedString(u"macOS update required",
+                                 u"macOS update required text")
+    # we don't know how to localize this note, return None
+    return None
+
+
+def getLocalizedLongNoteForItem(item, is_update=False):
+    '''Attempt to localize a note. Currently handle only two types.'''
+    note = item.get('note')
+    if note.startswith('Insufficient disk space to download and install'):
+        if is_update:
+            return NSLocalizedString(
+                u"An older version is currently installed. There is not enough "
+                "disk space to download and install this update.",
+                u"Long Not Enough Disk Space For Update display text")
+        else:
+            return NSLocalizedString(
+                u"There is not enough disk space to download and install this "
+                "item.",
+                u"Long Not Enough Disk Space display text")
+    if note.startswith('Requires macOS version '):
+        if is_update:
+            base_string = NSLocalizedString(
+                u"An older version is currently installed. You must upgrade to "
+                "macOS version %s or higher to be able to install this update.",
+                u"Long update requires a higher OS version text")
+        else:
+            base_string = NSLocalizedString(
+                u"You must upgrade to macOS version %s to be able to "
+                "install this item.",
+                u"Long item requires a higher OS version text")
+        os_version = item.get('minimum_os_version', 'UNKNOWN')
+        return base_string % os_version
+    # we don't know how to localize this note, return None
+    return None
+
 class GenericItem(dict):
     '''Base class for our types of Munki items'''
 
@@ -476,6 +549,7 @@ class GenericItem(dict):
             del self['description']
         if not 'raw_description' in self:
             self['raw_description'] = u''
+            del self['description']
         self['icon'] = self.getIcon()
         self['due_date_sort'] = NSDate.distantFuture()
         # sort items that need restart highest, then logout, then other
@@ -582,17 +656,16 @@ class GenericItem(dict):
         # use the Generic package icon
         return 'static/Generic.png'
 
-    def unavailable_reason_text(self):
+    def unavailable_reason_text(self, is_update=False):
         '''There are several reasons an item might be unavailable for install.
            Return the relevent reason'''
         if ('licensed_seats_available' in self
                 and not self['licensed_seats_available']):
             return NSLocalizedString(u"No licenses available",
                                      u"No Licenses Available display text")
-        if (self.get('note') ==
-                'Insufficient disk space to download and install.'):
-            return NSLocalizedString(u"Not enough disk space",
-                                     u"Not Enough Disk Space display text")
+        localizedNote = getLocalizedShortNoteForItem(self, is_update=is_update)
+        if localizedNote:
+            return '<span class="warning">' + localizedNote + '</span>'
         # return generic reason
         return NSLocalizedString(u"Not currently available",
                                  u"Not Currently Available display text")
@@ -601,6 +674,9 @@ class GenericItem(dict):
         '''Return localized status display text'''
         if self['status'] == 'unavailable':
             return self.unavailable_reason_text()
+        if (self['status'] in ['installed', 'installed-not-removable'] and
+                self.get('note')):
+            return self.unavailable_reason_text(is_update=True)
         text_map = {
             'install-error':
                 NSLocalizedString(u"Installation Error",
@@ -874,6 +950,8 @@ class OptionalItem(GenericItem):
         if 'category' not in self:
             self['category'] = NSLocalizedString(u"Uncategorized",
                                                  u"No Category name")
+        if 'featured' not in self:
+            self['featured'] = False
         if self['developer']:
             self['category_and_developer'] = u'%s - %s' % (
                 self['category'], self['developer'])
@@ -984,15 +1062,18 @@ class OptionalItem(GenericItem):
             warning_text = NSLocalizedString(
                 u"A removal attempt failed. "
                 "Removal will be attempted again.\n"
-                "If this situation continues, contact your systems"
+                "If this situation continues, contact your systems "
                 "administrator.",
                 u"Removal Error message")
             start_text += ('<span class="warning">%s</span><br/><br/>'
                            % filtered_html(warning_text))
         if self.get('note'):
-            # some other note. Probably won't be localized, but we can try
-            warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
-                self['note'], self['note'], None)
+            is_update = self['status'] in ['installed', 'installed-not-removable']
+            warning_text = getLocalizedLongNoteForItem(self, is_update=is_update)
+            if not warning_text:
+                # some other note. Probably won't be localized, but we can try
+                warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
+                    self['note'], self['note'], None)
             start_text += ('<span class="warning">%s</span><br/><br/>'
                            % filtered_html(warning_text))
         if self.get('dependent_items'):
@@ -1061,7 +1142,7 @@ class UpdateItem(GenericItem):
         identifier = (self.get('name', '') + '--version-'
                       + self.get('version_to_install', ''))
         self['detail_link'] = 'updatedetail-%s.html' % quote(identifier)
-        if not self['status'] == 'will-be-removed':
+        if not self.get('status') == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
                 self['type'] = NSLocalizedString(
@@ -1075,8 +1156,7 @@ class UpdateItem(GenericItem):
         self['dependent_items'] = dependentItems(self['name'])
 
     def description(self):
-        warning = ''
-        dependent_items = ''
+        start_text = ''
         if not self['status'] == 'will-be-removed':
             force_install_after_date = self.get('force_install_after_date')
             if force_install_after_date:
@@ -1092,10 +1172,37 @@ class UpdateItem(GenericItem):
                     forced_date_text = NSLocalizedString(
                         u"This item must be installed by %s",
                         u"Forced Date warning")
-                    warning = ('<span class="warning">'
-                               + forced_date_text % date_str
-                               + '</span><br><br>')
+                    start_text += ('<span class="warning">'
+                                   + forced_date_text % date_str
+                                   + '</span><br><br>')
+            elif self['status'] == 'problem-item':
+                if self.get('install_error'):
+                    warning_text = NSLocalizedString(
+                        u"An installation attempt failed. "
+                        "Installation will be attempted again.\n"
+                        "If this situation continues, contact your systems "
+                        "administrator.",
+                        u"Install Error message")
+                    start_text += ('<span class="warning">%s</span><br/><br/>'
+                                   % filtered_html(warning_text))
+                elif self.get('removal_error'):
+                    warning_text = NSLocalizedString(
+                        u"A removal attempt failed. "
+                        "Removal will be attempted again.\n"
+                        "If this situation continues, contact your systems "
+                        "administrator.",
+                        u"Removal Error message")
+                    start_text += ('<span class="warning">%s</span><br/><br/>'
+                                   % filtered_html(warning_text))
+                elif self.get('note'):
+                    warning_text = getLocalizedLongNoteForItem(self)
+                    if not warning_text:
+                        # some other note. Probably won't be localized, but we can try
+                        warning_text = NSBundle.mainBundle().localizedStringForKey_value_table_(
+                            self['note'], self['note'], None)
+                    start_text += ('<span class="warning">%s</span><br/><br/>'
+                                   % filtered_html(warning_text))
             if self.get('dependent_items'):
-                dependent_items = self.dependency_description()
+                start_text += self.dependency_description()
 
-        return warning + dependent_items + self['raw_description']
+        return start_text + self['raw_description']

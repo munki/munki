@@ -2,27 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.googlecode.munki.ManagedSoftwareCenter</string>
-  <key>LimitLoadToSessionType</key>
-  <array>
-    <string>Aqua</string>
-  </array>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/usr/local/munki/launchapp</string>
-    <string>-a</string>
-    <string>/Applications/Managed Software Center.app</string>
-  </array>
-  <key>RunAtLoad</key>
-  <false/>
-  <key>KeepAlive</key>
-  <dict>
-     <key>PathState</key>
-     <dict>
-       <key>/var/run/com.googlecode.munki.ManagedSoftwareUpdate</key>
-       <true/>
-     </dict>
-  </dict>
+	<key>KeepAlive</key>
+	<dict>
+		<key>PathState</key>
+		<dict>
+			<key>/var/run/com.googlecode.munki.ManagedSoftwareCenter</key>
+			<true/>
+		</dict>
+	</dict>
+	<key>Label</key>
+	<string>com.googlecode.munki.ManagedSoftwareCenter</string>
+	<key>LimitLoadToSessionType</key>
+	<array>
+		<string>Aqua</string>
+	</array>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/munki/launchapp</string>
+		<string>-a</string>
+		<string>/Applications/Managed Software Center.app</string>
+	</array>
 </dict>
 </plist>

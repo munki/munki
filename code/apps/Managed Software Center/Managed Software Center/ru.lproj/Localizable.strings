@@ -22,6 +22,9 @@
 /* Restart Required detail */
 "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
 
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Проблема с конфигурацией системы не позволяет правильному функционированию Центра Управления ПО. Сообщаемая проблема: ";
+
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Дополнительные отложенные обновления";
 
@@ -34,8 +37,17 @@
 /* Forced Logout warning detail */
 "All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Будут установлены все отложенные обновления. Все несохраненные данные будут потеряны.\nВы можете избежать принудительного завершения работы, выполнив выход из системы.";
 
+/* Allow button text */
+"Allow" = "Разрешить";
+
 /* Install Error message */
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Попытка установки не удалась. Попытка будет предпринята снова.\nЕсли эта ситуация продолжится, обратитесь к системному администратору.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "В настоящее время установлена ​старая версия. Недостаточно места на диске для загрузки и установки этого обновления.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "В настоящее время установлена старая версия. Для установки этого обновления необходимо перейти на версию macOS %s или выше.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Приложения, которые используются другими";
@@ -91,6 +103,9 @@
 /* Unavailable long action text */
 "Currently Unavailable" = "В настоящее время Недоступно";
 
+/* Deny button text */
+"Deny" = "Не разрешать";
+
 /* managedsoftwareupdate message */
 "Determining which filesystem items to remove" = "Определение элементов файловой системы для удаления";
 
@@ -108,6 +123,12 @@
 
 /* Sidebar Due label */
 "Due:" = "До:";
+
+/* FeaturedLabel */
+"Featured" = "Подборка";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Подборка элементов";
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Завершение...";
@@ -172,6 +193,9 @@
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Центр Управления ПО не может связаться с сервером обновлений в данный момент.\nПопробуйте еще раз позже. Если эта ситуация продолжится, обратитесь к системному администратору.";
 
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Центр Управления ПО хочет разблокировать загрузочный диск после перезапуска, чтобы завершить все ожидающие обновления.";
+
 /* Managed Update type */
 "Managed Update" = "Управляемое Обновление";
 
@@ -235,6 +259,9 @@
 /* managedsoftwareupdate message */
 "Package removal complete." = "Удаление пакета завершено.";
 
+/* Password label */
+"Password:" = "Пароль:";
+
 /* Pending Updates alert title */
 "Pending updates" = "Отложенные обновления";
 
@@ -246,6 +273,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Подготовка удаления";
+
+/* Problm Updates label */
+"Problem updates" = "проблемные обновления";
 
 /* Quit button title */
 "Quit" = "Завершить";
@@ -310,6 +340,9 @@
 /* Sidebar Status label */
 "Status:" = "Статус:";
 
+/* System configuration problem alert title */
+"System configuration problem" = "Проблема с конфигурацией системы";
+
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Программное обеспечение было успешно установлено.";
 
@@ -340,11 +373,17 @@
 /* No Pending Updates secondary text */
 "There is no new software for your computer at this time." = "В данный момент для Вашего компьютера нет обновлений.";
 
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Недостаточно места на диске для загрузки и установки этого элемента.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Этот элемент необходим для:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Этот элемент должен быть установлен до %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Для разрешения  введите свой пароль для входа в систему.";
 
 /* No Items secondary text */
 "Try again later." = "Попробуйте еще раз позже.";
@@ -376,7 +415,7 @@
 /* Update Required long action text */
 "Update Required" = "Обновить Обязательное";
 
-/* Update Available status text */
+/* No comment provided by engineer. */
 "Update available" = "Доступно обновление";
 
 /* Update Check Failed title */
@@ -421,6 +460,9 @@
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%s";
 
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Вы должны перейти на версию macOS %s  чтобы иметь возможность установить этот элемент.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Ваш компьютер не подключен к постоянному источнику питания.";
 
@@ -429,3 +471,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "У Вас самое новое ПО.";
+
+/* macOS update required text */
+"macOS update required" = "требуется обновление macOS";
