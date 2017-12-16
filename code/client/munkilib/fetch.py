@@ -211,7 +211,7 @@ def get_url(url, destinationpath,
         # stored caching data so we can download only if the
         # file has changed on the server
         gurl_obj = Gurl.alloc().initWithOptions_({'file': destinationpath})
-        cache_data = gurl_obj.get_stored_headers()
+        cache_data = gurl_obj.getStoredHeaders()
         del gurl_obj
 
     # only works with NSURLSession (10.9 and newer)
