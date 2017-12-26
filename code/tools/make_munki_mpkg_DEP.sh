@@ -32,7 +32,7 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-b]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-b]
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
