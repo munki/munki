@@ -370,6 +370,15 @@ def process_install(manifestitem, cataloglist, installinfo,
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
 
+<<<<<<< Local Changes
+<<<<<<< Local Changes
+=======
+    if item_pl.get('localized_strings'):
+        iteminfo['localized_strings'] = item_pl['localized_strings']
+
+>>>>>>> External Changes
+=======
+>>>>>>> External Changes
     if not dependencies_met:
         display.display_warning(
             'Didn\'t attempt to install %s because could not resolve all '
@@ -643,13 +652,14 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
         return
 
     for item in manifestdata.get('included_manifests', []):
-        nestedmanifestpath = manifestutils.get_manifest(item)
-        if not nestedmanifestpath:
-            raise manifestutils.ManifestException
-        if processes.stop_requested():
-            return {}
-        process_manifest_for_key(nestedmanifestpath, manifest_key,
-                                 installinfo, cataloglist)
+        if item: # only process if item is not empty
+            nestedmanifestpath = manifestutils.get_manifest(item)
+            if not nestedmanifestpath:
+                raise manifestutils.ManifestException
+            if processes.stop_requested():
+                return {}
+            process_manifest_for_key(nestedmanifestpath, manifest_key,
+                                     installinfo, cataloglist)
 
     conditionalitems = manifestdata.get('conditional_items', [])
     if conditionalitems:
