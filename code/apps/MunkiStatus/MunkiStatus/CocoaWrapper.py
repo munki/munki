@@ -4,7 +4,7 @@
 #  MunkiStatus
 #
 #  Created by Greg Neagle on 6/26/17.
-#  Copyright (c) 2017 The Munki Project. All rights reserved.
+#  Copyright (c) 2018 The Munki Project. All rights reserved.
 #
 
 """Selectively import Cocoa symbols to speed up app launch.
