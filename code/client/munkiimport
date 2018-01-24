@@ -292,7 +292,9 @@ def main():
         parser.print_usage()
         exit(0)
 
-    installer_item = arguments[0]
+    installer_item = None
+    if len(arguments):
+        installer_item = arguments[0]
     uninstaller_item = options.uninstalleritem
     is_applemetadata = options.apple_update
 
