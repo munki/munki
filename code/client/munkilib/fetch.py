@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2011-2017 Greg Neagle.
+# Copyright 2011-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -211,7 +211,7 @@ def get_url(url, destinationpath,
         # stored caching data so we can download only if the
         # file has changed on the server
         gurl_obj = Gurl.alloc().initWithOptions_({'file': destinationpath})
-        cache_data = gurl_obj.get_stored_headers()
+        cache_data = gurl_obj.getStoredHeaders()
         del gurl_obj
 
     # only works with NSURLSession (10.9 and newer)

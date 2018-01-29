@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -681,6 +681,7 @@ class AppleUpdates(object):
         self._display_status_major(msg)
 
         installlist = self.software_update_info()
+        remaining_apple_updates = []
         installresults = {'installed': [], 'download': []}
 
         su_options = ['-i']
@@ -690,9 +691,14 @@ class AppleUpdates(object):
             su_options.extend(unattended_install_items)
             # Filter installist to only include items
             # which we're attempting to install
-            installlist = [item for item in installlist
-                           if item.get('productKey') in
-                           unattended_install_product_ids]
+            filtered_installlist = [item for item in installlist
+                                    if item.get('productKey') in
+                                    unattended_install_product_ids]
+            # record items we aren't planning to attempt to install
+            remaining_apple_updates = [item for item in installlist
+                                       if item not in filtered_installlist]
+            installlist = filtered_installlist
+
         else:
             # We're installing all available updates; add all their names
             for item in installlist:
@@ -766,11 +772,18 @@ class AppleUpdates(object):
         if retcode:  # there was an error
             display.display_error('softwareupdate error: %s' % retcode)
 
-        # clean up our now stale local cache
-        if not only_unattended:
+        if not remaining_apple_updates:
+            # clean up our now stale local cache
             self.applesync.clean_up_cache()
-        # remove the now invalid AppleUpdates.plist and AvailableUpdates.plist
-        self.clear_apple_update_info()
+            # remove the now invalid AppleUpdates.plist
+            self.clear_apple_update_info()
+        else:
+            # we installed some of the updates, but some are still uninstalled.
+            # re-write the apple_update_info to match
+            plist = {'AppleUpdates': remaining_apple_updates}
+            FoundationPlist.writePlist(plist, self.apple_updates_plist)
+            #TODO: clean up cached items we no longer need
+
         # Also clear our pref value for last check date. We may have
         # just installed an update which is a pre-req for some other update.
         # Let's check again soon.

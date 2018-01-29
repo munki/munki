@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017 Greg Neagle.
+# Copyright 2017-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -415,12 +415,24 @@ def get_catalog_info(mounted_dmgpath):
             display_name = os.path.splitext(os.path.basename(app_path))[0]
             name = display_name.replace(' ', '_')
             description = 'Installs macOS version %s' % vers
+            if vers.startswith('10.12'):
+                # Sierra was 8.8GB at http://www.apple.com/macos/how-to-upgrade/
+                # (http://web.archive.org/web/20160910163424/
+                #      https://www.apple.com/macos/how-to-upgrade/)
+                installed_size = int(8.8 * 1024 * 1024)
+            elif vers.startswith('10.13'):
+                # High Sierra:
+                # "14.3GB of available storage to perform upgrade"
+                # http://www.apple.com/macos/how-to-upgrade/
+                installed_size = int(14.3 * 1024 * 1024)
+            else:
+                # will need to modify for future macOS releases
+                installed_size = int(14.3 * 1024 * 1024)
             return {'RestartAction': 'RequireRestart',
                     'apple_item': True,
                     'description': description,
                     'display_name': display_name,
-                    'installed_size': 9227469,
-                    #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
+                    'installed_size': installed_size,
                     'installer_type': 'startosinstall',
                     'minimum_munki_version': '3.0.0.3211',
                     'minimum_os_version': '10.8',

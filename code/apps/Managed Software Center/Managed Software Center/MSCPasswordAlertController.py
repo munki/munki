@@ -4,7 +4,7 @@
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 4/17/17.
-#  Copyright (c) 2017 The Munki Project. All rights reserved.
+#  Copyright (c) 2018 The Munki Project. All rights reserved.
 #
 '''Controller for our custom alert that prompts for password'''
 

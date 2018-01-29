@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ def get_manifest(manifest_name, suppress_errors=False):
 
     display.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     display.display_detail('Getting manifest %s...', manifest_name)
-    manifestpath = os.path.join(manifest_dir, manifest_name)
+    manifestpath = os.path.join(manifest_dir, manifest_name.lstrip('/'))
 
     # Create the folder the manifest shall be stored in
     destinationdir = os.path.dirname(manifestpath)

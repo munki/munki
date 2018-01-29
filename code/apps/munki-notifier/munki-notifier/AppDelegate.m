@@ -3,7 +3,7 @@
 //  munki-notifier
 //
 //  Created by Greg Neagle on 2/23/17.
-//  Copyright © 2017 The Munki Project. All rights reserved.
+//  Copyright © 2018 The Munki Project. All rights reserved.
 //  Much code lifted and adapted from https://github.com/julienXX/terminal-notifier
 //
 
@@ -183,7 +183,7 @@ void launchMSCapp()
         NSString *subtitle = @"";
         NSString *message  = updateCountMessage;
         if (deadlineMessage) {
-            subtitle = updateCountMessage;
+            //subtitle = updateCountMessage;
             message = deadlineMessage;
         }
 

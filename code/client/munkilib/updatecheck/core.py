@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -460,15 +460,22 @@ def get_primary_manifest_catalogs(client_id='', force_refresh=False):
     Returns:
       cataloglist: list of catalogs from primary manifest
     """
+    manifest = None
     cataloglist = []
     if (force_refresh or
             manifestutils.PRIMARY_MANIFEST_TAG
             not in manifestutils.manifests()):
         # Fetch manifest from repo
-        manifest = manifestutils.get_primary_manifest(client_id)
+        try:
+            manifest = manifestutils.get_primary_manifest(client_id)
+        except manifestutils.ManifestException:
+            # can't get "fresh" manifest, fall through and try for cached
+            pass
         # set force_refresh = True so we'll also download any missing catalogs
         force_refresh = True
-    else:
+
+    if (not manifest and
+            manifestutils.PRIMARY_MANIFEST_TAG in manifestutils.manifests()):
         # Use cached manifest if available
         manifest_dir = os.path.join(
             prefs.pref('ManagedInstallDir'), 'manifests')
