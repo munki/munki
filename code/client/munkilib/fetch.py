@@ -76,6 +76,10 @@ def import_middleware():
     the module is loaded under the 'middleware' name'''
     required_function_name = 'process_request_options'
     munki_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if not os.path.isdir(munki_dir):
+        display.display_detail(
+            'Ignoring %s because it is not a directory' % munki_dir)
+        return
     for filename in os.listdir(munki_dir):
         if (filename.startswith('middleware')
                 and os.path.splitext(filename)[1] == '.py'):
