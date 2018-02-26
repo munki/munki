@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -264,7 +264,8 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
                      'preupgrade_alert',
                      'OnDemand',
                      'minimum_os_version',
-                     'update_available']
+                     'update_available',
+                     'localized_strings']
     for key in optional_keys:
         if key in item_pl:
             iteminfo[key] = item_pl[key]
@@ -369,6 +370,9 @@ def process_install(manifestitem, cataloglist, installinfo,
     iteminfo['name'] = item_pl.get('name', '')
     iteminfo['display_name'] = item_pl.get('display_name', iteminfo['name'])
     iteminfo['description'] = item_pl.get('description', '')
+
+    if item_pl.get('localized_strings'):
+        iteminfo['localized_strings'] = item_pl['localized_strings']
 
     if not dependencies_met:
         display.display_warning(
@@ -643,13 +647,14 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
         return
 
     for item in manifestdata.get('included_manifests', []):
-        nestedmanifestpath = manifestutils.get_manifest(item)
-        if not nestedmanifestpath:
-            raise manifestutils.ManifestException
-        if processes.stop_requested():
-            return {}
-        process_manifest_for_key(nestedmanifestpath, manifest_key,
-                                 installinfo, cataloglist)
+        if item: # only process if item is not empty
+            nestedmanifestpath = manifestutils.get_manifest(item)
+            if not nestedmanifestpath:
+                raise manifestutils.ManifestException
+            if processes.stop_requested():
+                return {}
+            process_manifest_for_key(nestedmanifestpath, manifest_key,
+                                     installinfo, cataloglist)
 
     conditionalitems = manifestdata.get('conditional_items', [])
     if conditionalitems:
