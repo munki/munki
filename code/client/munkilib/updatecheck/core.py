@@ -173,7 +173,21 @@ def check(client_id='', localmanifestpath=None):
                 localonlyuninstalls = manifestutils.get_manifest_value_for_key(
                     localonlymanifest, 'managed_uninstalls') or []
                 for item in localonlyuninstalls:
-                    analyze.process_removal(item, cataloglist, installinfo)
+                    dummy_result = analyze.process_removal(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
+                localonlyoptionals = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'optional_installs') or []
+                for item in localonlyoptionals:
+                    dummy_result = analyze.process_optional_install(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
             else:
                 display.display_debug1(
                     "LocalOnlyManifest %s is set but is not present. "
