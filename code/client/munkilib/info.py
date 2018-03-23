@@ -622,7 +622,7 @@ def getMachineFacts():
     installer is applicable to this OS or hardware"""
     # pylint: disable=C0103
     machine = dict()
-    machine['hostname'] = os.uname()[1]
+    machine['hostname'] = os.uname()[1].decode('UTF-8')
     machine['arch'] = os.uname()[4]
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     hardware_info = get_hardware_info()
