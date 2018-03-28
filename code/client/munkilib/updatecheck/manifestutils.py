@@ -156,7 +156,9 @@ def get_primary_manifest(alternate_id=''):
         manifest = get_manifest(clientidentifier)
     else:
         # no client identifier specified, so try the hostname
-        hostname = os.uname()[1]
+        hostname = os.uname()[1].decode('UTF-8')
+        # os.uname()[1] seems to always return UTF-8 for hostnames that
+        # contain unicode characters, so we decode to Unicode
         clientidentifier = hostname
         display.display_detail(
             'No client id specified. Requesting %s...', clientidentifier)
