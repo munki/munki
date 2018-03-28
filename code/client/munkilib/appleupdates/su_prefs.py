@@ -59,6 +59,19 @@ def pref(pref_name):
         pref_name, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
 
 
+def set_pref(pref_name, value):
+    """Sets a value in /Library/Preferences/com.apple.SoftwareUpdate.
+    Uses CoreFoundation.
+    Args:
+       pref_name: str preference name to set.
+       valueL value to set it to.
+    """
+    CFPreferencesSetValue(
+        pref_name, value,
+        APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+        kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+
+
 def catalogurl_is_managed():
     """Returns True if Software Update's CatalogURL is managed
     via MCX or Profiles"""

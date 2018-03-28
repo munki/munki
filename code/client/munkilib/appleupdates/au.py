@@ -143,6 +143,9 @@ class AppleUpdates(object):
         else:
             catalog_url = self.applesync.get_apple_catalogurl()
 
+        # before we call softwareupdate,
+        # clear stored value for LastSessionSuccessful
+        su_prefs.set_pref('LastSessionSuccessful', None)
         retcode = self._run_softwareupdate(
             ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
         if retcode:  # there was an error
