@@ -343,10 +343,10 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
                  or filter in item['category'].lower()]
     if category:
         items = [item for item in items
-                 if category.lower() in item.get('category', '').lower()]
+                 if category.lower() == item.get('category', '').lower()]
     if developer:
         items = [item for item in items
-                 if developer.lower() in item.get('developer', '').lower()]
+                 if developer.lower() == item.get('developer', '').lower()]
 
     if category is None and developer is None and filter is None:
         # this is the default (formerly) "all items" view
