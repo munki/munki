@@ -18,6 +18,7 @@
 app_usage_monitor
 
 Created by Greg Neagle 14 Feb 2017
+Refactored April 2018 as user-level agent
 
 A tool to monitor application usage and record it to a database.
 Borrowing lots of code and ideas from the crankd project, part of pymacadmin:
@@ -29,6 +30,9 @@ and the application_usage scripts created by Google MacOps:
 # standard Python libs
 import logging
 import os
+import plistlib
+import select
+import socket
 import sys
 
 try:
@@ -43,9 +47,56 @@ except ImportError:
     logging.critical("PyObjC wrappers for Apple frameworks are missing.")
     sys.exit(-1)
 
-# our libs
-from munkilib import app_usage
-from munkilib import prefs
+
+APPUSAGED_SOCKET = "/var/run/appusaged"
+
+
+class AppUsageClientError(Exception):
+    '''Exception to raise for errors in AppUsageClient'''
+    pass
+
+
+class AppUsageClient(object):
+    '''Handles communication with auppusaged daemon'''
+    def connect(self):
+        '''Connect to authrestartd'''
+        try:
+            #pylint: disable=attribute-defined-outside-init
+            self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            #pylint: enable=attribute-defined-outside-init
+            self.socket.connect(APPUSAGED_SOCKET)
+        except socket.error as err:
+            raise AppUsageClientError(
+                "Couldn't connect to appusaged: %s" % err.strerror)
+
+    def send_request(self, request):
+        '''Send a request to appusaged'''
+        self.socket.send(plistlib.writePlistToString(request))
+        with os.fdopen(self.socket.fileno()) as fileref:
+            # use select so we don't hang indefinitely if appusaged dies
+            ready = select.select([fileref], [], [], 2)
+            if ready[0]:
+                reply = fileref.read()
+            else:
+                reply = ''
+
+        if reply:
+            return reply.rstrip()
+        else:
+            return "ERROR:No reply"
+
+    def disconnect(self):
+        '''Disconnect from appusaged'''
+        self.socket.close()
+
+    def process(self, request):
+        '''Send a request and return the result'''
+        try:
+            self.connect()
+            result = self.send_request(request)
+        finally:
+            self.disconnect()
+        return result
 
 
 class NotificationHandler(NSObject):
@@ -60,7 +111,7 @@ class NotificationHandler(NSObject):
         if self is None:
             return None
 
-        self.usage = app_usage.ApplicationUsageRecorder()
+        self.usage = AppUsageClient()
         self.ws_nc = NSWorkspace.sharedWorkspace().notificationCenter()
 
         self.ws_nc.addObserver_selector_name_object_(
@@ -126,40 +177,31 @@ class NotificationHandler(NSObject):
         """Handle NSWorkspaceDidLaunchApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
         app_dict = self.get_app_dict(app_object)
-        self.usage.log_application_usage('launch', app_dict)
+        self.usage.process({'event': 'launch', 'app_dict': app_dict})
 
     def didActivateApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidActivateApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
         app_dict = self.get_app_dict(app_object)
-        self.usage.log_application_usage('activate', app_dict)
+        self.usage.process({'event': 'activate', 'app_dict': app_dict})
 
     def didTerminateApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidTerminateApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
         app_dict = self.get_app_dict(app_object)
-        self.usage.log_application_usage('quit', app_dict)
+        self.usage.process({'event': 'quit', 'app_dict': app_dict})
 
     def requestedItemForInstall_(self, notification):
         """Handle com.googlecode.munki.managedsoftwareupdate.installrequest"""
         logging.info('got install request notification')
         user_info = notification.userInfo()
-        self.usage.log_install_request(user_info)
+        self.usage.process(user_info)
 
 
 def main():
     """Initialize our handler object and let NSWorkspace's notification center
     know we are interested in notifications"""
 
-    # configure logging
-    logpath = os.path.join(
-        os.path.dirname(prefs.pref('LogFile')), 'app_usage_monitor.log')
-    logging.basicConfig(
-        filename=logpath,
-        format='%(asctime)s %(levelname)s:%(message)s',
-        level=logging.INFO)
-
-    logging.info('app_usage_monitor started')
     # PyLint can't tell that NotificationHandler' NSObject superclass
     # has an alloc() method
     # pylint: disable=no-member
