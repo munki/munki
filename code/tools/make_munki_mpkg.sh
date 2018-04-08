@@ -154,6 +154,7 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
 
+
 # get a psuedo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
@@ -449,15 +450,20 @@ echo "Creating app_usage package template..."
 APPUSAGEROOT="$PKGTMP/munki_app_usage"
 mkdir -m 1775 "$APPUSAGEROOT"
 mkdir -m 1775 "$APPUSAGEROOT/Library"
+mkdir -m 755 "$APPUSAGEROOT/Library/LaunchAgents"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
 mkdir -p "$APPUSAGEROOT/usr/local/munki"
 chmod -R 755 "$APPUSAGEROOT/usr"
-# Copy tools and launch daemon.
+# Copy launch agent, launch daemon, daemon, and agent
+# LaunchAgent
+cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
+chmod 644 "$APPUSAGEROOT/Library/LaunchAgents/"*
+# LaunchDaemon
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
 chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
-# Copy tool.
+# Copy tools.
 # edit this if list of tools changes!
-for TOOL in app_usage_monitor
+for TOOL in appusaged app_usage_monitor
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
 done
