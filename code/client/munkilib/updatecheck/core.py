@@ -25,6 +25,7 @@ import os
 
 # our libs
 from . import analyze
+from . import autoconfig
 from . import catalogs
 from . import download
 from . import licensing
@@ -52,6 +53,9 @@ def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
+
+    # Auto-detect a Munki repo if one isn't defined in preferences
+    autoconfig.autodetect_repo_url_if_needed()
 
     reports.report['MachineInfo'] = info.getMachineFacts()
 

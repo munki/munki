@@ -72,7 +72,7 @@ DEFAULT_PREFS = {
     'ShowOptionalInstallsForHigherOSVersions': False,
     'SoftwareRepoCACertificate': None,
     'SoftwareRepoCAPath': None,
-    'SoftwareRepoURL': 'http://munki/repo',
+    'SoftwareRepoURL': None,
     'SoftwareUpdateServerURL': None,
     'SuppressAutoInstall': False,
     'SuppressLoginwindowInstall': False,
