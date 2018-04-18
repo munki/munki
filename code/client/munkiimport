@@ -433,7 +433,8 @@ def main():
                             'developer',
                             'icon_name',
                             'unused_software_removal_info',
-                            'localized_strings']:
+                            'localized_strings',
+                            'featured']:
                     if key in matchingpkginfo:
                         print 'Copying %s: %s' % (key, matchingpkginfo[key])
                         pkginfo[key] = matchingpkginfo[key]
