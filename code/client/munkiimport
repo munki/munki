@@ -260,6 +260,12 @@ def main():
 
     sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
+    
+    # there are a lot of valid combinations of option flags and arguments
+    # but if there are no option flags or arguments we should print usage
+    if len(sys.argv) == 1:
+        parser.print_usage()
+        exit(0)
 
     if options.version:
         print info.get_version()
