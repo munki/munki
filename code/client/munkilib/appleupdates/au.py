@@ -56,6 +56,21 @@ from .. import FoundationPlist
 
 # Apple's index of downloaded updates
 INDEX_PLIST = '/Library/Updates/index.plist'
+INSTALLHISTORY_PLIST = '/Library/Receipts/InstallHistory.plist'
+
+
+def softwareupdated_installhistory(start_date=None, end_date=None):
+    '''Returns softwareupdated items from InstallHistory.plist that are
+    within the given date range. (dates must be NSDates)'''
+    start_date = start_date or NSDate.distantPast()
+    end_date = end_date or NSDate.distantFuture()
+    try:
+        installhistory = FoundationPlist.readPlist(INSTALLHISTORY_PLIST)
+    except FoundationPlist.FoundationPlistException:
+        return []
+    return [item for item in installhistory
+            if item.get('processName') == 'softwareupdated'
+            and item['date'] >= start_date and item['date'] <= end_date]
 
 
 class AppleUpdates(object):
@@ -727,9 +742,17 @@ class AppleUpdates(object):
             catalog_url = 'file://localhost' + urllib2.quote(
                 self.applesync.local_catalog_path)
 
+        su_start_date = NSDate.new()
         retcode = self._run_softwareupdate(
             su_options, mode='install', catalog_url=catalog_url,
             results=installresults)
+        su_end_date = NSDate.new()
+
+        # get the items that were just installed from InstallHistory.plist
+        installed_items = softwareupdated_installhistory(
+            start_date=su_start_date, end_date=su_end_date)
+        display.display_debug2(
+            'InstallHistory.plist items:\n%s', installed_items)
         if not 'InstallResults' in reports.report:
             reports.report['InstallResults'] = []
 
@@ -740,10 +763,23 @@ class AppleUpdates(object):
             rep['name'] = item.get('apple_product_name')
             rep['version'] = item.get('version_to_install', '')
             rep['applesus'] = True
-            rep['time'] = NSDate.new()
+            rep['time'] = su_end_date
             rep['productKey'] = item.get('productKey', '')
             message = 'Apple Software Update install of %s-%s: %s'
-            if rep['name'] in installresults['installed']:
+            # first try to match against the items from InstallHistory.plist
+            matched_installed_items = [
+                ih_item for ih_item in installed_items
+                if ih_item['displayName'] in [
+                    item.get('apple_product_name'), item.get('display_name')]
+                and ih_item['displayVersion'] == item.get('version_to_install')
+            ]
+            if matched_installed_items:
+                display.display_debug2('Matched %s in InstallHistory.plist',
+                                       item.get('apple_product_name'))
+                rep['status'] = 0
+                rep['time'] = matched_installed_items[0]['date']
+                install_status = 'SUCCESSFUL'
+            elif rep['name'] in installresults['installed']:
                 rep['status'] = 0
                 install_status = 'SUCCESSFUL'
             elif ('display_name' in item and
