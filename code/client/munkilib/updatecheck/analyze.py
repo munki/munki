@@ -243,6 +243,12 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     iteminfo['uninstallable'] = (
         item_pl.get('uninstallable', False)
         and (item_pl.get('uninstall_method', '') != ''))
+    # If the item is a precache item, get that precache flag
+    # and also the basename of the installer item
+    if item_pl.get('installer_item_location') and item_pl.get('precache'):
+        iteminfo['precache'] = True
+        iteminfo['installer_item'] = \
+            download.get_url_basename(item_pl['installer_item_location'])
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
