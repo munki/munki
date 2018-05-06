@@ -395,6 +395,10 @@ def check(client_id='', localmanifestpath=None):
         cache_list.extend([item['uninstaller_item']
                            for item in installinfo.get('removals', [])
                            if item.get('uninstaller_item')])
+        # Don't delete optional installs that are designated as precache
+        cache_list.extend([item['installer_item']
+                           for item in installinfo.get('optional_installs', [])
+                           if item.get('precache')])
         cachedir = os.path.join(managed_install_dir, 'Cache')
         for item in osutils.listdir(cachedir):
             if item.endswith('.download'):
