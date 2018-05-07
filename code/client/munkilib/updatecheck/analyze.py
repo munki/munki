@@ -243,12 +243,18 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     iteminfo['uninstallable'] = (
         item_pl.get('uninstallable', False)
         and (item_pl.get('uninstall_method', '') != ''))
-    # If the item is a precache item, get that precache flag
-    # and also the basename of the installer item
-    if item_pl.get('installer_item_location') and item_pl.get('precache'):
+    # If the item is a precache item, record the precache flag
+    # and also the installer item location (as long as item doesn't have a note
+    # explaining why it's not available and as long as available seats is not 0)
+    if (item_pl.get('installer_item_location') and
+            item_pl.get('precache') and
+            not 'note' in item_pl and
+            (not 'licensed_seats_available' in item_pl or
+             item_pl['licensed_seats_available'])):
         iteminfo['precache'] = True
-        iteminfo['installer_item'] = \
-            download.get_url_basename(item_pl['installer_item_location'])
+        iteminfo['installer_item_location'] = item_pl['installer_item_location']
+        if 'installer_item_hash' in item_pl:
+            iteminfo['installer_item_hash'] = item_pl['installer_item_hash']
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
