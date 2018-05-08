@@ -112,8 +112,10 @@ def diskImageIsMounted(dmgpath):
         if 'image-path' in imageProperties:
             imagepath = imageProperties['image-path']
             if imagepath == dmgpath:
-                isMounted = True
-                break
+                for entity in imageProperties.get('system-entities', []):
+                    if entity.get('mount-point'):
+                        isMounted = True
+                        break
     return isMounted
 
 
