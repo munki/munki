@@ -617,6 +617,7 @@ sudo chown -hR root:wheel "$LAUNCHDROOT/Library/LaunchAgents"
 
 sudo chown root:admin "$APPUSAGEROOT/Library"
 sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchDaemons"
+sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 ######################
