@@ -395,6 +395,7 @@ chmod +x "$ADMINROOT/usr/local/munki"
 mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
 chmod -R 755 "$ADMINROOT/private"
+chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
@@ -605,6 +606,7 @@ sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
 sudo chown -hR root:admin "$COREROOT/Users"
+sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"
