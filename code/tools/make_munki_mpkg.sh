@@ -154,6 +154,7 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
 
+
 # get a psuedo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
@@ -385,6 +386,7 @@ chmod +x "$ADMINROOT/usr/local/munki"
 mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
 chmod -R 755 "$ADMINROOT/private"
+chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
@@ -449,15 +451,20 @@ echo "Creating app_usage package template..."
 APPUSAGEROOT="$PKGTMP/munki_app_usage"
 mkdir -m 1775 "$APPUSAGEROOT"
 mkdir -m 1775 "$APPUSAGEROOT/Library"
+mkdir -m 755 "$APPUSAGEROOT/Library/LaunchAgents"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
 mkdir -p "$APPUSAGEROOT/usr/local/munki"
 chmod -R 755 "$APPUSAGEROOT/usr"
-# Copy tools and launch daemon.
+# Copy launch agent, launch daemon, daemon, and agent
+# LaunchAgent
+cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
+chmod 644 "$APPUSAGEROOT/Library/LaunchAgents/"*
+# LaunchDaemon
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
 chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
-# Copy tool.
+# Copy tools.
 # edit this if list of tools changes!
-for TOOL in app_usage_monitor
+for TOOL in appusaged app_usage_monitor
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
 done
@@ -578,6 +585,7 @@ echo "Setting ownership to root..."
 sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
+sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"
@@ -590,6 +598,7 @@ sudo chown -hR root:wheel "$LAUNCHDROOT/Library/LaunchAgents"
 
 sudo chown root:admin "$APPUSAGEROOT/Library"
 sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchDaemons"
+sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 ######################

@@ -534,6 +534,9 @@ def warn_if_server_is_default(server):
     This is useful as a bootstrapping default, but is insecure.
     Warn the admin if Munki is using an insecure default.'''
     # server can be either ManifestURL or SoftwareRepoURL
+    if not server:
+        # hasn't been defined yet; will be auto-detected later
+        return
     if server.rstrip('/') in ['http://munki/repo',
                               'http://munki/repo/manifests']:
         display.display_warning(

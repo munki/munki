@@ -25,6 +25,7 @@ import os
 
 # our libs
 from . import analyze
+from . import autoconfig
 from . import catalogs
 from . import download
 from . import licensing
@@ -52,6 +53,9 @@ def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
+
+    # Auto-detect a Munki repo if one isn't defined in preferences
+    autoconfig.autodetect_repo_url_if_needed()
 
     reports.report['MachineInfo'] = info.getMachineFacts()
 
@@ -173,7 +177,21 @@ def check(client_id='', localmanifestpath=None):
                 localonlyuninstalls = manifestutils.get_manifest_value_for_key(
                     localonlymanifest, 'managed_uninstalls') or []
                 for item in localonlyuninstalls:
-                    analyze.process_removal(item, cataloglist, installinfo)
+                    dummy_result = analyze.process_removal(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
+                localonlyoptionals = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'optional_installs') or []
+                for item in localonlyoptionals:
+                    dummy_result = analyze.process_optional_install(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
             else:
                 display.display_debug1(
                     "LocalOnlyManifest %s is set but is not present. "

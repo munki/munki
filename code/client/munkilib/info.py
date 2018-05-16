@@ -616,6 +616,16 @@ def available_disk_space(volumepath='/'):
     return int(stat_val.f_frsize * stat_val.f_bavail / 1024)
 
 
+def get_os_build():
+    '''Returns the OS Build "number" (example 16G1212).'''
+    try:
+        system_version_plist = FoundationPlist.readPlist(
+            '/System/Library/CoreServices/SystemVersion.plist')
+        return system_version_plist['ProductBuildVersion']
+    except (FoundationPlist.FoundationPlistException, KeyError, AttributeError):
+        return ''
+
+
 @utils.Memoize
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
@@ -625,6 +635,7 @@ def getMachineFacts():
     machine['hostname'] = os.uname()[1].decode('UTF-8')
     machine['arch'] = os.uname()[4]
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
+    machine['os_build_number'] = get_os_build()
     hardware_info = get_hardware_info()
     machine['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
     machine['munki_version'] = get_version()
@@ -774,11 +785,16 @@ def predicate_info_object():
     info_object['date'] = add_tzoffset_to_date(
         NSDate.dateWithString_(
             reports.report.get('StartTime', reports.format_time())))
+    # split os version into components for easier predicate comparison
     os_vers = machine['os_vers']
     os_vers = os_vers + '.0.0'
     info_object['os_vers_major'] = int(os_vers.split('.')[0])
     info_object['os_vers_minor'] = int(os_vers.split('.')[1])
     info_object['os_vers_patch'] = int(os_vers.split('.')[2])
+    # get last build number component for easier predicate comparison
+    build = machine['os_build_number']
+    info_object['os_build_last_component'] = pkgutils.MunkiLooseVersion(
+        build).version[-1]
     if 'Book' in machine.get('machine_model', ''):
         info_object['machine_type'] = 'laptop'
     else:

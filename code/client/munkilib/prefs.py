@@ -72,7 +72,7 @@ DEFAULT_PREFS = {
     'ShowOptionalInstallsForHigherOSVersions': False,
     'SoftwareRepoCACertificate': None,
     'SoftwareRepoCAPath': None,
-    'SoftwareRepoURL': 'http://munki/repo',
+    'SoftwareRepoURL': None,
     'SoftwareUpdateServerURL': None,
     'SuppressAutoInstall': False,
     'SuppressLoginwindowInstall': False,
@@ -217,22 +217,22 @@ def pref(pref_name):
     return pref_value
 
 
-def get_config_level(pref_name, value):
+def get_config_level(domain, pref_name, value):
     '''Returns a string indicating where the given preference is defined'''
     if value is None:
         return '[not set]'
-    if CFPreferencesAppValueIsForced(pref_name, BUNDLE_ID):
+    if CFPreferencesAppValueIsForced(pref_name, domain):
         return '[MANAGED]'
     # define all the places we need to search, in priority order
     levels = [
         {'file': ('/var/root/Library/Preferences/ByHost/'
-                  'ManagedInstalls.xxxx.plist'),
-         'domain': BUNDLE_ID,
+                  '%s.xxxx.plist' % domain),
+         'domain': domain,
          'user': kCFPreferencesCurrentUser,
          'host': kCFPreferencesCurrentHost
         },
-        {'file': '/var/root/Library/Preferences/ManagedInstalls.plist',
-         'domain': BUNDLE_ID,
+        {'file': '/var/root/Library/Preferences/%s.plist' % domain,
+         'domain': domain,
          'user': kCFPreferencesCurrentUser,
          'host': kCFPreferencesAnyHost
         },
@@ -247,8 +247,8 @@ def get_config_level(pref_name, value):
          'user': kCFPreferencesCurrentUser,
          'host': kCFPreferencesAnyHost
         },
-        {'file': '/Library/Preferences/ManagedInstalls.plist',
-         'domain': BUNDLE_ID,
+        {'file': '/Library/Preferences/%s.plist' % domain,
+         'domain': domain,
          'user': kCFPreferencesAnyUser,
          'host': kCFPreferencesCurrentHost
         },
@@ -269,7 +269,7 @@ def get_config_level(pref_name, value):
 
 def print_config():
     '''Prints the current Munki configuration'''
-    print 'Current configuration:'
+    print 'Current Munki configuration:'
     max_pref_name_len = max(
         [len(pref_name) for pref_name in DEFAULT_PREFS.keys()])
     for pref_name in sorted(DEFAULT_PREFS.keys()):
@@ -277,7 +277,20 @@ def print_config():
             # skip it
             continue
         value = pref(pref_name)
-        where = get_config_level(pref_name, value)
+        where = get_config_level(BUNDLE_ID, pref_name, value)
+        repr_value = value
+        if isinstance(value, basestring):
+            repr_value = repr(value)
+        print ('%' + str(max_pref_name_len) + 's: %5s %s ') % (
+            pref_name, repr_value, where)
+    # also print com.apple.SoftwareUpdate CatalogURL config if
+    # Munki is configured to install Apple updates
+    if pref('InstallAppleSoftwareUpdates'):
+        print 'Current Apple softwareupdate configuration:'
+        domain = 'com.apple.SoftwareUpdate'
+        pref_name = 'CatalogURL'
+        value = CFPreferencesCopyAppValue(pref_name, domain)
+        where = get_config_level(domain, pref_name, value)
         repr_value = value
         if isinstance(value, basestring):
             repr_value = repr(value)
