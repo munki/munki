@@ -18,7 +18,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#if __clang_major__ >= 9
+#import <Python/Python.h>
+#else
 #import <Python.h>
+#endif
+
 int main(int argc, char *argv[])
 {
 
