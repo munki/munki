@@ -70,14 +70,13 @@ DEFAULT_USER_AGENT = "managedsoftwareupdate/%s Darwin/%s" % (
     munki_version, darwin_version)
 
 
-def import_middleware():
-    '''Check munki folder for a python file that starts with 'middleware'.
+def import_middleware(file_prefix='middleware', globals_prefix='middleware', required_function_name='process_request_options'):
+    '''Check munki folder for a python file that starts with a prefix.
     If the file exists and has a callable 'process_request_options' attribute,
-    the module is loaded under the 'middleware' name'''
-    required_function_name = 'process_request_options'
+    the module is loaded under the 'middleware' name by default'''
     munki_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     for filename in os.listdir(munki_dir):
-        if (filename.startswith('middleware')
+        if (filename.startswith(file_prefix)
                 and os.path.splitext(filename)[1] == '.py'):
             name = os.path.splitext(filename)[0]
             filepath = os.path.join(munki_dir, filename)
@@ -86,8 +85,8 @@ def import_middleware():
                 if hasattr(_tmp, required_function_name):
                     if callable(getattr(_tmp, required_function_name)):
                         display.display_debug1(
-                            'Loading middleware module %s' % filename)
-                        globals()['middleware'] = _tmp
+                            'Loading "%s" module %s' % (globals_prefix, filename))
+                        globals()[globals_prefix] = _tmp
                         return
                     else:
                         display.display_warning(
@@ -107,6 +106,8 @@ def import_middleware():
 
 middleware = None
 import_middleware()
+postware = None
+import_middleware(file_prefix='postware', globals_prefix='postware', required_function_name='process_post_fetch')
 
 
 class Error(Exception):
@@ -305,10 +306,18 @@ def get_url(url, destinationpath,
 
     if str(connection.status).startswith('2') and temp_download_exists:
         os.rename(tempdownloadpath, destinationpath)
+        if postware:
+            display.display_debug2('Processing options through postware')
+            # postware module must have process_post_fetch function
+            postware.process_post_fetch(url, destinationpath)
         return connection.headers
     elif connection.status == 304:
         # unchanged on server
         display.display_debug1('Item is unchanged on the server.')
+        if postware:
+            display.display_debug2('Processing options through postware')
+            # postware module must have process_post_fetch function
+            postware.process_post_fetch(url, destinationpath)
         return connection.headers
     else:
         # there was an HTTP error of some sort; remove our temp download.
