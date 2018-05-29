@@ -447,7 +447,7 @@ def sp_application_data():
                  stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                  stderr=subprocess.PIPE)
     try:
-        output, dummy_error = proc.communicate(timeout=60)
+        output, dummy_error = proc.communicate(timeout=600)
     except TimeoutError:
         display.display_error(
             'system_profiler hung; skipping SPApplicationsDataType query')
