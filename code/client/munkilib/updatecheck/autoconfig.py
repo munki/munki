@@ -36,7 +36,7 @@ from .. import prefs
 def get_domain_name():
     '''Return current domain name'''
     dns_config = SCDynamicStoreCopyValue(None, 'State:/Network/Global/DNS')
-    return dns_config['DomainName']
+    return dns_config.get('DomainName')
 
 
 def guess_repo_url():
@@ -47,9 +47,12 @@ def guess_repo_url():
     autodetected_url = 'http://munki/repo'
 
     domain_name = get_domain_name()
+    if domain_name is None:
+        # No DomainName set
+        return autodetected_url
+
     if domain_name == 'local':
         # no guesses if we are on a .local domain
-        print 'Warning: .local'
         return autodetected_url
 
     possible_urls = [
