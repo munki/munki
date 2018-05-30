@@ -264,17 +264,18 @@ def evidence_this_is_installed(item_pl):
             item_pl.get('uninstall_method') != 'removepackages'):
         display.display_debug2("Checking 'installs' items...")
         installitems = item_pl['installs']
-        foundallinstallitems = True
-        for item in installitems:
-            if 'path' in item:
-                # we can only check by path; if the item has been moved
-                # we're not clever enough to find it, and our removal
-                # methods are currently even less clever
-                if not os.path.exists(item['path']):
-                    # this item isn't on disk
-                    display.display_debug2(
-                        '%s not found on disk.', item['path'])
-                    foundallinstallitems = False
+        if installitems:
+            foundallinstallitems = True
+            for item in installitems:
+                if 'path' in item:
+                    # we can only check by path; if the item has been moved
+                    # we're not clever enough to find it, and our removal
+                    # methods are currently even less clever
+                    if not os.path.exists(item['path']):
+                        # this item isn't on disk
+                        display.display_debug2(
+                            '%s not found on disk.', item['path'])
+                        foundallinstallitems = False
         if (foundallinstallitems and
                 item_pl.get('uninstall_method') != 'removepackages'):
             return True
