@@ -275,17 +275,13 @@ def discardTimeZoneFromDate(the_date):
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
+    # get local offset
+    offset = NSTimeZone.localTimeZone().secondsFromGMT()
     try:
-        # get local offset
-        offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
-            '%z', None, None)
+        # return new NSDate minus local_offset
+        return the_date.dateByAddingTimeInterval_(-offset)
     except:
         raise BadDateError()
-    hour_offset = int(offset[0:3])
-    minute_offset = int(offset[0] + offset[3:])
-    seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
-    # return new NSDate minus local_offset
-    return the_date.dateByAddingTimeInterval_(-seconds_offset)
 
 
 def stringFromDate(nsdate):
