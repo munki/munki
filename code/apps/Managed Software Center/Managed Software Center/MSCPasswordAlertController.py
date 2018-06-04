@@ -88,7 +88,7 @@ class MSCPasswordAlertController(NSObject):
         password = self.passwordField.stringValue()
         if passwdutil.verifyPassword(username, password):
             # store password and end modal alert
-            authrestart.store_password(password)
+            authrestart.store_password(password, username=username)
             code = NSAlertFirstButtonReturn
             NSApplication.sharedApplication().stopModalWithCode_(code)
             NSApplication.sharedApplication().endSheet_returnCode_(

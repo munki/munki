@@ -138,12 +138,12 @@ def can_attempt_auth_restart(have_password=False):
     for us to attempt an authrestart'''
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
     return (os_version_tuple >= (10, 8) and
-            prefs.pref('PerformAuthRestarts') and 
+            prefs.pref('PerformAuthRestarts') and
             filevault_is_active() and supports_auth_restart() and
             (get_auth_restart_key(quiet=True) != '' or have_password))
 
 
-def perform_auth_restart(password=None):
+def perform_auth_restart(username=None, password=None):
     """When called this will perform an authorized restart. Before trying
     to perform an authorized restart it checks to see if the machine supports
     the feature. If supported it will look for the defined plist containing
@@ -157,11 +157,13 @@ def perform_auth_restart(password=None):
             "Machine doesn't support Authorized Restarts...")
         return False
     display.display_debug1('Machine supports Authorized Restarts...')
-    recovery_key = get_auth_restart_key() or password
-    if not recovery_key:
+    password = get_auth_restart_key() or password
+    if not password:
         return False
-    key = {'Password': recovery_key}
-    inputplist = FoundationPlist.writePlistToString(key)
+    keys = {'Password': password}
+    if username:
+        keys['Username'] = username
+    inputplist = FoundationPlist.writePlistToString(keys)
     display.display_info('Attempting an Authorized Restart now...')
     proc = subprocess.Popen(
         ['/usr/bin/fdesetup', 'authrestart', '-inputplist'],
@@ -179,7 +181,7 @@ def perform_auth_restart(password=None):
         return True
 
 
-def do_authorized_or_normal_restart(password=None):
+def do_authorized_or_normal_restart(username=None, password=None):
     '''Do an authrestart if allowed/possible, else do a normal restart.'''
     display.display_info('Restarting now.')
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
@@ -189,7 +191,7 @@ def do_authorized_or_normal_restart(password=None):
         if filevault_is_active():
             display.display_debug1('Configured to perform AuthRestarts...')
             # try to perform an auth restart
-            if not perform_auth_restart(password=password):
+            if not perform_auth_restart(username=username, password=password):
                 # if we got to here then the auth restart failed
                 # notify that it did then perform a normal restart
                 display.display_warning(
