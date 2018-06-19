@@ -96,7 +96,7 @@ def create_missing_dirs(destpath):
             os.makedirs(destpath, mode=parent_mode)
         except IOError:
             display.display_error(
-                "There was an IO error in creating the path %s!" % destpath)
+                "There was an IO error in creating the path %s!", destpath)
             return -1
         except BaseException:
             display.display_error(
@@ -133,7 +133,7 @@ def validate_source_and_destination(mountpoint, item):
     source_itempath = os.path.join(mountpoint, source_itemname)
     if not os.path.exists(source_itempath):
         display.display_error(
-            "Source item %s does not exist!" % source_itemname)
+            "Source item %s does not exist!", source_itemname)
         return (-1, None, None)
 
     # get destination path and item name
@@ -164,7 +164,7 @@ def validate_source_and_destination(mountpoint, item):
         retcode = subprocess.call(["/bin/rm", "-rf", full_destpath])
         if retcode:
             display.display_error(
-                "Error removing existing %s" % full_destpath)
+                "Error removing existing %s", full_destpath)
             return (retcode, None, None)
 
     if os.path.isdir(source_itempath):
@@ -173,7 +173,12 @@ def validate_source_and_destination(mountpoint, item):
         # directory with 0700 mode to prevent other processes that may have
         # write access to the parent directory from writing their own payloads
         # to this directory
-        os.makedirs(full_destpath, 0o0700)
+        try:
+            os.makedirs(full_destpath, 0o0700)
+        except OSError, err:
+            display.display_error(
+                "Error creating %s: %s", full_destpath, err)
+            return (-1, None, None)
 
     return (0, source_itempath, full_destpath)
 
@@ -199,14 +204,14 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
             # to 0700. if mode doesn't match, something insecure is happening
             if mode != 0o0700:
                 display.display_error(
-                    "Error copying %s to %s: destination path is insecure."
-                    % (source_path, destination_path))
+                    "Error copying %s to %s: destination path is insecure.",
+                    source_path, destination_path)
                 return -1
 
         # validation passed, OK to copy
         display.display_status_minor(
-            "Copying %s to %s"
-            % (os.path.basename(source_path), destination_path))
+            "Copying %s to %s",
+            os.path.basename(source_path), destination_path)
 
         # copy the file or directory, removing the quarantine xattr and
         # preserving HFS+ compression
@@ -214,7 +219,7 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
                                    source_path, destination_path])
         if retcode:
             display.display_error(
-                "Error copying %s to %s" % (source_path, destination_path))
+                "Error copying %s to %s", source_path, destination_path)
             return retcode
 
         # if destination is a directory, set the mode to that of the source
@@ -241,7 +246,7 @@ def copy_app_from_dmg(dmgpath):
     This type of installer_type is deprecated and should be
     replaced with the more generic copyFromDMG'''
     display.display_status_minor(
-        'Mounting disk image %s' % os.path.basename(dmgpath))
+        'Mounting disk image %s', os.path.basename(dmgpath))
     mountpoints = dmgutils.mountdmg(dmgpath)
     if mountpoints:
         retcode = 0
@@ -268,7 +273,7 @@ def copy_app_from_dmg(dmgpath):
                     "The software was successfully installed.")
         else:
             display.display_error(
-                "No application found on %s" % os.path.basename(dmgpath))
+                "No application found on %s", os.path.basename(dmgpath))
             retcode = -2
         dmgutils.unmountdmg(mountpoint)
         return retcode
@@ -285,7 +290,7 @@ def copy_from_dmg(dmgpath, itemlist):
         return -1
 
     display.display_status_minor(
-        'Mounting disk image %s' % os.path.basename(dmgpath))
+        'Mounting disk image %s', os.path.basename(dmgpath))
     mountpoints = dmgutils.mountdmg(dmgpath)
     if mountpoints:
         mountpoint = mountpoints[0]
@@ -298,7 +303,7 @@ def copy_from_dmg(dmgpath, itemlist):
         return retcode
     else:
         display.display_error(
-            "No mountable filesystems on %s" % os.path.basename(dmgpath))
+            "No mountable filesystems on %s", os.path.basename(dmgpath))
         return -1
 
 
