@@ -167,6 +167,14 @@ def validate_source_and_destination(mountpoint, item):
                 "Error removing existing %s" % full_destpath)
             return (retcode, None, None)
 
+    if os.path.isdir(source_itempath):
+        # source item is a directory (application bundle counts as a dir!)
+        # to prevent a security vulnerability, recreate the destination item
+        # directory with 0700 mode to prevent other processes that may have
+        # write access to the parent directory from writing their own payloads
+        # to this directory
+        os.makedirs(full_destpath, 0o0700)
+
     return (0, source_itempath, full_destpath)
 
 
@@ -184,16 +192,36 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
         if errorcode:
             return errorcode
 
+        # one last permissions check before we copy
+        if os.path.isdir(destination_path):
+            mode = os.stat(destination_path).st_mode & 0o7777
+            # destination path that is a directory should have set the mode
+            # to 0700. if mode doesn't match, something insecure is happening
+            if mode != 0o0700:
+                display.display_error(
+                    "Error copying %s to %s: destination path is insecure."
+                    % (source_path, destination_path))
+                return -1
+
         # validation passed, OK to copy
         display.display_status_minor(
             "Copying %s to %s"
             % (os.path.basename(source_path), destination_path))
+
+        # copy the file or directory, removing the quarantine xattr and
+        # preserving HFS+ compression
         retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
                                    source_path, destination_path])
         if retcode:
             display.display_error(
                 "Error copying %s to %s" % (source_path, destination_path))
             return retcode
+
+        # if destination is a directory, set the mode to that of the source
+        # directory (since we set it to 0700 earlier for copying safety)
+        if os.path.isdir(destination_path):
+            source_mode = os.stat(source_path).st_mode & 0o7777
+            os.chmod(destination_path, source_mode)
 
         # remove com.apple.quarantine xattr since `man ditto` lies and doesn't
         # seem to actually always remove it
