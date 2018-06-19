@@ -200,9 +200,11 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
         # one last permissions check before we copy
         if os.path.isdir(destination_path):
             mode = os.stat(destination_path).st_mode & 0o7777
+            owner_uid = os.stat(destination_path).st_uid
             # destination path that is a directory should have set the mode
-            # to 0700. if mode doesn't match, something insecure is happening
-            if mode != 0o0700:
+            # to 0700 and owner should be root. if mode and owner don't match,
+            # something insecure is happening
+            if mode != 0o0700 or owner_uid != 0:
                 display.display_error(
                     "Error copying %s to %s: destination path is insecure.",
                     source_path, destination_path)
