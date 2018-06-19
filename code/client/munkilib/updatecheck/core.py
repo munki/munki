@@ -224,6 +224,18 @@ def check(client_id='', localmanifestpath=None):
         usermanifest = '/Users/Shared/.SelfServeManifest'
         selfservemanifest = os.path.join(
             managed_install_dir, 'manifests', 'SelfServeManifest')
+
+        if os.path.islink(usermanifest):
+            # not allowed as it could link to things not normally
+            # readable by unprivileged users
+            try:
+                os.unlink(usermanifest)
+            except OSError:
+                pass
+            display.display_warning(
+                "Found symlink at %s. Ignoring and removing."
+                % selfservemanifest)
+
         if os.path.exists(usermanifest):
             # copy user-generated SelfServeManifest to our
             # managed_install_dir
