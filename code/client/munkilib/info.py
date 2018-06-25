@@ -427,7 +427,7 @@ def launchservices_installed_apps():
     # we access a "protected" function from LaunchServices
     # pylint: disable=W0212
 
-    apps = LaunchServices._LSCopyAllApplicationURLs(None)
+    apps = LaunchServices._LSCopyAllApplicationURLs(None) or []
     applist = []
     for app in apps:
         app_path = app.path()
