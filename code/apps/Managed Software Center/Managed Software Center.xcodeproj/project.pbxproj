@@ -676,7 +676,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.6,
+					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Managed Software Center-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
@@ -701,7 +701,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.6,
+					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Managed Software Center-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
