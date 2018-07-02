@@ -58,7 +58,7 @@ def set_permissions(item, full_destpath):
         return retcode
 
     # set mode
-    mode = item.get('mode', 'o-w')
+    mode = item.get('mode', 'o-w,go+rX')
     display.display_detail(
         "Setting mode for '%s' to '%s'" % (full_destpath, mode))
     retcode = subprocess.call(['/bin/chmod', '-R', mode, full_destpath])
