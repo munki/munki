@@ -15,19 +15,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-precached
+precaching
 
 Created by Greg Neagle on 2018-05-06.
 
-Module for precacheing optional installs with installed=False and precache=True.
+Module for precaching optional installs with installed=False and precache=True.
 """
 import os
+import sys
 
 from . import download
 
 from .. import FoundationPlist
 from .. import display
 from .. import fetch
+from .. import launchd
 from .. import prefs
 
 
@@ -60,6 +62,29 @@ def cache():
             display.display_warning(
                 'Failed to precache the installer for %s because %s',
                 item['name'], unicode(err))
+
+
+def run_agent():
+    '''Kick off a run of our precaching agent, which allows the precaching to
+    run in the background after a normal Munki run'''
+    parent_dir = (
+        os.path.dirname(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.abspath(__file__)))))
+    precache_agent_path = os.path.join(parent_dir, 'precache_agent')
+    if not os.path.exists(precache_agent_path):
+        # try absolute path in Munki's normal install dir
+        precache_agent_path = '/usr/local/munki/precache_agent'
+    if os.path.exists(precache_agent_path):
+        try:
+            job = launchd.Job([precache_agent_path] , cleanup_at_exit=False)
+            job.start()
+        except launchd.LaunchdJobException as err:
+            display.display_error(
+                'Error with launchd job (%s): %s', precache_agent_path, err)
+    else:
+        display.display_error("Could not find precache_agent")
 
 
 if __name__ == '__main__':
