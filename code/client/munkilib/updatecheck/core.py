@@ -30,6 +30,7 @@ from . import catalogs
 from . import download
 from . import licensing
 from . import manifestutils
+from . import precaching
 
 from .. import display
 from .. import info
@@ -479,6 +480,9 @@ def check(client_id='', localmanifestpath=None):
 
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
+
+    # start our precaching agent
+    precaching.run_agent()
 
     if installcount or removalcount:
         return 1

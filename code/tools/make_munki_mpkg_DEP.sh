@@ -317,7 +317,7 @@ mkdir -p "$COREROOT/usr/local/munki/munkilib"
 chmod -R 755 "$COREROOT/usr"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
+for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor precache_agent ptyexec removepackages
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
