@@ -727,7 +727,18 @@ class AppleUpdates(object):
         # and not rescan for available updates.
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
-            su_options.append('--no-scan')
+            try:
+                # attempt to fetch the apple catalog to confirm connectivity
+                # to the Apple Software Update server
+                self.applesync.cache_apple_catalog()
+            except (sync.Error, fetch.Error):
+                # network or catalog server not available, suppress scan
+                # (we used to do this all the time, but this led to issues
+                #  with updates cached "too long" in 10.12+)
+                munkilog.log(
+                    "WARNING: Cannot reach Apple Software Update server while "
+                    "installing Apple updates")
+                su_options.append('--no-scan')
             # 10.11 seems not to like file:// URLs, and we don't really need
             # to switch to a local file URL anyway since we now have the
             # --no-scan option
