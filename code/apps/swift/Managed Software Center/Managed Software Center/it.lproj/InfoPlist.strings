@@ -1,0 +1,5 @@
+/* Localized versions of Info.plist keys */
+
+"CFBundleName" = "Centro Gestione Applicazioni";
+"CFBundleDisplayName" = "Centro Gestione Applicazioni";
+NSHumanReadableCopyright = "Copyright © 2010-2018 The Munki Project\nhttps://github.com/munki/munki";
