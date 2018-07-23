@@ -1,0 +1,95 @@
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Kontrollerar Apples lista med programuppdateringar...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Kontrollerar ytterligare ändringar...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Letar efter Apple-uppdateringar...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Letar efter uppdateringar...";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Bestämmer vad som ska tas bort";
+
+/* managedsoftwareupdate message */
+"Done." = "Klar.";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Hämtar Apple-uppdateringar...";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Avslutar...";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Samlar information om installerade paket";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Installerar Apple-uppdateringar...";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Inget att ta bort.";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Paketet borttaget.";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Rensar upp...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Förbereder...";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Förbereder macOS-installeraren...";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Tar bort kvitto";
+
+/* No comment provided by engineer. */
+"Restart" = "Omstart";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Omstart krävs";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Hämtar lista med programvara för den här datorn...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Kör Adobe Patch Installer";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Kör Adobe Setup";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Kör Adobe Uninstall";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Programvara som installerades eller togs bort kräver omstart.";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Program som installerades eller togs bort kräver en omstart. Du kommer att få möjlighet att spara ditt arbete.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Startar Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Påbörjar macOS-uppgradering...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Startar...";
+
+/* No comment provided by engineer. */
+"Starting…" = "Startar...";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Datorn kommer att starta om och börja uppgradera macOS.";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Programvaran installerades.";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Verifierar paket...";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Väntar på nätverk...";
