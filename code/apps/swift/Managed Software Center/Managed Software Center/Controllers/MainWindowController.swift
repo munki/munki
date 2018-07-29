@@ -414,8 +414,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
         // warn about blocking applications, etc...
         // then start an update session
         if updatesRequireRestart() || updatesRequireLogout() {
-            // switch to updates view
-            loadUpdatesPage(self)
+            if !currentPageIsUpdatesPage() {
+                // switch to updates view
+                loadUpdatesPage(self)
+            }
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
         } else {
