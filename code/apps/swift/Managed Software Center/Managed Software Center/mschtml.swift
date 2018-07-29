@@ -131,11 +131,11 @@ func escapeHTML(_ text: String) -> String {
 extension GenericItem {
     func escapeAndQuoteCommonFields() {
         // Adds _escaped and _quoted versions of several commonly-used fields
-        my["name_escaped"] = escapeHTML(my["name"] as? String ?? "")
-        my["name_quoted"] = escapeQuotes(my["name"] as? String ?? "")
-        my["display_name_escaped"] = escapeHTML(my["display_name"] as? String ?? "")
-        my["developer_escaped"] = escapeHTML(my["developer"] as? String ?? "")
-        my["display_version_escaped"] = escapeHTML(my["display_version"] as? String ?? "")
+        my["name_escaped"] = escapeHTML(self["name"] as? String ?? "")
+        my["name_quoted"] = escapeQuotes(self["name"] as? String ?? "")
+        my["display_name_escaped"] = escapeHTML(self["display_name"] as? String ?? "")
+        my["developer_escaped"] = escapeHTML(self["developer"] as? String ?? "")
+        my["display_version_escaped"] = escapeHTML(self["display_version"] as? String ?? "")
     }
 
     func addGeneralLabels() {

@@ -36,7 +36,7 @@ class AuthRestartClient {
             throw AuthRestartClientError.socketError(code: socket.errCode,
                                                       description: "Failed to write to \(AUTHRESTARTD_SOCKET)")
         }
-        let reply = socket.read()
+        let reply = socket.read(timeout: 1)
         if reply.isEmpty {
             return "ERROR:No reply"
         }
@@ -114,6 +114,7 @@ func fvIsActive() -> Bool {
     do {
         return try AuthRestartClient().fvIsActive()
     } catch {
+        msc_debug_log("fvIsActive(): Cought \(error)")
         return false
     }
 }
@@ -124,6 +125,7 @@ func verifyUser(_ username: String) -> Bool {
     do {
         return try AuthRestartClient().verifyUser(username)
     } catch {
+        msc_debug_log("verifyUser(): Cought \(error)")
         return false
     }
 }
@@ -134,6 +136,7 @@ func verifyRecoveryKeyPresent() -> Bool {
     do {
         return try AuthRestartClient().verifyRecoveryKeyPresent()
     } catch {
+        msc_debug_log("verifyRecoveryKeyPresent(): Cought \(error)")
         return false
     }
 }
@@ -143,6 +146,7 @@ func verifyCanAttemptAuthRestart() -> Bool {
     do {
         return try AuthRestartClient().verifyCanAttemptAuthRestart()
     } catch {
+        msc_debug_log("verifyCanAttemptAuthRestart(): Cought \(error)")
         return false
     }
 }
@@ -154,6 +158,7 @@ func storePassword(_ password: String, forUserName username: String = "") -> Boo
         try AuthRestartClient().storePassword(password, username: username)
         return true
     } catch {
+        msc_debug_log("storePassword(): Cought \(error)")
         return false
     }
 }

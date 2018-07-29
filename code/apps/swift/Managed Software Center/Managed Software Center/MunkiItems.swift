@@ -1115,16 +1115,18 @@ func updatesRequireLogout() -> Bool {
     if installRequiresLogout() {
         return true
     }
-    return getUpdateList().filter(
-        { ($0["RestartAction"] as? String ?? "").hasPrefix("Logout") }
-    ).count > 0
+    let requiresLogout = getUpdateList().filter(
+            { ($0["RestartAction"] as? String ?? "").hasSuffix("Logout") }
+        ).count > 0
+    return requiresLogout
 }
 
 func updatesRequireRestart() -> Bool {
     // Return true if any item in the update list requires a restart
-    return getUpdateList().filter(
-        { ($0["RestartAction"] as? String ?? "").hasPrefix("Restart") }
-    ).count > 0
+    let requiresRestart = getUpdateList().filter(
+            { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+        ).count > 0
+    return requiresRestart
 }
 
 func updatesContainNonUserSelectedItems() -> Bool {
