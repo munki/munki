@@ -43,7 +43,7 @@ def _installinfo():
         return {}
 
 
-def _items_to_precache(install_info):
+def items_to_precache(install_info):
     '''Returns a list of items from InstallInfo.plist's optional_installs
     that have precache=True and installed=False'''
     optional_install_items = install_info.get('optional_installs', [])
@@ -55,9 +55,9 @@ def _items_to_precache(install_info):
 def cache():
     '''Download any applicable precache items into our Cache folder'''
     install_info = _installinfo()
-    for item in _items_to_precache(install_info):
+    for item in items_to_precache(install_info):
         try:
-            download.download_installeritem(item, install_info)
+            download.download_installeritem(item, install_info, precaching=True)
         except fetch.Error, err:
             display.display_warning(
                 'Failed to precache the installer for %s because %s',
