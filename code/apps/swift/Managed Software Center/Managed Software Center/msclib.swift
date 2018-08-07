@@ -41,6 +41,7 @@ func runProcess(_ command: String, args: [String] = []) -> (exitcode: Int, stdou
     let stdout_pipe = Pipe()
     let stderr_pipe = Pipe()
     
+    msc_debug_log("Running process \(command) with args \(args)")
     proc.launchPath = command
     proc.arguments = args
     proc.standardOutput = stdout_pipe
