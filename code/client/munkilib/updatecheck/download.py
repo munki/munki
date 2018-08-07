@@ -39,7 +39,11 @@ from .. import FoundationPlist
 ICON_HASHES_PLIST_NAME = '_icon_hashes.plist'
 
 
-def enough_disk_space(item_pl, installlist=None, uninstalling=False, warn=True):
+def enough_disk_space(item_pl,
+                      installlist=None,
+                      uninstalling=False,
+                      warn=True,
+                      precaching=False):
     """Determine if there is enough disk space to download the installer
     item."""
     # fudgefactor is set to 100MB
@@ -103,7 +107,10 @@ def get_download_cache_path(url):
     return os.path.join(cachedir, get_url_basename(url))
 
 
-def download_installeritem(item_pl, installinfo, uninstalling=False):
+def download_installeritem(item_pl,
+                           installinfo,
+                           uninstalling=False,
+                           precaching=False):
     """Downloads an (un)installer item.
     Returns True if the item was downloaded, False if it was already cached.
     Raises an error if there are issues..."""
@@ -145,8 +152,14 @@ def download_installeritem(item_pl, installinfo, uninstalling=False):
 
     if not os.path.exists(destinationpath):
         # check to see if there is enough free space to download and install
-        if not enough_disk_space(item_pl, installinfo['managed_installs'],
-                                 uninstalling=uninstalling):
+        if not enough_disk_space(item_pl, 
+                                 installinfo['managed_installs'],
+                                 uninstalling=uninstalling,
+                                 precaching=precaching):
+            if not precaching:
+                # see if there are any precached items we can delete to free
+                # up space
+                pass
             raise fetch.DownloadError(
                 'Insufficient disk space to download and install %s' % pkgname)
         else:
