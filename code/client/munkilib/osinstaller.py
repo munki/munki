@@ -263,8 +263,20 @@ class StartOSInstallRunner(object):
         cmd.extend([startosinstall_path,
                     '--agreetolicense',
                     '--rebootdelay', '300',
-                    '--pidtosignal', str(os.getpid()),
-                    '--nointeraction'])
+                    '--pidtosignal', str(os.getpid())])
+
+        if pkgutils.MunkiLooseVersion(
+                os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
+            # --volume option is _required_ prior to 10.12.4 installer
+            # and must _not_ be included in 10.12.4+ installer's startosinstall
+            cmd.extend(['--volume', '/'])
+
+        if pkgutils.MunkiLooseVersion(
+                os_version) < pkgutils.MunkiLooseVersion('10.13.5'):
+            # --nointeraction is an undocumented option that appears to be
+            # not only no longer needed/useful but seems to trigger some issues
+            # in more recent releases
+            cmd.extend(['--nointeraction'])
 
         if pkgutils.MunkiLooseVersion(
                 os_version) < pkgutils.MunkiLooseVersion('10.14'):
@@ -277,12 +289,6 @@ class StartOSInstallRunner(object):
         if (self.installinfo and
                 'additional_startosinstall_options' in self.installinfo):
             cmd.extend(self.installinfo['additional_startosinstall_options'])
-
-        if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
-            # --volume option is _required_ prior to 10.12.4 installer
-            # and must _not_ be included in 10.12.4+ installer's startosinstall
-            cmd.extend(['--volume', '/'])
 
         # more magic to get startosinstall to not buffer its output for
         # percent complete
