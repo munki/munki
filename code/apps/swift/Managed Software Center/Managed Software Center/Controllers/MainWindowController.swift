@@ -300,7 +300,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
             _alertedUserToOutstandingUpdates = true
         default:
             // should never get here
-            msc_debug_log("Unexpected valuse for page name: \(filename)")
+            msc_debug_log("Unexpected value for page name: \(filename)")
         }
         // update count might have changed
         displayUpdateCount()
@@ -606,8 +606,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
         var category = ""
         var our_filter = ""
         var developer = ""
-        if key == "category" && value != "all" {
-            category = value
+        if key == "category" {
+             if value != "all" {
+                category = value
+             }
         } else if key == "filter" {
             our_filter = value
         } else if key == "developer" {
