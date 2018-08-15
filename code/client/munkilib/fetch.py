@@ -304,7 +304,11 @@ def get_url(url, destinationpath,
     connection.headers['http_result_description'] = description
 
     if str(connection.status).startswith('2') and temp_download_exists:
-        os.rename(tempdownloadpath, destinationpath)
+        try:
+            os.rename(tempdownloadpath, destinationpath)
+        except OSError, err:
+            # Re-raise the error as a GurlError
+            raise GurlError(-1, str(err))
         return connection.headers
     elif connection.status == 304:
         # unchanged on server
