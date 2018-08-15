@@ -170,13 +170,16 @@ def get_primary_manifest(alternate_id=''):
         if not manifest:
             # try the short hostname
             clientidentifier = hostname.split('.')[0]
-            display.display_detail(
-                'Request failed. Trying %s...', clientidentifier)
-            try:
-                manifest = get_manifest(
-                    clientidentifier, suppress_errors=True)
-            except ManifestNotRetrievedException:
-                pass
+            if clientidentifier:
+                # need this test because of crazy people who give their
+                # machines hostnames that start with a period!
+                display.display_detail(
+                    'Request failed. Trying %s...', clientidentifier)
+                try:
+                    manifest = get_manifest(
+                        clientidentifier, suppress_errors=True)
+                except ManifestNotRetrievedException:
+                    pass
 
         if not manifest:
             # try the machine serial number
