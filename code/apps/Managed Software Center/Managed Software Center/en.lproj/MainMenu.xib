@@ -232,9 +232,9 @@
                     <toolbarItem implicitItemIdentifier="450E106F-9925-4E50-9609-9457D33597D0" label="Software" paletteLabel="Software" image="AllItemsTemplate" id="jTu-Wf-fi2">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="CPR-oF-gUx" customClass="MSCToolbarButton">
-                            <rect key="frame" x="3" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="CPR-oF-gUx" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -248,9 +248,9 @@
                     <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Categories" paletteLabel="Categories" image="toolbarCategoriesTemplate" id="G2X-M7-NVB">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="YGi-pE-3SV" customClass="MSCToolbarButton">
-                            <rect key="frame" x="9" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="YGi-pE-3SV" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -264,9 +264,9 @@
                     <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="My Items" paletteLabel="My Items" image="MyStuffTemplate" id="Uby-CQ-lvU">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="eek-hQ-v8t" customClass="MSCToolbarButton">
-                            <rect key="frame" x="4" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="eek-hQ-v8t" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -280,9 +280,9 @@
                     <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="updatesTemplate" id="AjB-m1-mu8">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
-                            <rect key="frame" x="2" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="caG-fL-UJh" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="updatesTemplate" imagePosition="overlaps" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -377,11 +377,8 @@
                     <toolbarItem reference="CEb-sx-e3H"/>
                     <toolbarItem reference="O3a-eC-4fX"/>
                     <toolbarItem reference="jTu-Wf-fi2"/>
-                    <toolbarItem reference="sF1-NQ-sSb"/>
                     <toolbarItem reference="G2X-M7-NVB"/>
-                    <toolbarItem reference="sF1-NQ-sSb"/>
                     <toolbarItem reference="Uby-CQ-lvU"/>
-                    <toolbarItem reference="sF1-NQ-sSb"/>
                     <toolbarItem reference="AjB-m1-mu8"/>
                     <toolbarItem reference="O3a-eC-4fX"/>
                     <toolbarItem reference="fbJ-cF-weR"/>
