@@ -18,10 +18,16 @@ import msclib
 import msclog
 import munki
 
-from AppKit import NSApp
+from AppKit import NSApp, NSUserDefaults
 from Foundation import NSBundle
 from Foundation import NSString, NSLocalizedString, NSUTF8StringEncoding
 
+def interfaceStyle():
+    '''Returns "dark" if using Dark Mode, otherwise "light"'''
+    interfaceType = NSUserDefaults.standardUserDefaults().stringForKey_("AppleInterfaceStyle")
+    if interfaceType == "Dark":
+        return "dark"
+    return "light"
 
 def quote(a_string):
     '''Replacement for urllib.quote that handles Unicode strings'''
@@ -97,6 +103,8 @@ def write_page(page_name, html):
 def assemble_page(main_page_template_name, page_dict, **kwargs):
     '''Returns HTML for our page from one or more templates
        and a dictionary of keys and values'''
+    # add current appearance style/theme
+    page_dict["data_theme"] = interfaceStyle()
     # make sure our general labels are present
     addGeneralLabels(page_dict)
     # get our main template

@@ -3,6 +3,50 @@
 ** Based on App Store CSS © 2013 Apple Inc.
 */
 
+html {
+    --background-color: white;
+    --text-color-emphasized: #151515;
+    --text-color-normal: #545454;
+    --text-color-subdued: #696969;
+    --text-color-warning: #CC0000;
+    --button-text-color-enabled: #ffffff;
+    --button-text-color-disabled: #bdbdbd;
+    --popup-menu-text-color: black;
+    --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#eaeaea));
+    --small-btn-background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
+    --small-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #85868d), to( #7a7bb2));
+    --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
+    --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777));
+    --install-btn-background: -webkit-gradient(linear, left top, left bottom, from( #85868d), color-stop(0.05, #84858c), color-stop(0.5, #888188), color-stop(0.96, #7b7c83), to( #7a7bb2));
+    --install-btn-background-active: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#5e5fa0), color-stop(4%,#67686f), color-stop(50%,#736d73), color-stop(95%,#6f7077), color-stop(100%,#707178));
+}
+
+html[data-theme='dark'] {
+    --background-color: #242424;
+    --text-color-emphasized: #e7e7e7;
+    --text-color-normal: #cfcfcf;
+    --text-color-subdued: #b7b7b7;
+    --text-color-warning: #E00000;
+    --button-text-color-enabled: #000000;
+    --button-text-color-disabled: #696969;
+    --popup-menu-text-color: white;
+    --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4c), to(#5c5c5c));
+    --small-btn-background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
+    --small-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#E8E6FF), to( #F2F3FC));
+    --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
+    --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#5D99F1), to(#4A65AC));
+    --install-btn-background: -webkit-gradient(linear, left top, left bottom, from( #BABBC3), color-stop(0.05, #B9BAC2), color-stop(0.5, #BDB6BD), color-stop(0.96, #AFB0B8), to(#B0AFEA));
+    --install-btn-background-active: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#E8E6FF), color-stop(4%,#E7E8F0), color-stop(50%,#F5EEF5), color-stop(95%,#F1F2FA), color-stop(100%,#F2F3FC));
+}
+
+html.appearance-transition,
+html.appearance-transition *,
+html.appearance-transition *:before,
+html.appearance-transition *:after {
+    transition: all 750ms !important;
+    transition-delay: 0 !important;
+}
+
 html,
 body, div, ul, ol, li, a, img, embed, h1, h2, h3, h4, h5, h6, dl, dt, dd, pre,
 code, form, fieldset, legend, input, textarea, p, blockquote, table, th,
@@ -29,7 +73,7 @@ li {
 
 a {
     text-decoration: none;
-    color: #000
+    color: var(--text-color-emphasized)
 }
 
 * {
@@ -52,6 +96,7 @@ body, button, input {
     font-family: -apple-system, "Helvetica Neue", "Helvetica", "Arial";
     font-smooth: always;
     -webkit-font-smoothing: antialiased
+    color: var(--text-color-normal);
 }
 
 @-webkit-keyframes generic-loading-spinner-animation {
@@ -177,7 +222,7 @@ a * {
 
 a {
     text-decoration: none;
-    color: #1b1b1b;
+    color: var(--text-color-emphasized);
     cursor: auto
 }
 
@@ -223,7 +268,7 @@ a {
 html, body {
     -webkit-background-size: 36px 635px;
     background-repeat: repeat-x;
-    background-color: white;
+    background-color: var(--background-color);
     font-family: -apple-system, "Helvetica Neue", Helvetica, sans-serif;
     font-size: 11px
 }
@@ -322,9 +367,8 @@ footer.no-country-nav div.bottom-links {
 }
 
 footer div.bottom-links * {
-    color: #4c4c4c;
+    color: var(--text-color-normal);
     display: inline-block;
-    color: #4f5f6e;
     font-size: 10px;
     font-weight: normal;
 }
@@ -334,7 +378,7 @@ footer div.bottom-links>span {
 }
 
 footer div.bottom-links li a {
-    color: #576982;
+    color: var(--text-color-normal);
     font-weight: normal
 }
 
@@ -351,7 +395,8 @@ footer div.bottom-links div.intl {
 }
 
 div.select {
-    position: relative
+    position: relative;
+    display: inline-block
 }
 
 div.select label {
@@ -359,61 +404,20 @@ div.select label {
 }
 
 div.select select {
-    -webkit-appearance: none;
-    border: 1px solid #a6b5c6;
-    -webkit-border-radius: 3px;
-    padding: 3px 20px 3px 6px;
-    -webkit-background-clip: padding;
-    background: -webkit-gradient(linear, left top, left bottom, from( #edf3f8), to( #dee4ea));
-    font-size: 9px;
-    font-weight: bold;
-    margin-left: 5px
-}
-
-div.select select:focus {
-    outline: 0 transparent
-}
-
-div.select:after {
-    -webkit-mask-box-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAWCAYAAAD5Jg1dAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAl0lEQVQokWP4//8/AzIGgiggtscQR1MkBMRvgfg2ELPhUzgNiP9DcQtWhUBgg6QIhH8CsS6KQiBgBuLzaApB+DBIDllhKRZFMJwJVcMgDcSf8Sj8DFXDsBGPIhhex4AeXrjw8FIIBFuICB5QEDLIERXgUGMrCEYhVCEbjkRxDCVR4ElmBrgS7kwkhe2UZwWo4lggdkIXBwBe1apnRfWr3AAAAABJRU5ErkJggg==);
-    content: "";
-    position: absolute;
-    height: 11px;
-    width: 5px;
-    right: 6px;
-    top: 5px;
-    pointer-events: none;
-    background-color: #000
-}
-
-div.select select:focus {
-    outline: 0 transparent
-}
-
-div.select {
-    position: relative;
-    display: inline-block
-}
-
-div.select select {
-    background: -webkit-gradient(linear, left top, left bottom, from( #fff), to( #eaeaea));
+    background: var(--popup-menu-background);
     font-size: 11px;
     font-weight: normal;
-    /*color: #626262;*/
+    color: var(--popup-menu-text-color);
     outline: 0;
     line-height: 15px;
     margin: 0;
     padding: 0 25px 1px 5px;
     border: 0;
-    /*text-shadow: #fff 0 1px 0;*/
     -webkit-appearance: none;
     -webkit-box-shadow: rgba(0, 0, 0, .35) 0 1px 2px, rgba(0, 0, 0, .8) 0 0 1px;
     box-shadow: rgba(0, 0, 0, .35) 0 1px 2px, rgba(0, 0, 0, .2) 0 0 1px;
-    -webkit-border-radius: 3px
-}
-
-div.select label {
-    font-size: 11px
+    -webkit-border-radius: 3px;
+    -webkit-background-clip: padding;
 }
 
 div.select select:focus {
@@ -428,7 +432,7 @@ div.select:before {
     width: 0;
     height: 16px;
     border-left: 1px solid #cecece;
-    border-right: 1px solid #f8f8f8;
+    border-right: 1px solid var(--background-color);
     pointer-events: none
 }
 
@@ -441,7 +445,7 @@ div.select:after {
     right: 6px;
     top: 3px;
     pointer-events: none;
-    background-color: #626262
+    background-color: var(--popup-menu-text-color);
 }
 
 div.titled-box {
@@ -452,7 +456,7 @@ div.titled-box {
 
 div.titled-box h2 {
     font: normal 14px -apple-system, "Helvetica Neue", 'Helvetica';
-    color: #53565e;
+    color: var(--text-color-normal);
     line-height: 24px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -461,7 +465,7 @@ div.titled-box h2 {
 
 div.titled-box h2 a {
     font: normal 12px -apple-system, "Helvetica Neue", 'Helvetica';
-    color: #53565e;
+    color: var(--text-color-normal);
     line-height: 24px
 }
 
@@ -521,14 +525,14 @@ div.titled-box li.link a {
     display: block;
     font-size: 11px;
     font-weight: normal;
-    color: #222;
+    color: var(--text-color-normal);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap
 }
 
 div.titled-box li.link.user-link a {
-    color: #676767
+    color: var(--text-color-subdued)
 }
 
 body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
@@ -547,7 +551,7 @@ div.lockup-container .title, div.titled-container .title {
 div.lockup-container .title h2, div.titled-container .title h2 {
     display: inline-block;
     font: normal 14px -apple-system, "Helvetica Neue", 'Helvetica';
-    color: #53565e;
+    color: var(--text-color-normal);
     line-height: 32px
 }
 
@@ -557,7 +561,7 @@ div.lockup-container .title, div.titled-container .title, div.titled-box h2 {
 }
 
 div.titled-box h2 {
-    color: #53565e;
+    color: var(--text-color-normal);
     border-bottom: 1px solid #cacaca;
     border-width: 0 0 1px !important;
     margin-bottom: 6px;
@@ -570,17 +574,17 @@ div.titled-box h2 {
 div.lockup-container .title h1 {
     display: inline-block;
     font: normal 14px -apple-system, "Helvetica Neue", Helvetica;
-    color: #53565e;
+    color: var(--text-color-normal);
     line-height: 32px
 }
 
 div.lockup-container .title h1 a {
-    color: #53565e;
+    color: var(--text-color-normal);
     text-decoration: none
 }
 
 div.lockup-container .title span {
-    color: #53565e;
+    color: var(--text-color-normal);
     font-size: 10px;
     font-weight: normal
 }
@@ -625,12 +629,12 @@ div.lockup-container div.lockup ul {
 
 div.lockup-container div.lockup li.name>* {
     font-size: 12px;
-    color: #000
+    color: var(--text-color-emphasized)
 }
 
 div.lockup-container div.lockup li, div.lockup-container div.lockup li>a,
 div.lockup-container div.lockup li>span {
-    color: #6c6c6c;
+    color: var(--text-color-subdued);
     font-size: 11px
 }
 
@@ -733,7 +737,7 @@ div.lockup ul li {
 }
 
 div.lockup li.name {
-    color: #000;
+    color: var(--text-color-emphasized);
     max-width: 190px
 }
 
@@ -759,7 +763,7 @@ div.lockup-container div.lockup.category ul {
 }
 
 div.lockup-container div.lockup.category li.genre a {
-    color: #4f5459
+    color: var(--text-color-subdued);
 }
 
 div.msc-button.small {
@@ -769,11 +773,10 @@ div.msc-button.small {
 div.msc-button-inner {
     height: 13px;
     -webkit-border-radius: 3px;
-    background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
+    background: var(--small-btn-background);
     border: 1px solid rgba(136, 136, 138, .746094);
     text-transform: uppercase;
-    /*text-shadow: rgba(0, 0, 0, .5) 0 -1px 0;*/
-    color: #fff;
+    color: var(--button-text-color-enabled);
     font: normal normal bold 9px/12px 'Helvetica';
     padding-left: 10px;
     padding-right: 10px;
@@ -788,12 +791,12 @@ div.msc-button-inner.removing {
     background: none;
     cursor: default;
     pointer-events: none;
-    border: 1px solid rgba(40,40,40,.35);
-    color: rgba(40,40,40,.35);
+    border: .5px solid var(--button-text-color-disabled);
+    color: var(--button-text-color-disabled)
 }
 
-div.msc-button-inner:not(.installed-not-removable):hover {
-    background: -webkit-gradient(linear, left top, left bottom, from( #85868d), to( #7a7bb2))
+div.msc-button-inner:not(.installed-not-removable):active:hover {
+    background: var(--small-btn-background-active);
 }
 
 div.msc-button button {
@@ -818,8 +821,8 @@ div.msc-button-inner.large {
     text-transform: capitalize;
     line-height: 21px;
     border: 1px solid rgb(42, 73, 118);
-    color: #fff;
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
+    color: White;
+    background: var(--detail-btn-background);
     border-color: #1F4A7A;
     -webkit-border-radius: 5px;
 }
@@ -831,15 +834,14 @@ div.msc-button-inner.large.unavailable,
 div.msc-button-inner.large.installing, 
 div.msc-button-inner.large.removing {
     background: none;
-    border: 1px solid rgba(40,40,40,.35);
-    color: rgba(40,40,40,.35);
+    border: .5px solid var(--button-text-color-disabled);
+    color: var(--button-text-color-disabled);
     cursor: default;
     pointer-events: none;
-    text-shadow: rgba(255,255,255,1) 0 1px 0;
 }
 
-div.msc-button-inner.large:not(.installed-not-removable):hover {
-    background: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777))
+div.msc-button-inner.large:not(.installed-not-removable):active:hover {
+    background: var(--detail-btn-background-active);
 }
 
 div.msc-button.install-updates {
@@ -857,13 +859,11 @@ div.msc-button-inner.install-updates {
     min-width: 90px;
     margin-left: 5px;
     font-size: 11px;
-    font-family: "Helvetica";
     text-transform: uppercase;
     line-height: 24px;
     border: 0;
-    color: #fff;
-    /*text-shadow: rgba(0, 0, 0, .5) 0 -1px 0;*/
-    background: -webkit-gradient(linear, left top, left bottom, from( #85868d), color-stop(0.05, #84858c), color-stop(0.5, #888188), color-stop(0.96, #7b7c83), to( #7a7bb2));
+    color: var(--button-text-color-enabled);
+    background: var(--install-btn-background);
     border-color: #1F4A7A;
     -webkit-border-radius: 3px;
 }
@@ -876,15 +876,14 @@ div.msc-button-inner.install.update-must-be-installed,
 div.msc-button-inner.install-updates.installing,
 div.msc-button-inner.install-updates.removing {
     background: none;
-    border: 1px solid rgba(40,40,40,.35);
-    color: rgba(40,40,40,.35);
+    border: 1px solid var(--button-text-color-disabled);
+    color: var(--button-text-color-disabled);
     cursor: default;
     pointer-events: none;
-    text-shadow: rgba(255,255,255,1) 0 1px 0;
 }
 
-div.msc-button-inner.install-updates:not(.installed-not-removable):hover {
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#5e5fa0), color-stop(4%,#67686f), color-stop(50%,#736d73), color-stop(95%,#6f7077), color-stop(100%,#707178));
+div.msc-button-inner.install-updates:not(.installed-not-removable):active:hover {
+    background: var(--install-btn-background-active);
 }
 
 .scrollbar::-webkit-scrollbar {
@@ -1188,7 +1187,7 @@ div.title div.select {
 }
 
 .warning {
-    color: #CC0000 !important;
+    color: var(--text-color-warning) !important;
 }
 
 div.lockup li a.follow,
@@ -1246,7 +1245,7 @@ span.update-will-be-installed,
 span.update-available, 
 span.warning {
     visibility: visible !important;
-    color: #CC0000 !important;
+    color: var(--text-color-warning) !important;
 }
 
 span.downloading>span.progress-spinner,
@@ -1291,7 +1290,7 @@ div.lockup li.removing {
 
 div.lockup li.installed,
 div.lockup li.installed-not-removable {
-    color: #4f5459;
+    color: var(--text-color-normal);
 }
 
 #update-warning-text {
@@ -1303,7 +1302,7 @@ div.lockup-container div.status-results {
     text-align:center;
     padding-top: 100px;
     padding-bottom: 100px;
-    color: #666
+    color: var(--text-color-subdued);
 }
 div.lockup-container div.status-results>h2 {
     margin-bottom: 6px;
@@ -1315,6 +1314,6 @@ div.lockup-container div.status-results>p {
 }
 div.lockup-container div.status-results>p a{
     font-weight: bold; 
-    color: #666
+    color: var(--text-color-subdued);
 }
 
