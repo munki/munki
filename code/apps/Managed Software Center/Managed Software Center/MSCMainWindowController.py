@@ -51,6 +51,7 @@ from WebKit import WebView, WebPreferences
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
 
+
 class MSCMainWindowController(NSWindowController):
 
     _alertedUserToOutstandingUpdates = False
@@ -366,8 +367,16 @@ class MSCMainWindowController(NSWindowController):
 
     def registerForNotifications(self):
         '''register for notification messages'''
-        # register for notification if available updates change
         notification_center = NSDistributedNotificationCenter.defaultCenter()
+        # register for notification if user switches to/from Dark Mode
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.interfaceThemeChanged,
+            'AppleInterfaceThemeChangedNotification',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
+
+        # register for notification if available updates change
         notification_center.addObserver_selector_name_object_suspensionBehavior_(
             self,
             self.updateAvailableUpdates,
@@ -377,13 +386,20 @@ class MSCMainWindowController(NSWindowController):
 
         # register for notification to display a logout warning
         # from the logouthelper
-        notification_center = NSDistributedNotificationCenter.defaultCenter()
         notification_center.addObserver_selector_name_object_suspensionBehavior_(
             self,
             self.forcedLogoutWarning,
             'com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn',
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
+    
+    def interfaceThemeChanged(self):
+        '''Called when user switches to/from Dark Mode'''
+        interface_style = mschtml.interfaceStyle()
+        scriptObject = self.webView.windowScriptObject()
+        args = [interface_style]
+        # call JavaScript in the webview to update the appearance CSS
+        scriptObject.callWebScriptMethod_withArguments_("changeAppearanceModeTo", args)
 
     def updateAvailableUpdates(self):
         '''If a Munki session is not in progress (that we know of) and
