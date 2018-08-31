@@ -75,13 +75,13 @@ class MSCAppDelegate(NSObject):
         # without the Retina assets to avoid an appearance issue when the
         # icon has a badge in the Dock (and App Switcher)
         # Darwin major version 10 is Snow Leopard (10.6)
-        if os.uname()[2].split('.')[0] == '10':
+        if int(os.uname()[2].split('.')[0]) == 10:
             myImage = NSImage.imageNamed_("Managed Software Center 10_6")
             NSApp.setApplicationIconImage_(myImage)
 
         # if we are running under Mountain Lion or later set ourselves as a delegate
         # for NSUserNotificationCenter notifications
-        if os.uname()[2].split('.')[0] > '11':
+        if int(os.uname()[2].split('.')[0]) > 11:
             NSUserNotificationCenter.defaultUserNotificationCenter().setDelegate_(self)
 
         # have the statuscontroller register for its own notifications
