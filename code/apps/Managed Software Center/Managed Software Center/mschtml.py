@@ -24,9 +24,12 @@ from Foundation import NSString, NSLocalizedString, NSUTF8StringEncoding
 
 def interfaceStyle():
     '''Returns "dark" if using Dark Mode, otherwise "light"'''
-    interfaceType = NSUserDefaults.standardUserDefaults().stringForKey_("AppleInterfaceStyle")
-    if interfaceType == "Dark":
-        return "dark"
+    # running under Mojave or later or undocumented pref is set
+    if (int(os.uname()[2].split('.')[0]) >= 18 or
+            NSUserDefaults.standardUserDefaults().boolForKey_("AllowDarkModeOnUnsupportedOSes")):
+        interfaceType = NSUserDefaults.standardUserDefaults().stringForKey_("AppleInterfaceStyle")
+        if interfaceType == "Dark":
+            return "dark"
     return "light"
 
 def quote(a_string):
