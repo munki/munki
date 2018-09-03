@@ -17,6 +17,16 @@ extension Array {
     }
 }
 
+func interfaceTheme() -> String {
+    // Returns "dark" if using Dark Mode, otherwise "light"
+    if let interfaceType = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") {
+        if interfaceType == "Dark" {
+            return "dark"
+        }
+    }
+    return "light"
+}
+
 func getRawTemplate(_ template_name: String) -> String {
     // return a raw html template.
     let customTemplatesPath = NSString.path(withComponents: [html_dir(), "custom/templates"])
@@ -84,7 +94,8 @@ func assemblePage(fromTemplate template_name: String,
                    additionalTemplates additional_subs: BaseItem = BaseItem() ) -> String {
     // Returns HTML for our page from one or more templates
     // and a dictionary of keys and values
-    
+    // add current appearance style/theme
+    pageItem["data_theme"] = interfaceTheme()
     // make sure our general labels are present
     pageItem.addGeneralLabels()
     // get our main template
