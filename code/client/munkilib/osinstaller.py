@@ -262,20 +262,33 @@ class StartOSInstallRunner(object):
 
         cmd.extend([startosinstall_path,
                     '--agreetolicense',
-                    '--applicationpath', app_path,
                     '--rebootdelay', '300',
-                    '--pidtosignal', str(os.getpid()),
-                    '--nointeraction'])
-
-        if (self.installinfo and
-                'additional_startosinstall_options' in self.installinfo):
-            cmd.extend(self.installinfo['additional_startosinstall_options'])
+                    '--pidtosignal', str(os.getpid())])
 
         if pkgutils.MunkiLooseVersion(
                 os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
-            # and must _not_ be included in 10.12.4 installer's startosinstall
+            # and must _not_ be included in 10.12.4+ installer's startosinstall
             cmd.extend(['--volume', '/'])
+
+        if pkgutils.MunkiLooseVersion(
+                os_version) < pkgutils.MunkiLooseVersion('10.13.5'):
+            # --nointeraction is an undocumented option that appears to be
+            # not only no longer needed/useful but seems to trigger some issues
+            # in more recent releases
+            cmd.extend(['--nointeraction'])
+
+        if pkgutils.MunkiLooseVersion(
+                os_version) < pkgutils.MunkiLooseVersion('10.14'):
+            # --applicationpath is required in 10.12 and 10.13.x installers
+            # it seems to be optional in later releases of 10.13 (like 10.13.6)
+            # it prints a deprecation warning in 10.14 beta installers.
+            # So only add it if we are running a 10.12 or 10.13 installer
+            cmd.extend(['--applicationpath', app_path])
+
+        if (self.installinfo and
+                'additional_startosinstall_options' in self.installinfo):
+            cmd.extend(self.installinfo['additional_startosinstall_options'])
 
         # more magic to get startosinstall to not buffer its output for
         # percent complete
