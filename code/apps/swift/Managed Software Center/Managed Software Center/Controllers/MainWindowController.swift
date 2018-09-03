@@ -345,8 +345,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     
     func registerForNotifications() {
         // register for notification messages
-        // register for notification if available updates change
         let nc = DistributedNotificationCenter.default()
+        // register for notification if user switches to/from Dark Mode
+        nc.addObserver(self,
+                       selector: #selector(self.interfaceThemeChanged(_:)),
+                       name: NSNotification.Name(
+                        rawValue: "AppleInterfaceThemeChangedNotification"),
+                       object: nil,
+                       suspensionBehavior: .deliverImmediately)
+        // register for notification if available updates change
         nc.addObserver(self,
                        selector: #selector(self.updateAvailableUpdates(_:)),
                        name: NSNotification.Name(
@@ -361,6 +368,16 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
                             rawValue: "com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn"),
                        object: nil,
                        suspensionBehavior: .deliverImmediately)
+    }
+    
+    @objc func interfaceThemeChanged(_ notification: Notification) {
+        // Called when user switches to/from Dark Mode
+        let interface_theme = interfaceTheme()
+        // call JavaScript in the webview to update the appearance CSS
+        if let scriptObject = webView.windowScriptObject {
+            let args = [interface_theme]
+            scriptObject.callWebScriptMethod("changeAppearanceModeTo", withArguments: args)
+        }
     }
     
     @objc func updateAvailableUpdates(_ notification: Notification) {
