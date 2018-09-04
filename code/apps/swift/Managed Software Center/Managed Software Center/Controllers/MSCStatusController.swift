@@ -225,6 +225,8 @@ class MSCStatusController: NSObject {
             percent = 100.0
         }
         _status_percent = percent
+        //TO-DO: figure this out
+        /*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when setting percentageDone")
             return
@@ -242,12 +244,15 @@ class MSCStatusController: NSObject {
                 }
             }
         }
+         */
     }
 
     func setMessage(_ text: String) {
         // Display main status message
         let messageText = Bundle.main.localizedString(forKey: text, value: text, table: nil)
         _status_message = messageText
+        //TO-DO: figure this out
+        /*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when setting status text")
             return
@@ -262,12 +267,15 @@ class MSCStatusController: NSObject {
                 }
             }
         }
+         */
     }
     
     func setDetail(_ text: String) {
         // Display main status message
         let detailText = Bundle.main.localizedString(forKey: text, value: text, table: nil)
         _status_detail = detailText
+        //TO-DO: figure this out
+        /*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when setting detail text")
             return
@@ -282,6 +290,7 @@ class MSCStatusController: NSObject {
                 }
             }
         }
+        */
     }
 
     func getStopButtonState() -> Bool {
@@ -297,6 +306,8 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnHidden = true
+//TO-DO: figure this out
+/*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when hiding stop button")
             return
@@ -311,6 +322,7 @@ class MSCStatusController: NSObject {
                 }
             }
         }
+ */
     }
     
     func showStopButton() {
@@ -320,6 +332,8 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnHidden = false
+//TO-DO: figure this out
+/*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when showing stop button")
             return
@@ -332,6 +346,7 @@ class MSCStatusController: NSObject {
                 install_btn.className = btn_classes.joined(separator: " ")
             }
         }
+ */
     }
     
     func disableStopButton() {
@@ -341,6 +356,8 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnHidden = true
+//TO-DO: figure this out
+/*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when disabling stop button")
             return
@@ -355,6 +372,7 @@ class MSCStatusController: NSObject {
                 }
             }
         }
+ */
     }
     
     func enableStopButton() {
@@ -364,6 +382,8 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnDisabled = false
+//TO-DO: figure this out
+/*
         guard let document = statusWindowController.webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument when enabling stop button")
             return
@@ -376,6 +396,7 @@ class MSCStatusController: NSObject {
                 install_btn.className = btn_classes.joined(separator: " ")
             }
         }
+ */
     }
     
     func getRestartAlertDismissed() -> Bool {

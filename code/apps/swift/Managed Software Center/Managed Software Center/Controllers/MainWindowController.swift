@@ -9,7 +9,7 @@
 import Cocoa
 import WebKit
 
-class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDelegate, WebResourceLoadDelegate, WebFrameLoadDelegate, WebUIDelegate {
+class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate {
 
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
@@ -37,7 +37,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     
     @IBOutlet weak var searchField: NSSearchField!
     
-    @IBOutlet weak var webView: WebView!
+    @IBOutlet weak var webView: WKWebView!
     
     @IBOutlet weak var softwareMenuItem: NSMenuItem!
     @IBOutlet weak var categoriesMenuItem: NSMenuItem!
@@ -277,8 +277,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
         // enable/disable controls as needed
         enableOrDisableSoftwareViewControls()
         // what page are we currently viewing?
-        let page_url = webView.mainFrameURL ?? ""
-        let filename = URL(string: page_url)?.lastPathComponent ?? ""
+        let page_url = webView.url
+        let filename = page_url?.lastPathComponent ?? ""
         let name = (filename as NSString).deletingPathExtension
         let key = name.components(separatedBy: "-")[0]
         switch key {
@@ -331,11 +331,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     override func awakeFromNib() {
         // Stuff we need to intialize when we start
         super.awakeFromNib()
-        webView.drawsBackground = false
-        webView.uiDelegate = self
-        webView.frameLoadDelegate = self
-        webView.resourceLoadDelegate = self
-        webView.policyDelegate = self
+        //webView.drawsBackground = false
+        webView.navigationDelegate = self
         setNoPageCache()
         alert_controller = MSCAlertController()
         alert_controller.window = self.window
@@ -374,10 +371,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
         // Called when user switches to/from Dark Mode
         let interface_theme = interfaceTheme()
         // call JavaScript in the webview to update the appearance CSS
-        if let scriptObject = webView.windowScriptObject {
-            let args = [interface_theme]
-            scriptObject.callWebScriptMethod("changeAppearanceModeTo", withArguments: args)
-        }
+        webView.evaluateJavaScript("changeAppearanceModeTo('\(interface_theme)')")
     }
     
     @objc func updateAvailableUpdates(_ notification: Notification) {
@@ -594,28 +588,30 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     func updateMyItemsPage() {
         // Update the "My Items" page with current data.
         // Modifies the DOM to avoid ugly browser refresh
-        let myitems_rows = buildMyItemsRows()
+        // TO-DO: figure out how to replace this logic in JavaScript
+        /*let myitems_rows = buildMyItemsRows()
         let document = webView.mainFrameDocument
         if let table_body_element = document?.getElementById("my_items_rows") {
             table_body_element.innerHTML = myitems_rows
-        }
+        }*/
     }
     
     func updateCategoriesPage() {
         // Update the Catagories page with current data.
         // Modifies the DOM to avoid ugly browser refresh
-        let items_html = buildCategoryItemsHTML()
+        // TO-DO: figure out how to replace this logic in JavaScript
+        /*let items_html = buildCategoryItemsHTML()
         let document = webView.mainFrameDocument
         if let items_div_element = document?.getElementById("optional_installs_items") {
             items_div_element.innerHTML = items_html
-        }
+        }*/
     }
     
     func updateListPage() {
         // Update the optional items list page with current data.
         // Modifies the DOM to avoid ugly browser refresh
-        let page_url = webView.mainFrameURL ?? ""
-        let filename = URL(string: page_url)?.lastPathComponent ?? ""
+        let page_url = webView.url
+        let filename = page_url?.lastPathComponent ?? ""
         let name = ((filename as NSString).deletingPathExtension) as String
         let components = name.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
         let key = String(components[0])
@@ -638,70 +634,159 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
         msc_debug_log("updating software list page with " +
                       "category: '\(category)', developer: '\(developer)', " +
                       "filter: '\(our_filter)'")
+        // TO-DO: figure out how to replace this logic in JavaScript
+        /*
         let items_html = buildListPageItemsHTML(
             category: category, developer: developer, filter: our_filter)
         let document = webView.mainFrameDocument
         if let items_div_element = document?.getElementById("optional_installs_items") {
             items_div_element.innerHTML = items_html
-        }
+        }*/
     }
     
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
+        do {
+            try buildPage(url_fragment)
+        } catch {
+            msc_debug_log(
+                "Could not build page for \(url_fragment): \(error)")
+        }
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
         let request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
                                  timeoutInterval: TimeInterval(10.0))
-        webView.mainFrame.load(request)
+        webView.load(request)
         if url_fragment == "updates.html" {
             // clear all earlier update notifications
             NSUserNotificationCenter.default.removeAllDeliveredNotifications()
         }
     }
     
+    func handleMunkiURL(_ url: URL) {
+        // Display page associated with munki:// url
+        guard url.scheme == "munki" else {
+            msc_debug_log("URL \(url) has unsupported scheme")
+            return
+        }
+        guard let host = url.host else {
+            msc_debug_log("URL \(url) has invalid format")
+            return
+        }
+        var filename = unquote(host)
+        if (filename as NSString).pathExtension.isEmpty {
+            filename += ".html"
+        }
+        if filename.hasSuffix(".html") {
+            load_page(filename)
+        } else {
+            msc_debug_log("\(url) doesn't have a valid extension. Prevented from opening")
+        }
+    }
+
     func setNoPageCache() {
         /* We disable the back/forward page cache because
          we generate each page dynamically; we want things
          that are changed in one page view to be reflected
          immediately in all page views */
-        let identifier = "com.googlecode.munki.ManagedSoftwareCenter"
+        // TO-DO: figure this out
+        /*let identifier = "com.googlecode.munki.ManagedSoftwareCenter"
         if let prefs = WebPreferences(identifier: identifier) {
             prefs.usesPageCache = false
             webView.preferencesIdentifier = identifier
-        }
+        }*/
     }
     
-    // WebPolicyDelegate methods
+    // WKNavigationDelegateMethods
     
-    func webView(_ webView: WebView!,
-                 decidePolicyForNewWindowAction actionInformation: [AnyHashable : Any]!,
-                 request: URLRequest!,
-                 newFrameName frameName: String!,
-                 decisionListener listener: WebPolicyDecisionListener!) {
-        // if the request is to open the link in a new window,
-        // open link in default browser instead of in our app's WebView
-        listener.ignore()
-        if let the_url = request.url {
-            NSWorkspace.shared.open(the_url)
-        }
-    }
-    
-    func webView(_ webView: WebView!,
-                 decidePolicyForMIMEType type: String!,
-                 request: URLRequest!,
-                 frame: WebFrame!,
-                 decisionListener listener: WebPolicyDecisionListener!) {
-        // Decide whether to show or download content
-        if WebView.canShowMIMEType(type) {
-            listener.use()
-        } else {
-            // send the request to the user's default browser instead, where it
-            // can display or download it
-            listener.ignore()
-            if let the_url = request.url {
-                NSWorkspace.shared.open(the_url)
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let url = navigationAction.request.url {
+            msc_debug_log("Got load request for \(url)")
+            if navigationAction.targetFrame == nil {
+                // new window target
+                // open link in default browser instead of in our app's WebView
+                NSWorkspace.shared.open(url)
+                decisionHandler(.cancel)
+                return
             }
+        }
+        if let url = navigationAction.request.url, let scheme = url.scheme {
+            msc_debug_log("Got URL scheme: \(scheme)")
+            if scheme == "munki" {
+                handleMunkiURL(url)
+                decisionHandler(.cancel)
+                return
+            }
+        }
+        decisionHandler(.allow)
+    }
+    
+    func webView(_ webView: WKWebView,
+                 decidePolicyFor navigationResponse: WKNavigationResponse,
+                 decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        if !(navigationResponse.canShowMIMEType) {
+            if let url = navigationResponse.response.url {
+                // open link in default browser instead of in our app's WebView
+                NSWorkspace.shared.open(url)
+                decisionHandler(.cancel)
+                return
+            }
+        }
+        decisionHandler(.allow)
+    }
+    
+    func webView(_ webView: WKWebView,
+                 didStartProvisionalNavigation navigation: WKNavigation!) {
+        // Animate progress spinner while we load a page and highlight the
+        // proper toolbar button
+        progressSpinner.startAnimation(self)
+        if let main_url = webView.url {
+            let pagename = main_url.lastPathComponent
+            msc_debug_log("Requested pagename is \(pagename)")
+            if (pagename == "category-all.html" ||
+                pagename.hasPrefix("detail-") ||
+                pagename.hasPrefix("filter-") ||
+                pagename.hasPrefix("developer-")) {
+                highlightToolbarButtons("Software")
+            } else if pagename == "categories.html" || pagename.hasPrefix("category-") {
+                highlightToolbarButtons("Categories")
+            } else if pagename == "myitems.html" {
+                highlightToolbarButtons("My Items")
+            } else if pagename == "updates.html" || pagename.hasPrefix("updatedetail-") {
+                highlightToolbarButtons("Updates")
+            } else {
+                // no idea what type of item it is
+                highlightToolbarButtons("")
+            }
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        progressSpinner.stopAnimation(self)
+        navigateBackButton.isEnabled = webView.canGoBack
+        navigateForwardButton.isEnabled = webView.canGoForward
+    }
+    
+    func webView(_ webView: WKWebView,
+                 didFail navigation: WKNavigation!,
+                 withError error: Error) {
+        // Stop progress spinner and log error
+        progressSpinner.stopAnimation(self)
+        msc_debug_log("Committed load error: \(error)")
+    }
+    
+    func webView(_ webView: WKWebView,
+                 didFailProvisionalNavigation navigation: WKNavigation!,
+                 withError error: Error) {
+        // Stop progress spinner and log
+        progressSpinner.stopAnimation(self)
+        msc_debug_log("Provisional load error: \(error)")
+        do {
+            let files = try FileManager.default.contentsOfDirectory(atPath: htmlDir)
+            msc_debug_log("Files in html_dir: \(files)")
+        } catch {
+            // ignore
         }
     }
     
@@ -753,54 +838,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
         windowObject.setValue(self, forKey: "AppController")
     }
     
-    func webView(_ sender: WebView!, didStartProvisionalLoadFor frame: WebFrame!) {
-        // Animate progress spinner while we load a page and highlight the
-        // proper toolbar button
-        progressSpinner.startAnimation(self)
-        if let main_url = URL(string: webView.mainFrameURL) {
-            let pagename = main_url.lastPathComponent
-            msc_debug_log("Requested pagename is \(pagename)")
-            if (pagename == "category-all.html" ||
-                    pagename.hasPrefix("detail-") ||
-                    pagename.hasPrefix("filter-") ||
-                    pagename.hasPrefix("developer-")) {
-                highlightToolbarButtons("Software")
-            } else if pagename == "categories.html" || pagename.hasPrefix("category-") {
-                highlightToolbarButtons("Categories")
-            } else if pagename == "myitems.html" {
-                highlightToolbarButtons("My Items")
-            } else if pagename == "updates.html" || pagename.hasPrefix("updatedetail-") {
-                highlightToolbarButtons("Updates")
-            } else {
-                // no idea what type of item it is
-                highlightToolbarButtons("")
-            }
-        }
-    }
-    
-    func webView(_ sender: WebView!, didFinishLoadFor frame: WebFrame!) {
-        progressSpinner.stopAnimation(self)
-        navigateBackButton.isEnabled = webView.canGoBack
-        navigateForwardButton.isEnabled = webView.canGoForward
-    }
-    
-    func webView(_ sender: WebView!, didFailProvisionalLoadWithError error: Error!, for frame: WebFrame!) {
-        // Stop progress spinner and log
-        progressSpinner.stopAnimation(self)
-        msc_debug_log("Provisional load error: \(error)")
-        do {
-            let files = try FileManager.default.contentsOfDirectory(atPath: htmlDir)
-             msc_debug_log("Files in html_dir: \(files)")
-        } catch {
-            // ignore
-        }
-    }
-    
-    func webView(_ sender: WebView!, didFailLoadWithError error: Error!, for frame: WebFrame!) {
-        // Stop progress spinner and log error
-        progressSpinner.stopAnimation(self)
-        msc_debug_log("Committed load error: \(error)")
-    }
     
     // WebView uiDelegate methods
     // (none currently)
@@ -888,10 +925,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     }
     
     func updateOptionalInstallButtonBeginAction(_ item_name: String) {
-        if let scriptObject = webView.windowScriptObject {
-            let args = [item_name]
-            scriptObject.callWebScriptMethod("fadeOutAndRemove", withArguments: args)
-        }
+        webView.evaluateJavaScript("fadeOutAndRemove('\(item_name)')")
     }
     
     @objc func myItemsActionButtonClicked(_ item_name: String) {
@@ -914,6 +948,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     func myItemsActionButtonPerformAction(_ item_name: String) {
         // perform action needed when user clicks
         // the Install/Remove/Cancel button in the My Items view
+        // TO-DO: figure out how to this in JavaScript
+        /*
         guard let item = optionalItem(forName: item_name) else {
             msc_debug_log(
                 "User clicked MyItems action button for \(item_name)")
@@ -965,7 +1001,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
                 // cancelled a pending install or removal; should run an updatecheck
                 checkForUpdates(suppress_apple_update_check: true)
             }
-        }
+        }*/
     }
     
     @objc func actionButtonClicked(_ item_name: String) {
@@ -1101,6 +1137,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
     @objc func updateOptionalInstallButtonFinishAction(_ item_name: String) {
         // Perform the required action when a user clicks
         // the cancel or add button in the updates list
+        // TO-DO: figure this out
+        /*
         guard let document = webView.mainFrameDocument else {
             msc_debug_log("Could not get webView.mainFrameDocument")
             return
@@ -1193,10 +1231,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
             // complete first
             self.perform(#selector(self.checkForUpdates), with: true, afterDelay: 1.0)
         }
+        */
     }
     
     func updateDOMforOptionalItem(_ item: OptionalItem) {
         // Update displayed status of an item
+        // TO-DO: figure this out
+        /*
         let item_name = item["name"] as? String ?? ""
         guard let document = webView.mainFrameDocument else {
             msc_debug_log("ERROR in updateDOMforOptionalItem: could not get mainFrameDocument")
@@ -1233,6 +1274,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WebPolicyDeleg
             // text contains html, like '<span class="warning">Some warning</span>'
             status_text_span.innerHTML = item["status_text"] as? String ?? ""
         }
+        */
     }
     
     @objc func changeSelectedCategory(_ category: String) {
