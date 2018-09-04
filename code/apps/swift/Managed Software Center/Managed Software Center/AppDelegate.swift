@@ -87,37 +87,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let urlDescriptor = event.paramDescriptor(forKeyword: keyword)
         if let urlString = urlDescriptor?.stringValue {
             msc_log("MSU", "Called by external URL: \(urlString)")
-            openMunkiURL(urlString)
-        }
-    }
-    
-    func openMunkiURL(_ urlString: String) {
-        // Display page associated with munki:// url
-        guard let url = URL(string: urlString) else {
-            msc_debug_log("\(urlString) is not a valid URL")
-            return
-        }
-        guard url.scheme == "munki" else {
-            msc_debug_log("URL \(urlString) has unsupported scheme")
-            return
-        }
-        guard let host = url.host else {
-            msc_debug_log("URL \(urlString) has invalid format")
-            return
-        }
-        var filename = unquote(host)
-        if (filename as NSString).pathExtension.isEmpty {
-            filename += ".html"
-        }
-        if filename.hasSuffix(".html") {
-            do {
-                try buildPage(filename)
-                mainWindowController.load_page(filename)
-            } catch {
-                msc_debug_log("Could not build page for \(urlString): \(error)")
+            if let url = URL(string: urlString) {
+                mainWindowController.handleMunkiURL(url)
+            } else {
+                msc_debug_log("\(urlString) is not a valid URL")
+                return
             }
-        } else {
-            msc_debug_log("\(urlString) doesn't have a valid extension. Prevented from opening")
         }
     }
 
@@ -138,7 +113,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if user_info["action"] as? String ?? "" == "open_url" {
             let urlString = user_info["value"] as? String ?? "munki://updates"
             msc_log("MSU", "Got user notification to open \(urlString)")
-            openMunkiURL(urlString)
+            if let url = URL(string: urlString) {
+                mainWindowController.handleMunkiURL(url)
+            }
             center.removeDeliveredNotification(notification)
         } else {
             msc_log("MSU", "Got user notification with unrecognized userInfo")

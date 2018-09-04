@@ -672,7 +672,7 @@ class OptionalItem: GenericItem {
         } else {
             my["size"] = ""
         }
-        my["detail_link"] = "detail-\(quote(name)).html"
+        my["detail_link"] = "munki://detail-\(quote(name)).html"
         my["hide_cancel_button"] = ""
         let note = my["note"] as? String ?? ""
         if note.isEmpty {
@@ -904,7 +904,7 @@ class UpdateItem: GenericItem {
         let name = my["name"] as? String ?? ""
         let version = my["version_to_install"] as? String ?? ""
         let identifier = "\(name)--version-\(version)"
-        my["detail_link"] = "updatedetail-\(quote(identifier)).html"
+        my["detail_link"] = "munki://updatedetail-\(quote(identifier)).html"
         let status = my["status"] as? String ?? ""
         if status != "will-be-removed" {
             if let force_install_after_date = my["force_install_after_date"] as? Date {
