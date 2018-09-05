@@ -63,6 +63,9 @@ body.product .product-detail .product-info .product-review p,body.product .produ
     line-height: 16px;
     color: var(--text-color-normal);
 }
+body.product .product-detail .product-info .product-review p a {
+    color: var(--description-link-color);
+}
 body.product .sidebar .app-info .content {
     font-size: 11px;
     color: var(--text-color-emphasized)
