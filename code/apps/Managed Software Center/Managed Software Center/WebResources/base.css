@@ -9,6 +9,7 @@ html {
     --text-color-normal: hsl(0, 0%, 23%);
     --text-color-subdued: hsl(0, 0%, 48%);
     --text-color-warning: hsl(0, 100%, 40%);
+    --description-link-color: #3E6397;
     --button-text-color-enabled: hsl(0, 0%, 100%);
     --button-text-color-disabled: hsl(0, 0%, 74%);
     --popup-menu-text-color: hsl(0, 0%, 0%);
@@ -27,6 +28,7 @@ html[data-theme='dark'] {
     --text-color-normal: hsl(0, 0%, 77%);
     --text-color-subdued: hsl(0, 0%, 62%);
     --text-color-warning: hsl(0, 100%, 60%);
+    --description-link-color: #90B0EA;
     --button-text-color-enabled: hsl(0, 0%, 0%);
     --button-text-color-disabled: hsl(0, 0%, 41%);
     --popup-menu-text-color: hsl(0, 0%, 100%);
