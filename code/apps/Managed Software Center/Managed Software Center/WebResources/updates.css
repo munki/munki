@@ -331,7 +331,7 @@ div.os-updates p.note {
     color: #d30
 }
 .installation .description a {
-    color: #3E6397
+    color: var(--description-link-color)
 }
 .installation [data-text-truncate-lines] a.text-truncate-toggle {
     padding: 0;
