@@ -9,14 +9,15 @@
 import Cocoa
 import WebKit
 
-class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate {
-
+class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate, WKScriptMessageHandler {
+    
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
     var managedsoftwareupdate_task = ""
     var cached_self_service = SelfService()
     var alert_controller = MSCAlertController()
     var htmlDir = ""
+    var wkContentController = WKUserContentController()
     
     // status properties
     var _status_title = ""
@@ -37,18 +38,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBOutlet weak var searchField: NSSearchField!
     
-    @IBOutlet weak var webView: WKWebView!
-    
+    @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
+    @IBOutlet weak var navigateForwardMenuItem: NSMenuItem!
     @IBOutlet weak var softwareMenuItem: NSMenuItem!
     @IBOutlet weak var categoriesMenuItem: NSMenuItem!
     @IBOutlet weak var myItemsMenuItem: NSMenuItem!
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
     @IBOutlet weak var findMenuItem: NSMenuItem!
     
+    @IBOutlet weak var webViewPlaceholder: NSView!
+    var webView: WKWebView!
+    
     override func windowDidLoad() {
         super.windowDidLoad()
-    
-        // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
     }
     
     func appShouldTerminate() -> NSApplication.TerminateReply {
@@ -328,10 +330,42 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     // End NSWindowDelegate methods
     
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        // react to messages set to us by JavaScript
+        print("Got message from JavaScript!")
+        if message.name == "installButtonClicked" {
+            installButtonClicked()
+        }
+    }
+    
+    func addJSmessageHandlers() {
+        // define messages JavaScript can send us
+        wkContentController.add(self, name: "installButtonClicked")
+    }
+
+    func insertWebView() {
+        // replace our webview placeholder with the real one
+        if let superview = webViewPlaceholder.superview {
+            // define webview configuration
+            let webConfiguration = WKWebViewConfiguration()
+            addJSmessageHandlers()
+            webConfiguration.userContentController = wkContentController
+            webConfiguration.preferences.javaScriptEnabled = true
+            webConfiguration.preferences.javaEnabled = false
+            // init our webview
+            let replacementWebView = WKWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
+            replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
+            replacementWebView.allowsBackForwardNavigationGestures = true
+            // replace the placeholder in the window view with the real webview
+            superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
+            webView = replacementWebView
+        }
+    }
+    
     override func awakeFromNib() {
         // Stuff we need to intialize when we start
         super.awakeFromNib()
-        //webView.drawsBackground = false
+        insertWebView()
         webView.navigationDelegate = self
         setNoPageCache()
         alert_controller = MSCAlertController()
@@ -765,7 +799,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         progressSpinner.stopAnimation(self)
         navigateBackButton.isEnabled = webView.canGoBack
+        navigateBackMenuItem.isEnabled = webView.canGoBack
         navigateForwardButton.isEnabled = webView.canGoForward
+        navigateForwardMenuItem.isEnabled = webView.canGoForward
     }
     
     func webView(_ webView: WKWebView,
