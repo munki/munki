@@ -21,7 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSLog("%@", "Finished launching")
         if let info_dict = Bundle.main.infoDictionary {
             if let vers = info_dict["CFBundleShortVersionString"] as? String {
-                print(vers)
+                //print(vers)
                 msc_log("MSC", "launched", msg: "VER=\(vers)")
             }
         }
