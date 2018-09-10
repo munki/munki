@@ -15,7 +15,7 @@
         <li>
             <div class="msc-button small">
                 <button class="button-area uppercase"
-                        onClick="window.AppController.actionButtonClicked_('${name_quoted}');">
+                        onClick="window.webkit.messageHandlers.actionButtonClicked.postMessage('${name_quoted}');">
                     <div class="msc-button-inner ${status}" id="${name_escaped}_action_button_text">
                         ${short_action_text}
                     </div>

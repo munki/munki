@@ -637,6 +637,7 @@ func buildUpdatesPage() throws {
     other_updates += blocked_optional_updates
     
     let page = GenericItem()
+    page["update_rows"] = ""
     page["hide_progress_spinner"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"

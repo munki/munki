@@ -21,7 +21,7 @@
   <td>
       <div class="msc-button install-updates">
           <button class="button-area uppercase" 
-           onClick="window.AppController.myItemsActionButtonClicked_('${name_quoted}');">
+           onClick="window.webkit.messageHandlers.myItemsButtonClicked.postMessage('${name_quoted}');">
               <div class="msc-button-inner install-updates ${status}"
                    id="${name_escaped}_action_button_text">
                   ${myitem_action_text}

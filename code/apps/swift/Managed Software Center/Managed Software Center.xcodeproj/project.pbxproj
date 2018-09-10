@@ -35,6 +35,7 @@
 		C0546BD820FDAD82003FE5A6 /* power.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD720FDAD82003FE5A6 /* power.swift */; };
 		C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */; };
 		C05F87932105587A000DB8D8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C05F87952105587A000DB8D8 /* Localizable.strings */; };
+		C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */; };
 		C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */; };
 		C0D30BEB20CA445A005E876E /* MunkiItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D30BEA20CA445A005E876E /* MunkiItems.swift */; };
 		C0E2599E210AD8CE00C3A3D9 /* Socket.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E2599D210AD8CD00C3A3D9 /* Socket.swift */; };
@@ -116,6 +117,7 @@
 		C05F87A821055EF1000DB8D8 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A921055F04000DB8D8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87AA21055F10000DB8D8 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCWebView.swift; sourceTree = "<group>"; };
 		C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCStatusController.swift; sourceTree = "<group>"; };
 		C0D30BEA20CA445A005E876E /* MunkiItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiItems.swift; sourceTree = "<group>"; };
 		C0E2599D210AD8CD00C3A3D9 /* Socket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Socket.swift; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 				C04CA61920E682AE00711461 /* passwdutil.swift */,
 				C04CA61B20E68B1800711461 /* authrestart.swift */,
 				C0546BD720FDAD82003FE5A6 /* power.swift */,
+				C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -390,6 +393,7 @@
 				C03107C320C8B65E007FE337 /* msclib.swift in Sources */,
 				C04F829F20BB713B00F9C57D /* munki.swift in Sources */,
 				C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */,
+				C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */,
 				C0E2599E210AD8CE00C3A3D9 /* Socket.swift in Sources */,
 				C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */,
 				C04F82A120BB77CF00F9C57D /* FoundationPlist.swift in Sources */,

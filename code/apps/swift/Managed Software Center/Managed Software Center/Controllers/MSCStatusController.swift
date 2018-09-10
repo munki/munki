@@ -174,7 +174,7 @@ class MSCStatusController: NSObject {
         // Initialize the main window for update status
         statusWindowController._update_in_progress = true
         if statusWindowController.currentPageIsUpdatesPage() {
-            statusWindowController.webView.reload(self)
+            statusWindowController.load_page("updates.html")
             statusWindowController.displayUpdateCount()
         }
     }
@@ -225,72 +225,29 @@ class MSCStatusController: NSObject {
             percent = 100.0
         }
         _status_percent = percent
-        //TO-DO: figure this out
-        /*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when setting percentageDone")
-            return
-        }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let progress = document.getElementById("progress-bar") {
-                if percent > 0 {
-                    // indeterminate
-                    progress.className = "indeterminate"
-                    progress.removeAttribute("style")
-                } else {
-                    progress.className = ""
-                    progress.setAttribute("style", value: "width: \(percent)")
-                }
-            }
-        }
-         */
+        // tell JavaScript to update the percentage done
+        msc_debug_log("Calling JavaScript updateProgress")
+        statusWindowController.webView.evaluateJavaScript("updateProgress(\(percent))")
     }
 
     func setMessage(_ text: String) {
         // Display main status message
-        let messageText = Bundle.main.localizedString(forKey: text, value: text, table: nil)
+        var messageText = Bundle.main.localizedString(forKey: text, value: text, table: nil)
         _status_message = messageText
-        //TO-DO: figure this out
-        /*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when setting status text")
-            return
+        if messageText.isEmpty {
+            messageText = "&nbsp;"
         }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let textElement = document.getElementById("primary-status-text") {
-                if messageText.isEmpty {
-                    textElement.innerHTML = "&nbsp;"
-                } else {
-                    (textElement as! DOMHTMLElement).innerText = messageText
-                }
-            }
-        }
-         */
+        statusWindowController.setInnerHTML(messageText, elementID: "primary-status-text")
     }
     
     func setDetail(_ text: String) {
-        // Display main status message
-        let detailText = Bundle.main.localizedString(forKey: text, value: text, table: nil)
+        // Display status detail
+        var detailText = Bundle.main.localizedString(forKey: text, value: text, table: nil)
         _status_detail = detailText
-        //TO-DO: figure this out
-        /*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when setting detail text")
-            return
+        if detailText.isEmpty {
+            detailText = "&nbsp;"
         }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let textElement = document.getElementById("secondary-status-text") {
-                if detailText.isEmpty {
-                    textElement.innerHTML = "&nbsp;"
-                } else {
-                    (textElement as! DOMHTMLElement).innerText = detailText
-                }
-            }
-        }
-        */
+        statusWindowController.setInnerHTML(detailText, elementID: "secondary-status-text")
     }
 
     func getStopButtonState() -> Bool {
@@ -306,23 +263,7 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnHidden = true
-//TO-DO: figure this out
-/*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when hiding stop button")
-            return
-        }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let install_btn = document.getElementById("install-all-button-text") {
-                var btn_classes = install_btn.className.components(separatedBy: " ")
-                if !btn_classes.contains("hidden") {
-                    btn_classes.append("hidden")
-                    install_btn.className = btn_classes.joined(separator: " ")
-                }
-            }
-        }
- */
+        statusWindowController.webView.evaluateJavaScript("hideStopButton()")
     }
     
     func showStopButton() {
@@ -332,21 +273,7 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnHidden = false
-//TO-DO: figure this out
-/*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when showing stop button")
-            return
-        }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let install_btn = document.getElementById("install-all-button-text") {
-                var btn_classes = install_btn.className.components(separatedBy: " ")
-                btn_classes = btn_classes.filter({ $0 != "hidden" })
-                install_btn.className = btn_classes.joined(separator: " ")
-            }
-        }
- */
+        statusWindowController.webView.evaluateJavaScript("showStopButton()")
     }
     
     func disableStopButton() {
@@ -356,23 +283,7 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnHidden = true
-//TO-DO: figure this out
-/*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when disabling stop button")
-            return
-        }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let install_btn = document.getElementById("install-all-button-text") {
-                var btn_classes = install_btn.className.components(separatedBy: " ")
-                if !btn_classes.contains("disabled") {
-                    btn_classes.append("disabled")
-                    install_btn.className = btn_classes.joined(separator: " ")
-                }
-            }
-        }
- */
+        statusWindowController.webView.evaluateJavaScript("disableStopButton()")
     }
     
     func enableStopButton() {
@@ -382,21 +293,7 @@ class MSCStatusController: NSObject {
             return
         }
         _status_stopBtnDisabled = false
-//TO-DO: figure this out
-/*
-        guard let document = statusWindowController.webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument when enabling stop button")
-            return
-        }
-        if let _ = document.getElementById("updates-progress-spinner") {
-            // if we found the updates-progress-spinner we're displaying the updates status page
-            if let install_btn = document.getElementById("install-all-button-text") {
-                var btn_classes = install_btn.className.components(separatedBy: " ")
-                btn_classes = btn_classes.filter({ $0 != "disabled" })
-                install_btn.className = btn_classes.joined(separator: " ")
-            }
-        }
- */
+        statusWindowController.webView.evaluateJavaScript("enableStopButton()")
     }
     
     func getRestartAlertDismissed() -> Bool {
