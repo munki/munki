@@ -9,6 +9,7 @@
 import Cocoa
 import WebKit
 
+
 class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate, WKScriptMessageHandler {
     
     var _alertedUserToOutstandingUpdates = false
@@ -285,8 +286,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         let key = name.components(separatedBy: "-")[0]
         switch key {
         case "detail", "updatedetail":
-            // item detail page
-            webView.reload(self)
+            // item detail page; just rebuild and reload it
+            load_page(filename)
         case "category", "filter", "developer":
             // optional item list page
             updateListPage()
@@ -297,8 +298,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // my items page
             updateMyItemsPage()
         case "updates":
-            // updates page
-            webView.reload(self)
+            // updates page; just rebuild and reload it
+            load_page("updates.html")
             _alertedUserToOutstandingUpdates = true
         default:
             // should never get here
@@ -332,15 +333,45 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         // react to messages set to us by JavaScript
-        print("Got message from JavaScript!")
+        print("Got message from JavaScript: \(message.name)")
         if message.name == "installButtonClicked" {
             installButtonClicked()
+        }
+        if message.name == "myItemsButtonClicked" {
+            if let item_name = message.body as? String {
+                myItemsActionButtonClicked(item_name)
+            }
+        }
+        if message.name == "actionButtonClicked" {
+            if let item_name = message.body as? String {
+                actionButtonClicked(item_name)
+            }
+        }
+        if message.name == "changeSelectedCategory" {
+            if let category_name = message.body as? String {
+                changeSelectedCategory(category_name)
+            }
+        }
+        if message.name == "updateOptionalInstallButtonClicked" {
+            if let item_name = message.body as? String {
+                updateOptionalInstallButtonClicked(item_name)
+            }
+        }
+        if message.name == "updateOptionalInstallButtonFinishAction" {
+            if let item_name = message.body as? String {
+                updateOptionalInstallButtonFinishAction(item_name)
+            }
         }
     }
     
     func addJSmessageHandlers() {
         // define messages JavaScript can send us
         wkContentController.add(self, name: "installButtonClicked")
+        wkContentController.add(self, name: "myItemsButtonClicked")
+        wkContentController.add(self, name: "actionButtonClicked")
+        wkContentController.add(self, name: "changeSelectedCategory")
+        wkContentController.add(self, name: "updateOptionalInstallButtonClicked")
+        wkContentController.add(self, name: "updateOptionalInstallButtonFinishAction")
     }
 
     func insertWebView() {
@@ -352,8 +383,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             webConfiguration.userContentController = wkContentController
             webConfiguration.preferences.javaScriptEnabled = true
             webConfiguration.preferences.javaEnabled = false
+            if UserDefaults.standard.bool(forKey: "developerExtrasEnabled") {
+                webConfiguration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+            }
             // init our webview
-            let replacementWebView = WKWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
+            let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
             replacementWebView.allowsBackForwardNavigationGestures = true
             // replace the placeholder in the window view with the real webview
@@ -449,6 +483,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // User selected Reload page menu item. Reload the page and kick off an updatecheck
         msc_log("user", "reload_page_menu_item_selected")
         checkForUpdates()
+        URLCache.shared.removeAllCachedResponses()
         webView.reload(sender)
     }
     
@@ -520,7 +555,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if items_to_be_installed_names.contains(name) {
                     msc_debug_log("Setting status for \(name) to \"installing\"")
                     new_status = "installing"
-                } else if items_to_be_removed_names.contains("name") {
+                } else if items_to_be_removed_names.contains(name) {
                     msc_debug_log("Setting status for \(name) to \"removing\"")
                     new_status = "removing"
                 }
@@ -622,23 +657,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func updateMyItemsPage() {
         // Update the "My Items" page with current data.
         // Modifies the DOM to avoid ugly browser refresh
-        // TO-DO: figure out how to replace this logic in JavaScript
-        /*let myitems_rows = buildMyItemsRows()
-        let document = webView.mainFrameDocument
-        if let table_body_element = document?.getElementById("my_items_rows") {
-            table_body_element.innerHTML = myitems_rows
-        }*/
+        let myitems_rows = buildMyItemsRows()
+        setInnerHTML(myitems_rows, elementID: "my_items_rows")
     }
     
     func updateCategoriesPage() {
         // Update the Catagories page with current data.
         // Modifies the DOM to avoid ugly browser refresh
-        // TO-DO: figure out how to replace this logic in JavaScript
-        /*let items_html = buildCategoryItemsHTML()
-        let document = webView.mainFrameDocument
-        if let items_div_element = document?.getElementById("optional_installs_items") {
-            items_div_element.innerHTML = items_html
-        }*/
+        let items_html = buildCategoryItemsHTML()
+        setInnerHTML(items_html, elementID: "optional_installs_items")
     }
     
     func updateListPage() {
@@ -668,14 +695,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         msc_debug_log("updating software list page with " +
                       "category: '\(category)', developer: '\(developer)', " +
                       "filter: '\(our_filter)'")
-        // TO-DO: figure out how to replace this logic in JavaScript
-        /*
         let items_html = buildListPageItemsHTML(
             category: category, developer: developer, filter: our_filter)
-        let document = webView.mainFrameDocument
-        if let items_div_element = document?.getElementById("optional_installs_items") {
-            items_div_element.innerHTML = items_html
-        }*/
+        setInnerHTML(items_html, elementID: "optional_installs_items")
     }
     
     func load_page(_ url_fragment: String) {
@@ -724,7 +746,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
          we generate each page dynamically; we want things
          that are changed in one page view to be reflected
          immediately in all page views */
-        // TO-DO: figure this out
+        // TO-DO: figure this out for WKWebView
         /*let identifier = "com.googlecode.munki.ManagedSoftwareCenter"
         if let prefs = WebPreferences(identifier: identifier) {
             prefs.usesPageCache = false
@@ -865,56 +887,39 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         return request
     }
     
-    // WebFrameLoadDelegate methods
-    
-    func webView(_ webView: WebView!,
-                 didClearWindowObject windowObject: WebScriptObject!,
-                 for frame: WebFrame!) {
-        // Configure webView to let JavaScript talk to this object.
-        windowObject.setValue(self, forKey: "AppController")
-    }
-    
-    
-    // WebView uiDelegate methods
-    // (none currently)
-    
-    // JavaScript integration -- WebScripting methods
-    
-    /*override class func webScriptName(for selector: Selector!) -> String! {
-        if selector == #selector(self.changeSelectedCategory(_:)) {
-            return "changeSelectedCategory"
-        } else {
-            return nil
-        }
-    }*/
-    
-    override class func isSelectorExcluded(fromWebScript selector: Selector!) -> Bool {
-        let allowedSelectors = [
-            #selector(self.openExternalLink(_:)),
-            #selector(self.installButtonClicked),
-            #selector(self.updateOptionalInstallButtonClicked(_:)),
-            #selector(self.myItemsActionButtonClicked(_:)),
-            #selector(self.actionButtonClicked(_:)),
-            #selector(self.updateOptionalInstallButtonFinishAction(_:)),
-            #selector(self.changeSelectedCategory(_:))
-        ]
-        if allowedSelectors.contains(selector) {
-            return false // this selector is not excluded
-        } else {
-            return true // all other selectors are excluded
-        }
-    }
+    // JavaScript integration
     
     // handling DOM UI elements
     
-    @objc func openExternalLink(_ url: String) {
+    func setInnerHTML(_ htmlString: String, elementID: String) {
+        if let rawData = htmlString.data(using: .utf8) {
+            let encodedData = rawData.base64EncodedString()
+            webView.evaluateJavaScript("setInnerHTMLforElementID('\(elementID)', '\(encodedData)')")
+        }
+    }
+    
+    func addToInnerHTML(_ htmlString: String, elementID: String) {
+        if let rawData = htmlString.data(using: .utf8) {
+            let encodedData = rawData.base64EncodedString()
+            webView.evaluateJavaScript("addToInnerHTMLforElementID('\(elementID)', '\(encodedData)')")
+        }
+    }
+    
+    func setInnerText(_ textString: String, elementID: String) {
+        if let rawData = textString.data(using: .utf8) {
+            let encodedData = rawData.base64EncodedString()
+            webView.evaluateJavaScript("setInnerTextforElementID('\(elementID)', '\(encodedData)')")
+        }
+    }
+    
+    func openExternalLink(_ url: String) {
         // open a link in the default browser
         if let real_url = URL(string: url) {
             NSWorkspace.shared.open(real_url)
         }
     }
     
-    @objc func installButtonClicked() {
+    func installButtonClicked() {
         // this method is called from JavaScript when the user
         // clicks the Install button in the Updates view
         if _update_in_progress {
@@ -943,7 +948,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
     }
     
-    @objc func updateOptionalInstallButtonClicked(_ item_name: String) {
+   func updateOptionalInstallButtonClicked(_ item_name: String) {
         // this method is called from JavaScript when a user clicks
         // the cancel or add button in the updates list
         if let item = optionalItem(forName: item_name) {
@@ -964,7 +969,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         webView.evaluateJavaScript("fadeOutAndRemove('\(item_name)')")
     }
     
-    @objc func myItemsActionButtonClicked(_ item_name: String) {
+    func myItemsActionButtonClicked(_ item_name: String) {
         // this method is called from JavaScript when the user clicks
         // the Install/Remove/Cancel button in the My Items view
         if let item = optionalItem(forName: item_name) {
@@ -984,30 +989,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func myItemsActionButtonPerformAction(_ item_name: String) {
         // perform action needed when user clicks
         // the Install/Remove/Cancel button in the My Items view
-        // TO-DO: figure out how to this in JavaScript
-        /*
         guard let item = optionalItem(forName: item_name) else {
             msc_debug_log(
                 "User clicked MyItems action button for \(item_name)")
             msc_debug_log("Could not find item for \(item_name)")
-            return
-        }
-        guard let document = webView.mainFrameDocument else {
-            msc_debug_log(
-                "User clicked MyItems action button for \(item_name)")
-            msc_debug_log("Could not get webView.mainFrameDocument")
-            return
-        }
-        guard let status_line = document.getElementById("\(item_name)_status_text") else {
-            msc_debug_log(
-                "User clicked MyItems action button for \(item_name)")
-            msc_debug_log("Unexpected error finding \(item_name)_status_text")
-            return
-        }
-        guard let btn = document.getElementById("\(item_name)_action_button_text") else {
-            msc_debug_log(
-                "User clicked MyItems action button for \(item_name)")
-            msc_debug_log("Unexpected error finding \(item_name)_action_button_text")
             return
         }
         let prior_status = item["status"] as? String ?? ""
@@ -1020,27 +1005,25 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if current_status == "not-installed" {
             // we removed item from list of things to install
             // now remove from display
-            if let table_row = document.getElementById("\(item_name)_myitems_table_row") {
-                table_row.parent.removeChild(table_row)
-            } else {
-                (btn as! DOMHTMLElement).innerText = item["myitem_action_text"] as? String ?? ""
-                (status_line as! DOMHTMLElement).innerText = item["myitem_status_text"] as? String ?? ""
-                status_line.className = "status \(current_status)"
+            webView.evaluateJavaScript("removeElementByID('\(item_name)_myitems_table_row')")
+        } else {
+            setInnerHTML(item["myitem_action_text"] as? String ?? "", elementID: "\(item_name)_action_button_text")
+            setInnerHTML(item["myitem_status_text"] as? String ?? "", elementID: "\(item_name)_status_text")
+            webView.evaluateJavaScript("document.getElementById('\(item_name)_status_text')).className = 'status \(current_status)'")
+        }
+        if ["install-requested", "removal-requested"].contains(current_status) {
+            _alertedUserToOutstandingUpdates = false
+            if !_update_in_progress {
+                updateNow()
             }
-            if ["install-requested", "removal-requested"].contains(current_status) {
-                _alertedUserToOutstandingUpdates = false
-                if !_update_in_progress {
-                    updateNow()
-                }
-            } else if ["will-be-installed", "update-will-be-installed",
-                       "will-be-removed"].contains(prior_status) {
-                // cancelled a pending install or removal; should run an updatecheck
-                checkForUpdates(suppress_apple_update_check: true)
-            }
-        }*/
+        } else if ["will-be-installed", "update-will-be-installed",
+                   "will-be-removed"].contains(prior_status) {
+            // cancelled a pending install or removal; should run an updatecheck
+            checkForUpdates(suppress_apple_update_check: true)
+        }
     }
     
-    @objc func actionButtonClicked(_ item_name: String) {
+    func actionButtonClicked(_ item_name: String) {
         // this method is called from JavaScript when the user clicks
         // the Install/Removel/Cancel button in the list or detail view
         if let item = optionalItem(forName: item_name) {
@@ -1170,30 +1153,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
     }
     
-    @objc func updateOptionalInstallButtonFinishAction(_ item_name: String) {
+    func updateOptionalInstallButtonFinishAction(_ item_name: String) {
         // Perform the required action when a user clicks
         // the cancel or add button in the updates list
-        // TO-DO: figure this out
-        /*
-        guard let document = webView.mainFrameDocument else {
-            msc_debug_log("Could not get webView.mainFrameDocument")
-            return
-        }
+        msc_debug_log("Called updateOptionalInstallButtonFinishAction for \(item_name)")
         guard let item = optionalItem(forName: item_name) else {
             msc_debug_log(
                 "Unexpected error: Can't find item for \(item_name)")
             return
         }
-        guard let update_table_row = document.getElementById(
-            "\(item_name)_update_table_row") else {
-                msc_debug_log(
-                    "Unexpected error: Can't find \(item_name)_update_table_row")
-                return
-        }
-        // remove this row from its current table
-        update_table_row.parent.removeChild(update_table_row)
         
-        //let previous_status = item["status"] as? String ?? ""
+        // remove row for this item from its current table
+        webView.evaluateJavaScript("removeElementByID('\(item_name)_update_table_row')")
+        
         // update item status
         if !update_status_for_item(item) {
             // there was a problem, can't continue
@@ -1208,56 +1180,35 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // make some new HTML for the updated item
             let item_template = getTemplate("update_row_template.html")
             let item_html = item_template.substitute(item)
-            var table: DOMElement?
             if ["install-requested",
                     "update-will-be-installed", "installed"].contains(current_status) {
                 // add the node to the updates-to-install table
-                table = document.getElementById("updates-to-install-table")
+                addToInnerHTML(item_html, elementID: "updates-to-install-table")
             }
             if current_status == "update-available" {
                 // add the node to the other-updates table
-                table = document.getElementById("other-updates-table")
+                addToInnerHTML(item_html, elementID: "other-updates-table")
             }
-            if table == nil {
-                msc_debug_log(
-                    "Unexpected error: could not find updates-to-install-table or other-updates-table")
-                return
-            }
-            // this isn't the greatest way to add something to the DOM
-            // but it works...
-            table!.innerHTML = table!.innerHTML + item_html
         }
         
         // might need to toggle visibility of other updates div
-        if let other_updates_div = document.getElementById("other-updates") {
-            var other_updates_div_classes = other_updates_div.className.components(separatedBy: " ")
-            let other_updates_table_html = (document.getElementById("other-updates-table")?.innerHTML ?? "")
-            let other_updates_table_html_trimmed = other_updates_table_html.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !other_updates_table_html_trimmed.isEmpty {
-                // remove
-                other_updates_div_classes = other_updates_div_classes.filter({ $0 != "hidden" })
-                other_updates_div.className = other_updates_div_classes.joined(separator: " ")
-            } else {
-                if !other_updates_div_classes.contains("hidden") {
-                    other_updates_div_classes.append("hidden")
-                    other_updates_div.className = other_updates_div_classes.joined(separator: " ")
-                }
-            }
+        // find any optional installs with status update available
+        let other_updates = getOptionalInstallItems().filter(
+            { ($0["status"] as? String ?? "") == "update-available" }
+        )
+        if other_updates.isEmpty {
+            webView.evaluateJavaScript("document.getElementById('other-updates').classList.add('hidden')")
+        } else {
+            webView.evaluateJavaScript("document.getElementById('other-updates').classList.remove('hidden')")
         }
         
         // update the updates-to-install header to reflect the new list of
         // updates to install
-        if let update_count_element = document.getElementById("update-count-string") {
-            (update_count_element as! DOMHTMLElement).innerText = updateCountMessage(getUpdateCount())
-        }
-        if let warning_text_element = document.getElementById("update-warning-text") {
-            (warning_text_element as! DOMHTMLElement).innerText = getWarningText()
-        }
+        setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
+        setInnerText(getWarningText(), elementID: "update-warning-text")
     
         // update text of Install All button
-        if let install_all_button_element = document.getElementById("install-all-button-text") {
-            (install_all_button_element as! DOMHTMLElement).innerText = getInstallAllButtonTextForCount(getUpdateCount())
-        }
+        setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
         
         // update count badges
         displayUpdateCount()
@@ -1267,53 +1218,47 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // complete first
             self.perform(#selector(self.checkForUpdates), with: true, afterDelay: 1.0)
         }
-        */
     }
-    
+
     func updateDOMforOptionalItem(_ item: OptionalItem) {
         // Update displayed status of an item
-        // TO-DO: figure this out
-        /*
         let item_name = item["name"] as? String ?? ""
-        guard let document = webView.mainFrameDocument else {
-            msc_debug_log("ERROR in updateDOMforOptionalItem: could not get mainFrameDocument")
-            return
-        }
-        guard let status_line = document.getElementById("\(item_name)_status_text") else {
-            msc_debug_log("ERROR in updateDOMforOptionalItem: could not find \(item_name)_status_text in DOM")
-            return
-        }
-        guard let btn = document.getElementById("\(item_name)_action_button_text") else {
-            msc_debug_log("ERROR in updateDOMforOptionalItem: could not find \(item_name)_action_button_text in DOM")
-            return
-        }
+        msc_debug_log("Called updateDOMforOptionalItem for \(item_name)")
+        let btn_id = "\(item_name)_action_button_text"
+        let status_line_id = "\(item_name)_status_text"
         
-        var btn_classes = btn.className.components(separatedBy: " ")
-        // filter out status class
-        btn_classes = btn_classes.filter(
-            { ["msc-button-inner", "large", "small", "install-updates"].contains($0) }
-        )
-        if let item_status = item["status"] as? String {
-            btn_classes.append(item_status)
-            btn.className = btn_classes.joined(separator: " ")
-            status_line.className = item_status
+        webView.evaluateJavaScript("document.getElementById('\(btn_id)').className")  { (result, error) in
+            msc_debug_log("result: \(result ?? "<none>") error: \(String(describing: error))")
+            if error == nil {
+                var btn_classes = (result as? String ?? "").components(separatedBy: " ")
+                // filter out status class
+                btn_classes = btn_classes.filter(
+                    { ["msc-button-inner", "large", "small", "install-updates"].contains($0) }
+                )
+                if let item_status = item["status"] as? String {
+                    btn_classes.append(item_status)
+                    let btnClassName = btn_classes.joined(separator: " ")
+                    self.webView.evaluateJavaScript("document.getElementById('\(btn_id)').className = '\(btnClassName)'")
+                    self.webView.evaluateJavaScript("document.getElementById('\(status_line_id)').className = '\(item_status)'")
+                }
+                if btn_classes.contains("install-updates") {
+                    //(btn as! DOMHTMLElement).innerText = item["myitem_action_text"] as? String ?? ""
+                    self.setInnerText(item["myitem_action_text"] as? String ?? "", elementID: btn_id)
+                } else if btn_classes.contains("long_action_text") {
+                    //(btn as! DOMHTMLElement).innerText = item["long_action_text"] as? String ?? ""
+                    self.setInnerText(item["long_action_text"] as? String ?? "", elementID: btn_id)
+                } else {
+                    //(btn as! DOMHTMLElement).innerText = item["short_action_text"] as? String ?? ""
+                    self.setInnerText(item["short_action_text"] as? String ?? "", elementID: btn_id)
+                }
+                // use innerHTML instead of innerText because sometimes the status
+                // text contains html, like '<span class="warning">Some warning</span>'
+                self.setInnerHTML(item["status_text"] as? String ?? "", elementID: "\(item_name)_status_text_span")
+            }
         }
-        if btn_classes.contains("install-updates") {
-            (btn as! DOMHTMLElement).innerText = item["myitem_action_text"] as? String ?? ""
-        } else if btn_classes.contains("long_action_text") {
-            (btn as! DOMHTMLElement).innerText = item["long_action_text"] as? String ?? ""
-        } else {
-            (btn as! DOMHTMLElement).innerText = item["short_action_text"] as? String ?? ""
-        }
-        if let status_text_span = document.getElementById("\(item_name)_status_text_span") {
-            // use setInnerHTML_ instead of setInnerText_ because sometimes the status
-            // text contains html, like '<span class="warning">Some warning</span>'
-            status_text_span.innerHTML = item["status_text"] as? String ?? ""
-        }
-        */
     }
     
-    @objc func changeSelectedCategory(_ category: String) {
+    func changeSelectedCategory(_ category: String) {
         // this method is called from JavaScript when the user
         // changes the category selected in the sidebar popup
         let all_categories_label = NSLocalizedString(
@@ -1347,11 +1292,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
         // Handle WebView back button
+        URLCache.shared.removeAllCachedResponses()
         webView.goBack(self)
     }
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {
         // Handle WebView forward button
+        URLCache.shared.removeAllCachedResponses()
         webView.goForward(self)
     }
     
