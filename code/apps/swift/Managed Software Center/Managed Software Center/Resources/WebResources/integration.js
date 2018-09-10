@@ -14,10 +14,16 @@ function changeAppearanceModeTo(theme) {
 
 // integration functions to be called from Swift
 
+function b64DecodeUnicode(str) {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+}
+
 function setInnerHTMLforElementID(elementID, encodedData) {
     var theElement = document.getElementById(elementID);
     if (theElement != null) {
-        var decodedData = window.atob(encodedData);
+        var decodedData = b64DecodeUnicode(encodedData);
         theElement.innerHTML = decodedData;
     }
 }
@@ -25,7 +31,7 @@ function setInnerHTMLforElementID(elementID, encodedData) {
 function addToInnerHTMLforElementID(elementID, encodedData) {
     var theElement = document.getElementById(elementID);
     if (theElement != null) {
-        var decodedData = window.atob(encodedData);
+        var decodedData = b64DecodeUnicode(encodedData);
         theElement.innerHTML = theElement.innerHTML + decodedData;
     }
 }
@@ -33,7 +39,7 @@ function addToInnerHTMLforElementID(elementID, encodedData) {
 function setInnerTextforElementID(elementID, encodedData) {
     var theElement = document.getElementById(elementID);
     if (theElement != null) {
-        var decodedData = window.atob(encodedData);
+        var decodedData = b64DecodeUnicode(encodedData);
         theElement.innerText = decodedData;
     }
 }
