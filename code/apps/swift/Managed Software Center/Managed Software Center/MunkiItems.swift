@@ -964,7 +964,7 @@ class UpdateItem: GenericItem {
                     start_text += "<span class=\"warning\">\(filtered_html(warning_text))</span><br/><br/>"
                 }
             }
-            if (my["dependent_items"] as? [String]) != nil {
+            if !((my["dependent_items"] as? [String] ?? []).isEmpty) {
                 start_text += dependency_description()
             }
         }
