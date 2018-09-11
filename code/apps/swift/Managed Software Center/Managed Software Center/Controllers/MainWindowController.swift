@@ -366,6 +366,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func addJSmessageHandlers() {
         // define messages JavaScript can send us
+        wkContentController.add(self, name: "openExternalLink")
         wkContentController.add(self, name: "installButtonClicked")
         wkContentController.add(self, name: "myItemsButtonClicked")
         wkContentController.add(self, name: "actionButtonClicked")
