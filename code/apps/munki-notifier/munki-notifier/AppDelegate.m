@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-NSString * const MunkiNotifyBundleID = @"com.googlecode.munki.munki-notify";
+NSString * const MunkiNotifyBundleID = @"com.googlecode.munki.munki-notifier";
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
 NSString * const MunkiUpdatesURL = @"munki://updates";
