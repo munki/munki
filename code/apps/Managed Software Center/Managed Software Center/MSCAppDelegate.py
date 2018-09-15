@@ -148,7 +148,7 @@ class MSCAppDelegate(NSObject):
 
     def userNotificationCenter_didActivateNotification_(self, center, notification):
         '''User clicked on a Notification Center alert'''
-        user_info = notification.userInfo()
+        user_info = notification.userInfo() or {}
         if user_info.get('action') == 'open_url':
             url = user_info.get('value', 'munki://updates')
             msclog.log("MSU", "Got user notification to open %s" % url)
@@ -156,6 +156,7 @@ class MSCAppDelegate(NSObject):
             center.removeDeliveredNotification_(notification)
         else:
             msclog.log("MSU", "Got user notification with unrecognized userInfo")
+            self.openMunkiURL('munki://updates')
 
     def userNotificationCenter_shouldPresentNotification_(self, center, notification):
         return True
