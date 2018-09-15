@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-NSString * const MunkiNotifyBundleID = @"com.googlecode.munki.munki-notifier";
+NSString * const MunkiNotifierBundleID = @"com.googlecode.munki.munki-notifier";
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
 NSString * const MunkiUpdatesURL = @"munki://updates";
@@ -27,7 +27,7 @@ NSString *_fakeBundleIdentifier = nil;
 - (NSString *)__bundleIdentifier;
 {
     if (self == [NSBundle mainBundle]) {
-        return _fakeBundleIdentifier ? _fakeBundleIdentifier : MunkiNotifyBundleID;
+        return _fakeBundleIdentifier ? _fakeBundleIdentifier : MunkiNotifierBundleID;
     } else {
         return [self __bundleIdentifier];
     }
