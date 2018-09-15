@@ -231,8 +231,8 @@ InstallFakeBundleIdentifierHook()
 {
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeDeliveredNotification:userNotification];
     
-    NSString *action     = userNotification.userInfo[@"action"];
-    NSString *value     = userNotification.userInfo[@"value"];
+    NSString *action = userNotification.userInfo[@"action"];
+    NSString *value = userNotification.userInfo[@"value"];
     
     NSLog(@"User activated notification:");
     NSLog(@"    title: %@", userNotification.title);
