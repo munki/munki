@@ -9,14 +9,12 @@
 
 #import "AppDelegate.h"
 #import <objc/runtime.h>
-#include <CoreFoundation/CoreFoundation.h>
 
 NSString * const MunkiNotifierBundleID = @"com.googlecode.munki.munki-notifier";
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
 NSString * const MunkiUpdatesURL = @"munki://updates";
 long const DefaultUseNotificationCenterDays = 3;
-
 
 NSString *_fakeBundleIdentifier = nil;
 
@@ -40,24 +38,11 @@ InstallFakeBundleIdentifierHook()
 {
     Class class = objc_getClass("NSBundle");
     if (class) {
-        method_exchangeImplementations(
-            class_getInstanceMethod(class, @selector(bundleIdentifier)),
-            class_getInstanceMethod(class, @selector(__bundleIdentifier)));
+        method_exchangeImplementations(class_getInstanceMethod(class, @selector(bundleIdentifier)),
+                                       class_getInstanceMethod(class, @selector(__bundleIdentifier)));
         return YES;
     }
     return NO;
-}
-
-
-void launchMSCapp()
-{
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    if ([fileManager fileExistsAtPath: @"/Applications/Managed Software Center.app"]) {
-        [[NSWorkspace sharedWorkspace] launchApplication: @"/Applications/Managed Software Center.app"];
-    } else {
-        // just let LaunchServices find it and launch it for us
-        [[NSWorkspace sharedWorkspace] launchApplication: @"Managed Software Center.app"];
-    }
 }
 
 
@@ -65,141 +50,138 @@ void launchMSCapp()
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
-    if (floor(kCFCoreFoundationVersionNumber) < kCFCoreFoundationVersionNumber10_8) {
-        // we are running on something earlier than 10.8. Just launch MSC.app and quit.
-        launchMSCapp();
+    NSUserNotification *userNotification = notification.userInfo[NSApplicationLaunchUserNotificationKey];
+    if (userNotification) {
+        [self userActivatedNotification:userNotification];
+    } else {
+        // Install the fake bundle ID hook so we can fake the sender. This also
+        // needs to be done to be able to remove a message.
+        @autoreleasepool {
+            if (InstallFakeBundleIdentifierHook()) {
+                _fakeBundleIdentifier = ManagedSoftwareCenterBundleID;
+            }
+        }
+        [self notifyUser];
+    }
+}
+
+- (void)notifyUser
+{
+    // Do we have a running NotificationCenter?
+    NSArray *runningProcesses = [[[NSWorkspace sharedWorkspace] runningApplications]
+                                 valueForKey:@"bundleIdentifier"];
+    BOOL notificationCenterAvailable = ([runningProcesses indexOfObject:NotificationCenterUIBundleID]
+                                        != NSNotFound);
+    
+    // get count of pending updates, oldest update days and any forced update due date
+    // from Munki's preferences
+    CFPropertyListRef plistRef = nil;
+    long updateCount = 0;
+    float oldestUpdateDays = 0;
+    long useNotificationCenterDays = DefaultUseNotificationCenterDays;
+    NSDate *forcedUpdateDueDate = nil;
+    
+    CFPreferencesAppSynchronize(CFSTR("ManagedInstalls"));
+    plistRef = CFPreferencesCopyValue(CFSTR("PendingUpdateCount"),
+                                      CFSTR("ManagedInstalls"),
+                                      kCFPreferencesAnyUser,
+                                      kCFPreferencesCurrentHost);
+    if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
+        updateCount = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
+    }
+    plistRef = CFPreferencesCopyValue(CFSTR("OldestUpdateDays"),
+                                      CFSTR("ManagedInstalls"),
+                                      kCFPreferencesAnyUser,
+                                      kCFPreferencesCurrentHost);
+    if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
+        oldestUpdateDays = [(NSNumber *)CFBridgingRelease(plistRef) floatValue];
+    }
+    if (CFPreferencesAppValueIsForced(CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"))) {
+        // use CFPreferencesCopyAppValue so we can respect managed preferences
+        plistRef = CFPreferencesCopyAppValue(CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"));
+    } else {
+        // preference not managed, read from /Library/Preferences (ignoring user-level preferences)
+        plistRef = CFPreferencesCopyValue(CFSTR("UseNotificationCenterDays"),
+                                          CFSTR("ManagedInstalls"),
+                                          kCFPreferencesAnyUser,
+                                          kCFPreferencesCurrentHost);
+    }
+    if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
+        useNotificationCenterDays = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
+    }
+    //NSLog(@"UseNotificationCenterDays: %ld", useNotificationCenterDays);
+    plistRef = CFPreferencesCopyValue(CFSTR("ForcedUpdateDueDate"),
+                                      CFSTR("ManagedInstalls"),
+                                      kCFPreferencesAnyUser,
+                                      kCFPreferencesCurrentHost);
+    if (plistRef && CFGetTypeID(plistRef) == CFDateGetTypeID()) {
+        forcedUpdateDueDate = (NSDate *)CFBridgingRelease((CFDateRef)plistRef);
+    }
+    
+    if (updateCount == 0) {
+        // no available updates
+        if (notificationCenterAvailable) {
+            // clear any previously posted updates available notifications and exit
+            [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+        }
+        [NSApp terminate: self];
+        return;
+    }
+    
+    // updateCount > 0
+    if (! notificationCenterAvailable || oldestUpdateDays > useNotificationCenterDays) {
+        // Notification Center is not available or Notification Manager notifications
+        // are being ignored or suppressed; launch MSC.app and show updates
+        if (notificationCenterAvailable) {
+            // clear any previously posted updates available notifications since we are going
+            // to launch MSC.app
+            [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+        }
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
         [NSApp terminate: self];
         return;
     }
     
-    NSUserNotification *userNotification = notification.userInfo[
-        NSApplicationLaunchUserNotificationKey];
-    if (userNotification) {
-        [self userActivatedNotification:userNotification];
-        [NSApp terminate: self];
-    } else {
-        // Do we have a running NotificationCenter?
-        NSArray *runningProcesses = [[[NSWorkspace sharedWorkspace] runningApplications]
-                                     valueForKey:@"bundleIdentifier"];
-        BOOL notificationCenterAvailable = ([runningProcesses indexOfObject:NotificationCenterUIBundleID]
-                                            != NSNotFound);
-        
-        if (notificationCenterAvailable) {
-            // Install the fake bundle ID hook so we can fake the sender. This also
-            // needs to be done to be able to remove a message.
-            @autoreleasepool {
-                if (InstallFakeBundleIdentifierHook()) {
-                    _fakeBundleIdentifier = ManagedSoftwareCenterBundleID;
-                }
-            }
-        }
-
-        // get count of pending updates, oldest update days and any forced update due date
-        // from Munki's preferences
-        CFPropertyListRef plistRef = nil;
-        long updateCount = 0;
-        float oldestUpdateDays = 0;
-        long useNotificationCenterDays = DefaultUseNotificationCenterDays;
-        NSDate *forcedUpdateDueDate = nil;
-
-        CFPreferencesAppSynchronize(CFSTR("ManagedInstalls"));
-        plistRef = CFPreferencesCopyValue(
-            CFSTR("PendingUpdateCount"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
-        if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
-            updateCount = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
-        }
-        plistRef = CFPreferencesCopyValue(
-            CFSTR("OldestUpdateDays"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
-        if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
-            oldestUpdateDays = [(NSNumber *)CFBridgingRelease(plistRef) floatValue];
-        }
-        if (CFPreferencesAppValueIsForced(CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"))) {
-            // use CFPreferencesCopyAppValue so we can respect managed preferences
-            plistRef = CFPreferencesCopyAppValue(
-                CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"));
-        } else {
-            // preference not managed, read from /Library/Preferences (ignoring user-level preferences)
-            plistRef = CFPreferencesCopyValue(
-                CFSTR("UseNotificationCenterDays"), CFSTR("ManagedInstalls"),
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
-        }
-        if (plistRef && CFGetTypeID(plistRef) == CFNumberGetTypeID()) {
-            useNotificationCenterDays = [(NSNumber *)CFBridgingRelease(plistRef) integerValue];
-        }
-        //NSLog(@"UseNotificationCenterDays: %ld", useNotificationCenterDays);
-        plistRef = CFPreferencesCopyValue(
-             CFSTR("ForcedUpdateDueDate"), CFSTR("ManagedInstalls"), kCFPreferencesAnyUser, kCFPreferencesCurrentHost);
-        if (plistRef && CFGetTypeID(plistRef) == CFDateGetTypeID()) {
-            forcedUpdateDueDate = (NSDate *)CFBridgingRelease((CFDateRef)plistRef);
-        }
-
-        if (updateCount == 0) {
-            // no available updates
-            if (notificationCenterAvailable) {
-                // clear any previously posted updates available notifications and exit
-                [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-            }
-            [NSApp terminate: self];
-            return;
-        }
-
-        // updateCount > 0
-        if (! notificationCenterAvailable || oldestUpdateDays > useNotificationCenterDays) {
-            // Notification Center is not available or Notification Manager notifications
-            // are being ignored or suppressed; launch MSC.app and show updates
-            if (notificationCenterAvailable) {
-                // clear any previously posted updates available notifications since we are going
-                // to launch MSC.app
-                [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-            }
-            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
-            [NSApp terminate: self];
-            return;
-        }
-
-        // We have Notification Center, create and post our notification
-        // Build a localized update count message
-        NSString *updateCountMessage = NSLocalizedString(@"1 pending update", @"One Update message");
-        NSString *multipleUpdatesFormatString = NSLocalizedString(
-            @"%@ pending updates", @"Multiple Update message");
-        if (updateCount > 1) {
-            updateCountMessage = [NSString stringWithFormat:multipleUpdatesFormatString,
-                                  [@(updateCount) stringValue]];
-        }
-
-        // Build a localized force install date message
-        NSString *deadlineMessage = nil;
-        NSString *deadlineMessageFormatString = NSLocalizedString(
-              @"One or more items must be installed by %@", @"Forced Install Date summary");
-        if (forcedUpdateDueDate) {
-            deadlineMessage = [NSString stringWithFormat:deadlineMessageFormatString,
-                [self stringFromDate: forcedUpdateDueDate]];
-        }
-
-        // Assemble all our needed notification info
-        NSString *title    = NSLocalizedString(
-            @"Software updates available", @"Software updates available message");
-        NSString *subtitle = @"";
-        NSString *message  = updateCountMessage;
-        if (deadlineMessage) {
-            //subtitle = updateCountMessage;
-            message = deadlineMessage;
-        }
-
-        // Create options (userInfo) dictionary
-        NSMutableDictionary *options = [NSMutableDictionary dictionary];
-        options[@"groupID"]  = @"com.googlecode.munki.munki-notifier.update-notification";
-        options[@"action"]   = @"open_url";
-        options[@"value"]    = MunkiUpdatesURL;
-        
-        // deliver the notification
-        [self deliverNotificationWithTitle:title
-                                  subtitle:subtitle
-                                   message:message
-                                   options:options
-                                     sound:nil];
+    // We have Notification Center, create and post our notification
+    // Build a localized update count message
+    NSString *updateCountMessage = NSLocalizedString(@"1 pending update", @"One Update message");
+    NSString *multipleUpdatesFormatString = NSLocalizedString(@"%@ pending updates",
+                                                              @"Multiple Update message");
+    if (updateCount > 1) {
+        updateCountMessage = [NSString stringWithFormat:multipleUpdatesFormatString,
+                              [@(updateCount) stringValue]];
     }
+    
+    // Build a localized force install date message
+    NSString *deadlineMessage = nil;
+    NSString *deadlineMessageFormatString = NSLocalizedString(@"One or more items must be installed by %@",
+                                                              @"Forced Install Date summary");
+    if (forcedUpdateDueDate) {
+        deadlineMessage = [NSString stringWithFormat:deadlineMessageFormatString,
+                           [self stringFromDate: forcedUpdateDueDate]];
+    }
+    
+    // Assemble all our needed notification info
+    NSString *title    = NSLocalizedString(@"Software updates available",
+                                           @"Software updates available message");
+    NSString *subtitle = @"";
+    NSString *message  = updateCountMessage;
+    if (deadlineMessage) {
+        //subtitle = updateCountMessage;
+        message = deadlineMessage;
+    }
+    
+    // Create options (userInfo) dictionary
+    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    options[@"action"]   = @"open_url";
+    options[@"value"]    = MunkiUpdatesURL;
+    
+    // deliver the notification
+    [self deliverNotificationWithTitle:title
+                              subtitle:subtitle
+                               message:message
+                               options:options
+                                 sound:nil];
 }
 
 - (NSString *)stringFromDate:(NSDate *)date
@@ -213,7 +195,6 @@ void launchMSCapp()
     return [formatter stringFromDate:date];
 }
 
-
 - (void)deliverNotificationWithTitle:(NSString *)title
                             subtitle:(NSString *)subtitle
                              message:(NSString *)message
@@ -222,13 +203,11 @@ void launchMSCapp()
 {
     // First remove earlier notifications from us
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-    // this other way doesn't seem to work reliably.
-    //if (options[@"groupID"]) [self removeNotificationWithGroupID:options[@"groupID"]];
-
+    
     NSUserNotification *userNotification = [NSUserNotification new];
     userNotification.title = title;
-    if (! [subtitle isEqualToString:@""]) userNotification.subtitle = subtitle;
-    if (! [message isEqualToString:@""]) userNotification.informativeText = message;
+    userNotification.subtitle = subtitle;
+    userNotification.informativeText = message;
     userNotification.userInfo = options;
     
     if (floor(kCFCoreFoundationVersionNumber) > kCFCoreFoundationVersionNumber10_8) {
@@ -238,61 +217,50 @@ void launchMSCapp()
     }
     userNotification.hasActionButton = true;
     userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
-
+    
     if (sound != nil) {
-        userNotification.soundName = [sound isEqualToString: @"default"] ? NSUserNotificationDefaultSoundName : sound;
+        userNotification.soundName = [sound isEqualToString: @"default"] ? NSUserNotificationDefaultSoundName : sound ;
     }
-
+    
     NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
     center.delegate = self;
-    [center deliverNotification:userNotification];
+    [center scheduleNotification:userNotification];
 }
 
-// this function does not appear to reliably remove notifications. To further investigate in the future.
-- (void)removeNotificationWithGroupID:(NSString *)groupID;
-{
-    NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
-    for (NSUserNotification *userNotification in center.deliveredNotifications) {
-        if ([@"ALL" isEqualToString:groupID] || [userNotification.userInfo[@"groupID"] isEqualToString:groupID]) {
-            [center removeDeliveredNotification:userNotification];
-        }
-    }
-}
-
-// React to user clicking on notification
 - (void)userActivatedNotification:(NSUserNotification *)userNotification;
 {
     [[NSUserNotificationCenter defaultUserNotificationCenter] removeDeliveredNotification:userNotification];
     
     NSString *action = userNotification.userInfo[@"action"];
-    NSString *value  = userNotification.userInfo[@"value"];
+    NSString *value = userNotification.userInfo[@"value"];
+    
+    NSLog(@"User activated notification:");
+    NSLog(@"    title: %@", userNotification.title);
+    NSLog(@" subtitle: %@", userNotification.subtitle);
+    NSLog(@"  message: %@", userNotification.informativeText);
+    NSLog(@"   action: %@", action);
+    NSLog(@"    value: %@", value);
     
     if ([action isEqualToString:@"open_url"]){
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:value]];
     } else {
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
     }
+    
+    [NSApp terminate: self];
 }
 
-// Return YES to present the notification even if MSC.app is frontmost
+
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center
-     shouldPresentNotification:(NSUserNotification *)notification;
+     shouldPresentNotification:(NSUserNotification *)userNotification;
 {
     return YES;
 }
 
 // Once the notification is delivered we can exit.
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center
-        didDeliverNotification:(NSUserNotification *)notification;
+        didDeliverNotification:(NSUserNotification *)userNotification;
 {
-    [NSApp terminate: self];
-}
-
-// handle user clicking on our notification
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center
-       didActivateNotification:(NSUserNotification *)notification
-{
-    [self userActivatedNotification:notification];
     [NSApp terminate: self];
 }
 
