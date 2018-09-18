@@ -10,13 +10,11 @@
 #import "AppDelegate.h"
 #import <objc/runtime.h>
 
-NSString * const MunkiNotifierBundleID = @"com.googlecode.munki.munki-notifier";
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
 NSString * const MunkiUpdatesURL = @"munki://updates";
 long const DefaultUseNotificationCenterDays = 3;
 
-NSString *_fakeBundleIdentifier = nil;
 
 @implementation NSBundle (FakeBundleIdentifier)
 
@@ -25,7 +23,7 @@ NSString *_fakeBundleIdentifier = nil;
 - (NSString *)__bundleIdentifier;
 {
     if (self == [NSBundle mainBundle]) {
-        return _fakeBundleIdentifier ? _fakeBundleIdentifier : MunkiNotifierBundleID;
+        return ManagedSoftwareCenterBundleID;
     } else {
         return [self __bundleIdentifier];
     }
@@ -54,12 +52,9 @@ InstallFakeBundleIdentifierHook()
     if (userNotification) {
         [self userActivatedNotification:userNotification];
     } else {
-        // Install the fake bundle ID hook so we can fake the sender. This also
-        // needs to be done to be able to remove a message.
+        // Install the fake bundle ID hook so we can fake the sender.
         @autoreleasepool {
-            if (InstallFakeBundleIdentifierHook()) {
-                _fakeBundleIdentifier = ManagedSoftwareCenterBundleID;
-            }
+            InstallFakeBundleIdentifierHook();
         }
         [self notifyUser];
     }
@@ -206,7 +201,7 @@ InstallFakeBundleIdentifierHook()
     
     NSUserNotification *userNotification = [NSUserNotification new];
     userNotification.title = title;
-    userNotification.subtitle = subtitle;
+    if (! [subtitle isEqualToString:@""]) userNotification.subtitle = subtitle;
     userNotification.informativeText = message;
     userNotification.userInfo = options;
     
@@ -215,7 +210,7 @@ InstallFakeBundleIdentifierHook()
         // Attempt to display as alert style (though user can override at any time)
         [userNotification setValue:@YES forKey:@"_showsButtons"];
     }
-    userNotification.hasActionButton = true;
+    userNotification.hasActionButton = YES;
     userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
     
     if (sound != nil) {
