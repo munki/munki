@@ -1,4 +1,4 @@
-<tr class='installation ${added_or_deleted}' id="${name_escaped}_update_table_row">
+<tr class="installation" id="${name_escaped}_update_table_row">
   <td>
     <a href="${detail_link}" class="artwork-link">
       <div class="artwork">
@@ -20,6 +20,6 @@
   </td>
   <td class="${hide_cancel_button}">
       <button title="${long_action_text}" class="cancel-or-add" aria-label="${long_action_text}"
-          onClick="window.AppController.updateOptionalInstallButtonClicked_('${name_quoted}');"></button>
+          onClick="window.webkit.messageHandlers.updateOptionalInstallButtonClicked.postMessage('${name_quoted}');"></button>
   </td>
 </tr>

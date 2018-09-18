@@ -7,7 +7,7 @@
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/detail.css" />
     
-    <script type="text/javascript" charset="utf-8" src="static/appearance.js"></script>
+    <script type="text/javascript" charset="utf-8" src="static/integration.js"></script>
 </head>
 
 <body class="product software">
@@ -25,7 +25,7 @@
                                 </div>
                                 <div class="msc-button large">
                                     <button class="button-area uppercase" 
-                                     onClick="window.AppController.actionButtonClicked_('${name_quoted}');">
+                                     onClick="window.webkit.messageHandlers.actionButtonClicked.postMessage('${name_quoted}');">
                                         <div class="msc-button-inner large ${status}"
                                              id="${name_escaped}_action_button_text">
                                             ${long_action_text}
@@ -76,7 +76,7 @@
                                             <span id="${name_escaped}_status_text_span">
                                                 ${status_text}
                                             </span>
-                                            <a class="follow" href="updates.html"></a>
+                                            <a class="follow" href="munki://updates.html"></a>
                                             <span class="progress-spinner"></span>
                                         </span>
                                     </li>

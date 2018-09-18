@@ -194,7 +194,7 @@ extension GenericItem {
         var more_in_category_html = ""
         var excludeFromMoreByDeveloperNames = [String]()
         if let category = item["category"] as? String {
-            my["category_link"] = "category-\(quote(category)).html"
+            my["category_link"] = "munki://category-\(quote(category)).html"
             var more_in_category = items.filter(
                 {
                     ( $0["category"] as? String == category &&
@@ -230,7 +230,7 @@ extension GenericItem {
         let excludeFromMoreByDeveloperNames = my["_excludeFromMoreByDeveloperNames"] as? [String] ?? []
         my["_excludeFromMoreByDeveloperNames"] = nil
         if let developer = item["developer"] as? String {
-            my["developer_link"] = "developer-\(quote(developer)).html"
+            my["developer_link"] = "munki://developer-\(quote(developer)).html"
             more_by_developer = items.filter(
                 {
                     ( !excludeFromMoreByDeveloperNames.contains($0["name"] as? String ?? "") &&
@@ -534,7 +534,7 @@ func buildCategoryItemsHTML() -> String {
         for category in category_list.sorted() {
             let category_data = BaseItem()
             category_data["category_name_escaped"] = escapeHTML(category)
-            category_data["category_link"] = "category-\(quote(category)).html"
+            category_data["category_link"] = "munki://category-\(quote(category)).html"
             var category_items = all_items.filter(
                 { ($0["category"] as? String ?? "") == category }
             )
@@ -637,6 +637,7 @@ func buildUpdatesPage() throws {
     other_updates += blocked_optional_updates
     
     let page = GenericItem()
+    page["update_rows"] = ""
     page["hide_progress_spinner"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"

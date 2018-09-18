@@ -3,7 +3,6 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="14113"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -51,7 +50,9 @@
                 <outlet property="myItemsMenuItem" destination="1bG-B4-adC" id="PCP-Ye-eRl"/>
                 <outlet property="myItemsToolbarButton" destination="K8l-s4-jvt" id="cHq-DK-BZy"/>
                 <outlet property="navigateBackButton" destination="AG2-ba-10I" id="cPd-dh-gGG"/>
+                <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
                 <outlet property="navigateForwardButton" destination="a6V-j2-ZvV" id="IGk-12-NL7"/>
+                <outlet property="navigateForwardMenuItem" destination="nIf-zM-816" id="l80-4O-0q4"/>
                 <outlet property="progressSpinner" destination="6oL-54-k6Q" id="SHv-QS-lUx"/>
                 <outlet property="searchField" destination="1z2-9L-z6e" id="xp8-BZ-5dZ"/>
                 <outlet property="softwareMenuItem" destination="YIg-jD-AbB" id="D6s-mC-x4d"/>
@@ -59,7 +60,7 @@
                 <outlet property="updateButtonCell" destination="enf-JF-dWM" id="a2w-hN-n3L"/>
                 <outlet property="updatesMenuItem" destination="HOZ-SU-4Sm" id="UdT-3I-JpJ"/>
                 <outlet property="updatesToolbarButton" destination="Rwi-cJ-59c" id="MRY-by-5VU"/>
-                <outlet property="webView" destination="Wo1-qU-xAa" id="TPC-3I-M45"/>
+                <outlet property="webViewPlaceholder" destination="Wf8-HB-bc8" id="qCG-zy-8UQ"/>
                 <outlet property="window" destination="EeR-uP-dFY" id="FfQ-Q4-xUU"/>
             </connections>
         </customObject>
@@ -155,8 +156,16 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Navigate" autoenablesItems="NO" id="gGe-RP-Ys4">
                         <items>
-                            <menuItem title="Back" keyEquivalent="[" id="4nC-yt-nEz"/>
-                            <menuItem title="Forward" keyEquivalent="]" id="nIf-zM-816"/>
+                            <menuItem title="Back" keyEquivalent="[" id="4nC-yt-nEz">
+                                <connections>
+                                    <action selector="navigateBackBtnClicked:" target="XGW-R4-ybE" id="1Js-TT-NXZ"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Forward" keyEquivalent="]" id="nIf-zM-816">
+                                <connections>
+                                    <action selector="navigateForwardBtnClicked:" target="XGW-R4-ybE" id="SFV-5J-eBx"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Reload Page" keyEquivalent="r" id="RZb-6e-dMo">
                                 <connections>
                                     <action selector="reloadPage:" target="XGW-R4-ybE" id="0AT-pi-VuZ"/>
@@ -257,7 +266,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" ambiguous="YES" id="tqD-vb-lE4">
                             <rect key="frame" x="0.0" y="0.0" width="514" height="325"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="rzT-c7-fSM">
                                     <rect key="frame" x="0.0" y="0.0" width="514" height="325"/>
@@ -339,13 +348,10 @@
                 <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <webView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wo1-qU-xAa">
+                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wf8-HB-bc8">
                         <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
-                            <nil key="identifier"/>
-                        </webPreferences>
-                    </webView>
+                    </customView>
                 </subviews>
             </view>
             <toolbar key="toolbar" implicitIdentifier="1393D938-3469-4EFC-8191-CC1B9C26850B" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconAndLabel" sizeMode="regular" id="hOq-DI-ljx">
@@ -510,6 +516,7 @@
             <connections>
                 <outlet property="delegate" destination="XGW-R4-ybE" id="4N2-bF-JRb"/>
             </connections>
+            <point key="canvasLocation" x="138.5" y="134"/>
         </window>
         <customView id="qxW-KU-9S3">
             <rect key="frame" x="0.0" y="0.0" width="317" height="22"/>
@@ -539,6 +546,7 @@
             </subviews>
             <point key="canvasLocation" x="-1957.5" y="-2587"/>
         </customView>
+        <userDefaultsController representsSharedInstance="YES" id="Gxl-ZZ-6oq"/>
     </objects>
     <resources>
         <image name="AllItemsTemplate" width="28" height="26"/>

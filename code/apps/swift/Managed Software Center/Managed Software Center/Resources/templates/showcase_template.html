@@ -24,7 +24,7 @@ function stageClicked() {
     slide = slides()[currentSlide];
     target = slide.getAttribute('target');
     if (target == '_blank') {
-        window.AppController.openExternalLink_(slide.getAttribute('href'));
+        window.webkit.messageHandlers.openExternalLink.postMessage(slide.getAttribute('href'));
     } else {
         window.location.href = slide.getAttribute('href');
     }
