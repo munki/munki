@@ -40,12 +40,14 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
+    -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
+                the certificate's Common Name. Ex: "Developer ID Application: Munki (U8PN57A5N2)"
 
 EOF
 }
 
 
-while getopts "i:r:o:c:s:h" option
+while getopts "i:r:o:c:s:S:h" option
 do
     case $option in
         "i")
@@ -61,7 +63,10 @@ do
             CONFPKG="$OPTARG"
             ;;
         "s")
-            SIGNINGCERT="$OPTARG"
+            PKGSIGNINGCERT="$OPTARG"
+            ;;
+        "S" )
+            APPSIGNINGCERT="$OPTARG"
             ;;
         "h" | *)
             usage
@@ -412,6 +417,22 @@ cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resou
 cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
+
+# sign MSC app
+if [ "$APPSIGNINGCERT" != "" ]; then
+    echo "Signing Managed Software Center.app..."
+    /usr/bin/codesign -s "$APPSIGNINGCERT" --verbose \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
+        "$APPROOT/Applications/Managed Software Center.app"
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
+        exit 2
+    fi
+fi
+
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
@@ -676,12 +697,12 @@ done
 echo
 # build distribution pkg from the components
 # Sign package if specified with options.
-if [ "$SIGNINGCERT" != "" ]; then
+if [ "$PKGSIGNINGCERT" != "" ]; then
      /usr/bin/productbuild \
         --distribution "$DISTFILE" \
         --package-path "$METAROOT" \
         --resources "$METAROOT/Resources" \
-        --sign "$SIGNINGCERT" \
+        --sign "$PKGSIGNINGCERT" \
         "$MPKG"
 else
     /usr/bin/productbuild \
