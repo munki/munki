@@ -7,5 +7,5 @@
 function category_select() {
     var e = document.getElementById("category-selector");
     var category = e.options[e.selectedIndex].text;
-    window.AppController.changeSelectedCategory_(category);
+    window.webkit.messageHandlers.changeSelectedCategory.postMessage(category);
 }
