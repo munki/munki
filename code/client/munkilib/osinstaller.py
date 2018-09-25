@@ -262,20 +262,26 @@ class StartOSInstallRunner(object):
 
         cmd.extend([startosinstall_path,
                     '--agreetolicense',
-                    '--applicationpath', app_path,
                     '--rebootdelay', '300',
                     '--pidtosignal', str(os.getpid()),
                     '--nointeraction'])
 
-        if (self.installinfo and
-                'additional_startosinstall_options' in self.installinfo):
-            cmd.extend(self.installinfo['additional_startosinstall_options'])
+        if pkgutils.MunkiLooseVersion(
+                os_version) < pkgutils.MunkiLooseVersion('10.13.6'):
+            # --applicationpath option is _required_ in Sierra and early
+            # releases of High Sierra. It became optional (or is ignored) in
+            # later releases of High Sierra and causes warnings in Mojave
+            cmd.extend(['--applicationpath', app_path])
 
         if pkgutils.MunkiLooseVersion(
                 os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
             # and must _not_ be included in 10.12.4 installer's startosinstall
             cmd.extend(['--volume', '/'])
+
+        if (self.installinfo and
+                'additional_startosinstall_options' in self.installinfo):
+            cmd.extend(self.installinfo['additional_startosinstall_options'])
 
         # more magic to get startosinstall to not buffer its output for
         # percent complete
