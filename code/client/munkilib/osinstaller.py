@@ -232,7 +232,7 @@ class StartOSInstallRunner(object):
         startosinstall_path = os.path.join(
             app_path, 'Contents/Resources/startosinstall')
 
-        os_version = get_os_version(app_path)
+        os_vers_to_install = get_os_version(app_path)
 
         # run startosinstall via subprocess
 
@@ -266,25 +266,25 @@ class StartOSInstallRunner(object):
                     '--pidtosignal', str(os.getpid())])
 
         if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.14'):
+            # --applicationpath option is _required_ in Sierra and early
+            # releases of High Sierra. It became optional (or is ignored?) in
+            # later releases of High Sierra and causes warnings in Mojave
+            # so don't add this option when installing Mojave
+            cmd.extend(['--applicationpath', app_path])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
             # and must _not_ be included in 10.12.4+ installer's startosinstall
             cmd.extend(['--volume', '/'])
 
         if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.13.5'):
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.13.5'):
             # --nointeraction is an undocumented option that appears to be
             # not only no longer needed/useful but seems to trigger some issues
             # in more recent releases
             cmd.extend(['--nointeraction'])
-
-        if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.14'):
-            # --applicationpath is required in 10.12 and 10.13.x installers
-            # it seems to be optional in later releases of 10.13 (like 10.13.6)
-            # it prints a deprecation warning in 10.14 beta installers.
-            # So only add it if we are running a 10.12 or 10.13 installer
-            cmd.extend(['--applicationpath', app_path])
 
         if (self.installinfo and
                 'additional_startosinstall_options' in self.installinfo):
@@ -394,7 +394,7 @@ class StartOSInstallRunner(object):
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
             munkilog.log(
-                'Starting macOS install of %s: SUCCESSFUL' % os_version,
+                'Starting macOS install of %s: SUCCESSFUL' % os_vers_to_install,
                 'Install.log')
             # previously we checked if retcode == 255:
             # that may have been something specific to 10.12's startosinstall
