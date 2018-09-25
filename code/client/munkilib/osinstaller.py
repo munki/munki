@@ -232,7 +232,7 @@ class StartOSInstallRunner(object):
         startosinstall_path = os.path.join(
             app_path, 'Contents/Resources/startosinstall')
 
-        os_version = get_os_version(app_path)
+        os_vers_to_install = get_os_version(app_path)
 
         # run startosinstall via subprocess
 
@@ -267,14 +267,15 @@ class StartOSInstallRunner(object):
                     '--nointeraction'])
 
         if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.13.6'):
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.14'):
             # --applicationpath option is _required_ in Sierra and early
-            # releases of High Sierra. It became optional (or is ignored) in
+            # releases of High Sierra. It became optional (or is ignored?) in
             # later releases of High Sierra and causes warnings in Mojave
+            # so don't add this option when installing Mojave
             cmd.extend(['--applicationpath', app_path])
 
         if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
             # and must _not_ be included in 10.12.4 installer's startosinstall
             cmd.extend(['--volume', '/'])
@@ -387,7 +388,7 @@ class StartOSInstallRunner(object):
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
             munkilog.log(
-                'Starting macOS install of %s: SUCCESSFUL' % os_version,
+                'Starting macOS install of %s: SUCCESSFUL' % os_vers_to_install,
                 'Install.log')
             # previously we checked if retcode == 255:
             # that may have been something specific to 10.12's startosinstall
