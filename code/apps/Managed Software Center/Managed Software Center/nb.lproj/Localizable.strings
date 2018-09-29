@@ -5,7 +5,7 @@
 "1 pending update" = "1 ventende oppdatering";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du må logge ut før opdatering. Vent et øyeblikb da det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du må logge ut før opdatering. Vent et øyeblikk da det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %s." = "En tvungen utlogging vil skje ca. %s.";
@@ -59,10 +59,10 @@
 "Cancel install" = "Avbryt installering";
 
 /* Cancel Removal long action text */
-"Cancel removal" = "Anbryt fjerning";
+"Cancel removal" = "Avbryt fjerning";
 
 /* Cancel Update long action text */
-"Cancel update" = "Avryt oppdatering";
+"Cancel update" = "Avbryt oppdatering";
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan ikke vise ønsket objekt.";
@@ -377,7 +377,7 @@
 "There is not enough disk space to download and install this item." = "Det er ikke tilstrekkelig diskplass tilgjengelig til laste ned og installere denne pakken.";
 
 /* Dependency List prologue text */
-"This item is required by:" = "Dette objektet er krevd av:";
+"This item is required by:" = "Dette objektet kreves av:";
 
 /* Forced Date warning */
 "This item must be installed by %s" = "Dette objektet må installeres senest %s";
@@ -425,7 +425,7 @@
 "Update in progress." = "Oppdatering i gang.";
 
 /* Update Now button title */
-"Update now" = "Oppdater nu";
+"Update now" = "Oppdater nå";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Oppdatering vil bli installert";
@@ -470,7 +470,7 @@
 "Your search had no results." = "Ditt søk ga ingen resultater.";
 
 /* No Pending Updates primary text */
-"Your software is up to date." = "Din programvare er oppdateret.";
+"Your software is up to date." = "Din programvare er oppdatert.";
 
 /* macOS update required text */
 "macOS update required" = "macOS-oppdatering nødvendig";
