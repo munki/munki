@@ -710,7 +710,7 @@ def makepkginfo(installeritem, options):
 
 def check_mode(option, opt, value, parser):
     '''Callback to check --mode options'''
-    modes = value.lower().replace(',', ' ').split()
+    modes = value.replace(',', ' ').split()
     value = None
     rex = re.compile("[augo]+[=+-][rstwxXugo]+")
     for mode in modes:
