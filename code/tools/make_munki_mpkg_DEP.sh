@@ -333,7 +333,7 @@ if [ "$SVNREV" -lt "1302" ]; then
 fi
 
 # Enable bootstrap features if requested
-if [ "$BOOTSTRAPMODE" -eq "1" ]; then
+if [ "$BOOTSTRAPMODE" == "1" ]; then
     echo "Enabling bootstrap mode..."
     mkdir -p "$COREROOT/Users/Shared/"
     touch "$COREROOT/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
