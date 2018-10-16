@@ -674,7 +674,7 @@ def get_conditions():
     except (OSError, IOError):
         pass
     if os.path.exists(conditionalscriptdir):
-        for conditionalscript in osutils.listdir(conditionalscriptdir):
+        for conditionalscript in sorted(osutils.listdir(conditionalscriptdir)):
             if conditionalscript.startswith('.'):
                 # skip files that start with a period
                 continue
