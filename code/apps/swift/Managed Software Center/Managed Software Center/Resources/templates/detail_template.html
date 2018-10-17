@@ -16,7 +16,6 @@
             <div id="content">
                 <div class="background"></div>
                 <div class="columns">
-
                     <div class="main">
                         <div class="product-detail">
                             <div class="lockup product">
@@ -43,16 +42,14 @@
                                     <div class="title">
                                         <h1>${display_name_escaped}</h1>
                                     </div>
-                                    <p class="more-text">
-                                        ${description}
-                                    </p>
+                                    <a href="${developer_link}">${developer_escaped}</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="sidebar">
-                        <!-- Item information sidebar list-->
+                  <!--  <div class="sidebar">
+                         Item information sidebar list
                         <div class="titled-box app-info">
                             <h2>${informationLabel}</h2>
                             <div class="content">
@@ -83,29 +80,25 @@
                                     <li class="warning">${restart_action_text}</li>
                                 </ul>
                             </div>
-                        </div>
-                        <!-- More in category sidebar list-->
+                        </div>-->
+                        <!-- More in category sidebar list
                         <div class="titled-box more-by ${hide_more_in_category}">
                             <h2>
                                 <a href="${category_link}">${moreInCategoryLabel}</a>
                             </h2>
                             <div class="content">${more_in_category}</div>
-                        </div>
-                        <!-- More by developer sidebar list-->
+                        </div>-->
+                        <!-- More by developer sidebar list
                         <div class="titled-box more-by ${hide_more_by_developer}">
                             <h2>
                                 <a href="${developer_link}">${moreByDeveloperLabel}</a>
                             </h2>
                             <div class="content">${more_by_developer}</div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
             </div>
         </div>
     </div>
-
-    <footer>
-        ${footer}
-    </footer>
 </body>
 </html>
