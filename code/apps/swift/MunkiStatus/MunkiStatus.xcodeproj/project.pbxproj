@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		562FE88E2175B5A900660716 /* MSWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 562FE88D2175B5A900660716 /* MSWindow.swift */; };
 		C0168E9020B1E1D80027BD78 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0168E8F20B1E1D80027BD78 /* LogViewController.swift */; };
 		C04F824E20BB157800F9C57D /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C04F825020BB157800F9C57D /* Localizable.strings */; };
 		C04F825D20BB15F500F9C57D /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F825C20BB15F500F9C57D /* Localization.swift */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		562FE88D2175B5A900660716 /* MSWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSWindow.swift; sourceTree = "<group>"; };
 		C0168E8F20B1E1D80027BD78 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		C0168E9120B2939B0027BD78 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C04F823F20BA8E9000F9C57D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 				C04F825C20BB15F500F9C57D /* Localization.swift */,
 				C0168E8F20B1E1D80027BD78 /* LogViewController.swift */,
 				C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */,
+				562FE88D2175B5A900660716 /* MSWindow.swift */,
 				C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */,
 				C0A7937F20B0EA7800F56DD5 /* Utils.swift */,
 				C0544D4D20AF0EDA00DC86F6 /* Assets.xcassets */,
@@ -195,6 +198,7 @@
 				C0A7938020B0EA7800F56DD5 /* Utils.swift in Sources */,
 				C04F825D20BB15F500F9C57D /* Localization.swift in Sources */,
 				C0544D4C20AF0EDA00DC86F6 /* AppDelegate.swift in Sources */,
+				562FE88E2175B5A900660716 /* MSWindow.swift in Sources */,
 				C0A7937E20AFAE0300F56DD5 /* MunkiStatusViewController.swift in Sources */,
 				C0168E9020B1E1D80027BD78 /* LogViewController.swift in Sources */,
 			);
