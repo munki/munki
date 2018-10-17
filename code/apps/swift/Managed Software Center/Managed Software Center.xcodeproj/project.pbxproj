@@ -15,7 +15,6 @@
 		C019631221039F020009F51A /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C019631021039F020009F51A /* WebResources */; };
 		C019631F2105080B0009F51A /* MSCDockTilePlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = C019631D2105080B0009F51A /* MSCDockTilePlugIn.m */; };
 		C019632221050C910009F51A /* MSCDockTilePlugin.docktileplugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = C0196317210507DB0009F51A /* MSCDockTilePlugin.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C03107C120C77E5A007FE337 /* MSCBadgedTemplateImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C020C77E5A007FE337 /* MSCBadgedTemplateImage.swift */; };
 		C03107C320C8B65E007FE337 /* msclib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C220C8B65E007FE337 /* msclib.swift */; };
 		C03107C520C8F220007FE337 /* msclog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C420C8F220007FE337 /* msclog.swift */; };
 		C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04CA61920E682AE00711461 /* passwdutil.swift */; };
@@ -81,7 +80,6 @@
 		C0196319210507DB0009F51A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C019631D2105080B0009F51A /* MSCDockTilePlugIn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSCDockTilePlugIn.m; sourceTree = "<group>"; };
 		C019631E2105080B0009F51A /* MSCDockTilePlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSCDockTilePlugIn.h; sourceTree = "<group>"; };
-		C03107C020C77E5A007FE337 /* MSCBadgedTemplateImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCBadgedTemplateImage.swift; sourceTree = "<group>"; };
 		C03107C220C8B65E007FE337 /* msclib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msclib.swift; sourceTree = "<group>"; };
 		C03107C420C8F220007FE337 /* msclog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msclog.swift; sourceTree = "<group>"; };
 		C04CA61920E682AE00711461 /* passwdutil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = passwdutil.swift; sourceTree = "<group>"; };
@@ -201,7 +199,6 @@
 				C04F829C20BB5B9E00F9C57D /* MSCToolbarButton.swift */,
 				C04F829E20BB713B00F9C57D /* munki.swift */,
 				C04F82A020BB77CF00F9C57D /* FoundationPlist.swift */,
-				C03107C020C77E5A007FE337 /* MSCBadgedTemplateImage.swift */,
 				C03107C220C8B65E007FE337 /* msclib.swift */,
 				C03107C420C8F220007FE337 /* msclog.swift */,
 				C0FBF1BC20D4945B00FAD1BE /* mschtml.swift */,
@@ -378,7 +375,6 @@
 			files = (
 				C0FBF1BF20D4A0BB00FAD1BE /* Template.swift in Sources */,
 				C0FD710A20D485A80018A002 /* HtmlFilter.swift in Sources */,
-				C03107C120C77E5A007FE337 /* MSCBadgedTemplateImage.swift in Sources */,
 				C0FBF1BD20D4945B00FAD1BE /* mschtml.swift in Sources */,
 				C03107C320C8B65E007FE337 /* msclib.swift in Sources */,
 				C04F829F20BB713B00F9C57D /* munki.swift in Sources */,
