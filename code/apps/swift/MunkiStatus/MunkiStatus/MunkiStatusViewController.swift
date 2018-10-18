@@ -31,13 +31,6 @@ class MunkiStatusViewController: NSViewController {
             // Fallback on earlier versions
         }
         // Do view setup here.
-        
-        let colorFilter = CIFilter(name: "CIFalseColor")!
-        colorFilter.setDefaults()
-        colorFilter.setValue(CIColor(color: .white), forKey: "inputColor0")
-        colorFilter.setValue(CIColor(color: .black), forKey: "inputColor1")
-        progressBar.contentFilters = [colorFilter]
-        
         if atLoginWindow() {
             view.window?.canBecomeVisibleWithoutLogin = true
             view.window?.level = statusWindowLevel
@@ -237,4 +230,5 @@ class MunkiStatusViewController: NSViewController {
         // thread will exit
         receivingNotifications = false
     }
+    
 }
