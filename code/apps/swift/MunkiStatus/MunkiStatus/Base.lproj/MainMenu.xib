@@ -175,17 +175,6 @@
                 <rect key="frame" x="0.0" y="0.0" width="532" height="252"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PAW-IC-X4H">
-                        <rect key="frame" x="386" y="3" width="132" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Stop" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5ah-wI-MiF">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="stopButtonClicked:" target="BQF-ok-gPV" id="e6d-yd-DIn"/>
-                        </connections>
-                    </button>
                     <progressIndicator wantsLayer="YES" fixedFrame="YES" maxValue="100" doubleValue="2" indeterminate="YES" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="J19-Nl-auR">
                         <rect key="frame" x="110" y="68" width="312" height="20"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -214,6 +203,18 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PAW-IC-X4H">
+                        <rect key="frame" x="200" y="14" width="132" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="bevel" title="Stop" bezelStyle="rounded" alignment="center" imageScaling="proportionallyDown" inset="2" id="5ah-wI-MiF">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <color key="contentTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <connections>
+                            <action selector="stopButtonClicked:" target="BQF-ok-gPV" id="e6d-yd-DIn"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="-602" y="-1054"/>

@@ -34,8 +34,7 @@ func atLoginWindow() -> Bool {
     if consoleuser == nil {
         return true
     }
-    //return (consoleuser! == "loginwindow")
-    return true
+    return (consoleuser! == "loginwindow")
 }
 
 func exec(_ command: String, args: [String]?) -> String {
