@@ -174,7 +174,9 @@ def validate_source_and_destination(mountpoint, item):
         # write access to the parent directory from writing their own payloads
         # to this directory
         try:
+            original_umask = os.umask(0)
             os.makedirs(full_destpath, 0o0700)
+            os.umask(original_umask)
         except OSError, err:
             display.display_error(
                 "Error creating %s: %s", full_destpath, err)
