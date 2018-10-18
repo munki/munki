@@ -20,17 +20,16 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
-    let items = [["title": "Software", "icon": "AllItemsTemplate"],
-                 ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
-                 ["title": "My Items", "icon": "MyStuffTemplate"],
-                 ["title": "Updates", "icon": "updatesTemplate"]]
-    
     // status properties
     var _status_title = ""
     var stop_requested = false
     var user_warned_about_extra_updates = false
     
     // Cocoa UI binding properties
+    @IBOutlet weak var softwareToolbarButton: MSCToolbarButton!
+    @IBOutlet weak var categoriesToolbarButton: MSCToolbarButton!
+    @IBOutlet weak var myItemsToolbarButton: MSCToolbarButton!
+    @IBOutlet weak var updatesToolbarButton: MSCToolbarButton!
     
     @IBOutlet weak var updateButtonCell: MSCToolbarButtonCell!
     
@@ -40,31 +39,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBOutlet weak var searchField: NSSearchField!
     
-    @IBOutlet weak var sidebar: NSOutlineView!
+    @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
+    @IBOutlet weak var navigateForwardMenuItem: NSMenuItem!
+    @IBOutlet weak var softwareMenuItem: NSMenuItem!
+    @IBOutlet weak var categoriesMenuItem: NSMenuItem!
+    @IBOutlet weak var myItemsMenuItem: NSMenuItem!
+    @IBOutlet weak var updatesMenuItem: NSMenuItem!
+    @IBOutlet weak var findMenuItem: NSMenuItem!
     
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
     
     override func windowDidLoad() {
         super.windowDidLoad()
-
-    }
-    
-    @objc private func onItemClicked() {
-        if 0 ... items.count ~= sidebar.clickedRow {
-            switch sidebar.clickedRow {
-            case 0:
-                loadAllSoftwarePage(self)
-            case 1:
-                loadCategoriesPage(self)
-            case 2:
-                loadMyItemsPage(self)
-            case 3:
-                loadUpdatesPage(self)
-            default:
-                loadUpdatesPage(self)
-            }
-        }
     }
     
     func appShouldTerminate() -> NSApplication.TerminateReply {
@@ -91,7 +78,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return sidebar.selectedRow == 3
+        return updatesToolbarButton.state == .on
     }
     
     func alertToPendingUpdates() {
@@ -162,12 +149,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func highlightToolbarButtons(_ nameToHighlight: String) {
-        for (index, item) in items.enumerated() {
-            if nameToHighlight == item["title"] {
-                sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
-            }
-        }
-        
+        softwareToolbarButton.state = (nameToHighlight == "Software" ? .on : .off)
+        categoriesToolbarButton.state = (nameToHighlight == "Categories" ? .on : .off)
+        myItemsToolbarButton.state = (nameToHighlight == "My Items" ? .on : .off)
+        updatesToolbarButton.state = (nameToHighlight == "Updates" ? .on : .off)
     }
     
     func enableOrDisableToolbarButtons(_ enabled: Bool) {
@@ -180,6 +165,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 updates_button_state = false
             }
         }
+        softwareToolbarButton.isEnabled = enabled_state
+        categoriesToolbarButton.isEnabled = enabled_state
+        myItemsToolbarButton.isEnabled = enabled_state
+        updatesToolbarButton.isEnabled = updates_button_state
     }
     
     func enableOrDisableSoftwareViewControls() {
@@ -187,6 +176,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         let enabled_state = (getOptionalInstallItems().count > 0)
         enableOrDisableToolbarButtons(enabled_state)
         searchField.isEnabled = enabled_state
+        findMenuItem.isEnabled = enabled_state
+        softwareMenuItem.isEnabled = enabled_state
+        softwareMenuItem.isEnabled = enabled_state
+        categoriesMenuItem.isEnabled = enabled_state
+        myItemsMenuItem.isEnabled = enabled_state
     }
     
     func munkiStatusSessionEnded(_ sessionResult: Int) {
@@ -328,7 +322,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Our window was activated, make sure controls enabled as needed
         let enabled_state = (getOptionalInstallItems().count > 0)
         enableOrDisableToolbarButtons(enabled_state)
-        sidebar.action = #selector(onItemClicked)
     }
     
     func windowDidResignMain(_ notification: Notification) {
@@ -398,7 +391,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
             replacementWebView.allowsBackForwardNavigationGestures = true
-            replacementWebView.setValue(false, forKey: "drawsBackground")
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             webView = replacementWebView
@@ -653,18 +645,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Display the update count as a badge in the window toolbar
         // and as an icon badge in the Dock
         let updateCount = getUpdateCount()
-        
-        var cellView:MSCTableCellView?
-        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
-            cellView = view.view(atColumn: 0) as? MSCTableCellView
-        }
-        
+        let btn_image = MSCBadgedTemplateImage.image(named: NSImage.Name(rawValue: "updatesTemplate.pdf"),
+                                                     withCount: updateCount)
+        updateButtonCell.image = btn_image
         if updateCount > 0 {
             NSApp.dockTile.badgeLabel = String(updateCount)
-            cellView?.badge.stringValue = String(updateCount)
         } else {
             NSApp.dockTile.badgeLabel = nil
-            cellView?.badge.stringValue = ""
         }
     }
     
@@ -834,10 +821,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         progressSpinner.stopAnimation(self)
-//        navigateBackButton.isEnabled = webView.canGoBack
-//        navigateBackMenuItem.isEnabled = webView.canGoBack
-//        navigateForwardButton.isEnabled = webView.canGoForward
-//        navigateForwardMenuItem.isEnabled = webView.canGoForward
+        navigateBackButton.isEnabled = webView.canGoBack
+        navigateBackMenuItem.isEnabled = webView.canGoBack
+        navigateForwardButton.isEnabled = webView.canGoForward
+        navigateForwardMenuItem.isEnabled = webView.canGoForward
     }
     
     func webView(_ webView: WKWebView,
@@ -1364,73 +1351,5 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             msc_debug_log("Search filter is: \(filterString)")
             load_page("filter-\(filterString).html")
         }
-    }
-}
-
-extension MainWindowController: NSOutlineViewDataSource {
-    // Number of items in the sidebar
-    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        return items.count
-    }
-    
-    // Items to be added to sidebar
-    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        return items[index]
-    }
-    
-    // Whether rows are expandable by an arrow
-    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        return false
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
-        return MSCTableRowView(frame: NSZeroRect);
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, didAdd rowView: NSTableRowView, forRow row: Int) {
-        rowView.selectionHighlightStyle = .regular
-    }
-}
-
-extension MainWindowController: NSOutlineViewDelegate {
-    
-    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        var view: MSCTableCellView?
-        let itemDict = item as? [String: String]
-        if let title = itemDict?["title"], let icon = itemDict?["icon"] {
-            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? MSCTableCellView
-            if let textField = view?.title {
-                textField.stringValue = title.localized(withComment: "\(title) label")
-            }
-            if let imageView = view?.imgView {
-                imageView.image = NSImage(named: NSImage.Name(rawValue: icon))?.tint(color: .secondaryLabelColor)
-            }
-        }
-        return view
-    }
-}
-
-extension NSImage {
-    func tint(color: NSColor) -> NSImage {
-        guard !self.isTemplate else { return self }
-        
-        let image = self.copy() as! NSImage
-        image.lockFocus()
-        
-        color.set()
-        
-        let imageRect = NSRect(origin: NSZeroPoint, size: image.size)
-        imageRect.fill(using: .sourceAtop)
-        
-        image.unlockFocus()
-        image.isTemplate = false
-        
-        return image
-    }
-}
-
-extension String {
-    func localized(withComment comment: String? = nil) -> String {
-        return NSLocalizedString(self, comment: comment ?? "")
     }
 }
