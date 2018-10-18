@@ -39,7 +39,6 @@ class MunkiStatusViewController: NSViewController {
         progressBar.contentFilters = [colorFilter]
         
         if atLoginWindow() {
-            self.stopButton.isHidden = true
             view.window?.canBecomeVisibleWithoutLogin = true
             view.window?.level = statusWindowLevel
         }
