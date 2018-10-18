@@ -501,7 +501,7 @@
 		C090050F16CDD84E00BE34CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -524,7 +524,7 @@
 		C090051016CDD84E00BE34CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
