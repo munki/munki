@@ -4,60 +4,46 @@
 */
 
 html {
-    --background-color: transparent;
-    --boder-color: hsl(0, 0%, 87.1%);
-    --line-color: hsl(0, 0%, 90.2%);
-    --text-color-emphasized: hsl(0, 0%, 8%);
-    --text-color-normal: hsl(0, 0%, 15.3%);
-    --text-color-subdued: hsl(240, 2.7%, 55.7%);
-    --text-color-warning: hsl(0, 100%, 40%);
-    --description-link-color: #3E6397;
-    --button-text-color-enabled: hsl(0, 0%, 100%);
-    --button-text-color-active: hsl(0, 0%, 100%);
-    --button-text-color-disabled: hsl(0, 0%, 74%);
-    --small-button-text-color-enabled: hsl(212, 100%, 51.4%);
-    --small-button-text-color-active: hsl(212, 95.4%, 42.7%);
-    --small-button-text-color-disabled: hsl(0, 0%, 74%);
-    --popup-menu-text-color: hsl(0, 0%, 0%);
-    --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(hsl(0, 0%, 100%)), to(hsl(0, 0%, 92%)));
-    --small-btn-background: hsl(240, 30.8%, 94.9%);
-    --small-btn-background-active: hsl(240, 6.5%, 79.0%);
+    --background-color: white;
+    --text-color-emphasized: #151515;
+    --text-color-normal: #545454;
+    --text-color-subdued: #696969;
+    --text-color-warning: #CC0000;
+    --button-text-color-enabled: #ffffff;
+    --button-text-color-disabled: #bdbdbd;
+    --popup-menu-text-color: black;
+    --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#eaeaea));
+    --small-btn-background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
+    --small-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #85868d), to( #7a7bb2));
     --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
     --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777));
-    --install-btn-background: hsl(212, 100%, 51.4%);
-    --install-btn-background-active: hsl(212, 95.4%, 42.7%);
+    --install-btn-background: -webkit-gradient(linear, left top, left bottom, from( #85868d), color-stop(0.05, #84858c), color-stop(0.5, #888188), color-stop(0.96, #7b7c83), to( #7a7bb2));
+    --install-btn-background-active: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#5e5fa0), color-stop(4%,#67686f), color-stop(50%,#736d73), color-stop(95%,#6f7077), color-stop(100%,#707178));
 }
 
 html[data-theme='dark'] {
-    --background-color: transparent;
-    --boder-color: hsl(0, 0%, 0%);
-    --line-color: hsl(202, 9.7%, 22.2%);
-    --text-color-emphasized: hsl(0, 0%, 92%);
-    --text-color-normal: hsl(0, 0%, 88%);
-    --text-color-subdued: hsl(0, 0%, 62%);
-    --text-color-warning: hsl(0, 100%, 60%);
-    --description-link-color: #90B0EA;
-    --button-text-color-enabled: hsl(0, 0%, 100%);
-    --button-text-color-active: hsl(300, 1.2%, 83.3%);
-    --button-text-color-disabled: hsl(0, 0%, 41%);
-    --small-button-text-color-enabled: hsl(212, 100%, 51.4%);
-    --small-button-text-color-active: hsl(212, 95.4%, 42.7%);
-    --small-button-text-color-disabled: hsl(0, 0%, 74%);
-    --popup-menu-text-color: hsl(0, 0%, 100%);
-    --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(hsl(0, 0%, 30%)), to(hsl(0, 0%, 38%)));
-    --small-btn-background: hsl(240, 30.8%, 94.9%);
-    --small-btn-background-active: hsl(240, 6.5%, 79.0%);
+    --background-color: #242424;
+    --text-color-emphasized: #e7e7e7;
+    --text-color-normal: #cfcfcf;
+    --text-color-subdued: #b7b7b7;
+    --text-color-warning: #E00000;
+    --button-text-color-enabled: #000000;
+    --button-text-color-disabled: #696969;
+    --popup-menu-text-color: white;
+    --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4c), to(#5c5c5c));
+    --small-btn-background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
+    --small-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#E8E6FF), to( #F2F3FC));
     --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
     --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#5D99F1), to(#4A65AC));
-    --install-btn-background: hsl(212, 100%, 51.4%);
-    --install-btn-background-active: hsl(212, 95.4%, 42.7%);
+    --install-btn-background: -webkit-gradient(linear, left top, left bottom, from( #BABBC3), color-stop(0.05, #B9BAC2), color-stop(0.5, #BDB6BD), color-stop(0.96, #AFB0B8), to(#B0AFEA));
+    --install-btn-background-active: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#E8E6FF), color-stop(4%,#E7E8F0), color-stop(50%,#F5EEF5), color-stop(95%,#F1F2FA), color-stop(100%,#F2F3FC));
 }
 
 html.appearance-transition,
 html.appearance-transition *,
 html.appearance-transition *:before,
 html.appearance-transition *:after {
-    transition: all 500ms !important;
+    transition: all 750ms !important;
     transition-delay: 0 !important;
 }
 
@@ -82,12 +68,12 @@ h1, h2, h3, h4, h5, h6 {
 
 li {
     list-style-type: none;
-    disabled-list-style-position: outside;
+    disabled-list-style-position: outside
 }
 
 a {
     text-decoration: none;
-    color: var(--text-color-emphasized);
+    color: var(--text-color-emphasized)
 }
 
 * {
@@ -109,7 +95,7 @@ option {
 body, button, input {
     font-family: -apple-system, "Helvetica Neue", "Helvetica", "Arial";
     font-smooth: always;
-    -webkit-font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased
     color: var(--text-color-normal);
 }
 
@@ -265,7 +251,7 @@ button, button *, select {
 }
 
 body {
-    -webkit-font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased
 }
 
 body:after {
@@ -289,17 +275,16 @@ html, body {
 
 html {
     height: 100%;
-    background-image: none;
-    border-left: 1px solid var(--boder-color);
+    background-image: none
 }
 
 #wrapper {
     position: relative;
-    max-width: 1600px;
-    min-width: 779px;
+    max-width: 1198px;
+    min-width: 984px;
     height: 100%;
     margin: 0 auto;
-    padding: 0 40px;
+    padding: 0 20px;
     display: -webkit-box;
     min-height: 0;
     -webkit-box-orient: vertical;
@@ -308,7 +293,7 @@ html {
 
 #content {
     min-height: 100%;
-    margin: 0 auto;
+    margin: 0 auto -35px;
     padding-bottom: 90px
 }
 
@@ -361,8 +346,8 @@ footer {
     text-align: center;
     position: relative;
     z-index: 1;
-    max-width: 1600px;
-    min-width: 779px;
+    max-width: 1198px;
+    min-width: 984px;
     margin: 0 auto;
     padding: 0 20px
 }
@@ -560,14 +545,19 @@ div.lockup-container, div.container, div.titled-container {
 
 div.lockup-container .title, div.titled-container .title {
     height: 32px;
-    border-top: 1px solid var(--line-color);
+    border-bottom: 1px solid #d7d7d7
 }
 
 div.lockup-container .title h2, div.titled-container .title h2 {
     display: inline-block;
-    font: bold 20px -apple-system, "Helvetica Neue", 'Helvetica';
+    font: normal 14px -apple-system, "Helvetica Neue", 'Helvetica';
     color: var(--text-color-normal);
     line-height: 32px
+}
+
+div.lockup-container .title, div.titled-container .title, div.titled-box h2 {
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
 }
 
 div.titled-box h2 {
@@ -625,23 +615,12 @@ div.lockup-container .paginated-container {
 div.lockup-container div.lockup {
     display: block;
     float: left;
-    width: 50%
-}
-
-@media only screen and (min-width: 1000px) {
-    div.lockup-container div.lockup {
-        width: 33.3%; 
-    }
-}
-
-@media only screen and (min-width: 1400px) {
-    div.lockup-container div.lockup {
-        width: 25%; 
-    }
+    width: 33.3%;
+    height: 98px;
 }
 
 div.lockup-container div.lockup div.artwork {
-    margin-right: 20px
+    margin-right: 10px
 }
 
 div.lockup-container div.lockup ul {
@@ -649,18 +628,14 @@ div.lockup-container div.lockup ul {
 }
 
 div.lockup-container div.lockup li.name>* {
-    font-size: 15px;
-    color: var(--text-color-normal)
-}
-
-div.lockup-container div.lockup li.name:hover>* {
-    text-decoration: none;
+    font-size: 12px;
+    color: var(--text-color-emphasized)
 }
 
 div.lockup-container div.lockup li, div.lockup-container div.lockup li>a,
 div.lockup-container div.lockup li>span {
     color: var(--text-color-subdued);
-    font-size: 12px
+    font-size: 11px
 }
 
 div.lockup-container[data-columns-current] {
@@ -743,7 +718,7 @@ div.lockup-container[data-columns-current="5"] div.lockup:nth-last-of-type(5) {
 
 div.lockup {
     position: relative;
-    padding-top: 15px;
+    padding: 10px
 }
 
 div.lockup div.artwork {
@@ -763,6 +738,7 @@ div.lockup ul li {
 
 div.lockup li.name {
     color: var(--text-color-emphasized);
+    max-width: 190px
 }
 
 div.lockup li.artist {
@@ -795,15 +771,15 @@ div.msc-button.small {
 }
 
 div.msc-button-inner {
-    height: 24px;
-    -webkit-border-radius: 12px;
+    height: 13px;
+    -webkit-border-radius: 3px;
     background: var(--small-btn-background);
+    border: 1px solid rgba(136, 136, 138, .746094);
     text-transform: uppercase;
-    color: var(--small-button-text-color-enabled);
-    font: normal normal bold 10px/14px 'Helvetica';
+    color: var(--button-text-color-enabled);
+    font: normal normal bold 9px/12px 'Helvetica';
     padding-left: 10px;
     padding-right: 10px;
-    line-height: 24px;
 }
 
 div.msc-button-inner.installed-not-removable, 
@@ -821,7 +797,6 @@ div.msc-button-inner.removing {
 
 div.msc-button-inner:not(.installed-not-removable):active:hover {
     background: var(--small-btn-background-active);
-    color: var(--small-button-text-color-active);
 }
 
 div.msc-button button {
@@ -875,22 +850,22 @@ div.msc-button.install-updates {
 }
 
 div.msc-button.install-updates.in-header {
-    margin-top: -6px;
+    margin-top: -2px;
 }
 
 div.msc-button-inner.install-updates {
-    height: 30px;
+    height: 23px;
     position: relative;
     min-width: 90px;
     margin-left: 5px;
     font-size: 11px;
     text-transform: uppercase;
-    line-height: 32px;
+    line-height: 24px;
     border: 0;
     color: var(--button-text-color-enabled);
     background: var(--install-btn-background);
     border-color: #1F4A7A;
-    -webkit-border-radius: 15px;
+    -webkit-border-radius: 3px;
 }
 
 div.msc-button-inner.install-updates.disabled,
@@ -909,7 +884,6 @@ div.msc-button-inner.install-updates.removing {
 
 div.msc-button-inner.install-updates:not(.installed-not-removable):active:hover {
     background: var(--install-btn-background-active);
-    color: var(--button-text-color-active);
 }
 
 .scrollbar::-webkit-scrollbar {
@@ -1177,8 +1151,7 @@ body {
     margin: 0;
     min-height: 100%;
     display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow-x: hidden;
+    -webkit-box-orient: vertical
 }
 
 div#page {
@@ -1305,6 +1278,10 @@ div.lockup li.removing span.progress-spinner {
     right: 20px;
 }
 
+div.lockup li {
+    max-width: 190px;
+}
+
 div.lockup li.not-installed,
 div.lockup li.installing, 
 div.lockup li.removing {
@@ -1325,28 +1302,18 @@ div.lockup-container div.status-results {
     text-align:center;
     padding-top: 100px;
     padding-bottom: 100px;
+    color: var(--text-color-subdued);
 }
 div.lockup-container div.status-results>h2 {
     margin-bottom: 6px;
     font-weight: bold;
-    font-size: 25px;
-    color: var(--text-color-normal);
+    font-size: 14px
 }
 div.lockup-container div.status-results>p {
-    font-size: 14px;
-    color: var(--text-color-subdued);
+    font-size: 12px
 }
 div.lockup-container div.status-results>p a{
     font-weight: bold; 
     color: var(--text-color-subdued);
 }
 
-.button {
-    margin-top:10px;
-}
-
-.items {
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--line-color);
-    height: 105px;
-}
