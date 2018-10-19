@@ -356,7 +356,7 @@ div.columns {
 
 footer {
     font-size: 10px;
-    color: #4c4c4c;
+    color: var(--text-color-normal);
     line-height: 30px;
     text-align: center;
     position: relative;
@@ -364,7 +364,7 @@ footer {
     max-width: 1600px;
     min-width: 779px;
     margin: 0 auto;
-    padding: 0 20px
+    padding: 0 40px
 }
 
 footer script {
@@ -373,7 +373,7 @@ footer script {
 
 footer div.bottom-links {
     margin: 0 0 0 0;
-    border-top: 1px solid #d3d7db;
+    border-top: 1px solid var(--line-color);
     position: relative
 }
 
