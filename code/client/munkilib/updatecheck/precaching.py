@@ -22,7 +22,6 @@ Created by Greg Neagle on 2018-05-06.
 Module for precaching optional installs with installed=False and precache=True.
 """
 import os
-import sys
 
 from . import download
 
@@ -64,6 +63,54 @@ def cache():
                 item['name'], unicode(err))
 
 
+def uncache(space_needed_in_kb):
+    '''Discard precached items to free up space for managed installs'''
+    install_info = _installinfo()
+    precached_items = [
+        [os.path.basename(item['installer_item_location'])]
+        for item in _items_to_precache(install_info)
+        if item.get('installer_item_location')]
+    if not precached_items:
+        return
+
+    cachedir = os.path.join(prefs.pref('ManagedInstallDir'), 'Cache')
+    precached_size = 0
+    for item in precached_items:
+        # item is [itemname]
+        item_path = os.path.join(cachedir, item[0])
+        itemsize = int(os.path.getsize(item_path)/1024)
+        precached_size += itemsize
+        item.append(itemsize)
+        # item is now [itemname, itemsize]
+
+    if precached_size < space_needed_in_kb:
+        # we can't clear enough space, so don't bother removing anything.
+        # otherwise we'll clear some space, but still can't download the large
+        # managed install, but then we'll have enough space to redownload the
+        # precachable items and so we will (and possibly do this over and
+        # over -- delete some, redownload, delete some, redownload...)
+        return
+
+    # sort reversed by size; smallest at end
+    precached_items.sort(key=lambda x: x[1], reverse=True)
+    deleted_kb = 0
+    while precached_items:
+        if deleted_kb >= space_needed_in_kb:
+            break
+        # remove and return last item in precached_items
+        # we delete the smallest item first, proceeeding until we've freed up
+        # enough space or deleted all the items
+        item = precached_items.pop()
+        item_path = os.path.join(cachedir, item[0])
+        item_size = item[1]
+        try:
+            os.remove(item_path)
+            deleted_kb += item_size
+        except OSError, err:
+            display.display_error(
+                "Could not remove precached item %s: %s" % (item_path, err))
+
+
 def run_agent():
     '''Kick off a run of our precaching agent, which allows the precaching to
     run in the background after a normal Munki run'''
@@ -78,7 +125,7 @@ def run_agent():
         precache_agent_path = '/usr/local/munki/precache_agent'
     if os.path.exists(precache_agent_path):
         try:
-            job = launchd.Job([precache_agent_path] , cleanup_at_exit=False)
+            job = launchd.Job([precache_agent_path], cleanup_at_exit=False)
             job.start()
         except launchd.LaunchdJobException as err:
             display.display_error(
