@@ -223,7 +223,7 @@ class RepoCleaner(object):
                 if pkginfo.get(key):
                     value = pkginfo[key]
                     if key == 'catalogs':
-                        value = ', '.join(value)
+                        value = ', '.join(sorted(value))
                     if key == 'receipts':
                         value = ', '.join(
                             [item.get('packageid', '') for item in value])
