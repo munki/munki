@@ -529,10 +529,23 @@ CONFOUTLINE=""
 CONFCHOICE=""
 CONFREF=""
 if [ ! -z "$CONFPKG" ]; then
-    if [ $PKGTYPE == "flat" ]; then
-        echo "Flat configuration package not implemented"
-        exit 1
-    else
+    if [[ -f "${CONFPKG}" ]]; then
+        echo "Flat configuration package supplied"
+        PKG_INFO_TEMP=$(mktemp /tmp/confpkg.XXXXX)
+        /usr/sbin/installer -pkginfo -verbose -plist -pkg "${CONFPKG}" > "${PKG_INFO_TEMP}"
+
+        CONFTITLE=$(/usr/libexec/PlistBuddy -c "Print :Title" "${PKG_INFO_TEMP}")
+        CONFDESC=$(/usr/libexec/PlistBuddy -c "Print :Description" "${PKG_INFO_TEMP}")
+        CONFSIZE=$(/usr/libexec/PlistBuddy -c "Print :Size" "${PKG_INFO_TEMP}")
+        CONFID="${PKGID}.config"
+        CONFVERSION="1.0"
+
+        CONFBASENAME=$(basename "${CONFPKG}")
+
+        rm "${PKG_INFO_TEMP}"
+        cp "${CONFPKG}" "${PKGDEST}"
+
+    elif [[ -d "${CONFPKG}" ]]; then
         echo "Bundle-style configuration package not supported"
         exit 1
         #if [ -d "$CONFPKG/Contents/Resources/English.lproj" ]; then
@@ -549,6 +562,9 @@ if [ ! -z "$CONFPKG" ]; then
         #CONFSIZE=`defaults read "$CONFPKG/Contents/Info" IFPkgFlagInstalledSize`
         #CONFVERSION=`defaults read "$CONFPKG/Contents/Info" CFBundleShortVersionString`
         #CONFBASENAME=`basename "$CONFPKG"`
+    else
+        echo "Unknown package type - neither flat nor bundle"
+        exit 1
     fi
     CONFOUTLINE="<line choice=\"config\"/>"
     CONFCHOICE="<choice id=\"config\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
