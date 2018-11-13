@@ -37,7 +37,7 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
-    -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
+    -c package  Include a configuration package. This must be a flat, not a bundle style package.
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
     -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
