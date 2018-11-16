@@ -111,25 +111,6 @@ def enough_disk_space(item_pl, installlist=None,
     return False
 
 
-def get_url_basename(url):
-    """For a URL, absolute or relative, return the basename string.
-
-    e.g. "http://foo/bar/path/foo.dmg" => "foo.dmg"
-         "/path/foo.dmg" => "foo.dmg"
-    """
-
-    url_parse = urlparse.urlparse(url)
-    return os.path.basename(url_parse.path)
-
-
-def get_download_cache_path(url):
-    """For a URL, return the path that the download should cache to.
-
-    Returns a string."""
-    cachedir = os.path.join(prefs.pref('ManagedInstallDir'), 'Cache')
-    return os.path.join(cachedir, get_url_basename(url))
-
-
 def download_installeritem(item_pl,
                            installinfo, uninstalling=False, precaching=False):
     """Downloads an (un)installer item.
