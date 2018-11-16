@@ -223,6 +223,7 @@ class AlertController(NSObject):
             u"There is a configuration problem with the managed software "
             "installer. Could not start the process. Contact your systems "
             "administrator.", u"Could Not Start Session message")
+        OKButtonTitle = NSLocalizedString(u"OK", u"OK button title")
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             alertMessageText, OKButtonTitle, nil, nil, u"%@", detailText)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
