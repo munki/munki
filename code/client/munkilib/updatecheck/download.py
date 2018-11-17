@@ -438,6 +438,10 @@ def uncache(space_needed_in_kb):
 def run_precaching_agent():
     '''Kick off a run of our precaching agent, which allows the precaching to
     run in the background after a normal Munki run'''
+    if not _items_to_precache(_installinfo()):
+        # nothing to precache
+        display.display_debug1('Nothing found to precache.')
+        return
     parent_dir = (
         os.path.dirname(
             os.path.dirname(
@@ -448,6 +452,8 @@ def run_precaching_agent():
         # try absolute path in Munki's normal install dir
         precache_agent_path = '/usr/local/munki/precache_agent'
     if os.path.exists(precache_agent_path):
+        display.display_debug1(
+            'Launching precache_agent from %s', precache_agent_path)
         try:
             job = launchd.Job([precache_agent_path], cleanup_at_exit=False)
             job.start()
