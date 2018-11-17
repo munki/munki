@@ -118,7 +118,7 @@ class MSCStatusController(NSObject):
             self.timer = None
         self.cleanUpStatusSession()
         # tell the window controller the update session is done
-        self.statusWindowController.munkiStatusSessionEnded_(result)
+        self.statusWindowController.munkiStatusSessionEndedWithStatus_errorMessage_(result, "")
 
     def updateStatus_(self, notification):
         '''Got update status notification from managedsoftwareupdate'''
