@@ -306,22 +306,6 @@ def shortRelativeStringFromDate(nsdate):
     return unicode(df.stringFromDate_(nsdate))
 
 
-def startUpdateCheck(suppress_apple_update_check=False):
-    '''Does launchd magic to run managedsoftwareupdate as root.'''
-    try:
-        if not os.path.exists(UPDATECHECKLAUNCHFILE):
-            plist = {}
-            plist['SuppressAppleUpdateCheck'] = suppress_apple_update_check
-            try:
-                FoundationPlist.writePlist(plist, UPDATECHECKLAUNCHFILE)
-            except FoundationPlist.FoundationPlistException:
-                # problem creating the trigger file
-                return 1
-        return 0
-    except (OSError, IOError):
-        return 1
-
-
 def getAppleUpdates():
     '''Returns any available Apple updates'''
     managedinstallbase = pref('ManagedInstallDir')
@@ -391,6 +375,26 @@ def currentGUIusers():
     return gui_users
 
 
+class ProcessStartError(Exception):
+    '''An exception to raise when we can't start managedsoftwareupdate'''
+    pass
+
+
+def startUpdateCheck(suppress_apple_update_check=False):
+    '''Does launchd magic to run managedsoftwareupdate as root.'''
+    try:
+        if not os.path.exists(UPDATECHECKLAUNCHFILE):
+            plist = {}
+            plist['SuppressAppleUpdateCheck'] = suppress_apple_update_check
+            try:
+                FoundationPlist.writePlist(plist, UPDATECHECKLAUNCHFILE)
+            except FoundationPlist.FoundationPlistException, err:
+                # problem creating the trigger file
+                raise ProcessStartError(err)
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
+
+
 def logoutNow():
     '''Uses oscascript to run an AppleScript
     to tell loginwindow to logout.
@@ -410,13 +414,12 @@ end ignoring
 def logoutAndUpdate():
     '''Touch a flag so the process that runs after
     logout knows it's OK to install everything'''
-
     try:
         if not os.path.exists(INSTALLATLOGOUTFILE):
             open(INSTALLATLOGOUTFILE, 'w').close()
         logoutNow()
-    except (OSError, IOError):
-        return 1
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
 
 
 def clearLaunchTrigger():
@@ -426,8 +429,8 @@ def clearLaunchTrigger():
     try:
         if os.path.exists(INSTALLATLOGOUTFILE):
             os.unlink(INSTALLATLOGOUTFILE)
-    except (OSError, IOError):
-        return 1
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
 
 
 def justUpdate():
@@ -438,9 +441,8 @@ def justUpdate():
     try:
         if not os.path.exists(INSTALLWITHOUTLOGOUTFILE):
             open(INSTALLWITHOUTLOGOUTFILE, 'w').close()
-        return 0
-    except (OSError, IOError):
-        return 1
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
 
 
 def pythonScriptRunning(scriptname):
