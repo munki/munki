@@ -487,7 +487,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                              'icon_name',
                              'PayloadIdentifier',
                              'icon_hash',
-                             'OnDemand']
+                             'OnDemand',
+                             'precache']
 
             if (is_optional_install and
                     not installationstate.some_version_installed(item_pl)):
