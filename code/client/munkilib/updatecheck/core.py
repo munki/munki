@@ -30,7 +30,6 @@ from . import catalogs
 from . import download
 from . import licensing
 from . import manifestutils
-from . import precaching
 
 from .. import display
 from .. import info
@@ -483,7 +482,7 @@ def check(client_id='', localmanifestpath=None):
 
     # start our precaching agent
     # note -- this must happen _after_ InstallInfo.plist gets written to disk.
-    precaching.run_agent()
+    download.run_precaching_agent()
 
     if installcount or removalcount:
         return 1
