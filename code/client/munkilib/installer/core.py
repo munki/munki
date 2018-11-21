@@ -404,6 +404,11 @@ def install_with_info(
                     foundagain = True
                     break
 
+        # check to see if the item is both precache and OnDemand
+        if not foundagain and item.get('precache') and item.get('OnDemand'):
+            foundagain = True
+            break
+
         # need to check skipped_installs as well
         if not foundagain:
             for skipped_item in skipped_installs:
