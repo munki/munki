@@ -390,7 +390,7 @@ def install_with_info(
         # this might happen if there are multiple things being installed
         # with choicesXML files applied to a metapackage or
         # multiple packages being installed from a single DMG
-        foundagain = False
+        stillneeded = False
         current_installer_item = item['installer_item']
         # are we at the end of the installlist?
         # (we already incremented itemindex for display
@@ -401,25 +401,25 @@ def install_with_info(
             for lateritem in installlist[itemindex:]:
                 if (lateritem.get('installer_item') ==
                         current_installer_item):
-                    foundagain = True
+                    stillneeded = True
                     break
 
         # check to see if the item is both precache and OnDemand
-        if not foundagain and item.get('precache') and item.get('OnDemand'):
-            foundagain = True
+        if not stillneeded and item.get('precache') and item.get('OnDemand'):
+            stillneeded = True
             break
 
         # need to check skipped_installs as well
-        if not foundagain:
+        if not stillneeded:
             for skipped_item in skipped_installs:
                 if (skipped_item.get('installer_item') ==
                         current_installer_item):
-                    foundagain = True
+                    stillneeded = True
                     break
 
         # ensure package is not deleted from cache if installation
         # fails by checking retcode
-        if not foundagain and retcode == 0:
+        if not stillneeded and retcode == 0:
             # now remove the item from the install cache
             # (if it's still there)
             itempath = os.path.join(dirpath, current_installer_item)
