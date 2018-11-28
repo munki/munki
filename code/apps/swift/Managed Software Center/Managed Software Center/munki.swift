@@ -262,20 +262,6 @@ func shortRelativeStringFromDate(_ theDate: Date) -> String {
     return df.string(from: theDate)
 }
 
-func startUpdateCheck(_ suppress_spple_update_check: Bool = false) -> Bool {
-    // Does launchd magic to run managedsoftwareupdate as root.
-    if !(FileManager.default.fileExists(atPath: UPDATECHECKLAUNCHFILE)) {
-        let plist = ["SuppressAppleUpdateCheck": suppress_spple_update_check]
-        do {
-            try writePlist(plist, toFile: UPDATECHECKLAUNCHFILE)
-        } catch {
-            // problem creating the trigger file
-            return false
-        }
-    }
-    return true
-}
-
 func humanReadable(_ kbytes: Int) -> String {
     let units: [(String, Int)] = [
         ("KB", 1024),
@@ -332,6 +318,23 @@ func currentGUIusers() -> [String] {
     return gui_users
 }
 
+enum ProcessStartError: Error {
+    case error(description: String)
+}
+
+func startUpdateCheck(_ suppress_apple_update_check: Bool = false) throws {
+    // Does launchd magic to run managedsoftwareupdate as root.
+    if !(FileManager.default.fileExists(atPath: UPDATECHECKLAUNCHFILE)) {
+        let plist = ["SuppressAppleUpdateCheck": suppress_apple_update_check]
+        do {
+            try writePlist(plist, toFile: UPDATECHECKLAUNCHFILE)
+        } catch {
+            throw ProcessStartError.error(
+                description: "Could not create file \(UPDATECHECKLAUNCHFILE) -- \(error)")
+        }
+    }
+}
+
 func logoutNow() {
     /* Uses oscascript to run an AppleScript
      to tell loginwindow to logout.
@@ -346,28 +349,34 @@ end ignoring
     _ = exec("/usr/bin/osascript", args: ["-e", script])
 }
 
-func logoutAndUpdate() -> Bool {
+func logoutAndUpdate() throws {
     // Touch a flag so the process that runs after logout
     // knows it's OK to install everything, then trigger logout
     if !(FileManager.default.fileExists(atPath: INSTALLATLOGOUTFILE)) {
         let success = FileManager.default.createFile(
             atPath: INSTALLATLOGOUTFILE, contents: nil, attributes: nil)
-        if !success { return false }
+        if !success {
+            throw ProcessStartError.error(
+                description: "Could not create file \(INSTALLATLOGOUTFILE)")
+        }
     }
     logoutNow()
-    return true
 }
 
-func justUpdate() -> Bool {
+func justUpdate() throws {
     /* Trigger managedinstaller via launchd KeepAlive path trigger
      We touch a file that launchd is is watching
      launchd, in turn,
      launches managedsoftwareupdate --installwithnologout as root */
     if FileManager.default.fileExists(atPath: INSTALLWITHOUTLOGOUTFILE) {
-        return true
+        return
     }
-    return FileManager.default.createFile(
+    let success = FileManager.default.createFile(
             atPath: INSTALLWITHOUTLOGOUTFILE, contents: nil, attributes: nil)
+    if !success {
+        throw ProcessStartError.error(
+            description: "Could not create file \(INSTALLWITHOUTLOGOUTFILE)")
+    }
 }
 
 func pythonScriptRunning(_ scriptName: String) -> Bool {

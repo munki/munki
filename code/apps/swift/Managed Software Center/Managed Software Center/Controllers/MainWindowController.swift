@@ -183,9 +183,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         myItemsMenuItem.isEnabled = enabled_state
     }
     
-    func munkiStatusSessionEnded(_ sessionResult: Int) {
+    func munkiStatusSessionEnded(withStatus sessionResult: Int, errorMessage: String) {
         // Called by StatusController when a Munki session ends
         msc_debug_log("MunkiStatus session ended: \(sessionResult)")
+        if !errorMessage.isEmpty {
+            msc_debug_log("MunkiStatus session error message: \(errorMessage)")
+        }
         msc_debug_log("MunkiStatus session type: \(managedsoftwareupdate_task)")
         let tasktype = managedsoftwareupdate_task
         managedsoftwareupdate_task = ""
@@ -237,6 +240,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                      "Try again later. If this situation continues, " +
                      "contact your systems administrator."),
                     comment: "Failed Preflight Check detail")
+            }
+            if !errorMessage.isEmpty {
+                detailText = "\(detailText)\n\n\(errorMessage)"
             }
             // show the alert sheet
             self.window!.makeKeyAndOrderFront(self)
@@ -467,17 +473,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if _update_in_progress {
             return
         }
-        if startUpdateCheck(suppress_apple_update_check) {
-            _update_in_progress = true
-            displayUpdateCount()
-            managedsoftwareupdate_task = "manualcheck"
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller.startMunkiStatusSession()
-            }
-            markRequestedItemsAsProcessing()
-        } else {
-            munkiStatusSessionEnded(2)
+        do {
+            try startUpdateCheck(suppress_apple_update_check)
+        } catch {
+            munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+            return
         }
+        _update_in_progress = true
+        displayUpdateCount()
+        managedsoftwareupdate_task = "manualcheck"
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller.startMunkiStatusSession()
+        }
+        markRequestedItemsAsProcessing()
     }
     
     @IBAction func reloadPage(_ sender: Any) {
@@ -518,16 +526,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 status_controller._status_message = NSLocalizedString(
                     "Updating...", comment: "Updating message")
             }
-            if justUpdate() {
-                managedsoftwareupdate_task = "installwithnologout"
-                if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                    status_controller.startMunkiStatusSession()
-                }
-                markPendingItemsAsInstalling()
-            } else {
-                msc_debug_log("Error starting install session")
-                munkiStatusSessionEnded(2)
+            do {
+                try justUpdate()
+            } catch {
+                msc_debug_log("Error starting install session: \(error)")
+                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
             }
+            managedsoftwareupdate_task = "installwithnologout"
+            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+                status_controller.startMunkiStatusSession()
+            }
+            markPendingItemsAsInstalling()
         }
     }
     
@@ -608,16 +617,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we can suppress the Apple update check
             _update_in_progress = true
             displayUpdateCount()
-            if startUpdateCheck(true) {
-                managedsoftwareupdate_task = "checktheninstall"
-                if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                    status_controller.startMunkiStatusSession()
-                }
-                markRequestedItemsAsProcessing()
-            } else {
-                msc_debug_log("Error starting check-then-install session")
-                munkiStatusSessionEnded(2)
+            do {
+                try startUpdateCheck(true)
+            } catch {
+                msc_debug_log("Error starting check-then-install session: \(error)")
+                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+                return
             }
+            managedsoftwareupdate_task = "checktheninstall"
+            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+                status_controller.startMunkiStatusSession()
+            }
+            markRequestedItemsAsProcessing()
         } else if !_alertedUserToOutstandingUpdates && updatesContainNonUserSelectedItems() {
             // current list of updates contains some not explicitly chosen by
             // the user

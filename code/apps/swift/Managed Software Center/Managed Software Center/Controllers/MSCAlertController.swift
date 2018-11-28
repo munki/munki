@@ -93,7 +93,11 @@ class MSCAlertController: NSObject {
                     // clicked logout button
                     msc_log("user", "install_with_logout")
                     self.handlePossibleAuthRestart()
-                    _ = logoutAndUpdate()
+                    do {
+                        try logoutAndUpdate()
+                    } catch {
+                        self.installSessionErrorAlert("\(error)")
+                    }
                 }
             })
         } else {
@@ -102,7 +106,11 @@ class MSCAlertController: NSObject {
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
                 msc_log("user", "install_with_logout")
                 self.handlePossibleAuthRestart()
-                _ = logoutAndUpdate()
+                do {
+                    try logoutAndUpdate()
+                } catch {
+                    self.installSessionErrorAlert("\(error)")
+                }
             })
         }
     }
@@ -188,15 +196,17 @@ class MSCAlertController: NSObject {
             }
             msc_log("user", "install_with_logout")
             handlePossibleAuthRestart()
-            if !logoutAndUpdate() {
-                installSessionErrorAlert()
+            do {
+                try logoutAndUpdate()
+            } catch {
+                installSessionErrorAlert("\(error)")
             }
         } else {
             msc_log("user", "cancelled")
         }
     }
     
-    func installSessionErrorAlert() {
+    func installSessionErrorAlert(_ errorMessage: String) {
         // Something has gone wrong and we can't trigger an install at logout
         msc_log("user", "install_session_failed")
         guard let mainWindow = window else {
@@ -206,10 +216,14 @@ class MSCAlertController: NSObject {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
             "Install session failed", comment: "Install Session Failed title")
-        alert.informativeText = NSLocalizedString(
+        var detailText = NSLocalizedString(
             "There is a configuration problem with the managed software " +
-            "installer. Could not start the process. Contact your systems " +
+                "installer. Could not start the process. Contact your systems " +
             "administrator.", comment: "Could Not Start Session message")
+        if !errorMessage.isEmpty {
+            detailText = "\(detailText)\n\n\(errorMessage)"
+        }
+        alert.informativeText = detailText
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
             // do nothing

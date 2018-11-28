@@ -112,7 +112,7 @@ class MSCStatusController: NSObject {
         }
         cleanUpStatusSession()
         // tell the window controller the update session is done
-        statusWindowController.munkiStatusSessionEnded(result)
+        statusWindowController.munkiStatusSessionEnded(withStatus: result, errorMessage: "")
     }
     
     @objc func updateStatus(_ notification: NSUserNotification) {
