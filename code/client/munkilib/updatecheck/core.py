@@ -481,6 +481,7 @@ def check(client_id='', localmanifestpath=None):
     removalcount = len(installinfo.get('removals', []))
 
     # start our precaching agent
+    # note -- this must happen _after_ InstallInfo.plist gets written to disk.
     download.run_precaching_agent()
 
     if installcount or removalcount:

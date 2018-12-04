@@ -1,0 +1,26 @@
+<div class="lockup small detailed option">
+    <a href="${detail_link}" class="artwork-link">
+        <div class="artwork">
+            <img width="75" height="75" alt="${display_name_escaped}" class="artwork" src="${icon}" />
+        </div>
+    </a>
+    <ul class="list">
+        <li class="name" title="${display_name_escaped}"><a href="${detail_link}">${display_name_escaped}</a></li>
+        <li class="genre">${category_and_developer_escaped}</li>
+        <li class="${status}" id="${name_escaped}_status_text">
+            <span id="${name_escaped}_status_text_span">${status_text}</span>
+            <a class="follow" href="munki://updates.html"></a>
+            <span class="progress-spinner"></span>
+        </li>
+        <li>
+            <div class="msc-button small">
+                <button class="button-area uppercase"
+                        onClick="window.webkit.messageHandlers.actionButtonClicked.postMessage('${name_quoted}');">
+                    <div class="msc-button-inner ${status}" id="${name_escaped}_action_button_text">
+                        ${short_action_text}
+                    </div>
+                </button>
+            </div>
+        </li>
+    </ul>
+</div>

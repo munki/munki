@@ -1,0 +1,95 @@
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Prüfe Apple Software Update Katalog...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Prüfe auf weitere Änderungen...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Prüfe verfügbare Apple Software Updates...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Prüfe auf verfügbare Updates...";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Stelle fest, welche Dateien zu entfernen sind";
+
+/* managedsoftwareupdate message */
+"Done." = "Fertig";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Lade verfügbare Apple Software Updates herunter...";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Abschließen...";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Sammle Informationen zu installierten Paketen";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Installiere verfügbare Apple Software Updates...";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Nichts zu entfernen.";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Entfernen des Paketes abgeschlossen.";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Führe postflight Aufgaben aus...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Führe preflight Aufgaben aus...";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Vorbereitungen zum Ausführen des macOS Installer...";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Entferne Paketquittung";
+
+/* No comment provided by engineer. */
+"Restart" = "Neustart";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Neustart erforderlich";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Hole Liste von Software für diesen Computer...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Starte Adobe Patch Installer";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Starte Adobe Setup";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Starte Adobe Uninstall";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Installierte oder entfernte Software benötigt einen Neustart.";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Softwareaktualisierung oder -entfernung benötigt einen Neustart. Sie können offene Dokumente noch sichern.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Starte Adobe Installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "macOS Upgrade wird gestartet...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Starte...";
+
+/* No comment provided by engineer. */
+"Starting…" = "Starten…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Das System startet neu und beginnt dann mit dem Upgrade von macOS";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Die Software wurde erfolgreich installiert.";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Prüfe Paketintegrität...";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Warte auf Netzwerk...";

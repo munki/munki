@@ -1,0 +1,32 @@
+<tr class="installation" id="${name_escaped}_myitems_table_row">
+  <td>
+    <a href="${detail_link}" class="artwork-link">
+        <div class="artwork">
+            <img width="75" height="75" alt="${display_name_escaped}" class="artwork" src="${icon}" />
+        </div>
+    </a>
+    <ul class="list info">
+        <li><h2><a title="${display_name_escaped}" href="${detail_link}">${display_name_escaped}</a></h2></li>
+        <li class="install-info-cell">${developer_escaped}</li>
+    </ul>
+  </td>
+  <td class="install-info-cell">${version_to_install}</td>
+  <td class="install-info-cell">${size}</td>
+  <td class="status install-info-cell">
+      <span class="${status}" id="${name_escaped}_status_text">
+          ${status_text}
+          <a class="follow" href="munki://updates.html">
+    </span>
+  </td>
+  <td>
+      <div class="msc-button install-updates">
+          <button class="button-area uppercase" 
+           onClick="window.webkit.messageHandlers.myItemsButtonClicked.postMessage('${name_quoted}');">
+              <div class="msc-button-inner install-updates ${status}"
+                   id="${name_escaped}_action_button_text">
+                  ${myitem_action_text}
+              </div>
+          </button>
+      </div>
+  </td>
+</tr>
