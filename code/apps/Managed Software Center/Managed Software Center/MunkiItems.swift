@@ -215,8 +215,8 @@ class GenericItem: BaseItem {
     func getIcon() -> String {
         // Return name/relative path of image file to use for the icon
         // first look for downloaded icons
-        let icon_known_exts = [".bmp", ".gif", ".icns", ".jpg", ".jpeg", ".png",
-                               ".psd", ".tga", ".tif", ".tiff", ".yuv"]
+        let icon_known_exts = ["bmp", "gif", "icns", "jpg", "jpeg", "png",
+                               "psd", "tga", "tif", "tiff", "yuv"]
         var icon_name = my["icon_name"] as? String ?? my["name"] as? String ?? ""
         if !icon_known_exts.contains((icon_name as NSString).pathExtension) {
             icon_name += ".png"
