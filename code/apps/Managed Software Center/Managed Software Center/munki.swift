@@ -66,7 +66,8 @@ func pref(_ prefName: String) -> Any? {
         "AppleSoftwareUpdatesOnly": false,
         "ShowRemovalDetail": false,
         "InstallRequiresLogout": false,
-        "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS
+        "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS,
+        "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     ]
     var value: Any?
     value = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
@@ -74,6 +75,21 @@ func pref(_ prefName: String) -> Any? {
         value = defaultPrefs[prefName]
     }
     return value
+}
+
+func logFilePref() -> String {
+    /* Returns Munki's LogFile preference. Since this uses CFPreferencesCopyAppValue,
+     preferences can be defined several places. Precedence is:
+     - MCX/configuration profile
+     - ~/Library/Preferences/ManagedInstalls.plist
+     - /Library/Preferences/ManagedInstalls.plist
+     - default_pref defined here.
+     */
+    let value = CFPreferencesCopyAppValue("LogFile" as CFString, "ManagedInstalls" as CFString)
+    if value == nil {
+        return "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
+    }
+    return value! as! String
 }
 
 func readSelfServiceManifest() -> PlistDict {
