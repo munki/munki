@@ -111,6 +111,7 @@
 				C0544D4420AF0EDA00DC86F6 /* Sources */,
 				C0544D4520AF0EDA00DC86F6 /* Frameworks */,
 				C0544D4620AF0EDA00DC86F6 /* Resources */,
+				C05BD40521B76FD40025F304 /* Embed version info */,
 			);
 			buildRules = (
 			);
@@ -186,6 +187,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C05BD40521B76FD40025F304 /* Embed version info */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed version info";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a psuedo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C0544D4420AF0EDA00DC86F6 /* Sources */ = {
