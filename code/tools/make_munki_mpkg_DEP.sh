@@ -139,7 +139,7 @@ if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$APPSSVNREV
 fi
 # get base apps version from MSC.app
-APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Managed Software Center-Info" CFBundleShortVersionString`
+APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Info" CFBundleShortVersionString`
 # append the APPSSVNREV
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 

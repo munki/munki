@@ -56,7 +56,7 @@ static void updateCount(NSDockTile *tile) {
 	    [[NSDistributedNotificationCenter defaultCenter] removeObserver:self.updateObserver];
 	    self.updateObserver = nil;
     }
-    [super dealloc];
+    //[super dealloc];
 }
 
 @end
