@@ -1,0 +1,34 @@
+desired_state = 'installed' or 'not-installed' or 'dont-care'
+maps to managed_install, managed_uninstall, or not in SelfServeManifest
+
+removal-error (implies desired_state is not-installed)
+    click -> cancel -> desired_state = dont-care
+will-be-removed
+    click -> cancel -> desired_state = dont-care
+installed-not-removable
+    no action possible
+removal-requested
+    click -> cancel -> desired_state = dont-care (No updatecheck needed)
+installed
+    click -> remove -> desired_state = not-installed (immediate state is removal-requested)
+update-must-be-installed
+    no action possible
+update-will-be-installed
+    click -> cancel -> desired_state = dont-care
+update-available
+    click -> install -> desired_state = installed (immediate state is install-requested)
+
+install-error (implies desired_state is installed)
+    click -> cancel -> desired_state = dont-care
+unavailable
+    no action possible
+must-be-installed
+    no action possible
+will-be-installed
+    click -> cancel -> desired_state = dont-care
+install-requested
+    click -> cancel -> desired_state = dont-care (No updatecheck needed)
+not-installed
+    click -> install -> desired_state = installed (immediate state is install-requested)
+
+

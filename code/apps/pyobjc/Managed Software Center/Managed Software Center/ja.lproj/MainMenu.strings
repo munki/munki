@@ -1,0 +1,164 @@
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "ヘルプ";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "ヘルプ";
+
+/* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
+"111.title" = "Managed Software Center　ヘルプ";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "サービス";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "サービス";
+
+/* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
+"134.title" = "Managed Software Centerを隠す";
+
+/* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
+"136.title" = "Managed Software Centerを終了";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "ほかを隠す";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "すべてを表示";
+
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "ウィンドウ";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "コピー";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "すべてを選択";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "カット";
+
+/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
+"1XY-pX-Pwv.title" = "検索";
+
+/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
+"1uK-HI-wGR.title" = "マイアイテム";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "削除";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "ペースト";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "編集";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Undo";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Redo";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "編集";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "しまう";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "ズーム";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "ウィンドウ";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
+"371.title" = "Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
+"375.title" = "ナビゲート";
+
+/* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
+"376.title" = "ナビゲート";
+
+/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
+"56.title" = "Managed Software Center";
+
+/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
+"57.title" = "Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
+"58.title" = "Managed Software Centerについて";
+
+/* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
+"9S1-fB-bKZ.title" = "カテゴリ";
+
+/* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "Afg-mB-WlJ"; */
+"Afg-mB-WlJ.title" = "再読み込み";
+
+/* Class = "NSToolbarItem"; label = "Updates"; ObjectID = "AjB-m1-mu8"; */
+"AjB-m1-mu8.label" = "アップデート";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Updates"; ObjectID = "AjB-m1-mu8"; */
+"AjB-m1-mu8.paletteLabel" = "アップデート";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
+"CEb-sx-e3H.paletteLabel" = "ナビゲーション";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "Ef8-fO-Dm6"; */
+"Ef8-fO-Dm6.title" = "Password:";
+
+/* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
+"G2X-M7-NVB.label" = "カテゴリ";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
+"G2X-M7-NVB.paletteLabel" = "カテゴリ";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Rl8-0j-Dpu"; */
+"Rl8-0j-Dpu.title" = "Text Cell";
+
+/* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "Uby-CQ-lvU"; */
+"Uby-CQ-lvU.label" = "マイアイテム";
+
+/* Class = "NSToolbarItem"; paletteLabel = "My Items"; ObjectID = "Uby-CQ-lvU"; */
+"Uby-CQ-lvU.paletteLabel" = "マイアイテム";
+
+/* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
+"VYO-og-DRc.title" = "ソフトウェア";
+
+/* Class = "NSWindow"; title = "Log"; ObjectID = "X5I-7f-aJs"; */
+"X5I-7f-aJs.title" = "Log";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "a1e-6Q-iNS"; */
+"a1e-6Q-iNS.title" = "Text Cell";
+
+/* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
+"bd5-IY-BXv.title" = "閉じる";
+
+/* Class = "NSMenuItem"; title = "Back"; ObjectID = "fEq-6D-Ce0"; */
+"fEq-6D-Ce0.title" = "戻る";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "fbJ-cF-weR"; */
+"fbJ-cF-weR.paletteLabel" = "検索";
+
+/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
+"jQt-Mr-wFT.title" = "Enter Full Screen";
+
+/* Class = "NSToolbarItem"; label = "Software"; ObjectID = "jTu-Wf-fi2"; */
+"jTu-Wf-fi2.label" = "ソフトウェア";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "jTu-Wf-fi2"; */
+"jTu-Wf-fi2.paletteLabel" = "ソフトウェア";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "sF1-NQ-sSb"; */
+"sF1-NQ-sSb.paletteLabel" = "Narrow Space";
+
+/* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
+"tv9-wZ-XWN.title" = "アップデート";
+
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "vPs-dO-LDa"; */
+"vPs-dO-LDa.title" = "ログを表示";
+
+/* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
+"z4Z-vu-XGX.title" = "次へ";

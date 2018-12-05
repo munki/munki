@@ -1,164 +1,164 @@
-/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
-"103.title" = "Aide";
+/* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "1Dc-SU-RKH"; */
+"1Dc-SU-RKH.title" = "Naviguer";
 
-/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
-"106.title" = "Aide";
+/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "1LL-5u-cZt"; */
+"1LL-5u-cZt.title" = "Plein écran";
 
-/* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
-"111.title" = "Aide du Centre de gestion des logiciels";
+/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "Centre de gestion des logiciels";
 
-/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
-"130.title" = "Services";
+/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1bG-B4-adC"; */
+"1bG-B4-adC.title" = "Mes articles";
 
-/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
-"131.title" = "Services";
+/* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "4lt-PW-vbr"; */
+"4lt-PW-vbr.paletteLabel" = "Navigation";
 
-/* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
-"134.title" = "Masquer le Centre de gestion des logiciels";
+/* Class = "NSMenuItem"; title = "Back"; ObjectID = "4nC-yt-nEz"; */
+"4nC-yt-nEz.title" = "Précédent";
 
-/* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
-"136.title" = "Quitter le Centre de gestion des logiciels";
+/* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "Quitter le Centre de gestion des logiciels";
 
-/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
-"145.title" = "Masquer les autres";
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "5QF-Oa-p0T"; */
+"5QF-Oa-p0T.title" = "Modifier";
 
-/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
-"150.title" = "Tout afficher";
+/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "5kV-Vb-QxS"; */
+"5kV-Vb-QxS.title" = "À propos de Centre de gestion des logiciels";
 
-/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "Fenêtre";
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "6dh-zS-Vam"; */
+"6dh-zS-Vam.title" = "Rétablir";
 
-/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
-"197.title" = "Copier";
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "8sr-3d-QrU"; */
+"8sr-3d-QrU.title" = "Text Cell";
 
-/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
-"198.title" = "Tout sélectionner";
+/* Class = "NSWindow"; title = "Log"; ObjectID = "9hv-e8-cy0"; */
+"9hv-e8-cy0.title" = "Log";
 
-/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
-"199.title" = "Couper";
+/* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
+"AYu-sK-qS6.title" = "Main Menu";
 
-/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
-"1XY-pX-Pwv.title" = "Rechercher";
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "DPV-5p-iWV"; */
+"DPV-5p-iWV.title" = "Text Cell";
 
-/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
-"1uK-HI-wGR.title" = "Mes articles";
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "EeR-uP-dFY"; */
+"EeR-uP-dFY.title" = "Centre de gestion des logiciels";
 
-/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
-"202.title" = "Supprimer";
+/* Class = "NSMenu"; title = "Help"; ObjectID = "F2S-fz-NVQ"; */
+"F2S-fz-NVQ.title" = "Aide";
 
-/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
-"203.title" = "Coller";
+/* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "FKE-Sm-Kum"; */
+"FKE-Sm-Kum.title" = "Aide du Centre de gestion des logiciels";
 
-/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
-"205.title" = "Édition";
+/* Class = "NSMenuItem"; title = "Updates"; ObjectID = "HOZ-SU-4Sm"; */
+"HOZ-SU-4Sm.title" = "Mises à jour";
 
-/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
-"207.title" = "Annuler";
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "HsX-gY-H6Z"; */
+"HsX-gY-H6Z.title" = "Zoom";
 
-/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
-"215.title" = "Rétablir";
+/* Class = "NSMenuItem"; title = "Categories"; ObjectID = "IjL-Sm-tWj"; */
+"IjL-Sm-tWj.title" = "Catégories";
 
-/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
-"217.title" = "Modifier";
+/* Class = "NSMenuItem"; title = "Search"; ObjectID = "JRN-bq-1gM"; */
+"JRN-bq-1gM.title" = "Rechercher";
 
-/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Minimiser";
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
+"Kd2-mp-pUS.title" = "Tout afficher";
 
-/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
-"239.title" = "Zoom";
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "Lao-d1-6EI"; */
+"Lao-d1-6EI.title" = "Fenêtre";
 
-/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "Fenêtre";
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "NMo-om-nkz"; */
+"NMo-om-nkz.title" = "Services";
 
-/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMenuPrincipal";
+/* Class = "NSToolbarItem"; label = "Software"; ObjectID = "OWt-II-Pv5"; */
+"OWt-II-Pv5.label" = "Logiciel";
 
-/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
-"371.title" = "Centre de gestion des logiciels";
+/* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "OWt-II-Pv5"; */
+"OWt-II-Pv5.paletteLabel" = "Logiciel";
 
-/* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
-"375.title" = "Naviguer";
+/* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "Masquer le Centre de gestion des logiciels";
 
-/* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
-"376.title" = "Naviguer";
+/* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "RZb-6e-dMo"; */
+"RZb-6e-dMo.title" = "Actualiser la page";
 
-/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
-"56.title" = "Centre de gestion des logiciels";
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "Ruw-6m-B2m"; */
+"Ruw-6m-B2m.title" = "Tout sélectionner";
 
-/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
-"57.title" = "Centre de gestion des logiciels";
+/* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "VJm-ZV-d6j"; */
+"VJm-ZV-d6j.paletteLabel" = "Narrow Space";
 
-/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
-"58.title" = "À propos de Centre de gestion des logiciels";
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
+"Vdr-fp-XzO.title" = "Masquer les autres";
 
-/* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
-"9S1-fB-bKZ.title" = "Catégories";
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "Vmh-Df-yvT"; */
+"Vmh-Df-yvT.title" = "Minimiser";
 
-/* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "Afg-mB-WlJ"; */
-"Afg-mB-WlJ.title" = "Actualiser la page";
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "W48-6f-4Dl"; */
+"W48-6f-4Dl.title" = "Édition";
 
-/* Class = "NSToolbarItem"; label = "Updates"; ObjectID = "AjB-m1-mu8"; */
-"AjB-m1-mu8.label" = "Mises à jour";
+/* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "XOq-vH-sPs"; */
+"XOq-vH-sPs.paletteLabel" = "Rechercher";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Updates"; ObjectID = "AjB-m1-mu8"; */
-"AjB-m1-mu8.paletteLabel" = "Mises à jour";
+/* Class = "NSMenu"; title = "Window"; ObjectID = "XR5-fT-Z3r"; */
+"XR5-fT-Z3r.title" = "Fenêtre";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
-"CEb-sx-e3H.paletteLabel" = "Navigation";
+/* Class = "NSMenuItem"; title = "Software"; ObjectID = "YIg-jD-AbB"; */
+"YIg-jD-AbB.title" = "Logiciel";
 
-/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "Ef8-fO-Dm6"; */
-"Ef8-fO-Dm6.title" = "Password:";
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
+"dRJ-4n-Yzg.title" = "Annuler";
 
-/* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
-"G2X-M7-NVB.label" = "Catégories";
+/* Class = "NSMenu"; title = "Navigate"; ObjectID = "gGe-RP-Ys4"; */
+"gGe-RP-Ys4.title" = "Naviguer";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
-"G2X-M7-NVB.paletteLabel" = "Catégories";
+/* Class = "NSToolbarItem"; label = "Updates"; ObjectID = "gQm-G7-CfH"; */
+"gQm-G7-CfH.label" = "Mises à jour";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Rl8-0j-Dpu"; */
-"Rl8-0j-Dpu.title" = "Text Cell";
+/* Class = "NSToolbarItem"; paletteLabel = "Updates"; ObjectID = "gQm-G7-CfH"; */
+"gQm-G7-CfH.paletteLabel" = "Mises à jour";
 
-/* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "Uby-CQ-lvU"; */
-"Uby-CQ-lvU.label" = "Mes articles";
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "gVA-U4-sdL"; */
+"gVA-U4-sdL.title" = "Coller";
 
-/* Class = "NSToolbarItem"; paletteLabel = "My Items"; ObjectID = "Uby-CQ-lvU"; */
-"Uby-CQ-lvU.paletteLabel" = "Mes articles";
+/* Class = "NSMenuItem"; title = "Close"; ObjectID = "hHf-p1-NYV"; */
+"hHf-p1-NYV.title" = "Fermer";
 
-/* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
-"VYO-og-DRc.title" = "Logiciel";
+/* Class = "NSMenu"; title = "Services"; ObjectID = "hz9-B4-Xy5"; */
+"hz9-B4-Xy5.title" = "Services";
 
-/* Class = "NSWindow"; title = "Log"; ObjectID = "X5I-7f-aJs"; */
-"X5I-7f-aJs.title" = "Log";
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "iem-kB-sic"; */
+"iem-kB-sic.title" = "Password:";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "a1e-6Q-iNS"; */
-"a1e-6Q-iNS.title" = "Text Cell";
+/* Class = "NSMenuItem"; title = "Forward"; ObjectID = "nIf-zM-816"; */
+"nIf-zM-816.title" = "Suivant";
 
-/* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Fermer";
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "pa3-QI-u2k"; */
+"pa3-QI-u2k.title" = "Supprimer";
 
-/* Class = "NSMenuItem"; title = "Back"; ObjectID = "fEq-6D-Ce0"; */
-"fEq-6D-Ce0.title" = "Précédent";
+/* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "qEd-P9-kRi"; */
+"qEd-P9-kRi.label" = "Catégories";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "fbJ-cF-weR"; */
-"fbJ-cF-weR.paletteLabel" = "Rechercher";
+/* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "qEd-P9-kRi"; */
+"qEd-P9-kRi.paletteLabel" = "Catégories";
 
-/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
-"jQt-Mr-wFT.title" = "Plein écran";
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "s1H-qa-D2r"; */
+"s1H-qa-D2r.title" = "Afficher l’historique";
 
-/* Class = "NSToolbarItem"; label = "Software"; ObjectID = "jTu-Wf-fi2"; */
-"jTu-Wf-fi2.label" = "Logiciel";
+/* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "u2Q-hm-cfe"; */
+"u2Q-hm-cfe.label" = "Mes articles";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "jTu-Wf-fi2"; */
-"jTu-Wf-fi2.paletteLabel" = "Logiciel";
+/* Class = "NSToolbarItem"; paletteLabel = "My Items"; ObjectID = "u2Q-hm-cfe"; */
+"u2Q-hm-cfe.paletteLabel" = "Mes articles";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "sF1-NQ-sSb"; */
-"sF1-NQ-sSb.paletteLabel" = "Narrow Space";
+/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "Centre de gestion des logiciels";
 
-/* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
-"tv9-wZ-XWN.title" = "Mises à jour";
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "uRl-iY-unG"; */
+"uRl-iY-unG.title" = "Couper";
 
-/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "vPs-dO-LDa"; */
-"vPs-dO-LDa.title" = "Afficher l’historique";
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "wpr-3q-Mcd"; */
+"wpr-3q-Mcd.title" = "Aide";
 
-/* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
-"z4Z-vu-XGX.title" = "Suivant";
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "x3v-GG-iWU"; */
+"x3v-GG-iWU.title" = "Copier";
