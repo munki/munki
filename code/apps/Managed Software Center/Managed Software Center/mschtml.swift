@@ -356,7 +356,7 @@ func buildListPage(category: String = "",
     var categories_html_list = ""
     for item in Array(category_set).sorted() {
         categories_html_list += (
-            "<li class=\"link\"><a href=\"category-\(quote(item)).html\">\(item)</a></li>\n")
+            "<li class=\"link\"><a href=\"munki://category-\(quote(item)).html\">\(item)</a></li>\n")
     }
     
     let item_hmtl = buildListPageItemsHTML(
@@ -600,7 +600,7 @@ func buildMyItemsRows() -> String {
             "Select software to install.",
             comment: "No Installed Software secondary text")
         alert["secondary_status_text"] = (
-            "<a href=\"category-all.html\">\(select_software_msg)</a>" )
+            "<a href=\"munki://category-all.html\">\(select_software_msg)</a>" )
         alert["hide_progress_bar"] = "hidden"
         myitems_rows = status_results_template.substitute(alert)
     }
