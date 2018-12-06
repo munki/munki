@@ -112,16 +112,16 @@ class AppleUpdates(object):
         display.display_status_major(message)
 
     def restart_needed(self):
-        """Returns True if any update requires an restart."""
+        """Returns a int of 1 if any update requires a restart 0 if not"""
         try:
             apple_updates = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.NSPropertyListSerializationException:
-            return True
+            return 1
         for item in apple_updates.get('AppleUpdates', []):
             if item.get('RestartAction') in self.RESTART_ACTIONS:
-                return True
+                return 1
         # if we get this far, there must be no items that require restart
-        return False
+        return 0
 
     def clear_apple_update_info(self):
         """Clears Apple update info.
@@ -652,6 +652,10 @@ class AppleUpdates(object):
                 pass
             elif output == '':
                 pass
+            elif 'Please call halt(8)' in output:
+                # This update requires we shutdown instead of a restart.
+                self.shutdown_instead_of_restart = True
+                display.display_status_minor(output)
             else:
                 display.display_status_minor(output)
 
@@ -683,13 +687,14 @@ class AppleUpdates(object):
         if display.munkistatusoutput:
             munkistatus.hideStopButton()
 
+        self.shutdown_instead_of_restart = False
         # Get list of unattended_installs
         if only_unattended:
             msg = 'Installing unattended Apple Software Updates...'
             unattended_install_items, unattended_install_product_ids = \
                 self.get_unattended_installs()
             # ensure that we don't restart for unattended installations
-            restartneeded = False
+            restartneeded = 0
             if not unattended_install_items:
                 return False  # didn't find any unattended installs
         else:
@@ -842,6 +847,9 @@ class AppleUpdates(object):
         # show stop button again
         if display.munkistatusoutput:
             munkistatus.showStopButton()
+
+        if self.shutdown_instead_of_restart:
+            restartneeded = 2
 
         return restartneeded
 

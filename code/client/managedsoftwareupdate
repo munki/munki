@@ -234,7 +234,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
         clearLastNotifiedDate()
 
     munki_need_to_restart = False
-    apple_need_to_restart = False
+    apple_need_to_restart = 0
 
     if munkiUpdatesAvailable():
         # install munki updates
@@ -287,7 +287,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             raise
 
     reports.savereport()
-    return munki_need_to_restart or apple_need_to_restart
+    return apple_need_to_restart or munki_need_to_restart
 
 
 def doFinishingTasks(runtype=None):
@@ -327,8 +327,8 @@ def startLogoutHelper():
             'Could not start com.googlecode.munki.logouthelper')
 
 
-def doRestart():
-    """Handle the need for a restart."""
+def doRestart(shutdown=False):
+    """Handle the need for a restart or a possbile shutdown."""
     restartMessage = 'Software installed or removed requires a restart.'
     munkilog.log(restartMessage)
     if display.munkistatusoutput:
@@ -346,6 +346,8 @@ def doRestart():
         time.sleep(5)
         # try to use authrestartd to do an auth restart; if that fails
         # do it directly
+        if shutdown:
+            authrestart.do_authorized_or_normal_restart(shutdown)
         if not authrestartd.restart():
             authrestart.do_authorized_or_normal_restart()
     else:
@@ -944,7 +946,7 @@ def main():
     # send a notification event so MSC can update its display if needed
     sendUpdateNotification()
 
-    mustrestart = False
+    mustrestart = 0
     mustlogout = False
     notify_user = False
     force_action = None
@@ -1097,7 +1099,11 @@ def main():
         # not handling this currently
         pass
     if mustrestart:
-        doRestart()
+        shutdown = False
+        # check to see if our restart should actually be a shutdown.
+        if mustrestart == 2:
+            shutdown = True
+        doRestart(shutdown)
     else:
         # tell status app we're done sending status
         munkistatus.quit_app()
