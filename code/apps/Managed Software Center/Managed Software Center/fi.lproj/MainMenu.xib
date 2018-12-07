@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.18"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="14313.18"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject">
+            <connections>
+                <outlet property="delegate" destination="373" id="374"/>
+            </connections>
+        </customObject>
+        <menu title="AMainMenu" systemMenu="main" id="29" userLabel="MainMenu">
+            <items>
+                <menuItem title="Managed Software Center" id="56">
+                    <menu key="submenu" title="Managed Software Center" systemMenu="apple" id="57">
+                        <items>
+                            <menuItem title="Tietoja: Managed Software Center" id="58">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="236">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Palvelut" id="131">
+                                <menu key="submenu" title="Palvelut" systemMenu="services" id="130"/>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="144">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Kätke Managed Software Center" keyEquivalent="h" id="134">
+                                <connections>
+                                    <action selector="hide:" target="-1" id="367"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Kätke muut" keyEquivalent="h" id="145">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="hideOtherApplications:" target="-1" id="368"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Näytä kaikki" id="150">
+                                <connections>
+                                    <action selector="unhideAllApplications:" target="-1" id="370"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="149">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Lopeta Managed Software Center" keyEquivalent="q" id="136" userLabel="1111">
+                                <connections>
+                                    <action selector="terminate:" target="-1" id="369"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Muokkaa" id="217">
+                    <menu key="submenu" title="Muokkaa" id="205">
+                        <items>
+                            <menuItem title="Peru" keyEquivalent="z" id="207">
+                                <connections>
+                                    <action selector="undo:" target="-1" id="223"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Tee sittenkin" keyEquivalent="Z" id="215">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="redo:" target="-1" id="231"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="206">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Leikkaa" keyEquivalent="x" id="199">
+                                <connections>
+                                    <action selector="cut:" target="-1" id="228"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Kopioi" keyEquivalent="c" id="197">
+                                <connections>
+                                    <action selector="copy:" target="-1" id="224"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Liitä" keyEquivalent="v" id="203">
+                                <connections>
+                                    <action selector="paste:" target="-1" id="226"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Poista" id="202">
+                                <connections>
+                                    <action selector="delete:" target="-1" id="235"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Valitse kaikki" keyEquivalent="a" id="198">
+                                <connections>
+                                    <action selector="selectAll:" target="-1" id="232"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Näytä" id="375">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Näytä" autoenablesItems="NO" id="376">
+                        <items>
+                            <menuItem title="Taaksepäin" keyEquivalent="[" id="fEq-6D-Ce0">
+                                <connections>
+                                    <action selector="goBack:" target="S5Y-lq-2nB" id="0f7-qp-Ei9"/>
+                                    <binding destination="KMl-S0-0FF" name="enabled" keyPath="webView.canGoBack" id="dxu-ec-sN0"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Eteenpäin" keyEquivalent="]" id="z4Z-vu-XGX">
+                                <connections>
+                                    <action selector="goForward:" target="S5Y-lq-2nB" id="boz-Ie-dlh"/>
+                                    <binding destination="KMl-S0-0FF" name="enabled" keyPath="webView.canGoForward" id="Ys1-WO-dkB"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Lataa sivu uudelleen" keyEquivalent="r" id="Afg-mB-WlJ">
+                                <connections>
+                                    <action selector="reloadPage:" target="KMl-S0-0FF" id="dj6-JD-aMq"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Etsi" keyEquivalent="f" id="1XY-pX-Pwv">
+                                <connections>
+                                    <action selector="selectText:" target="gLI-O8-siB" id="0D8-FV-q15"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Jey-TI-2ca"/>
+                            <menuItem title="Ohjelmistot" enabled="NO" keyEquivalent="1" id="VYO-og-DRc">
+                                <connections>
+                                    <action selector="loadAllSoftwarePage:" target="KMl-S0-0FF" id="F3m-2h-riT"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Kategoriat" enabled="NO" keyEquivalent="2" id="9S1-fB-bKZ">
+                                <connections>
+                                    <action selector="loadCategoriesPage:" target="KMl-S0-0FF" id="npC-5v-bMY"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Omat" enabled="NO" keyEquivalent="3" id="1uK-HI-wGR">
+                                <connections>
+                                    <action selector="loadMyItemsPage:" target="KMl-S0-0FF" id="qsB-5W-uX4"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Päivitykset" keyEquivalent="4" id="tv9-wZ-XWN">
+                                <connections>
+                                    <action selector="loadUpdatesPage:" target="KMl-S0-0FF" id="wag-1E-xys"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Ikkuna" id="19">
+                    <menu key="submenu" title="Ikkuna" systemMenu="window" id="24">
+                        <items>
+                            <menuItem title="Sulje" keyEquivalent="w" id="bd5-IY-BXv">
+                                <connections>
+                                    <action selector="performClose:" target="-1" id="992-qp-IXJ"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Pienennä" keyEquivalent="m" id="23">
+                                <connections>
+                                    <action selector="performMiniaturize:" target="-1" id="37"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Zoomaa" id="239">
+                                <connections>
+                                    <action selector="performZoom:" target="-1" id="240"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" hidden="YES" id="92">
+                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            </menuItem>
+                            <menuItem title="Siirry koko näytön tilaan" hidden="YES" enabled="NO" keyEquivalent="f" id="jQt-Mr-wFT">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleFullScreen:" target="-1" id="3pL-iV-Ndq"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="lBR-K5-svb"/>
+                            <menuItem title="Näytä loki" keyEquivalent="l" id="vPs-dO-LDa">
+                                <connections>
+                                    <action selector="showLogWindow:" target="a6z-Lq-EqL" id="sqE-gM-htm"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Ohje" id="103" userLabel="1">
+                    <menu key="submenu" title="Ohje" id="106" userLabel="2">
+                        <items>
+                            <menuItem title="Managed Software Center -ohje" keyEquivalent="?" id="111">
+                                <connections>
+                                    <action selector="showHelp:" target="-1" id="360"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+            </items>
+        </menu>
+        <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="main" animationBehavior="default" tabbingMode="disallowed" id="371">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES"/>
+            <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
+            <rect key="contentRect" x="132" y="116" width="1143" height="730"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <value key="minSize" type="size" width="1000" height="475"/>
+            <view key="contentView" id="372">
+                <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <webView id="S5Y-lq-2nB">
+                        <rect key="frame" x="0.0" y="0.0" width="1143" height="730"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO">
+                            <nil key="identifier"/>
+                        </webPreferences>
+                    </webView>
+                </subviews>
+            </view>
+            <toolbar key="toolbar" implicitIdentifier="1393D938-3469-4EFC-8191-CC1B9C26850B" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconAndLabel" sizeMode="regular" id="c5f-Iv-Tk6">
+                <allowedToolbarItems>
+                    <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="Hjz-lX-eQa"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="O3a-eC-4fX"/>
+                    <toolbarItem implicitItemIdentifier="450E106F-9925-4E50-9609-9457D33597D0" label="Ohjelmistot" paletteLabel="Ohjelmistot" image="AllItemsTemplate" id="jTu-Wf-fi2">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" id="CPR-oF-gUx" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="smallSystem"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="softwareToolbarButtonClicked:" target="KMl-S0-0FF" id="EBL-9Q-w81"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Kategoriat" paletteLabel="Kategoriat" image="toolbarCategoriesTemplate" id="G2X-M7-NVB">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" id="YGi-pE-3SV" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="categoriesToolbarButtonClicked:" target="KMl-S0-0FF" id="LGx-sG-Vqt"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="Omat" paletteLabel="Omat" image="MyStuffTemplate" id="Uby-CQ-lvU">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" id="eek-hQ-v8t" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="myItemsToolbarButtonClicked:" target="KMl-S0-0FF" id="aEj-Et-K0C"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Päivitykset" paletteLabel="Päivitykset" image="updatesTemplate" id="AjB-m1-mu8">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="updatesTemplate" imagePosition="overlaps" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
+                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="updatesToolbarButtonClicked:" target="KMl-S0-0FF" id="J7I-Tj-wjp"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="A52A96D0-F85E-407F-818C-DC4B93605053" label="" paletteLabel="Narrow Space" tag="-1" id="sF1-NQ-sSb">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="4" height="30"/>
+                        <size key="maxSize" width="4" height="31"/>
+                        <customView key="view" id="Mui-Sc-36b">
+                            <rect key="frame" x="39" y="14" width="4" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        </customView>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="DF488649-5B94-417F-B23E-C646362F6FCA" label="" paletteLabel="Navigation" tag="-1" id="CEb-sx-e3H">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="150" height="30"/>
+                        <size key="maxSize" width="150" height="30"/>
+                        <box key="view" autoresizesSubviews="NO" boxType="custom" borderType="none" borderWidth="0.0" titlePosition="noTitle" transparent="YES" id="E6X-hz-53x">
+                            <rect key="frame" x="0.0" y="14" width="150" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view key="contentView" id="kru-wE-63g">
+                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="mXP-yD-2El">
+                                        <rect key="frame" x="60" y="4" width="16" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    </progressIndicator>
+                                    <button verticalHuggingPriority="750" id="5fL-Tq-Ajk">
+                                        <rect key="frame" x="0.0" y="-1" width="27" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSGoLeftTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Uz1-Pt-HP6">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="navigateBackBtnClicked:" target="KMl-S0-0FF" id="Frj-uc-9SD"/>
+                                        </connections>
+                                    </button>
+                                    <button verticalHuggingPriority="750" id="3tK-Kg-Idc">
+                                        <rect key="frame" x="26" y="-1" width="27" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSGoRightTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jkw-VK-yd7">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="navigateForwardBtnClicked:" target="KMl-S0-0FF" id="3ai-MZ-ToF"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </view>
+                            <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </box>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="E1A9A599-F94D-4780-9330-F2B0F75FA3BA" label="" paletteLabel="Etsi" tag="-1" id="fbJ-cF-weR">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="150" height="30"/>
+                        <size key="maxSize" width="150" height="30"/>
+                        <box key="view" autoresizesSubviews="NO" boxType="custom" borderType="none" borderWidth="0.0" titlePosition="noTitle" transparent="YES" id="KHk-ld-jkr">
+                            <rect key="frame" x="0.0" y="14" width="150" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view key="contentView" id="jlI-OI-XM8">
+                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="gLI-O8-siB">
+                                        <rect key="frame" x="0.0" y="1" width="150" height="22"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="Rxm-nO-bmO">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </searchFieldCell>
+                                        <connections>
+                                            <action selector="searchFilterChanged:" target="KMl-S0-0FF" id="497-kJ-NwJ"/>
+                                        </connections>
+                                    </searchField>
+                                </subviews>
+                            </view>
+                            <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </box>
+                    </toolbarItem>
+                </allowedToolbarItems>
+                <defaultToolbarItems>
+                    <toolbarItem reference="CEb-sx-e3H"/>
+                    <toolbarItem reference="O3a-eC-4fX"/>
+                    <toolbarItem reference="jTu-Wf-fi2"/>
+                    <toolbarItem reference="G2X-M7-NVB"/>
+                    <toolbarItem reference="Uby-CQ-lvU"/>
+                    <toolbarItem reference="AjB-m1-mu8"/>
+                    <toolbarItem reference="O3a-eC-4fX"/>
+                    <toolbarItem reference="fbJ-cF-weR"/>
+                </defaultToolbarItems>
+            </toolbar>
+            <connections>
+                <outlet property="delegate" destination="KMl-S0-0FF" id="TkM-Lg-q7E"/>
+            </connections>
+        </window>
+        <customObject id="373" userLabel="MSCAppDelegate" customClass="MSCAppDelegate">
+            <connections>
+                <outlet property="mainWindowController" destination="KMl-S0-0FF" id="m7n-3a-HoQ"/>
+                <outlet property="passwordAlertController" destination="7j7-vi-FnZ" id="peP-bR-3XF"/>
+                <outlet property="statusController" destination="GhX-6Z-STv" id="3ln-OI-LRD"/>
+            </connections>
+        </customObject>
+        <customObject id="420" customClass="NSFontManager"/>
+        <customObject id="GhX-6Z-STv" customClass="MSCStatusController">
+            <connections>
+                <outlet property="statusWindowController" destination="KMl-S0-0FF" id="bGK-ut-hWM"/>
+            </connections>
+        </customObject>
+        <customObject id="KMl-S0-0FF" userLabel="MSCMainWindowController" customClass="MSCMainWindowController">
+            <connections>
+                <outlet property="categoriesMenuItem" destination="9S1-fB-bKZ" id="cfs-BV-4tQ"/>
+                <outlet property="categoriesToolbarButton" destination="YGi-pE-3SV" id="7tq-ma-J77"/>
+                <outlet property="findMenuItem" destination="1XY-pX-Pwv" id="nT2-rv-DIX"/>
+                <outlet property="fullScreenMenuItem" destination="jQt-Mr-wFT" id="9tf-Lb-Mec"/>
+                <outlet property="myItemsMenuItem" destination="1uK-HI-wGR" id="Jkb-QR-M6x"/>
+                <outlet property="myItemsToolbarButton" destination="eek-hQ-v8t" id="HdQ-Tf-9h7"/>
+                <outlet property="navigateBackBtn" destination="5fL-Tq-Ajk" id="1A3-2b-WqF"/>
+                <outlet property="navigateForwardBtn" destination="3tK-Kg-Idc" id="mLk-P1-ngS"/>
+                <outlet property="progressSpinner" destination="mXP-yD-2El" id="i8K-at-fcb"/>
+                <outlet property="searchField" destination="gLI-O8-siB" id="APe-GG-ZHl"/>
+                <outlet property="softwareMenuItem" destination="VYO-og-DRc" id="K69-dp-kBp"/>
+                <outlet property="softwareToolbarButton" destination="CPR-oF-gUx" id="PJp-bn-F4D"/>
+                <outlet property="updateButtonCell" destination="ZVD-Hl-dlF" id="epg-T1-8v1"/>
+                <outlet property="updatesToolbarButton" destination="caG-fL-UJh" id="Czs-cR-TvW"/>
+                <outlet property="webView" destination="S5Y-lq-2nB" id="TPJ-jP-F85"/>
+                <outlet property="window" destination="371" id="JK3-nH-LOl"/>
+                <outlet property="windowMenuSeperatorItem" destination="92" id="eCt-83-MtH"/>
+            </connections>
+        </customObject>
+        <customObject id="a6z-Lq-EqL" customClass="MSCLogWindowController">
+            <connections>
+                <outlet property="logView" destination="UAy-M3-yRr" id="cvs-RK-Mg2"/>
+                <outlet property="pathControl" destination="WBU-xF-NX3" id="90X-cm-AqK"/>
+                <outlet property="searchField" destination="N3t-et-cTX" id="4hW-Ue-VWp"/>
+                <outlet property="window" destination="X5I-7f-aJs" id="2H4-ci-ApV"/>
+            </connections>
+        </customObject>
+        <customObject id="7j7-vi-FnZ" customClass="MSCPasswordAlertController">
+            <connections>
+                <outlet property="passwordField" destination="RBe-5Z-jso" id="zYq-Pt-66l"/>
+                <outlet property="passwordLabel" destination="X5P-3t-HRa" id="fH0-42-wqC"/>
+                <outlet property="passwordView" destination="ZH2-ra-J2V" id="ZPQ-um-15i"/>
+            </connections>
+        </customObject>
+        <userDefaultsController representsSharedInstance="YES" id="602"/>
+        <window title="Log" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingMode="disallowed" id="X5I-7f-aJs" userLabel="Log Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
+            <rect key="contentRect" x="636" y="390" width="512" height="480"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <value key="minSize" type="size" width="512" height="360"/>
+            <view key="contentView" id="dBq-Rn-ing">
+                <rect key="frame" x="0.0" y="0.0" width="512" height="480"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <scrollView autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="Kh7-rR-yrV">
+                        <rect key="frame" x="-1" y="-1" width="514" height="449"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" id="rwq-IA-IvG">
+                            <rect key="frame" x="1" y="1" width="512" height="447"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                            <subviews>
+                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="UAy-M3-yRr">
+                                    <rect key="frame" x="0.0" y="0.0" width="512" height="447"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                    <tableColumns>
+                                        <tableColumn identifier="spacer" editable="NO" width="10" minWidth="8" maxWidth="3.4028234663852886e+38" id="BrL-gn-tp4">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" placeholderString="" id="a1e-6Q-iNS">
+                                                <font key="font" metaFont="fixedUser" size="11"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                        <tableColumn identifier="data" editable="NO" width="502" minWidth="40" maxWidth="2560" id="LA1-bD-SzC">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="charWrapping" selectable="YES" allowsUndo="NO" alignment="left" title="Text Cell" id="Rl8-0j-Dpu">
+                                                <font key="font" metaFont="fixedUser" size="11"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                    </tableColumns>
+                                </tableView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="jbz-w3-Ald">
+                            <rect key="frame" x="1" y="427" width="630" height="16"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="050-d8-vNg">
+                            <rect key="frame" x="-100" y="-100" width="15" height="303"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="N3t-et-cTX">
+                        <rect key="frame" x="301" y="452" width="200" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Nc2-ny-iaV">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </searchFieldCell>
+                        <connections>
+                            <action selector="searchFilterChanged:" target="a6z-Lq-EqL" id="bVX-7y-fs3"/>
+                        </connections>
+                    </searchField>
+                    <pathControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" id="WBU-xF-NX3">
+                        <rect key="frame" x="4" y="452" width="278" height="22"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <pathCell key="cell" selectable="YES" refusesFirstResponder="YES" alignment="left" id="gwm-XM-tLs">
+                            <font key="font" metaFont="system"/>
+                            <url key="url" string="file://localhost/Applications/"/>
+                            <color key="backgroundColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </pathCell>
+                    </pathControl>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="a6z-Lq-EqL" id="BQa-PG-rdk"/>
+            </connections>
+            <point key="canvasLocation" x="68" y="887"/>
+        </window>
+        <customView id="ZH2-ra-J2V">
+            <rect key="frame" x="0.0" y="0.0" width="317" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <secureTextField wantsLayer="YES" verticalHuggingPriority="750" id="RBe-5Z-jso">
+                    <rect key="frame" x="75" y="0.0" width="242" height="22"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                    <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="675-6Y-zrc">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <allowedInputSourceLocales>
+                            <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                        </allowedInputSourceLocales>
+                    </secureTextFieldCell>
+                </secureTextField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="X5P-3t-HRa">
+                    <rect key="frame" x="1" y="3" width="76" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Password:" id="Ef8-fO-Dm6">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <point key="canvasLocation" x="-1957.5" y="-2587"/>
+        </customView>
+    </objects>
+    <resources>
+        <image name="AllItemsTemplate" width="28" height="26"/>
+        <image name="MyStuffTemplate" width="28" height="23.5"/>
+        <image name="NSGoLeftTemplate" width="9" height="12"/>
+        <image name="NSGoRightTemplate" width="9" height="12"/>
+        <image name="toolbarCategoriesTemplate" width="25" height="24"/>
+        <image name="updatesTemplate" width="24" height="24"/>
+    </resources>
+</document>
