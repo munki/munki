@@ -347,7 +347,7 @@ def doRestart(shutdown=False):
         # try to use authrestartd to do an auth restart; if that fails
         # do it directly
         if shutdown:
-            authrestart.do_authorized_or_normal_restart(shutdown)
+            authrestart.do_authorized_or_normal_restart(shutdown=shutdown)
         if not authrestartd.restart():
             authrestart.do_authorized_or_normal_restart()
     else:
