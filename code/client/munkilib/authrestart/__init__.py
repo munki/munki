@@ -186,15 +186,16 @@ def do_authorized_or_normal_restart(username=None,
                                     shutdown=False):
     '''Do a shutdown if needed, or an authrestart if allowed/possible,
     else do a normal restart.'''
-    display.display_info('Restarting now.')
     if shutdown:
         # we need a shutdown here instead of any type of restart
         display.display_debug1('Performing a shutdown...')
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-h', '-o', 'now'])
+        return dummy_retcode
+    display.display_info('Restarting now.')
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
     if (prefs.pref('PerformAuthRestarts') and
             (prefs.pref('RecoveryKeyFile') or password) and
-            os_version_tuple >= (10, 8) and not shutdown):
+            os_version_tuple >= (10, 8)):
         if filevault_is_active():
             display.display_debug1('Configured to perform AuthRestarts...')
             # try to perform an auth restart
@@ -206,14 +207,9 @@ def do_authorized_or_normal_restart(username=None,
             else:
                 # we triggered an authrestart
                 return
-    if shutdown:
-        # we need a shutdown here instead of any type of restart
-        display.display_debug1('Performing a shutdown...')
-        dummy_retcode = subprocess.call(['/sbin/shutdown', '-h', '-o', 'now'])
-    else:
-        # fall back to normal restart
-        display.display_debug1('Performing a regular restart...')
-        dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
+    # fall back to normal restart
+    display.display_debug1('Performing a regular restart...')
+    dummy_retcode = subprocess.call(['/sbin/shutdown', '-r', 'now'])
 
 
 if __name__ == '__main__':
