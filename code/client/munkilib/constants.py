@@ -51,6 +51,12 @@ CHECKANDINSTALLATSTARTUPFLAG = (
 INSTALLATSTARTUPFLAG = '/Users/Shared/.com.googlecode.munki.installatstartup'
 INSTALLATLOGOUTFLAG = '/private/tmp/com.googlecode.munki.installatlogout'
 
+# postinstall actions
+POSTACTION_NONE = 0
+POSTACTION_LOGOUT = 1
+POSTACTION_RESTART = 2
+POSTACTION_SHUTDOWN = 4
+
 
 if __name__ == '__main__':
     print 'This is a library of support tools for the Munki Suite.'

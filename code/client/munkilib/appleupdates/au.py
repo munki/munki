@@ -39,6 +39,7 @@ from . import su_prefs
 from . import sync
 
 from ..updatecheck import catalogs
+from ..constants import POSTACTION_NONE, POSTACTION_RESTART, POSTACTION_SHUTDOWN
 
 from .. import display
 from .. import fetch
@@ -81,6 +82,7 @@ class AppleUpdates(object):
     of those updates.
     """
 
+    SHUTDOWN_ACTIONS = ['RequireShutdown']
     RESTART_ACTIONS = ['RequireRestart', 'RecommendRestart']
 
     def __init__(self):
@@ -97,6 +99,7 @@ class AppleUpdates(object):
         self.applesync = sync.AppleUpdateSync()
 
         self._update_list_cache = None
+        self.shutdown_instead_of_restart = False
 
         # apple_update_metadata support
         self.client_id = ''
@@ -111,17 +114,20 @@ class AppleUpdates(object):
         # pylint: disable=no-self-use
         display.display_status_major(message)
 
-    def restart_needed(self):
-        """Returns a int of 1 if any update requires a restart 0 if not"""
+    def restart_action_for_updates(self):
+        """Returns the most heavily weighted postaction"""
         try:
             apple_updates = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.NSPropertyListSerializationException:
-            return 1
+            return POSTACTION_RESTART
+        for item in apple_updates.get('AppleUpdates', []):
+            if item.get('RestartAction') in self.SHUTDOWN_ACTIONS:
+                return POSTACTION_SHUTDOWN
         for item in apple_updates.get('AppleUpdates', []):
             if item.get('RestartAction') in self.RESTART_ACTIONS:
-                return 1
+                return POSTACTION_RESTART
         # if we get this far, there must be no items that require restart
-        return 0
+        return POSTACTION_NONE
 
     def clear_apple_update_info(self):
         """Clears Apple update info.
@@ -695,12 +701,12 @@ class AppleUpdates(object):
             unattended_install_items, unattended_install_product_ids = \
                 self.get_unattended_installs()
             # ensure that we don't restart for unattended installations
-            restartneeded = 0
+            restart_action = POSTACTION_NONE
             if not unattended_install_items:
                 return False  # didn't find any unattended installs
         else:
             msg = 'Installing available Apple Software Updates...'
-            restartneeded = self.restart_needed()
+            restart_action = self.restart_action_for_updates()
 
         self._display_status_major(msg)
 
@@ -851,9 +857,9 @@ class AppleUpdates(object):
 
         if self.shutdown_instead_of_restart:
             display.display_debug2('Found shutdown flag...')
-            restartneeded = 2
+            restart_action = POSTACTION_SHUTDOWN
 
-        return restartneeded
+        return restart_action
 
     def software_updates_available(
             self, force_check=False, suppress_check=False):
@@ -930,11 +936,12 @@ class AppleUpdates(object):
         # Mapping of supported restart_actions to
         # equal or greater auxiliary actions
         restart_actions = {
+            'RequireShutdown': ['RequireShutdown'],
             'RequireRestart': ['RequireRestart', 'RecommendRestart'],
             'RecommendRestart': ['RequireRestart', 'RecommendRestart'],
             'RequireLogout': ['RequireRestart', 'RecommendRestart',
                               'RequireLogout'],
-            'None': ['RequireRestart', 'RecommendRestart',
+            'None': ['RequireShutdown', 'RequireRestart', 'RecommendRestart',
                      'RequireLogout', 'None']
         }
 
@@ -994,7 +1001,7 @@ class AppleUpdates(object):
         for item in apple_updates:
             if (item.get('unattended_install') or
                     (prefs.pref('UnattendedAppleUpdates') and
-                     item.get('RestartAction', 'None') is 'None' and
+                     item.get('RestartAction', 'None') == 'None' and
                      os_version_tuple >= (10, 10))):
                 if processes.blocking_applications_running(item):
                     display.display_detail(
