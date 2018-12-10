@@ -233,13 +233,13 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
         # changes after this round of installs
         clearLastNotifiedDate()
 
-    munki_need_to_restart = False
-    apple_need_to_restart = 0
+    munki_items_restart_action = constants.POSTACTION_NONE
+    apple_items_restart_action = constants.POSTACTION_NONE
 
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            munki_need_to_restart = installer.run(
+            munki_items_restart_action = installer.run(
                 only_unattended=only_unattended)
         except:
             display.display_error('Unexpected error in munkilib.installer:')
@@ -277,7 +277,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
     if do_apple_updates:
         # install Apple updates
         try:
-            apple_need_to_restart = appleupdates.installAppleUpdates(
+            apple_items_restart_action = appleupdates.installAppleUpdates(
                 only_unattended=only_unattended)
         except:
             display.display_error(
@@ -287,7 +287,13 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             raise
 
     reports.savereport()
-    return apple_need_to_restart or munki_need_to_restart
+    if (apple_items_restart_action == constants.POSTACTION_SHUTDOWN
+            or munki_items_restart_action == constants.POSTACTION_SHUTDOWN):
+        return constants.POSTACTION_SHUTDOWN
+    if (apple_items_restart_action == constants.POSTACTION_RESTART
+            or munki_items_restart_action == constants.POSTACTION_RESTART):
+        return constants.POSTACTION_RESTART
+    return constants.POSTACTION_NONE
 
 
 def doFinishingTasks(runtype=None):
@@ -946,14 +952,14 @@ def main():
     # send a notification event so MSC can update its display if needed
     sendUpdateNotification()
 
-    mustrestart = 0
+    restart_action = constants.POSTACTION_NONE
     mustlogout = False
     notify_user = False
     force_action = None
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
-            mustrestart = doInstallTasks(appleupdatesavailable)
+            restart_action = doInstallTasks(appleupdatesavailable)
             # reset our count of available updates (it might not actually
             # be zero, but we want to clear the badge on the Dock icon;
             # it can be updated to the "real" count on the next Munki run)
@@ -1098,12 +1104,10 @@ def main():
     if mustlogout:
         # not handling this currently
         pass
-    if mustrestart:
-        shutdown = False
-        # check to see if our restart should actually be a shutdown.
-        if mustrestart == 2:
-            shutdown = True
-        doRestart(shutdown)
+    if restart_action == constants.POSTACTION_SHUTDOWN:
+        doRestart(shutdown=True)
+    elif restart_action == constants.POSTACTION_RESTART:
+        doRestart()
     else:
         # tell status app we're done sending status
         munkistatus.quit_app()
