@@ -585,8 +585,8 @@ func buildMyItemsRows() -> String {
     let item_list = getMyItemsList()
     if !item_list.isEmpty {
         let item_template = getTemplate("myitems_row_template.html")
-        for item in item_list {
-            // TO-DO: sort item_list by display_name_lower
+        let sorted_items = item_list.sorted(by: { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
+        for item in sorted_items {
             item.escapeAndQuoteCommonFields()
             myitems_rows += item_template.substitute(item)
         }
