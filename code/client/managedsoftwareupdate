@@ -354,7 +354,7 @@ def doRestart(shutdown=False):
         # do it directly
         if shutdown:
             authrestart.do_authorized_or_normal_restart(shutdown=shutdown)
-        if not authrestartd.restart():
+        elif not authrestartd.restart():
             authrestart.do_authorized_or_normal_restart()
     else:
         if display.munkistatusoutput:
