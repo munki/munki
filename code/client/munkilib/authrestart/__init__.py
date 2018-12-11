@@ -188,7 +188,8 @@ def do_authorized_or_normal_restart(username=None,
     else do a normal restart.'''
     if shutdown:
         # we need a shutdown here instead of any type of restart
-        display.display_debug1('Performing a shutdown...')
+        display.display_info('Shutting down now.')
+        display.display_debug1('Performing a regular shutdown...')
         dummy_retcode = subprocess.call(['/sbin/shutdown', '-h', '-o', 'now'])
         return
     display.display_info('Restarting now.')
