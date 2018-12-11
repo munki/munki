@@ -18,6 +18,7 @@ func msc_log(_ source: String, _ event: String, msg: String = "") {
 }
 
 func msc_debug_log(_ logMessage: String) {
-    // stub
-    print(logMessage)
+    // Log to Apple System Log facility and also to MSU log if configured
+    NSLog("%@", logMessage)
+    msc_log("MSC", "debug", msg: logMessage)
 }
