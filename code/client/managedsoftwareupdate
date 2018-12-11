@@ -287,13 +287,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             raise
 
     reports.savereport()
-    if (apple_items_restart_action == constants.POSTACTION_SHUTDOWN
-            or munki_items_restart_action == constants.POSTACTION_SHUTDOWN):
-        return constants.POSTACTION_SHUTDOWN
-    if (apple_items_restart_action == constants.POSTACTION_RESTART
-            or munki_items_restart_action == constants.POSTACTION_RESTART):
-        return constants.POSTACTION_RESTART
-    return constants.POSTACTION_NONE
+    return max(apple_items_restart_action, munki_items_restart_action)
 
 
 def doFinishingTasks(runtype=None):
