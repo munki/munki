@@ -35,6 +35,7 @@ from . import pkg
 from . import rmpkgs
 
 from .. import adobeutils
+from .. import constants
 from .. import display
 from .. import dmgutils
 from .. import munkistatus
@@ -752,7 +753,9 @@ def run(only_unattended=False):
         munkilog.log("###    End managed installer session    ###")
 
     reports.savereport()
-    return removals_need_restart or installs_need_restart
+    if removals_need_restart or installs_need_restart:
+        return constants.POSTACTION_RESTART
+    return constants.POSTACTION_NONE
 
 
 if __name__ == '__main__':
