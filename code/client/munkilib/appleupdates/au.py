@@ -656,13 +656,15 @@ class AppleUpdates(object):
             elif 'Missing bundle identifier' in output:
                 # don't display this, it's noise
                 pass
-            elif output == '':
-                pass
-            elif output.contains('Please call halt'):
+            elif (('Please call halt' in output
+                   or 'your computer must shut down' in output)
+                  and not self.shutdown_instead_of_restart):
                 # This update requires we shutdown instead of a restart.
                 display.display_status_minor(output)
                 display.display_info('### This update requires a shutdown. ###')
                 self.shutdown_instead_of_restart = True
+            elif output == '':
+                pass
             else:
                 display.display_status_minor(output)
 
