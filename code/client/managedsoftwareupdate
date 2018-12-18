@@ -330,7 +330,10 @@ def startLogoutHelper():
 def doRestart(shutdown=False):
     """Handle the need for a restart or a possbile shutdown."""
     restartMessage = 'Software installed or removed requires a restart.'
-    munkilog.log(restartMessage)
+    if shutdown:
+        munkilog.log('Software installed or removed requires a shut down.')
+    else:
+        munkilog.log(restartMessage)
     if display.munkistatusoutput:
         munkistatus.hideStopButton()
         munkistatus.message(restartMessage)

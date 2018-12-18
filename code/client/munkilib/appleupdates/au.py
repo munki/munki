@@ -658,10 +658,10 @@ class AppleUpdates(object):
                 pass
             elif output == '':
                 pass
-            elif output.startswith('Please call halt'):
+            elif output.contains('Please call halt'):
                 # This update requires we shutdown instead of a restart.
                 display.display_status_minor(output)
-                display.display_debug2('This update requires a shutdown...')
+                display.display_info('### This update requires a shutdown. ###')
                 self.shutdown_instead_of_restart = True
             else:
                 display.display_status_minor(output)
@@ -856,7 +856,9 @@ class AppleUpdates(object):
             munkistatus.showStopButton()
 
         if self.shutdown_instead_of_restart:
-            display.display_debug2('Found shutdown flag...')
+            display.display_info(
+                'One or more Apple updates requires a shutdown instead of '
+                'restart.')
             restart_action = POSTACTION_SHUTDOWN
 
         return restart_action
