@@ -4,7 +4,7 @@
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 4/18/17.
-#  Copyright (c) 2018 The Munki Project. All rights reserved.
+#  Copyright (c) 2018-2019 The Munki Project. All rights reserved.
 #
 '''Code to interact with the OpenDirectory framework'''
 
