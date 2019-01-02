@@ -368,6 +368,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 updateOptionalInstallButtonFinishAction(item_name)
             }
         }
+        if message.name == "openExternalLink" {
+            if let link = message.body as? String {
+                openExternalLink(link)
+            }
+        }
     }
     
     func addJSmessageHandlers() {
@@ -933,6 +938,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func openExternalLink(_ url: String) {
         // open a link in the default browser
+        msc_debug_log("External link request: \(url)")
         if let real_url = URL(string: url) {
             NSWorkspace.shared.open(real_url)
         }
