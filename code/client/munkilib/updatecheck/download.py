@@ -368,10 +368,12 @@ def _installinfo():
 
 def _items_to_precache(install_info):
     '''Returns a list of items from InstallInfo.plist's optional_installs
-    that have precache=True and installed=False'''
+    that have precache=True and (installed=False or needs_update=True)'''
     optional_install_items = install_info.get('optional_installs', [])
     precache_items = [item for item in optional_install_items
-                      if item.get('precache') and not item.get('installed')]
+                      if item.get('precache')
+                      and (not item.get('installed')
+                           or item.get('needs_update'))]
     return precache_items
 
 
