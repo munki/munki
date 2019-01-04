@@ -44,7 +44,7 @@ class MunkiStatusViewController: NSViewController {
         view.window?.orderFrontRegardless()
         timer = Timer.scheduledTimer(timeInterval: 5.0,
                                      target: self,
-                                     selector: #selector(MunkiStatusViewController.checkProcess),
+                                     selector: #selector(self.checkProcess),
                                      userInfo: nil,
                                      repeats: true)
     }
