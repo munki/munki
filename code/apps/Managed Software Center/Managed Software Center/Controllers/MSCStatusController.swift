@@ -130,7 +130,7 @@ class MSCStatusController: NSObject {
         if let detail = info["detail"] as? String {
             setDetail(detail)
         }
-        if let percent = info["percent"] as? String {
+        if let percent = info["percent"] {
             setPercentageDone(percent)
         }
         if let stop_button_visible = info["stop_button_visible"] as? Bool {
