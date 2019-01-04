@@ -16,7 +16,7 @@ class MSCStatusController: NSObject {
     // Handles status messages from managedsoftwareupdate
     var session_started = false
     var got_status_update = false
-    var timer: Timer?
+    var timer: Timer? = nil
     
     var _status_restartAlertDismissed = false
     var _status_stopBtnDisabled = false
@@ -58,11 +58,11 @@ class MSCStatusController: NSObject {
         // process failure
         timeout_counter = 6
         saw_process = false
-        timer = Timer(timeInterval: 5.0,
-                      target: self,
-                      selector: #selector(self.checkProcess),
-                      userInfo: nil,
-                      repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 5.0,
+                                     target: self,
+                                     selector: #selector(self.checkProcess),
+                                     userInfo: nil,
+                                     repeats: true)
     }
     
     @objc func checkProcess() {
