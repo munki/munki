@@ -778,7 +778,7 @@ def main():
         exit(constants.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
-    display.munkistatusoutput = options.munkistatusoutput
+    display.munkistatusoutput = True
     display.verbose = options.verbose
 
     # Set environment variable for verbosity
