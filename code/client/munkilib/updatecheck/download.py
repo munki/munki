@@ -379,6 +379,7 @@ def _items_to_precache(install_info):
 
 def cache():
     '''Download any applicable precache items into our Cache folder'''
+    display.display_info("#### Beginning precaching session ####")
     install_info = _installinfo()
     for item in _items_to_precache(install_info):
         try:
@@ -387,24 +388,38 @@ def cache():
             display.display_warning(
                 'Failed to precache the installer for %s because %s',
                 item['name'], unicode(err))
+    display.display_info("#### Ending precaching session ####")
 
 
 def uncache(space_needed_in_kb):
     '''Discard precached items to free up space for managed installs'''
     install_info = _installinfo()
-    precached_items = [
+    # make a list of names of precachable items
+    precachable_items = [
         [os.path.basename(item['installer_item_location'])]
         for item in _items_to_precache(install_info)
         if item.get('installer_item_location')]
-    if not precached_items:
+    if not precachable_items:
         return
 
     cachedir = os.path.join(prefs.pref('ManagedInstallDir'), 'Cache')
+    # now filter our list to items actually downloaded
+    items_in_cache = osutils.listdir(cachedir)
+    precached_items = [item for item in precachable_items
+                       if item in items_in_cache]
+    if not precached_items:
+        return
+
     precached_size = 0
     for item in precached_items:
         # item is [itemname]
         item_path = os.path.join(cachedir, item[0])
-        itemsize = int(os.path.getsize(item_path)/1024)
+        try:
+            itemsize = int(os.path.getsize(item_path)/1024)
+        except OSError, err:
+            display.display_warning("Could not get size of %s: %s"
+                                    % (item_path, err))
+            itemsize = 0
         precached_size += itemsize
         item.append(itemsize)
         # item is now [itemname, itemsize]
