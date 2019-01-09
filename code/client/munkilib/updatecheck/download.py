@@ -379,7 +379,7 @@ def _items_to_precache(install_info):
 
 def cache():
     '''Download any applicable precache items into our Cache folder'''
-    display.display_info("#### Beginning precaching session ####")
+    display.display_info("###   Beginning precaching session   ###")
     install_info = _installinfo()
     for item in _items_to_precache(install_info):
         try:
@@ -388,7 +388,7 @@ def cache():
             display.display_warning(
                 'Failed to precache the installer for %s because %s',
                 item['name'], unicode(err))
-    display.display_info("#### Ending precaching session ####")
+    display.display_info("###    Ending precaching session     ###")
 
 
 def uncache(space_needed_in_kb):
@@ -452,6 +452,8 @@ def uncache(space_needed_in_kb):
                 "Could not remove precached item %s: %s" % (item_path, err))
 
 
+PRECACHING_AGENT_LABEL = "com.googlecode.munki.precache_agent"
+
 def run_precaching_agent():
     '''Kick off a run of our precaching agent, which allows the precaching to
     run in the background after a normal Munki run'''
@@ -469,16 +471,32 @@ def run_precaching_agent():
         # try absolute path in Munki's normal install dir
         precache_agent_path = '/usr/local/munki/precache_agent'
     if os.path.exists(precache_agent_path):
+        display.display_info("Starting precaching agent")
         display.display_debug1(
             'Launching precache_agent from %s', precache_agent_path)
         try:
-            job = launchd.Job([precache_agent_path], cleanup_at_exit=False)
+            job = launchd.Job([precache_agent_path],
+                              job_label=PRECACHING_AGENT_LABEL,
+                              cleanup_at_exit=False)
             job.start()
         except launchd.LaunchdJobException as err:
             display.display_error(
                 'Error with launchd job (%s): %s', precache_agent_path, err)
     else:
         display.display_error("Could not find precache_agent")
+
+
+def stop_precaching_agent():
+    '''Stop the precaching_agent if it's running'''
+    agent_info = launchd.job_info(PRECACHING_AGENT_LABEL)
+    if agent_info.get('state') != 'unknown':
+        # it's either running or stopped. Removing it will stop it.
+        if agent_info.get('state') == 'running':
+            display.display_info("Stopping precaching agent")
+        try:
+            launchd.remove_job(PRECACHING_AGENT_LABEL)
+        except launchd.LaunchdJobException, err:
+            display.display_error('Error stopping precaching agent: %s', err)
 
 
 if __name__ == '__main__':
