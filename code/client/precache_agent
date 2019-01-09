@@ -21,13 +21,27 @@ Created by Greg Neagle on 2018-07-18.
 
 A privileged agent that downloads optional installs items marked for precaching.
 """
+import signal
+import sys
 import time
 
 from munkilib import display
 from munkilib.updatecheck import download
 
 
+def signal_handler(signum, _):
+    """Handle any signals we've been told to.
+    Right now just handle SIGTERM so clean up can happen, like
+    garbage collection, which will trigger object destructors and
+    kill any launchd processes we've started."""
+    if signum == signal.SIGTERM:
+        display.display_info("###    Precaching session stopped    ###")
+        sys.exit()
+
+
 if __name__ == '__main__':
+    # install handler for SIGTERM
+    signal.signal(signal.SIGTERM, signal_handler)
     # turn off Munki status output; this should be silent
     display.munkistatusoutput = False
     download.cache()
