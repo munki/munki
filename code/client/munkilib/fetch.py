@@ -202,8 +202,7 @@ def get_url(url, destinationpath,
 
     tempdownloadpath = destinationpath + '.download'
     if os.path.exists(tempdownloadpath) and not resume:
-        if resume and not os.path.exists(destinationpath):
-            os.remove(tempdownloadpath)
+        os.remove(tempdownloadpath)
 
     cache_data = None
     if onlyifnewer and os.path.exists(destinationpath):
