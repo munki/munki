@@ -18,4 +18,5 @@ pkgutil --forget com.googlecode.munki.core
 pkgutil --forget com.googlecode.munki.admin
 pkgutil --forget com.googlecode.munki.app
 pkgutil --forget com.googlecode.munki.launchd
+pkgutil --forget com.googlecode.munki.app_usage
 pkgutil --forget com.googlecode.munki
