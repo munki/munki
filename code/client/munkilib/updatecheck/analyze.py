@@ -253,8 +253,9 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
              item_pl['licensed_seats_available'])):
         iteminfo['precache'] = True
         iteminfo['installer_item_location'] = item_pl['installer_item_location']
-        if 'installer_item_hash' in item_pl:
-            iteminfo['installer_item_hash'] = item_pl['installer_item_hash']
+        for key in ['installer_item_hash', 'PackageCompleteURL', 'PackageURL']:
+            if key in item_pl:
+                iteminfo[key] = item_pl[key]
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
