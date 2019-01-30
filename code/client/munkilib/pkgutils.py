@@ -263,9 +263,9 @@ def parsePkgRefs(filename, path_to_pkg=None):
                 if payloads:
                     keys = payloads[0].attributes.keys()
                     if 'installKBytes' in keys:
-                        pkginfo['installed_size'] = int(
+                        pkginfo['installed_size'] = int(float(
                             payloads[0].attributes[
-                                'installKBytes'].value.encode('UTF-8'))
+                                'installKBytes'].value.encode('UTF-8')))
                     if pkginfo not in info:
                         info.append(pkginfo)
                 # if there isn't a payload, no receipt is left by a flat
@@ -285,9 +285,9 @@ def parsePkgRefs(filename, path_to_pkg=None):
                         pkgref_dict[pkgid]['version'] = \
                             ref.attributes['version'].value.encode('UTF-8')
                     if 'installKBytes' in keys:
-                        pkgref_dict[pkgid]['installed_size'] = int(
+                        pkgref_dict[pkgid]['installed_size'] = int(float(
                             ref.attributes['installKBytes'].value.encode(
-                                'UTF-8'))
+                                'UTF-8')))
                     if ref.firstChild:
                         text = ref.firstChild.wholeText
                         if text.endswith('.pkg'):
