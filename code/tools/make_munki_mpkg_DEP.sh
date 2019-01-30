@@ -548,6 +548,11 @@ cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.4" authoringToolBuild="179">
     <title>Munki - Managed software installation for macOS</title>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="10.10"/>
+        </allowed-os-versions>
+    </volume-check>
     <options customize="allow" allow-external-scripts="yes"/>
     <domains enable_anywhere="true"/>
     <installation-check script="requirerestart()"/>
