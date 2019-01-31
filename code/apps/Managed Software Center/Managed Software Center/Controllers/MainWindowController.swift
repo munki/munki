@@ -748,14 +748,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return
         }
         var filename = unquote(host)
-        if (filename as NSString).pathExtension.isEmpty {
+        // append ".html" if absent
+        if !(filename.hasSuffix(".html")) {
             filename += ".html"
         }
-        if filename.hasSuffix(".html") {
-            load_page(filename)
-        } else {
-            msc_debug_log("\(url) doesn't have a valid extension. Prevented from opening")
-        }
+        // try to build and load the page
+        load_page(filename)
     }
 
     func setNoPageCache() {
