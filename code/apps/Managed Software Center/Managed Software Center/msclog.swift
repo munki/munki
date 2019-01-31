@@ -18,6 +18,12 @@ func is_safe_to_use(_ pathname: String) -> Bool {
     // Returns true if we can open this file and it is a regular file owned by us
     // mostly C functions since this a port from Python
     var safe = false
+    if !(FileManager.default.fileExists(atPath: pathname)) {
+        if FileManager.default.createFile(atPath: pathname, contents: nil, attributes: [FileAttributeKey.posixPermissions: 0o0600]) == false {
+            NSLog("Could not create %@", pathname)
+            return false
+        }
+    }
     let fref = open(UnsafePointer(pathname), O_RDWR | O_CREAT | O_NOFOLLOW, 0x0600)
     if fref != -1 {
         var st = stat()
@@ -43,7 +49,7 @@ func setup_logging() {
     let username = NSUserName()
     if !(FileManager.default.fileExists(atPath: MSULOGDIR)) {
         do {
-            try FileManager.default.createDirectory(atPath: MSULOGDIR, withIntermediateDirectories: true, attributes: [FileAttributeKey.posixPermissions: 0x1777])
+            try FileManager.default.createDirectory(atPath: MSULOGDIR, withIntermediateDirectories: true, attributes: [FileAttributeKey.posixPermissions: 0o1777])
         } catch {
             NSLog("Could not create %@: %@", MSULOGDIR, "\(error)")
             return
@@ -60,7 +66,7 @@ func setup_logging() {
     }
     // try to set our preferred permissions
     do {
-        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0x1777], ofItemAtPath: MSULOGDIR)
+        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o1777], ofItemAtPath: MSULOGDIR)
     } catch {
         // do nothing
     }
@@ -70,10 +76,11 @@ func setup_logging() {
     for _ in 0..<10 {
         if is_safe_to_use(filename) {
             MSULOGFILE = filename
+            NSLog("Using file %@ for user-level logging", filename)
             return
         }
         NSLog("Not safe to use %@ for logging", filename)
-        filename = NSString.path(withComponents: [MSULOGDIR, "(\(username)_\(arc4random()).log"])
+        filename = NSString.path(withComponents: [MSULOGDIR, "\(username)_\(arc4random()).log"])
     }
     NSLog("Could not set up user-level logging for %@", username)
 }
