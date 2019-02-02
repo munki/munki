@@ -68,7 +68,7 @@ else:
     def pref(prefname):
         """Returns a preference for prefname. This is a fallback mechanism if
         CoreFoundation functions are not available -- for example to allow the
-        possible use of makecatlogs or manifestutil on Linux"""
+        possible use of makecatalogs or manifestutil on Linux"""
         if not hasattr(pref, 'cache'):
             pref.cache = None
         if not pref.cache:
