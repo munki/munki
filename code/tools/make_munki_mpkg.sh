@@ -125,7 +125,7 @@ if [ "$?" != "0" ]; then
 fi
 
 cd "$MUNKIROOT"
-# generate a psuedo-svn revision number for the core tools (and admin tools)
+# generate a pseudo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
 GITREV=`git log -n1 --format="%H" -- code/client`
 GITREVINDEX=`git rev-list --count $GITREV`
@@ -133,7 +133,7 @@ SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
-# get a psuedo-svn revision number for the apps pkg
+# get a pseudo-svn revision number for the apps pkg
 APPSGITREV=`git log -n1 --format="%H" -- code/apps`
 GITREVINDEX=`git rev-list --count $APPSGITREV`
 APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
@@ -160,7 +160,7 @@ fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
 
 
-# get a psuedo-svn revision number for the metapackage
+# get a pseudo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
 

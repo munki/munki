@@ -227,7 +227,7 @@ class MyOptParseExit(Exception):
 class MyOptionParser(optparse.OptionParser):
     '''Custom option parser that overrides the error handler and
     the exit handler so printing help doesn't exit the interactive
-    psuedo-shell'''
+    pseudo-shell'''
     def error(self, msg):
         """error(msg : string)
 
