@@ -397,7 +397,7 @@ def startUpdateCheck(suppress_apple_update_check=False):
 
 
 def logoutNow():
-    '''Uses oscascript to run an AppleScript
+    '''Uses osascript to run an AppleScript
     to tell loginwindow to logout.
     Ugly, but it works.'''
 
