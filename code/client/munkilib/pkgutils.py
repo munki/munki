@@ -119,7 +119,7 @@ def padVersionString(versString, tupleCount):
 def getVersionString(plist, key=None):
     """Gets a version string from the plist.
 
-    If a key is explictly specified, the value of that key is
+    If a key is explicitly specified, the value of that key is
     returned without modification, or an empty string if the
     key does not exist.
 
