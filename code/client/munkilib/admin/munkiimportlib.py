@@ -239,7 +239,7 @@ def find_matching_pkginfo(repo, pkginfo):
     try:
         catdb = make_catalog_db(repo)
     except CatalogReadException, err:
-        # could not retreive catalogs/all
+        # could not retrieve catalogs/all
         # do we have any existing pkgsinfo items?
         pkgsinfo_items = repo.itemlist('pkgsinfo')
         if len(pkgsinfo_items):

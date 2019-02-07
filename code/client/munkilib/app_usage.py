@@ -38,7 +38,7 @@ from . import prefs
 # SQLite db to store application usage data
 APPLICATION_USAGE_DB = os.path.join(
     prefs.pref('ManagedInstallDir'), 'application_usage.sqlite')
-# SQL to detect existance of application usage table
+# SQL to detect existence of application usage table
 APPLICATION_USAGE_TABLE_DETECT = 'SELECT * FROM application_usage LIMIT 1'
 # This table creates ~64 bytes of disk data per event.
 APPLICATION_USAGE_TABLE_CREATE = (

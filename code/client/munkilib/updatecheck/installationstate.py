@@ -288,7 +288,7 @@ def evidence_this_is_installed(item_pl):
             display.display_debug2("Installed receipts don't match.")
 
     # if we got this far, we failed all the tests, so the item
-    # must not be installed (or we dont't have the right info...)
+    # must not be installed (or we don't have the right info...)
     return False
 
 

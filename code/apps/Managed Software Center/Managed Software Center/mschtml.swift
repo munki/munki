@@ -55,7 +55,7 @@ func getRawTemplate(_ template_name: String) -> String {
 }
 
 func getTemplate(_ template_name: String) -> Template {
-    // return a Template object containg our html template
+    // return a Template object containing our html template
     return Template(getRawTemplate(template_name))
 }
 
@@ -623,7 +623,7 @@ func buildUpdatesPage() throws {
         { ($0["status"] as? String ?? "") == "update-available" }
     )
     // find any listed optional install updates that require a higher OS
-    // or have insufficent disk space or other blockers (because they have a
+    // or have insufficient disk space or other blockers (because they have a
     // note)
     let blocked_optional_updates = getOptionalInstallItems().filter(
         {

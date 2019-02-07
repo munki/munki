@@ -132,11 +132,11 @@ def getVersionString(plist, key=None):
     VersionString = ''
     if key:
         # admin has specified a specific key
-        # return value verbatum or empty string
+        # return value verbatim or empty string
         return plist.get(key, '')
 
     # default to CFBundleShortVersionString plus magic
-    # and workarounds and edge case cleanupds
+    # and workarounds and edge case cleanups
     key = 'CFBundleShortVersionString'
     if not 'CFBundleShortVersionString' in plist:
         if 'Bundle versions string, short' in plist:

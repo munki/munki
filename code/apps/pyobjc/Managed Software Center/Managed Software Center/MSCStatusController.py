@@ -112,7 +112,7 @@ class MSCStatusController(NSObject):
         return self.session_started
 
     def sessionEnded_(self, result):
-        '''clean up after a managesoftwareupdate session ends'''
+        '''clean up after a managedsoftwareupdate session ends'''
         if self.timer:
             self.timer.invalidate()
             self.timer = None

@@ -161,7 +161,7 @@ class MSCAlertController: NSObject {
         } else if updatesRequireLogout() || installRequiresLogout() {
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
-                "Logout Required", comment: "Logput Required title")
+                "Logout Required", comment: "Logout Required title")
             alert.informativeText = NSLocalizedString(
                 "A logout is required before updating. Please be patient  " +
                 "as there may be a short delay at the login window. Log " +

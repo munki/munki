@@ -40,7 +40,7 @@ class MSCPasswordAlertController: NSObject {
         fieldFrame.origin.x = labelWidth + 8
         fieldFrame.size.width = viewWidth - labelWidth - 8
         passwordField.frame = fieldFrame
-        // add esc as a key equivilent for the Deny button
+        // add esc as a key equivalent for the Deny button
         alert.buttons[1].keyEquivalent = "\u{1B}"
         // change the Allow button to call our password validation method
         let allowButton = alert.buttons[0]

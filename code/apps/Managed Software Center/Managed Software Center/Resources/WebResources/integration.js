@@ -1,4 +1,4 @@
-/* appearance.js
+/* integration.js
  Managed Software Center
  
  Created by Greg Neagle on 8/27/18.

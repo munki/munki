@@ -1,5 +1,5 @@
 //
-//  UnixDomainSocket.swift
+//  Socket.swift
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/23/18.

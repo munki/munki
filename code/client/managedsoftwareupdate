@@ -356,7 +356,7 @@ def doRestart(shutdown=False):
     else:
         if display.munkistatusoutput:
             # someone is logged in and we're using Managed Software Center.
-            # We need to notifiy the active user that a restart is required.
+            # We need to notify the active user that a restart is required.
             # We actually should almost never get here; generally Munki knows
             # a restart is needed before even starting the updates and forces
             # a logout before applying the updates
@@ -564,7 +564,7 @@ def main():
     parser.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
 
-    # commonnly-used options
+    # commonly-used options
     common_options = optparse.OptionGroup(
         parser, 'Common Options', 'Commonly used options')
     common_options.add_option(
@@ -1028,7 +1028,7 @@ def main():
                 # if any installs are still requiring force actions, just
                 # initiate a logout to get started.  blocking apps might
                 # have stopped even non-logout/reboot installs from
-                # occuring.
+                # occurring.
                 if force_action in ['now', 'logout', 'restart']:
                     mustlogout = True
 
