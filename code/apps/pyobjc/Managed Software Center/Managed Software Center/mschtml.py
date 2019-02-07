@@ -599,7 +599,7 @@ def build_updates_page():
     # build problem updates table
     page['problem_updates_header_message'] = NSLocalizedString(
         u"Problem updates",
-        u"Problm Updates label")
+        u"Problem Updates label")
     page['problem_update_rows'] = u''
 
     if problem_updates:

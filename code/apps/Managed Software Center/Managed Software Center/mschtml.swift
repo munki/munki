@@ -676,7 +676,7 @@ func buildUpdatesPage() throws {
     
     // build problem updates table
     page["problem_updates_header_message"] = NSLocalizedString(
-        "Problem updates", comment: "Problm Updates label")
+        "Problem updates", comment: "Problem Updates label")
     page["problem_update_rows"] = ""
     if !problem_updates.isEmpty {
         page["hide_problem_updates"] = ""
