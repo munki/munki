@@ -192,11 +192,31 @@ class AppleUpdates(object):
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = su_prefs.pref(
             'RecommendedUpdates')
-        if recommended_updates:
-            return [item['Product Key'] for item in recommended_updates
-                    if 'Product Key' in item]
+        if recommended_updates is not None:
+            try:
+                return [item['Product Key'] for item in recommended_updates
+                        if 'Product Key' in item]
+            except IndexError:
+                # RecommendedUpdates is an empty list
+                return []
+            except (KeyError, AttributeError):
+                # RecommendedUpdates is in an unexpected format
+                display.display_debug1(
+                    'com.apple.SoftwareUpdate RecommendedUpdates is in an '
+                    'unexpected format: %s', recommended_updates)
+                return []
 
-        # not in com.apple.SoftwareUpdate preferences, try index.plist
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        # We've collected data that indicates that com.apple.SoftwareUpdate
+        # RecommendedUpdates should be present on 10.9+ if there are available
+        # updates. We don't have data on 10.7 or 10.8.
+        if os_version_tuple < (10, 8):
+            display.display_debug1(
+                'com.apple.SoftwareUpdate RecommendedUpdates is not defined')
+            return []
+
+        # fall through to using index.plist only if com.apple.SoftwareUpdate
+        # RecommendedUpdates doesn't exist and we're on macOS < 10.9
         if not os.path.exists(INDEX_PLIST):
             display.display_debug1('%s does not exist.' % INDEX_PLIST)
             return []
