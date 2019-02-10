@@ -693,7 +693,7 @@ class GenericItem(dict):
 
     def unavailable_reason_text(self, is_update=False):
         '''There are several reasons an item might be unavailable for install.
-           Return the relevent reason'''
+           Return the relevant reason'''
         if ('licensed_seats_available' in self
                 and not self['licensed_seats_available']):
             return NSLocalizedString(u"No licenses available",

@@ -555,7 +555,7 @@ def build_updates_page():
         if item['status'] == 'update-available']
 
     # find any listed optional install updates that require a higher OS
-    # or have insufficent disk space or other blockers (because they have a
+    # or have insufficient disk space or other blockers (because they have a
     # note)
     blocked_optional_updates = [
         item for item in MunkiItems.getOptionalInstallItems()

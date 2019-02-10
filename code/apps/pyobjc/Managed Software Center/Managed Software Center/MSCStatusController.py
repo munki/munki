@@ -185,7 +185,7 @@ class MSCStatusController(NSObject):
         self._status_percent = -1
 
     def setPercentageDone_(self, percent):
-        '''Display precentage done'''
+        '''Display percentage done'''
         try:
             if float(percent) > 100.0:
                 percent = 100
@@ -338,7 +338,7 @@ class MSCStatusController(NSObject):
                         install_btn.setClassName_(' '.join(btn_classes))
 
     def getRestartAlertDismissed(self):
-        '''Was the restart alert dimissed?'''
+        '''Was the restart alert dismissed?'''
         return self._status_restartAlertDismissed
 
 
