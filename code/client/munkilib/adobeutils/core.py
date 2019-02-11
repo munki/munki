@@ -195,7 +195,7 @@ def mount_adobe_dmg(dmgpath):
 
 def get_percent(current, maximum):
     '''Returns a value useful with MunkiStatus to use when
-    displaying precent-done status'''
+    displaying percent-done status'''
     if maximum == 0:
         percentdone = -1
     elif current < 0:
