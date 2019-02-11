@@ -32,7 +32,7 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
@@ -40,12 +40,14 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
+    -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
+                the certificate's Common Name. Ex: "Developer ID Application: Munki (U8PN57A5N2)"
 
 EOF
 }
 
 
-while getopts "i:r:o:c:s:h" option
+while getopts "i:r:o:c:s:S:h" option
 do
     case $option in
         "i")
@@ -61,7 +63,10 @@ do
             CONFPKG="$OPTARG"
             ;;
         "s")
-            SIGNINGCERT="$OPTARG"
+            PKGSIGNINGCERT="$OPTARG"
+            ;;
+        "S" )
+            APPSIGNINGCERT="$OPTARG"
             ;;
         "h" | *)
             usage
@@ -153,6 +158,7 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
     LAUNCHDVERSION=`defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString`
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
+
 
 # get a psuedo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
@@ -314,7 +320,7 @@ mkdir -p "$COREROOT/usr/local/munki/munkilib"
 chmod -R 755 "$COREROOT/usr"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
+for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor precache_agent ptyexec removepackages
 do
     cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
@@ -385,6 +391,7 @@ chmod +x "$ADMINROOT/usr/local/munki"
 mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
 chmod -R 755 "$ADMINROOT/private"
+chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
@@ -410,6 +417,22 @@ cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resou
 cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
+
+# sign MSC app
+if [ "$APPSIGNINGCERT" != "" ]; then
+    echo "Signing Managed Software Center.app..."
+    /usr/bin/codesign -s "$APPSIGNINGCERT" --verbose \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
+        "$APPROOT/Applications/Managed Software Center.app"
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
+        exit 2
+    fi
+fi
+
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
@@ -449,15 +472,20 @@ echo "Creating app_usage package template..."
 APPUSAGEROOT="$PKGTMP/munki_app_usage"
 mkdir -m 1775 "$APPUSAGEROOT"
 mkdir -m 1775 "$APPUSAGEROOT/Library"
+mkdir -m 755 "$APPUSAGEROOT/Library/LaunchAgents"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
 mkdir -p "$APPUSAGEROOT/usr/local/munki"
 chmod -R 755 "$APPUSAGEROOT/usr"
-# Copy tools and launch daemon.
+# Copy launch agent, launch daemon, daemon, and agent
+# LaunchAgent
+cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
+chmod 644 "$APPUSAGEROOT/Library/LaunchAgents/"*
+# LaunchDaemon
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
 chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
-# Copy tool.
+# Copy tools.
 # edit this if list of tools changes!
-for TOOL in app_usage_monitor
+for TOOL in appusaged app_usage_monitor
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
 done
@@ -578,6 +606,7 @@ echo "Setting ownership to root..."
 sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
+sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"
@@ -590,6 +619,7 @@ sudo chown -hR root:wheel "$LAUNCHDROOT/Library/LaunchAgents"
 
 sudo chown root:admin "$APPUSAGEROOT/Library"
 sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchDaemons"
+sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 ######################
@@ -667,12 +697,12 @@ done
 echo
 # build distribution pkg from the components
 # Sign package if specified with options.
-if [ "$SIGNINGCERT" != "" ]; then
+if [ "$PKGSIGNINGCERT" != "" ]; then
      /usr/bin/productbuild \
         --distribution "$DISTFILE" \
         --package-path "$METAROOT" \
         --resources "$METAROOT/Resources" \
-        --sign "$SIGNINGCERT" \
+        --sign "$PKGSIGNINGCERT" \
         "$MPKG"
 else
     /usr/bin/productbuild \

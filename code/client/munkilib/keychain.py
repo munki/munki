@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2014-2017 Greg Neagle.
+# Copyright 2014-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import base64
 import hashlib
 import os
 import subprocess
-from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 from . import display
 from . import osutils
@@ -151,11 +150,16 @@ def get_client_cert_common_name():
     cert_info = get_munki_client_cert_info()
     client_cert_path = cert_info['client_cert_path']
     if client_cert_path and os.path.exists(client_cert_path):
-        fileobj = open(client_cert_path)
-        data = fileobj.read()
-        fileobj.close()
-        x509 = load_certificate(FILETYPE_PEM, data)
-        common_name = x509.get_subject().commonName
+        cmd = ['/usr/bin/openssl', 'x509', '-noout', '-subject', '-in',
+               client_cert_path]
+        proc = subprocess.Popen(cmd,
+                                bufsize=-1, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        if out:
+            for i in out.split('/'):
+                if i.startswith('CN='):
+                    common_name = i[3:].rstrip()
     return common_name
 
 

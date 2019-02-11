@@ -14,7 +14,7 @@ BRANCH="master"
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-o dir] [-c package] [-r revision]"
+Usage: `basename $0` [-i id] [-o dir] [-c package] [-r revision]
 
     -i id       Set the base package bundle ID
     -o dir      Set the output directory

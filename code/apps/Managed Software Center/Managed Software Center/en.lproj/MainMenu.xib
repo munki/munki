@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="12120"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="14113"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -206,8 +206,8 @@
                 </menuItem>
             </items>
         </menu>
-        <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="main" animationBehavior="default" id="371">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" unifiedTitleAndToolbar="YES"/>
+        <window title="Managed Software Center" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="main" animationBehavior="default" tabbingMode="disallowed" id="371">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="132" y="116" width="1143" height="730"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
@@ -232,9 +232,9 @@
                     <toolbarItem implicitItemIdentifier="450E106F-9925-4E50-9609-9457D33597D0" label="Software" paletteLabel="Software" image="AllItemsTemplate" id="jTu-Wf-fi2">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="CPR-oF-gUx" customClass="MSCToolbarButton">
-                            <rect key="frame" x="3" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="CPR-oF-gUx" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="AllItemsTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6UP-LY-MAs" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -248,9 +248,9 @@
                     <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Categories" paletteLabel="Categories" image="toolbarCategoriesTemplate" id="G2X-M7-NVB">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="YGi-pE-3SV" customClass="MSCToolbarButton">
-                            <rect key="frame" x="9" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="YGi-pE-3SV" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="toolbarCategoriesTemplate" imagePosition="only" alignment="center" inset="2" id="Vtx-wt-JLV" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -264,9 +264,9 @@
                     <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="My Items" paletteLabel="My Items" image="MyStuffTemplate" id="Uby-CQ-lvU">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="eek-hQ-v8t" customClass="MSCToolbarButton">
-                            <rect key="frame" x="4" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="eek-hQ-v8t" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="MyStuffTemplate" imagePosition="only" alignment="center" inset="2" id="Z0f-h1-4qy" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -280,9 +280,9 @@
                     <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="updatesTemplate" id="AjB-m1-mu8">
                         <nil key="toolTip"/>
                         <size key="minSize" width="48" height="30"/>
-                        <size key="maxSize" width="48" height="30"/>
-                        <button key="view" id="caG-fL-UJh" customClass="MSCToolbarButton">
-                            <rect key="frame" x="2" y="14" width="48" height="30"/>
+                        <size key="maxSize" width="64" height="30"/>
+                        <button key="view" misplaced="YES" id="caG-fL-UJh" customClass="MSCToolbarButton">
+                            <rect key="frame" x="0.0" y="14" width="64" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <buttonCell key="cell" type="squareTextured" bezelStyle="texturedSquare" image="updatesTemplate" imagePosition="overlaps" alignment="center" inset="2" id="ZVD-Hl-dlF" customClass="MSCToolbarButtonCell">
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -355,7 +355,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <searchField wantsLayer="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="gLI-O8-siB">
+                                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="gLI-O8-siB">
                                         <rect key="frame" x="0.0" y="1" width="150" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="Rxm-nO-bmO">
@@ -377,11 +377,8 @@
                     <toolbarItem reference="CEb-sx-e3H"/>
                     <toolbarItem reference="O3a-eC-4fX"/>
                     <toolbarItem reference="jTu-Wf-fi2"/>
-                    <toolbarItem reference="sF1-NQ-sSb"/>
                     <toolbarItem reference="G2X-M7-NVB"/>
-                    <toolbarItem reference="sF1-NQ-sSb"/>
                     <toolbarItem reference="Uby-CQ-lvU"/>
-                    <toolbarItem reference="sF1-NQ-sSb"/>
                     <toolbarItem reference="AjB-m1-mu8"/>
                     <toolbarItem reference="O3a-eC-4fX"/>
                     <toolbarItem reference="fbJ-cF-weR"/>
@@ -441,7 +438,7 @@
             </connections>
         </customObject>
         <userDefaultsController representsSharedInstance="YES" id="602"/>
-        <window title="Log" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="X5I-7f-aJs" userLabel="Log Window">
+        <window title="Log" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingMode="disallowed" id="X5I-7f-aJs" userLabel="Log Window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
             <rect key="contentRect" x="636" y="390" width="512" height="480"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
@@ -455,7 +452,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="rwq-IA-IvG">
                             <rect key="frame" x="1" y="1" width="512" height="447"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" id="UAy-M3-yRr">
                                     <rect key="frame" x="0.0" y="0.0" width="512" height="447"/>
@@ -502,7 +499,7 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
-                    <searchField wantsLayer="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="N3t-et-cTX">
+                    <searchField wantsLayer="YES" verticalHuggingPriority="750" id="N3t-et-cTX">
                         <rect key="frame" x="301" y="452" width="200" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Nc2-ny-iaV">
@@ -534,7 +531,7 @@
             <rect key="frame" x="0.0" y="0.0" width="317" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <secureTextField wantsLayer="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="RBe-5Z-jso">
+                <secureTextField wantsLayer="YES" verticalHuggingPriority="750" id="RBe-5Z-jso">
                     <rect key="frame" x="75" y="0.0" width="242" height="22"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                     <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="675-6Y-zrc">
@@ -546,7 +543,7 @@
                         </allowedInputSourceLocales>
                     </secureTextFieldCell>
                 </secureTextField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="X5P-3t-HRa">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="X5P-3t-HRa">
                     <rect key="frame" x="1" y="3" width="76" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Password:" id="Ef8-fO-Dm6">

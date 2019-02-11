@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ curl replacement using NSURLConnection and friends
 """
 
 import os
-import xattr
 from urlparse import urlparse
+import xattr
 
 # builtin super doesn't work with Cocoa classes in recent PyObjC releases.
 from objc import super
@@ -228,7 +228,7 @@ class Gurl(NSObject):
                 request.setValue_forHTTPHeaderField_(value, header)
         # does the file already exist? See if we can resume a partial download
         if os.path.isfile(self.destination_path):
-            stored_data = self.get_stored_headers()
+            stored_data = self.getStoredHeaders()
             if (self.can_resume and 'expected-length' in stored_data and
                     ('last-modified' in stored_data or 'etag' in stored_data)):
                 # we have a partial file and we're allowed to resume
@@ -237,7 +237,7 @@ class Gurl(NSObject):
                 byte_range = 'bytes=%s-' % local_filesize
                 request.setValue_forHTTPHeaderField_(byte_range, 'Range')
         if self.download_only_if_changed and not self.resume:
-            stored_data = self.cache_data or self.get_stored_headers()
+            stored_data = self.cache_data or self.getStoredHeaders()
             if 'last-modified' in stored_data:
                 request.setValue_forHTTPHeaderField_(
                     stored_data['last-modified'], 'if-modified-since')
@@ -245,8 +245,8 @@ class Gurl(NSObject):
                 request.setValue_forHTTPHeaderField_(
                     stored_data['etag'], 'if-none-match')
         if NSURLSESSION_AVAILABLE:
-            configuration = \
-                NSURLSessionConfiguration.defaultSessionConfiguration()
+            configuration = (
+                NSURLSessionConfiguration.defaultSessionConfiguration())
 
             # optional: ignore system http/https proxies (10.9+ only)
             if self.ignore_system_proxy is True:
@@ -258,9 +258,9 @@ class Gurl(NSObject):
             configuration.setTLSMinimumSupportedProtocol_(
                 self.minimum_tls_protocol)
 
-            self.session = \
+            self.session = (
                 NSURLSession.sessionWithConfiguration_delegate_delegateQueue_(
-                    configuration, self, None)
+                    configuration, self, None))
             self.task = self.session.dataTaskWithRequest_(request)
             self.task.resume()
         else:
@@ -286,7 +286,7 @@ class Gurl(NSObject):
             NSDate.dateWithTimeIntervalSinceNow_(.1))
         return self.done
 
-    def get_stored_headers(self):
+    def getStoredHeaders(self):
         '''Returns any stored headers for self.destination_path'''
         # try to read stored headers
         try:
@@ -304,7 +304,7 @@ class Gurl(NSObject):
         else:
             return dataObject
 
-    def store_headers(self, headers):
+    def storeHeaders_(self, headers):
         '''Store dictionary data as an xattr for self.destination_path'''
         plistData, error = (
             NSPropertyListSerialization.
@@ -320,7 +320,7 @@ class Gurl(NSObject):
             self.log('Could not store metadata to %s: %s'
                      % (self.destination_path, err))
 
-    def normalize_header_dict(self, a_dict):
+    def normalizeHeaderDict_(self, a_dict):
         '''Since HTTP header names are not case-sensitive, we normalize a
         dictionary of HTTP headers by converting all the key names to
         lower case'''
@@ -349,10 +349,10 @@ class Gurl(NSObject):
         don\'t attempt to resume the download next time'''
         if str(self.status).startswith('2'):
             # remove the expected-size from the stored headers
-            headers = self.get_stored_headers()
+            headers = self.getStoredHeaders()
             if 'expected-length' in headers:
                 del headers['expected-length']
-                self.store_headers(headers)
+                self.storeHeaders_(headers)
 
     def URLSession_task_didCompleteWithError_(self, session, task, error):
         '''NSURLSessionTaskDelegate method.'''
@@ -400,7 +400,7 @@ class Gurl(NSObject):
             # Headers and status code only available for HTTP/S transfers
             self.status = response.statusCode()
             self.headers = dict(response.allHeaderFields())
-            normalized_headers = self.normalize_header_dict(self.headers)
+            normalized_headers = self.normalizeHeaderDict_(self.headers)
             if 'last-modified' in normalized_headers:
                 download_data['last-modified'] = normalized_headers[
                     'last-modified']
@@ -414,7 +414,7 @@ class Gurl(NSObject):
         if not self.destination and self.destination_path:
             if self.status == 206 and self.resume:
                 # 206 is Partial Content response
-                stored_data = self.get_stored_headers()
+                stored_data = self.getStoredHeaders()
                 if (not stored_data or
                         stored_data.get('etag') != download_data.get('etag') or
                         stored_data.get('last-modified') != download_data.get(
@@ -452,7 +452,7 @@ class Gurl(NSObject):
                 # store some headers with the file for use if we need to resume
                 # the downloadand for future checking if the file on the server
                 # has changed
-                self.store_headers(download_data)
+                self.storeHeaders_(download_data)
         if completionHandler:
             # tell the session task to continue
             completionHandler(NSURLSessionResponseAllow)

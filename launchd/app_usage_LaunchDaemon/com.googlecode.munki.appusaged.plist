@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.googlecode.munki.appusaged</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/munki/appusaged</string>
+	</array>
+	<key>Sockets</key>
+	<dict>
+		<key>appusaged</key>
+		<dict>
+			<key>SockPathMode</key>
+			<integer>438</integer>
+			<key>SockPathName</key>
+			<string>/var/run/appusaged</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

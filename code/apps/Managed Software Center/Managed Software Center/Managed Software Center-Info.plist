@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>4.7</string>
+	<string>4.8</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -49,11 +49,13 @@
 	<key>NSDockTilePlugIn</key>
 	<string>MSCDockTilePlugin.docktileplugin</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2017 The Munki Project https://github.com/munki/munki</string>
+	<string>Copyright © 2018 The Munki Project https://github.com/munki/munki</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
 </dict>

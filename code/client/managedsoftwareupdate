@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -233,13 +233,13 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
         # changes after this round of installs
         clearLastNotifiedDate()
 
-    munki_need_to_restart = False
-    apple_need_to_restart = False
+    munki_items_restart_action = constants.POSTACTION_NONE
+    apple_items_restart_action = constants.POSTACTION_NONE
 
     if munkiUpdatesAvailable():
         # install munki updates
         try:
-            munki_need_to_restart = installer.run(
+            munki_items_restart_action = installer.run(
                 only_unattended=only_unattended)
         except:
             display.display_error('Unexpected error in munkilib.installer:')
@@ -277,7 +277,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
     if do_apple_updates:
         # install Apple updates
         try:
-            apple_need_to_restart = appleupdates.installAppleUpdates(
+            apple_items_restart_action = appleupdates.installAppleUpdates(
                 only_unattended=only_unattended)
         except:
             display.display_error(
@@ -287,7 +287,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             raise
 
     reports.savereport()
-    return munki_need_to_restart or apple_need_to_restart
+    return max(apple_items_restart_action, munki_items_restart_action)
 
 
 def doFinishingTasks(runtype=None):
@@ -327,10 +327,13 @@ def startLogoutHelper():
             'Could not start com.googlecode.munki.logouthelper')
 
 
-def doRestart():
-    """Handle the need for a restart."""
+def doRestart(shutdown=False):
+    """Handle the need for a restart or a possbile shutdown."""
     restartMessage = 'Software installed or removed requires a restart.'
-    munkilog.log(restartMessage)
+    if shutdown:
+        munkilog.log('Software installed or removed requires a shut down.')
+    else:
+        munkilog.log(restartMessage)
     if display.munkistatusoutput:
         munkistatus.hideStopButton()
         munkistatus.message(restartMessage)
@@ -346,7 +349,9 @@ def doRestart():
         time.sleep(5)
         # try to use authrestartd to do an auth restart; if that fails
         # do it directly
-        if not authrestartd.restart():
+        if shutdown:
+            authrestart.do_authorized_or_normal_restart(shutdown=shutdown)
+        elif not authrestartd.restart():
             authrestart.do_authorized_or_normal_restart()
     else:
         if display.munkistatusoutput:
@@ -534,6 +539,9 @@ def warn_if_server_is_default(server):
     This is useful as a bootstrapping default, but is insecure.
     Warn the admin if Munki is using an insecure default.'''
     # server can be either ManifestURL or SoftwareRepoURL
+    if not server:
+        # hasn't been defined yet; will be auto-detected later
+        return
     if server.rstrip('/') in ['http://munki/repo',
                               'http://munki/repo/manifests']:
         display.display_warning(
@@ -770,7 +778,7 @@ def main():
         exit(constants.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
-    display.munkistatusoutput = options.munkistatusoutput
+    display.munkistatusoutput = True
     display.verbose = options.verbose
 
     # Set environment variable for verbosity
@@ -794,7 +802,7 @@ def main():
     munkilog.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print 'Managed Software Update Tool'
-        print 'Copyright 2010-2017 The Munki Project'
+        print 'Copyright 2010-2018 The Munki Project'
         print 'https://github.com/munki/munki\n'
 
     display.display_status_major('Starting...')
@@ -941,14 +949,14 @@ def main():
     # send a notification event so MSC can update its display if needed
     sendUpdateNotification()
 
-    mustrestart = False
+    restart_action = constants.POSTACTION_NONE
     mustlogout = False
     notify_user = False
     force_action = None
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
-            mustrestart = doInstallTasks(appleupdatesavailable)
+            restart_action = doInstallTasks(appleupdatesavailable)
             # reset our count of available updates (it might not actually
             # be zero, but we want to clear the badge on the Dock icon;
             # it can be updated to the "real" count on the next Munki run)
@@ -1093,7 +1101,9 @@ def main():
     if mustlogout:
         # not handling this currently
         pass
-    if mustrestart:
+    if restart_action == constants.POSTACTION_SHUTDOWN:
+        doRestart(shutdown=True)
+    elif restart_action == constants.POSTACTION_RESTART:
         doRestart()
     else:
         # tell status app we're done sending status

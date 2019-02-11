@@ -451,7 +451,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -480,7 +480,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -501,18 +501,18 @@
 		C090050F16CDD84E00BE34CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,
+					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,
 				);
 				INFOPLIST_FILE = "MunkiStatus/MunkiStatus-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
@@ -525,18 +525,18 @@
 		C090051016CDD84E00BE34CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MunkiStatus/MunkiStatus-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,
+					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,
 				);
 				INFOPLIST_FILE = "MunkiStatus/MunkiStatus-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;

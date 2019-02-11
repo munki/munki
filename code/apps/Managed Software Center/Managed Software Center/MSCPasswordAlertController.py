@@ -4,7 +4,7 @@
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 4/17/17.
-#  Copyright (c) 2017 The Munki Project. All rights reserved.
+#  Copyright (c) 2018 The Munki Project. All rights reserved.
 #
 '''Controller for our custom alert that prompts for password'''
 
@@ -87,8 +87,8 @@ class MSCPasswordAlertController(NSObject):
         username = NSUserName()
         password = self.passwordField.stringValue()
         if passwdutil.verifyPassword(username, password):
-            # store password and end modal alert
-            authrestart.store_password(password)
+            # store username and password and end modal alert
+            authrestart.store_password(password, username=username)
             code = NSAlertFirstButtonReturn
             NSApplication.sharedApplication().stopModalWithCode_(code)
             NSApplication.sharedApplication().endSheet_returnCode_(

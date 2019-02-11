@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -57,6 +57,19 @@ def pref(pref_name):
     """
     return CFPreferencesCopyAppValue(
         pref_name, APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN)
+
+
+def set_pref(pref_name, value):
+    """Sets a value in /Library/Preferences/com.apple.SoftwareUpdate.
+    Uses CoreFoundation.
+    Args:
+       pref_name: str preference name to set.
+       valueL value to set it to.
+    """
+    CFPreferencesSetValue(
+        pref_name, value,
+        APPLE_SOFTWARE_UPDATE_PREFS_DOMAIN,
+        kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
 
 
 def catalogurl_is_managed():
