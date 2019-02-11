@@ -2,7 +2,7 @@
 #
 # MSCStatusController.py
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ class MSCStatusController(NSObject):
             self.timer = None
         self.cleanUpStatusSession()
         # tell the window controller the update session is done
-        self.statusWindowController.munkiStatusSessionEnded_(result)
+        self.statusWindowController.munkiStatusSessionEndedWithStatus_errorMessage_(result, "")
 
     def updateStatus_(self, notification):
         '''Got update status notification from managedsoftwareupdate'''

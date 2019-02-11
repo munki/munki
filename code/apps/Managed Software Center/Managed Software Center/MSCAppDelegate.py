@@ -3,7 +3,7 @@
 #  MSCAppDelegate.py
 #  Managed Software Center
 #
-#  Copyright 2013-2017 Greg Neagle.
+#  Copyright 2013-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,13 +75,13 @@ class MSCAppDelegate(NSObject):
         # without the Retina assets to avoid an appearance issue when the
         # icon has a badge in the Dock (and App Switcher)
         # Darwin major version 10 is Snow Leopard (10.6)
-        if os.uname()[2].split('.')[0] == '10':
+        if int(os.uname()[2].split('.')[0]) == 10:
             myImage = NSImage.imageNamed_("Managed Software Center 10_6")
             NSApp.setApplicationIconImage_(myImage)
 
         # if we are running under Mountain Lion or later set ourselves as a delegate
         # for NSUserNotificationCenter notifications
-        if os.uname()[2].split('.')[0] > '11':
+        if int(os.uname()[2].split('.')[0]) > 11:
             NSUserNotificationCenter.defaultUserNotificationCenter().setDelegate_(self)
 
         # have the statuscontroller register for its own notifications
@@ -148,7 +148,7 @@ class MSCAppDelegate(NSObject):
 
     def userNotificationCenter_didActivateNotification_(self, center, notification):
         '''User clicked on a Notification Center alert'''
-        user_info = notification.userInfo()
+        user_info = notification.userInfo() or {}
         if user_info.get('action') == 'open_url':
             url = user_info.get('value', 'munki://updates')
             msclog.log("MSU", "Got user notification to open %s" % url)
@@ -156,6 +156,7 @@ class MSCAppDelegate(NSObject):
             center.removeDeliveredNotification_(notification)
         else:
             msclog.log("MSU", "Got user notification with unrecognized userInfo")
+            self.openMunkiURL('munki://updates')
 
     def userNotificationCenter_shouldPresentNotification_(self, center, notification):
         return True

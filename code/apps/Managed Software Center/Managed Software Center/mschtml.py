@@ -18,10 +18,19 @@ import msclib
 import msclog
 import munki
 
-from AppKit import NSApp
+from AppKit import NSApp, NSUserDefaults
 from Foundation import NSBundle
 from Foundation import NSString, NSLocalizedString, NSUTF8StringEncoding
 
+def interfaceStyle():
+    '''Returns "dark" if using Dark Mode, otherwise "light"'''
+    # running under Mojave or later or undocumented pref is set
+    if (int(os.uname()[2].split('.')[0]) >= 18 or
+            NSUserDefaults.standardUserDefaults().boolForKey_("AllowDarkModeOnUnsupportedOSes")):
+        interfaceType = NSUserDefaults.standardUserDefaults().stringForKey_("AppleInterfaceStyle")
+        if interfaceType == "Dark":
+            return "dark"
+    return "light"
 
 def quote(a_string):
     '''Replacement for urllib.quote that handles Unicode strings'''
@@ -97,6 +106,8 @@ def write_page(page_name, html):
 def assemble_page(main_page_template_name, page_dict, **kwargs):
     '''Returns HTML for our page from one or more templates
        and a dictionary of keys and values'''
+    # add current appearance style/theme
+    page_dict["data_theme"] = interfaceStyle()
     # make sure our general labels are present
     addGeneralLabels(page_dict)
     # get our main template
@@ -343,10 +354,10 @@ def build_list_page_items_html(category=None, developer=None, filter=None):
                  or filter in item['category'].lower()]
     if category:
         items = [item for item in items
-                 if category.lower() in item.get('category', '').lower()]
+                 if category.lower() == item.get('category', '').lower()]
     if developer:
         items = [item for item in items
-                 if developer.lower() in item.get('developer', '').lower()]
+                 if developer.lower() == item.get('developer', '').lower()]
 
     if category is None and developer is None and filter is None:
         # this is the default (formerly) "all items" view

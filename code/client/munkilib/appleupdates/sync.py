@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2017 Greg Neagle.
+# Copyright 2009-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,10 @@ DEFAULT_CATALOG_URLS = {
               '-leopard.merged-1.sucatalog'),
     '10.13': ('https://swscan.apple.com/content/catalogs/others/'
               'index-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard'
-              '-leopard.merged-1.sucatalog')
+              '-leopard.merged-1.sucatalog'),
+    '10.14': ('https://swscan.apple.com/content/catalogs/others/'
+              'index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-'
+              'snowleopard-leopard.merged-1.sucatalog')
 }
 
 # Preference domain for Apple Software Update.

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2011-2017 Greg Neagle.
+# Copyright 2011-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -202,8 +202,7 @@ def get_url(url, destinationpath,
 
     tempdownloadpath = destinationpath + '.download'
     if os.path.exists(tempdownloadpath) and not resume:
-        if resume and not os.path.exists(destinationpath):
-            os.remove(tempdownloadpath)
+        os.remove(tempdownloadpath)
 
     cache_data = None
     if onlyifnewer and os.path.exists(destinationpath):
@@ -211,7 +210,7 @@ def get_url(url, destinationpath,
         # stored caching data so we can download only if the
         # file has changed on the server
         gurl_obj = Gurl.alloc().initWithOptions_({'file': destinationpath})
-        cache_data = gurl_obj.get_stored_headers()
+        cache_data = gurl_obj.getStoredHeaders()
         del gurl_obj
 
     # only works with NSURLSession (10.9 and newer)
@@ -304,7 +303,11 @@ def get_url(url, destinationpath,
     connection.headers['http_result_description'] = description
 
     if str(connection.status).startswith('2') and temp_download_exists:
-        os.rename(tempdownloadpath, destinationpath)
+        try:
+            os.rename(tempdownloadpath, destinationpath)
+        except OSError, err:
+            # Re-raise the error as a GurlError
+            raise GurlError(-1, str(err))
         return connection.headers
     elif connection.status == 304:
         # unchanged on server

@@ -4,7 +4,7 @@
 #  Managed Software Center
 #
 #  Created by Greg Neagle on 2/11/10.
-#  Copyright 2010-2017 Greg Neagle.
+#  Copyright 2010-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import objc
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
+from Foundation import NSTimeZone
 from Foundation import NSBundle
 from Foundation import NSDate
 from Foundation import NSFileManager
@@ -275,17 +276,13 @@ def discardTimeZoneFromDate(the_date):
     '2011-06-20 12:00:00 -0700'.
     In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
     """
+    # get local offset
+    offset = NSTimeZone.localTimeZone().secondsFromGMT()
     try:
-        # get local offset
-        offset = the_date.descriptionWithCalendarFormat_timeZone_locale_(
-            '%z', None, None)
+        # return new NSDate minus local_offset
+        return the_date.dateByAddingTimeInterval_(-offset)
     except:
         raise BadDateError()
-    hour_offset = int(offset[0:3])
-    minute_offset = int(offset[0] + offset[3:])
-    seconds_offset = 60 * 60 * hour_offset + 60 * minute_offset
-    # return new NSDate minus local_offset
-    return the_date.dateByAddingTimeInterval_(-seconds_offset)
 
 
 def stringFromDate(nsdate):
@@ -308,22 +305,6 @@ def shortRelativeStringFromDate(nsdate):
     df.setTimeStyle_(kCFDateFormatterShortStyle)
     df.setDoesRelativeDateFormatting_(True)
     return unicode(df.stringFromDate_(nsdate))
-
-
-def startUpdateCheck(suppress_apple_update_check=False):
-    '''Does launchd magic to run managedsoftwareupdate as root.'''
-    try:
-        if not os.path.exists(UPDATECHECKLAUNCHFILE):
-            plist = {}
-            plist['SuppressAppleUpdateCheck'] = suppress_apple_update_check
-            try:
-                FoundationPlist.writePlist(plist, UPDATECHECKLAUNCHFILE)
-            except FoundationPlist.FoundationPlistException:
-                # problem creating the trigger file
-                return 1
-        return 0
-    except (OSError, IOError):
-        return 1
 
 
 def getAppleUpdates():
@@ -395,6 +376,26 @@ def currentGUIusers():
     return gui_users
 
 
+class ProcessStartError(Exception):
+    '''An exception to raise when we can't start managedsoftwareupdate'''
+    pass
+
+
+def startUpdateCheck(suppress_apple_update_check=False):
+    '''Does launchd magic to run managedsoftwareupdate as root.'''
+    try:
+        if not os.path.exists(UPDATECHECKLAUNCHFILE):
+            plist = {}
+            plist['SuppressAppleUpdateCheck'] = suppress_apple_update_check
+            try:
+                FoundationPlist.writePlist(plist, UPDATECHECKLAUNCHFILE)
+            except FoundationPlist.FoundationPlistException, err:
+                # problem creating the trigger file
+                raise ProcessStartError(err)
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
+
+
 def logoutNow():
     '''Uses oscascript to run an AppleScript
     to tell loginwindow to logout.
@@ -414,13 +415,12 @@ end ignoring
 def logoutAndUpdate():
     '''Touch a flag so the process that runs after
     logout knows it's OK to install everything'''
-
     try:
         if not os.path.exists(INSTALLATLOGOUTFILE):
             open(INSTALLATLOGOUTFILE, 'w').close()
         logoutNow()
-    except (OSError, IOError):
-        return 1
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
 
 
 def clearLaunchTrigger():
@@ -430,8 +430,8 @@ def clearLaunchTrigger():
     try:
         if os.path.exists(INSTALLATLOGOUTFILE):
             os.unlink(INSTALLATLOGOUTFILE)
-    except (OSError, IOError):
-        return 1
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
 
 
 def justUpdate():
@@ -442,9 +442,8 @@ def justUpdate():
     try:
         if not os.path.exists(INSTALLWITHOUTLOGOUTFILE):
             open(INSTALLWITHOUTLOGOUTFILE, 'w').close()
-        return 0
-    except (OSError, IOError):
-        return 1
+    except (OSError, IOError), err:
+        raise ProcessStartError(err)
 
 
 def pythonScriptRunning(scriptname):

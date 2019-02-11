@@ -119,7 +119,10 @@ class AlertController(NSObject):
         if btn_pressed == self._force_warning_logout_btn:
             msclog.log("user", "install_with_logout")
             self.handlePossibleAuthRestart()
-            result = munki.logoutAndUpdate()
+            try:
+                munki.logoutAndUpdate()
+            except munki.ProcessStartError, err:
+                self.installSessionErrorAlert_(err)
         elif btn_pressed == self._force_warning_ok_btn:
             msclog.log("user", "dismissed_forced_logout_warning")
 
@@ -208,13 +211,14 @@ class AlertController(NSObject):
                 return
             msclog.log("user", "install_with_logout")
             self.handlePossibleAuthRestart()
-            result = munki.logoutAndUpdate()
-            if result:
-                self.installSessionErrorAlert()
+            try:
+                munki.logoutAndUpdate()
+            except munki.ProcessStartError, err:
+                self.installSessionErrorAlert_(err)
         elif returncode == NSAlertAlternateReturn:
             msclog.log("user", "cancelled")
 
-    def installSessionErrorAlert(self):
+    def installSessionErrorAlert_(self, errmsg):
         '''Something has gone wrong and we can't trigger an install at logout'''
         msclog.log("user", "install_session_failed")
         alertMessageText = NSLocalizedString(
@@ -223,10 +227,12 @@ class AlertController(NSObject):
             u"There is a configuration problem with the managed software "
             "installer. Could not start the process. Contact your systems "
             "administrator.", u"Could Not Start Session message")
+        detailText += u"\n\n" + unicode(errmsg)
+        OKButtonTitle = NSLocalizedString(u"OK", u"OK button title")
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
             alertMessageText, OKButtonTitle, nil, nil, u"%@", detailText)
         alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(
-            self.window(), self,
+            self.window, self,
             self.installSessionErrorAlertDidEnd_returnCode_contextInfo_, nil)
 
     @AppHelper.endSheetMethod

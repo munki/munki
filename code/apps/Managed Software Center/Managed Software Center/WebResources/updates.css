@@ -48,7 +48,7 @@ div.installations thead {
     border-bottom: 1px solid #d7d7d7;
 }
 div.installations th {
-    color: #53565e;
+    color: var(--text-color-normal);
     font-size: 14px;
     font-weight: normal;
     height: 32px;
@@ -83,10 +83,10 @@ div.installations th:last-child {
     padding: 0 10px
 }
 .installation td,.installation td a {
-    color: #494949
+    color: var(--text-color-emphasized)
 }
 .installation td.install-info-cell,.installation td.install-info-cell a, li.install-info-cell {
-    color: rgb(121,121,121)
+    color: var(--text-color-subdued);
 }
 .installation:first-child td {
     border-top: transparent
@@ -103,25 +103,15 @@ div.installations th:last-child {
     width: 35px
 }
 .installation h2 {
-    color: #565656;
+    color: var(--text-color-emphasized);
     font-size: 13px;
     font-weight: normal;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 300px
 }
-.installation h2 a {
-    color: inherit
-}
-/*
- .installation .status {
- text-align: right;
- font-size: 10px;
- line-height: 13px
- }
- */
 .installation .error {
-    color: #f00
+    color: var(--text-color-warning);
 }
 .installation .status span {
     display: block
@@ -236,7 +226,8 @@ div.purchases .installation td.status span.preparing-removal
 #updates #header h1 {
     font-size: 15px;
     font-weight: normal;
-    color: #929292;
+    /*color: #929292;*/
+    color: var(--text-color-subdued);
     text-align: center
 }
 div.updates table {
@@ -275,13 +266,13 @@ div.updates .installation img.artwork {
     min-width: 35px
 }
 div.updates .installation ul.info {
-    color: #62676C;
+    color: var(--text-color-subdued);
     font-size: 11px;
     line-height: 16px;
     margin-left: 55px
 }
 div.updates .installation ul.info h2 {
-    color: #565656;
+    color: var(--text-color-normal);
     margin-bottom: 1px
 }
 div.updates .installation ul.info li:nth-child(n+2) {
@@ -340,7 +331,7 @@ div.os-updates p.note {
     color: #d30
 }
 .installation .description a {
-    color: #3E6397
+    color: var(--description-link-color)
 }
 .installation [data-text-truncate-lines] a.text-truncate-toggle {
     padding: 0;
@@ -544,7 +535,7 @@ div.progress {
     -webkit-box-sizing: content-box;
     padding: 1px 3px;
     -webkit-border-radius: 8px;
-    background: #fff
+    background: var(--background-color);
 }
 
 div.progress > span {
@@ -580,10 +571,10 @@ div.progress > span.indeterminate > span {
     top: 0; left: 0; bottom: 0; right: 0;
     background-image: 
     -webkit-gradient(linear, left bottom, right top, 
-    color-stop(.25, rgba(255, 255, 255, .9)), 
+    color-stop(.25, var(--background-color)),
     color-stop(.25, transparent), color-stop(.5, transparent), 
-    color-stop(.5, rgba(255, 255, 255, .9)), 
-    color-stop(.75, rgba(255, 255, 255, .9)), 
+    color-stop(.5, var(--background-color)),
+    color-stop(.75, var(--background-color)), 
     color-stop(.76, transparent), to(transparent)
     );
     z-index: 1;

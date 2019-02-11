@@ -2,7 +2,7 @@
 //  main.m
 //  MunkiStatus
 //
-//  Copyright 2013-2017 Greg Neagle.
+//  Copyright 2013-2018 Greg Neagle.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#if __clang_major__ >= 9
+#import <Python/Python.h>
+#else
 #import <Python.h>
+#endif
+
 int main(int argc, char *argv[])
 {
 

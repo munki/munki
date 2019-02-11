@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017 Greg Neagle.
+# Copyright 2017-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -232,7 +232,7 @@ class StartOSInstallRunner(object):
         startosinstall_path = os.path.join(
             app_path, 'Contents/Resources/startosinstall')
 
-        os_version = get_os_version(app_path)
+        os_vers_to_install = get_os_version(app_path)
 
         # run startosinstall via subprocess
 
@@ -262,20 +262,33 @@ class StartOSInstallRunner(object):
 
         cmd.extend([startosinstall_path,
                     '--agreetolicense',
-                    '--applicationpath', app_path,
                     '--rebootdelay', '300',
-                    '--pidtosignal', str(os.getpid()),
-                    '--nointeraction'])
+                    '--pidtosignal', str(os.getpid())])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.14'):
+            # --applicationpath option is _required_ in Sierra and early
+            # releases of High Sierra. It became optional (or is ignored?) in
+            # later releases of High Sierra and causes warnings in Mojave
+            # so don't add this option when installing Mojave
+            cmd.extend(['--applicationpath', app_path])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.12.4'):
+            # --volume option is _required_ prior to 10.12.4 installer
+            # and must _not_ be included in 10.12.4+ installer's startosinstall
+            cmd.extend(['--volume', '/'])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.13.5'):
+            # --nointeraction is an undocumented option that appears to be
+            # not only no longer needed/useful but seems to trigger some issues
+            # in more recent releases
+            cmd.extend(['--nointeraction'])
 
         if (self.installinfo and
                 'additional_startosinstall_options' in self.installinfo):
             cmd.extend(self.installinfo['additional_startosinstall_options'])
-
-        if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
-            # --volume option is _required_ prior to 10.12.4 installer
-            # and must _not_ be included in 10.12.4 installer's startosinstall
-            cmd.extend(['--volume', '/'])
 
         # more magic to get startosinstall to not buffer its output for
         # percent complete
@@ -381,7 +394,7 @@ class StartOSInstallRunner(object):
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
             munkilog.log(
-                'Starting macOS install of %s: SUCCESSFUL' % os_version,
+                'Starting macOS install of %s: SUCCESSFUL' % os_vers_to_install,
                 'Install.log')
             # previously we checked if retcode == 255:
             # that may have been something specific to 10.12's startosinstall
@@ -415,12 +428,24 @@ def get_catalog_info(mounted_dmgpath):
             display_name = os.path.splitext(os.path.basename(app_path))[0]
             name = display_name.replace(' ', '_')
             description = 'Installs macOS version %s' % vers
+            if vers.startswith('10.12'):
+                # Sierra was 8.8GB at http://www.apple.com/macos/how-to-upgrade/
+                # (http://web.archive.org/web/20160910163424/
+                #      https://www.apple.com/macos/how-to-upgrade/)
+                installed_size = int(8.8 * 1024 * 1024)
+            elif vers.startswith('10.13'):
+                # High Sierra:
+                # "14.3GB of available storage to perform upgrade"
+                # http://www.apple.com/macos/how-to-upgrade/
+                installed_size = int(14.3 * 1024 * 1024)
+            else:
+                # will need to modify for future macOS releases
+                installed_size = int(14.3 * 1024 * 1024)
             return {'RestartAction': 'RequireRestart',
                     'apple_item': True,
                     'description': description,
                     'display_name': display_name,
-                    'installed_size': 9227469,
-                    #    8.8GB - http://www.apple.com/macos/how-to-upgrade/
+                    'installed_size': installed_size,
                     'installer_type': 'startosinstall',
                     'minimum_munki_version': '3.0.0.3211',
                     'minimum_os_version': '10.8',

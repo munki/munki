@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2017 Greg Neagle.
+# Copyright 2017-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,9 +72,11 @@ class FDEUtil(object):
             if not key in self.request:
                 raise FDEUtilError('No %s in request' % key)
 
-    def store_password(self, password):
+    def store_password(self, password, username=None):
         '''Stores a password for later use for authrestart'''
         self.server.stored_password = password
+        if username:
+            self.server.stored_username = username
 
     def handle(self):
         '''Handle our request'''
@@ -85,8 +87,11 @@ class FDEUtil(object):
             # restart
             self.log.info('Restart request from uid %s', self.uid)
             if self.uid == 0:
+                self.log.info('Stored username for authrestart: %s',
+                              self.server.stored_username)
                 authrestart.do_authorized_or_normal_restart(
-                    password=self.server.stored_password)
+                    password=self.server.stored_password,
+                    username=self.server.stored_username)
                 return 'RESTARTING'
             else:
                 self.log.info('Restart request denied')
@@ -95,18 +100,19 @@ class FDEUtil(object):
         if self.request['task'] == 'store_password':
             # store a password for later fdesetup authrestart
             self.log.info('Store password request')
+            password = self.request.get('password')
+            if not password:
+                self.log.info('No password in request')
+                raise FDEUtilError('No password provided')
             username = self.request.get('username')
+            self.log.info('Request username: %s', username)
             # don't store the password if the user isn't enabled for FileVault
             if (username and
                     not authrestart.can_attempt_auth_restart_for(username)):
                 self.log.info('User %s can\'t do auth restart', username)
                 raise FDEUtilError(
                     'User %s can\'t do FileVault authrestart' % username)
-            password = self.request.get('password')
-            if not password:
-                self.log.info('No password in request')
-                raise FDEUtilError('No password provided')
-            self.store_password(password)
+            self.store_password(password, username=username)
             self.log.info('Password stored.')
             return 'DONE'
 
@@ -291,6 +297,7 @@ class RestartHelperDaemon(SocketServer.UnixStreamServer):
             self, self.socket.getsockname(), RequestHandlerClass)
         self.timed_out = False
         self.stored_password = None
+        self.stored_username = None
         self.log = logging.getLogger(APPNAME)
 
     def setup_logging(self):

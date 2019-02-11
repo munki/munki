@@ -3,7 +3,7 @@
 #  MSCMainWindowController.py
 #  Managed Software Center
 #
-#  Copyright 2013-2017 Greg Neagle.
+#  Copyright 2013-2018 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ from WebKit import WebView, WebPreferences
 
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
+
 
 class MSCMainWindowController(NSWindowController):
 
@@ -202,7 +203,7 @@ class MSCMainWindowController(NSWindowController):
         self.categoriesMenuItem.setEnabled_(enabled_state)
         self.myItemsMenuItem.setEnabled_(enabled_state)
 
-    def munkiStatusSessionEnded_(self, sessionResult):
+    def munkiStatusSessionEndedWithStatus_errorMessage_(self, sessionResult, errmsg):
         '''Called by StatusController when a Munki session ends'''
         msclog.debug_log(u"MunkiStatus session ended: %s" % sessionResult)
         msclog.debug_log(
@@ -219,6 +220,7 @@ class MSCMainWindowController(NSWindowController):
             OKButtonTitle = NSLocalizedString(u"OK", u"OK button title")
             alertMessageText = NSLocalizedString(
                 u"Update check failed", u"Update Check Failed title")
+            detailText = u""
             if tasktype == "installwithnologout":
                 msclog.log("MSC", "cant_update", "Install session failed")
                 alertMessageText = NSLocalizedString(
@@ -257,6 +259,8 @@ class MSCMainWindowController(NSWindowController):
                      "Try again later. If this situation continues, "
                      "contact your systems administrator."),
                     u"Failed Preflight Check detail")
+            if errmsg:
+                detailText += u"\n\n" + unicode(errmsg)
             # show the alert sheet
             self.window().makeKeyAndOrderFront_(self)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(
@@ -366,8 +370,16 @@ class MSCMainWindowController(NSWindowController):
 
     def registerForNotifications(self):
         '''register for notification messages'''
-        # register for notification if available updates change
         notification_center = NSDistributedNotificationCenter.defaultCenter()
+        # register for notification if user switches to/from Dark Mode
+        notification_center.addObserver_selector_name_object_suspensionBehavior_(
+            self,
+            self.interfaceThemeChanged,
+            'AppleInterfaceThemeChangedNotification',
+            None,
+            NSNotificationSuspensionBehaviorDeliverImmediately)
+
+        # register for notification if available updates change
         notification_center.addObserver_selector_name_object_suspensionBehavior_(
             self,
             self.updateAvailableUpdates,
@@ -377,13 +389,20 @@ class MSCMainWindowController(NSWindowController):
 
         # register for notification to display a logout warning
         # from the logouthelper
-        notification_center = NSDistributedNotificationCenter.defaultCenter()
         notification_center.addObserver_selector_name_object_suspensionBehavior_(
             self,
             self.forcedLogoutWarning,
             'com.googlecode.munki.ManagedSoftwareUpdate.logoutwarn',
             None,
             NSNotificationSuspensionBehaviorDeliverImmediately)
+    
+    def interfaceThemeChanged(self):
+        '''Called when user switches to/from Dark Mode'''
+        interface_style = mschtml.interfaceStyle()
+        scriptObject = self.webView.windowScriptObject()
+        args = [interface_style]
+        # call JavaScript in the webview to update the appearance CSS
+        scriptObject.callWebScriptMethod_withArguments_("changeAppearanceModeTo", args)
 
     def updateAvailableUpdates(self):
         '''If a Munki session is not in progress (that we know of) and
@@ -406,15 +425,18 @@ class MSCMainWindowController(NSWindowController):
         # attempt to start the update check
         if self._update_in_progress:
             return
-        result = munki.startUpdateCheck(suppress_apple_update_check)
-        if result == 0:
-            self._update_in_progress = True
-            self.displayUpdateCount()
-            self.managedsoftwareupdate_task = "manualcheck"
-            NSApp.delegate().statusController.startMunkiStatusSession()
-            self.markRequestedItemsAsProcessing()
-        else:
-            self.munkiStatusSessionEnded_(2)
+        try:
+            munki.startUpdateCheck(suppress_apple_update_check)
+        except munki.ProcessStartError, err:
+            self.munkiStatusSessionEndedWithStatus_errorMessage_(-2, unicode(err))
+            return
+
+        self._update_in_progress = True
+        self.displayUpdateCount()
+        self.managedsoftwareupdate_task = "manualcheck"
+        NSApp.delegate().statusController.startMunkiStatusSession()
+        self.markRequestedItemsAsProcessing()
+
 
     @IBAction
     def reloadPage_(self, sender):
@@ -447,10 +469,11 @@ class MSCMainWindowController(NSWindowController):
             self.displayUpdateCount()
             self.setStatusViewTitle_(
                 NSLocalizedString(u"Updating...", u"Updating message"))
-            result = munki.justUpdate()
-            if result:
-                msclog.debug_log("Error starting install session: %s" % result)
-                self.munkiStatusSessionEnded_(2)
+            try:
+                munki.justUpdate()
+            except munki.ProcessStartError, err:
+                msclog.debug_log("Error starting install session: %s" % err)
+                self.munkiStatusSessionEndedWithStatus_errorMessage_(-2, err)
             else:
                 self.managedsoftwareupdate_task = "installwithnologout"
                 NSApp.delegate().statusController.startMunkiStatusSession()
@@ -526,11 +549,12 @@ class MSCMainWindowController(NSWindowController):
             suppress_apple_update_check = True
             self._update_in_progress = True
             self.displayUpdateCount()
-            result = munki.startUpdateCheck(suppress_apple_update_check)
-            if result:
+            try:
+                munki.startUpdateCheck(suppress_apple_update_check)
+            except munki.ProcessStartError, err:
                 msclog.debug_log(
-                    "Error starting check-then-install session: %s" % result)
-                self.munkiStatusSessionEnded_(2)
+                    "Error starting check-then-install session: %s" % err)
+                self.munkiStatusSessionEndedWithStatus_errorMessage_(-2, err)
             else:
                 self.managedsoftwareupdate_task = "checktheninstall"
                 NSApp.delegate().statusController.startMunkiStatusSession()
