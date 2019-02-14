@@ -290,7 +290,7 @@ def install_with_info(
                 retcode = dmg.copy_from_dmg(itempath, item.get('items_to_copy'))
                 if retcode == 0 and requires_restart(item):
                     restartflag = True
-            # appdmg install (depercated)
+            # appdmg install (deprecated)
             elif installer_type == "appdmg":
                 display.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")

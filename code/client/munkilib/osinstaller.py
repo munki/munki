@@ -55,7 +55,7 @@ from . import scriptutils
 
 def boot_volume_is_cs_converting():
     '''Returns True if the boot volume is in the middle of a CoreStorage
-    conversion from encypted to decrypted or vice-versa. macOS installs fail
+    conversion from encrypted to decrypted or vice-versa. macOS installs fail
     in this state.'''
     try:
         output = subprocess.check_output(
@@ -87,7 +87,7 @@ def find_install_macos_app(dir_path):
 
 def install_macos_app_is_stub(app_path):
     '''High Sierra downloaded installer is sometimes a "stub" application that
-    does not contain the InstallESD.dmg. Retune True if the given app path is
+    does not contain the InstallESD.dmg. Return True if the given app path is
     missing the InstallESD.dmg'''
     installesd_dmg = os.path.join(
         app_path, 'Contents/SharedSupport/InstallESD.dmg')

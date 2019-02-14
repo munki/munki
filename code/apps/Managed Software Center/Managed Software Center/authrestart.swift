@@ -114,7 +114,7 @@ func fvIsActive() -> Bool {
     do {
         return try AuthRestartClient().fvIsActive()
     } catch {
-        msc_debug_log("fvIsActive(): Cought \(error)")
+        msc_debug_log("fvIsActive(): Caught \(error)")
         return false
     }
 }
@@ -125,7 +125,7 @@ func verifyUser(_ username: String) -> Bool {
     do {
         return try AuthRestartClient().verifyUser(username)
     } catch {
-        msc_debug_log("verifyUser(): Cought \(error)")
+        msc_debug_log("verifyUser(): Caught \(error)")
         return false
     }
 }
@@ -136,7 +136,7 @@ func verifyRecoveryKeyPresent() -> Bool {
     do {
         return try AuthRestartClient().verifyRecoveryKeyPresent()
     } catch {
-        msc_debug_log("verifyRecoveryKeyPresent(): Cought \(error)")
+        msc_debug_log("verifyRecoveryKeyPresent(): Caught \(error)")
         return false
     }
 }
@@ -146,7 +146,7 @@ func verifyCanAttemptAuthRestart() -> Bool {
     do {
         return try AuthRestartClient().verifyCanAttemptAuthRestart()
     } catch {
-        msc_debug_log("verifyCanAttemptAuthRestart(): Cought \(error)")
+        msc_debug_log("verifyCanAttemptAuthRestart(): Caught \(error)")
         return false
     }
 }
@@ -158,7 +158,7 @@ func storePassword(_ password: String, forUserName username: String = "") -> Boo
         try AuthRestartClient().storePassword(password, username: username)
         return true
     } catch {
-        msc_debug_log("storePassword(): Cought \(error)")
+        msc_debug_log("storePassword(): Caught \(error)")
         return false
     }
 }

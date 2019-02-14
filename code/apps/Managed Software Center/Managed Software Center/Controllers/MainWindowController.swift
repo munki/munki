@@ -409,7 +409,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     override func awakeFromNib() {
-        // Stuff we need to intialize when we start
+        // Stuff we need to initialize when we start
         super.awakeFromNib()
         insertWebView()
         webView.navigationDelegate = self
@@ -679,7 +679,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func updateCategoriesPage() {
-        // Update the Catagories page with current data.
+        // Update the Categories page with current data.
         // Modifies the DOM to avoid ugly browser refresh
         let items_html = buildCategoryItemsHTML()
         setInnerHTML(items_html, elementID: "optional_installs_items")
@@ -1048,7 +1048,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func actionButtonClicked(_ item_name: String) {
         // this method is called from JavaScript when the user clicks
-        // the Install/Removel/Cancel button in the list or detail view
+        // the Install/Remove/Cancel button in the list or detail view
         if let item = optionalItem(forName: item_name) {
             var showAlert = true
             let status = item["status"] as? String ?? ""

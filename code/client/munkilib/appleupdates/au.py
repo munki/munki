@@ -741,7 +741,7 @@ class AppleUpdates(object):
         if only_unattended:
             # Append list of unattended_install items
             su_options.extend(unattended_install_items)
-            # Filter installist to only include items
+            # Filter installlist to only include items
             # which we're attempting to install
             filtered_installlist = [item for item in installlist
                                     if item.get('productKey') in
@@ -1010,7 +1010,7 @@ class AppleUpdates(object):
     def get_unattended_installs(self):
         """Processes AppleUpdates.plist to return a list
         of NAME-VERSION formatted items and a list of product_ids
-        which are elgible for unattended installation.
+        which are eligible for unattended installation.
         """
         item_list = []
         product_ids = []

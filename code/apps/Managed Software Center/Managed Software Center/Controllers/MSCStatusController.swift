@@ -105,7 +105,7 @@ class MSCStatusController: NSObject {
     }
     
     func sessionEnded(_ result: Int) {
-        // clean up after a managesoftwareupdate session ends
+        // clean up after a managedsoftwareupdate session ends
         if let uTimer = timer {
             uTimer.invalidate()
             timer = nil
@@ -297,7 +297,7 @@ class MSCStatusController: NSObject {
     }
     
     func getRestartAlertDismissed() -> Bool {
-        // Was the restart alert dimissed?'
+        // Was the restart alert dismissed?'
         return _status_restartAlertDismissed
     }
     

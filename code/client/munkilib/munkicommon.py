@@ -21,8 +21,8 @@ Created by Greg Neagle on 2008-11-18.
 Common functions used by the munki tools.
 """
 
-# this module current exists purely for backwards-compatibity so that anything
-# calling munkicommon functions will still work (for now)
+# this module currently exists purely for backwards compatibility so that
+# anything calling munkicommon functions will still work (for now)
 
 # We wildcard-import from submodules for backwards compatibility; functions
 # that were previously available from this module

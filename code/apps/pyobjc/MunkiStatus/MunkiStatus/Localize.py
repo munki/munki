@@ -71,8 +71,8 @@ class LocalizationError(Exception):
 def detectEncoding(filepath):
     '''
     Try to detect the file's encoding.
-    If its not utf-16 assume it's utf-8, this should work for ascii
-    files becuase the first 128 characters are the same...
+    If it's not utf-16 assume it's utf-8, this should work for ascii
+    files because the first 128 characters are the same...
     '''
 
     f = open(filepath, 'r')

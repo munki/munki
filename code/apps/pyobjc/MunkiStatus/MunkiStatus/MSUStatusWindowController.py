@@ -342,7 +342,7 @@ class MSUStatusWindowController(NSObject):
 
         self.got_status_update = True
         info = notification.userInfo()
-        # explictly get keys from info object; PyObjC in Mountain Lion
+        # explicitly get keys from info object; PyObjC in Mountain Lion
         # seems to need this
         info_keys = info.keys()
         if 'message' in info_keys:

@@ -761,7 +761,7 @@ def add_tzoffset_to_date(the_date):
     <Key>condition</key>
     <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
 
-    with the intent being that the comparision is against local time.
+    with the intent being that the comparison is against local time.
 
     """
     # find our time zone offset in seconds

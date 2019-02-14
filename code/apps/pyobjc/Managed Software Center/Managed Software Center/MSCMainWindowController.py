@@ -355,7 +355,7 @@ class MSCMainWindowController(NSWindowController):
             self.fullScreenMenuItem.setEnabled_(True)
 
     def awakeFromNib(self):
-        '''Stuff we need to intialize when we start'''
+        '''Stuff we need to initialize when we start'''
         self.configureFullScreenMenuItem()
         self.webView.setDrawsBackground_(NO)
         self.webView.setUIDelegate_(self)
@@ -601,7 +601,7 @@ class MSCMainWindowController(NSWindowController):
         table_body_element.setInnerHTML_(myitems_rows)
 
     def updateCategoriesPage(self):
-        '''Update the Catagories page with current data.
+        '''Update the Categories page with current data.
         Modifies the DOM to avoid ugly browser refresh'''
         items_html = mschtml.build_category_items_html()
         document = self.webView.mainFrameDocument()
@@ -994,7 +994,7 @@ class MSCMainWindowController(NSWindowController):
             self.myItemsActionButtonPerformAction_(item_name)
 
     def myItemsActionButtonPerformAction_(self, item_name):
-        '''perfrom action needed when user clicks
+        '''perform action needed when user clicks
         the Install/Remove/Cancel button in the My Items view'''
         document = self.webView.mainFrameDocument()
         item = MunkiItems.optionalItemForName_(item_name)
@@ -1066,7 +1066,7 @@ class MSCMainWindowController(NSWindowController):
 
     def actionButtonClicked_(self, item_name):
         '''this method is called from JavaScript when the user clicks
-        the Install/Removel/Cancel button in the list or detail view'''
+        the Install/Remove/Cancel button in the list or detail view'''
 
         item = MunkiItems.optionalItemForName_(item_name)
         if not item:

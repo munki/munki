@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #  CocoaWrapper.py
-#  MunkiStatus
+#  Managed Software Center
 #
 #  Created by Greg Neagle on 6/26/17.
 #  Copyright (c) 2018-2019 The Munki Project. All rights reserved.
