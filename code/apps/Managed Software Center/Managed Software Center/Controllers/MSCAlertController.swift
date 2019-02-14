@@ -301,7 +301,7 @@ class MSCAlertController: NSObject {
                 "in use:\n\n%@",
                 comment: "Other Users Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, other_users_apps.joined(separator: "\n"))
+                format: formatString, Array(Set(other_users_apps)).joined(separator: "\n"))
         } else {
             alert.messageText = NSLocalizedString(
                 "Conflicting applications running",
@@ -311,7 +311,7 @@ class MSCAlertController: NSObject {
                 "proceeding with installation or removal:\n\n%@",
                 comment: "Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, my_apps.joined(separator: "\n"))
+                format: formatString, Array(Set(my_apps)).joined(separator: "\n"))
         }
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
