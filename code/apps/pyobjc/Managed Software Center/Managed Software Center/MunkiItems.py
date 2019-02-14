@@ -216,8 +216,8 @@ def updatesContainNonUserSelectedItems():
 def getEffectiveUpdateList():
     '''Combine the updates Munki has found with any optional choices to
        make the effective list of updates'''
-    # get pending optional items seperately since OptionalItems have
-    # extra details/attribbutes
+    # get pending optional items separately since OptionalItems have
+    # extra details/attributes
     optional_installs = getOptionalWillBeInstalledItems()
     optional_removals = getOptionalWillBeRemovedItems()
     optional_item_names = [item['name']
@@ -693,7 +693,7 @@ class GenericItem(dict):
 
     def unavailable_reason_text(self, is_update=False):
         '''There are several reasons an item might be unavailable for install.
-           Return the relevent reason'''
+           Return the relevant reason'''
         if ('licensed_seats_available' in self
                 and not self['licensed_seats_available']):
             return NSLocalizedString(u"No licenses available",

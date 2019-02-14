@@ -625,7 +625,7 @@ def get_catalogs(cataloglist):
                     catalogdata = FoundationPlist.readPlist(catalogpath)
                 except FoundationPlist.NSPropertyListSerializationException:
                     display.display_error(
-                        'Retreived catalog %s is invalid.', catalogname)
+                        'Retrieved catalog %s is invalid.', catalogname)
                     try:
                         os.unlink(catalogpath)
                     except (OSError, IOError):

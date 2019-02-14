@@ -119,7 +119,7 @@ def padVersionString(versString, tupleCount):
 def getVersionString(plist, key=None):
     """Gets a version string from the plist.
 
-    If a key is explictly specified, the value of that key is
+    If a key is explicitly specified, the value of that key is
     returned without modification, or an empty string if the
     key does not exist.
 
@@ -132,11 +132,11 @@ def getVersionString(plist, key=None):
     VersionString = ''
     if key:
         # admin has specified a specific key
-        # return value verbatum or empty string
+        # return value verbatim or empty string
         return plist.get(key, '')
 
     # default to CFBundleShortVersionString plus magic
-    # and workarounds and edge case cleanupds
+    # and workarounds and edge case cleanups
     key = 'CFBundleShortVersionString'
     if not 'CFBundleShortVersionString' in plist:
         if 'Bundle versions string, short' in plist:

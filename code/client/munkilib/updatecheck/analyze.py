@@ -347,7 +347,7 @@ def process_install(manifestitem, cataloglist, installinfo,
 
     # there are two kinds of dependencies/relationships.
     #
-    # 'requires' are prerequistes:
+    # 'requires' are prerequisites:
     #  package A requires package B be installed first.
     #  if package A is removed, package B is unaffected.
     #  requires can be a one to many relationship.

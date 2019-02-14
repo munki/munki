@@ -352,7 +352,7 @@ func startUpdateCheck(_ suppress_apple_update_check: Bool = false) throws {
 }
 
 func logoutNow() {
-    /* Uses oscascript to run an AppleScript
+    /* Uses osascript to run an AppleScript
      to tell loginwindow to logout.
      Ugly, but it works. */
     let script = """

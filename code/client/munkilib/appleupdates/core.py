@@ -59,7 +59,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
     if os_version_tuple >= (10, 11):
         if munkisuscatalog:
             display.display_warning(
-                "Custom softwareupate catalog %s in Munki's preferences will "
+                "Custom softwareupdate catalog %s in Munki's preferences will "
                 "be ignored." % munkisuscatalog)
     elif su_prefs.catalogurl_is_managed():
         display.display_warning(

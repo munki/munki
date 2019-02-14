@@ -45,7 +45,7 @@ func unquote(_ aString: String) -> String {
 }
 
 func clearMunkiItemsCache() {
-    // formely known as reset()
+    // formerly known as reset()
     Cache.shared.clear()
 }
 
@@ -246,7 +246,7 @@ class GenericItem: BaseItem {
     
     func unavailable_reason_text(is_update: Bool = false) -> String {
         // There are several reasons an item might be unavailable for install.
-        // Return the relevent reason
+        // Return the relevant reason
         let licensed_seats_available = my["licensed_seats_available"] as? Bool ?? true
         if !licensed_seats_available {
             return NSLocalizedString("No licenses available",

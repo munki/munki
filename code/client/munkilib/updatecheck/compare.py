@@ -18,7 +18,7 @@ updatecheck.compare
 
 Created by Greg Neagle on 2016-12-13.
 
-Comparsion/checking functions used by updatecheck
+Comparison/checking functions used by updatecheck
 """
 
 import os
@@ -277,7 +277,7 @@ def filesystem_item_exists(item):
 
 def compare_item_version(item):
     '''Compares an installs_item with what's on the startup disk.
-    Wraps other comparsion functions.
+    Wraps other comparison functions.
 
     For applications, bundles, and plists:
     Returns 0 if the item isn't installed
