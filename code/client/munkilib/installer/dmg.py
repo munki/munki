@@ -37,26 +37,16 @@ from .. import pkgutils
 def set_permissions(item, full_destpath):
     '''Sets owner, group and mode for full_destpath from info in item.
     Returns 0 on success, non-zero otherwise'''
-    # set owner
+    # set owner and group
     user = item.get('user', 'root')
-    display.display_detail(
-        "Setting owner for '%s' to '%s'" % (full_destpath, user))
-    retcode = subprocess.call(
-        ['/usr/sbin/chown', '-R', user, full_destpath])
-    if retcode:
-        display.display_error(
-            "Error setting owner for %s" % (full_destpath))
-        return retcode
-
-    # set group
     group = item.get('group', 'admin')
     display.display_detail(
-        "Setting group for '%s' to '%s'" % (full_destpath, group))
+        "Setting owner and group for '%s' to '%s:%s'" % (full_destpath, user, group))
     retcode = subprocess.call(
-        ['/usr/bin/chgrp', '-R', group, full_destpath])
+        ['/usr/sbin/chown', '-R', user + ':' + group, full_destpath])
     if retcode:
         display.display_error(
-            "Error setting group for %s" % (full_destpath))
+            "Error setting owner and group for %s" % (full_destpath))
         return retcode
 
     # set mode
