@@ -1003,7 +1003,7 @@ def main():
                     display.munkistatusoutput = True
                     munkilog.log('No GUI users, installing at login window.')
                     munkistatus.launchMunkiStatus()
-                    mustrestart = doInstallTasks(appleupdatesavailable)
+                    restart_action = doInstallTasks(appleupdatesavailable)
                     # reset our count of available updates
                     updatesavailable = 0
                     appleupdatesavailable = 0
@@ -1109,7 +1109,8 @@ def main():
         # tell status app we're done sending status
         munkistatus.quit_app()
 
-    if runtype == 'checkandinstallatstartup' and not mustrestart:
+    if (runtype == 'checkandinstallatstartup' and
+            restart_action == constants.POSTACTION_NONE):
         if os.path.exists(constants.CHECKANDINSTALLATSTARTUPFLAG):
             # we installed things but did not need to restart; we need to run
             # again to check for more updates.
