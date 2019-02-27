@@ -217,7 +217,14 @@ class GenericItem: BaseItem {
         // first look for downloaded icons
         let icon_known_exts = ["bmp", "gif", "icns", "jpg", "jpeg", "png",
                                "psd", "tga", "tif", "tiff", "yuv"]
-        var icon_name = my["icon_name"] as? String ?? my["name"] as? String ?? ""
+        var icon_name = ""
+        // Use icon_name if it exists and isn't empty
+        if let plist_icon_name = my["icon_name"] as? String, plist_icon_name != "" {
+            icon_name = plist_icon_name
+        // use the package name if it's not empty
+        } else if let plist_name = my["name"] as? String, plist_name != "" {
+            icon_name = plist_name
+        }
         if !icon_known_exts.contains((icon_name as NSString).pathExtension) {
             icon_name += ".png"
         }
