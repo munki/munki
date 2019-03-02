@@ -511,6 +511,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             if !currentPageIsUpdatesPage() {
                 // switch to updates view
                 loadUpdatesPage(self)
+            } else {
+                // we're already displaying the available updates
+                _alertedUserToOutstandingUpdates = true
             }
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
