@@ -96,7 +96,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if time_til_logout > 0 {
                     let deadline_str = stringFromDate(deadline)
                     let formatString = NSLocalizedString(
-                        ("One or more updates must be installed by %s. A logout " +
+                        ("One or more updates must be installed by %@. A logout " +
                           "may be forced if you wait too long to update."),
                         comment: "Mandatory Updates Pending detail")
                     alertDetail = String(format: formatString, deadline_str)
