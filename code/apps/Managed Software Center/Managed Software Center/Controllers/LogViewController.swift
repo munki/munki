@@ -121,7 +121,7 @@ class LogViewController: NSViewController {
         logWindow.setFrame(windowRect, display: false)
         logWindow.makeKeyAndOrderFront(self)
         watchLogFile(logFileURL)
-        logView.setDraggingSourceOperationMask(NSDragOperation.all, forLocal: false)
+        logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }
     
     func watchLogFile(_ logFileURL: URL) {
