@@ -50,6 +50,7 @@ class MSCPasswordAlertController: NSObject {
         alert.window.initialFirstResponder = passwordField
         // we can finally run the alert!
         let result = alert.runModal()
+        alert.window.orderOut(nil)
         if result == .alertFirstButtonReturn {
             // they clicked "Allow". We handled it in the verifyPassword method
             msc_log("user", "stored password for auth restart")
@@ -68,8 +69,6 @@ class MSCPasswordAlertController: NSObject {
             // store username and password and end modal alert
             _ = storePassword(password, forUserName: username)
             NSApplication.shared.stopModal(withCode: .alertFirstButtonReturn)
-            NSApplication.shared.endSheet(alert.window, returnCode: NSApplication.ModalResponse.alertFirstButtonReturn.rawValue)
-            alert.window.orderOut(nil)
         } else {
             // wrong password, shake the alert window
             shake(alert.window)
