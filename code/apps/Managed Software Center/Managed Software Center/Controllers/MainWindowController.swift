@@ -723,12 +723,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
-        do {
+        /*do {
             try buildPage(url_fragment)
         } catch {
             msc_debug_log(
                 "Could not build page for \(url_fragment): \(error)")
-        }
+        }*/
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
         let request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
@@ -772,6 +772,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }*/
     }
     
+    func clearCache() {
+        if #available(OSX 10.11, *) {
+            let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+            let dateFrom = Date.init(timeIntervalSince1970: 0)
+            WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+        } else {
+            // Fallback on earlier versions
+            URLCache.shared.removeAllCachedResponses()
+        }
+    }
+
     // WKNavigationDelegateMethods
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -798,6 +809,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 NSWorkspace.shared.open(url)
                 decisionHandler(.cancel)
                 return
+            }
+            if url.scheme == "file" {
+                // if this is a MSC page, generate it!
+                if url.deletingLastPathComponent().path == htmlDir {
+                    let filename = url.lastPathComponent
+                    do {
+                        try buildPage(filename)
+                    } catch {
+                        msc_debug_log(
+                            "Could not build page for \(filename): \(error)")
+                    }
+                }
             }
         }
         decisionHandler(.allow)
@@ -849,6 +872,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         navigateBackMenuItem.isEnabled = webView.canGoBack
         navigateForwardButton.isEnabled = webView.canGoForward
         navigateForwardMenuItem.isEnabled = webView.canGoForward
+        clearCache()
     }
     
     func webView(_ webView: WKWebView,
@@ -872,46 +896,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // ignore
         }
     }
-    
-    // WebResourceLoadDelegate methods
-    
-    func webView(_ sender: WebView!,
-                 resource identifier: Any!,
-                 willSend request: URLRequest!,
-                 redirectResponse: URLResponse!,
-                 from dataSource: WebDataSource!) -> URLRequest! {
-        // By reacting to this delegate notification, we can build the page
-        // the WebView wants to load'''
-        msc_debug_log(
-            "webView:resource:willSendRequest:redirectResponse:fromDataSource:")
-        if let url = request.url, let scheme = url.scheme {
-            msc_debug_log("Got URL scheme: \(scheme)")
-            if scheme == NSURLFileScheme {
-                let path = url.path
-                msc_debug_log("Request path is \(path)")
-                if path.hasPrefix(htmlDir) && url.pathExtension == "html" {
-                    let filename = url.lastPathComponent
-                    if (filename.hasPrefix("detail-") ||
-                            filename.hasPrefix("category-") ||
-                            filename.hasPrefix("filter-") ||
-                            filename.hasPrefix("developer-") ||
-                            filename.hasPrefix("updatedetail-") ||
-                            filename == "myitems.html" ||
-                            filename == "updates.html" ||
-                            filename == "categories.html") {
-                        do {
-                            try buildPage(filename)
-                        } catch {
-                            msc_debug_log(
-                                "Could not build page for \(filename): \(error)")
-                        }
-                    }
-                }
-            }
-        }
-        return request
-    }
-    
+
     // JavaScript integration
     
     // handling DOM UI elements
@@ -1318,13 +1303,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
         // Handle WebView back button
-        URLCache.shared.removeAllCachedResponses()
         webView.goBack(self)
     }
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {
         // Handle WebView forward button
-        URLCache.shared.removeAllCachedResponses()
         webView.goForward(self)
     }
     
