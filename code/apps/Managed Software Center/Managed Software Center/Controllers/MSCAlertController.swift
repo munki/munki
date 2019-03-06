@@ -61,7 +61,7 @@ class MSCAlertController: NSObject {
             let formatString = NSLocalizedString(
                 "A logout will be forced in less than %@ minutes.",
                 comment: "Logout warning string when logout is in < 60 minutes") as NSString
-            infoText = NSString(format: formatString, timeUntilLogout) as String + "\n" + moreText
+            infoText = NSString(format: formatString, NSNumber.init(value: timeUntilLogout)) as String + "\n" + moreText
         } else {
             msc_log("user", "forced_logout_warning_final")
             infoText = NSLocalizedString(
@@ -86,10 +86,7 @@ class MSCAlertController: NSObject {
             alert.addButton(withTitle: ok_btn_title)
             alert.addButton(withTitle: logout_btn_title)
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-                if modalResponse == .alertFirstButtonReturn {
-                    // clicked OK button
-                     msc_log("user", "dismissed_forced_logout_warning")
-                } else {
+                if modalResponse == .alertSecondButtonReturn {
                     // clicked logout button
                     msc_log("user", "install_with_logout")
                     self.handlePossibleAuthRestart()
@@ -98,6 +95,9 @@ class MSCAlertController: NSObject {
                     } catch {
                         self.installSessionErrorAlert("\(error)")
                     }
+                } else {
+                    // dismissed or closed or ignored
+                    msc_log("user", "dismissed_forced_logout_warning")
                 }
             })
         } else {
