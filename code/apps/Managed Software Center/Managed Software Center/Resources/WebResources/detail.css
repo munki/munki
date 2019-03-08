@@ -58,10 +58,13 @@ body.product .product-detail .product-info .product-review h4 {
     color: var(--text-color-subdued);
     /*text-shadow: rgba(255,255,255,1) 0 1px 0*/
 }
-body.product .product-detail .product-info .product-review .more-text,body.product .product-detail .product-info .product-review ul {
+body.product .product-detail .product-info .product-review p,body.product .product-detail .product-info .product-review ul {
     font-size: 12px;
     line-height: 16px;
     color: var(--text-color-normal);
+}
+body.product .product-detail .product-info .product-review p a {
+    color: var(--description-link-color);
 }
 body.product .sidebar .app-info .content {
     font-size: 11px;
