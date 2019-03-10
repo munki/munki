@@ -257,16 +257,15 @@ def install_with_info(
 
         display_name = item.get('display_name') or item.get('name')
         version_to_install = item.get('version_to_install', '')
+        display.display_status_major(
+            "Installing %s (%s of %s)"
+            % (display_name, itemindex, len(installlist)))
 
         retcode = 0
         if 'preinstall_script' in item:
             retcode = scriptutils.run_embedded_script('preinstall_script', item)
 
         if retcode == 0 and 'installer_item' in item:
-            display.display_status_major(
-                "Installing %s (%s of %s)"
-                % (display_name, itemindex, len(installlist)))
-
             installer_type = item.get("installer_type", "")
 
             itempath = os.path.join(dirpath, item["installer_item"])
