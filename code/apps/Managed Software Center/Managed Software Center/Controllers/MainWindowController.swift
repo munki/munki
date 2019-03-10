@@ -26,10 +26,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var user_warned_about_extra_updates = false
     
     // Cocoa UI binding properties
-    @IBOutlet weak var softwareToolbarButton: MSCToolbarButton!
-    @IBOutlet weak var categoriesToolbarButton: MSCToolbarButton!
-    @IBOutlet weak var myItemsToolbarButton: MSCToolbarButton!
-    @IBOutlet weak var updatesToolbarButton: MSCToolbarButton!
+    @IBOutlet weak var softwareToolbarItem: NSToolbarItem!
+    @IBOutlet weak var categoriesToolbarItem: NSToolbarItem!
+    @IBOutlet weak var myItemsToolbarItem: NSToolbarItem!
+    @IBOutlet weak var updatesToolbarItem: NSToolbarItem!
     
     @IBOutlet weak var updateButtonCell: MSCToolbarButtonCell!
     
@@ -78,7 +78,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return updatesToolbarButton.state == .on
+        return updatesToolbarItem.isEnabled
     }
     
     func alertToPendingUpdates() {
@@ -147,15 +147,21 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         displayUpdateCount()
         cached_self_service = SelfService()
     }
-    
-    func highlightToolbarButtons(_ nameToHighlight: String) {
-        softwareToolbarButton.state = (nameToHighlight == "Software" ? .on : .off)
-        categoriesToolbarButton.state = (nameToHighlight == "Categories" ? .on : .off)
-        myItemsToolbarButton.state = (nameToHighlight == "My Items" ? .on : .off)
-        updatesToolbarButton.state = (nameToHighlight == "Updates" ? .on : .off)
+
+    func highlightButtonFor(item: NSToolbarItem, itemName: String, nameToHighlight: String) {
+        if let button = item.view as? NSButton {
+            button.state = (nameToHighlight == itemName ? .on : .off)
+        }
     }
     
-    func enableOrDisableToolbarButtons(_ enabled: Bool) {
+    func highlightToolbarButtons(_ nameToHighlight: String) {
+        highlightButtonFor(item: softwareToolbarItem, itemName: "Software", nameToHighlight: nameToHighlight)
+        highlightButtonFor(item: categoriesToolbarItem, itemName: "Categories", nameToHighlight: nameToHighlight)
+        highlightButtonFor(item: myItemsToolbarItem, itemName: "My Items", nameToHighlight: nameToHighlight)
+        highlightButtonFor(item: updatesToolbarItem, itemName: "Updates", nameToHighlight: nameToHighlight)
+    }
+    
+    func enableOrDisableToolbarItems(_ enabled: Bool) {
         // Enable or disable buttons in our toolbar
         var enabled_state = enabled
         var updates_button_state = true
@@ -165,16 +171,16 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 updates_button_state = false
             }
         }
-        softwareToolbarButton.isEnabled = enabled_state
-        categoriesToolbarButton.isEnabled = enabled_state
-        myItemsToolbarButton.isEnabled = enabled_state
-        updatesToolbarButton.isEnabled = updates_button_state
+        softwareToolbarItem.isEnabled = enabled_state
+        categoriesToolbarItem.isEnabled = enabled_state
+        myItemsToolbarItem.isEnabled = enabled_state
+        updatesToolbarItem.isEnabled = updates_button_state
     }
     
     func enableOrDisableSoftwareViewControls() {
         // Disable or enable the controls that let us view optional items
         let enabled_state = (getOptionalInstallItems().count > 0)
-        enableOrDisableToolbarButtons(enabled_state)
+        enableOrDisableToolbarItems(enabled_state)
         searchField.isEnabled = enabled_state
         findMenuItem.isEnabled = enabled_state
         softwareMenuItem.isEnabled = enabled_state
@@ -327,12 +333,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func windowDidBecomeMain(_ notification: Notification) {
         // Our window was activated, make sure controls enabled as needed
         let enabled_state = (getOptionalInstallItems().count > 0)
-        enableOrDisableToolbarButtons(enabled_state)
+        enableOrDisableToolbarItems(enabled_state)
     }
     
     func windowDidResignMain(_ notification: Notification) {
         // Our window was deactivated, make sure controls enabled as needed
-        enableOrDisableToolbarButtons(false)
+        enableOrDisableToolbarItems(false)
     }
     
     // End NSWindowDelegate methods
@@ -1332,22 +1338,22 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         _alertedUserToOutstandingUpdates = true
     }
     
-    @IBAction func softwareToolbarButtonClicked(_ sender: Any) {
+    @IBAction func softwareToolbarItemClicked(_ sender: Any) {
         // User clicked Software toolbar button
         loadAllSoftwarePage(sender)
     }
     
-    @IBAction func categoriesToolbarButtonClicked(_ sender: Any) {
+    @IBAction func categoriesToolbarItemClicked(_ sender: Any) {
         // User clicked Categories toolbar button'''
         loadCategoriesPage(sender)
     }
     
-    @IBAction func myItemsToolbarButtonClicked(_ sender: Any) {
+    @IBAction func myItemsToolbarItemClicked(_ sender: Any) {
         // User clicked My Items toolbar button'''
         loadMyItemsPage(sender)
     }
     
-    @IBAction func updatesToolbarButtonClicked(_ sender: Any) {
+    @IBAction func updatesToolbarItemClicked(_ sender: Any) {
         // User clicked Updates toolbar button'''
         loadUpdatesPage(sender)
     }
