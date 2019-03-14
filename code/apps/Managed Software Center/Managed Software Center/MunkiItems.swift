@@ -976,7 +976,7 @@ class UpdateItem: GenericItem {
 }
 
 func getOptionalInstallItems() -> [OptionalItem] {
-    let appleSoftwareUpdatesOnly = pref("AppleSoftwareUpdatesOnly") as? Bool ?? false
+    let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
     if appleSoftwareUpdatesOnly {
         return [OptionalItem]()
     }

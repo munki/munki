@@ -1187,7 +1187,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         let current_status = item["status"] as? String ?? ""
         msc_log("user", "optional_install_\(current_status)", msg: item_name)
-        if item["needs_update"] as? Bool ?? false {
+        if pythonishBool(item["needs_update"]) {
             // make some new HTML for the updated item
             let item_template = getTemplate("update_row_template.html")
             let item_html = item_template.substitute(item)

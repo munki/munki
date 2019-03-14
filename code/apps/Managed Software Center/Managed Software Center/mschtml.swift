@@ -414,7 +414,7 @@ func buildListPageItemsHTML(category: String = "",
         // this is the default (formerly) "all items" view
         // look for featured items and display those if we have them
         let featured_items = items.filter(
-            { ($0["featured"] as? Bool ?? false) == true }
+            { pythonishBool($0["featured"]) == true }
         )
         if !featured_items.isEmpty {
             items = featured_items

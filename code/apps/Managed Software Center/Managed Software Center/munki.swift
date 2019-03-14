@@ -52,6 +52,36 @@ func reloadPrefs() {
     CFPreferencesAppSynchronize(BUNDLE_ID)
 }
 
+func pythonishBool(_ foo: Any?) -> Bool {
+    // Converts values of various types to boolean in the same way
+    // Python treats non-booleans in a boolean context
+    if let bar = foo as? Bool {
+        return bar
+    }
+    if let bar = foo as? Int {
+        // Anything but 0 is true
+        return bar != 0
+    }
+    if let bar = foo as? Double {
+        // Anything but 0 is true
+        return bar != 0.0
+    }
+    if let bar = foo as? String {
+        // Non-empty strings are true; else false
+        return !bar.isEmpty
+    }
+    if let bar = foo as? Array<Any> {
+        // Non-empty arrays are true; else false
+        return !bar.isEmpty
+    }
+    if let bar = foo as? Dictionary<AnyHashable, Any> {
+        // Non-empty dicts are true; else false
+        return !bar.isEmpty
+    }
+    // nil or unhandled type is false
+    return false
+}
+
 func pref(_ prefName: String) -> Any? {
     /* Return a preference. Since this uses CFPreferencesCopyAppValue,
      Preferences can be defined several places. Precedence is:
@@ -151,12 +181,12 @@ func userSelfServiceChoicesChanged() -> Bool {
 
 func getRemovalDetailPrefs() -> Bool {
     // Returns preference to control display of removal detail
-    return pref("ShowRemovalDetail") as? Bool ?? false
+    return pythonishBool(pref("ShowRemovalDetail"))
 }
 
 func installRequiresLogout() -> Bool {
     // Returns preference to force logout for all installs
-    return pref("InstallRequiresLogout") as? Bool ?? false
+    return pythonishBool(pref("InstallRequiresLogout"))
 }
 
 func readPlistAsNSDictionary(_ filepath: String) -> PlistDict {
@@ -179,8 +209,8 @@ func getInstallInfo() -> PlistDict {
 
 func getAppleUpdates() -> PlistDict {
     // Returns any available Apple update info
-    let installAppleSoftwareUpdates = pref("InstallAppleSoftwareUpdates") as? Bool ?? false
-    let appleSoftwareUpdatesOnly = pref("AppleSoftwareUpdatesOnly") as? Bool ?? false
+    let installAppleSoftwareUpdates = pythonishBool(pref("InstallAppleSoftwareUpdates"))
+    let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
     if installAppleSoftwareUpdates || appleSoftwareUpdatesOnly {
         let managedinstallbase = pref("ManagedInstallDir") as! String
         let appleupdates_path = NSString.path(
