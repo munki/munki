@@ -36,10 +36,10 @@ func is_safe_to_use(_ pathname: String) -> Bool {
 }
 
 func setup_logging() {
-    if pref("MSUDebugLogEnabled") as? Bool ?? false {
+    if pythonishBool(pref("MSUDebugLogEnabled")) {
         MSUDEBUGLOGENABLED = true
     }
-    if pref("MSULogEnabled") as? Bool ?? false {
+    if pythonishBool(pref("MSULogEnabled")) {
         MSULOGENABLED = true
     }
     if !(MSULOGENABLED) {
