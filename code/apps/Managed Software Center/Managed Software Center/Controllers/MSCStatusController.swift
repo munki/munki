@@ -158,7 +158,7 @@ class MSCStatusController: NSObject {
         }
         if command == "activate" {
             // do nothing
-        } else if command == "shoeRestartAlert" {
+        } else if command == "showRestartAlert" {
             if session_started {
                 sessionEnded(0)
             }
