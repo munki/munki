@@ -392,7 +392,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // init our webview
             let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
-            replacementWebView.allowsBackForwardNavigationGestures = true
+            replacementWebView.allowsBackForwardNavigationGestures = false
             replacementWebView.setValue(false, forKey: "drawsBackground")
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
