@@ -1,0 +1,101 @@
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
+"103.title" = "Ohje";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
+"106.title" = "Ohje";
+
+/* Class = "NSMenuItem"; title = "MunkiStatus Help"; ObjectID = "111"; */
+"111.title" = "MunkiStatus-ohje";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
+"130.title" = "Palvelut";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
+"131.title" = "Palvelut";
+
+/* Class = "NSMenuItem"; title = "Hide MunkiStatus"; ObjectID = "134"; */
+"134.title" = "Kätke MunkiStatus";
+
+/* Class = "NSMenuItem"; title = "Quit MunkiStatus"; ObjectID = "136"; */
+"136.title" = "Lopeta MunkiStatus";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
+"145.title" = "Kätke muut";
+
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
+"150.title" = "Näytä kaikki";
+
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
+"19.title" = "Ikkuna";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
+"197.title" = "Kopioi";
+
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
+"198.title" = "Valitse kaikki";
+
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
+"199.title" = "Leikkaa";
+
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "1B8-Pq-rf7"; */
+"1B8-Pq-rf7.title" = "Näytä loki";
+
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "1Nd-E7-vfR"; */
+"1Nd-E7-vfR.title" = "Managed Software Center";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
+"202.title" = "Poista";
+
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
+"203.title" = "Liitä";
+
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
+"205.title" = "Muokkaa";
+
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
+"207.title" = "Peru";
+
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
+"215.title" = "Tee sittenkin";
+
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
+"217.title" = "Muokkaa";
+
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
+"23.title" = "Pienennä";
+
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
+"239.title" = "Zoomaa";
+
+/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
+"24.title" = "Ikkuna";
+
+/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
+"29.title" = "AMainMenu";
+
+/* Class = "NSMenuItem"; title = "MunkiStatus"; ObjectID = "56"; */
+"56.title" = "MunkiStatus";
+
+/* Class = "NSMenu"; title = "MunkiStatus"; ObjectID = "57"; */
+"57.title" = "MunkiStatus";
+
+/* Class = "NSMenuItem"; title = "About MunkiStatus"; ObjectID = "58"; */
+"58.title" = "Tietoja: MunkiStatus";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "8Nl-My-27d"; */
+"8Nl-My-27d.title" = "Text Cell";
+
+/* Class = "NSWindow"; title = "Log"; ObjectID = "LgH-P6-zEw"; */
+"LgH-P6-zEw.title" = "Log";
+
+/* Class = "NSButtonCell"; title = "Stop"; ObjectID = "M20-JG-Pmr"; */
+"M20-JG-Pmr.title" = "Pysäytä";
+
+/* Class = "NSWindow"; title = "BackdropWindow"; ObjectID = "VCy-58-vwp"; */
+"VCy-58-vwp.title" = "BackdropWindow";
+
+/* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
+"bd5-IY-BXv.title" = "Sulje";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "nGI-3K-7Wv"; */
+"nGI-3K-7Wv.title" = "Text Cell";

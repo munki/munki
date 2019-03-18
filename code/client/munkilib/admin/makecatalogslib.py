@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2018 Greg Neagle.
+# Copyright 2017-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
 
     # Check if the installer item actually exists
     if not installeritempath in pkgs_list:
-        # do a case-insenstive comparison
+        # do a case-insensitive comparison
         found_caseinsensitive_match = False
         for repo_pkg in pkgs_list:
             if installeritempath.lower() == repo_pkg.lower():
@@ -132,7 +132,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
 
         # Check if the uninstaller item actually exists
         if not uninstalleritempath in pkgs_list:
-            # do a case-insenstive comparison
+            # do a case-insensitive comparison
             found_caseinsensitive_match = False
             for repo_pkg in pkgs_list:
                 if uninstalleritempath.lower() == repo_pkg.lower():

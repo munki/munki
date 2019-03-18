@@ -1,0 +1,5 @@
+/* Localized versions of Info.plist keys */
+
+"CFBundleName" = "Managed Software Centre";
+"CFBundleDisplayName" = "Managed Software Centre";
+NSHumanReadableCopyright = "Copyright © 2010-2019 The Munki Project\nhttps://github.com/munki/munki";

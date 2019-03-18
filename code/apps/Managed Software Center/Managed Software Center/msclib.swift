@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/6/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -108,6 +108,40 @@ func get_custom_resources() {
     }
 }
 
+func linkOrCopy(_ sourcePath: String, _ destPath: String) {
+    // if sourcePath and destPath are on the same volume (device)
+    // symlink, otherwise copy. This works around an issue with WKWebView
+    // where it will refuse to get file:// resources that include symlinks
+    // that point to paths on a different volume
+    // by default, symlink instead of copy
+    var prefer_symlink = true
+    // destPath might not yet exist so get its parent directory
+    let destDir = (destPath as NSString).deletingLastPathComponent
+    do {
+        let source_filesystem = try FileManager.default.attributesOfItem(atPath: sourcePath)[.systemNumber] as? Int ?? 0
+        let dest_filesystem = try FileManager.default.attributesOfItem(atPath: destDir)[.systemNumber] as? Int ?? 0
+        prefer_symlink = (source_filesystem == dest_filesystem)
+    } catch {
+        msc_debug_log("Can't get filesystem attributes while setting up html dir: \(error)")
+    }
+    if prefer_symlink {
+        do {
+            // symlinks sort of invert the idea of source and destination.
+            // in this case, sourcePath is the orignal content in its "real" location
+            // and destPath is where the symlink itself resides
+            try FileManager.default.createSymbolicLink(atPath: destPath, withDestinationPath: sourcePath)
+        } catch {
+            msc_debug_log("Error creating symlink \(destPath): \(error)")
+        }
+    } else {
+        do {
+            try FileManager.default.copyItem(atPath:sourcePath, toPath: destPath)
+        } catch {
+            msc_debug_log("Error copying \(sourcePath) to \(destPath): \(error)")
+        }
+    }
+}
+
 func html_dir() -> String {
     // sets up our local html cache directory if needed
     // returns path to our html directory
@@ -149,26 +183,18 @@ func html_dir() -> String {
             return ""
         }
         
-        // symlink our static files dir
+        // symlink or copy our static files dir
         if let resourcesPath = Bundle.main.resourcePath {
-            let dest_path = NSString.path(withComponents: [resourcesPath, "WebResources"])
-            let link_path = NSString.path(withComponents: [_msclib_html_dir, "static"])
-            do {
-                try FileManager.default.createSymbolicLink(atPath: link_path, withDestinationPath: dest_path)
-            } catch {
-                msc_debug_log("Error creating symlink \(link_path): \(error)")
-            }
+            let source_path = NSString.path(withComponents: [resourcesPath, "WebResources"])
+            let dest_path = NSString.path(withComponents: [_msclib_html_dir, "static"])
+            linkOrCopy(source_path, dest_path)
         }
         
-        // symlink the Managed Installs icons dir
+        // symlink or copy the Managed Installs icons dir
         if let managed_install_dir = pref("ManagedInstallDir") as? String {
-            let dest_path = NSString.path(withComponents: [managed_install_dir, "icons"])
-            let link_path = NSString.path(withComponents: [_msclib_html_dir, "icons"])
-            do {
-                try FileManager.default.createSymbolicLink(atPath: link_path, withDestinationPath: dest_path)
-            } catch {
-                msc_debug_log("Error creating symlink \(link_path): \(error)")
-            }
+            let source_path = NSString.path(withComponents: [managed_install_dir, "icons"])
+            let dest_path = NSString.path(withComponents: [_msclib_html_dir, "icons"])
+            linkOrCopy(source_path, dest_path)
         }
         
         // unzip any custom client resources

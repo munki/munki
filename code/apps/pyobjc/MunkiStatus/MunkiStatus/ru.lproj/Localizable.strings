@@ -1,0 +1,95 @@
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Проверка каталога Обновлений ПО Apple...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Проверка дополнительных изменений...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Проверка доступных Обновлений ПО Apple...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Проверка доступных обновлений...";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Определение элементов файловой системы для удаления";
+
+/* managedsoftwareupdate message */
+"Done." = "Готово.";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Загрузка доступных Обновлений ПО Apple...";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Завершение...";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Сбор информации об установленных пакетах";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Установка доступных Обновлений ПО Apple...";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Нечего удалять.";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Удаление пакета завершено.";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Выполнение послеполетных задач...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Выполнение предварительных задач...";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Пoдготовка запуска Программы Установки macOS...";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Удаление квитанции";
+
+/* No comment provided by engineer. */
+"Restart" = "Перезагрузить";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Требуется перезагрузка";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Получение списка ПО для этой машины...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Выполнение установщика Adobe Patch";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Выполнение Adobe Setup";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Выполнение Adobe Uninstall";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Установленное или удаленное ПО требует перезагрузки.";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Установка/удаление программ требует перезагрузки. У Вас будет возможность сохранить открытые документы.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Запуск Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Запуск обновление для macOS...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Запуск...";
+
+/* No comment provided by engineer. */
+"Starting…" = "Запуск…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Система перегрузится и начнет обновление macOS.";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Программное обеспечение было успешно установлено.";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Проверка целостности пакета...";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Ожидание сети...";

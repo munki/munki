@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # encoding: utf-8
 #
-# Copyright 2011-2018 Greg Neagle.
+# Copyright 2011-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ def get_installer_item_names(repo, catalog_limit_list):
         catalogs_list = repo.itemlist('catalogs')
     except munkirepo.RepoError, err:
         print >> sys.stderr, (
-            'Could not retreive catalogs: %s' % unicode(err))
+            'Could not retrieve catalogs: %s' % unicode(err))
         return []
     for catalog_name in catalogs_list:
         if catalog_name in catalog_limit_list:
@@ -58,7 +58,7 @@ def get_installer_item_names(repo, catalog_limit_list):
                 catalog = plistlib.readPlistFromString(data)
             except munkirepo.RepoError, err:
                 print >> sys.stderr, (
-                    'Could not retreive catalog %s: %s'
+                    'Could not retrieve catalog %s: %s'
                     % (catalog_name, unicode(err)))
             except (IOError, OSError, ExpatError):
                 # skip items that aren't valid plists
@@ -79,7 +79,7 @@ def get_manifest_names(repo):
         manifest_names = repo.itemlist('manifests')
     except munkirepo.RepoError, err:
         print >> sys.stderr, (
-            'Could not retreive manifests: %s' % unicode(err))
+            'Could not retrieve manifests: %s' % unicode(err))
         manifest_names = []
     manifest_names.sort()
     return manifest_names
@@ -91,7 +91,7 @@ def get_catalogs(repo):
         catalog_names = repo.itemlist('catalogs')
     except munkirepo.RepoError, err:
         print >> sys.stderr, (
-            'Could not retreive catalogs: %s' % unicode(err))
+            'Could not retrieve catalogs: %s' % unicode(err))
         catalog_names = []
     catalog_names.sort()
     return catalog_names
@@ -144,7 +144,7 @@ def get_manifest(repo, manifest_name):
         data = repo.get(manifest_ref)
         return plistlib.readPlistFromString(data)
     except munkirepo.RepoError, err:
-        print >> sys.stderr, (u'Could not retreive manifest %s: %s'
+        print >> sys.stderr, (u'Could not retrieve manifest %s: %s'
                               % (manifest_name, unicode(err)))
         return None
     except (IOError, OSError, ExpatError), err:
@@ -227,7 +227,7 @@ class MyOptParseExit(Exception):
 class MyOptionParser(optparse.OptionParser):
     '''Custom option parser that overrides the error handler and
     the exit handler so printing help doesn't exit the interactive
-    psuedo-shell'''
+    pseudo-shell'''
     def error(self, msg):
         """error(msg : string)
 
@@ -659,7 +659,7 @@ def move_install_to_uninstall(repo, args):
     else:
         if pkgname in manifest['managed_installs']:
             manifest['managed_installs'].remove(pkgname)
-            print ('Removed %s from section %s of mainfest %s' % (pkgname, 'managed_installs', options.manifest))
+            print ('Removed %s from section %s of manifest %s' % (pkgname, 'managed_installs', options.manifest))
         else:
             print >> sys.stderr, ('WARNING: Package %s is not in section %s '
                                   'of manifest %s. No changes made.'

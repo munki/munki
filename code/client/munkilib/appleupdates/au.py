@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ from . import su_prefs
 from . import sync
 
 from ..updatecheck import catalogs
+from ..constants import POSTACTION_NONE, POSTACTION_RESTART, POSTACTION_SHUTDOWN
 
 from .. import display
 from .. import fetch
@@ -81,6 +82,7 @@ class AppleUpdates(object):
     of those updates.
     """
 
+    SHUTDOWN_ACTIONS = ['RequireShutdown']
     RESTART_ACTIONS = ['RequireRestart', 'RecommendRestart']
 
     def __init__(self):
@@ -97,6 +99,7 @@ class AppleUpdates(object):
         self.applesync = sync.AppleUpdateSync()
 
         self._update_list_cache = None
+        self.shutdown_instead_of_restart = False
 
         # apple_update_metadata support
         self.client_id = ''
@@ -111,17 +114,20 @@ class AppleUpdates(object):
         # pylint: disable=no-self-use
         display.display_status_major(message)
 
-    def restart_needed(self):
-        """Returns True if any update requires an restart."""
+    def restart_action_for_updates(self):
+        """Returns the most heavily weighted postaction"""
         try:
             apple_updates = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.NSPropertyListSerializationException:
-            return True
+            return POSTACTION_RESTART
+        for item in apple_updates.get('AppleUpdates', []):
+            if item.get('RestartAction') in self.SHUTDOWN_ACTIONS:
+                return POSTACTION_SHUTDOWN
         for item in apple_updates.get('AppleUpdates', []):
             if item.get('RestartAction') in self.RESTART_ACTIONS:
-                return True
+                return POSTACTION_RESTART
         # if we get this far, there must be no items that require restart
-        return False
+        return POSTACTION_NONE
 
     def clear_apple_update_info(self):
         """Clears Apple update info.
@@ -186,11 +192,31 @@ class AppleUpdates(object):
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = su_prefs.pref(
             'RecommendedUpdates')
-        if recommended_updates:
-            return [item['Product Key'] for item in recommended_updates
-                    if 'Product Key' in item]
+        if recommended_updates is not None:
+            try:
+                return [item['Product Key'] for item in recommended_updates
+                        if 'Product Key' in item]
+            except IndexError:
+                # RecommendedUpdates is an empty list
+                return []
+            except (KeyError, AttributeError):
+                # RecommendedUpdates is in an unexpected format
+                display.display_debug1(
+                    'com.apple.SoftwareUpdate RecommendedUpdates is in an '
+                    'unexpected format: %s', recommended_updates)
+                return []
 
-        # not in com.apple.SoftwareUpdate preferences, try index.plist
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        # We've collected data that indicates that com.apple.SoftwareUpdate
+        # RecommendedUpdates should be present on 10.9+ if there are available
+        # updates. We don't have data on 10.7 or 10.8.
+        if os_version_tuple < (10, 8):
+            display.display_debug1(
+                'com.apple.SoftwareUpdate RecommendedUpdates is not defined')
+            return []
+
+        # fall through to using index.plist only if com.apple.SoftwareUpdate
+        # RecommendedUpdates doesn't exist and we're on macOS < 10.9
         if not os.path.exists(INDEX_PLIST):
             display.display_debug1('%s does not exist.' % INDEX_PLIST)
             return []
@@ -650,6 +676,13 @@ class AppleUpdates(object):
             elif 'Missing bundle identifier' in output:
                 # don't display this, it's noise
                 pass
+            elif (('Please call halt' in output
+                   or 'your computer must shut down' in output)
+                  and not self.shutdown_instead_of_restart):
+                # This update requires we shutdown instead of a restart.
+                display.display_status_minor(output)
+                display.display_info('### This update requires a shutdown. ###')
+                self.shutdown_instead_of_restart = True
             elif output == '':
                 pass
             else:
@@ -683,18 +716,19 @@ class AppleUpdates(object):
         if display.munkistatusoutput:
             munkistatus.hideStopButton()
 
+        self.shutdown_instead_of_restart = False
         # Get list of unattended_installs
         if only_unattended:
             msg = 'Installing unattended Apple Software Updates...'
             unattended_install_items, unattended_install_product_ids = \
                 self.get_unattended_installs()
             # ensure that we don't restart for unattended installations
-            restartneeded = False
+            restart_action = POSTACTION_NONE
             if not unattended_install_items:
                 return False  # didn't find any unattended installs
         else:
             msg = 'Installing available Apple Software Updates...'
-            restartneeded = self.restart_needed()
+            restart_action = self.restart_action_for_updates()
 
         self._display_status_major(msg)
 
@@ -707,7 +741,7 @@ class AppleUpdates(object):
         if only_unattended:
             # Append list of unattended_install items
             su_options.extend(unattended_install_items)
-            # Filter installist to only include items
+            # Filter installlist to only include items
             # which we're attempting to install
             filtered_installlist = [item for item in installlist
                                     if item.get('productKey') in
@@ -843,7 +877,13 @@ class AppleUpdates(object):
         if display.munkistatusoutput:
             munkistatus.showStopButton()
 
-        return restartneeded
+        if self.shutdown_instead_of_restart:
+            display.display_info(
+                'One or more Apple updates requires a shutdown instead of '
+                'restart.')
+            restart_action = POSTACTION_SHUTDOWN
+
+        return restart_action
 
     def software_updates_available(
             self, force_check=False, suppress_check=False):
@@ -920,11 +960,12 @@ class AppleUpdates(object):
         # Mapping of supported restart_actions to
         # equal or greater auxiliary actions
         restart_actions = {
+            'RequireShutdown': ['RequireShutdown'],
             'RequireRestart': ['RequireRestart', 'RecommendRestart'],
             'RecommendRestart': ['RequireRestart', 'RecommendRestart'],
             'RequireLogout': ['RequireRestart', 'RecommendRestart',
                               'RequireLogout'],
-            'None': ['RequireRestart', 'RecommendRestart',
+            'None': ['RequireShutdown', 'RequireRestart', 'RecommendRestart',
                      'RequireLogout', 'None']
         }
 
@@ -969,7 +1010,7 @@ class AppleUpdates(object):
     def get_unattended_installs(self):
         """Processes AppleUpdates.plist to return a list
         of NAME-VERSION formatted items and a list of product_ids
-        which are elgible for unattended installation.
+        which are eligible for unattended installation.
         """
         item_list = []
         product_ids = []
@@ -984,7 +1025,7 @@ class AppleUpdates(object):
         for item in apple_updates:
             if (item.get('unattended_install') or
                     (prefs.pref('UnattendedAppleUpdates') and
-                     item.get('RestartAction', 'None') is 'None' and
+                     item.get('RestartAction', 'None') == 'None' and
                      os_version_tuple >= (10, 10))):
                 if processes.blocking_applications_running(item):
                     display.display_detail(

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ from . import reports
 from . import munkistatus
 
 
+
 def _getsteps(num_of_steps, limit):
     """
     Helper function for display_percent_done
@@ -55,7 +56,8 @@ def display_percent_done(current, maximum):
         percentdone = 100
     else:
         percentdone = int(float(current)/float(maximum)*100)
-    munkistatus.percent(str(percentdone))
+    if munkistatusoutput:
+        munkistatus.percent(str(percentdone))
 
     if verbose:
         step = _getsteps(16, maximum)
@@ -116,9 +118,10 @@ def display_status_major(msg, *args):
     """
     msg = _concat_message(msg, *args)
     munkilog.log(msg)
-    munkistatus.message(msg)
-    munkistatus.detail('')
-    munkistatus.percent(-1)
+    if munkistatusoutput:
+        munkistatus.message(msg)
+        munkistatus.detail('')
+        munkistatus.percent(-1)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
             print '%s' % msg.encode('UTF-8')
@@ -134,7 +137,8 @@ def display_status_minor(msg, *args):
     """
     msg = _concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
-    munkistatus.detail(msg)
+    if munkistatusoutput:
+        munkistatus.detail(msg)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
             print '    %s' % msg.encode('UTF-8')
@@ -230,7 +234,7 @@ def display_error(msg, *args):
 # module globals
 # pylint: disable=invalid-name
 verbose = 1
-munkistatusoutput = False
+munkistatusoutput = True
 # pylint: enable=invalid-name
 
 

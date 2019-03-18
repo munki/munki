@@ -1,0 +1,834 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		650B29A419B69FC800A5E946 /* MSCToolbar.py in Resources */ = {isa = PBXBuildFile; fileRef = 650B29A319B69FC800A5E946 /* MSCToolbar.py */; };
+		C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */ = {isa = PBXBuildFile; fileRef = C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */; };
+		C00F67571F016C9F00D9007D /* CocoaWrapper.py in Resources */ = {isa = PBXBuildFile; fileRef = C00F67561F016C9F00D9007D /* CocoaWrapper.py */; };
+		C01B396D1EEA6A9000DFBA3B /* libpython2.7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */; };
+		C01FBD311EA64CD600AE97EE /* passwdutil.py in Resources */ = {isa = PBXBuildFile; fileRef = C01FBD301EA64CD600AE97EE /* passwdutil.py */; };
+		C02C98891911B81D00425167 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C02C98871911B81D00425167 /* Localizable.strings */; };
+		C042CA151EAD86DE006CC681 /* MSCPasswordAlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */; };
+		C0453A211CCEF7B60002D396 /* MSCLogWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */; };
+		C049C9951AEC77DD00251D45 /* updatesTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C049C9941AEC77DD00251D45 /* updatesTemplate.png */; };
+		C05C3CEF188391F200095E65 /* munki.py in Resources */ = {isa = PBXBuildFile; fileRef = C05C3CEE188391F200095E65 /* munki.py */; };
+		C079D9C118BD435200BAD62E /* AlertController.py in Resources */ = {isa = PBXBuildFile; fileRef = C079D9C018BD435200BAD62E /* AlertController.py */; };
+		C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C09004F116CDD84E00BE34CE /* Cocoa.framework */; };
+		C090050016CDD84E00BE34CE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C09004FF16CDD84E00BE34CE /* main.m */; };
+		C090050616CDD84E00BE34CE /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = C090050516CDD84E00BE34CE /* main.py */; };
+		C090050816CDD84E00BE34CE /* MSCAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = C090050716CDD84E00BE34CE /* MSCAppDelegate.py */; };
+		C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C090050916CDD84E00BE34CE /* MainMenu.xib */; };
+		C094B6CF188F7C7700E06897 /* MSCStatusController.py in Resources */ = {isa = PBXBuildFile; fileRef = C094B6CE188F7C7700E06897 /* MSCStatusController.py */; };
+		C0A71B76188A47C700A6EE82 /* MSCMainWindowController.py in Resources */ = {isa = PBXBuildFile; fileRef = C0A71B75188A47C700A6EE82 /* MSCMainWindowController.py */; };
+		C0AAA21C18B801400012663F /* MunkiItems.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AAA21B18B801400012663F /* MunkiItems.py */; };
+		C0AAA21E18BAD8710012663F /* msclog.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AAA21D18BAD8710012663F /* msclog.py */; };
+		C0AAA22018BC67F90012663F /* mschtml.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AAA21F18BC67F90012663F /* mschtml.py */; };
+		C0AE8658186D2DF900C87AE7 /* Managed Software Center.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */; };
+		C0AE865A186D32AF00C87AE7 /* MSCBadgedTemplateImage.py in Resources */ = {isa = PBXBuildFile; fileRef = C0AE8659186D32AF00C87AE7 /* MSCBadgedTemplateImage.py */; };
+		C0B3743F187089F300B6204E /* AllItemsTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0B3743A187089F300B6204E /* AllItemsTemplate.png */; };
+		C0B37442187089F300B6204E /* toolbarCategoriesTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C0B3743D187089F300B6204E /* toolbarCategoriesTemplate.pdf */; };
+		C0B3744618708A0300B6204E /* templates in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744418708A0300B6204E /* templates */; };
+		C0B3744718708A0300B6204E /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C0B3744518708A0300B6204E /* WebResources */; };
+		C0B9E8B219AB8E5500DB7247 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C09004FC16CDD84E00BE34CE /* InfoPlist.strings */; };
+		C0B9E8B619AF7E9E00DB7247 /* Managed Software Center 10_6.icns in Resources */ = {isa = PBXBuildFile; fileRef = C0B9E8B519AF7E9E00DB7247 /* Managed Software Center 10_6.icns */; };
+		C0D6D0691EA55B470099C126 /* authrestart.py in Resources */ = {isa = PBXBuildFile; fileRef = C0D6D0681EA55B470099C126 /* authrestart.py */; };
+		C0E098BC1857A3C80045DEEB /* msclib.py in Resources */ = {isa = PBXBuildFile; fileRef = C0E098BB1857A3C80045DEEB /* msclib.py */; };
+		C0EF96BA1ADDB9B2002C02FF /* MSCDockTilePlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */; };
+		C0EF96BD1ADDBD88002C02FF /* MSCDockTilePlugin.docktileplugin in Copy Files */ = {isa = PBXBuildFile; fileRef = C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C0F1586D187D256200052F9A /* MyStuffTemplate.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C0EF96C11ADDCBAD002C02FF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C09004E416CDD84E00BE34CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C0EF96B01ADDB90B002C02FF;
+			remoteInfo = MSCDockTilePlugin;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C0EF96BC1ADDBD77002C02FF /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C0EF96BD1ADDBD88002C02FF /* MSCDockTilePlugin.docktileplugin in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		650B29A319B69FC800A5E946 /* MSCToolbar.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCToolbar.py; sourceTree = "<group>"; };
+		C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = FoundationPlist.py; sourceTree = "<group>"; };
+		C00F67561F016C9F00D9007D /* CocoaWrapper.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = CocoaWrapper.py; sourceTree = "<group>"; };
+		C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython2.7.dylib; path = ../../../../../../../../../System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/libpython2.7.dylib; sourceTree = SDKROOT; };
+		C01E26911B4DADDC005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C01E26921B4DADE4005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C01E26931B4DADEB005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C01E26941B4DADF3005ACFFB /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ja; path = ja.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C01FBD301EA64CD600AE97EE /* passwdutil.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = passwdutil.py; sourceTree = "<group>"; };
+		C02C98731911B55600425167 /* Managed Software Center-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Managed Software Center-Info.plist"; sourceTree = "<group>"; };
+		C02C98751911B63E00425167 /* fr */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fr; path = fr.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98761911B63E00425167 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98771911B64A00425167 /* de */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = de; path = de.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98781911B64A00425167 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98791911B65600425167 /* es */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = es; path = es.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C987A1911B65600425167 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C987B1911B66400425167 /* da */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = da; path = da.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C987C1911B66400425167 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C987D1911B67600425167 /* fi */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = fi; path = fi.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C987E1911B67600425167 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C987F1911B67F00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = nb; path = nb.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98801911B67F00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98811911B68800425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ru; path = ru.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98821911B68800425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98831911B69000425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = sv; path = sv.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C02C98841911B69000425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C02C98881911B81D00425167 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988A1911B82900425167 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988B1911B82A00425167 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988C1911B82C00425167 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988D1911B82D00425167 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988E1911B82E00425167 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C988F1911B82E00425167 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C98901911B83000425167 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C02C98911911B83100425167 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCPasswordAlertController.py; sourceTree = "<group>"; };
+		C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCLogWindowController.py; sourceTree = "<group>"; };
+		C046261519FFF8C000AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C046261619FFF8CC00AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C046261719FFF8DA00AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C046261819FFF98900AF1E48 /* it */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = it; path = it.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C049C9941AEC77DD00251D45 /* updatesTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = updatesTemplate.png; sourceTree = "<group>"; };
+		C05C3CEE188391F200095E65 /* munki.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = munki.py; sourceTree = "<group>"; };
+		C079D9C018BD435200BAD62E /* AlertController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = AlertController.py; sourceTree = "<group>"; };
+		C07E957E1913EE4600B40B9A /* nl */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = nl; path = nl.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C07E957F1913EE4600B40B9A /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C07E95801913EE4600B40B9A /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C09004ED16CDD84E00BE34CE /* Managed Software Center.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Managed Software Center.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C09004F116CDD84E00BE34CE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		C09004F616CDD84E00BE34CE /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		C09004F716CDD84E00BE34CE /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		C09004F816CDD84E00BE34CE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		C09004FD16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C09004FF16CDD84E00BE34CE /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Managed Software Center-Prefix.pch"; sourceTree = "<group>"; };
+		C090050516CDD84E00BE34CE /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
+		C090050716CDD84E00BE34CE /* MSCAppDelegate.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = MSCAppDelegate.py; sourceTree = "<group>"; };
+		C090050A16CDD84E00BE34CE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C094B6CE188F7C7700E06897 /* MSCStatusController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCStatusController.py; sourceTree = "<group>"; };
+		C0A71B75188A47C700A6EE82 /* MSCMainWindowController.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCMainWindowController.py; sourceTree = "<group>"; };
+		C0AAA21B18B801400012663F /* MunkiItems.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MunkiItems.py; sourceTree = "<group>"; };
+		C0AAA21D18BAD8710012663F /* msclog.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msclog.py; sourceTree = "<group>"; };
+		C0AAA21F18BC67F90012663F /* mschtml.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mschtml.py; sourceTree = "<group>"; };
+		C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Center.icns"; sourceTree = "<group>"; };
+		C0AE8659186D32AF00C87AE7 /* MSCBadgedTemplateImage.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MSCBadgedTemplateImage.py; sourceTree = "<group>"; };
+		C0B3743A187089F300B6204E /* AllItemsTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AllItemsTemplate.png; sourceTree = "<group>"; };
+		C0B3743D187089F300B6204E /* toolbarCategoriesTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = toolbarCategoriesTemplate.pdf; sourceTree = "<group>"; };
+		C0B3744418708A0300B6204E /* templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = templates; sourceTree = "<group>"; };
+		C0B3744518708A0300B6204E /* WebResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebResources; sourceTree = "<group>"; };
+		C0B9E89F19AA2B6800DB7247 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A119AA2B8400DB7247 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A219AA2B8600DB7247 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A319AA2B8900DB7247 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A419AA2B8B00DB7247 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A519AA2B8D00DB7247 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A619AA2B9100DB7247 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A719AA2B9400DB7247 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A819AA2B9700DB7247 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8A919AA2B9A00DB7247 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8AD19AA55DC00DB7247 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8AE19AA55DC00DB7247 /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8AF19AA55DC00DB7247 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C0B9E8B519AF7E9E00DB7247 /* Managed Software Center 10_6.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Managed Software Center 10_6.icns"; sourceTree = "<group>"; };
+		C0D6D0681EA55B470099C126 /* authrestart.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = authrestart.py; sourceTree = "<group>"; };
+		C0E098BB1857A3C80045DEEB /* msclib.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = msclib.py; sourceTree = "<group>"; };
+		C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MSCDockTilePlugin.docktileplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0EF96B41ADDB90B002C02FF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C0EF96B81ADDB9B2002C02FF /* MSCDockTilePlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSCDockTilePlugIn.h; sourceTree = "<group>"; };
+		C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSCDockTilePlugIn.m; sourceTree = "<group>"; };
+		C0F1586D187D256200052F9A /* MyStuffTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MyStuffTemplate.png; sourceTree = "<group>"; };
+		E62967521993D4A400ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_GB; path = en_GB.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E62967541993D4AF00ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E62967551993D4B900ADCB43 /* en_GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_GB; path = en_GB.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E665C3B81993D58D00C428C4 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E665C3BA1993D59600C428C4 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_AU; path = en_AU.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E665C3BB1993D5A600C428C4 /* en_AU */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_AU; path = en_AU.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E68EB44F1993C3950003D10C /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E68EB4501993C3AC0003D10C /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en_CA; path = en_CA.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E68EB4521993C40C0003D10C /* en_CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en_CA; path = en_CA.lproj/Localizable.strings; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C09004EA16CDD84E00BE34CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C09004F216CDD84E00BE34CE /* Cocoa.framework in Frameworks */,
+				C01B396D1EEA6A9000DFBA3B /* libpython2.7.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0EF96AE1ADDB90B002C02FF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C09004E216CDD84E00BE34CE = {
+			isa = PBXGroup;
+			children = (
+				C09004F916CDD84E00BE34CE /* Managed Software Center */,
+				C0EF96B21ADDB90B002C02FF /* MSCDockTilePlugin */,
+				C09004F016CDD84E00BE34CE /* Frameworks */,
+				C09004EE16CDD84E00BE34CE /* Products */,
+				C01B396C1EEA6A9000DFBA3B /* libpython2.7.dylib */,
+			);
+			sourceTree = "<group>";
+		};
+		C09004EE16CDD84E00BE34CE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C09004ED16CDD84E00BE34CE /* Managed Software Center.app */,
+				C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C09004F016CDD84E00BE34CE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C09004F116CDD84E00BE34CE /* Cocoa.framework */,
+				C09004F516CDD84E00BE34CE /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C09004F516CDD84E00BE34CE /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C09004F616CDD84E00BE34CE /* AppKit.framework */,
+				C09004F716CDD84E00BE34CE /* CoreData.framework */,
+				C09004F816CDD84E00BE34CE /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		C09004F916CDD84E00BE34CE /* Managed Software Center */ = {
+			isa = PBXGroup;
+			children = (
+				C042CA141EAD86DE006CC681 /* MSCPasswordAlertController.py */,
+				C0B9E8B519AF7E9E00DB7247 /* Managed Software Center 10_6.icns */,
+				C094B6CE188F7C7700E06897 /* MSCStatusController.py */,
+				C05C3CEE188391F200095E65 /* munki.py */,
+				C0B37439187089B900B6204E /* Resources */,
+				C0AE8659186D32AF00C87AE7 /* MSCBadgedTemplateImage.py */,
+				C00A4C56185FCEC9004EB3B7 /* FoundationPlist.py */,
+				C090050516CDD84E00BE34CE /* main.py */,
+				C090050716CDD84E00BE34CE /* MSCAppDelegate.py */,
+				C0AE8657186D2DF900C87AE7 /* Managed Software Center.icns */,
+				C090050916CDD84E00BE34CE /* MainMenu.xib */,
+				C09004FA16CDD84E00BE34CE /* Supporting Files */,
+				C0E098BB1857A3C80045DEEB /* msclib.py */,
+				C0A71B75188A47C700A6EE82 /* MSCMainWindowController.py */,
+				C0AAA21B18B801400012663F /* MunkiItems.py */,
+				C0AAA21D18BAD8710012663F /* msclog.py */,
+				C0AAA21F18BC67F90012663F /* mschtml.py */,
+				C079D9C018BD435200BAD62E /* AlertController.py */,
+				C0D6D0681EA55B470099C126 /* authrestart.py */,
+				C01FBD301EA64CD600AE97EE /* passwdutil.py */,
+				650B29A319B69FC800A5E946 /* MSCToolbar.py */,
+				C0453A201CCEF7B60002D396 /* MSCLogWindowController.py */,
+				C00F67561F016C9F00D9007D /* CocoaWrapper.py */,
+			);
+			path = "Managed Software Center";
+			sourceTree = "<group>";
+		};
+		C09004FA16CDD84E00BE34CE /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C0B9E89E19AA2B6800DB7247 /* MainMenu.strings */,
+				C02C98871911B81D00425167 /* Localizable.strings */,
+				C02C98731911B55600425167 /* Managed Software Center-Info.plist */,
+				C09004FC16CDD84E00BE34CE /* InfoPlist.strings */,
+				C09004FF16CDD84E00BE34CE /* main.m */,
+				C090050116CDD84E00BE34CE /* Managed Software Center-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C0B37439187089B900B6204E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C049C9941AEC77DD00251D45 /* updatesTemplate.png */,
+				C0F1586D187D256200052F9A /* MyStuffTemplate.png */,
+				C0B3744418708A0300B6204E /* templates */,
+				C0B3744518708A0300B6204E /* WebResources */,
+				C0B3743A187089F300B6204E /* AllItemsTemplate.png */,
+				C0B3743D187089F300B6204E /* toolbarCategoriesTemplate.pdf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		C0EF96B21ADDB90B002C02FF /* MSCDockTilePlugin */ = {
+			isa = PBXGroup;
+			children = (
+				C0EF96B81ADDB9B2002C02FF /* MSCDockTilePlugIn.h */,
+				C0EF96B91ADDB9B2002C02FF /* MSCDockTilePlugIn.m */,
+				C0EF96B31ADDB90B002C02FF /* Supporting Files */,
+			);
+			path = MSCDockTilePlugin;
+			sourceTree = "<group>";
+		};
+		C0EF96B31ADDB90B002C02FF /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C0EF96B41ADDB90B002C02FF /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C09004EC16CDD84E00BE34CE /* Managed Software Center */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Center" */;
+			buildPhases = (
+				C09CE1D918BEA41000B9724A /* Localize */,
+				C09004E916CDD84E00BE34CE /* Sources */,
+				C09004EA16CDD84E00BE34CE /* Frameworks */,
+				C09004EB16CDD84E00BE34CE /* Resources */,
+				C09CE1DA18BEA59E00B9724A /* Embed version info */,
+				C0EF96BC1ADDBD77002C02FF /* Copy Files */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C0EF96C21ADDCBAD002C02FF /* PBXTargetDependency */,
+			);
+			name = "Managed Software Center";
+			productName = SomeDumbTest;
+			productReference = C09004ED16CDD84E00BE34CE /* Managed Software Center.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C0EF96B01ADDB90B002C02FF /* MSCDockTilePlugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0EF96B51ADDB90B002C02FF /* Build configuration list for PBXNativeTarget "MSCDockTilePlugin" */;
+			buildPhases = (
+				C0EF96C01ADDC0AF002C02FF /* Resources */,
+				C0EF96AD1ADDB90B002C02FF /* Sources */,
+				C0EF96AE1ADDB90B002C02FF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MSCDockTilePlugin;
+			productName = MSCDockTilePlugin;
+			productReference = C0EF96B11ADDB90B002C02FF /* MSCDockTilePlugin.docktileplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C09004E416CDD84E00BE34CE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = MSC;
+				LastUpgradeCheck = 0720;
+				ORGANIZATIONNAME = "The Munki Project";
+				TargetAttributes = {
+					C0EF96B01ADDB90B002C02FF = {
+						CreatedOnToolsVersion = 6.3;
+					};
+				};
+			};
+			buildConfigurationList = C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Center" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				da,
+				Dutch,
+				English,
+				fi,
+				French,
+				German,
+				nb,
+				ru,
+				Spanish,
+				sv,
+				ar,
+				ca,
+				cs,
+				el,
+				he,
+				hr,
+				hu,
+				Italian,
+				Japanese,
+				ko,
+				no,
+				pl,
+				pt,
+				pt_PT,
+				ro,
+				sk,
+				th,
+				tr,
+				uk,
+				zh_CN,
+				zh_TW,
+				fr,
+				de,
+				es,
+				"nl-NL",
+				nl,
+				en_CA,
+				en_GB,
+				en_AU,
+				en_US,
+				"en-CA",
+				"en-GB",
+				"en-AU",
+				it,
+				ja,
+			);
+			mainGroup = C09004E216CDD84E00BE34CE;
+			productRefGroup = C09004EE16CDD84E00BE34CE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C09004EC16CDD84E00BE34CE /* Managed Software Center */,
+				C0EF96B01ADDB90B002C02FF /* MSCDockTilePlugin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C09004EB16CDD84E00BE34CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0B9E8B219AB8E5500DB7247 /* InfoPlist.strings in Resources */,
+				C02C98891911B81D00425167 /* Localizable.strings in Resources */,
+				C090050B16CDD84E00BE34CE /* MainMenu.xib in Resources */,
+				C049C9951AEC77DD00251D45 /* updatesTemplate.png in Resources */,
+				C00F67571F016C9F00D9007D /* CocoaWrapper.py in Resources */,
+				C090050616CDD84E00BE34CE /* main.py in Resources */,
+				C0E098BC1857A3C80045DEEB /* msclib.py in Resources */,
+				C042CA151EAD86DE006CC681 /* MSCPasswordAlertController.py in Resources */,
+				C0AAA21E18BAD8710012663F /* msclog.py in Resources */,
+				C0AAA22018BC67F90012663F /* mschtml.py in Resources */,
+				C05C3CEF188391F200095E65 /* munki.py in Resources */,
+				C01FBD311EA64CD600AE97EE /* passwdutil.py in Resources */,
+				C079D9C118BD435200BAD62E /* AlertController.py in Resources */,
+				C00A4C57185FCEC9004EB3B7 /* FoundationPlist.py in Resources */,
+				C0D6D0691EA55B470099C126 /* authrestart.py in Resources */,
+				C0453A211CCEF7B60002D396 /* MSCLogWindowController.py in Resources */,
+				C090050816CDD84E00BE34CE /* MSCAppDelegate.py in Resources */,
+				C0AE865A186D32AF00C87AE7 /* MSCBadgedTemplateImage.py in Resources */,
+				C0A71B76188A47C700A6EE82 /* MSCMainWindowController.py in Resources */,
+				C094B6CF188F7C7700E06897 /* MSCStatusController.py in Resources */,
+				650B29A419B69FC800A5E946 /* MSCToolbar.py in Resources */,
+				C0AAA21C18B801400012663F /* MunkiItems.py in Resources */,
+				C0B9E8B619AF7E9E00DB7247 /* Managed Software Center 10_6.icns in Resources */,
+				C0AE8658186D2DF900C87AE7 /* Managed Software Center.icns in Resources */,
+				C0B37442187089F300B6204E /* toolbarCategoriesTemplate.pdf in Resources */,
+				C0F1586E187D256200052F9A /* MyStuffTemplate.png in Resources */,
+				C0B3743F187089F300B6204E /* AllItemsTemplate.png in Resources */,
+				C0B3744718708A0300B6204E /* WebResources in Resources */,
+				C0B3744618708A0300B6204E /* templates in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0EF96C01ADDC0AF002C02FF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C09CE1D918BEA41000B9724A /* Localize */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = Localize;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd Managed\\ Software\\ Center\n\n# generate localizable strings\n./Localize.py --to en --genstrings \"./*.{h,m,py}\" --utf8\n\n# localize nibs\n./Localize.py --from en --to da --utf8\n./Localize.py --from en --to de --utf8\n./Localize.py --from en --to en_CA --utf8\n./Localize.py --from en --to en_GB --utf8\n./Localize.py --from en --to en_AU --utf8\n./Localize.py --from en --to es --utf8\n./Localize.py --from en --to fi --utf8\n./Localize.py --from en --to fr --utf8\n./Localize.py --from en --to it --utf8\n./Localize.py --from en --to ja --utf8\n./Localize.py --from en --to nb --utf8\n./Localize.py --from en --to nl --utf8\n./Localize.py --from en --to ru --utf8\n./Localize.py --from en --to sv --utf8";
+		};
+		C09CE1DA18BEA59E00B9724A /* Embed version info */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed version info";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\n# Git isn't installed on 10.6 or earlier by default, so find it\nGIT=`which git`\nif [ \"$GIT\" == \"\" ] ; then\n    # let's hope it's in /usr/local/bin\n    if [ -x \"/usr/local/bin/git\" ] ; then\n        GIT=/usr/local/bin/git\n    fi\nfi\n\nif [ \"$GIT\" != \"\" ] ; then\n    # generate a pseudo-svn revision number from the list of Git revisions\n    GITREV=`$GIT log -n1 --format=\"%H\" -- ./`\n  GITREVINDEX=`$GIT rev-list --count $GITREV`\n    REV=$(($GITREVINDEX + $MAGICNUMBER))\n\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n    /usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C09004E916CDD84E00BE34CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C090050016CDD84E00BE34CE /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0EF96AD1ADDB90B002C02FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0EF96BA1ADDB9B2002C02FF /* MSCDockTilePlugIn.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C0EF96C21ADDCBAD002C02FF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C0EF96B01ADDB90B002C02FF /* MSCDockTilePlugin */;
+			targetProxy = C0EF96C11ADDCBAD002C02FF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C02C98871911B81D00425167 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C02C98881911B81D00425167 /* en */,
+				C02C988A1911B82900425167 /* fr */,
+				C02C988B1911B82A00425167 /* de */,
+				C02C988C1911B82C00425167 /* es */,
+				C02C988D1911B82D00425167 /* da */,
+				C02C988E1911B82E00425167 /* fi */,
+				C02C988F1911B82E00425167 /* nb */,
+				C02C98901911B83000425167 /* ru */,
+				C02C98911911B83100425167 /* sv */,
+				C07E957F1913EE4600B40B9A /* nl */,
+				E68EB4521993C40C0003D10C /* en_CA */,
+				E62967541993D4AF00ADCB43 /* en_GB */,
+				E665C3B81993D58D00C428C4 /* en_AU */,
+				C046261619FFF8CC00AF1E48 /* it */,
+				C01E26921B4DADE4005ACFFB /* ja */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		C09004FC16CDD84E00BE34CE /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C09004FD16CDD84E00BE34CE /* en */,
+				C02C98761911B63E00425167 /* fr */,
+				C02C98781911B64A00425167 /* de */,
+				C02C987A1911B65600425167 /* es */,
+				C02C987C1911B66400425167 /* da */,
+				C02C987E1911B67600425167 /* fi */,
+				C02C98801911B67F00425167 /* nb */,
+				C02C98821911B68800425167 /* ru */,
+				C02C98841911B69000425167 /* sv */,
+				C07E95801913EE4600B40B9A /* nl */,
+				E68EB44F1993C3950003D10C /* en_CA */,
+				E62967551993D4B900ADCB43 /* en_GB */,
+				E665C3BA1993D59600C428C4 /* en_AU */,
+				C046261719FFF8DA00AF1E48 /* it */,
+				C01E26931B4DADEB005ACFFB /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		C090050916CDD84E00BE34CE /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C090050A16CDD84E00BE34CE /* en */,
+				C02C98751911B63E00425167 /* fr */,
+				C02C98771911B64A00425167 /* de */,
+				C02C98791911B65600425167 /* es */,
+				C02C987B1911B66400425167 /* da */,
+				C02C987D1911B67600425167 /* fi */,
+				C02C987F1911B67F00425167 /* nb */,
+				C02C98811911B68800425167 /* ru */,
+				C02C98831911B69000425167 /* sv */,
+				C07E957E1913EE4600B40B9A /* nl */,
+				E68EB4501993C3AC0003D10C /* en_CA */,
+				E62967521993D4A400ADCB43 /* en_GB */,
+				E665C3BB1993D5A600C428C4 /* en_AU */,
+				C046261819FFF98900AF1E48 /* it */,
+				C01E26941B4DADF3005ACFFB /* ja */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		C0B9E89E19AA2B6800DB7247 /* MainMenu.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C0B9E89F19AA2B6800DB7247 /* en */,
+				C0B9E8A119AA2B8400DB7247 /* fr */,
+				C0B9E8A219AA2B8600DB7247 /* de */,
+				C0B9E8A319AA2B8900DB7247 /* es */,
+				C0B9E8A419AA2B8B00DB7247 /* da */,
+				C0B9E8A519AA2B8D00DB7247 /* fi */,
+				C0B9E8A619AA2B9100DB7247 /* nb */,
+				C0B9E8A719AA2B9400DB7247 /* ru */,
+				C0B9E8A819AA2B9700DB7247 /* sv */,
+				C0B9E8A919AA2B9A00DB7247 /* nl */,
+				C0B9E8AD19AA55DC00DB7247 /* en_AU */,
+				C0B9E8AE19AA55DC00DB7247 /* en_CA */,
+				C0B9E8AF19AA55DC00DB7247 /* en_GB */,
+				C046261519FFF8C000AF1E48 /* it */,
+				C01E26911B4DADDC005ACFFB /* ja */,
+			);
+			name = MainMenu.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C090050C16CDD84E00BE34CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C090050D16CDD84E00BE34CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C090050F16CDD84E00BE34CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Managed Software Center/Managed Software Center-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Managed Software Center-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
+				PRODUCT_NAME = "Managed Software Center";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		C090051016CDD84E00BE34CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Managed Software Center/Managed Software Center-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Managed Software Center-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
+				PRODUCT_NAME = "Managed Software Center";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C0EF96B61ADDB90B002C02FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MSCDockTilePlugin/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = NO;
+				WRAPPER_EXTENSION = docktileplugin;
+			};
+			name = Debug;
+		};
+		C0EF96B71ADDB90B002C02FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MSCDockTilePlugin/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = NO;
+				WRAPPER_EXTENSION = docktileplugin;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C09004E716CDD84E00BE34CE /* Build configuration list for PBXProject "Managed Software Center" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C090050C16CDD84E00BE34CE /* Debug */,
+				C090050D16CDD84E00BE34CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C090050E16CDD84E00BE34CE /* Build configuration list for PBXNativeTarget "Managed Software Center" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C090050F16CDD84E00BE34CE /* Debug */,
+				C090051016CDD84E00BE34CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0EF96B51ADDB90B002C02FF /* Build configuration list for PBXNativeTarget "MSCDockTilePlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0EF96B61ADDB90B002C02FF /* Debug */,
+				C0EF96B71ADDB90B002C02FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C09004E416CDD84E00BE34CE /* Project object */;
+}

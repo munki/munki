@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 5/27/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -52,6 +52,36 @@ func reloadPrefs() {
     CFPreferencesAppSynchronize(BUNDLE_ID)
 }
 
+func pythonishBool(_ foo: Any?) -> Bool {
+    // Converts values of various types to boolean in the same way
+    // Python treats non-booleans in a boolean context
+    if let bar = foo as? Bool {
+        return bar
+    }
+    if let bar = foo as? Int {
+        // Anything but 0 is true
+        return bar != 0
+    }
+    if let bar = foo as? Double {
+        // Anything but 0 is true
+        return bar != 0.0
+    }
+    if let bar = foo as? String {
+        // Non-empty strings are true; else false
+        return !bar.isEmpty
+    }
+    if let bar = foo as? Array<Any> {
+        // Non-empty arrays are true; else false
+        return !bar.isEmpty
+    }
+    if let bar = foo as? Dictionary<AnyHashable, Any> {
+        // Non-empty dicts are true; else false
+        return !bar.isEmpty
+    }
+    // nil or unhandled type is false
+    return false
+}
+
 func pref(_ prefName: String) -> Any? {
     /* Return a preference. Since this uses CFPreferencesCopyAppValue,
      Preferences can be defined several places. Precedence is:
@@ -66,7 +96,8 @@ func pref(_ prefName: String) -> Any? {
         "AppleSoftwareUpdatesOnly": false,
         "ShowRemovalDetail": false,
         "InstallRequiresLogout": false,
-        "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS
+        "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS,
+        "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     ]
     var value: Any?
     value = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
@@ -74,6 +105,21 @@ func pref(_ prefName: String) -> Any? {
         value = defaultPrefs[prefName]
     }
     return value
+}
+
+func logFilePref() -> String {
+    /* Returns Munki's LogFile preference. Since this uses CFPreferencesCopyAppValue,
+     preferences can be defined several places. Precedence is:
+     - MCX/configuration profile
+     - ~/Library/Preferences/ManagedInstalls.plist
+     - /Library/Preferences/ManagedInstalls.plist
+     - default_pref defined here.
+     */
+    let value = CFPreferencesCopyAppValue("LogFile" as CFString, "ManagedInstalls" as CFString)
+    if value == nil {
+        return "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
+    }
+    return value! as! String
 }
 
 func readSelfServiceManifest() -> PlistDict {
@@ -135,12 +181,12 @@ func userSelfServiceChoicesChanged() -> Bool {
 
 func getRemovalDetailPrefs() -> Bool {
     // Returns preference to control display of removal detail
-    return pref("ShowRemovalDetail") as? Bool ?? false
+    return pythonishBool(pref("ShowRemovalDetail"))
 }
 
 func installRequiresLogout() -> Bool {
     // Returns preference to force logout for all installs
-    return pref("InstallRequiresLogout") as? Bool ?? false
+    return pythonishBool(pref("InstallRequiresLogout"))
 }
 
 func readPlistAsNSDictionary(_ filepath: String) -> PlistDict {
@@ -163,8 +209,8 @@ func getInstallInfo() -> PlistDict {
 
 func getAppleUpdates() -> PlistDict {
     // Returns any available Apple update info
-    let installAppleSoftwareUpdates = pref("InstallAppleSoftwareUpdates") as? Bool ?? false
-    let appleSoftwareUpdatesOnly = pref("AppleSoftwareUpdatesOnly") as? Bool ?? false
+    let installAppleSoftwareUpdates = pythonishBool(pref("InstallAppleSoftwareUpdates"))
+    let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
     if installAppleSoftwareUpdates || appleSoftwareUpdatesOnly {
         let managedinstallbase = pref("ManagedInstallDir") as! String
         let appleupdates_path = NSString.path(
@@ -262,20 +308,6 @@ func shortRelativeStringFromDate(_ theDate: Date) -> String {
     return df.string(from: theDate)
 }
 
-func startUpdateCheck(_ suppress_spple_update_check: Bool = false) -> Bool {
-    // Does launchd magic to run managedsoftwareupdate as root.
-    if !(FileManager.default.fileExists(atPath: UPDATECHECKLAUNCHFILE)) {
-        let plist = ["SuppressAppleUpdateCheck": suppress_spple_update_check]
-        do {
-            try writePlist(plist, toFile: UPDATECHECKLAUNCHFILE)
-        } catch {
-            // problem creating the trigger file
-            return false
-        }
-    }
-    return true
-}
-
 func humanReadable(_ kbytes: Int) -> String {
     let units: [(String, Int)] = [
         ("KB", 1024),
@@ -332,8 +364,25 @@ func currentGUIusers() -> [String] {
     return gui_users
 }
 
+enum ProcessStartError: Error {
+    case error(description: String)
+}
+
+func startUpdateCheck(_ suppress_apple_update_check: Bool = false) throws {
+    // Does launchd magic to run managedsoftwareupdate as root.
+    if !(FileManager.default.fileExists(atPath: UPDATECHECKLAUNCHFILE)) {
+        let plist = ["SuppressAppleUpdateCheck": suppress_apple_update_check]
+        do {
+            try writePlist(plist, toFile: UPDATECHECKLAUNCHFILE)
+        } catch {
+            throw ProcessStartError.error(
+                description: "Could not create file \(UPDATECHECKLAUNCHFILE) -- \(error)")
+        }
+    }
+}
+
 func logoutNow() {
-    /* Uses oscascript to run an AppleScript
+    /* Uses osascript to run an AppleScript
      to tell loginwindow to logout.
      Ugly, but it works. */
     let script = """
@@ -346,28 +395,34 @@ end ignoring
     _ = exec("/usr/bin/osascript", args: ["-e", script])
 }
 
-func logoutAndUpdate() -> Bool {
+func logoutAndUpdate() throws {
     // Touch a flag so the process that runs after logout
     // knows it's OK to install everything, then trigger logout
     if !(FileManager.default.fileExists(atPath: INSTALLATLOGOUTFILE)) {
         let success = FileManager.default.createFile(
             atPath: INSTALLATLOGOUTFILE, contents: nil, attributes: nil)
-        if !success { return false }
+        if !success {
+            throw ProcessStartError.error(
+                description: "Could not create file \(INSTALLATLOGOUTFILE)")
+        }
     }
     logoutNow()
-    return true
 }
 
-func justUpdate() -> Bool {
+func justUpdate() throws {
     /* Trigger managedinstaller via launchd KeepAlive path trigger
      We touch a file that launchd is is watching
      launchd, in turn,
      launches managedsoftwareupdate --installwithnologout as root */
     if FileManager.default.fileExists(atPath: INSTALLWITHOUTLOGOUTFILE) {
-        return true
+        return
     }
-    return FileManager.default.createFile(
+    let success = FileManager.default.createFile(
             atPath: INSTALLWITHOUTLOGOUTFILE, contents: nil, attributes: nil)
+    if !success {
+        throw ProcessStartError.error(
+            description: "Could not create file \(INSTALLWITHOUTLOGOUTFILE)")
+    }
 }
 
 func pythonScriptRunning(_ scriptName: String) -> Bool {
