@@ -44,14 +44,14 @@ div.installations table:not(.no-header):before {
 }
 div.installations thead {
     border-radius: 5px 5px 0 0;
-    height: 50px;
-    border-bottom: 1px solid var(--line-color);
+    height: 32px;
+    border-bottom: 1px solid #d7d7d7;
 }
 div.installations th {
     color: var(--text-color-normal);
-    font-size: 32px;
-    font-weight: bold;
-    height: 50px;
+    font-size: 14px;
+    font-weight: normal;
+    height: 32px;
     line-height: 14px;
     text-align: left
 }
