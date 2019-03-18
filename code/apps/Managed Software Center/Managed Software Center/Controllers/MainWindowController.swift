@@ -170,22 +170,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
     }
     
-    func enableOrDisableToolbarButtons(_ enabled: Bool) {
-        // Enable or disable buttons in our toolbar
-        var enabled_state = enabled
-        var updates_button_state = true
-        if let window = self.window {
-            if window.isMainWindow == false {
-                enabled_state = false
-                updates_button_state = false
-            }
-        }
-    }
-    
     func enableOrDisableSoftwareViewControls() {
         // Disable or enable the controls that let us view optional items
         let enabled_state = (getOptionalInstallItems().count > 0)
-        enableOrDisableToolbarButtons(enabled_state)
         searchField.isEnabled = enabled_state
     }
     
@@ -332,14 +319,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func windowDidBecomeMain(_ notification: Notification) {
         // Our window was activated, make sure controls enabled as needed
-        let enabled_state = (getOptionalInstallItems().count > 0)
-        enableOrDisableToolbarButtons(enabled_state)
         sidebar.action = #selector(onItemClicked)
     }
     
     func windowDidResignMain(_ notification: Notification) {
         // Our window was deactivated, make sure controls enabled as needed
-        enableOrDisableToolbarButtons(false)
     }
     
     // End NSWindowDelegate methods
