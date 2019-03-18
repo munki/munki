@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ def padVersionString(versString, tupleCount):
 def getVersionString(plist, key=None):
     """Gets a version string from the plist.
 
-    If a key is explictly specified, the value of that key is
+    If a key is explicitly specified, the value of that key is
     returned without modification, or an empty string if the
     key does not exist.
 
@@ -132,11 +132,11 @@ def getVersionString(plist, key=None):
     VersionString = ''
     if key:
         # admin has specified a specific key
-        # return value verbatum or empty string
+        # return value verbatim or empty string
         return plist.get(key, '')
 
     # default to CFBundleShortVersionString plus magic
-    # and workarounds and edge case cleanupds
+    # and workarounds and edge case cleanups
     key = 'CFBundleShortVersionString'
     if not 'CFBundleShortVersionString' in plist:
         if 'Bundle versions string, short' in plist:
@@ -263,9 +263,9 @@ def parsePkgRefs(filename, path_to_pkg=None):
                 if payloads:
                     keys = payloads[0].attributes.keys()
                     if 'installKBytes' in keys:
-                        pkginfo['installed_size'] = int(
+                        pkginfo['installed_size'] = int(float(
                             payloads[0].attributes[
-                                'installKBytes'].value.encode('UTF-8'))
+                                'installKBytes'].value.encode('UTF-8')))
                     if pkginfo not in info:
                         info.append(pkginfo)
                 # if there isn't a payload, no receipt is left by a flat
@@ -285,9 +285,9 @@ def parsePkgRefs(filename, path_to_pkg=None):
                         pkgref_dict[pkgid]['version'] = \
                             ref.attributes['version'].value.encode('UTF-8')
                     if 'installKBytes' in keys:
-                        pkgref_dict[pkgid]['installed_size'] = int(
+                        pkgref_dict[pkgid]['installed_size'] = int(float(
                             ref.attributes['installKBytes'].value.encode(
-                                'UTF-8'))
+                                'UTF-8')))
                     if ref.firstChild:
                         text = ref.firstChild.wholeText
                         if text.endswith('.pkg'):

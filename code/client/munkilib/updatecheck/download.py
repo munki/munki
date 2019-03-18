@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -333,7 +333,7 @@ def download_client_resources():
 
 def download_catalog(catalogname):
     '''Attempt to download a catalog from the Munki server, Returns the path to
-    the downlaoded catalog file'''
+    the downloaded catalog file'''
     catalogbaseurl = (prefs.pref('CatalogURL') or
                       prefs.pref('SoftwareRepoURL') + '/catalogs/')
     if not catalogbaseurl.endswith('?') and not catalogbaseurl.endswith('/'):
@@ -368,15 +368,18 @@ def _installinfo():
 
 def _items_to_precache(install_info):
     '''Returns a list of items from InstallInfo.plist's optional_installs
-    that have precache=True and installed=False'''
+    that have precache=True and (installed=False or needs_update=True)'''
     optional_install_items = install_info.get('optional_installs', [])
     precache_items = [item for item in optional_install_items
-                      if item.get('precache') and not item.get('installed')]
+                      if item.get('precache')
+                      and (not item.get('installed')
+                           or item.get('needs_update'))]
     return precache_items
 
 
 def cache():
     '''Download any applicable precache items into our Cache folder'''
+    display.display_info("###   Beginning precaching session   ###")
     install_info = _installinfo()
     for item in _items_to_precache(install_info):
         try:
@@ -385,24 +388,38 @@ def cache():
             display.display_warning(
                 'Failed to precache the installer for %s because %s',
                 item['name'], unicode(err))
+    display.display_info("###    Ending precaching session     ###")
 
 
 def uncache(space_needed_in_kb):
     '''Discard precached items to free up space for managed installs'''
     install_info = _installinfo()
-    precached_items = [
+    # make a list of names of precachable items
+    precachable_items = [
         [os.path.basename(item['installer_item_location'])]
         for item in _items_to_precache(install_info)
         if item.get('installer_item_location')]
-    if not precached_items:
+    if not precachable_items:
         return
 
     cachedir = os.path.join(prefs.pref('ManagedInstallDir'), 'Cache')
+    # now filter our list to items actually downloaded
+    items_in_cache = osutils.listdir(cachedir)
+    precached_items = [item for item in precachable_items
+                       if item in items_in_cache]
+    if not precached_items:
+        return
+
     precached_size = 0
     for item in precached_items:
         # item is [itemname]
         item_path = os.path.join(cachedir, item[0])
-        itemsize = int(os.path.getsize(item_path)/1024)
+        try:
+            itemsize = int(os.path.getsize(item_path)/1024)
+        except OSError, err:
+            display.display_warning("Could not get size of %s: %s"
+                                    % (item_path, err))
+            itemsize = 0
         precached_size += itemsize
         item.append(itemsize)
         # item is now [itemname, itemsize]
@@ -435,6 +452,8 @@ def uncache(space_needed_in_kb):
                 "Could not remove precached item %s: %s" % (item_path, err))
 
 
+PRECACHING_AGENT_LABEL = "com.googlecode.munki.precache_agent"
+
 def run_precaching_agent():
     '''Kick off a run of our precaching agent, which allows the precaching to
     run in the background after a normal Munki run'''
@@ -452,16 +471,32 @@ def run_precaching_agent():
         # try absolute path in Munki's normal install dir
         precache_agent_path = '/usr/local/munki/precache_agent'
     if os.path.exists(precache_agent_path):
+        display.display_info("Starting precaching agent")
         display.display_debug1(
             'Launching precache_agent from %s', precache_agent_path)
         try:
-            job = launchd.Job([precache_agent_path], cleanup_at_exit=False)
+            job = launchd.Job([precache_agent_path],
+                              job_label=PRECACHING_AGENT_LABEL,
+                              cleanup_at_exit=False)
             job.start()
         except launchd.LaunchdJobException as err:
             display.display_error(
                 'Error with launchd job (%s): %s', precache_agent_path, err)
     else:
         display.display_error("Could not find precache_agent")
+
+
+def stop_precaching_agent():
+    '''Stop the precaching_agent if it's running'''
+    agent_info = launchd.job_info(PRECACHING_AGENT_LABEL)
+    if agent_info.get('state') != 'unknown':
+        # it's either running or stopped. Removing it will stop it.
+        if agent_info.get('state') == 'running':
+            display.display_info("Stopping precaching agent")
+        try:
+            launchd.remove_job(PRECACHING_AGENT_LABEL)
+        except launchd.LaunchdJobException, err:
+            display.display_error('Error stopping precaching agent: %s', err)
 
 
 if __name__ == '__main__':

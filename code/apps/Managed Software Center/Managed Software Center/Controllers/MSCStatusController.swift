@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/11/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -16,7 +16,7 @@ class MSCStatusController: NSObject {
     // Handles status messages from managedsoftwareupdate
     var session_started = false
     var got_status_update = false
-    var timer: Timer?
+    var timer: Timer? = nil
     
     var _status_restartAlertDismissed = false
     var _status_stopBtnDisabled = false
@@ -58,11 +58,11 @@ class MSCStatusController: NSObject {
         // process failure
         timeout_counter = 6
         saw_process = false
-        timer = Timer(timeInterval: 5.0,
-                      target: self,
-                      selector: #selector(self.checkProcess),
-                      userInfo: nil,
-                      repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 5.0,
+                                     target: self,
+                                     selector: #selector(self.checkProcess),
+                                     userInfo: nil,
+                                     repeats: true)
     }
     
     @objc func checkProcess() {
@@ -105,14 +105,14 @@ class MSCStatusController: NSObject {
     }
     
     func sessionEnded(_ result: Int) {
-        // clean up after a managesoftwareupdate session ends
+        // clean up after a managedsoftwareupdate session ends
         if let uTimer = timer {
             uTimer.invalidate()
             timer = nil
         }
         cleanUpStatusSession()
         // tell the window controller the update session is done
-        statusWindowController.munkiStatusSessionEnded(result)
+        statusWindowController.munkiStatusSessionEnded(withStatus: result, errorMessage: "")
     }
     
     @objc func updateStatus(_ notification: NSUserNotification) {
@@ -130,7 +130,7 @@ class MSCStatusController: NSObject {
         if let detail = info["detail"] as? String {
             setDetail(detail)
         }
-        if let percent = info["percent"] as? String {
+        if let percent = info["percent"] {
             setPercentageDone(percent)
         }
         if let stop_button_visible = info["stop_button_visible"] as? Bool {
@@ -158,7 +158,7 @@ class MSCStatusController: NSObject {
         }
         if command == "activate" {
             // do nothing
-        } else if command == "shoeRestartAlert" {
+        } else if command == "showRestartAlert" {
             if session_started {
                 sessionEnded(0)
             }
@@ -297,7 +297,7 @@ class MSCStatusController: NSObject {
     }
     
     func getRestartAlertDismissed() -> Bool {
-        // Was the restart alert dimissed?'
+        // Was the restart alert dismissed?'
         return _status_restartAlertDismissed
     }
     

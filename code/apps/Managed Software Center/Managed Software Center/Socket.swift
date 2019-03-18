@@ -1,9 +1,9 @@
 //
-//  UnixDomainSocket.swift
+//  Socket.swift
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/23/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Darwin

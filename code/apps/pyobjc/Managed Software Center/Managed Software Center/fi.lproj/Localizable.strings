@@ -1,0 +1,476 @@
+/* Multiple Updates message */
+"%s pending updates" = "%s päivitystä saatavilla";
+
+/* One Update message */
+"1 pending update" = "1 päivitys saatavilla";
+
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii kaikkien ohjelmien sulkemista ja käyttäjien uloskirjautumista järjestelmästä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
+
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "Uloskirjautuminen suoritetaan pakotetusti noin %s.";
+
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "Uloskirjautuminen suoritetaan pakotetusti alle %s minuutin kuluttua.";
+
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Uloskirjautuminen suoritetaan alle minuutin kuluttua pakotetusti.\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Poistaminen epäonnistui mutta sitä yritetään uudelleen.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Järjestelmän määritysvirhe estää Managed Software Center -ohjelman toiminnan. Raportoitu ongelma on: ";
+
+/* Additional Pending Updates title */
+"Additional Pending Updates" = "Muut odottavat päivitykset";
+
+/* AllCategoriesLabel */
+"All Categories" = "Kaikki kategoriat";
+
+/* AllItemsHeaderText */
+"All items" = "Kaikki ohjelmistot";
+
+/* Forced Logout warning detail */
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Kaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.\nVoit ohittaa pakotetun uloskirjaamisen kirjautumalla ulos nyt.";
+
+/* Allow button text */
+"Allow" = "Salli";
+
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Asennus epäonnistui mutta sitä yritetään uudelleen.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "Vanhempi versio on asennettu. Päivityksen lataamiseen ja asentamiseen ei ole riittävästi levytilaa.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Vanhempi versio on asennettu. Päivityksen asentamiseen tarvitaan macOS %s tai uudempi.";
+
+/* Other Users Blocking Apps Running title */
+"Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
+
+/* Cancel button title/short action text */
+"Cancel" = "Kumoa";
+
+/* Cancel Install long action text */
+"Cancel install" = "Kumoa asennus";
+
+/* Cancel Removal long action text */
+"Cancel removal" = "Kumoa poisto";
+
+/* Cancel Update long action text */
+"Cancel update" = "Keskeytä päivitys";
+
+/* Item Not Found message */
+"Cannot display the requested item." = "Pyydettyä kohdetta ei voida näyttää.";
+
+/* Categories label */
+"Categories" = "Kategoriat";
+
+/* Sidebar Category label */
+"Category:" = "Kategoria:";
+
+/* Check Again button title */
+"Check Again" = "Tarkista uudelleen";
+
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Tarkistetaan Applen ohjelmistopäivitysten luetteloa...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Tarkistetaan muutoksia...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Tarkistetaan Applen ohjelmistopäivityksiä...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Tarkistetaan päivityksiä...";
+
+/* Checking For Updates message */
+"Checking for updates..." = "Tarkistetaan päivityksiä...";
+
+/* Blocking Apps Running title */
+"Conflicting applications running" = "Käynnissä on ohjelmia jotka estävät päivityksen";
+
+/* Continue button text */
+"Continue" = "Jatka";
+
+/* Critical Update type */
+"Critical Update" = "Kriittinen päivitys";
+
+/* Unavailable long action text */
+"Currently Unavailable" = "Ei saatavilla tällä hetkellä";
+
+/* Deny button text */
+"Deny" = "Kiellä";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Määritetään poistettavia kohteita";
+
+/* Sidebar Developer label */
+"Developer:" = "Kehittäjä:";
+
+/* managedsoftwareupdate message */
+"Done." = "Valmis.";
+
+/* Downloading status text */
+"Downloading" = "Ladataan";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Haetaan Applen ohjelmistopäivityksiä...";
+
+/* Sidebar Due label */
+"Due:" = "Asennettava:";
+
+/* FeaturedLabel */
+"Featured" = "Esittelyssä";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Esittelyssä";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Viimeistellään...";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Tietokoneellesi asennetaan laiteohjelmistopäivitys. Tietokoneen virtajohdon pitää olla liitettynä toimivaan virtalähteeseen. Päivityksen suorittaminen kestää useita minuutteja. Älä häiritse tai sammuta tietokonetta päivityksen aikana.";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Tietokone tulisi varmuuden vuoksi liittää virtalähteeseen ennen päivittämistä. Oletko varma että haluat jatkaa?";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "Pakotettu uloskirjautuminen pakolliselle asennukselle";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Kootaan tietoja asennetuista paketeista";
+
+/* No help alert title */
+"Help" = "Ohje";
+
+/* No help alert detail */
+"Help isn't available for Managed Software Center." = "Managed Software Center -ohjelmalle ei ole ohjetta.";
+
+/* Sidebar Information label */
+"Information" = "Tietoja";
+
+/* Install action text */
+"Install" = "Asenna";
+
+/* Install Required action text */
+"Install Required" = "Pakollinen asennus";
+
+/* Install Requested status text */
+"Install requested" = "Asennusta pyydetty";
+
+/* Install Session Failed title */
+"Install session failed" = "Asennus epäonnistui";
+
+/* Install Error status text */
+"Installation Error" = "Virhe asennettaessa";
+
+/* Installed status text */
+"Installed" = "Asennettu";
+
+/* Installing status text */
+"Installing" = "Asennetaan";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Asennetaan Applen ohjelmistopäivityksiä...";
+
+/* Log out and Update button text */
+"Log out and update" = "Kirjaudu ulos ja päivitä";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "Kirjaudu ulos ja päivitä nyt";
+
+/* Logout Required title */
+"Logout Required" = "Vaatii uloskirjautumisen";
+
+/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei voi tarkistaa päivityksiä juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei saa yhteyttä palvelimeen juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center haluaa avata käynnistyslevyn lukituksen seuraavalla käynnistyskerralla jatkaakseen päivitysten asentamista.";
+
+/* Managed Update type */
+"Managed Update" = "Hallittu päivitys";
+
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "Pakollisia päivityksiä odottamassa";
+
+/* More link text */
+"More" = "Lisää";
+
+/* Sidebar More By Developer label */
+"More by %s" = "Lisää kehittäjältä %s";
+
+/* Sidebar More In Category label */
+"More in %s" = "Lisää kategoriassa %s";
+
+/* My Items label */
+"My Items" = "Omat ohjelmistot";
+
+/* No Licenses Available display text */
+"No licenses available" = "Ei lisenssejä saatavilla";
+
+/* No Updates message */
+"No pending updates" = "Ei päivityksiä";
+
+/* Item Not Found title */
+"Not Found" = "Ei tuloksia";
+
+/* Not Currently Available display text */
+"Not currently available" = "Ei saatavilla tällä hetkellä";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "Kovalevyllä ei ole tarpeeksi tilaa";
+
+/* Not Installed status text */
+"Not installed" = "Ei asennettu";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Ei poistettavia kohteita.";
+
+/* OK button title */
+"OK" = "OK";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "Yksi tai useampi kohde täytyy asentaa ennen %s";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Yksi tai useampi pakollinen päivitys on myöhässä. Uloskirjautuminen tullaan suorittamaan pakotetusti pian.";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Yksi tai useampi päivitys täytyy asentaa ennen %s. Uloskirjautuminen saatetaan pakottaa jos odotat liian pitkään ennen päivittämistä.";
+
+/* Other Available Updates label */
+"Other available updates" = "Muut saatavilla olevat päivitykset";
+
+/* Other Users Blocking Apps Running detail */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Muut kirjautuneet käyttäjät käyttävät seuraavia ohjelmia. Yritä myöhemmin uudelleen kun ohjelmat eivät ole enää käytössä:\n\n%s";
+
+/* Other Users Logged In title */
+"Other users logged in" = "Muut kirjautuneet käyttäjät";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Paketin poisto valmis.";
+
+/* Password label */
+"Password:" = "Salasana:";
+
+/* Pending Updates alert title */
+"Pending updates" = "Odottavat päivitykset";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Suoritetaan viimeisteleviä tehtäviä...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Suoritetaan valmistavia tehtäviä...";
+
+/* Preparing Removal status text */
+"Preparing removal" = "Valmistellaan poistoa";
+
+/* Problem Updates label */
+"Problem updates" = "Epäonnistuneet päivitykset";
+
+/* Quit button title */
+"Quit" = "Lopeta";
+
+/* Removal Error status text */
+"Removal Error" = "Virhe poistettaessa";
+
+/* Removal Requested status text */
+"Removal requested" = "Poistoa pyydetty";
+
+/* Remove action text */
+"Remove" = "Poista";
+
+/* Removing status text */
+"Removing" = "Poistetaan";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Poistetaan kuitteja";
+
+/* Install Required action text */
+"Required" = "Pakollinen";
+
+/* Restart button title */
+"Restart" = "Käynnistä uudelleen";
+
+/* Restart Required title */
+"Restart Required" = "Vaatii uudelleenkäynnistyksen";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Haetaan ohjelmistolistaa tälle tietokoneelle...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Ajetaan Adobe Patch -asentajaa";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Ajetaan Adobe Setup -ohjelmistoa";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Ajetaan Adobe Uninstall -ohjelmistoa";
+
+/* No Installed Software secondary text */
+"Select software to install." = "Valitse asennettavat ohjelmistot.";
+
+/* Sidebar Size label */
+"Size:" = "Koko:";
+
+/* Software label */
+"Software" = "Ohjelmistot";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Asennettu ohjelmisto tai poisto vaatii tietokoneen uudelleenkäynnistyksen.";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Asennettu ohjelmisto tai poisto vaatii tietokoneen uudelleenkäynnistyksen. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Käynnistetään Adobe-asentajaa...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Aloitetaan...";
+
+/* Sidebar Status label */
+"Status:" = "Tila:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "Järjestelmän määritysvirhe";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Ohjelmiston asennus onnistui.";
+
+/* Additional Pending Updates detail */
+"There are additional pending updates to install or remove." = "Muita ohjelmistopäivityksiä tai poistoja odottamassa.";
+
+/* No Items primary text */
+"There are no available software items." = "Ei saatavilla olevia ohjelmistoja.";
+
+/* No Developer Results primary text */
+"There are no items from this developer." = "Ei kohteita tältä kehittäjältä.";
+
+/* No Category Results primary text */
+"There are no items in this category." = "Ei kohteita tässä kategoriassa.";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Tietokoneelle on kirjautuneena muita käyttäjiä.\nMuut käyttäjät saattavat menettää tallentamattomia muutoksia jos päivitys tehdään nyt.\n\nYritä uudelleen kun muut käyttäjät ovat kirjautuneet ulos.";
+
+/* Pending Updates alert detail text */
+"There are pending updates for this computer." = "Tietokoneelle on saatavilla ohjelmistopäivityksiä.";
+
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Asennusohjelmassa on konfiguraatiovirhe. Prosessia ei voitu käynnistää. Ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Asennusohjelmassa on konfiguraatiovirhe. Prosessi päättyi odottamatta. Ota yhteyttä järjestelmän ylläpitäjään.";
+
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "Tietokoneelle ei ole tällä hetkellä saatavilla uusia ohjelmistopäivityksiä.";
+
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Päivityksen lataamiseen ja asentamiseen ei ole riittävästi levytilaa.";
+
+/* Dependency List prologue text */
+"This item is required by:" = "Tämän kohteen vaatii:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "Asennettava ennen %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Salli lukituksen avaaminen syöttämällä salasana.";
+
+/* No Items secondary text */
+"Try again later." = "Yritä myöhemmin uudelleen.";
+
+/* No Search Results secondary text */
+"Try searching again." = "Yritä etsimistä uudelleen.";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "Valitse toinen kategoria.";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "Valitse toinen kehittäjä.";
+
+/* Sidebar Type label */
+"Type:" = "Tyyppi:";
+
+/* Unavailable status text */
+"Unavailable" = "Ei saatavilla";
+
+/* No Category name */
+"Uncategorized" = "Ei kategoriaa";
+
+/* Update button title/action text */
+"Update" = "Päivitä";
+
+/* Update All button title */
+"Update All" = "Päivitä kaikki";
+
+/* Update Required long action text */
+"Update Required" = "Pakollinen päivitys";
+
+/* No comment provided by engineer. */
+"Update available" = "Päivitys saatavilla";
+
+/* Update Check Failed title */
+"Update check failed" = "Päivitysten tarkistaminen epäonnistui";
+
+/* Update In Progress primary text */
+"Update in progress." = "Päivitys käynnissä.";
+
+/* Update Now button title */
+"Update now" = "Päivitä nyt";
+
+/* Update Will Be Installed status text */
+"Update will be installed" = "Päivitys asennetaan";
+
+/* Updates label */
+"Updates" = "Päivitykset";
+
+/* Updating message */
+"Updating..." = "Päivitetään...";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Tarkistetaan paketin eheyttä...";
+
+/* Sidebar Version label */
+"Version" = "Versio";
+
+/* Sidebar Version label */
+"Version:" = "Versio:";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Odotetaan verkkoyhteyttä...";
+
+/* Will Be Installed status text */
+"Will be installed" = "Asennetaan";
+
+/* Will Be Removed status text */
+"Will be removed" = "Poistetaan";
+
+/* No Installed Software primary text */
+"You have no selected software." = "Sinulla ei ole valittuja ohjelmistoja.";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%s";
+
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Päivityksen asentamiseen tarvitaan macOS %@.";
+
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "Tietokonetta ei ole liitetty virtalähteeseen.";
+
+/* No Search Results primary text */
+"Your search had no results." = "Ei tuloksia.";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "Ohjelmisto on ajan tasalla.";
+
+/* macOS update required text */
+"macOS update required" = "macOS-päivitys vaaditaan";

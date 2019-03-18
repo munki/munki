@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -181,8 +181,17 @@ def perform_auth_restart(username=None, password=None):
         return True
 
 
-def do_authorized_or_normal_restart(username=None, password=None):
-    '''Do an authrestart if allowed/possible, else do a normal restart.'''
+def do_authorized_or_normal_restart(username=None,
+                                    password=None,
+                                    shutdown=False):
+    '''Do a shutdown if needed, or an authrestart if allowed/possible,
+    else do a normal restart.'''
+    if shutdown:
+        # we need a shutdown here instead of any type of restart
+        display.display_info('Shutting down now.')
+        display.display_debug1('Performing a regular shutdown...')
+        dummy_retcode = subprocess.call(['/sbin/shutdown', '-h', '-o', 'now'])
+        return
     display.display_info('Restarting now.')
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
     if (prefs.pref('PerformAuthRestarts') and

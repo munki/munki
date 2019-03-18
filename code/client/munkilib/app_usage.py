@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2018 Greg Neagle.
+# Copyright 2017-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ from . import prefs
 # SQLite db to store application usage data
 APPLICATION_USAGE_DB = os.path.join(
     prefs.pref('ManagedInstallDir'), 'application_usage.sqlite')
-# SQL to detect existance of application usage table
+# SQL to detect existence of application usage table
 APPLICATION_USAGE_TABLE_DETECT = 'SELECT * FROM application_usage LIMIT 1'
 # This table creates ~64 bytes of disk data per event.
 APPLICATION_USAGE_TABLE_CREATE = (

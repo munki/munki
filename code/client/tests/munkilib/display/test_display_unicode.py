@@ -6,7 +6,7 @@ test_display_unicode.py
 Unit tests for display.display_* functions.
 
 """
-# Copyright 2014-2018 Greg Neagle.
+# Copyright 2014-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

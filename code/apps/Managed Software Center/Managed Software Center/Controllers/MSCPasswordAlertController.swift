@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/17/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -40,7 +40,7 @@ class MSCPasswordAlertController: NSObject {
         fieldFrame.origin.x = labelWidth + 8
         fieldFrame.size.width = viewWidth - labelWidth - 8
         passwordField.frame = fieldFrame
-        // add esc as a key equivilent for the Deny button
+        // add esc as a key equivalent for the Deny button
         alert.buttons[1].keyEquivalent = "\u{1B}"
         // change the Allow button to call our password validation method
         let allowButton = alert.buttons[0]
@@ -50,6 +50,7 @@ class MSCPasswordAlertController: NSObject {
         alert.window.initialFirstResponder = passwordField
         // we can finally run the alert!
         let result = alert.runModal()
+        alert.window.orderOut(nil)
         if result == .alertFirstButtonReturn {
             // they clicked "Allow". We handled it in the verifyPassword method
             msc_log("user", "stored password for auth restart")
@@ -68,8 +69,6 @@ class MSCPasswordAlertController: NSObject {
             // store username and password and end modal alert
             _ = storePassword(password, forUserName: username)
             NSApplication.shared.stopModal(withCode: .alertFirstButtonReturn)
-            NSApplication.shared.endSheet(alert.window, returnCode: NSApplication.ModalResponse.alertFirstButtonReturn.rawValue)
-            alert.window.orderOut(nil)
         } else {
             // wrong password, shake the alert window
             shake(alert.window)

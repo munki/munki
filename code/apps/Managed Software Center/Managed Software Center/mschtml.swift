@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/15/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -55,7 +55,7 @@ func getRawTemplate(_ template_name: String) -> String {
 }
 
 func getTemplate(_ template_name: String) -> Template {
-    // return a Template object containg our html template
+    // return a Template object containing our html template
     return Template(getRawTemplate(template_name))
 }
 
@@ -356,7 +356,7 @@ func buildListPage(category: String = "",
     var categories_html_list = ""
     for item in Array(category_set).sorted() {
         categories_html_list += (
-            "<li class=\"link\"><a href=\"category-\(quote(item)).html\">\(item)</a></li>\n")
+            "<li class=\"link\"><a href=\"munki://category-\(quote(item)).html\">\(item)</a></li>\n")
     }
     
     let item_hmtl = buildListPageItemsHTML(
@@ -414,7 +414,7 @@ func buildListPageItemsHTML(category: String = "",
         // this is the default (formerly) "all items" view
         // look for featured items and display those if we have them
         let featured_items = items.filter(
-            { ($0["featured"] as? Bool ?? false) == true }
+            { pythonishBool($0["featured"]) == true }
         )
         if !featured_items.isEmpty {
             items = featured_items
@@ -585,8 +585,8 @@ func buildMyItemsRows() -> String {
     let item_list = getMyItemsList()
     if !item_list.isEmpty {
         let item_template = getTemplate("myitems_row_template.html")
-        for item in item_list {
-            // TO-DO: sort item_list by display_name_lower
+        let sorted_items = item_list.sorted(by: { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
+        for item in sorted_items {
             item.escapeAndQuoteCommonFields()
             myitems_rows += item_template.substitute(item)
         }
@@ -600,7 +600,7 @@ func buildMyItemsRows() -> String {
             "Select software to install.",
             comment: "No Installed Software secondary text")
         alert["secondary_status_text"] = (
-            "<a href=\"category-all.html\">\(select_software_msg)</a>" )
+            "<a href=\"munki://category-all.html\">\(select_software_msg)</a>" )
         alert["hide_progress_bar"] = "hidden"
         myitems_rows = status_results_template.substitute(alert)
     }
@@ -623,7 +623,7 @@ func buildUpdatesPage() throws {
         { ($0["status"] as? String ?? "") == "update-available" }
     )
     // find any listed optional install updates that require a higher OS
-    // or have insufficent disk space or other blockers (because they have a
+    // or have insufficient disk space or other blockers (because they have a
     // note)
     let blocked_optional_updates = getOptionalInstallItems().filter(
         {
@@ -676,7 +676,7 @@ func buildUpdatesPage() throws {
     
     // build problem updates table
     page["problem_updates_header_message"] = NSLocalizedString(
-        "Problem updates", comment: "Problm Updates label")
+        "Problem updates", comment: "Problem Updates label")
     page["problem_update_rows"] = ""
     if !problem_updates.isEmpty {
         page["hide_problem_updates"] = ""

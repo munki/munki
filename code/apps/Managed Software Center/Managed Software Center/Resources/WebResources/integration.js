@@ -1,4 +1,4 @@
-/* appearance.js
+/* integration.js
  Managed Software Center
  
  Created by Greg Neagle on 8/27/18.
@@ -64,7 +64,7 @@ function updateProgress(percent_done) {
             progress_bar.removeAttribute("style");
         } else {
             progress_bar.classList.remove("indeterminate");
-            progress_bar.setAttribute("style", percent_done.toString());
+            progress_bar.setAttribute("style", "width: " + percent_done.toString() + "%");
         }
     }
 }

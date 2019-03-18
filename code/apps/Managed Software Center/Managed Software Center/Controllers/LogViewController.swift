@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 5/20/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -115,14 +115,13 @@ class LogViewController: NSViewController {
         windowRect.origin.y = 200.0
         windowRect.size.width -= 200.0
         windowRect.size.height -= 300.0
-        //let logFileURL = NSURL.fileURL(withPath: logFilePref())
-        let logFileURL = NSURL.fileURL(withPath: "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log")
+        let logFileURL = NSURL.fileURL(withPath: logFilePref())
         pathControl.url = logFileURL
         logWindow.title = logFileURL.lastPathComponent
         logWindow.setFrame(windowRect, display: false)
         logWindow.makeKeyAndOrderFront(self)
         watchLogFile(logFileURL)
-        logView.setDraggingSourceOperationMask(NSDragOperation.all, forLocal: false)
+        logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }
     
     func watchLogFile(_ logFileURL: URL) {

@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/15/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -83,7 +83,7 @@ func filtered_html(_ text: String, filter_images: Bool = false) -> String {
     }
     
     let delete_elements = ["script", "style", "head", "table", "form"]
-    var delete_tags = ["!DOCTYPE", "html", "body", "span"]
+    var delete_tags = ["!DOCTYPE", "html", "body"]
     let transform_tags = [
         "ul": ["<br>", "<br>"],
         "ol": ["<br>", "<br>"],

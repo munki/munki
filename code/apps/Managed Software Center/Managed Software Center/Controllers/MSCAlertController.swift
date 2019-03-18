@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/15/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -61,7 +61,7 @@ class MSCAlertController: NSObject {
             let formatString = NSLocalizedString(
                 "A logout will be forced in less than %@ minutes.",
                 comment: "Logout warning string when logout is in < 60 minutes") as NSString
-            infoText = NSString(format: formatString, timeUntilLogout) as String + "\n" + moreText
+            infoText = NSString(format: formatString, NSNumber.init(value: timeUntilLogout)) as String + "\n" + moreText
         } else {
             msc_log("user", "forced_logout_warning_final")
             infoText = NSLocalizedString(
@@ -86,14 +86,18 @@ class MSCAlertController: NSObject {
             alert.addButton(withTitle: ok_btn_title)
             alert.addButton(withTitle: logout_btn_title)
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-                if modalResponse == .alertFirstButtonReturn {
-                    // clicked OK button
-                     msc_log("user", "dismissed_forced_logout_warning")
-                } else {
+                if modalResponse == .alertSecondButtonReturn {
                     // clicked logout button
                     msc_log("user", "install_with_logout")
                     self.handlePossibleAuthRestart()
-                    _ = logoutAndUpdate()
+                    do {
+                        try logoutAndUpdate()
+                    } catch {
+                        self.installSessionErrorAlert("\(error)")
+                    }
+                } else {
+                    // dismissed or closed or ignored
+                    msc_log("user", "dismissed_forced_logout_warning")
                 }
             })
         } else {
@@ -102,7 +106,11 @@ class MSCAlertController: NSObject {
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
                 msc_log("user", "install_with_logout")
                 self.handlePossibleAuthRestart()
-                _ = logoutAndUpdate()
+                do {
+                    try logoutAndUpdate()
+                } catch {
+                    self.installSessionErrorAlert("\(error)")
+                }
             })
         }
     }
@@ -153,7 +161,7 @@ class MSCAlertController: NSObject {
         } else if updatesRequireLogout() || installRequiresLogout() {
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
-                "Logout Required", comment: "Logput Required title")
+                "Logout Required", comment: "Logout Required title")
             alert.informativeText = NSLocalizedString(
                 "A logout is required before updating. Please be patient  " +
                 "as there may be a short delay at the login window. Log " +
@@ -188,15 +196,17 @@ class MSCAlertController: NSObject {
             }
             msc_log("user", "install_with_logout")
             handlePossibleAuthRestart()
-            if !logoutAndUpdate() {
-                installSessionErrorAlert()
+            do {
+                try logoutAndUpdate()
+            } catch {
+                installSessionErrorAlert("\(error)")
             }
         } else {
             msc_log("user", "cancelled")
         }
     }
     
-    func installSessionErrorAlert() {
+    func installSessionErrorAlert(_ errorMessage: String) {
         // Something has gone wrong and we can't trigger an install at logout
         msc_log("user", "install_session_failed")
         guard let mainWindow = window else {
@@ -206,10 +216,14 @@ class MSCAlertController: NSObject {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
             "Install session failed", comment: "Install Session Failed title")
-        alert.informativeText = NSLocalizedString(
+        var detailText = NSLocalizedString(
             "There is a configuration problem with the managed software " +
-            "installer. Could not start the process. Contact your systems " +
+                "installer. Could not start the process. Contact your systems " +
             "administrator.", comment: "Could Not Start Session message")
+        if !errorMessage.isEmpty {
+            detailText = "\(detailText)\n\n\(errorMessage)"
+        }
+        alert.informativeText = detailText
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
             // do nothing
@@ -287,7 +301,7 @@ class MSCAlertController: NSObject {
                 "in use:\n\n%@",
                 comment: "Other Users Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, other_users_apps.joined(separator: "\n"))
+                format: formatString, Array(Set(other_users_apps)).joined(separator: "\n"))
         } else {
             alert.messageText = NSLocalizedString(
                 "Conflicting applications running",
@@ -297,7 +311,7 @@ class MSCAlertController: NSObject {
                 "proceeding with installation or removal:\n\n%@",
                 comment: "Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, my_apps.joined(separator: "\n"))
+                format: formatString, Array(Set(my_apps)).joined(separator: "\n"))
         }
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in

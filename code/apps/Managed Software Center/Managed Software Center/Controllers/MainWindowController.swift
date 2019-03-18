@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -109,7 +109,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if time_til_logout > 0 {
                     let deadline_str = stringFromDate(deadline)
                     let formatString = NSLocalizedString(
-                        ("One or more updates must be installed by %s. A logout " +
+                        ("One or more updates must be installed by %@. A logout " +
                           "may be forced if you wait too long to update."),
                         comment: "Mandatory Updates Pending detail")
                     alertDetail = String(format: formatString, deadline_str)
@@ -189,9 +189,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         searchField.isEnabled = enabled_state
     }
     
-    func munkiStatusSessionEnded(_ sessionResult: Int) {
+    func munkiStatusSessionEnded(withStatus sessionResult: Int, errorMessage: String) {
         // Called by StatusController when a Munki session ends
         msc_debug_log("MunkiStatus session ended: \(sessionResult)")
+        if !errorMessage.isEmpty {
+            msc_debug_log("MunkiStatus session error message: \(errorMessage)")
+        }
         msc_debug_log("MunkiStatus session type: \(managedsoftwareupdate_task)")
         let tasktype = managedsoftwareupdate_task
         managedsoftwareupdate_task = ""
@@ -243,6 +246,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                      "Try again later. If this situation continues, " +
                      "contact your systems administrator."),
                     comment: "Failed Preflight Check detail")
+            }
+            if !errorMessage.isEmpty {
+                detailText = "\(detailText)\n\n\(errorMessage)"
             }
             // show the alert sheet
             self.window!.makeKeyAndOrderFront(self)
@@ -369,6 +375,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 updateOptionalInstallButtonFinishAction(item_name)
             }
         }
+        if message.name == "openExternalLink" {
+            if let link = message.body as? String {
+                openExternalLink(link)
+            }
+        }
     }
     
     func addJSmessageHandlers() {
@@ -406,7 +417,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     override func awakeFromNib() {
-        // Stuff we need to intialize when we start
+        // Stuff we need to initialize when we start
         super.awakeFromNib()
         insertWebView()
         webView.navigationDelegate = self
@@ -475,17 +486,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if _update_in_progress {
             return
         }
-        if startUpdateCheck(suppress_apple_update_check) {
-            _update_in_progress = true
-            displayUpdateCount()
-            managedsoftwareupdate_task = "manualcheck"
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller.startMunkiStatusSession()
-            }
-            markRequestedItemsAsProcessing()
-        } else {
-            munkiStatusSessionEnded(2)
+        do {
+            try startUpdateCheck(suppress_apple_update_check)
+        } catch {
+            munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+            return
         }
+        _update_in_progress = true
+        displayUpdateCount()
+        managedsoftwareupdate_task = "manualcheck"
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller.startMunkiStatusSession()
+        }
+        markRequestedItemsAsProcessing()
     }
     
     @IBAction func reloadPage(_ sender: Any) {
@@ -506,6 +519,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             if !currentPageIsUpdatesPage() {
                 // switch to updates view
                 loadUpdatesPage(self)
+            } else {
+                // we're already displaying the available updates
+                _alertedUserToOutstandingUpdates = true
             }
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
@@ -526,16 +542,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 status_controller._status_message = NSLocalizedString(
                     "Updating...", comment: "Updating message")
             }
-            if justUpdate() {
-                managedsoftwareupdate_task = "installwithnologout"
-                if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                    status_controller.startMunkiStatusSession()
-                }
-                markPendingItemsAsInstalling()
-            } else {
-                msc_debug_log("Error starting install session")
-                munkiStatusSessionEnded(2)
+            do {
+                try justUpdate()
+            } catch {
+                msc_debug_log("Error starting install session: \(error)")
+                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
             }
+            managedsoftwareupdate_task = "installwithnologout"
+            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+                status_controller.startMunkiStatusSession()
+            }
+            markPendingItemsAsInstalling()
         }
     }
     
@@ -616,16 +633,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we can suppress the Apple update check
             _update_in_progress = true
             displayUpdateCount()
-            if startUpdateCheck(true) {
-                managedsoftwareupdate_task = "checktheninstall"
-                if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                    status_controller.startMunkiStatusSession()
-                }
-                markRequestedItemsAsProcessing()
-            } else {
-                msc_debug_log("Error starting check-then-install session")
-                munkiStatusSessionEnded(2)
+            do {
+                try startUpdateCheck(true)
+            } catch {
+                msc_debug_log("Error starting check-then-install session: \(error)")
+                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+                return
             }
+            managedsoftwareupdate_task = "checktheninstall"
+            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+                status_controller.startMunkiStatusSession()
+            }
+            markRequestedItemsAsProcessing()
         } else if !_alertedUserToOutstandingUpdates && updatesContainNonUserSelectedItems() {
             // current list of updates contains some not explicitly chosen by
             // the user
@@ -676,7 +695,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func updateCategoriesPage() {
-        // Update the Catagories page with current data.
+        // Update the Categories page with current data.
         // Modifies the DOM to avoid ugly browser refresh
         let items_html = buildCategoryItemsHTML()
         setInnerHTML(items_html, elementID: "optional_installs_items")
@@ -717,12 +736,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
-        do {
+        /*do {
             try buildPage(url_fragment)
         } catch {
             msc_debug_log(
                 "Could not build page for \(url_fragment): \(error)")
-        }
+        }*/
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
         let request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
@@ -745,14 +764,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return
         }
         var filename = unquote(host)
-        if (filename as NSString).pathExtension.isEmpty {
+        // append ".html" if absent
+        if !(filename.hasSuffix(".html")) {
             filename += ".html"
         }
-        if filename.hasSuffix(".html") {
-            load_page(filename)
-        } else {
-            msc_debug_log("\(url) doesn't have a valid extension. Prevented from opening")
-        }
+        // try to build and load the page
+        load_page(filename)
     }
 
     func setNoPageCache() {
@@ -768,6 +785,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }*/
     }
     
+    func clearCache() {
+        if #available(OSX 10.11, *) {
+            let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+            let dateFrom = Date.init(timeIntervalSince1970: 0)
+            WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+        } else {
+            // Fallback on earlier versions
+            URLCache.shared.removeAllCachedResponses()
+        }
+    }
+
     // WKNavigationDelegateMethods
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -787,6 +815,25 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 handleMunkiURL(url)
                 decisionHandler(.cancel)
                 return
+            }
+            if scheme == "mailto" {
+                // open link in default mail client since WKWebView doesn't
+                // forward these links natively
+                NSWorkspace.shared.open(url)
+                decisionHandler(.cancel)
+                return
+            }
+            if url.scheme == "file" {
+                // if this is a MSC page, generate it!
+                if url.deletingLastPathComponent().path == htmlDir {
+                    let filename = url.lastPathComponent
+                    do {
+                        try buildPage(filename)
+                    } catch {
+                        msc_debug_log(
+                            "Could not build page for \(filename): \(error)")
+                    }
+                }
             }
         }
         decisionHandler(.allow)
@@ -838,6 +885,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 //        navigateBackMenuItem.isEnabled = webView.canGoBack
 //        navigateForwardButton.isEnabled = webView.canGoForward
 //        navigateForwardMenuItem.isEnabled = webView.canGoForward
+        clearCache()
     }
     
     func webView(_ webView: WKWebView,
@@ -861,46 +909,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // ignore
         }
     }
-    
-    // WebResourceLoadDelegate methods
-    
-    func webView(_ sender: WebView!,
-                 resource identifier: Any!,
-                 willSend request: URLRequest!,
-                 redirectResponse: URLResponse!,
-                 from dataSource: WebDataSource!) -> URLRequest! {
-        // By reacting to this delegate notification, we can build the page
-        // the WebView wants to load'''
-        msc_debug_log(
-            "webView:resource:willSendRequest:redirectResponse:fromDataSource:")
-        if let url = request.url, let scheme = url.scheme {
-            msc_debug_log("Got URL scheme: \(scheme)")
-            if scheme == NSURLFileScheme {
-                let path = url.path
-                msc_debug_log("Request path is \(path)")
-                if path.hasPrefix(htmlDir) && url.pathExtension == "html" {
-                    let filename = url.lastPathComponent
-                    if (filename.hasPrefix("detail-") ||
-                            filename.hasPrefix("category-") ||
-                            filename.hasPrefix("filter-") ||
-                            filename.hasPrefix("developer-") ||
-                            filename.hasPrefix("updatedetail-") ||
-                            filename == "myitems.html" ||
-                            filename == "updates.html" ||
-                            filename == "categories.html") {
-                        do {
-                            try buildPage(filename)
-                        } catch {
-                            msc_debug_log(
-                                "Could not build page for \(filename): \(error)")
-                        }
-                    }
-                }
-            }
-        }
-        return request
-    }
-    
+
     // JavaScript integration
     
     // handling DOM UI elements
@@ -928,6 +937,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func openExternalLink(_ url: String) {
         // open a link in the default browser
+        msc_debug_log("External link request: \(url)")
         if let real_url = URL(string: url) {
             NSWorkspace.shared.open(real_url)
         }
@@ -1039,7 +1049,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func actionButtonClicked(_ item_name: String) {
         // this method is called from JavaScript when the user clicks
-        // the Install/Removel/Cancel button in the list or detail view
+        // the Install/Remove/Cancel button in the list or detail view
         if let item = optionalItem(forName: item_name) {
             var showAlert = true
             let status = item["status"] as? String ?? ""
@@ -1190,7 +1200,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         let current_status = item["status"] as? String ?? ""
         msc_log("user", "optional_install_\(current_status)", msg: item_name)
-        if item["needs_update"] as? Bool ?? false {
+        if pythonishBool(item["needs_update"]) {
             // make some new HTML for the updated item
             let item_template = getTemplate("update_row_template.html")
             let item_html = item_template.substitute(item)
@@ -1306,13 +1316,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
         // Handle WebView back button
-        URLCache.shared.removeAllCachedResponses()
         webView.goBack(self)
     }
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {
         // Handle WebView forward button
-        URLCache.shared.removeAllCachedResponses()
         webView.goForward(self)
     }
     

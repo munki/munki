@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/7/18.
-//  Copyright © 2018 The Munki Project. All rights reserved.
+//  Copyright © 2018-2019 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -45,7 +45,7 @@ func unquote(_ aString: String) -> String {
 }
 
 func clearMunkiItemsCache() {
-    // formely known as reset()
+    // formerly known as reset()
     Cache.shared.clear()
 }
 
@@ -215,9 +215,12 @@ class GenericItem: BaseItem {
     func getIcon() -> String {
         // Return name/relative path of image file to use for the icon
         // first look for downloaded icons
-        let icon_known_exts = [".bmp", ".gif", ".icns", ".jpg", ".jpeg", ".png",
-                               ".psd", ".tga", ".tif", ".tiff", ".yuv"]
-        var icon_name = my["icon_name"] as? String ?? my["name"] as? String ?? ""
+        let icon_known_exts = ["bmp", "gif", "icns", "jpg", "jpeg", "png",
+                               "psd", "tga", "tif", "tiff", "yuv"]
+        var icon_name = my["icon_name"] as? String ?? ""
+        if icon_name == "" {
+            icon_name = my["name"] as? String ?? ""
+        }
         if !icon_known_exts.contains((icon_name as NSString).pathExtension) {
             icon_name += ".png"
         }
@@ -246,7 +249,7 @@ class GenericItem: BaseItem {
     
     func unavailable_reason_text(is_update: Bool = false) -> String {
         // There are several reasons an item might be unavailable for install.
-        // Return the relevent reason
+        // Return the relevant reason
         let licensed_seats_available = my["licensed_seats_available"] as? Bool ?? true
         if !licensed_seats_available {
             return NSLocalizedString("No licenses available",
@@ -973,7 +976,7 @@ class UpdateItem: GenericItem {
 }
 
 func getOptionalInstallItems() -> [OptionalItem] {
-    let appleSoftwareUpdatesOnly = pref("AppleSoftwareUpdatesOnly") as? Bool ?? false
+    let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
     if appleSoftwareUpdatesOnly {
         return [OptionalItem]()
     }

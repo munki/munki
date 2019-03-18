@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -297,7 +297,7 @@ def get_xml_text_element(dom_node, name):
 
 
 def parse_option_xml(option_xml_file):
-    '''Parses an optionXML.xml file and pulls ot items of interest, returning
+    '''Parses an optionXML.xml file and pulls the items of interest, returning
     them in a dictionary'''
     info = {}
     dom = minidom.parse(option_xml_file)
@@ -684,7 +684,7 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
             if pkgname:
                 cataloginfo['package_path'] = pkgname
 
-            # make some (hopfully functional) installs items from the payloads
+            # make some (hopefully functional) installs items from the payloads
             installs = []
             uninstalldir = "/Library/Application Support/Adobe/Uninstall"
             # first look for a payload with a display_name matching the

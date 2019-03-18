@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -86,6 +86,9 @@ def check(client_id='', localmanifestpath=None):
 
         if processes.stop_requested():
             return 0
+
+        # stop precaching_agent if it's running
+        download.stop_precaching_agent()
 
         # prevent idle sleep only if we are on AC power
         caffeinator = None
@@ -422,14 +425,12 @@ def check(client_id='', localmanifestpath=None):
                     # we have a partial and a full download
                     # for the same item. (This shouldn't happen.)
                     # remove the partial download.
+                    display.display_detail(
+                        'Removing partial download %s from cache', item)
                     os.unlink(os.path.join(cachedir, item))
-                elif problem_items == []:
-                    # problem items is our list of items
-                    # that need to be installed but are missing
-                    # the installer_item; these might be partial
-                    # downloads. So if we have no problem items, it's
-                    # OK to get rid of any partial downloads hanging
-                    # around.
+                elif fullitem not in cache_list:
+                    display.display_detail(
+                        'Removing partial download %s from cache', item)
                     os.unlink(os.path.join(cachedir, item))
             elif item not in cache_list:
                 display.display_detail('Removing %s from cache', item)

@@ -1,0 +1,126 @@
+/*
+ ** detail.css for Managed Software Center.app
+ ** Based on App Store CSS © 2013 Apple Inc.
+ */
+
+body.product.software #content {
+    max-width: 1397px
+}
+body.product div.columns {
+    margin-bottom: 30px
+}
+body.product.software .main {
+    margin-top: 8px
+}
+body.product .main>.product-detail {
+    margin-bottom: 23px;
+    min-height: 196px;
+    margin-right: 10px;
+    display: -webkit-box;
+    -webkit-box-orient: horizontal;
+    -webkit-box-align: stretch
+}
+body.product .product-detail .lockup {
+    display: inline-block;
+    width: 175px;
+    text-align: center;
+    padding: 0;
+    margin-right: 20px
+}
+body.product .product-detail .lockup div.artwork {
+    float: none;
+    margin-bottom: 20px
+}
+body.product .product-detail .lockup div.artwork img {
+    width: 140px;
+    height: 140px
+}
+body.product .product-detail .product-info {
+    -webkit-box-flex: 1
+}
+body.product .product-detail .product-info .title h1 {
+    margin-bottom: 12px;
+    font-family: -apple-system, "Helvetica Neue", Helvetica;
+    font-size: 24px;
+    line-height: 22px;
+    /*font-weight: bold;*/
+    color: var(--text-color-emphasized);
+    /*text-shadow: rgba(255,255,255,1) 0 1px 0*/
+}
+body.product .product-detail .product-info .title a {
+    color: currentcolor
+}
+body.product .product-detail .product-info .product-review h4 {
+    margin-bottom: 4px;
+    font-family: -apple-system, "Helvetica Neue", Helvetica;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-color-subdued);
+    /*text-shadow: rgba(255,255,255,1) 0 1px 0*/
+}
+body.product .product-detail .product-info .product-review p,body.product .product-detail .product-info .product-review ul {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--text-color-normal);
+}
+body.product .product-detail .product-info .product-review p a {
+    color: var(--description-link-color);
+}
+body.product .sidebar .app-info .content {
+    font-size: 11px;
+    color: var(--text-color-emphasized)
+}
+body.product .sidebar .app-info ul.list li,body.product .sidebar .app-info .app-rating {
+    margin-bottom: 5px
+}
+body.product .sidebar .app-info li .label,
+body.product .sidebar .app-info p span.label {
+    font-weight: normal;
+    color: var(--text-color-subdued);
+}
+body.product .sidebar .more-by {
+    padding-bottom: 0
+}
+body.product .sidebar .more-by .content {
+    margin-top: -6px
+}
+body.product .sidebar .more-by div.lockup {
+    display: -webkit-box;
+    padding: 7px 10px;
+    border-width: 0 0 1px 0;
+    height: 55px
+}
+body.product .sidebar .more-by div.lockup:last-child {
+    -webkit-border-image: none;
+    border-bottom-width: 0;
+    padding-bottom: 0;
+    -webkit-border-bottom-left-radius: 5px;
+    -webkit-border-bottom-right-radius: 5px
+}
+body.product .sidebar .more-by div.lockup .artwork {
+    width: 35px;
+    height: 35px;
+    margin-right: 5px;
+    display: inline-block;
+    float: left
+}
+body.product .sidebar .more-by div.lockup ul {
+    display: inline-block;
+    width: 138px
+}
+body.product .sidebar .more-by div.lockup li {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden
+}
+body.product .sidebar .more-by div.lockup li.name {
+    margin-bottom: 1px;
+    font-size: 11px;
+    /*font-weight: bold*/
+}
+body.product .sidebar .more-by div.lockup li.genre {
+    color: var(--text-color-subdued);
+    font-size: 10px
+}
+

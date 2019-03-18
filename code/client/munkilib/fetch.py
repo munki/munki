@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2011-2018 Greg Neagle.
+# Copyright 2011-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -202,8 +202,7 @@ def get_url(url, destinationpath,
 
     tempdownloadpath = destinationpath + '.download'
     if os.path.exists(tempdownloadpath) and not resume:
-        if resume and not os.path.exists(destinationpath):
-            os.remove(tempdownloadpath)
+        os.remove(tempdownloadpath)
 
     cache_data = None
     if onlyifnewer and os.path.exists(destinationpath):
@@ -565,10 +564,10 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
     The feature is controlled through the PackageVerificationMode key in
     the ManagedInstalls.plist. Following modes currently exist:
         none: No integrity check is performed.
-        hash: Integrity check is performed by calcualting a SHA-256 hash of
+        hash: Integrity check is performed by calculating a SHA-256 hash of
             the given file and comparing it against the reference value in
             catalog. Only applies for package plists that contain the
-            item_key; for packages without the item_key, verifcation always
+            item_key; for packages without the item_key, verification always
             returns True.
         hash_strict: Same as hash, but returns False for package plists that
             do not contain the item_key.

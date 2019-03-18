@@ -1,0 +1,476 @@
+/* Multiple Updates message */
+"%s pending updates" = "%s отложенных обновлений";
+
+/* One Update message */
+"1 pending update" = "1 отложенное обновление";
+
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Перед установкой обновлений необходимо выйти из системы. После выхода из системы дождитесь появления окна входа. Выйти из системы и обновить?";
+
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "Работа будет принудительно завершена в %s.";
+
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "Работа будет принудительно завершена менее чем через %s минут.";
+
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Работа будет принудительно завершена менее чем через минуту.\nБудут установлены все отложенные обновления. Все несохраненные данные будут потеряны.";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Попытка удаления не удалась. Попытка будет предпринята снова.\nЕсли эта ситуация продолжится, обратитесь к системному администратору.";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Проблема с конфигурацией системы не позволяет правильному функционированию Центра Управления ПО. Сообщаемая проблема: ";
+
+/* Additional Pending Updates title */
+"Additional Pending Updates" = "Дополнительные отложенные обновления";
+
+/* AllCategoriesLabel */
+"All Categories" = "Все категории";
+
+/* AllItemsHeaderText */
+"All items" = "Все элементы";
+
+/* Forced Logout warning detail */
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Будут установлены все отложенные обновления. Все несохраненные данные будут потеряны.\nВы можете избежать принудительного завершения работы, выполнив выход из системы.";
+
+/* Allow button text */
+"Allow" = "Разрешить";
+
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Попытка установки не удалась. Попытка будет предпринята снова.\nЕсли эта ситуация продолжится, обратитесь к системному администратору.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "В настоящее время установлена ​старая версия. Недостаточно места на диске для загрузки и установки этого обновления.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "В настоящее время установлена старая версия. Для установки этого обновления необходимо перейти на версию macOS %s или выше.";
+
+/* Other Users Blocking Apps Running title */
+"Applications in use by others" = "Приложения, которые используются другими";
+
+/* Cancel button title/short action text */
+"Cancel" = "Отменить";
+
+/* Cancel Install long action text */
+"Cancel install" = "Отменить установку";
+
+/* Cancel Removal long action text */
+"Cancel removal" = "Отменить удаление";
+
+/* Cancel Update long action text */
+"Cancel update" = "Отменить обновление";
+
+/* Item Not Found message */
+"Cannot display the requested item." = "Невозможно отобразить запрашиваемый элемент.";
+
+/* Categories label */
+"Categories" = "Категории";
+
+/* Sidebar Category label */
+"Category:" = "Категория:";
+
+/* Check Again button title */
+"Check Again" = "Проверить снова";
+
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Проверка каталога Обновлений ПО Apple...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Проверка дополнительных изменений...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Проверка доступных Обновлений ПО Apple...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Проверка доступных обновлений...";
+
+/* Checking For Updates message */
+"Checking for updates..." = "Проверка обновлений...";
+
+/* Blocking Apps Running title */
+"Conflicting applications running" = "Конфликт запущенных приложений";
+
+/* Continue button text */
+"Continue" = "Продолжить";
+
+/* Critical Update type */
+"Critical Update" = "Критическое Обновление";
+
+/* Unavailable long action text */
+"Currently Unavailable" = "В настоящее время Недоступно";
+
+/* Deny button text */
+"Deny" = "Не разрешать";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Определение элементов файловой системы для удаления";
+
+/* Sidebar Developer label */
+"Developer:" = "Разработчик:";
+
+/* managedsoftwareupdate message */
+"Done." = "Готово.";
+
+/* Downloading status text */
+"Downloading" = "Загрузка";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Загрузка доступных Обновлений ПО Apple...";
+
+/* Sidebar Due label */
+"Due:" = "До:";
+
+/* FeaturedLabel */
+"Featured" = "Подборка";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Подборка элементов";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Завершение...";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Прошивка будет обновлена на Вашем компьютере. Шнур питания компьютера должен быть подключен и подключен к исправному источнику питания. Обновление может занять несколько минут. Не мешайте или не отключайте питание на вашем компьютере во время этого обновления.";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Для продолжения установки рекомендуется подключить компьютер к постоянному источнику питания. Вы действительно хотите продолжить установку обновлений?";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "Принудительное завершение работы для установки Обязательного Обновления";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Сбор информации об установленных пакетах";
+
+/* No help alert title */
+"Help" = "Помощь";
+
+/* No help alert detail */
+"Help isn't available for Managed Software Center." = "Помощь недоступна для Центра Управления ПО.";
+
+/* Sidebar Information label */
+"Information" = "Информация";
+
+/* Install action text */
+"Install" = "Установить";
+
+/* Install Required action text */
+"Install Required" = "Установить Обязательные";
+
+/* Install Requested status text */
+"Install requested" = "Установить Требуемые";
+
+/* Install Session Failed title */
+"Install session failed" = "Сбой процесса установки";
+
+/* Install Error status text */
+"Installation Error" = "Ошибка установки";
+
+/* Installed status text */
+"Installed" = "Установлено";
+
+/* Installing status text */
+"Installing" = "Установка";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Установка доступных Обновлений ПО Apple...";
+
+/* Log out and Update button text */
+"Log out and update" = "Выйти из системы и обновить";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "Выйти из системы и обновить сейчас";
+
+/* Logout Required title */
+"Logout Required" = "Необходимо выйти из системы";
+
+/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Центр Управления ПО не может проверить наличие обновлений в данный момент.\nПопробуйте еще раз позже. Если эта ситуация продолжится, обратитесь к системному администратору.";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Центр Управления ПО не может связаться с сервером обновлений в данный момент.\nПопробуйте еще раз позже. Если эта ситуация продолжится, обратитесь к системному администратору.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Центр Управления ПО хочет разблокировать загрузочный диск после перезапуска, чтобы завершить все ожидающие обновления.";
+
+/* Managed Update type */
+"Managed Update" = "Управляемое Обновление";
+
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "Отложенные обязательные обновления";
+
+/* More link text */
+"More" = "Дополнительно";
+
+/* Sidebar More By Developer label */
+"More by %s" = "Еще от %s";
+
+/* Sidebar More In Category label */
+"More in %s" = "Еще в %s";
+
+/* My Items label */
+"My Items" = "Мои элементы";
+
+/* No Licenses Available display text */
+"No licenses available" = "Нет доступных лицензий";
+
+/* No Updates message */
+"No pending updates" = "Нет отложенных обновлений";
+
+/* Item Not Found title */
+"Not Found" = "Не найдено";
+
+/* Not Currently Available display text */
+"Not currently available" = "В настоящее время не доступно";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "Недостаточно места на диске";
+
+/* Not Installed status text */
+"Not installed" = "Не установлено";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Нечего удалять.";
+
+/* OK button title */
+"OK" = "OK";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "Один или несколько элементов должны быть установлены до %s";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Одно или несколько обязательных обновлений просрочены для установки. Сеанс будет принудительно завершен.";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Один или несколько обвнолений должны быть установлены до %s. Сеанс может быть принудительно завершен.";
+
+/* Other Available Updates label */
+"Other available updates" = "Другие доступные обновления";
+
+/* Other Users Blocking Apps Running detail */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Другие авторизированные пользователи используют следующие приложения. Попробуйте обновление позже, когда они больше не используются:\n\n%s";
+
+/* Other Users Logged In title */
+"Other users logged in" = "Другие пользователи сейчас в системе";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Удаление пакета завершено.";
+
+/* Password label */
+"Password:" = "Пароль:";
+
+/* Pending Updates alert title */
+"Pending updates" = "Отложенные обновления";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Выполнение послеполетных задач...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Выполнение предварительных задач...";
+
+/* Preparing Removal status text */
+"Preparing removal" = "Подготовка удаления";
+
+/* Problem Updates label */
+"Problem updates" = "проблемные обновления";
+
+/* Quit button title */
+"Quit" = "Завершить";
+
+/* Removal Error status text */
+"Removal Error" = "Ошибка Удаления";
+
+/* Removal Requested status text */
+"Removal requested" = "Запрошено удаление";
+
+/* Remove action text */
+"Remove" = "Удалить";
+
+/* Removing status text */
+"Removing" = "Удаление";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Удаление квитанции";
+
+/* Install Required action text */
+"Required" = "Обязательное";
+
+/* Restart button title */
+"Restart" = "Перезагрузить";
+
+/* Restart Required title */
+"Restart Required" = "Требуется перезагрузка";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Получение списка ПО для этой машины...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Выполнение установщика Adobe Patch";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Выполнение Adobe Setup";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Выполнение Adobe Uninstall";
+
+/* No Installed Software secondary text */
+"Select software to install." = "Выберите ПО для установки.";
+
+/* Sidebar Size label */
+"Size:" = "Размер:";
+
+/* Software label */
+"Software" = "Программы";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Установленное или удаленное ПО требует перезагрузки.";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Установленное или удаленное ПО требует перезагрузки. У Вас будет возможность сохранить открытые документы.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Запуск Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Запуск...";
+
+/* Sidebar Status label */
+"Status:" = "Статус:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "Проблема с конфигурацией системы";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Программное обеспечение было успешно установлено.";
+
+/* Additional Pending Updates detail */
+"There are additional pending updates to install or remove." = "Есть дополнительные отложенные обновления для установки или удаления.";
+
+/* No Items primary text */
+"There are no available software items." = "Нет доступного ПО.";
+
+/* No Developer Results primary text */
+"There are no items from this developer." = "Нет элементов от этого разработчика.";
+
+/* No Category Results primary text */
+"There are no items in this category." = "Нет элементов в этой категории.";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другие пользователи сейчас в системе.\nОбновление может привести к потере их несохраненных документов.\n\nПовторите попытку после выхода других пользователей из системы.";
+
+/* Pending Updates alert detail text */
+"There are pending updates for this computer." = "Есть отложенные обновления для этого компьютера.";
+
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Ошибка в конфигурации managed software installer. Не удалось запустить процесс. Обратитесь к системному администратору.";
+
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Ошибка в конфигурации managed software installer. Процесс завершился неожиданно. Обратитесь к системному администратору.";
+
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "В данный момент для Вашего компьютера нет обновлений.";
+
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Недостаточно места на диске для загрузки и установки этого элемента.";
+
+/* Dependency List prologue text */
+"This item is required by:" = "Этот элемент необходим для:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "Этот элемент должен быть установлен до %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Для разрешения  введите свой пароль для входа в систему.";
+
+/* No Items secondary text */
+"Try again later." = "Попробуйте еще раз позже.";
+
+/* No Search Results secondary text */
+"Try searching again." = "Попробуйте поискать снова.";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "Попробуйте выбрать другую категорию.";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "Попробуйте выбрать другой разработчика.";
+
+/* Sidebar Type label */
+"Type:" = "Тип:";
+
+/* Unavailable status text */
+"Unavailable" = "Недоступно";
+
+/* No Category name */
+"Uncategorized" = "Без категории";
+
+/* Update button title/action text */
+"Update" = "Обновить";
+
+/* Update All button title */
+"Update All" = "Обновить Все";
+
+/* Update Required long action text */
+"Update Required" = "Обновить Обязательное";
+
+/* No comment provided by engineer. */
+"Update available" = "Доступно обновление";
+
+/* Update Check Failed title */
+"Update check failed" = "Не удалось проверить наличие обновлений";
+
+/* Update In Progress primary text */
+"Update in progress." = "Обновление выполняется.";
+
+/* Update Now button title */
+"Update now" = "Обновить сейчас";
+
+/* Update Will Be Installed status text */
+"Update will be installed" = "Обновление будет установлено";
+
+/* Updates label */
+"Updates" = "Обновления";
+
+/* Updating message */
+"Updating..." = "Обновление...";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Проверка целостности пакета...";
+
+/* Sidebar Version label */
+"Version" = "Версия";
+
+/* Sidebar Version label */
+"Version:" = "Версия:";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Ожидание сети...";
+
+/* Will Be Installed status text */
+"Will be installed" = "Будет установлено";
+
+/* Will Be Removed status text */
+"Will be removed" = "Будет удалено";
+
+/* No Installed Software primary text */
+"You have no selected software." = "У вас нет выбранного ПО.";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%s";
+
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Вы должны перейти на версию macOS %s  чтобы иметь возможность установить этот элемент.";
+
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "Ваш компьютер не подключен к постоянному источнику питания.";
+
+/* No Search Results primary text */
+"Your search had no results." = "По Вашему запросу ничего не найдено.";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "У Вас самое новое ПО.";
+
+/* macOS update required text */
+"macOS update required" = "требуется обновление macOS";
