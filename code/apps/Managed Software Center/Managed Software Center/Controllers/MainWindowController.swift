@@ -661,13 +661,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
             cellView = view.view(atColumn: 0) as? MSCTableCellView
         }
-        
+
         if updateCount > 0 {
             NSApp.dockTile.badgeLabel = String(updateCount)
-            cellView?.badge.stringValue = String(updateCount)
+            cellView?.badge.title = String(updateCount)
+            cellView?.badge.isHidden = false
         } else {
             NSApp.dockTile.badgeLabel = nil
-            cellView?.badge.stringValue = ""
+            cellView?.badge.isHidden = true
         }
     }
     
