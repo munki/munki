@@ -45,10 +45,10 @@
         <customObject id="XGW-R4-ybE" customClass="MainWindowController" customModule="Managed_Software_Center" customModuleProvider="target">
             <connections>
                 <outlet property="categoriesMenuItem" destination="IjL-Sm-tWj" id="Nu2-xf-MO3"/>
-                <outlet property="categoriesToolbarButton" destination="b1l-lV-Aqx" id="7mx-2b-ugK"/>
+                <outlet property="categoriesToolbarItem" destination="qEd-P9-kRi" id="yu9-tm-NdO"/>
                 <outlet property="findMenuItem" destination="JRN-bq-1gM" id="r2S-8Y-njg"/>
                 <outlet property="myItemsMenuItem" destination="1bG-B4-adC" id="PCP-Ye-eRl"/>
-                <outlet property="myItemsToolbarButton" destination="K8l-s4-jvt" id="cHq-DK-BZy"/>
+                <outlet property="myItemsToolbarItem" destination="u2Q-hm-cfe" id="97H-Oc-k99"/>
                 <outlet property="navigateBackButton" destination="AG2-ba-10I" id="cPd-dh-gGG"/>
                 <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
                 <outlet property="navigateForwardButton" destination="a6V-j2-ZvV" id="IGk-12-NL7"/>
@@ -56,10 +56,10 @@
                 <outlet property="progressSpinner" destination="6oL-54-k6Q" id="SHv-QS-lUx"/>
                 <outlet property="searchField" destination="1z2-9L-z6e" id="xp8-BZ-5dZ"/>
                 <outlet property="softwareMenuItem" destination="YIg-jD-AbB" id="D6s-mC-x4d"/>
-                <outlet property="softwareToolbarButton" destination="i6a-Uk-awg" id="nDD-Gz-TfS"/>
+                <outlet property="softwareToolbarItem" destination="OWt-II-Pv5" id="eVd-Ck-Lsr"/>
                 <outlet property="updateButtonCell" destination="enf-JF-dWM" id="a2w-hN-n3L"/>
                 <outlet property="updatesMenuItem" destination="HOZ-SU-4Sm" id="UdT-3I-JpJ"/>
-                <outlet property="updatesToolbarButton" destination="Rwi-cJ-59c" id="MRY-by-5VU"/>
+                <outlet property="updatesToolbarItem" destination="gQm-G7-CfH" id="aji-o9-VDn"/>
                 <outlet property="webViewPlaceholder" destination="Wf8-HB-bc8" id="qCG-zy-8UQ"/>
                 <outlet property="window" destination="EeR-uP-dFY" id="FfQ-Q4-xUU"/>
             </connections>
@@ -369,10 +369,10 @@
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
-                            <connections>
-                                <action selector="softwareToolbarButtonClicked:" target="XGW-R4-ybE" id="J1O-8v-jfy"/>
-                            </connections>
                         </button>
+                        <connections>
+                            <action selector="softwareToolbarItemClicked:" target="XGW-R4-ybE" id="y1Z-TH-3WW"/>
+                        </connections>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="9267BDF0-EDD3-4260-B667-859261333F12" label="Categories" paletteLabel="Categories" image="toolbarCategoriesTemplate" id="qEd-P9-kRi">
                         <nil key="toolTip"/>
@@ -385,10 +385,10 @@
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
-                            <connections>
-                                <action selector="categoriesToolbarButtonClicked:" target="XGW-R4-ybE" id="V0J-fS-pTQ"/>
-                            </connections>
                         </button>
+                        <connections>
+                            <action selector="categoriesToolbarItemClicked:" target="XGW-R4-ybE" id="GQn-Q0-FiR"/>
+                        </connections>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="9570907B-B4E4-46CE-9C1F-F61C0F5417D3" label="My Items" paletteLabel="My Items" image="MyStuffTemplate" id="u2Q-hm-cfe">
                         <nil key="toolTip"/>
@@ -401,10 +401,10 @@
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
-                            <connections>
-                                <action selector="myItemsToolbarButtonClicked:" target="XGW-R4-ybE" id="65S-cT-hrb"/>
-                            </connections>
                         </button>
+                        <connections>
+                            <action selector="myItemsToolbarItemClicked:" target="XGW-R4-ybE" id="3wl-41-MwI"/>
+                        </connections>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="3C7DBD25-73E3-4B4E-B426-0A33A1570BD5" label="Updates" paletteLabel="Updates" image="updatesTemplate" id="gQm-G7-CfH">
                         <nil key="toolTip"/>
@@ -417,10 +417,10 @@
                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
-                            <connections>
-                                <action selector="updatesToolbarButtonClicked:" target="XGW-R4-ybE" id="eaU-VX-oQS"/>
-                            </connections>
                         </button>
+                        <connections>
+                            <action selector="updatesToolbarItemClicked:" target="XGW-R4-ybE" id="RIh-K6-cP3"/>
+                        </connections>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="A52A96D0-F85E-407F-818C-DC4B93605053" label="" paletteLabel="Narrow Space" tag="-1" id="VJm-ZV-d6j">
                         <nil key="toolTip"/>
