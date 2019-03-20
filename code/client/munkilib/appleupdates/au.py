@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -192,11 +192,31 @@ class AppleUpdates(object):
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = su_prefs.pref(
             'RecommendedUpdates')
-        if recommended_updates:
-            return [item['Product Key'] for item in recommended_updates
-                    if 'Product Key' in item]
+        if recommended_updates is not None:
+            try:
+                return [item['Product Key'] for item in recommended_updates
+                        if 'Product Key' in item]
+            except IndexError:
+                # RecommendedUpdates is an empty list
+                return []
+            except (KeyError, AttributeError):
+                # RecommendedUpdates is in an unexpected format
+                display.display_debug1(
+                    'com.apple.SoftwareUpdate RecommendedUpdates is in an '
+                    'unexpected format: %s', recommended_updates)
+                return []
 
-        # not in com.apple.SoftwareUpdate preferences, try index.plist
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        # We've collected data that indicates that com.apple.SoftwareUpdate
+        # RecommendedUpdates should be present on 10.9+ if there are available
+        # updates. We don't have data on 10.7 or 10.8.
+        if os_version_tuple < (10, 8):
+            display.display_debug1(
+                'com.apple.SoftwareUpdate RecommendedUpdates is not defined')
+            return []
+
+        # fall through to using index.plist only if com.apple.SoftwareUpdate
+        # RecommendedUpdates doesn't exist and we're on macOS < 10.9
         if not os.path.exists(INDEX_PLIST):
             display.display_debug1('%s does not exist.' % INDEX_PLIST)
             return []
@@ -721,7 +741,7 @@ class AppleUpdates(object):
         if only_unattended:
             # Append list of unattended_install items
             su_options.extend(unattended_install_items)
-            # Filter installist to only include items
+            # Filter installlist to only include items
             # which we're attempting to install
             filtered_installlist = [item for item in installlist
                                     if item.get('productKey') in
@@ -990,7 +1010,7 @@ class AppleUpdates(object):
     def get_unattended_installs(self):
         """Processes AppleUpdates.plist to return a list
         of NAME-VERSION formatted items and a list of product_ids
-        which are elgible for unattended installation.
+        which are eligible for unattended installation.
         """
         item_list = []
         product_ids = []

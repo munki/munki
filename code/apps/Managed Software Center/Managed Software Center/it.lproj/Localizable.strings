@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s aggiornamenti in sospeso";
+"%@ pending updates" = "%@ aggiornamenti in sospeso";
 
 /* One Update message */
 "1 pending update" = "1 aggiornamento in sospeso";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "È necessario un logout prima dell'aggiornamento. Potrebbe esserci un leggero ritardo prima della finestra di login. Eseguire il logout e l'aggiornamento adesso?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Un logout verrà forzato tra circa %s.";
+"A logout will be forced at approximately %@." = "Un logout verrà forzato tra circa %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Un logout verrà forzato in meno di %s minuti.";
+"A logout will be forced in less than %@ minutes." = "Un logout verrà forzato in meno di %@ minuti.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Un logout verrà forzato in meno di un minuto.\nTutti gli aggiornamenti in sospeso verranno installati. I documenti non salvati verranno persi.";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Una versione precedente è attualmente installata. Non c'è abbastanza spazio su disco per scaricare e installare questo aggiornamento.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Una versione precedente è attualmente installata. Per installare questo update bisogna aggiornare il sistema a Mac OS %s o superiore.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Una versione precedente è attualmente installata. Per installare questo update bisogna aggiornare il sistema a Mac OS %@ o superiore.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicazioni in uso da altri";
@@ -206,10 +206,10 @@
 "More" = "Altri";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Altri da %s";
+"More by %@" = "Altri da %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Altri in %s";
+"More in %@" = "Altri in %@";
 
 /* My Items label */
 "My Items" = "I Miei Elementi";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Uno o più elementi devono essere installati da %s";
+"One or more items must be installed by %@" = "Uno o più elementi devono essere installati da %@";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Uno o più aggiornamenti obbligatori sono in ritardo per l'installazione. Un logout verrà forzato a breve.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Uno o più elementi devono essere installati da %s. Un logout potrebbe essere forzato in caso si aspetti troppo per l'aggiornamento.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Uno o più elementi devono essere installati da %@. Un logout potrebbe essere forzato in caso si aspetti troppo per l'aggiornamento.";
 
 /* Other Available Updates label */
 "Other available updates" = "Altri aggiornamenti disponibili";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Altri utenti collegati stanno usando le seguenti applicazioni. Provare l'aggiornamento quando non saranno in uso:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Altri utenti collegati stanno usando le seguenti applicazioni. Provare l'aggiornamento quando non saranno in uso:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Altri utenti collegati";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Rimozione in preparazione";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "Aggiornamenti che richiedono attenzione";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Questo elemento è richiesto da:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Questo elemento deve essere installato da %s";
+"This item must be installed by %@" = "Questo elemento deve essere installato da %@";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Per permettere questo, inserire la password di login.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "Non ci sono applicazioni selezionate.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "Per installare questo elemento bisogna aggiornare il sistema a Mac OS %s";
+"You must upgrade to macOS version %@ to be able to install this item." = "Per installare questo elemento bisogna aggiornare il sistema a Mac OS %@";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Il computer non è collegato ad una presa di corrente.";

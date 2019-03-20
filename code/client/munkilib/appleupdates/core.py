@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
     if os_version_tuple >= (10, 11):
         if munkisuscatalog:
             display.display_warning(
-                "Custom softwareupate catalog %s in Munki's preferences will "
+                "Custom softwareupdate catalog %s in Munki's preferences will "
                 "be ignored." % munkisuscatalog)
     elif su_prefs.catalogurl_is_managed():
         display.display_warning(

@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s wachtende updates";
+"%@ pending updates" = "%@ wachtende updates";
 
 /* One Update message */
 "1 pending update" = "1 wachtende update";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "U moet uitloggen voordat het bijwerken kan beginnen. Nadat het login window verschijnt kan het een ogenblik duren voordat bijwerken begint. Wilt U nu uitloggen en bijwerken?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "U wordt automatisch uitgelogd om ongeveer %s.";
+"A logout will be forced at approximately %@." = "U wordt automatisch uitgelogd om ongeveer %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "U wordt automatisch uitgelogd binnen %s minuten.";
+"A logout will be forced in less than %@ minutes." = "U wordt automatisch uitgelogd binnen %@ minuten.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "U wordt binnen een minuut automatisch uitgelogd.\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Een oudere versie is op dit moment geïnstalleerd. Er is onvoldoende schijfruimte om deze update te downloaden en installeren.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Een oudere versie is op dit moment geïnstalleerd. Upgrade eerst naar macOS versie %s of hoger zodat de update geïnstalleerd kan worden.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Een oudere versie is op dit moment geïnstalleerd. Upgrade eerst naar macOS versie %@ of hoger zodat de update geïnstalleerd kan worden.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaties in gebruik door anderen";
@@ -206,10 +206,10 @@
 "More" = "Meer";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Meer van %s";
+"More by %@" = "Meer van %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Meer in %s";
+"More in %@" = "Meer in %@";
 
 /* My Items label */
 "My Items" = "Mijn Items";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Eén of meer items moeten voor %s worden geïnstalleerd";
+"One or more items must be installed by %@" = "Eén of meer items moeten voor %@ worden geïnstalleerd";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Er zijn één of meerdere achterstallige updates. Verplicht uitloggen zal spoedig nodig zijn.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Één of meerdere updates zullen worden geïnstalleerd op of voor %s. Geforceerd uitloggen kan mogelijk zijn als U te lang wacht met bijwerken.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Één of meerdere updates zullen worden geïnstalleerd op of voor %@. Geforceerd uitloggen kan mogelijk zijn als U te lang wacht met bijwerken.";
 
 /* Other Available Updates label */
 "Other available updates" = "Andere beschikbare updates";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Andere ingelogde gebruikers hebben de volgende applicaties actief. Probeer later nog eens te updaten als ze niet langer in gebruik zijn:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Andere ingelogde gebruikers hebben de volgende applicaties actief. Probeer later nog eens te updaten als ze niet langer in gebruik zijn:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Andere gebruikers zijn nog ingelogd";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Verwijderen voorbereiden";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "Problematische updates";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Dit item is benodigd voor:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Dit item moet geïnstalleerd zijn voor %s";
+"This item must be installed by %@" = "Dit item moet geïnstalleerd zijn voor %@";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Om dit toe te staan, vul je loginwachtwoord in.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "U heeft geen software geselecteerd.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "De volgende applicaties dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "De volgende applicaties dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "Upgrade eerst naar macOS versie %s of hoger zodat dit onderdeel geïnstalleerd kan worden.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Upgrade eerst naar macOS versie %@ of hoger zodat dit onderdeel geïnstalleerd kan worden.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Uw computer is niet aangesloten op het lichtnet.";

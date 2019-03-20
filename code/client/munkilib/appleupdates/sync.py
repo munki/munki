@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ appleupdates.sync
 
 Created by Greg Neagle on 2017-01-06.
 
-Utilities for replicating and retreiving Apple software update metadata
+Utilities for replicating and retrieving Apple software update metadata
 """
 
 import gzip
@@ -474,7 +474,7 @@ class AppleUpdateSync(object):
         return list_of_localizations[0]
 
     def distribution_for_product_key(self, product_key, language=None):
-        '''Returns the path to a distibution file from /Library/Updates
+        '''Returns the path to a distribution file from /Library/Updates
         or the local cache for the given product_key. If language is
         defined it will try to retrieve that specific language, otherwise
         it will use the available languages and the value of the
