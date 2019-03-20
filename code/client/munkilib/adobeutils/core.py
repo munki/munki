@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -195,7 +195,7 @@ def mount_adobe_dmg(dmgpath):
 
 def get_percent(current, maximum):
     '''Returns a value useful with MunkiStatus to use when
-    displaying precent-done stauts'''
+    displaying percent-done status'''
     if maximum == 0:
         percentdone = -1
     elif current < 0:
@@ -827,7 +827,7 @@ def adobe_setup_error(errorcode):
         13: "Media optimization failed",
         14: "Failed due to insufficient privileges",
         15: "Media DB Sync Failed",
-        16: "Failed to laod the Deployment file",
+        16: "Failed to load the Deployment file",
         17: "EULA Acceptance Failed",
         18: "C3PO Bootstrap Failed",
         19: "Conflicting processes running",

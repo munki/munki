@@ -1,0 +1,5 @@
+﻿/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centre cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator.";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centre cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator.";

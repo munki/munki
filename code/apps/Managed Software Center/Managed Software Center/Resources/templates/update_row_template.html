@@ -1,0 +1,25 @@
+<tr class="installation" id="${name_escaped}_update_table_row">
+  <td>
+    <a href="${detail_link}" class="artwork-link">
+      <div class="artwork">
+        <img width="75" height="75" alt="${display_name_escaped}" class="artwork" src="${icon}">
+      </div>
+    </a>
+    <ul class="list info">
+        <li><h2><a title="${display_name_escaped}" href="${detail_link}">${display_name_escaped}</a></h2></li>
+        <li>${developer_escaped}</li>
+        <li>${version_label} ${display_version_escaped}</li>
+        <li class="warning">${restart_action_text}</li>
+    </ul>
+  </td>
+  <td>
+    <p class="description" data-text-truncate-lines="4">
+      ${description_without_images}
+      <a class="text-truncate-toggle hidden" href="#">${more_link_text}</a>
+    </p>
+  </td>
+  <td class="${hide_cancel_button}">
+      <button title="${long_action_text}" class="cancel-or-add" aria-label="${long_action_text}"
+          onClick="window.webkit.messageHandlers.updateOptionalInstallButtonClicked.postMessage('${name_quoted}');"></button>
+  </td>
+</tr>

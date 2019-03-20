@@ -1,0 +1,476 @@
+/* Multiple Updates message */
+"%s pending updates" = "アップデートを%s個保留しています";
+
+/* One Update message */
+"1 pending update" = "アップデートを1つ保留しています";
+
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデートの前にログアウトする必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
+
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "％sに、強制的にログアウトさせられます";
+
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "％s分以内に、強制的にログアウトさせられます";
+
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "１分以内に強制的にログアウトさせられます。\n保留中のアップデートはすべてインストールされます。保存されていない作業内容は消失します。";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "削除に失敗しました。次回削除を試みます。\nそれでも削除されない場合は、システムの管理者に連絡してください。";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデート後に再起動する必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "システムコンフィギュレーションの問題が、Managed Software Centerの正常なオペレーションを妨げています。報告された問題は:";
+
+/* Additional Pending Updates title */
+"Additional Pending Updates" = "その他保留中のアップデート";
+
+/* AllCategoriesLabel */
+"All Categories" = "すべてのカテゴリ";
+
+/* AllItemsHeaderText */
+"All items" = "すべてのアイテム";
+
+/* Forced Logout warning detail */
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "保留中のすべてのアップデートをインストールします。保存されていない作業内容は消失します。\n今ログアウトをすれば、強制ログアウトを避ける事ができます。";
+
+/* Allow button text */
+"Allow" = "許可";
+
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "インストールに失敗しました。再度インストールを試みます。\nインストールの失敗が続くようであれば、システム管理者に連絡してください。";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "旧バージョンがインストールされています。このアップデートをダウンロードしてインストールするには空き領域が不足しています。";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %s 以降にアップグレードする必要があります。";
+
+/* Other Users Blocking Apps Running title */
+"Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
+
+/* Cancel button title/short action text */
+"Cancel" = "キャンセル";
+
+/* Cancel Install long action text */
+"Cancel install" = "インストールをキャンセル";
+
+/* Cancel Removal long action text */
+"Cancel removal" = "削除をキャンセル";
+
+/* Cancel Update long action text */
+"Cancel update" = "アップデートをキャンセル";
+
+/* Item Not Found message */
+"Cannot display the requested item." = "リクエストされたアイテムを表示できません";
+
+/* Categories label */
+"Categories" = "カテゴリ";
+
+/* Sidebar Category label */
+"Category:" = "カテゴリ:";
+
+/* Check Again button title */
+"Check Again" = "もう一度確認する";
+
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "アップルソフトウェアアップデートカタログを確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "追加変更を確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートを確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "入手可能なアップデートを確認中…";
+
+/* Checking For Updates message */
+"Checking for updates..." = "アップデートを確認中…";
+
+/* Blocking Apps Running title */
+"Conflicting applications running" = "下記のプログラムを閉じる必要があります";
+
+/* Continue button text */
+"Continue" = "続ける";
+
+/* Critical Update type */
+"Critical Update" = "重要なアップデート";
+
+/* Unavailable long action text */
+"Currently Unavailable" = "現在利用できません";
+
+/* Deny button text */
+"Deny" = "不許可";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "どのファイル項目を削除するか特定中";
+
+/* Sidebar Developer label */
+"Developer:" = "デベロッパ:";
+
+/* managedsoftwareupdate message */
+"Done." = "完了";
+
+/* Downloading status text */
+"Downloading" = "ダウンロード中";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをダウンロード中…";
+
+/* Sidebar Due label */
+"Due:" = "アップデート期限:";
+
+/* FeaturedLabel */
+"Featured" = "おすすめ";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "おすすめのアイテム";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "仕上げ中…";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "ファームウェアがアップデートされます。お使いのコンピューターの電源コードを電源に繋いでください。アップデート完了までには数分がかかります。アップデート処理の進行中はアップデート処理を妨げたり、コンピューターの電源を切らないでください。";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "支障の発生を避けるためにアップデートを実行する前にコンピューターを電源に接続してください。アップデートを続けますか？";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "必須インストールのため、強制ログアウトします";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "インストールされたパッケージの情報を収集中";
+
+/* No help alert title */
+"Help" = "ヘルプ";
+
+/* No help alert detail */
+"Help isn't available for Managed Software Center." = "Managed Software Centerにヘルプは付属していません";
+
+/* Sidebar Information label */
+"Information" = "情報";
+
+/* Install action text */
+"Install" = "インストール";
+
+/* Install Required action text */
+"Install Required" = "要請されたインストール";
+
+/* Install Requested status text */
+"Install requested" = "要請されたインストール";
+
+/* Install Session Failed title */
+"Install session failed" = "インストールセッションに失敗しました";
+
+/* Install Error status text */
+"Installation Error" = "インストールエラー";
+
+/* Installed status text */
+"Installed" = "インストール済み";
+
+/* Installing status text */
+"Installing" = "インストール中";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをインストール中…";
+
+/* Log out and Update button text */
+"Log out and update" = "ログアウトし、アップデートする";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "ログアウトし、今すぐアップデートする";
+
+/* Logout Required title */
+"Logout Required" = "ログアウトが必要です";
+
+/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centerは現在アップーデートのチェックができません。\n後でもう一度実行してください。もしこの状況が改善されない場合は、システム管理者に連絡してください。";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centerは現在アップーデートサーバーと接続できません。\n後でもう一度実行してください。もしこの状況が改善されない場合は、システム管理者に連絡してください。";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Centerは、すべての保留中のアップデートを完了させるため、再起動後、スタートアップディスクをアンロックします。";
+
+/* Managed Update type */
+"Managed Update" = "必須のアップデート";
+
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "必須のアップデートを保留中";
+
+/* More link text */
+"More" = "さらに見る";
+
+/* Sidebar More By Developer label */
+"More by %s" = "％sをもっと見る";
+
+/* Sidebar More In Category label */
+"More in %s" = "%sでもっと見る";
+
+/* My Items label */
+"My Items" = "マイアイテム";
+
+/* No Licenses Available display text */
+"No licenses available" = "有効なライセンスがありません";
+
+/* No Updates message */
+"No pending updates" = "保留中のアップデートはありません";
+
+/* Item Not Found title */
+"Not Found" = "見つかりません";
+
+/* Not Currently Available display text */
+"Not currently available" = "現在使用ができません";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "ディスクの空きが足りません";
+
+/* Not Installed status text */
+"Not installed" = "インストールされていません";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "削除する項目がありません";
+
+/* OK button title */
+"OK" = "OK";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "%sまでに、1つまたそれ以上のアイテムのインストールが必要です";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "一つまたそれ以上の必須アップデートが期日までに行われていないため、強制的にログアウトをします";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "%sまでに、一つまたそれ以上のアイテムをインストールしなければいけません。アップーデートを実行しなければ、強制的にログアウトさせられます。";
+
+/* Other Available Updates label */
+"Other available updates" = "その他入手可能なアップデート";
+
+/* Other Users Blocking Apps Running detail */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "別のユーザーが、下記のアプリケーションを使用しています。別のユーザーが\n%s\nの使用を終えてから、アップーデートをもう一度実行してください。";
+
+/* Other Users Logged In title */
+"Other users logged in" = "別のユーザーがログイン中です";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "パッケージの削除が完了しました";
+
+/* Password label */
+"Password:" = "パスワード:";
+
+/* Pending Updates alert title */
+"Pending updates" = "アップデートを保留中";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "postflightタスクを実行中…";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "preflightタスクを実行中…";
+
+/* Preparing Removal status text */
+"Preparing removal" = "削除準備中です";
+
+/* Problem Updates label */
+"Problem updates" = "問題のアップデート";
+
+/* Quit button title */
+"Quit" = "終了";
+
+/* Removal Error status text */
+"Removal Error" = "削除エラー";
+
+/* Removal Requested status text */
+"Removal requested" = "削除リクエスト";
+
+/* Remove action text */
+"Remove" = "削除";
+
+/* Removing status text */
+"Removing" = "削除中";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "receipt情報を削除中です";
+
+/* Install Required action text */
+"Required" = "必須";
+
+/* Restart button title */
+"Restart" = "再起動";
+
+/* Restart Required title */
+"Restart Required" = "再起動が必要です";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "このコンピューターのソフトウェアリストを取得中…";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Adobeアップデートをインストール中";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Adobeセットアップ実行中";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Adobeアンインストール実行中";
+
+/* No Installed Software secondary text */
+"Select software to install." = "インストールするソフトウェアを選択してください";
+
+/* Sidebar Size label */
+"Size:" = "サイズ:";
+
+/* Software label */
+"Software" = "ソフトウェア";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "インストールまた削除したソフトウェアがあるため再起動が必要です";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "インストールまた削除したソフトウェアがあるため再起動が必要です。現在使用中のドキュメントの保存ができます。";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Adobeインストーラーを開始…";
+
+/* managedsoftwareupdate message */
+"Starting..." = "開始…";
+
+/* Sidebar Status label */
+"Status:" = "ステータス:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "システムコンフィギュレーションに問題があります";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "ソフトウェアのインストールが完了しました";
+
+/* Additional Pending Updates detail */
+"There are additional pending updates to install or remove." = "インストールまた削除すべきアップデートが保留中になっています";
+
+/* No Items primary text */
+"There are no available software items." = "使用可能なソフトウェアアイテムはありません";
+
+/* No Developer Results primary text */
+"There are no items from this developer." = "このディベロッパのアイテムはありません";
+
+/* No Category Results primary text */
+"There are no items in this category." = "このカテゴリにアイテムはありません";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "他のユーザーがこのコンピューターにログインしています。\n今アップデートを実行すると、他のユーザーのワークが失われる原因になります。\n\n他のユーザーがログアウトしたのち、もう一度アップデートを実行してください。";
+
+/* Pending Updates alert detail text */
+"There are pending updates for this computer." = "アップデートが保留されています。";
+
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "managed softwareインストラーのコンフィギュレーションに問題があります。インストールプロセスを開始することができません。システム管理者に連絡してください。";
+
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "managed softwareインストラーのコンフィギュレーションに問題があります。インストールプロセスが予期せず中断されました。システム管理者に連絡してください。";
+
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "このコンピューターのソフトウェアを更新する必要はありません";
+
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "このアイテムをダウンロードしてインストールするには空き領域が不足しています。";
+
+/* Dependency List prologue text */
+"This item is required by:" = "関連アイテム:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "このアイテムは%sまでにインストールしなければいけません";
+
+/* Password explanation */
+"To allow this, enter your login password." = "これを許可する為、ログインパスワードを入力して下さい。";
+
+/* No Items secondary text */
+"Try again later." = "後でもう一度実行してください";
+
+/* No Search Results secondary text */
+"Try searching again." = "もう一度検索してください";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "ほかのカテゴリを選択してしてください";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "ほかのディベロッパを選択してしてください";
+
+/* Sidebar Type label */
+"Type:" = "種類:";
+
+/* Unavailable status text */
+"Unavailable" = "入手できません";
+
+/* No Category name */
+"Uncategorized" = "未分類";
+
+/* Update button title/action text */
+"Update" = "アップデート";
+
+/* Update All button title */
+"Update All" = "すべてをアップデート";
+
+/* Update Required long action text */
+"Update Required" = "アップデートが必要です";
+
+/* No comment provided by engineer. */
+"Update available" = "アップデートがあります";
+
+/* Update Check Failed title */
+"Update check failed" = "アップデートの確認に失敗しました";
+
+/* Update In Progress primary text */
+"Update in progress." = "アップデートを実行中です";
+
+/* Update Now button title */
+"Update now" = "今すぐアップデート";
+
+/* Update Will Be Installed status text */
+"Update will be installed" = "アップデートをインストールします";
+
+/* Updates label */
+"Updates" = "アップデート";
+
+/* Updating message */
+"Updating..." = "アップデート中…";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "パッケージの完全性を検証中…";
+
+/* Sidebar Version label */
+"Version" = "バージョン";
+
+/* Sidebar Version label */
+"Version:" = "バージョン:";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "ネットーワーク接続を待っています…";
+
+/* Will Be Installed status text */
+"Will be installed" = "インストールします";
+
+/* Will Be Removed status text */
+"Will be removed" = "削除します";
+
+/* No Installed Software primary text */
+"You have no selected software." = "ソフトウェアが選択されていません";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%s";
+
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "このアイテムをインストールするにはmacOS %s 以降にアップグレードする必要があります。";
+
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "このコンピューターは電源に接続されていません";
+
+/* No Search Results primary text */
+"Your search had no results." = "検索結果がありません";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "ソフトウェアは最新です";
+
+/* macOS update required text */
+"macOS update required" = "macOSアップデートが必要";

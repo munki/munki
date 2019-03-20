@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -482,6 +482,7 @@ def check(client_id='', localmanifestpath=None):
     removalcount = len(installinfo.get('removals', []))
 
     # start our precaching agent
+    # note -- this must happen _after_ InstallInfo.plist gets written to disk.
     download.run_precaching_agent()
 
     if installcount or removalcount:

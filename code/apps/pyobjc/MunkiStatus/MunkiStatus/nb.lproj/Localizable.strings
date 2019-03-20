@@ -1,0 +1,95 @@
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Kontrollerer katalogen til Apple-programvareoppdatering...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Søker etter flere endringer...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Søker etter tilgjengelige Apple-programvareoppdateringer...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Søker etter tilgjengelige oppdateringer...";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Undersøker hvilke elementer som kan fjernes";
+
+/* managedsoftwareupdate message */
+"Done." = "Ferdig.";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Henter tilgjengelige Apple-programvareoppdateringer...";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Avslutter...";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Samler informasjon om installert programvare";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Installerer tilgjengelige Apple-programvareopdateringer...";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Ingenting å fjerne.";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Avinstallasjon av programvare er gjennomført.";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Utfører postflight-oppgaver...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Utfører preflight-oppgaver...";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Forbereder å kjøre macOS-installeringsprogrammet...";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Fjerner opplysninger om kvittering";
+
+/* No comment provided by engineer. */
+"Restart" = "Omstart";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Krever omstart";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Henter en liste over tilgjenglig programvare for denne datamaskinen...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Kjører Adobe Patch Installer";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Kjører Adobe Setup";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Kjører Adobe Uninstall";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Programvaren som er installert eller fjernet krever en omstart.";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Programvare som er installert eller fjernet krever en omstart. Du vil få anledning til å lagre alle åpne dokumenter.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Starter Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starter macOS-oppgradering...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Starter...";
+
+/* No comment provided by engineer. */
+"Starting…" = "Starter…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Systemet vil gjøre en omstart og begynne oppgraderingen av macOS.";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Installasjon av programvaren er fullført.";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Verifiserer integriteten til programvarepakken...";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Venter på nettverk...";

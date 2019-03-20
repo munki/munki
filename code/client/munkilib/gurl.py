@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -254,7 +254,7 @@ class Gurl(NSObject):
                     {kCFNetworkProxiesHTTPEnable: False,
                      kCFNetworkProxiesHTTPSEnable: False})
 
-            # set minumum supported TLS protocol (defaults to TLS1)
+            # set minimum supported TLS protocol (defaults to TLS1)
             configuration.setTLSMinimumSupportedProtocol_(
                 self.minimum_tls_protocol)
 
@@ -450,7 +450,7 @@ class Gurl(NSObject):
                 # not resuming, just open the file for writing
                 self.destination = open(self.destination_path, 'w')
                 # store some headers with the file for use if we need to resume
-                # the downloadand for future checking if the file on the server
+                # the download and for future checking if the file on the server
                 # has changed
                 self.storeHeaders_(download_data)
         if completionHandler:

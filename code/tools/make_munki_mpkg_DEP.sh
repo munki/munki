@@ -123,7 +123,7 @@ if [ "$?" != "0" ]; then
 fi
 
 cd "$MUNKIROOT"
-# generate a psuedo-svn revision number for the core tools (and admin tools)
+# generate a pseudo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
 GITREV=`git log -n1 --format="%H" -- code/client`
 GITREVINDEX=`git rev-list --count $GITREV`
@@ -131,7 +131,7 @@ SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
-# get a psuedo-svn revision number for the apps pkg
+# get a pseudo-svn revision number for the apps pkg
 APPSGITREV=`git log -n1 --format="%H" -- code/apps`
 GITREVINDEX=`git rev-list --count $APPSGITREV`
 APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
@@ -139,7 +139,7 @@ if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$APPSSVNREV
 fi
 # get base apps version from MSC.app
-APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Managed Software Center-Info" CFBundleShortVersionString`
+APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Info" CFBundleShortVersionString`
 # append the APPSSVNREV
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
@@ -157,7 +157,7 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
 
-# get a psuedo-svn revision number for the metapackage
+# get a pseudo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
 
@@ -547,7 +547,12 @@ fi
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.4" authoringToolBuild="179">
-    <title>Munki - Managed software installation for OS X</title>
+    <title>Munki - Managed software installation for macOS</title>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="10.10"/>
+        </allowed-os-versions>
+    </volume-check>
     <options customize="allow" allow-external-scripts="yes"/>
     <domains enable_anywhere="true"/>
     <installation-check script="requirerestart()"/>

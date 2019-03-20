@@ -1,5 +1,5 @@
-/* Localized versions of Info.plist keys */
+/*  InfoPlist.strings */
 
 "CFBundleName" = "MunkiStatus";
 "CFBundleDisplayName" = "MunkiStatus";
-NSHumanReadableCopyright = "Copyright © 2010-2018 The Munki Project\nhttps://github.com/munki/munki";
+NSHumanReadableCopyright = "Copyright � 2010-2018 The Munki Project\nhttps://github.com/munki/munki";

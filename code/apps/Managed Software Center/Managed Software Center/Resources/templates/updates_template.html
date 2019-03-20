@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html lang="en" data-theme="${data_theme}">
+<head>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Updates</title>
+
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/updates.css" />
+    
+    <script type="text/javascript" charset="utf-8" src="static/updates.js"></script>
+    <script type="text/javascript" charset="utf-8" src="static/integration.js"></script>
+    
+</head>
+
+<body class="grouping">
+    <div id="page">
+        <div id="wrapper">
+            <div id="content">
+                <div class="background"></div>
+                <div id="updates" class="main">
+                    <div id="os-and-app-updates"
+                         class="lockup-container installations updates">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="3">
+                                        <div class="non-scan-progress">
+                                            <span id="update-count-string">${update_count}</span>
+                                            &nbsp;
+                                            <span class="warning" id="update-warning-text">
+                                                ${warning_text}
+                                            </span>
+                                            <div class='progress-spinner ${hide_progress_spinner}' id="updates-progress-spinner"></div>
+                                            <div class="msc-button install-updates in-header">
+                                                <button class="button-area uppercase"
+                                                        onClick="window.webkit.messageHandlers.installButtonClicked.postMessage('');">
+                                                    <div class="msc-button-inner install-updates ${install_all_button_classes}"
+                                                         id='install-all-button-text'>
+                                                        ${install_btn_label}
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </th>
+                                </tr>
+                           </thead>
+                           <tbody></tbody>
+                        </table>
+                        <div id="os-updates" class='lockup-container installations updates'>
+                            <table class="no-header">
+                                <tbody id="updates-to-install-table">
+                                    ${update_rows}
+                                </tbody>
+                             </table>
+                        </div>
+                    </div>
+                    <div id="problem-updates"
+                        class="lockup-container installations updates ${hide_problem_updates}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="3">
+                                        <div class="non-scan-progress">
+                                            ${problem_updates_header_message}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="problem-updates-table">
+                                ${problem_update_rows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="other-updates"
+                         class="lockup-container installations updates ${hide_other_updates}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="3">
+                                        <div class="non-scan-progress">
+                                            ${other_updates_header_message}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="other-updates-table">
+                                ${other_update_rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ${footer}
+    </footer>
+
+</body>
+</html>
+                    

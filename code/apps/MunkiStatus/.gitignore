@@ -1,10 +1,12 @@
 # .DS_Store files!
 .DS_Store
 
-# don't track .pyc files
-*.pyc
-
-# Xcode 5 user data
+# Xcode user data
 *.xcodeproj/project.xcworkspace/
 *.xcodeproj/xcuserdata/
+
+# ignore the MainMenu.xib for most localizations; it is generated at build time
+**/*.lproj/MainMenu.xib
+# but not the Base one!
+!**/Base.lproj/MainMenu.xib
 

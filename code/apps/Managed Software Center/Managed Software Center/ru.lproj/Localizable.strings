@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s отложенных обновлений";
+"%@ pending updates" = "%@ отложенных обновлений";
 
 /* One Update message */
 "1 pending update" = "1 отложенное обновление";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Перед установкой обновлений необходимо выйти из системы. После выхода из системы дождитесь появления окна входа. Выйти из системы и обновить?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Работа будет принудительно завершена в %s.";
+"A logout will be forced at approximately %@." = "Работа будет принудительно завершена в %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Работа будет принудительно завершена менее чем через %s минут.";
+"A logout will be forced in less than %@ minutes." = "Работа будет принудительно завершена менее чем через %@ минут.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Работа будет принудительно завершена менее чем через минуту.\nБудут установлены все отложенные обновления. Все несохраненные данные будут потеряны.";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "В настоящее время установлена ​старая версия. Недостаточно места на диске для загрузки и установки этого обновления.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "В настоящее время установлена старая версия. Для установки этого обновления необходимо перейти на версию macOS %s или выше.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "В настоящее время установлена старая версия. Для установки этого обновления необходимо перейти на версию macOS %@ или выше.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Приложения, которые используются другими";
@@ -206,10 +206,10 @@
 "More" = "Дополнительно";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Еще от %s";
+"More by %@" = "Еще от %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Еще в %s";
+"More in %@" = "Еще в %@";
 
 /* My Items label */
 "My Items" = "Мои элементы";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Один или несколько элементов должны быть установлены до %s";
+"One or more items must be installed by %@" = "Один или несколько элементов должны быть установлены до %@";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Одно или несколько обязательных обновлений просрочены для установки. Сеанс будет принудительно завершен.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Один или несколько обвнолений должны быть установлены до %s. Сеанс может быть принудительно завершен.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Один или несколько обвнолений должны быть установлены до %@. Сеанс может быть принудительно завершен.";
 
 /* Other Available Updates label */
 "Other available updates" = "Другие доступные обновления";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Другие авторизированные пользователи используют следующие приложения. Попробуйте обновление позже, когда они больше не используются:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Другие авторизированные пользователи используют следующие приложения. Попробуйте обновление позже, когда они больше не используются:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Другие пользователи сейчас в системе";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Подготовка удаления";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "проблемные обновления";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Этот элемент необходим для:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Этот элемент должен быть установлен до %s";
+"This item must be installed by %@" = "Этот элемент должен быть установлен до %@";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Для разрешения  введите свой пароль для входа в систему.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "У вас нет выбранного ПО.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "Вы должны перейти на версию macOS %s  чтобы иметь возможность установить этот элемент.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Вы должны перейти на версию macOS %@  чтобы иметь возможность установить этот элемент.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Ваш компьютер не подключен к постоянному источнику питания.";

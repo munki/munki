@@ -1,0 +1,95 @@
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Tarkistetaan Applen ohjelmistopäivitysten luetteloa...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Tarkistetaan muutoksia...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Tarkistetaan Applen ohjelmistopäivityksiä...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Tarkistetaan päivityksiä...";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Määritetään poistettavia kohteita";
+
+/* managedsoftwareupdate message */
+"Done." = "Valmis.";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Haetaan Applen ohjelmistopäivityksiä...";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Viimeistellään...";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Kootaan tietoja asennetuista paketeista";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Asennetaan Applen ohjelmistopäivityksiä...";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Ei poistettavia kohteita.";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Paketin poisto valmis.";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Suoritetaan viimeisteleviä tehtäviä...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Suoritetaan valmistavia tehtäviä...";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Valmistaudutaan käynnistämään macOS-asentaja...";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Poistetaan kuitteja";
+
+/* No comment provided by engineer. */
+"Restart" = "Käynnistä uudelleen";
+
+/* No comment provided by engineer. */
+"Restart Required" = "Vaatii uudelleenkäynnistyksen";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Haetaan ohjelmistolistaa tälle tietokoneelle...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Ajetaan Adobe Patch -asentajaa";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Ajetaan Adobe Setup -ohjelmistoa";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Ajetaan Adobe Uninstall -ohjelmistoa";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Asennettu ohjelmisto tai poisto vaatii tietokoneen uudelleenkäynnistyksen.";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Tietokone on käynnistettävä uudelleen kun asennus tai ohjelmiston poisto on suoritettu. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Käynnistetään Adobe-asentajaa...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Aloitetaan macOS-päivitystä...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Aloitetaan...";
+
+/* No comment provided by engineer. */
+"Starting…" = "Aloitetaan…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Tietokone käynnistyy uudelleen ja aloittaa macOS-päivityksen.";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Ohjelmiston asennus onnistui.";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Tarkistetaan paketin eheyttä...";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Odotetaan verkkoyhteyttä...";

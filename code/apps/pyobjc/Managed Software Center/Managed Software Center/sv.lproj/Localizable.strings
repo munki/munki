@@ -1,0 +1,476 @@
+/* Multiple Updates message */
+"%s pending updates" = "%s uppdateringar väntar";
+
+/* One Update message */
+"1 pending update" = "1 uppdatering väntar";
+
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Det krävs en utloggning före uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
+
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "Du kommer tvingas att loggas ut om cirka %s.";
+
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "Du kommer tvingas att loggas ut om cirka %s minuter.";
+
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En automatisk utloggning kommer att ske om mindre än en minut.\nAlla väntande uppdateringar kommer att installereras. Ej sparat arbete kommer att förloras!";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Avinstallationen misslyckades. Ytterligare försök att avinstallera kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart krävs efter uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Ett problem med systemkonfigurationen hindrar Managed Software Center från att fungera korrekt. Det rapporterade felet är: ";
+
+/* Additional Pending Updates title */
+"Additional Pending Updates" = "Ytterligare uppdateringar";
+
+/* AllCategoriesLabel */
+"All Categories" = "Alla kategorier";
+
+/* AllItemsHeaderText */
+"All items" = "Alla objekt";
+
+/* Forced Logout warning detail */
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alla väntande uppdateringar kommer att installeras. Ej sparat arbete kommer att förloras!\nDu kan undgå detta genom att logga ut nu.";
+
+/* Allow button text */
+"Allow" = "Tillåt";
+
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installationen misslyckades. Ytterligare installationsförsök kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update.";
+
+/* Other Users Blocking Apps Running title */
+"Applications in use by others" = "Andra användare på datorn har programmet öppet";
+
+/* Cancel button title/short action text */
+"Cancel" = "Avbryt";
+
+/* Cancel Install long action text */
+"Cancel install" = "Avbryt installation";
+
+/* Cancel Removal long action text */
+"Cancel removal" = "Avbryt avinstallation";
+
+/* Cancel Update long action text */
+"Cancel update" = "Avbryt uppdatering";
+
+/* Item Not Found message */
+"Cannot display the requested item." = "Kan inte visa de objekt du begärt.";
+
+/* Categories label */
+"Categories" = "Kategorier";
+
+/* Sidebar Category label */
+"Category:" = "Kategori:";
+
+/* Check Again button title */
+"Check Again" = "Kontrollera igen";
+
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Kontrollerar Apples lista med programuppdateringar...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Kontrollerar ytterligare ändringar...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Letar efter Apple-uppdateringar...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Letar efter uppdateringar...";
+
+/* Checking For Updates message */
+"Checking for updates..." = "Letar efter uppdateringar...";
+
+/* Blocking Apps Running title */
+"Conflicting applications running" = "Det finns öppna program som skapar en konflikt med installationen";
+
+/* Continue button text */
+"Continue" = "Fortsätt";
+
+/* Critical Update type */
+"Critical Update" = "Kritisk uppdatering";
+
+/* Unavailable long action text */
+"Currently Unavailable" = "Inte tillgänglig just nu";
+
+/* Deny button text */
+"Deny" = "Avbryt";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Bestämmer vad som ska tas bort";
+
+/* Sidebar Developer label */
+"Developer:" = "Utvecklare:";
+
+/* managedsoftwareupdate message */
+"Done." = "Klar.";
+
+/* Downloading status text */
+"Downloading" = "Hämtar";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Hämtar Apple-uppdateringar...";
+
+/* Sidebar Due label */
+"Due:" = "Dags:";
+
+/* FeaturedLabel */
+"Featured" = "I blickfånget";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "I blickfånget";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Avslutar...";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Den fasta programvaran i din dator kommer att uppdateras. Strömsladden måste vara ansluten till en fungerande strömkälla. Det kan ta flera minuter att installera uppdateringen. Försök inte avbryta uppdateringen eller stänga av datorn under tiden.";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bör ansluta datorn till en strömkälla innan du uppdaterar. Är du säker på att du vill fortsätta?";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "Tvingad utloggning för en obligatorisk installation";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Samlar information om installerade paket";
+
+/* No help alert title */
+"Help" = "Hjälp";
+
+/* No help alert detail */
+"Help isn't available for Managed Software Center." = "Det finns ingen hjälp för Managed Software Center.";
+
+/* Sidebar Information label */
+"Information" = "Information";
+
+/* Install action text */
+"Install" = "Installera";
+
+/* Install Required action text */
+"Install Required" = "Installation krävs";
+
+/* Install Requested status text */
+"Install requested" = "Installation begärd";
+
+/* Install Session Failed title */
+"Install session failed" = "Installationen misslyckades";
+
+/* Install Error status text */
+"Installation Error" = "Installationsfel";
+
+/* Installed status text */
+"Installed" = "Installerad";
+
+/* Installing status text */
+"Installing" = "Installerar";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Installerar tillgängliga Apple-uppdateringar...";
+
+/* Log out and Update button text */
+"Log out and update" = "Logga ut och uppdatera";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "Logga ut och uppdatera nu";
+
+/* Logout Required title */
+"Logout Required" = "Utloggning krävs";
+
+/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte leta efter uppdateringar nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte kontakta den uppdateringsservern just nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center behöver låsa upp startskivan efter omstart för att slutföra alla uppdateringar.";
+
+/* Managed Update type */
+"Managed Update" = "Hanterad uppdatering";
+
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "Obligatoriska uppdateringar väntar";
+
+/* More link text */
+"More" = "Mer";
+
+/* Sidebar More By Developer label */
+"More by %s" = "Mer av %s";
+
+/* Sidebar More In Category label */
+"More in %s" = "Mer i %s";
+
+/* My Items label */
+"My Items" = "Mina objekt";
+
+/* No Licenses Available display text */
+"No licenses available" = "Inga licenser tillgängliga";
+
+/* No Updates message */
+"No pending updates" = "Inga uppdateringar väntar.";
+
+/* Item Not Found title */
+"Not Found" = "Kunde inte hittas";
+
+/* Not Currently Available display text */
+"Not currently available" = "Inte tillgänglig just nu";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "Inte tillräckligt med utrymme på skivan";
+
+/* Not Installed status text */
+"Not installed" = "Ej installerat";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Inget att ta bort.";
+
+/* OK button title */
+"OK" = "OK";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "Ett eller flera objekt måste installeras senast %s";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "En eller flera obligatoriska uppdateringar har förfallit för installation. En utloggning kommer att tvingas snart.";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "En eller flera uppdateringar måste installeras senast %s. Om du väntar för länge, kommer det att ske en automatisk utloggning.";
+
+/* Other Available Updates label */
+"Other available updates" = "Andra tillgängliga uppdateringar";
+
+/* Other Users Blocking Apps Running detail */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Andra användare i datorn har följande program öppna Försök uppdatera senare när de inte längre används:\n\n%s";
+
+/* Other Users Logged In title */
+"Other users logged in" = "Andra användare är inloggade";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Paketet borttaget.";
+
+/* Password label */
+"Password:" = "Lösenord:";
+
+/* Pending Updates alert title */
+"Pending updates" = "Väntande uppdateringar";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Städar upp...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Förbereder...";
+
+/* Preparing Removal status text */
+"Preparing removal" = "Förbereder borttagning";
+
+/* Problem Updates label */
+"Problem updates" = "Problem updates";
+
+/* Quit button title */
+"Quit" = "Avsluta";
+
+/* Removal Error status text */
+"Removal Error" = "Borttagning misslyckades";
+
+/* Removal Requested status text */
+"Removal requested" = "Borttagning begärd";
+
+/* Remove action text */
+"Remove" = "Ta bort";
+
+/* Removing status text */
+"Removing" = "Tar bort";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Tar bort kvittot";
+
+/* Install Required action text */
+"Required" = "Required";
+
+/* Restart button title */
+"Restart" = "Omstart";
+
+/* Restart Required title */
+"Restart Required" = "Omstart krävs";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Hämtar en lista med programvara för den här datorn...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Kör Adobe Patch Installer";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Kör Adobe Setup";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Kör Adobe Uninstall";
+
+/* No Installed Software secondary text */
+"Select software to install." = "Välj programvara att installera.";
+
+/* Sidebar Size label */
+"Size:" = "Storlek:";
+
+/* Software label */
+"Software" = "Programvara";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "Programvara som installerades eller togs bort kräver en omstart..";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Program som lades till eller togs bort kräver en omstart. Du kommer att få möjlighet att spara ditt arbete.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Startar Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Startar...";
+
+/* Sidebar Status label */
+"Status:" = "Status:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "Problem med systemkonfiguration";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "Programvaran installerades.";
+
+/* Additional Pending Updates detail */
+"There are additional pending updates to install or remove." = "Det fins fler uppdateringar att installera eller ta bort.";
+
+/* No Items primary text */
+"There are no available software items." = "Inga programvaror tillgängliga.";
+
+/* No Developer Results primary text */
+"There are no items from this developer." = "Det finns inga programvaror från den här utvecklaren.";
+
+/* No Category Results primary text */
+"There are no items in this category." = "Det finns inget i den här kategorin.";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det finns andra användare inloggade på datorn.\nOm du uppdaterar nu riskerar dom att förlora ej sparat arbete.\n\nProva igen när de andra användarna har loggat ut.";
+
+/* Pending Updates alert detail text */
+"There are pending updates for this computer." = "Uppdateringar väntar.";
+
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Ett fel i inställningarna för Managed Software Installer har upptäckts, kontakta din datoradministratör.";
+
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Ett fel i inställningarna för Managed Software Update upptäcktes. Processen avslutades oväntat. Kontakta din datoradministratör.";
+
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "Det finns inga uppdateringar för närvarande.";
+
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
+
+/* Dependency List prologue text */
+"This item is required by:" = "Krävs av:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "Måste installeras senast %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Ange ditt inloggningslösenord för att tillåta detta.";
+
+/* No Items secondary text */
+"Try again later." = "Försök igen senare.";
+
+/* No Search Results secondary text */
+"Try searching again." = "Försök söka igen.";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "Försök med en annan kategori.";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "Försök med en annan utvecklare.";
+
+/* Sidebar Type label */
+"Type:" = "Typ:";
+
+/* Unavailable status text */
+"Unavailable" = "Ej tillgänglig";
+
+/* No Category name */
+"Uncategorized" = "Saknar kategori";
+
+/* Update button title/action text */
+"Update" = "Uppdatera";
+
+/* Update All button title */
+"Update All" = "Uppdatera alla";
+
+/* Update Required long action text */
+"Update Required" = "Uppdatering krävs";
+
+/* No comment provided by engineer. */
+"Update available" = "Uppdatering tillgänglig";
+
+/* Update Check Failed title */
+"Update check failed" = "Uppdateringskontrollen misslyckades";
+
+/* Update In Progress primary text */
+"Update in progress." = "Uppdatering pågår.";
+
+/* Update Now button title */
+"Update now" = "Uppdatera nu";
+
+/* Update Will Be Installed status text */
+"Update will be installed" = "Uppdateringen kommer att installeras";
+
+/* Updates label */
+"Updates" = "Uppdateringar";
+
+/* Updating message */
+"Updating..." = "Uppdateringar...";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Verifierar paket...";
+
+/* Sidebar Version label */
+"Version" = "Version";
+
+/* Sidebar Version label */
+"Version:" = "Version:";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "Väntar på nätverket...";
+
+/* Will Be Installed status text */
+"Will be installed" = "Kommer att installeras";
+
+/* Will Be Removed status text */
+"Will be removed" = "Kommer att tas bort";
+
+/* No Installed Software primary text */
+"You have no selected software." = "Du har inte valt någon programvara.";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%s";
+
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "You must upgrade to macOS version %s to be able to install this item.";
+
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "Datorn är inte ansluten till en strömkälla.";
+
+/* No Search Results primary text */
+"Your search had no results." = "Din sökning gav inga resultat.";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "Programvaran är uppdaterad.";
+
+/* macOS update required text */
+"macOS update required" = "macOS update required";

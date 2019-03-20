@@ -1,0 +1,95 @@
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "アップルソフトウェアアップデートカタログを確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "追加で変更すべき項目の有無を確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートの有無を確認中…";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "入手可能なアップデートの有無を確認中…";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "削除対象となるファイル項目を特定しています";
+
+/* managedsoftwareupdate message */
+"Done." = "完了";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをダウンロード中…";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "仕上げ中…";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "インストールされたパッケージの情報を収集中";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "アップルソフトウェアアップデートをインストール中…";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "削除対象項目はありません";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "パッケージの削除が完了しました";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "postflightタスクを実行中…";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "preflightタスクを実行中…";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "macOSインストーラーの実行を準備中...";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Receipt情報を削除中です";
+
+/* No comment provided by engineer. */
+"Restart" = "再起動";
+
+/* No comment provided by engineer. */
+"Restart Required" = "再起動が必要です";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "この端末用のソフトウェアリストを取得中…";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Adobeアップデートを実行中";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Adobeセットアップを実行中";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Adobeアンインストールを実行中";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "再起動を必要とするソフトウエアをインストールまたは削除しました";
+
+/* No comment provided by engineer. */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "再起動を必要とするソフトウエアをインストールまたは削除しました。現在使用中のドキュメントの保存ができます。";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Adobeインストーラーを開始…";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "macOSアップグレードの開始...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "開始…";
+
+/* No comment provided by engineer. */
+"Starting…" = "開始…";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "システムを再起動し、macOSアップグレードを開始します。";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "ソフトウェアのインストールが完了しました";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "パッケージの完全性を検証中…";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "ネットーワークとの接続を待っています…";

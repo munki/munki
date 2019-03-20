@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -625,7 +625,7 @@ def get_catalogs(cataloglist):
                     catalogdata = FoundationPlist.readPlist(catalogpath)
                 except FoundationPlist.NSPropertyListSerializationException:
                     display.display_error(
-                        'Retreived catalog %s is invalid.', catalogname)
+                        'Retrieved catalog %s is invalid.', catalogname)
                     try:
                         os.unlink(catalogpath)
                     except (OSError, IOError):

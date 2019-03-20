@@ -2,7 +2,7 @@
 
    File: MSCDockTilePlugIn.m
  
-   Copyright 2015-2018 Greg Neagle.
+   Copyright 2015-2019 Greg Neagle.
    Liberally adapted from Apple sample code:
    https://developer.apple.com/library/mac/samplecode/DockTile/Listings/DockTilePlugIn_DockTilePlugIn_h.html
  
@@ -56,7 +56,7 @@ static void updateCount(NSDockTile *tile) {
 	    [[NSDistributedNotificationCenter defaultCenter] removeObserver:self.updateObserver];
 	    self.updateObserver = nil;
     }
-    [super dealloc];
+    //[super dealloc];
 }
 
 @end

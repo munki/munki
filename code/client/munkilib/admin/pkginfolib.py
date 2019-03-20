@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2018 Greg Neagle.
+# Copyright 2017-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -938,7 +938,7 @@ def add_option_groups(parser):
     forced_unattended_options.add_option(
         '--unattended_uninstall', '--unattended-uninstall',
         action='store_true',
-        help='Item can be uninstalled without notifiying the user.')
+        help='Item can be uninstalled without notifying the user.')
     forced_unattended_options.add_option(
         '--force_install_after_date', '--force-install-after-date',
         metavar='DATE',

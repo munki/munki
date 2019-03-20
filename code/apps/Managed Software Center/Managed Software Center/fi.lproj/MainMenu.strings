@@ -1,164 +1,164 @@
-/* Class = "NSMenuItem"; title = "Help"; ObjectID = "103"; */
-"103.title" = "Ohje";
+/* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "1Dc-SU-RKH"; */
+"1Dc-SU-RKH.title" = "Näytä";
 
-/* Class = "NSMenu"; title = "Help"; ObjectID = "106"; */
-"106.title" = "Ohje";
+/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "1LL-5u-cZt"; */
+"1LL-5u-cZt.title" = "Siirry koko näytön tilaan";
 
-/* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "111"; */
-"111.title" = "Managed Software Center -ohje";
+/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "Managed Software Center";
 
-/* Class = "NSMenu"; title = "Services"; ObjectID = "130"; */
-"130.title" = "Palvelut";
+/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1bG-B4-adC"; */
+"1bG-B4-adC.title" = "Omat";
 
-/* Class = "NSMenuItem"; title = "Services"; ObjectID = "131"; */
-"131.title" = "Palvelut";
+/* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "4lt-PW-vbr"; */
+"4lt-PW-vbr.paletteLabel" = "Navigation";
 
-/* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "134"; */
-"134.title" = "Kätke Managed Software Center";
+/* Class = "NSMenuItem"; title = "Back"; ObjectID = "4nC-yt-nEz"; */
+"4nC-yt-nEz.title" = "Taaksepäin";
 
-/* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "136"; */
-"136.title" = "Lopeta Managed Software Center";
+/* Class = "NSMenuItem"; title = "Quit Managed Software Center"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "Lopeta Managed Software Center";
 
-/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "145"; */
-"145.title" = "Kätke muut";
+/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "5QF-Oa-p0T"; */
+"5QF-Oa-p0T.title" = "Muokkaa";
 
-/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "150"; */
-"150.title" = "Näytä kaikki";
+/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "5kV-Vb-QxS"; */
+"5kV-Vb-QxS.title" = "Tietoja: Managed Software Center";
 
-/* Class = "NSMenuItem"; title = "Window"; ObjectID = "19"; */
-"19.title" = "Ikkuna";
+/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "6dh-zS-Vam"; */
+"6dh-zS-Vam.title" = "Tee sittenkin";
 
-/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "197"; */
-"197.title" = "Kopioi";
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "8sr-3d-QrU"; */
+"8sr-3d-QrU.title" = "Text Cell";
 
-/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "198"; */
-"198.title" = "Valitse kaikki";
+/* Class = "NSWindow"; title = "Log"; ObjectID = "9hv-e8-cy0"; */
+"9hv-e8-cy0.title" = "Log";
 
-/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "199"; */
-"199.title" = "Leikkaa";
+/* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
+"AYu-sK-qS6.title" = "Main Menu";
 
-/* Class = "NSMenuItem"; title = "Search"; ObjectID = "1XY-pX-Pwv"; */
-"1XY-pX-Pwv.title" = "Etsi";
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "DPV-5p-iWV"; */
+"DPV-5p-iWV.title" = "Text Cell";
 
-/* Class = "NSMenuItem"; title = "My Items"; ObjectID = "1uK-HI-wGR"; */
-"1uK-HI-wGR.title" = "Omat";
+/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "EeR-uP-dFY"; */
+"EeR-uP-dFY.title" = "Managed Software Center";
 
-/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "202"; */
-"202.title" = "Poista";
+/* Class = "NSMenu"; title = "Help"; ObjectID = "F2S-fz-NVQ"; */
+"F2S-fz-NVQ.title" = "Ohje";
 
-/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "203"; */
-"203.title" = "Liitä";
+/* Class = "NSMenuItem"; title = "Managed Software Center Help"; ObjectID = "FKE-Sm-Kum"; */
+"FKE-Sm-Kum.title" = "Managed Software Center -ohje";
 
-/* Class = "NSMenu"; title = "Edit"; ObjectID = "205"; */
-"205.title" = "Muokkaa";
+/* Class = "NSMenuItem"; title = "Updates"; ObjectID = "HOZ-SU-4Sm"; */
+"HOZ-SU-4Sm.title" = "Päivitykset";
 
-/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "207"; */
-"207.title" = "Peru";
+/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "HsX-gY-H6Z"; */
+"HsX-gY-H6Z.title" = "Zoomaa";
 
-/* Class = "NSMenuItem"; title = "Redo"; ObjectID = "215"; */
-"215.title" = "Tee sittenkin";
+/* Class = "NSMenuItem"; title = "Categories"; ObjectID = "IjL-Sm-tWj"; */
+"IjL-Sm-tWj.title" = "Kategoriat";
 
-/* Class = "NSMenuItem"; title = "Edit"; ObjectID = "217"; */
-"217.title" = "Muokkaa";
+/* Class = "NSMenuItem"; title = "Search"; ObjectID = "JRN-bq-1gM"; */
+"JRN-bq-1gM.title" = "Etsi";
 
-/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "23"; */
-"23.title" = "Pienennä";
+/* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
+"Kd2-mp-pUS.title" = "Näytä kaikki";
 
-/* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "239"; */
-"239.title" = "Zoomaa";
+/* Class = "NSMenuItem"; title = "Window"; ObjectID = "Lao-d1-6EI"; */
+"Lao-d1-6EI.title" = "Ikkuna";
 
-/* Class = "NSMenu"; title = "Window"; ObjectID = "24"; */
-"24.title" = "Ikkuna";
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "NMo-om-nkz"; */
+"NMo-om-nkz.title" = "Palvelut";
 
-/* Class = "NSMenu"; title = "AMainMenu"; ObjectID = "29"; */
-"29.title" = "AMainMenu";
+/* Class = "NSToolbarItem"; label = "Software"; ObjectID = "OWt-II-Pv5"; */
+"OWt-II-Pv5.label" = "Ohjelmistot";
 
-/* Class = "NSWindow"; title = "Managed Software Center"; ObjectID = "371"; */
-"371.title" = "Managed Software Center";
+/* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "OWt-II-Pv5"; */
+"OWt-II-Pv5.paletteLabel" = "Ohjelmistot";
 
-/* Class = "NSMenuItem"; title = "Navigate"; ObjectID = "375"; */
-"375.title" = "Näytä";
+/* Class = "NSMenuItem"; title = "Hide Managed Software Center"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "Kätke Managed Software Center";
 
-/* Class = "NSMenu"; title = "Navigate"; ObjectID = "376"; */
-"376.title" = "Näytä";
+/* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "RZb-6e-dMo"; */
+"RZb-6e-dMo.title" = "Lataa sivu uudelleen";
 
-/* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "56"; */
-"56.title" = "Managed Software Center";
+/* Class = "NSMenuItem"; title = "Select All"; ObjectID = "Ruw-6m-B2m"; */
+"Ruw-6m-B2m.title" = "Valitse kaikki";
 
-/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "57"; */
-"57.title" = "Managed Software Center";
+/* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "VJm-ZV-d6j"; */
+"VJm-ZV-d6j.paletteLabel" = "Narrow Space";
 
-/* Class = "NSMenuItem"; title = "About Managed Software Center"; ObjectID = "58"; */
-"58.title" = "Tietoja: Managed Software Center";
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
+"Vdr-fp-XzO.title" = "Kätke muut";
 
-/* Class = "NSMenuItem"; title = "Categories"; ObjectID = "9S1-fB-bKZ"; */
-"9S1-fB-bKZ.title" = "Kategoriat";
+/* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "Vmh-Df-yvT"; */
+"Vmh-Df-yvT.title" = "Pienennä";
 
-/* Class = "NSMenuItem"; title = "Reload Page"; ObjectID = "Afg-mB-WlJ"; */
-"Afg-mB-WlJ.title" = "Lataa sivu uudelleen";
+/* Class = "NSMenu"; title = "Edit"; ObjectID = "W48-6f-4Dl"; */
+"W48-6f-4Dl.title" = "Muokkaa";
 
-/* Class = "NSToolbarItem"; label = "Updates"; ObjectID = "AjB-m1-mu8"; */
-"AjB-m1-mu8.label" = "Päivitykset";
+/* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "XOq-vH-sPs"; */
+"XOq-vH-sPs.paletteLabel" = "Etsi";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Updates"; ObjectID = "AjB-m1-mu8"; */
-"AjB-m1-mu8.paletteLabel" = "Päivitykset";
+/* Class = "NSMenu"; title = "Window"; ObjectID = "XR5-fT-Z3r"; */
+"XR5-fT-Z3r.title" = "Ikkuna";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Navigation"; ObjectID = "CEb-sx-e3H"; */
-"CEb-sx-e3H.paletteLabel" = "Navigation";
+/* Class = "NSMenuItem"; title = "Software"; ObjectID = "YIg-jD-AbB"; */
+"YIg-jD-AbB.title" = "Ohjelmistot";
 
-/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "Ef8-fO-Dm6"; */
-"Ef8-fO-Dm6.title" = "Password:";
+/* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
+"dRJ-4n-Yzg.title" = "Peru";
 
-/* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "G2X-M7-NVB"; */
-"G2X-M7-NVB.label" = "Kategoriat";
+/* Class = "NSMenu"; title = "Navigate"; ObjectID = "gGe-RP-Ys4"; */
+"gGe-RP-Ys4.title" = "Näytä";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "G2X-M7-NVB"; */
-"G2X-M7-NVB.paletteLabel" = "Kategoriat";
+/* Class = "NSToolbarItem"; label = "Updates"; ObjectID = "gQm-G7-CfH"; */
+"gQm-G7-CfH.label" = "Päivitykset";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Rl8-0j-Dpu"; */
-"Rl8-0j-Dpu.title" = "Text Cell";
+/* Class = "NSToolbarItem"; paletteLabel = "Updates"; ObjectID = "gQm-G7-CfH"; */
+"gQm-G7-CfH.paletteLabel" = "Päivitykset";
 
-/* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "Uby-CQ-lvU"; */
-"Uby-CQ-lvU.label" = "Omat";
+/* Class = "NSMenuItem"; title = "Paste"; ObjectID = "gVA-U4-sdL"; */
+"gVA-U4-sdL.title" = "Liitä";
 
-/* Class = "NSToolbarItem"; paletteLabel = "My Items"; ObjectID = "Uby-CQ-lvU"; */
-"Uby-CQ-lvU.paletteLabel" = "Omat";
+/* Class = "NSMenuItem"; title = "Close"; ObjectID = "hHf-p1-NYV"; */
+"hHf-p1-NYV.title" = "Sulje";
 
-/* Class = "NSMenuItem"; title = "Software"; ObjectID = "VYO-og-DRc"; */
-"VYO-og-DRc.title" = "Ohjelmistot";
+/* Class = "NSMenu"; title = "Services"; ObjectID = "hz9-B4-Xy5"; */
+"hz9-B4-Xy5.title" = "Palvelut";
 
-/* Class = "NSWindow"; title = "Log"; ObjectID = "X5I-7f-aJs"; */
-"X5I-7f-aJs.title" = "Log";
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "iem-kB-sic"; */
+"iem-kB-sic.title" = "Password:";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "a1e-6Q-iNS"; */
-"a1e-6Q-iNS.title" = "Text Cell";
+/* Class = "NSMenuItem"; title = "Forward"; ObjectID = "nIf-zM-816"; */
+"nIf-zM-816.title" = "Eteenpäin";
 
-/* Class = "NSMenuItem"; title = "Close"; ObjectID = "bd5-IY-BXv"; */
-"bd5-IY-BXv.title" = "Sulje";
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "pa3-QI-u2k"; */
+"pa3-QI-u2k.title" = "Poista";
 
-/* Class = "NSMenuItem"; title = "Back"; ObjectID = "fEq-6D-Ce0"; */
-"fEq-6D-Ce0.title" = "Taaksepäin";
+/* Class = "NSToolbarItem"; label = "Categories"; ObjectID = "qEd-P9-kRi"; */
+"qEd-P9-kRi.label" = "Kategoriat";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Search"; ObjectID = "fbJ-cF-weR"; */
-"fbJ-cF-weR.paletteLabel" = "Etsi";
+/* Class = "NSToolbarItem"; paletteLabel = "Categories"; ObjectID = "qEd-P9-kRi"; */
+"qEd-P9-kRi.paletteLabel" = "Kategoriat";
 
-/* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "jQt-Mr-wFT"; */
-"jQt-Mr-wFT.title" = "Siirry koko näytön tilaan";
+/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "s1H-qa-D2r"; */
+"s1H-qa-D2r.title" = "Näytä loki";
 
-/* Class = "NSToolbarItem"; label = "Software"; ObjectID = "jTu-Wf-fi2"; */
-"jTu-Wf-fi2.label" = "Ohjelmistot";
+/* Class = "NSToolbarItem"; label = "My Items"; ObjectID = "u2Q-hm-cfe"; */
+"u2Q-hm-cfe.label" = "Omat";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Software"; ObjectID = "jTu-Wf-fi2"; */
-"jTu-Wf-fi2.paletteLabel" = "Ohjelmistot";
+/* Class = "NSToolbarItem"; paletteLabel = "My Items"; ObjectID = "u2Q-hm-cfe"; */
+"u2Q-hm-cfe.paletteLabel" = "Omat";
 
-/* Class = "NSToolbarItem"; paletteLabel = "Narrow Space"; ObjectID = "sF1-NQ-sSb"; */
-"sF1-NQ-sSb.paletteLabel" = "Narrow Space";
+/* Class = "NSMenu"; title = "Managed Software Center"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "Managed Software Center";
 
-/* Class = "NSMenuItem"; title = "Updates"; ObjectID = "tv9-wZ-XWN"; */
-"tv9-wZ-XWN.title" = "Päivitykset";
+/* Class = "NSMenuItem"; title = "Cut"; ObjectID = "uRl-iY-unG"; */
+"uRl-iY-unG.title" = "Leikkaa";
 
-/* Class = "NSMenuItem"; title = "Show Log"; ObjectID = "vPs-dO-LDa"; */
-"vPs-dO-LDa.title" = "Näytä loki";
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "wpr-3q-Mcd"; */
+"wpr-3q-Mcd.title" = "Ohje";
 
-/* Class = "NSMenuItem"; title = "Forward"; ObjectID = "z4Z-vu-XGX"; */
-"z4Z-vu-XGX.title" = "Eteenpäin";
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "x3v-GG-iWU"; */
+"x3v-GG-iWU.title" = "Kopioi";

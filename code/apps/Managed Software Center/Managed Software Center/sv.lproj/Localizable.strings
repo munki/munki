@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s uppdateringar väntar";
+"%@ pending updates" = "%@ uppdateringar väntar";
 
 /* One Update message */
 "1 pending update" = "1 uppdatering väntar";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Det krävs en utloggning före uppdateringen. Det kan bli en kort fördröjning vid inloggningsfönstret. Logga ut och uppdatera nu?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Du kommer tvingas att loggas ut om cirka %s.";
+"A logout will be forced at approximately %@." = "Du kommer tvingas att loggas ut om cirka %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Du kommer tvingas att loggas ut om cirka %s minuter.";
+"A logout will be forced in less than %@ minutes." = "Du kommer tvingas att loggas ut om cirka %@ minuter.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En automatisk utloggning kommer att ske om mindre än en minut.\nAlla väntande uppdateringar kommer att installereras. Ej sparat arbete kommer att förloras!";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Andra användare på datorn har programmet öppet";
@@ -206,10 +206,10 @@
 "More" = "Mer";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Mer av %s";
+"More by %@" = "Mer av %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Mer i %s";
+"More in %@" = "Mer i %@";
 
 /* My Items label */
 "My Items" = "Mina objekt";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Ett eller flera objekt måste installeras senast %s";
+"One or more items must be installed by %@" = "Ett eller flera objekt måste installeras senast %@";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "En eller flera obligatoriska uppdateringar har förfallit för installation. En utloggning kommer att tvingas snart.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "En eller flera uppdateringar måste installeras senast %s. Om du väntar för länge, kommer det att ske en automatisk utloggning.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "En eller flera uppdateringar måste installeras senast %@. Om du väntar för länge, kommer det att ske en automatisk utloggning.";
 
 /* Other Available Updates label */
 "Other available updates" = "Andra tillgängliga uppdateringar";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Andra användare i datorn har följande program öppna Försök uppdatera senare när de inte längre används:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Andra användare i datorn har följande program öppna Försök uppdatera senare när de inte längre används:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Andra användare är inloggade";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Förbereder borttagning";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "Problem updates";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Krävs av:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Måste installeras senast %s";
+"This item must be installed by %@" = "Måste installeras senast %@";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Ange ditt inloggningslösenord för att tillåta detta.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "Du har inte valt någon programvara.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "You must upgrade to macOS version %s to be able to install this item.";
+"You must upgrade to macOS version %@ to be able to install this item." = "You must upgrade to macOS version %@ to be able to install this item.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Datorn är inte ansluten till en strömkälla.";

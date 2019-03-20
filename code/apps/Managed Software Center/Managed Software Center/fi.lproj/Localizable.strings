@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s päivitystä saatavilla";
+"%@ pending updates" = "%@ päivitystä saatavilla";
 
 /* One Update message */
 "1 pending update" = "1 päivitys saatavilla";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii kaikkien ohjelmien sulkemista ja käyttäjien uloskirjautumista järjestelmästä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Uloskirjautuminen suoritetaan pakotetusti noin %s.";
+"A logout will be forced at approximately %@." = "Uloskirjautuminen suoritetaan pakotetusti noin %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Uloskirjautuminen suoritetaan pakotetusti alle %s minuutin kuluttua.";
+"A logout will be forced in less than %@ minutes." = "Uloskirjautuminen suoritetaan pakotetusti alle %@ minuutin kuluttua.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Uloskirjautuminen suoritetaan alle minuutin kuluttua pakotetusti.\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Vanhempi versio on asennettu. Päivityksen lataamiseen ja asentamiseen ei ole riittävästi levytilaa.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Vanhempi versio on asennettu. Päivityksen asentamiseen tarvitaan macOS %s tai uudempi.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Vanhempi versio on asennettu. Päivityksen asentamiseen tarvitaan macOS %@ tai uudempi.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
@@ -206,10 +206,10 @@
 "More" = "Lisää";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Lisää kehittäjältä %s";
+"More by %@" = "Lisää kehittäjältä %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Lisää kategoriassa %s";
+"More in %@" = "Lisää kategoriassa %@";
 
 /* My Items label */
 "My Items" = "Omat ohjelmistot";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Yksi tai useampi kohde täytyy asentaa ennen %s";
+"One or more items must be installed by %@" = "Yksi tai useampi kohde täytyy asentaa ennen %@";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Yksi tai useampi pakollinen päivitys on myöhässä. Uloskirjautuminen tullaan suorittamaan pakotetusti pian.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Yksi tai useampi päivitys täytyy asentaa ennen %s. Uloskirjautuminen saatetaan pakottaa jos odotat liian pitkään ennen päivittämistä.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Yksi tai useampi päivitys täytyy asentaa ennen %@. Uloskirjautuminen saatetaan pakottaa jos odotat liian pitkään ennen päivittämistä.";
 
 /* Other Available Updates label */
 "Other available updates" = "Muut saatavilla olevat päivitykset";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Muut kirjautuneet käyttäjät käyttävät seuraavia ohjelmia. Yritä myöhemmin uudelleen kun ohjelmat eivät ole enää käytössä:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Muut kirjautuneet käyttäjät käyttävät seuraavia ohjelmia. Yritä myöhemmin uudelleen kun ohjelmat eivät ole enää käytössä:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Muut kirjautuneet käyttäjät";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Valmistellaan poistoa";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "Epäonnistuneet päivitykset";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Tämän kohteen vaatii:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Asennettava ennen %s";
+"This item must be installed by %@" = "Asennettava ennen %@";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Salli lukituksen avaaminen syöttämällä salasana.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "Sinulla ei ole valittuja ohjelmistoja.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "Päivityksen asentamiseen tarvitaan macOS %@.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Päivityksen asentamiseen tarvitaan macOS %@.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Tietokonetta ei ole liitetty virtalähteeseen.";
