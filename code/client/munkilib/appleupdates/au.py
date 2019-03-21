@@ -93,7 +93,10 @@ class AppleUpdates(object):
         # fix things if somehow we died last time before resetting the
         # original CatalogURL
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if os_version_tuple in [(10, 9), (10, 10)]:
+        if os_version_tuple < (10, 10):
+            display.display_warning(
+                'macOS versions below 10.10 are no longer supported')
+        if os_version_tuple == (10, 10):
             su_prefs.reset_original_catalogurl()
 
         self.applesync = sync.AppleUpdateSync()
@@ -186,9 +189,13 @@ class AppleUpdates(object):
         """Returns a list of product IDs of available Apple updates.
 
         Returns:
-          A list of string Apple update products ids.
+          A list of string Apple update product ids.
         """
         # pylint: disable=no-self-use
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple < (10, 10):
+            display.display_warning(
+                'macOS versions below 10.10 are no longer supported')
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         recommended_updates = su_prefs.pref(
             'RecommendedUpdates')
@@ -198,38 +205,13 @@ class AppleUpdates(object):
                         if 'Product Key' in item]
             except IndexError:
                 # RecommendedUpdates is an empty list
-                return []
+                pass
             except (KeyError, AttributeError):
                 # RecommendedUpdates is in an unexpected format
                 display.display_debug1(
                     'com.apple.SoftwareUpdate RecommendedUpdates is in an '
                     'unexpected format: %s', recommended_updates)
-                return []
-
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        # We've collected data that indicates that com.apple.SoftwareUpdate
-        # RecommendedUpdates should be present on 10.9+ if there are available
-        # updates. We don't have data on 10.7 or 10.8.
-        if os_version_tuple < (10, 8):
-            display.display_debug1(
-                'com.apple.SoftwareUpdate RecommendedUpdates is not defined')
-            return []
-
-        # fall through to using index.plist only if com.apple.SoftwareUpdate
-        # RecommendedUpdates doesn't exist and we're on macOS < 10.9
-        if not os.path.exists(INDEX_PLIST):
-            display.display_debug1('%s does not exist.' % INDEX_PLIST)
-            return []
-
-        try:
-            product_index = FoundationPlist.readPlist(INDEX_PLIST)
-            products = product_index.get('ProductPaths', {})
-            return products.keys()
-        except (FoundationPlist.FoundationPlistException,
-                KeyError, AttributeError), err:
-            display.display_error(
-                "Error processing %s: %s", INDEX_PLIST, err)
-            return []
+        return []
 
 
     def installed_apple_pkgs_changed(self):
@@ -253,10 +235,10 @@ class AppleUpdates(object):
 
         if current_apple_packages_checksum == old_apple_packages_checksum:
             return False
-        else:
-            prefs.set_pref('InstalledApplePackagesChecksum',
-                           current_apple_packages_checksum)
-            return True
+
+        prefs.set_pref('InstalledApplePackagesChecksum',
+                       current_apple_packages_checksum)
+        return True
 
     def _force_check_necessary(self, original_hash):
         """Returns True if a force check is needed, False otherwise.
@@ -408,19 +390,6 @@ class AppleUpdates(object):
                                 for item in recommended_updates]
             except (TypeError, AttributeError, KeyError):
                 pass
-
-        if not product_keys:
-            # next, try to get the applicable/recommended updates from
-            # /Library/Updates/index.plist
-            if os.path.exists(INDEX_PLIST):
-                try:
-                    product_index = FoundationPlist.readPlist(INDEX_PLIST)
-                    products = product_index.get('ProductPaths', {})
-                    product_keys = products.keys()
-                except (FoundationPlist.FoundationPlistException,
-                        AttributeError, TypeError), err:
-                    display.display_error(
-                        "Error parsing %s: %s", INDEX_PLIST, err)
 
         for product_key in product_keys:
             if not self.update_downloaded(product_key):
@@ -574,9 +543,7 @@ class AppleUpdates(object):
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if catalog_url:
             # OS version-specific stuff to use a specific CatalogURL
-            if os_version_tuple < (10, 9):
-                cmd.extend(['--CatalogURL', catalog_url])
-            elif os_version_tuple in [(10, 9), (10, 10)]:
+            if os_version_tuple == (10, 10):
                 su_prefs.set_custom_catalogurl(catalog_url)
 
         cmd.extend(options_list)
@@ -690,7 +657,7 @@ class AppleUpdates(object):
 
         if catalog_url:
             # reset CatalogURL if needed
-            if os_version_tuple in [(10, 9), (10, 10)]:
+            if os_version_tuple == (10, 10):
                 su_prefs.reset_original_catalogurl()
 
         retcode = job.returncode()
@@ -1021,12 +988,10 @@ class AppleUpdates(object):
                 'Error reading: %s', self.apple_updates_plist)
             return item_list, product_ids
         apple_updates = pl_dict.get('AppleUpdates', [])
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
         for item in apple_updates:
             if (item.get('unattended_install') or
                     (prefs.pref('UnattendedAppleUpdates') and
-                     item.get('RestartAction', 'None') == 'None' and
-                     os_version_tuple >= (10, 10))):
+                     item.get('RestartAction', 'None') == 'None')):
                 if processes.blocking_applications_running(item):
                     display.display_detail(
                         'Skipping unattended install of %s because '
