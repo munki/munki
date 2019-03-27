@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-appleupdates.au
+appleupdates.py
 
 Created by Greg Neagle on 2017-01-06.
 
@@ -108,15 +108,6 @@ class AppleUpdates(object):
         self.client_id = ''
         self.force_catalog_refresh = False
 
-    def _display_status_major(self, message):
-        """Resets MunkiStatus detail/percent, logs and msgs GUI.
-
-        Args:
-          message: str message to display to the user and log.
-        """
-        # pylint: disable=no-self-use
-        display.display_status_major(message)
-
     def restart_action_for_updates(self):
         """Returns the most heavily weighted postaction"""
         try:
@@ -150,7 +141,7 @@ class AppleUpdates(object):
           Boolean. True if successful, False otherwise.
         """
         msg = 'Checking for available Apple Software Updates...'
-        self._display_status_major(msg)
+        display.display_status_major(msg)
 
         if os.path.exists(INDEX_PLIST):
             # try to remove old/stale /Library/Updates/index.plist --
@@ -279,7 +270,7 @@ class AppleUpdates(object):
             self.applesync.apple_download_catalog_path)
 
         msg = 'Checking Apple Software Update catalog...'
-        self._display_status_major(msg)
+        display.display_status_major(msg)
         try:
             self.applesync.cache_apple_catalog()
         except sync.CatalogNotFoundError:
@@ -603,7 +594,7 @@ class AppleUpdates(object):
             elif output.startswith('Installing ') and mode == 'install':
                 item = output[11:]
                 if item:
-                    self._display_status_major(output)
+                    display.display_status_major(output)
             elif output.startswith('Downloaded ') and mode == 'install':
                 # don't display this
                 pass
@@ -697,7 +688,7 @@ class AppleUpdates(object):
             msg = 'Installing available Apple Software Updates...'
             restart_action = self.restart_action_for_updates()
 
-        self._display_status_major(msg)
+        display.display_status_major(msg)
 
         installlist = self.software_update_info()
         remaining_apple_updates = []
