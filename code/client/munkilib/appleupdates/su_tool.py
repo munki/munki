@@ -34,7 +34,7 @@ from .. import osutils
 from .. import processes
 
 
-def run(options_list, catalog_url=None, stop_allowed=False, mode=None):
+def run(options_list, catalog_url=None, stop_allowed=False):
     """Runs /usr/sbin/softwareupdate with options.
 
     Provides user feedback via command line or MunkiStatus.
@@ -42,7 +42,9 @@ def run(options_list, catalog_url=None, stop_allowed=False, mode=None):
     Args:
       options_list: sequence of options to send to softwareupdate.
       stopped_allowed: boolean
-      mode:
+      mode: a hint as to the softwareupdate mode. Supported values are
+            "list", "download", and "install"
+
     Returns:
       Dictionary of results
     """
@@ -81,6 +83,14 @@ def run(options_list, catalog_url=None, stop_allowed=False, mode=None):
             su_prefs.set_custom_catalogurl(catalog_url)
 
     cmd.extend(options_list)
+    # figure out the softwareupdate 'mode'
+    mode = None
+    if '-l' in options_list or '--list' in options_list:
+        mode = 'list'
+    elif '-d' in options_list or '--download' in options_list:
+        mode = 'download'
+    elif '-i' in options_list or '--install' in options_list:
+        mode = 'install'
 
     display.display_debug1('softwareupdate cmd: %s', cmd)
 
@@ -125,90 +135,109 @@ def run(options_list, catalog_url=None, stop_allowed=False, mode=None):
         output = output.decode('UTF-8').rstrip('\n')
         # parse and record info, or send the output to STDOUT or MunkiStatus
         # as applicable
-        if output.startswith('   * '):
-            update_entry = output[5:]
-            update_parts = update_entry.split('-')
-            # version is the bit after the last hyphen
-            # (let's hope there are no hyphens in the versions!)
-            vers = update_parts[-1]
-            # identifier is everything before the last hyphen
-            identifier = '-'.join(update_parts[0:-1])
-            results['updates'].append(
-                {'identifier': identifier,
-                 'version': vers}
-            )
-        elif output.strip().startswith('Progress: '):
+        # --list-specific output
+        if mode == "list":
+            if output.startswith('   * '):
+                # collect list of items available for install
+                update_entry = output[5:]
+                update_parts = update_entry.split('-')
+                # version is the bit after the last hyphen
+                # (let's hope there are no hyphens in the versions!)
+                vers = update_parts[-1]
+                # identifier is everything before the last hyphen
+                identifier = '-'.join(update_parts[0:-1])
+                results['updates'].append(
+                    {'identifier': identifier, 'version': vers})
+                continue
+
+        # --download-specific output
+        if mode == "download":
+            if output.strip().startswith('Installed '):
+                # 10.6/10.7/10.8(+?). Successful download of package name.
+                # don't display.
+                # softwareupdate logging "Installed" at the end of a
+                # successful download-only session is odd.
+                continue
+
+        # --install-specific output
+        if mode == "install":
+            if output.strip().startswith('Installing '):
+                item = output[11:]
+                if item:
+                    display.display_status_major(output)
+                continue
+            if output.strip().startswith('Downloaded '):
+                # don't display this
+                continue
+            if output.strip().startswith('Done with '):
+                # 10.9 successful install
+                display.display_status_minor(output)
+                results['installed'].append(output[10:])
+                continue
+            if output.strip().startswith('Downloading '):
+                # This is 10.5 & 10.7 behavior for a missing subpackage.
+                display.display_warning(
+                    'A necessary subpackage is not available on disk '
+                    'during an Apple Software Update installation '
+                    'run: %s' % output)
+                results['download'].append(output[12:])
+                continue
+            if output.strip().startswith('Installed '):
+                # 10.6/10.7/10.8(+?) Successful install of package name.
+                display.display_status_minor(output)
+                results['installed'].append(output[10:])
+                continue
+            if output.strip().startswith('Done '):
+                # 10.5. Successful install of package name.
+                display.display_status_minor(output)
+                results['installed'].append(output[5:])
+                continue
+            if output.strip().startswith('Package failed:'):
+                # Doesn't tell us which package.
+                display.display_error(
+                    'Apple update failed to install: %s' % output)
+                results['failures'].append(output)
+                continue
+            if (('Please call halt' in output
+                   or 'your computer must shut down' in output)
+                  and results['post_action'] != POSTACTION_SHUTDOWN):
+                # This update requires we shutdown instead of a restart.
+                display.display_status_minor(output)
+                display.display_info('### This update requires a shutdown. ###')
+                results['post_action'] = POSTACTION_SHUTDOWN
+                continue
+            if ('requires that you restart your computer' in output
+                  and results['post_action'] == POSTACTION_NONE):
+                # a restart is required
+                display.display_status_minor(output)
+                results['post_action'] = POSTACTION_RESTART
+                continue
+
+        # other output
+        if output.strip().startswith('Progress: '):
             # Snow Leopard/Lion progress info with '-v' flag
             try:
                 percent = int(output[10:].rstrip('%'))
             except ValueError:
                 percent = -1
             display.display_percent_done(percent, 100)
-        elif output.strip().startswith('Software Update Tool'):
+            continue
+        if output.strip().startswith('Software Update Tool'):
             # don't display this
-            pass
-        elif output.strip().startswith('Copyright 2'):
+            continue
+        if output.strip().startswith('Copyright 2'):
             # don't display this
-            pass
-        elif output.strip().startswith('Installing ') and mode == 'install':
-            item = output[11:]
-            if item:
-                display.display_status_major(output)
-        elif output.strip().startswith('Downloaded ') and mode == 'install':
-            # don't display this
-            pass
-        elif output.strip().startswith('Installed '):
-            # 10.6 / 10.7 / 10.8. Successful install of package name.
-            if mode == 'install':
-                display.display_status_minor(output)
-                results['installed'].append(output[10:])
-            else:
-                pass
-                # don't display.
-                # softwareupdate logging "Installed" at the end of a
-                # successful download-only session is odd.
-        elif output.strip().startswith('Done with ') and mode == 'install':
-            # 10.9 successful install
-            display.display_status_minor(output)
-            results['installed'].append(output[10:])
-        elif output.strip().startswith('Done '):
-            # 10.5. Successful install of package name.
-            display.display_status_minor(output)
-            results['installed'].append(output[5:])
-        elif output.strip().startswith('Downloading ') and mode == 'install':
-            # This is 10.5 & 10.7 behavior for a missing subpackage.
-            display.display_warning(
-                'A necessary subpackage is not available on disk '
-                'during an Apple Software Update installation '
-                'run: %s' % output)
-            results['download'].append(output[12:])
-        elif output.strip().startswith('Package failed:'):
-            # Doesn't tell us which package.
-            display.display_error(
-                'Apple update failed to install: %s' % output)
-            results['failures'].append(output)
-        elif output.strip().startswith('x '):
+            continue
+        if output.strip().startswith('x '):
             # don't display this, it's just confusing
-            pass
-        elif 'Missing bundle identifier' in output:
+            continue
+        if 'Missing bundle identifier' in output:
             # don't display this, it's noise
-            pass
-        elif (('Please call halt' in output
-               or 'your computer must shut down' in output)
-              and results['post_action'] != POSTACTION_SHUTDOWN):
-            # This update requires we shutdown instead of a restart.
-            display.display_status_minor(output)
-            display.display_info('### This update requires a shutdown. ###')
-            results['post_action'] = POSTACTION_SHUTDOWN
-        elif ('requires that you restart your computer' in output
-                and results['post_action'] == POSTACTION_NONE):
-            # a restart is required
-            display.display_status_minor(output)
-            results['post_action'] = POSTACTION_RESTART
-        elif output == '':
-            pass
+            continue
+        if output.strip() == '':
+            continue
         else:
-            display.display_status_minor(output)
+            display.display_status_minor(output.strip())
 
     if catalog_url:
         # reset CatalogURL if needed
@@ -228,4 +257,3 @@ def run(options_list, catalog_url=None, stop_allowed=False, mode=None):
 
     results['exit_code'] = retcode
     return results
-
