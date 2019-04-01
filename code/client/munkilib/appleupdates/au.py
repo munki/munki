@@ -175,34 +175,50 @@ class AppleUpdates(object):
             return False
         return True
 
+    def get_filtered_recommendedupdates(self):
+        """Returns the list of RecommendedUpdates from com.apple.SoftwareUpdate
+        preferences, filtered by the outout of `softwareupdate -l`"""
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple < (10, 10):
+            display.display_warning(
+                'macOS versions below 10.10 are no longer supported')
+        recommended_updates = su_prefs.pref('RecommendedUpdates') or []
+        if os_version_tuple < (10, 11):
+            # --no-scan flag is not supported; just return the
+            # RecommendedUpdates without filtering. We never saw the issues
+            # that this filtering is meant to address in 10.10 anyway!
+            return recommended_updates
+        su_options = ['-l', '--no-scan']
+        su_results = su_tool.run(su_options)
+        filtered_updates = []
+        for item in su_results.get('updates', []):
+            for update in recommended_updates:
+                if (item.get('identifier') == update.get('Identifier') and
+                        item.get('version') == update.get('Display Version')):
+                    # add update to final results only if it is also listed
+                    # in `softwareupdate -l` output
+                    filtered_updates.append(update)
+        return filtered_updates
+
     def available_update_product_ids(self):
         """Returns a list of product IDs of available Apple updates.
 
         Returns:
           A list of string Apple update product ids.
         """
-        # pylint: disable=no-self-use
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if os_version_tuple < (10, 10):
-            display.display_warning(
-                'macOS versions below 10.10 are no longer supported')
-        # first, try to get the list from com.apple.SoftwareUpdate preferences
-        recommended_updates = su_prefs.pref(
-            'RecommendedUpdates')
-        if recommended_updates is not None:
-            try:
-                return [item['Product Key'] for item in recommended_updates
-                        if 'Product Key' in item]
-            except IndexError:
-                # RecommendedUpdates is an empty list
-                pass
-            except (KeyError, AttributeError):
-                # RecommendedUpdates is in an unexpected format
-                display.display_debug1(
-                    'com.apple.SoftwareUpdate RecommendedUpdates is in an '
-                    'unexpected format: %s', recommended_updates)
+        recommended_updates = self.get_filtered_recommendedupdates()
+        try:
+            return [item['Product Key'] for item in recommended_updates
+                    if 'Product Key' in item]
+        except IndexError:
+            # RecommendedUpdates is an empty list
+            pass
+        except (KeyError, AttributeError):
+            # RecommendedUpdates is in an unexpected format
+            display.display_debug1(
+                'com.apple.SoftwareUpdate RecommendedUpdates is in an '
+                'unexpected format: %s', recommended_updates)
         return []
-
 
     def installed_apple_pkgs_changed(self):
         """Generates a SHA-256 checksum of the info for all packages in the
@@ -362,24 +378,23 @@ class AppleUpdates(object):
         apple_updates = []
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
-        recommended_updates = su_prefs.pref('RecommendedUpdates')
-        if recommended_updates:
-            for item in recommended_updates:
-                try:
-                    update_display_names[item['Product Key']] = (
-                        item['Display Name'])
-                except (TypeError, AttributeError, KeyError):
-                    pass
-                try:
-                    update_versions[item['Product Key']] = (
-                        item['Display Version'])
-                except (TypeError, AttributeError, KeyError):
-                    pass
+        recommended_updates = self.get_filtered_recommendedupdates()
+        for item in recommended_updates:
             try:
-                product_keys = [item['Product Key']
-                                for item in recommended_updates]
+                update_display_names[item['Product Key']] = (
+                    item['Display Name'])
             except (TypeError, AttributeError, KeyError):
                 pass
+            try:
+                update_versions[item['Product Key']] = (
+                    item['Display Version'])
+            except (TypeError, AttributeError, KeyError):
+                pass
+        try:
+            product_keys = [item['Product Key']
+                            for item in recommended_updates]
+        except (TypeError, AttributeError, KeyError):
+            pass
 
         for product_key in product_keys:
             if not self.update_downloaded(product_key):
