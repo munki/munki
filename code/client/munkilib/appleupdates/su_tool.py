@@ -132,11 +132,11 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             continue
         last_output = output
 
-        output = output.decode('UTF-8').rstrip('\n')
+        output = output.decode('UTF-8').rstrip('\n\r')
         # parse and record info, or send the output to STDOUT or MunkiStatus
         # as applicable
         # --list-specific output
-        if mode == "list":
+        if mode == 'list':
             if output.startswith('   * '):
                 # collect list of items available for install
                 update_entry = output[5:]
@@ -149,10 +149,14 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 results['updates'].append(
                     {'identifier': identifier, 'version': vers})
                 continue
+            else:
+                # we don't want any output from calling `softwareupdate -l`
+                continue
 
+        output = output.strip()
         # --download-specific output
-        if mode == "download":
-            if output.strip().startswith('Installed '):
+        if mode == 'download':
+            if output.startswith('Installed '):
                 # 10.6/10.7/10.8(+?). Successful download of package name.
                 # don't display.
                 # softwareupdate logging "Installed" at the end of a
@@ -160,21 +164,21 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 continue
 
         # --install-specific output
-        if mode == "install":
-            if output.strip().startswith('Installing '):
+        if mode == 'install':
+            if output.startswith('Installing '):
                 item = output[11:]
                 if item:
                     display.display_status_major(output)
                 continue
-            if output.strip().startswith('Downloaded '):
+            if output.startswith('Downloaded '):
                 # don't display this
                 continue
-            if output.strip().startswith('Done with '):
+            if output.startswith('Done with '):
                 # 10.9 successful install
                 display.display_status_minor(output)
                 results['installed'].append(output[10:])
                 continue
-            if output.strip().startswith('Downloading '):
+            if output.startswith('Downloading '):
                 # This is 10.5 & 10.7 behavior for a missing subpackage.
                 display.display_warning(
                     'A necessary subpackage is not available on disk '
@@ -182,17 +186,17 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                     'run: %s' % output)
                 results['download'].append(output[12:])
                 continue
-            if output.strip().startswith('Installed '):
+            if output.startswith('Installed '):
                 # 10.6/10.7/10.8(+?) Successful install of package name.
                 display.display_status_minor(output)
                 results['installed'].append(output[10:])
                 continue
-            if output.strip().startswith('Done '):
+            if output.startswith('Done '):
                 # 10.5. Successful install of package name.
                 display.display_status_minor(output)
                 results['installed'].append(output[5:])
                 continue
-            if output.strip().startswith('Package failed:'):
+            if output.startswith('Package failed:'):
                 # Doesn't tell us which package.
                 display.display_error(
                     'Apple update failed to install: %s' % output)
@@ -214,7 +218,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 continue
 
         # other output
-        if output.strip().startswith('Progress: '):
+        if output.startswith('Progress: '):
             # Snow Leopard/Lion progress info with '-v' flag
             try:
                 percent = int(output[10:].rstrip('%'))
@@ -222,22 +226,22 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 percent = -1
             display.display_percent_done(percent, 100)
             continue
-        if output.strip().startswith('Software Update Tool'):
+        if output.startswith('Software Update Tool'):
             # don't display this
             continue
-        if output.strip().startswith('Copyright 2'):
+        if output.startswith('Copyright 2'):
             # don't display this
             continue
-        if output.strip().startswith('x '):
+        if output.startswith('x '):
             # don't display this, it's just confusing
             continue
         if 'Missing bundle identifier' in output:
             # don't display this, it's noise
             continue
-        if output.strip() == '':
+        if output == '':
             continue
         else:
-            display.display_status_minor(output.strip())
+            display.display_status_minor(output)
 
     if catalog_url:
         # reset CatalogURL if needed
@@ -256,4 +260,6 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             retcode = 1
 
     results['exit_code'] = retcode
+
+    display.display_debug2('softwareupdate run results: %s', results)
     return results
