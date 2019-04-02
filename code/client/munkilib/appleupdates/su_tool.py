@@ -34,22 +34,9 @@ from .. import osutils
 from .. import processes
 
 
-def run(options_list, catalog_url=None, stop_allowed=False):
-    """Runs /usr/sbin/softwareupdate with options.
-
-    Provides user feedback via command line or MunkiStatus.
-
-    Args:
-      options_list: sequence of options to send to softwareupdate.
-      stopped_allowed: boolean
-      mode: a hint as to the softwareupdate mode. Supported values are
-            "list", "download", and "install"
-
-    Returns:
-      Dictionary of results
-    """
-    results = {}
-
+def find_ptty_tool():
+    """Returns a command-and-arguments list for a psuedo-tty tool we can use
+    to wrap our run of softwareupdate"""
     # we need to wrap our call to /usr/sbin/softwareupdate with a utility
     # that makes softwareupdate think it is connected to a tty-like
     # device so its output is unbuffered so we can get progress info
@@ -74,13 +61,32 @@ def run(options_list, catalog_url=None, stop_allowed=False):
         # this is not preferred because it uses way too much CPU
         # checking stdin for input that will never come...
         cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
+    return cmd
+
+
+def run(options_list, catalog_url=None, stop_allowed=False):
+    """Runs /usr/sbin/softwareupdate with options.
+
+    Provides user feedback via command line or MunkiStatus.
+
+    Args:
+      options_list: sequence of options to send to softwareupdate.
+      stopped_allowed: boolean
+      mode: a hint as to the softwareupdate mode. Supported values are
+            "list", "download", and "install"
+
+    Returns:
+      Dictionary of results
+    """
+    results = {}
+
+    cmd = find_ptty_tool()
     cmd.extend(['/usr/sbin/softwareupdate', '--verbose'])
 
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
-    if catalog_url:
+    if catalog_url and os_version_tuple == (10, 10):
         # OS version-specific stuff to use a specific CatalogURL
-        if os_version_tuple == (10, 10):
-            su_prefs.set_custom_catalogurl(catalog_url)
+        su_prefs.set_custom_catalogurl(catalog_url)
 
     cmd.extend(options_list)
     # figure out the softwareupdate 'mode'
@@ -132,7 +138,10 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             continue
         last_output = output
 
+        # do NOT strip leading or trailing spaces yet; we need them when
+        # parsing -l/--list output
         output = output.decode('UTF-8').rstrip('\n\r')
+
         # parse and record info, or send the output to STDOUT or MunkiStatus
         # as applicable
         # --list-specific output
@@ -203,15 +212,15 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 results['failures'].append(output)
                 continue
             if (('Please call halt' in output
-                   or 'your computer must shut down' in output)
-                  and results['post_action'] != POSTACTION_SHUTDOWN):
+                 or 'your computer must shut down' in output)
+                    and results['post_action'] != POSTACTION_SHUTDOWN):
                 # This update requires we shutdown instead of a restart.
                 display.display_status_minor(output)
                 display.display_info('### This update requires a shutdown. ###')
                 results['post_action'] = POSTACTION_SHUTDOWN
                 continue
             if ('requires that you restart your computer' in output
-                  and results['post_action'] == POSTACTION_NONE):
+                    and results['post_action'] == POSTACTION_NONE):
                 # a restart is required
                 display.display_status_minor(output)
                 results['post_action'] = POSTACTION_RESTART
@@ -243,10 +252,9 @@ def run(options_list, catalog_url=None, stop_allowed=False):
         else:
             display.display_status_minor(output)
 
-    if catalog_url:
+    if catalog_url and os_version_tuple == (10, 10):
         # reset CatalogURL if needed
-        if os_version_tuple == (10, 10):
-            su_prefs.reset_original_catalogurl()
+        su_prefs.reset_original_catalogurl()
 
     retcode = job.returncode()
     if retcode == 0:

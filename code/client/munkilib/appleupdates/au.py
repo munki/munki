@@ -54,8 +54,6 @@ from .. import updatecheck
 from .. import FoundationPlist
 
 
-# Apple's index of downloaded updates
-INDEX_PLIST = '/Library/Updates/index.plist'
 INSTALLHISTORY_PLIST = '/Library/Receipts/InstallHistory.plist'
 
 
@@ -142,15 +140,6 @@ class AppleUpdates(object):
         msg = 'Checking for available Apple Software Updates...'
         display.display_status_major(msg)
 
-        if os.path.exists(INDEX_PLIST):
-            # try to remove old/stale /Library/Updates/index.plist --
-            # in some older versions of OS X this can hang around and is not
-            # always cleaned up when /usr/sbin/softwareupdate finds no updates
-            try:
-                os.unlink(INDEX_PLIST)
-            except OSError:
-                pass
-
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
             catalog_url = None
@@ -177,7 +166,8 @@ class AppleUpdates(object):
 
     def get_filtered_recommendedupdates(self):
         """Returns the list of RecommendedUpdates from com.apple.SoftwareUpdate
-        preferences, filtered by the outout of `softwareupdate -l`"""
+        preferences, filtered by the output of `softwareupdate -l`"""
+        # pylint: disable=no-self-use
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple < (10, 10):
             display.display_warning(
@@ -188,14 +178,13 @@ class AppleUpdates(object):
             # RecommendedUpdates without filtering. We never saw the issues
             # that this filtering is meant to address in 10.10 anyway!
             return recommended_updates
-        su_options = ['-l', '--no-scan']
-        su_results = su_tool.run(su_options)
+        su_results = su_tool.run(['-l', '--no-scan'])
         filtered_updates = []
         for item in su_results.get('updates', []):
             for update in recommended_updates:
                 if (item.get('identifier') == update.get('Identifier') and
                         item.get('version') == update.get('Display Version')):
-                    # add update to final results only if it is also listed
+                    # add update to filtered_updates only if it is also listed
                     # in `softwareupdate -l` output
                     filtered_updates.append(update)
         return filtered_updates
@@ -363,10 +352,9 @@ class AppleUpdates(object):
         return True
 
     def software_update_info(self):
-        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist or
-        /Library/Updates/index.plist to generate the AppleUpdates.plist,
-        which records available updates in the format that
-        Managed Software Update.app expects.
+        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist to generate
+        the AppleUpdates.plist, which records available updates in the format
+        that Managed Software Center.app expects.
 
         Returns:
           List of dictionary update data.
@@ -660,7 +648,6 @@ class AppleUpdates(object):
             # re-write the apple_update_info to match
             plist = {'AppleUpdates': remaining_apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
-            #TODO: clean up cached items we no longer need
 
         # Also clear our pref value for last check date. We may have
         # just installed an update which is a pre-req for some other update.
