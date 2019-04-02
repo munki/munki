@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-appleupdates.au
+appleupdates.py
 
 Created by Greg Neagle on 2017-01-06.
 
@@ -25,7 +25,6 @@ import glob
 import hashlib
 import os
 import subprocess
-import time
 import urllib2
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -36,6 +35,7 @@ from Foundation import NSDate
 
 from . import dist
 from . import su_prefs
+from . import su_tool
 from . import sync
 
 from ..updatecheck import catalogs
@@ -43,7 +43,6 @@ from ..constants import POSTACTION_NONE, POSTACTION_RESTART, POSTACTION_SHUTDOWN
 
 from .. import display
 from .. import fetch
-from .. import launchd
 from .. import munkistatus
 from .. import munkihash
 from .. import munkilog
@@ -55,8 +54,6 @@ from .. import updatecheck
 from .. import FoundationPlist
 
 
-# Apple's index of downloaded updates
-INDEX_PLIST = '/Library/Updates/index.plist'
 INSTALLHISTORY_PLIST = '/Library/Receipts/InstallHistory.plist'
 
 
@@ -93,7 +90,10 @@ class AppleUpdates(object):
         # fix things if somehow we died last time before resetting the
         # original CatalogURL
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if os_version_tuple in [(10, 9), (10, 10)]:
+        if os_version_tuple < (10, 10):
+            display.display_warning(
+                'macOS versions below 10.10 are no longer supported')
+        if os_version_tuple == (10, 10):
             su_prefs.reset_original_catalogurl()
 
         self.applesync = sync.AppleUpdateSync()
@@ -104,15 +104,6 @@ class AppleUpdates(object):
         # apple_update_metadata support
         self.client_id = ''
         self.force_catalog_refresh = False
-
-    def _display_status_major(self, message):
-        """Resets MunkiStatus detail/percent, logs and msgs GUI.
-
-        Args:
-          message: str message to display to the user and log.
-        """
-        # pylint: disable=no-self-use
-        display.display_status_major(message)
 
     def restart_action_for_updates(self):
         """Returns the most heavily weighted postaction"""
@@ -147,16 +138,7 @@ class AppleUpdates(object):
           Boolean. True if successful, False otherwise.
         """
         msg = 'Checking for available Apple Software Updates...'
-        self._display_status_major(msg)
-
-        if os.path.exists(INDEX_PLIST):
-            # try to remove old/stale /Library/Updates/index.plist --
-            # in some older versions of OS X this can hang around and is not
-            # always cleaned up when /usr/sbin/softwareupdate finds no updates
-            try:
-                os.unlink(INDEX_PLIST)
-            except OSError:
-                pass
+        display.display_status_major(msg)
 
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
@@ -167,70 +149,65 @@ class AppleUpdates(object):
         # before we call softwareupdate,
         # clear stored value for LastSessionSuccessful
         su_prefs.set_pref('LastSessionSuccessful', None)
-        retcode = self._run_softwareupdate(
+        results = su_tool.run(
             ['-d', '-a'], catalog_url=catalog_url, stop_allowed=True)
+        retcode = results.get('exit_code', 0)
         if retcode:  # there was an error
             display.display_error('softwareupdate error: %s', retcode)
             return False
         # not sure all older OS X versions set LastSessionSuccessful, so
         # react only if it's explicitly set to False
-        last_session_successful = su_prefs.pref(
-            'LastSessionSuccessful')
+        last_session_successful = su_prefs.pref('LastSessionSuccessful')
         if last_session_successful is False:
             display.display_error(
                 'softwareupdate reported an unsuccessful download session.')
             return False
         return True
 
+    def get_filtered_recommendedupdates(self):
+        """Returns the list of RecommendedUpdates from com.apple.SoftwareUpdate
+        preferences, filtered by the output of `softwareupdate -l`"""
+        # pylint: disable=no-self-use
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple < (10, 10):
+            display.display_warning(
+                'macOS versions below 10.10 are no longer supported')
+        recommended_updates = su_prefs.pref('RecommendedUpdates') or []
+        if os_version_tuple < (10, 11):
+            # --no-scan flag is not supported; just return the
+            # RecommendedUpdates without filtering. We never saw the issues
+            # that this filtering is meant to address in 10.10 anyway!
+            return recommended_updates
+        su_results = su_tool.run(['-l', '--no-scan'])
+        filtered_updates = []
+        for item in su_results.get('updates', []):
+            for update in recommended_updates:
+                if (item.get('identifier') == update.get('Identifier') and
+                        item.get('version') == update.get('Display Version')):
+                    # add update to filtered_updates only if it is also listed
+                    # in `softwareupdate -l` output
+                    filtered_updates.append(update)
+        return filtered_updates
+
     def available_update_product_ids(self):
         """Returns a list of product IDs of available Apple updates.
 
         Returns:
-          A list of string Apple update products ids.
+          A list of string Apple update product ids.
         """
-        # pylint: disable=no-self-use
-        # first, try to get the list from com.apple.SoftwareUpdate preferences
-        recommended_updates = su_prefs.pref(
-            'RecommendedUpdates')
-        if recommended_updates is not None:
-            try:
-                return [item['Product Key'] for item in recommended_updates
-                        if 'Product Key' in item]
-            except IndexError:
-                # RecommendedUpdates is an empty list
-                return []
-            except (KeyError, AttributeError):
-                # RecommendedUpdates is in an unexpected format
-                display.display_debug1(
-                    'com.apple.SoftwareUpdate RecommendedUpdates is in an '
-                    'unexpected format: %s', recommended_updates)
-                return []
-
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        # We've collected data that indicates that com.apple.SoftwareUpdate
-        # RecommendedUpdates should be present on 10.9+ if there are available
-        # updates. We don't have data on 10.7 or 10.8.
-        if os_version_tuple < (10, 8):
-            display.display_debug1(
-                'com.apple.SoftwareUpdate RecommendedUpdates is not defined')
-            return []
-
-        # fall through to using index.plist only if com.apple.SoftwareUpdate
-        # RecommendedUpdates doesn't exist and we're on macOS < 10.9
-        if not os.path.exists(INDEX_PLIST):
-            display.display_debug1('%s does not exist.' % INDEX_PLIST)
-            return []
-
+        recommended_updates = self.get_filtered_recommendedupdates()
         try:
-            product_index = FoundationPlist.readPlist(INDEX_PLIST)
-            products = product_index.get('ProductPaths', {})
-            return products.keys()
-        except (FoundationPlist.FoundationPlistException,
-                KeyError, AttributeError), err:
-            display.display_error(
-                "Error processing %s: %s", INDEX_PLIST, err)
-            return []
-
+            return [item['Product Key'] for item in recommended_updates
+                    if 'Product Key' in item]
+        except IndexError:
+            # RecommendedUpdates is an empty list
+            pass
+        except (KeyError, AttributeError):
+            # RecommendedUpdates is in an unexpected format
+            display.display_debug1(
+                'com.apple.SoftwareUpdate RecommendedUpdates is in an '
+                'unexpected format: %s', recommended_updates)
+        return []
 
     def installed_apple_pkgs_changed(self):
         """Generates a SHA-256 checksum of the info for all packages in the
@@ -253,10 +230,10 @@ class AppleUpdates(object):
 
         if current_apple_packages_checksum == old_apple_packages_checksum:
             return False
-        else:
-            prefs.set_pref('InstalledApplePackagesChecksum',
-                           current_apple_packages_checksum)
-            return True
+
+        prefs.set_pref('InstalledApplePackagesChecksum',
+                       current_apple_packages_checksum)
+        return True
 
     def _force_check_necessary(self, original_hash):
         """Returns True if a force check is needed, False otherwise.
@@ -297,7 +274,7 @@ class AppleUpdates(object):
             self.applesync.apple_download_catalog_path)
 
         msg = 'Checking Apple Software Update catalog...'
-        self._display_status_major(msg)
+        display.display_status_major(msg)
         try:
             self.applesync.cache_apple_catalog()
         except sync.CatalogNotFoundError:
@@ -375,10 +352,9 @@ class AppleUpdates(object):
         return True
 
     def software_update_info(self):
-        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist or
-        /Library/Updates/index.plist to generate the AppleUpdates.plist,
-        which records available updates in the format that
-        Managed Software Update.app expects.
+        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist to generate
+        the AppleUpdates.plist, which records available updates in the format
+        that Managed Software Center.app expects.
 
         Returns:
           List of dictionary update data.
@@ -390,37 +366,23 @@ class AppleUpdates(object):
         apple_updates = []
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
-        recommended_updates = su_prefs.pref('RecommendedUpdates')
-        if recommended_updates:
-            for item in recommended_updates:
-                try:
-                    update_display_names[item['Product Key']] = (
-                        item['Display Name'])
-                except (TypeError, AttributeError, KeyError):
-                    pass
-                try:
-                    update_versions[item['Product Key']] = (
-                        item['Display Version'])
-                except (TypeError, AttributeError, KeyError):
-                    pass
+        recommended_updates = self.get_filtered_recommendedupdates()
+        for item in recommended_updates:
             try:
-                product_keys = [item['Product Key']
-                                for item in recommended_updates]
+                update_display_names[item['Product Key']] = (
+                    item['Display Name'])
             except (TypeError, AttributeError, KeyError):
                 pass
-
-        if not product_keys:
-            # next, try to get the applicable/recommended updates from
-            # /Library/Updates/index.plist
-            if os.path.exists(INDEX_PLIST):
-                try:
-                    product_index = FoundationPlist.readPlist(INDEX_PLIST)
-                    products = product_index.get('ProductPaths', {})
-                    product_keys = products.keys()
-                except (FoundationPlist.FoundationPlistException,
-                        AttributeError, TypeError), err:
-                    display.display_error(
-                        "Error parsing %s: %s", INDEX_PLIST, err)
+            try:
+                update_versions[item['Product Key']] = (
+                    item['Display Version'])
+            except (TypeError, AttributeError, KeyError):
+                pass
+        try:
+            product_keys = [item['Product Key']
+                            for item in recommended_updates]
+        except (TypeError, AttributeError, KeyError):
+            pass
 
         for product_key in product_keys:
             if not self.update_downloaded(product_key):
@@ -525,187 +487,6 @@ class AppleUpdates(object):
                 display.display_info('       *Logout required')
                 reports.report['LogoutRequired'] = True
 
-    def _run_softwareupdate(
-            self, options_list, catalog_url=None, stop_allowed=False,
-            mode=None, results=None):
-        """Runs /usr/sbin/softwareupdate with options.
-
-        Provides user feedback via command line or MunkiStatus.
-
-        Args:
-          options_list: sequence of options to send to softwareupdate.
-          stopped_allowed:
-          mode:
-          results:
-        Returns:
-          Integer softwareupdate exit code.
-        """
-        if results is None:
-            # we're not interested in the results,
-            # but need to create a temporary dict anyway
-            results = {}
-
-        # we need to wrap our call to /usr/sbin/softwareupdate with a utility
-        # that makes softwareupdate think it is connected to a tty-like
-        # device so its output is unbuffered so we can get progress info
-        #
-        # Try to find our ptyexec tool
-        # first look in the parent directory of the parent directory of this
-        # file's directory
-        # (../)
-        parent_dir = (
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.dirname(
-                        os.path.abspath(__file__)))))
-        ptyexec_path = os.path.join(parent_dir, 'ptyexec')
-        if not os.path.exists(ptyexec_path):
-            # try absolute path in munki's normal install dir
-            ptyexec_path = '/usr/local/munki/ptyexec'
-        if os.path.exists(ptyexec_path):
-            cmd = [ptyexec_path]
-        else:
-            # fall back to /usr/bin/script
-            # this is not preferred because it uses way too much CPU
-            # checking stdin for input that will never come...
-            cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
-        cmd.extend(['/usr/sbin/softwareupdate', '--verbose'])
-
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if catalog_url:
-            # OS version-specific stuff to use a specific CatalogURL
-            if os_version_tuple < (10, 9):
-                cmd.extend(['--CatalogURL', catalog_url])
-            elif os_version_tuple in [(10, 9), (10, 10)]:
-                su_prefs.set_custom_catalogurl(catalog_url)
-
-        cmd.extend(options_list)
-
-        display.display_debug1('softwareupdate cmd: %s', cmd)
-
-        try:
-            job = launchd.Job(cmd)
-            job.start()
-        except launchd.LaunchdJobException as err:
-            display.display_warning(
-                'Error with launchd job (%s): %s', cmd, err)
-            display.display_warning('Skipping softwareupdate run.')
-            return -3
-
-        results['installed'] = []
-        results['download'] = []
-        results['failures'] = []
-
-        last_output = None
-        while True:
-            if stop_allowed and processes.stop_requested():
-                job.stop()
-                break
-
-            output = job.stdout.readline()
-            if not output:
-                if job.returncode() is not None:
-                    break
-                else:
-                    # no data, but we're still running
-                    # sleep a bit before checking for more output
-                    time.sleep(1)
-                    continue
-
-            # Don't bother parsing the stdout output if it hasn't changed since
-            # the last loop iteration.
-            if last_output == output:
-                continue
-            last_output = output
-
-            output = output.decode('UTF-8').strip()
-            # send the output to STDOUT or MunkiStatus as applicable
-            if output.startswith('Progress: '):
-                # Snow Leopard/Lion progress info with '-v' flag
-                try:
-                    percent = int(output[10:].rstrip('%'))
-                except ValueError:
-                    percent = -1
-                display.display_percent_done(percent, 100)
-            elif output.startswith('Software Update Tool'):
-                # don't display this
-                pass
-            elif output.startswith('Copyright 2'):
-                # don't display this
-                pass
-            elif output.startswith('Installing ') and mode == 'install':
-                item = output[11:]
-                if item:
-                    self._display_status_major(output)
-            elif output.startswith('Downloaded ') and mode == 'install':
-                # don't display this
-                pass
-            elif output.startswith('Installed '):
-                # 10.6 / 10.7 / 10.8. Successful install of package name.
-                if mode == 'install':
-                    display.display_status_minor(output)
-                    results['installed'].append(output[10:])
-                else:
-                    pass
-                    # don't display.
-                    # softwareupdate logging "Installed" at the end of a
-                    # successful download-only session is odd.
-            elif output.startswith('Done with ') and mode == 'install':
-                # 10.9 successful install
-                display.display_status_minor(output)
-                results['installed'].append(output[10:])
-            elif output.startswith('Done '):
-                # 10.5. Successful install of package name.
-                display.display_status_minor(output)
-                results['installed'].append(output[5:])
-            elif output.startswith('Downloading ') and mode == 'install':
-                # This is 10.5 & 10.7 behavior for a missing subpackage.
-                display.display_warning(
-                    'A necessary subpackage is not available on disk '
-                    'during an Apple Software Update installation '
-                    'run: %s' % output)
-                results['download'].append(output[12:])
-            elif output.startswith('Package failed:'):
-                # Doesn't tell us which package.
-                display.display_error(
-                    'Apple update failed to install: %s' % output)
-                results['failures'].append(output)
-            elif output.startswith('x '):
-                # don't display this, it's just confusing
-                pass
-            elif 'Missing bundle identifier' in output:
-                # don't display this, it's noise
-                pass
-            elif (('Please call halt' in output
-                   or 'your computer must shut down' in output)
-                  and not self.shutdown_instead_of_restart):
-                # This update requires we shutdown instead of a restart.
-                display.display_status_minor(output)
-                display.display_info('### This update requires a shutdown. ###')
-                self.shutdown_instead_of_restart = True
-            elif output == '':
-                pass
-            else:
-                display.display_status_minor(output)
-
-        if catalog_url:
-            # reset CatalogURL if needed
-            if os_version_tuple in [(10, 9), (10, 10)]:
-                su_prefs.reset_original_catalogurl()
-
-        retcode = job.returncode()
-        if retcode == 0:
-            # get SoftwareUpdate's LastResultCode
-            last_result_code = su_prefs.pref(
-                'LastResultCode') or 0
-            if last_result_code > 2:
-                retcode = last_result_code
-
-            if results['failures']:
-                return 1
-
-        return retcode
-
     def install_apple_updates(self, only_unattended=False):
         """Uses softwareupdate to install previously downloaded updates.
 
@@ -730,7 +511,7 @@ class AppleUpdates(object):
             msg = 'Installing available Apple Software Updates...'
             restart_action = self.restart_action_for_updates()
 
-        self._display_status_major(msg)
+        display.display_status_major(msg)
 
         installlist = self.software_update_info()
         remaining_apple_updates = []
@@ -788,9 +569,10 @@ class AppleUpdates(object):
                 self.applesync.local_catalog_path)
 
         su_start_date = NSDate.new()
-        retcode = self._run_softwareupdate(
-            su_options, mode='install', catalog_url=catalog_url,
-            results=installresults)
+        installresults = su_tool.run(su_options, catalog_url=catalog_url)
+        retcode = installresults.get('exit_code', 0)
+        self.shutdown_instead_of_restart = installresults.get(
+            'post_action') == POSTACTION_SHUTDOWN
         su_end_date = NSDate.new()
 
         # get the items that were just installed from InstallHistory.plist
@@ -866,7 +648,6 @@ class AppleUpdates(object):
             # re-write the apple_update_info to match
             plist = {'AppleUpdates': remaining_apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
-            #TODO: clean up cached items we no longer need
 
         # Also clear our pref value for last check date. We may have
         # just installed an update which is a pre-req for some other update.
@@ -1021,12 +802,10 @@ class AppleUpdates(object):
                 'Error reading: %s', self.apple_updates_plist)
             return item_list, product_ids
         apple_updates = pl_dict.get('AppleUpdates', [])
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
         for item in apple_updates:
             if (item.get('unattended_install') or
                     (prefs.pref('UnattendedAppleUpdates') and
-                     item.get('RestartAction', 'None') == 'None' and
-                     os_version_tuple >= (10, 10))):
+                     item.get('RestartAction', 'None') == 'None')):
                 if processes.blocking_applications_running(item):
                     display.display_detail(
                         'Skipping unattended install of %s because '
