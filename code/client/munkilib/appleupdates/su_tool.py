@@ -61,6 +61,8 @@ def find_ptty_tool():
         # this is not preferred because it uses way too much CPU
         # checking stdin for input that will never come...
         cmd = ['/usr/bin/script', '-q', '-t', '1', '/dev/null']
+        display.display_warning(
+            'Using /usr/bin/script as a ptty; CPU load may suffer')
     return cmd
 
 
