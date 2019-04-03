@@ -179,7 +179,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func enableOrDisableSoftwareViewControls() {
         // Disable or enable the controls that let us view optional items
-        let enabled_state = (getOptionalInstallItems().count > 0)
+        let enabled_state = optionalInstallsExist()
         enableOrDisableToolbarItems(enabled_state)
         searchField.isEnabled = enabled_state
         findMenuItem.isEnabled = enabled_state
@@ -332,7 +332,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func windowDidBecomeMain(_ notification: Notification) {
         // Our window was activated, make sure controls enabled as needed
-        let enabled_state = (getOptionalInstallItems().count > 0)
+        let enabled_state = optionalInstallsExist()
         enableOrDisableToolbarItems(enabled_state)
     }
     
