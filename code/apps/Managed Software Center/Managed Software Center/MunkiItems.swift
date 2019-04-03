@@ -131,7 +131,7 @@ class GenericItem: BaseItem {
             my["developer"] = guess_developer()
         }
         if let description = my["description"] as? String {
-            my["raw_description"] = description
+            my["raw_description"] = filtered_html(description)
             my["description"] = nil
         }
         my["icon"] = getIcon()
