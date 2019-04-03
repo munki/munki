@@ -43,10 +43,11 @@ struct SelfService {
     }
 
     init() {
+        let selfServiceData = readSelfServiceManifest()
         _installs = Set(
-            readSelfServiceManifest()["managed_installs"] as? [String] ?? [String]())
+            selfServiceData["managed_installs"] as? [String] ?? [String]())
         _uninstalls = Set(
-            readSelfServiceManifest()["managed_uninstalls"] as? [String] ?? [String]())
+            selfServiceData["managed_uninstalls"] as? [String] ?? [String]())
     }
     
     mutating func subscribe(_ item_name: String) -> Bool {
