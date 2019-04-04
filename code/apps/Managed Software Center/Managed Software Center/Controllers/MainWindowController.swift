@@ -1340,21 +1340,25 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBAction func softwareToolbarItemClicked(_ sender: Any) {
         // User clicked Software toolbar button
+        highlightToolbarButtons("Software")
         loadAllSoftwarePage(sender)
     }
     
     @IBAction func categoriesToolbarItemClicked(_ sender: Any) {
         // User clicked Categories toolbar button'''
+        highlightToolbarButtons("Categories")
         loadCategoriesPage(sender)
     }
     
     @IBAction func myItemsToolbarItemClicked(_ sender: Any) {
         // User clicked My Items toolbar button'''
+        highlightToolbarButtons("My Items")
         loadMyItemsPage(sender)
     }
     
     @IBAction func updatesToolbarItemClicked(_ sender: Any) {
         // User clicked Updates toolbar button'''
+        highlightToolbarButtons("Updates")
         loadUpdatesPage(sender)
     }
     
