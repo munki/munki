@@ -148,17 +148,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         cached_self_service = SelfService()
     }
 
-    func highlightButtonFor(item: NSToolbarItem, itemName: String, nameToHighlight: String) {
+    func setHighlightFor(item: NSToolbarItem, doHighlight: Bool) {
         if let button = item.view as? NSButton {
-            button.state = (nameToHighlight == itemName ? .on : .off)
+            button.state = (doHighlight ? .on : .off)
         }
     }
     
     func highlightToolbarButtons(_ nameToHighlight: String) {
-        highlightButtonFor(item: softwareToolbarItem, itemName: "Software", nameToHighlight: nameToHighlight)
-        highlightButtonFor(item: categoriesToolbarItem, itemName: "Categories", nameToHighlight: nameToHighlight)
-        highlightButtonFor(item: myItemsToolbarItem, itemName: "My Items", nameToHighlight: nameToHighlight)
-        highlightButtonFor(item: updatesToolbarItem, itemName: "Updates", nameToHighlight: nameToHighlight)
+        setHighlightFor(item: softwareToolbarItem, doHighlight: (nameToHighlight == "Software"))
+        setHighlightFor(item: categoriesToolbarItem, doHighlight: (nameToHighlight == "Categories"))
+        setHighlightFor(item: myItemsToolbarItem, doHighlight: (nameToHighlight == "My Items"))
+        setHighlightFor(item: updatesToolbarItem, doHighlight: (nameToHighlight == "Updates"))
     }
     
     func enableOrDisableToolbarItems(_ enabled: Bool) {
