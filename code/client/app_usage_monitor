@@ -82,8 +82,7 @@ class AppUsageClient(object):
 
         if reply:
             return reply.rstrip()
-        else:
-            return "ERROR:No reply"
+        return "ERROR:No reply"
 
     def disconnect(self):
         '''Disconnect from appusaged'''
@@ -195,7 +194,12 @@ class NotificationHandler(NSObject):
         """Handle com.googlecode.munki.managedsoftwareupdate.installrequest"""
         logging.info('got install request notification')
         user_info = notification.userInfo()
-        self.usage.process(user_info)
+        self.usage.process(
+            {'event': user_info.get('event', 'unknown'),
+             'name': user_info.get('name', 'unknown'),
+             'version': user_info.get('version', 'unknown')
+            }
+        )
 
 
 def main():
@@ -205,7 +209,9 @@ def main():
     # PyLint can't tell that NotificationHandler' NSObject superclass
     # has an alloc() method
     # pylint: disable=no-member
+    # pylint: disable=unused-variable
     notification_handler = NotificationHandler.alloc().init()
+    # pylint: enable=unused-variable
     # pylint: enable=no-member
 
     while True:
