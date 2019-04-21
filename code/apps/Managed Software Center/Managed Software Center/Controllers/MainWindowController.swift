@@ -78,7 +78,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return updatesToolbarItem.isEnabled
+        return toolBarItemIsHighlighted(updatesToolbarItem)
     }
     
     func alertToPendingUpdates() {
@@ -146,6 +146,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         displayUpdateCount()
         cached_self_service = SelfService()
+    }
+
+    func toolBarItemIsHighlighted(_ item: NSToolbarItem) -> Bool {
+        if let button = item.view as? NSButton {
+            return (button.state == .on)
+        }
+        return false
     }
 
     func setHighlightFor(item: NSToolbarItem, doHighlight: Bool) {
