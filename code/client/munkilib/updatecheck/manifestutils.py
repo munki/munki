@@ -275,7 +275,7 @@ def remove_from_selfserve_section(itemname, section):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
     display.display_debug1(
-        "Removing %s from SelfSeveManifest's %s...", itemname, section)
+        "Removing %s from SelfServeManifest's %s...", itemname, section)
     selfservemanifest = os.path.join(
         prefs.pref('ManagedInstallDir'), 'manifests', 'SelfServeManifest')
     if not os.path.exists(selfservemanifest):
