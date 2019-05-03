@@ -104,7 +104,7 @@ def set_bootstrap_mode():
     # create CHECKANDINSTALLATSTARTUPFLAG file
     try:
         open(constants.CHECKANDINSTALLATSTARTUPFLAG, 'w').close()
-    except (OSError, IOError), err:
+    except (OSError, IOError) as err:
         reset_fde_autologin()
         raise SetupError(
             'Could not create bootstrapping flag file: %s', err)
@@ -116,6 +116,6 @@ def clear_bootstrap_mode():
     if os.path.exists(constants.CHECKANDINSTALLATSTARTUPFLAG):
         try:
             os.unlink(constants.CHECKANDINSTALLATSTARTUPFLAG)
-        except OSError, err:
+        except OSError as err:
             raise SetupError(
                 'Could not remove bootstrapping flag file: %s', err)

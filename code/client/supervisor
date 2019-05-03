@@ -134,7 +134,7 @@ class Supervisor(object):
                 stdout=stdout_pipe,
                 stderr=stderr_pipe,
             )
-        except OSError, e:
+        except OSError as e:
             self.exit_status = 127
             raise ExecuteError(str(e))
 
@@ -193,7 +193,7 @@ class Supervisor(object):
             logging.warning('Sending SIGKILL to %d', pid)
             os.kill(-1 * pid, signal.SIGKILL)
             time.sleep(KILL_WAIT_SECS)
-        except OSError, e:
+        except OSError as e:
             if e.args[0] == errno.ESRCH:
                 logging.warning('pid %d died on its own')
             else:
@@ -245,7 +245,7 @@ def parseOpts(argv):
                 'timeout=', 'delayrandom=', 'debug', 'help',
                 'error-exec=', 'error-exec-exit-codes=',
             ])
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
         raise OptionError(str(e))
 
     options = {}
@@ -335,7 +335,7 @@ def main(argv):
         options, args = parseOpts(argv[1:])
         if not processOpts(options, args):
             return 0
-    except OptionError, e:
+    except OptionError as e:
         logging.error(str(e))
         return 1
 
@@ -345,7 +345,7 @@ def main(argv):
     try:
         sp = Supervisor(delayrandom_abort=True)
         sp.setOptions(**options)
-    except Error, e:
+    except Error as e:
         logging.exception('%s %s', e.__class__.__name__, str(e))
         return 1
 
@@ -354,9 +354,9 @@ def main(argv):
     try:
         sp.execute(args)
         ex = sp.getExitStatus()
-    except TimeoutError, e:
+    except TimeoutError as e:
         ex = 1
-    except Error, e:
+    except Error as e:
         logging.exception('%s %s', e.__class__.__name__, str(e))
         ex = 1
 

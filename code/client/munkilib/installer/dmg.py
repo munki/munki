@@ -107,7 +107,7 @@ def remove_quarantine_from_item(some_path):
     try:
         if "com.apple.quarantine" in xattr.xattr(some_path).list():
             xattr.xattr(some_path).remove("com.apple.quarantine")
-    except BaseException, err:
+    except BaseException as err:
         display.display_warning(
             "Error removing com.apple.quarantine from %s: %s", some_path, err)
 
@@ -210,7 +210,7 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
             if os.path.isdir(destination_path):
                 shutil.rmtree(destination_path)
             os.rename(temp_destination_path, destination_path)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             display.display_error("Error moving item to destination: %s" % err)
             return -1
 

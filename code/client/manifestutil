@@ -47,7 +47,7 @@ def get_installer_item_names(repo, catalog_limit_list):
     item_list = []
     try:
         catalogs_list = repo.itemlist('catalogs')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, (
             'Could not retrieve catalogs: %s' % unicode(err))
         return []
@@ -56,7 +56,7 @@ def get_installer_item_names(repo, catalog_limit_list):
             try:
                 data = repo.get(os.path.join('catalogs', catalog_name))
                 catalog = plistlib.readPlistFromString(data)
-            except munkirepo.RepoError, err:
+            except munkirepo.RepoError as err:
                 print >> sys.stderr, (
                     'Could not retrieve catalog %s: %s'
                     % (catalog_name, unicode(err)))
@@ -77,7 +77,7 @@ def get_manifest_names(repo):
     '''Returns a list of available manifests'''
     try:
         manifest_names = repo.itemlist('manifests')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, (
             'Could not retrieve manifests: %s' % unicode(err))
         manifest_names = []
@@ -89,7 +89,7 @@ def get_catalogs(repo):
     '''Returns a list of available catalogs'''
     try:
         catalog_names = repo.itemlist('catalogs')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, (
             'Could not retrieve catalogs: %s' % unicode(err))
         catalog_names = []
@@ -143,11 +143,11 @@ def get_manifest(repo, manifest_name):
     try:
         data = repo.get(manifest_ref)
         return plistlib.readPlistFromString(data)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, (u'Could not retrieve manifest %s: %s'
                               % (manifest_name, unicode(err)))
         return None
-    except (IOError, OSError, ExpatError), err:
+    except (IOError, OSError, ExpatError) as err:
         print >> sys.stderr, (
             u'Could not read manifest %s: %s' % (manifest_name, unicode(err)))
         return None
@@ -165,7 +165,7 @@ def save_manifest(repo, manifest_dict, manifest_name, overwrite_existing=False):
         data = plistlib.writePlistToString(manifest_dict)
         repo.put(manifest_ref, data)
         return True
-    except (IOError, OSError, ExpatError, munkirepo.RepoError), err:
+    except (IOError, OSError, ExpatError, munkirepo.RepoError) as err:
         print >> sys.stderr, (
             u'Saving %s failed: %s' % (manifest_name, unicode(err)))
         return False
@@ -188,7 +188,7 @@ def manifest_rename(repo, source_manifest_name, dest_manifest_name,
         repo.put(dest_manifest_ref, source_data)
         repo.delete(source_manifest_ref)
         return True
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, u'Renaming %s to %s failed: %s' % (
             source_manifest_name, dest_manifest_name, unicode(err))
         return False
@@ -276,7 +276,7 @@ def list_catalogs(repo, args):
        Prints the names of the available catalogs''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -297,7 +297,7 @@ def list_catalog_items(repo, args):
        Lists items in the given catalogs''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -324,7 +324,7 @@ def list_manifests(repo, args):
        Prints names of available manifests.''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -356,7 +356,7 @@ def find(repo, args):
                             'FIND_TEXT'))
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -377,7 +377,7 @@ def find(repo, args):
         try:
             data = repo.get(manifest_ref)
             manifest = plistlib.readPlistFromString(data)
-        except (IOError, OSError, ExpatError, munkirepo.RepoError), err:
+        except (IOError, OSError, ExpatError, munkirepo.RepoError) as err:
             print >> sys.stderr, (
                 u'Error reading %s: %s' % (manifest_ref, unicode(err)))
             continue
@@ -421,7 +421,7 @@ def display_manifest(repo, args):
        Prints the contents of the specified manifest''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -460,7 +460,7 @@ def expand_included_manifests(repo, args):
         Prints included manifests in the specified manifest''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -484,7 +484,7 @@ def new_manifest(repo, args):
        Creates a new empty manifest''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -513,7 +513,7 @@ def copy_manifest(repo, args):
        Copies the contents of one manifest to another''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -540,7 +540,7 @@ def rename_manifest(repo, args):
        Renames the manifest''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -577,7 +577,7 @@ def add_pkg(repo, args):
                             'Defaults to managed_installs.'))
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -635,7 +635,7 @@ def move_install_to_uninstall(repo, args):
                       help='''name of manifest on which to operate''')
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -697,7 +697,7 @@ def remove_pkg(repo, args):
                             'package. Defaults to managed_installs.'))
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -748,7 +748,7 @@ def add_catalog(repo, args):
                       help='name of manifest on which to operate')
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -804,7 +804,7 @@ def remove_catalog(repo, args):
                       help='name of manifest on which to operate')
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -852,7 +852,7 @@ def add_included_manifest(repo, args):
                       help='name of manifest on which to operate')
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -912,7 +912,7 @@ def remove_included_manifest(repo, args):
                       help='name of manifest on which to operate')
     try:
         options, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -957,7 +957,7 @@ def refresh_cache(repo, args):
         Refreshes the repo data''')
     try:
         _, arguments = parser.parse_args(args)
-    except MyOptParseError, errmsg:
+    except MyOptParseError as errmsg:
         print >> sys.stderr, str(errmsg)
         return 22 # Invalid argument
     except MyOptParseExit:
@@ -1075,7 +1075,7 @@ def connect_to_repo():
         exit(-1)
     try:
         repo = munkirepo.connect(repo_url, repo_plugin)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, u'Repo error: %s' % unicode(err)
         exit(-1)
     return repo

@@ -69,7 +69,7 @@ def guess_repo_url():
             fetch.getDataFromURL(url + '/catalogs/all')
             autodetected_url = url
             break
-        except fetch.Error, err:
+        except fetch.Error as err:
             # couldn't connect or other error
             display.display_info('URL error: %s', err)
 

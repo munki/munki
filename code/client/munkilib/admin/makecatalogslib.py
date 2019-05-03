@@ -53,11 +53,11 @@ def hash_icons(repo, output_fn=None):
         try:
             icondata = repo.get('icons/' + icon_ref)
             icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             errors.append(u'RepoError for %s: %s' % (icon_ref, unicode(err)))
-        except IOError, err:
+        except IOError as err:
             errors.append(u'IO error for %s: %s' % (icon_ref, err))
-        except BaseException, err:
+        except BaseException as err:
             errors.append(u'Unexpected error for %s: %s' % (icon_ref, err))
     return icons, errors
 
@@ -165,7 +165,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         output_fn("Getting list of pkgsinfo...")
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise MakeCatalogsError(
             "Error getting list of pkgsinfo items: %s" % unicode(err))
 
@@ -174,7 +174,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         output_fn("Getting list of pkgs...")
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise MakeCatalogsError(
             "Error getting list of pkgs items: %s" % unicode(err))
 
@@ -188,10 +188,10 @@ def process_pkgsinfo(repo, options, output_fn=None):
         try:
             data = repo.get(pkginfo_ref)
             pkginfo = plistlib.readPlistFromString(data)
-        except IOError, err:
+        except IOError as err:
             errors.append("IO error for %s: %s" % (pkginfo_ref, err))
             continue
-        except BaseException, err:
+        except BaseException as err:
             errors.append("Unexpected error for %s: %s" % (pkginfo_ref, err))
             continue
 
@@ -279,7 +279,7 @@ def makecatalogs(repo, options, output_fn=None):
                 repo.put(catalogpath, catalog_data)
                 if output_fn:
                     output_fn("Created %s..." % catalogpath)
-            except munkirepo.RepoError, err:
+            except munkirepo.RepoError as err:
                 errors.append(
                     u'Failed to create catalog %s: %s' % (key, unicode(err)))
         else:
@@ -292,7 +292,7 @@ def makecatalogs(repo, options, output_fn=None):
         try:
             repo.put(icon_hashes_plist, icon_hashes)
             print "Created %s..." % (icon_hashes_plist)
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             errors.append(
                 u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
 

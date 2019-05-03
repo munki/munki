@@ -139,7 +139,7 @@ class StartOSInstallRunner(object):
         # set Munki to run at boot after the OS upgrade is complete
         try:
             bootstrapping.set_bootstrap_mode()
-        except bootstrapping.SetupError, err:
+        except bootstrapping.SetupError as err:
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
                 '%s', err)
@@ -464,7 +464,7 @@ def startosinstall(installer, finishing_tasks=None, installinfo=None):
             installer,
             finishing_tasks=finishing_tasks, installinfo=installinfo).start()
         return True
-    except StartOSInstallError, err:
+    except StartOSInstallError as err:
         display.display_error(
             u'Error starting macOS install: %s', unicode(err))
         munkilog.log(

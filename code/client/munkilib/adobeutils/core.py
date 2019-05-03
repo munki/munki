@@ -67,7 +67,7 @@ def rotate_pdapp_log():
             newlogname = os.path.join(logdir, 'PDApp %s.log' % alternate_string)
         try:
             os.rename(pdapplog_path, newlogname)
-        except OSError, err:
+        except OSError as err:
             munkilog.log('Could not rotate PDApp.log: %s', unicode(err))
 
 

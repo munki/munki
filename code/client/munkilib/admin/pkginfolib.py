@@ -453,7 +453,7 @@ def makepkginfo(installeritem, options):
         elif pkgutils.hasValidConfigProfileExt(installeritem):
             try:
                 pkginfo = get_catalog_info_for_profile(installeritem)
-            except ProfileMetadataGenerationError, err:
+            except ProfileMetadataGenerationError as err:
                 print >> sys.stderr, err
                 raise PkgInfoGenerationError(
                     "%s doesn't appear to be a supported configuration "

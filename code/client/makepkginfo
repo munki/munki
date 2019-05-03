@@ -114,7 +114,7 @@ def main():
         installeritem = None
     try:
         pkginfo = pkginfolib.makepkginfo(installeritem, options)
-    except pkginfolib.PkgInfoGenerationError, err:
+    except pkginfolib.PkgInfoGenerationError as err:
         print >> sys.stderr, err
         exit(-1)
 
