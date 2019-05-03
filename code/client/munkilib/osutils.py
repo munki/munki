@@ -68,7 +68,7 @@ def cleanUpTmpDir():
     if hasattr(tmpdir, 'cache'):
         try:
             shutil.rmtree(tmpdir.cache)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             display.display_warning(
                 'Unable to clean up temporary dir %s: %s',
                 tmpdir.cache, str(err))

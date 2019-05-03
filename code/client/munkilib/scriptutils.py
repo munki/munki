@@ -96,7 +96,7 @@ def run_script(itemname, path, scriptname, suppress_error=False):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-    except OSError, err:
+    except OSError as err:
         display.display_error(
             'Error executing script %s: %s' % (scriptname, str(err)))
         return -1

@@ -170,14 +170,14 @@ class FileRepo(Repo):
             if NETFSMOUNTURLSYNC_AVAILABLE:
                 try:
                     self.root = mount_share_url(self.baseurl)
-                except ShareMountException, err:
+                except ShareMountException as err:
                     raise RepoError(err)
                 else:
                     self.we_mounted_repo = True
             else:
                 try:
                     os.mkdir(self.root)
-                except (OSError, IOError), err:
+                except (OSError, IOError) as err:
                     raise RepoError(
                         u'Could not make repo mountpoint: %s' % unicode(err))
                 if self.baseurl.startswith('afp:'):
@@ -219,7 +219,7 @@ class FileRepo(Repo):
                     rel_path = abs_path[len(search_dir):].lstrip("/")
                     file_list.append(rel_path)
             return file_list
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def get(self, resource_identifier):
@@ -236,7 +236,7 @@ class FileRepo(Repo):
             data = fileref.read()
             fileref.close()
             return data
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def get_to_local_file(self, resource_identifier, local_file_path):
@@ -251,7 +251,7 @@ class FileRepo(Repo):
         local_file_path = unicodeize(local_file_path)
         try:
             shutil.copyfile(repo_filepath, local_file_path)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def put(self, resource_identifier, content):
@@ -268,7 +268,7 @@ class FileRepo(Repo):
             fileref = open(repo_filepath, 'w')
             fileref.write(content)
             fileref.close()
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def put_from_local_file(self, resource_identifier, local_file_path):
@@ -287,7 +287,7 @@ class FileRepo(Repo):
             os.makedirs(dir_path, 0755)
         try:
             shutil.copyfile(local_file_path, repo_filepath)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def delete(self, resource_identifier):
@@ -299,5 +299,5 @@ class FileRepo(Repo):
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
             os.remove(repo_filepath)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)

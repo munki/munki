@@ -189,7 +189,7 @@ def force_logout_now():
             except OSError:
                 pass
 
-    except BaseException, err:
+    except BaseException as err:
         display.display_error('Exception in force_logout_now(): %s' % str(err))
 
 
@@ -211,7 +211,7 @@ def stop_requested():
         display.display_info('### User stopped session ###')
         try:
             os.unlink(stop_request_flag)
-        except OSError, err:
+        except OSError as err:
             display.display_error(
                 'Could not remove %s: %s', stop_request_flag, err)
         return True

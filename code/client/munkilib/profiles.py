@@ -62,7 +62,7 @@ def config_profile_info(ignore_cache=False):
         try:
             config_profile_info.cache = FoundationPlist.readPlist(
                 output_plist + '.plist')
-        except BaseException, err:
+        except BaseException as err:
             display.display_error(
                 'Could not read configuration profile info: %s' % err)
             config_profile_info.cache = {}
@@ -124,7 +124,7 @@ def store_profile_receipt_data(identifier, hash_value):
         del profile_data[identifier]
     try:
         FoundationPlist.writePlist(profile_data, profile_receipt_data_path())
-    except BaseException, err:
+    except BaseException as err:
         display.display_error(
             'Cannot update hash for %s: %s' % (identifier, err))
 
@@ -136,7 +136,7 @@ def read_profile(profile_path):
     except FoundationPlist.NSPropertyListSerializationException:
         # possibly a signed profile
         return read_signed_profile(profile_path)
-    except BaseException, err:
+    except BaseException as err:
         display.display_error(
             'Error reading profile %s: %s' % (profile_path, err))
         return {}
@@ -165,7 +165,7 @@ def read_signed_profile(profile_path):
         return {}
     try:
         return FoundationPlist.readPlistFromString(stdout)
-    except FoundationPlist.NSPropertyListSerializationException, err:
+    except FoundationPlist.NSPropertyListSerializationException as err:
         # not a valid plist
         display.display_error(
             'Error reading profile %s: %s' % (profile_path, err))

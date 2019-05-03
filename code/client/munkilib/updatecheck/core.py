@@ -449,7 +449,7 @@ def check(client_id='', localmanifestpath=None):
                     'Could not read InstallInfo.plist. Deleting...')
                 try:
                     os.unlink(installinfopath)
-                except OSError, err:
+                except OSError as err:
                     display.display_error(
                         'Failed to delete InstallInfo.plist: %s', str(err))
             if oldinstallinfo == installinfo:

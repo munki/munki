@@ -119,11 +119,11 @@ class MWA2APIRepo(Repo):
         headers = {'Accept': 'application/xml'}
         try:
             data = self._curl(url, headers=headers)
-        except CurlError, err:
+        except CurlError as err:
             raise RepoError(err)
         try:
             plist = plistlib.readPlistFromString(data)
-        except ExpatError, err:
+        except ExpatError as err:
             raise RepoError(err)
         if kind in ['catalogs', 'manifests', 'pkgsinfo']:
             # it's a list of dicts containing 'filename' key/values
@@ -147,7 +147,7 @@ class MWA2APIRepo(Repo):
             headers = {}
         try:
             return self._curl(url, headers=headers)
-        except CurlError, err:
+        except CurlError as err:
             raise RepoError(err)
 
     def get_to_local_file(self, resource_identifier, local_file_path):
@@ -165,7 +165,7 @@ class MWA2APIRepo(Repo):
             headers = {}
         try:
             self._curl(url, headers=headers, filename=local_file_path)
-        except CurlError, err:
+        except CurlError as err:
             raise RepoError(err)
 
     def put(self, resource_identifier, content):
@@ -181,7 +181,7 @@ class MWA2APIRepo(Repo):
             headers = {}
         try:
             self._curl(url, headers=headers, method='PUT', content=content)
-        except CurlError, err:
+        except CurlError as err:
             raise RepoError(err)
 
     def put_from_local_file(self, resource_identifier, local_file_path):
@@ -197,14 +197,14 @@ class MWA2APIRepo(Repo):
             formdata = ['filedata=@%s' % local_file_path]
             try:
                 self._curl(url, method='POST', formdata=formdata)
-            except CurlError, err:
+            except CurlError as err:
                 raise RepoError(err)
         else:
             headers = {'Content-type': 'application/xml'}
             try:
                 self._curl(url, headers=headers, method='PUT',
                            filename=local_file_path)
-            except CurlError, err:
+            except CurlError as err:
                 raise RepoError(err)
 
     def delete(self, resource_identifier):
@@ -215,6 +215,6 @@ class MWA2APIRepo(Repo):
         url = urllib2.quote(resource_identifier.encode('UTF-8'))
         try:
             self._curl(url, method='DELETE')
-        except CurlError, err:
+        except CurlError as err:
             raise RepoError(err)
         

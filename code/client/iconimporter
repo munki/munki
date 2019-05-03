@@ -47,7 +47,7 @@ def copy_icon_to_repo(repo, name, path):
     try:
         repo.put_from_local_file(icon_ref, path)
         print_utf8(u'\tWrote: %s' % icon_ref)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print_err_utf8(u'\tError uploading %s: %s' % (icon_ref, unicode(err)))
 
 
@@ -61,7 +61,7 @@ def generate_png_from_startosinstall_item(repo, install_item):
     dmg_temp = TempFile()
     try:
         repo.get_to_local_file(dmg_ref, dmg_temp.path)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print_err_utf8(u'\tCan\'t download %s from repo: %s'
                        % (dmg_ref, unicode(err)))
         return
@@ -97,7 +97,7 @@ def generate_png_from_dmg_item(repo, install_item):
     dmg_temp = TempFile()
     try:
         repo.get_to_local_file(dmg_ref, dmg_temp.path)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print_err_utf8(u'\tCan\'t download %s from repo: %s'
                        % (dmg_ref, unicode(err)))
         return
@@ -134,7 +134,7 @@ def generate_pngs_from_pkg(repo, install_item):
     file_temp = TempFile()
     try:
         repo.get_to_local_file(item_path, file_temp.path)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print_err_utf8(u'\tCan\'t download %s from repo: %s'
                        % (item_path, unicode(err)))
         return
@@ -189,7 +189,7 @@ def find_items_to_check(repo, itemlist=None):
     try:
         all_catalog_data = repo.get('catalogs/all')
         catalogitems = FoundationPlist.readPlistFromString(all_catalog_data)
-    except (munkirepo.RepoError, FoundationPlist.FoundationPlistException), err:
+    except (munkirepo.RepoError, FoundationPlist.FoundationPlistException) as err:
         print_err_utf8(
             'Error getting catalog data from repo: %s' % unicode(err))
         return []
@@ -267,7 +267,7 @@ def main():
     # Make sure the repo exists
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print_err_utf8(u'Could not connect to munki repo: %s' % unicode(err))
         exit(-1)
 

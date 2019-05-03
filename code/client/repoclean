@@ -118,7 +118,7 @@ class RepoCleaner(object):
         # deleted
         try:
             manifests_list = self.repo.itemlist('manifests')
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             self.errors.append(
                 "Repo error getting list of manifests: %s" % unicode(err))
             manifests_list = []
@@ -126,7 +126,7 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(os.path.join('manifests', manifest_name))
                 manifest = plistlib.readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, ExpatError), err:
+            except (munkirepo.RepoError, IOError, OSError, ExpatError) as err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (manifest_name, unicode(err)))
                 continue
@@ -155,7 +155,7 @@ class RepoCleaner(object):
         print_utf8('Analyzing pkginfo files...')
         try:
             pkgsinfo_list = self.repo.itemlist('pkgsinfo')
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             self.errors.append(
                 "Repo error getting list of pkgsinfo: %s" % unicode(err))
             pkgsinfo_list = []
@@ -165,7 +165,7 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(pkginfo_identifier)
                 pkginfo = plistlib.readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, ExpatError), err:
+            except (munkirepo.RepoError, IOError, OSError, ExpatError) as err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (pkginfo_name, unicode(err)))
                 continue
@@ -331,7 +331,7 @@ class RepoCleaner(object):
                 print_utf8('Removing %s' % item['resource_identifier'])
                 try:
                     self.repo.delete(item['resource_identifier'])
-                except munkirepo.RepoError, err:
+                except munkirepo.RepoError as err:
                     print_err_utf8(unicode(err))
             if (item.get('pkg_path') and
                     not item['pkg_path'] in self.pkgs_to_keep):
@@ -339,7 +339,7 @@ class RepoCleaner(object):
                 print_utf8('Removing %s' % pkg_to_remove)
                 try:
                     self.repo.delete(pkg_to_remove)
-                except munkirepo.RepoError, err:
+                except munkirepo.RepoError as err:
                     print_err_utf8(unicode(err))
             if (item.get('uninstallpkg_path') and
                     not item['uninstallpkg_path'] in self.pkgs_to_keep):
@@ -347,7 +347,7 @@ class RepoCleaner(object):
                 print_utf8('Removing %s' % pkg_to_remove)
                 try:
                     self.repo.delete(pkg_to_remove)
-                except munkirepo.RepoError, err:
+                except munkirepo.RepoError as err:
                     print_err_utf8(unicode(err))
 
     def make_catalogs(self):
@@ -457,7 +457,7 @@ def main():
 
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, (u'Could not connect to munki repo: %s'
                               % unicode(err))
         exit(-1)

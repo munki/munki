@@ -210,7 +210,7 @@ class Job(object):
                 # store their file descriptors for use
                 self.stdout = open(self.stdout_path, 'r')
                 self.stderr = open(self.stderr_path, 'r')
-            except (OSError, IOError), err:
+            except (OSError, IOError) as err:
                 raise LaunchdJobException(err)
 
     def stop(self):

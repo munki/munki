@@ -518,7 +518,7 @@ class AppleUpdateSync(object):
                 try:
                     return self.retrieve_url_to_cache_dir(
                         url, copy_only_if_missing=True)
-                except ReplicationError, err:
+                except ReplicationError as err:
                     display.display_error(
                         'Could not retrieve %s: %s', url, err)
         return None

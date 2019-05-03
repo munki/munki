@@ -149,7 +149,7 @@ def _run_installer(cmd, env_vars, packagename):
     try:
         job = launchd.Job(cmd, environment_vars=env_vars)
         job.start()
-    except launchd.LaunchdJobException, err:
+    except launchd.LaunchdJobException as err:
         display.display_error(
             'Error with launchd job (%s): %s', cmd, str(err))
         display.display_error('Can\'t run installer.')

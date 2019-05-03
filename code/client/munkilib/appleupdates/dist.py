@@ -216,7 +216,7 @@ def parse_su_dist(filename):
         display.display_error(
             'Invalid XML in %s', filename)
         return None
-    except IOError, err:
+    except IOError as err:
         display.display_error(
             'Error reading %s: %s', filename, err)
         return None

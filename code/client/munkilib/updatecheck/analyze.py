@@ -555,7 +555,7 @@ def process_install(manifestitem, cataloglist, installinfo,
             #if manifestitemname in installinfo['processed_installs']:
             #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-        except (fetch.GurlError, fetch.GurlDownloadError), errmsg:
+        except (fetch.GurlError, fetch.GurlDownloadError) as errmsg:
             display.display_warning(
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
@@ -568,7 +568,7 @@ def process_install(manifestitem, cataloglist, installinfo,
             #if manifestitemname in installinfo['processed_installs']:
             #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-        except fetch.Error, errmsg:
+        except fetch.Error as errmsg:
             display.display_warning(
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
@@ -980,7 +980,7 @@ def process_removal(manifestitem, cataloglist, installinfo):
                     'Can\'t uninstall %s because the integrity check '
                     'failed.', iteminfo['name'])
                 return False
-            except fetch.Error, errmsg:
+            except fetch.Error as errmsg:
                 display.display_warning(
                     'Failed to download the uninstaller for %s because %s',
                     iteminfo['name'], errmsg)
