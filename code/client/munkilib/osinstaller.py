@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2018 Greg Neagle.
+# Copyright 2017-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ from . import scriptutils
 
 def boot_volume_is_cs_converting():
     '''Returns True if the boot volume is in the middle of a CoreStorage
-    conversion from encypted to decrypted or vice-versa. macOS installs fail
+    conversion from encrypted to decrypted or vice-versa. macOS installs fail
     in this state.'''
     try:
         output = subprocess.check_output(
@@ -87,7 +87,7 @@ def find_install_macos_app(dir_path):
 
 def install_macos_app_is_stub(app_path):
     '''High Sierra downloaded installer is sometimes a "stub" application that
-    does not contain the InstallESD.dmg. Retune True if the given app path is
+    does not contain the InstallESD.dmg. Return True if the given app path is
     missing the InstallESD.dmg'''
     installesd_dmg = os.path.join(
         app_path, 'Contents/SharedSupport/InstallESD.dmg')
@@ -232,7 +232,7 @@ class StartOSInstallRunner(object):
         startosinstall_path = os.path.join(
             app_path, 'Contents/Resources/startosinstall')
 
-        os_version = get_os_version(app_path)
+        os_vers_to_install = get_os_version(app_path)
 
         # run startosinstall via subprocess
 
@@ -262,20 +262,33 @@ class StartOSInstallRunner(object):
 
         cmd.extend([startosinstall_path,
                     '--agreetolicense',
-                    '--applicationpath', app_path,
                     '--rebootdelay', '300',
-                    '--pidtosignal', str(os.getpid()),
-                    '--nointeraction'])
+                    '--pidtosignal', str(os.getpid())])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.14'):
+            # --applicationpath option is _required_ in Sierra and early
+            # releases of High Sierra. It became optional (or is ignored?) in
+            # later releases of High Sierra and causes warnings in Mojave
+            # so don't add this option when installing Mojave
+            cmd.extend(['--applicationpath', app_path])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.12.4'):
+            # --volume option is _required_ prior to 10.12.4 installer
+            # and must _not_ be included in 10.12.4+ installer's startosinstall
+            cmd.extend(['--volume', '/'])
+
+        if pkgutils.MunkiLooseVersion(
+                os_vers_to_install) < pkgutils.MunkiLooseVersion('10.13.5'):
+            # --nointeraction is an undocumented option that appears to be
+            # not only no longer needed/useful but seems to trigger some issues
+            # in more recent releases
+            cmd.extend(['--nointeraction'])
 
         if (self.installinfo and
                 'additional_startosinstall_options' in self.installinfo):
             cmd.extend(self.installinfo['additional_startosinstall_options'])
-
-        if pkgutils.MunkiLooseVersion(
-                os_version) < pkgutils.MunkiLooseVersion('10.12.4'):
-            # --volume option is _required_ prior to 10.12.4 installer
-            # and must _not_ be included in 10.12.4 installer's startosinstall
-            cmd.extend(['--volume', '/'])
 
         # more magic to get startosinstall to not buffer its output for
         # percent complete
@@ -381,7 +394,7 @@ class StartOSInstallRunner(object):
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
             munkilog.log(
-                'Starting macOS install of %s: SUCCESSFUL' % os_version,
+                'Starting macOS install of %s: SUCCESSFUL' % os_vers_to_install,
                 'Install.log')
             # previously we checked if retcode == 255:
             # that may have been something specific to 10.12's startosinstall

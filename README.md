@@ -1,13 +1,13 @@
 Munki
 =====
 
-_Managed software installation for OS X_
+_Managed software installation for macOS_
 
 #### Introduction
 
 Munki is an open source project from [Walt Disney Animation Studios](https://www.disneyanimation.com/technology/opensource).
 
-Munki is a set of tools that, used together with a webserver-based repository of packages and package metadata, can be used by OS X administrators to manage software installs (and in many cases removals) on OS X client machines.
+Munki is a set of tools that, used together with a webserver-based repository of packages and package metadata, can be used by macOS administrators to manage software installs (and in many cases removals) on macOS client machines.
 
 Munki can install software packaged in the Apple package format, and also supports Adobe CS3/CS4/CS5/CS6 Enterprise Deployment "packages", and drag-and-drop disk images as installer sources.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ def main():
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
     parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
-                      help='Skip checking of pkg existence. Useful'
-                           'when pkgs aren\'t on the same server'
+                      help='Skip checking of pkg existence. Useful '
+                           'when pkgs aren\'t on the same server '
                            'as pkginfo, catalogs and manifests.')
     parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL that takes precedence '

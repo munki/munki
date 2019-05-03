@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -156,7 +156,9 @@ def get_primary_manifest(alternate_id=''):
         manifest = get_manifest(clientidentifier)
     else:
         # no client identifier specified, so try the hostname
-        hostname = os.uname()[1]
+        hostname = os.uname()[1].decode('UTF-8')
+        # os.uname()[1] seems to always return UTF-8 for hostnames that
+        # contain unicode characters, so we decode to Unicode
         clientidentifier = hostname
         display.display_detail(
             'No client id specified. Requesting %s...', clientidentifier)
@@ -168,13 +170,16 @@ def get_primary_manifest(alternate_id=''):
         if not manifest:
             # try the short hostname
             clientidentifier = hostname.split('.')[0]
-            display.display_detail(
-                'Request failed. Trying %s...', clientidentifier)
-            try:
-                manifest = get_manifest(
-                    clientidentifier, suppress_errors=True)
-            except ManifestNotRetrievedException:
-                pass
+            if clientidentifier:
+                # need this test because of crazy people who give their
+                # machines hostnames that start with a period!
+                display.display_detail(
+                    'Request failed. Trying %s...', clientidentifier)
+                try:
+                    manifest = get_manifest(
+                        clientidentifier, suppress_errors=True)
+                except ManifestNotRetrievedException:
+                    pass
 
         if not manifest:
             # try the machine serial number
@@ -270,7 +275,7 @@ def remove_from_selfserve_section(itemname, section):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
     display.display_debug1(
-        "Removing %s from SelfSeveManifest's %s...", itemname, section)
+        "Removing %s from SelfServeManifest's %s...", itemname, section)
     selfservemanifest = os.path.join(
         prefs.pref('ManagedInstallDir'), 'manifests', 'SelfServeManifest')
     if not os.path.exists(selfservemanifest):

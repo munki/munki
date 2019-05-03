@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import os
 
 # our libs
 from . import analyze
+from . import autoconfig
 from . import catalogs
 from . import download
 from . import licensing
@@ -52,6 +53,9 @@ def check(client_id='', localmanifestpath=None):
     """Checks for available new or updated managed software, downloading
     installer items if needed. Returns 1 if there are available updates,
     0 if there are no available updates, and -1 if there were errors."""
+
+    # Auto-detect a Munki repo if one isn't defined in preferences
+    autoconfig.autodetect_repo_url_if_needed()
 
     reports.report['MachineInfo'] = info.getMachineFacts()
 
@@ -82,6 +86,9 @@ def check(client_id='', localmanifestpath=None):
 
         if processes.stop_requested():
             return 0
+
+        # stop precaching_agent if it's running
+        download.stop_precaching_agent()
 
         # prevent idle sleep only if we are on AC power
         caffeinator = None
@@ -173,7 +180,21 @@ def check(client_id='', localmanifestpath=None):
                 localonlyuninstalls = manifestutils.get_manifest_value_for_key(
                     localonlymanifest, 'managed_uninstalls') or []
                 for item in localonlyuninstalls:
-                    analyze.process_removal(item, cataloglist, installinfo)
+                    dummy_result = analyze.process_removal(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
+                localonlyoptionals = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'optional_installs') or []
+                for item in localonlyoptionals:
+                    dummy_result = analyze.process_optional_install(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
             else:
                 display.display_debug1(
                     "LocalOnlyManifest %s is set but is not present. "
@@ -206,6 +227,18 @@ def check(client_id='', localmanifestpath=None):
         usermanifest = '/Users/Shared/.SelfServeManifest'
         selfservemanifest = os.path.join(
             managed_install_dir, 'manifests', 'SelfServeManifest')
+
+        if os.path.islink(usermanifest):
+            # not allowed as it could link to things not normally
+            # readable by unprivileged users
+            try:
+                os.unlink(usermanifest)
+            except OSError:
+                pass
+            display.display_warning(
+                "Found symlink at %s. Ignoring and removing."
+                % selfservemanifest)
+
         if os.path.exists(usermanifest):
             # copy user-generated SelfServeManifest to our
             # managed_install_dir
@@ -377,6 +410,11 @@ def check(client_id='', localmanifestpath=None):
         cache_list.extend([item['uninstaller_item']
                            for item in installinfo.get('removals', [])
                            if item.get('uninstaller_item')])
+        # Don't delete optional installs that are designated as precache
+        cache_list.extend(
+            [download.get_url_basename(item['installer_item_location'])
+             for item in installinfo.get('optional_installs', [])
+             if item.get('precache')])
         cachedir = os.path.join(managed_install_dir, 'Cache')
         for item in osutils.listdir(cachedir):
             if item.endswith('.download'):
@@ -387,14 +425,12 @@ def check(client_id='', localmanifestpath=None):
                     # we have a partial and a full download
                     # for the same item. (This shouldn't happen.)
                     # remove the partial download.
+                    display.display_detail(
+                        'Removing partial download %s from cache', item)
                     os.unlink(os.path.join(cachedir, item))
-                elif problem_items == []:
-                    # problem items is our list of items
-                    # that need to be installed but are missing
-                    # the installer_item; these might be partial
-                    # downloads. So if we have no problem items, it's
-                    # OK to get rid of any partial downloads hanging
-                    # around.
+                elif fullitem not in cache_list:
+                    display.display_detail(
+                        'Removing partial download %s from cache', item)
                     os.unlink(os.path.join(cachedir, item))
             elif item not in cache_list:
                 display.display_detail('Removing %s from cache', item)
@@ -444,6 +480,10 @@ def check(client_id='', localmanifestpath=None):
 
     installcount = len(installinfo.get('managed_installs', []))
     removalcount = len(installinfo.get('removals', []))
+
+    # start our precaching agent
+    # note -- this must happen _after_ InstallInfo.plist gets written to disk.
+    download.run_precaching_agent()
 
     if installcount or removalcount:
         return 1

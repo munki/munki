@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ Created by Greg Neagle on 2008-11-18.
 Common functions used by the munki tools.
 """
 
-# this module current exists purely for backwards-compatibity so that anything
-# calling munkicommon functions will still work (for now)
+# this module currently exists purely for backwards compatibility so that
+# anything calling munkicommon functions will still work (for now)
 
 # We wildcard-import from submodules for backwards compatibility; functions
 # that were previously available from this module

@@ -123,7 +123,7 @@ if [ "$?" != "0" ]; then
 fi
 
 cd "$MUNKIROOT"
-# generate a psuedo-svn revision number for the core tools (and admin tools)
+# generate a pseudo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
 GITREV=`git log -n1 --format="%H" -- code/client`
 GITREVINDEX=`git rev-list --count $GITREV`
@@ -131,7 +131,7 @@ SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
-# get a psuedo-svn revision number for the apps pkg
+# get a pseudo-svn revision number for the apps pkg
 APPSGITREV=`git log -n1 --format="%H" -- code/apps`
 GITREVINDEX=`git rev-list --count $APPSGITREV`
 APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
@@ -139,7 +139,7 @@ if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$APPSSVNREV
 fi
 # get base apps version from MSC.app
-APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Managed Software Center-Info" CFBundleShortVersionString`
+APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Info" CFBundleShortVersionString`
 # append the APPSSVNREV
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
@@ -157,7 +157,7 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
 
-# get a psuedo-svn revision number for the metapackage
+# get a pseudo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
 
@@ -317,7 +317,7 @@ mkdir -p "$COREROOT/usr/local/munki/munkilib"
 chmod -R 755 "$COREROOT/usr"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor ptyexec removepackages
+for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor precache_agent ptyexec removepackages
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
@@ -333,7 +333,7 @@ if [ "$SVNREV" -lt "1302" ]; then
 fi
 
 # Enable bootstrap features if requested
-if [ "$BOOTSTRAPMODE" -eq "1" ]; then
+if [ "$BOOTSTRAPMODE" == "1" ]; then
     echo "Enabling bootstrap mode..."
     mkdir -p "$COREROOT/Users/Shared/"
     touch "$COREROOT/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
@@ -395,6 +395,7 @@ chmod +x "$ADMINROOT/usr/local/munki"
 mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
 chmod -R 755 "$ADMINROOT/private"
+chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # Create package info file.
 ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
@@ -459,15 +460,20 @@ echo "Creating app_usage package template..."
 APPUSAGEROOT="$PKGTMP/munki_app_usage"
 mkdir -m 1775 "$APPUSAGEROOT"
 mkdir -m 1775 "$APPUSAGEROOT/Library"
+mkdir -m 755 "$APPUSAGEROOT/Library/LaunchAgents"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
 mkdir -p "$APPUSAGEROOT/usr/local/munki"
 chmod -R 755 "$APPUSAGEROOT/usr"
-# Copy tools and launch daemon.
+# Copy launch agent, launch daemon, daemon, and agent
+# LaunchAgent
+cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
+chmod 644 "$APPUSAGEROOT/Library/LaunchAgents/"*
+# LaunchDaemon
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
 chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
-# Copy tool.
+# Copy tools.
 # edit this if list of tools changes!
-for TOOL in app_usage_monitor
+for TOOL in appusaged app_usage_monitor
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
 done
@@ -541,7 +547,12 @@ fi
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.4" authoringToolBuild="179">
-    <title>Munki - Managed software installation for OS X</title>
+    <title>Munki - Managed software installation for macOS</title>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="10.10"/>
+        </allowed-os-versions>
+    </volume-check>
     <options customize="allow" allow-external-scripts="yes"/>
     <domains enable_anywhere="true"/>
     <installation-check script="requirerestart()"/>
@@ -600,6 +611,7 @@ sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
 sudo chown -hR root:admin "$COREROOT/Users"
+sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"
@@ -612,6 +624,7 @@ sudo chown -hR root:wheel "$LAUNCHDROOT/Library/LaunchAgents"
 
 sudo chown root:admin "$APPUSAGEROOT/Library"
 sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchDaemons"
+sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 ######################

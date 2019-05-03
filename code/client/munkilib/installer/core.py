@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ from . import pkg
 from . import rmpkgs
 
 from .. import adobeutils
+from .. import constants
 from .. import display
 from .. import dmgutils
 from .. import munkistatus
@@ -256,16 +257,15 @@ def install_with_info(
 
         display_name = item.get('display_name') or item.get('name')
         version_to_install = item.get('version_to_install', '')
+        display.display_status_major(
+            "Installing %s (%s of %s)"
+            % (display_name, itemindex, len(installlist)))
 
         retcode = 0
         if 'preinstall_script' in item:
             retcode = scriptutils.run_embedded_script('preinstall_script', item)
 
         if retcode == 0 and 'installer_item' in item:
-            display.display_status_major(
-                "Installing %s (%s of %s)"
-                % (display_name, itemindex, len(installlist)))
-
             installer_type = item.get("installer_type", "")
 
             itempath = os.path.join(dirpath, item["installer_item"])
@@ -289,7 +289,7 @@ def install_with_info(
                 retcode = dmg.copy_from_dmg(itempath, item.get('items_to_copy'))
                 if retcode == 0 and requires_restart(item):
                     restartflag = True
-            # appdmg install (depercated)
+            # appdmg install (deprecated)
             elif installer_type == "appdmg":
                 display.display_warning(
                     "install_type 'appdmg' is deprecated. Use 'copy_from_dmg'.")
@@ -390,7 +390,7 @@ def install_with_info(
         # this might happen if there are multiple things being installed
         # with choicesXML files applied to a metapackage or
         # multiple packages being installed from a single DMG
-        foundagain = False
+        stillneeded = False
         current_installer_item = item['installer_item']
         # are we at the end of the installlist?
         # (we already incremented itemindex for display
@@ -401,20 +401,25 @@ def install_with_info(
             for lateritem in installlist[itemindex:]:
                 if (lateritem.get('installer_item') ==
                         current_installer_item):
-                    foundagain = True
+                    stillneeded = True
                     break
 
+        # check to see if the item is both precache and OnDemand
+        if not stillneeded and item.get('precache') and item.get('OnDemand'):
+            stillneeded = True
+            break
+
         # need to check skipped_installs as well
-        if not foundagain:
+        if not stillneeded:
             for skipped_item in skipped_installs:
                 if (skipped_item.get('installer_item') ==
                         current_installer_item):
-                    foundagain = True
+                    stillneeded = True
                     break
 
         # ensure package is not deleted from cache if installation
         # fails by checking retcode
-        if not foundagain and retcode == 0:
+        if not stillneeded and retcode == 0:
             # now remove the item from the install cache
             # (if it's still there)
             itempath = os.path.join(dirpath, current_installer_item)
@@ -747,7 +752,9 @@ def run(only_unattended=False):
         munkilog.log("###    End managed installer session    ###")
 
     reports.savereport()
-    return removals_need_restart or installs_need_restart
+    if removals_need_restart or installs_need_restart:
+        return constants.POSTACTION_RESTART
+    return constants.POSTACTION_NONE
 
 
 if __name__ == '__main__':

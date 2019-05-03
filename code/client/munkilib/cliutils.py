@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2018 Greg Neagle.
+# Copyright 2017-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ else:
     def pref(prefname):
         """Returns a preference for prefname. This is a fallback mechanism if
         CoreFoundation functions are not available -- for example to allow the
-        possible use of makecatlogs or manifestutil on Linux"""
+        possible use of makecatalogs or manifestutil on Linux"""
         if not hasattr(pref, 'cache'):
             pref.cache = None
         if not pref.cache:

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -427,7 +427,7 @@ def launchservices_installed_apps():
     # we access a "protected" function from LaunchServices
     # pylint: disable=W0212
 
-    apps = LaunchServices._LSCopyAllApplicationURLs(None)
+    apps = LaunchServices._LSCopyAllApplicationURLs(None) or []
     applist = []
     for app in apps:
         app_path = app.path()
@@ -616,15 +616,26 @@ def available_disk_space(volumepath='/'):
     return int(stat_val.f_frsize * stat_val.f_bavail / 1024)
 
 
+def get_os_build():
+    '''Returns the OS Build "number" (example 16G1212).'''
+    try:
+        system_version_plist = FoundationPlist.readPlist(
+            '/System/Library/CoreServices/SystemVersion.plist')
+        return system_version_plist['ProductBuildVersion']
+    except (FoundationPlist.FoundationPlistException, KeyError, AttributeError):
+        return ''
+
+
 @utils.Memoize
 def getMachineFacts():
     """Gets some facts about this machine we use to determine if a given
     installer is applicable to this OS or hardware"""
     # pylint: disable=C0103
     machine = dict()
-    machine['hostname'] = os.uname()[1]
+    machine['hostname'] = os.uname()[1].decode('UTF-8')
     machine['arch'] = os.uname()[4]
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
+    machine['os_build_number'] = get_os_build()
     hardware_info = get_hardware_info()
     machine['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
     machine['munki_version'] = get_version()
@@ -663,7 +674,7 @@ def get_conditions():
     except (OSError, IOError):
         pass
     if os.path.exists(conditionalscriptdir):
-        for conditionalscript in osutils.listdir(conditionalscriptdir):
+        for conditionalscript in sorted(osutils.listdir(conditionalscriptdir)):
             if conditionalscript.startswith('.'):
                 # skip files that start with a period
                 continue
@@ -750,7 +761,7 @@ def add_tzoffset_to_date(the_date):
     <Key>condition</key>
     <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
 
-    with the intent being that the comparision is against local time.
+    with the intent being that the comparison is against local time.
 
     """
     # find our time zone offset in seconds
@@ -774,11 +785,16 @@ def predicate_info_object():
     info_object['date'] = add_tzoffset_to_date(
         NSDate.dateWithString_(
             reports.report.get('StartTime', reports.format_time())))
+    # split os version into components for easier predicate comparison
     os_vers = machine['os_vers']
     os_vers = os_vers + '.0.0'
     info_object['os_vers_major'] = int(os_vers.split('.')[0])
     info_object['os_vers_minor'] = int(os_vers.split('.')[1])
     info_object['os_vers_patch'] = int(os_vers.split('.')[2])
+    # get last build number component for easier predicate comparison
+    build = machine['os_build_number']
+    info_object['os_build_last_component'] = pkgutils.MunkiLooseVersion(
+        build).version[-1]
     if 'Book' in machine.get('machine_model', ''):
         info_object['machine_type'] = 'laptop'
     else:

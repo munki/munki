@@ -1,0 +1,476 @@
+/* Multiple Updates message */
+"%s pending updates" = "%s aggiornamenti in sospeso";
+
+/* One Update message */
+"1 pending update" = "1 aggiornamento in sospeso";
+
+/* Logout Required detail */
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "È necessario un logout prima dell'aggiornamento. Potrebbe esserci un leggero ritardo prima della finestra di login. Eseguire il logout e l'aggiornamento adesso?";
+
+/* Logout warning string when logout is an hour or more away */
+"A logout will be forced at approximately %s." = "Un logout verrà forzato tra circa %s.";
+
+/* Logout warning string when logout is in < 60 minutes */
+"A logout will be forced in less than %s minutes." = "Un logout verrà forzato in meno di %s minuti.";
+
+/* Logout warning string when logout is in less than a minute */
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Un logout verrà forzato in meno di un minuto.\nTutti gli aggiornamenti in sospeso verranno installati. I documenti non salvati verranno persi.";
+
+/* Removal Error message */
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Un tentativo di rimozione è fallito. La rimozione verrà riprovata ancora.\nSe questa situazione persiste, contattare l'amministratore di sistema.";
+
+/* Restart Required detail */
+"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "È necessario un riavvio dopo dell'aggiornamento. Potrebbe esserci un leggero ritardo prima della finestra di login. Eseguire il logout e l'aggiornamento adesso?";
+
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Un problema alla configurazione di sistema sta impedendo al Centro Gestione Applicazioni di operare correttamente. Il problema segnalato è: ";
+
+/* Additional Pending Updates title */
+"Additional Pending Updates" = "Ulteriori Aggiornamenti in Sospeso";
+
+/* AllCategoriesLabel */
+"All Categories" = "Tutte le Categorie";
+
+/* AllItemsHeaderText */
+"All items" = "Tutti gli elementi";
+
+/* Forced Logout warning detail */
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Tutti gli aggiornamenti in sospeso verrano installati. I documenti non salvati verranno persi.\nSi può evitare un logout forzato facendo un logout adesso.";
+
+/* Allow button text */
+"Allow" = "Consenti";
+
+/* Install Error message */
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Un tentativo di installazione è fallito. L'installazione verrà riprovata ancora.\nSe questa situazione persiste, contattare l'amministratore di sistema.";
+
+/* Long Not Enough Disk Space For Update display text */
+"An older version is currently installed. There is not enough disk space to download and install this update." = "Una versione precedente è attualmente installata. Non c'è abbastanza spazio su disco per scaricare e installare questo aggiornamento.";
+
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Una versione precedente è attualmente installata. Per installare questo update bisogna aggiornare il sistema a Mac OS %s o superiore.";
+
+/* Other Users Blocking Apps Running title */
+"Applications in use by others" = "Applicazioni in uso da altri";
+
+/* Cancel button title/short action text */
+"Cancel" = "Cancella";
+
+/* Cancel Install long action text */
+"Cancel install" = "Cancella installazione";
+
+/* Cancel Removal long action text */
+"Cancel removal" = "Cancella rimozione";
+
+/* Cancel Update long action text */
+"Cancel update" = "Cancella aggiornamento";
+
+/* Item Not Found message */
+"Cannot display the requested item." = "Impossibile visualizzare l'elemento richiesto.";
+
+/* Categories label */
+"Categories" = "Categorie";
+
+/* Sidebar Category label */
+"Category:" = "Categoria:";
+
+/* Check Again button title */
+"Check Again" = "Controlla ancora";
+
+/* managedsoftwareupdate message */
+"Checking Apple Software Update catalog..." = "Controllo catalogo Aggiornamenti Software Apple...";
+
+/* managedsoftwareupdate message */
+"Checking for additional changes..." = "Controllo per ulteriori cambiamenti...";
+
+/* managedsoftwareupdate message */
+"Checking for available Apple Software Updates..." = "Controllo Aggiornamenti Software Apple disponibili...";
+
+/* managedsoftwareupdate message */
+"Checking for available updates..." = "Controllo aggiornamenti disponibili...";
+
+/* Checking For Updates message */
+"Checking for updates..." = "Controllo aggiornamenti...";
+
+/* Blocking Apps Running title */
+"Conflicting applications running" = "Applicazioni in conflitto in esecuzione";
+
+/* Continue button text */
+"Continue" = "Continua";
+
+/* Critical Update type */
+"Critical Update" = "Aggiornamento critico";
+
+/* Unavailable long action text */
+"Currently Unavailable" = "Attualmente non disponibile";
+
+/* Deny button text */
+"Deny" = "Rifiuta";
+
+/* managedsoftwareupdate message */
+"Determining which filesystem items to remove" = "Determino elementi del filesystem da rimuovere";
+
+/* Sidebar Developer label */
+"Developer:" = "Developer:";
+
+/* managedsoftwareupdate message */
+"Done." = "Fatto.";
+
+/* Downloading status text */
+"Downloading" = "Download in corso";
+
+/* managedsoftwareupdate message */
+"Downloading available Apple Software Updates..." = "Download Aggiornamenti Apple Disponibili in corso...";
+
+/* Sidebar Due label */
+"Due:" = "Da fare:";
+
+/* FeaturedLabel */
+"Featured" = "In primo piano";
+
+/* FeaturedItemsHeaderText */
+"Featured items" = "Elementi in primo piano";
+
+/* managedsoftwareupdate message */
+"Finishing..." = "Conclusione...";
+
+/* Firmware Alert Default detail */
+"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Il Firmware verrà aggiornato sul computer. L'alimentatore deve essere collegato al computer ed inserito in una presa di corrente. L'aggiornamento potrebbe richiedere diversi minuti. Non interferire o spegnere il computer durante questo aggiornamento.";
+
+/* No Power Source Warning detail */
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Per migliori risultati, connettere il computer ad un alimentatore di corrente prima dell'aggiornamento. Sicuro di continuare l'aggiornamento?";
+
+/* Forced Logout title text */
+"Forced Logout for Mandatory Install" = "Logout forzato per installazioni obbligatorie";
+
+/* managedsoftwareupdate message */
+"Gathering information on installed packages" = "Raccolta informazioni sui pacchetti installati in corso";
+
+/* No help alert title */
+"Help" = "Aiuto";
+
+/* No help alert detail */
+"Help isn't available for Managed Software Center." = "Aiuto non è disponibile per Centro Gestione Applicazioni.";
+
+/* Sidebar Information label */
+"Information" = "Informazioni";
+
+/* Install action text */
+"Install" = "Installazione";
+
+/* Install Required action text */
+"Install Required" = "Installazione Necessaria";
+
+/* Install Requested status text */
+"Install requested" = "Installazione richiesta";
+
+/* Install Session Failed title */
+"Install session failed" = "Sessione di installazione fallita";
+
+/* Install Error status text */
+"Installation Error" = "Errore di installazione";
+
+/* Installed status text */
+"Installed" = "Installato";
+
+/* Installing status text */
+"Installing" = "Installazione in corso";
+
+/* managedsoftwareupdate message */
+"Installing available Apple Software Updates..." = "Installazione Aggiornamenti Software Apple in corso...";
+
+/* Log out and Update button text */
+"Log out and update" = "Log out e aggiornamento";
+
+/* Logout and Update Now button text */
+"Log out and update now" = "Log out e aggiornamento ora";
+
+/* Logout Required title */
+"Logout Required" = "Logout Necessario";
+
+/* Failed Preflight Check detail */
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "In questo momento il Centro Gestione Applicazioni non riesce a controllare gli aggiornamenti.\nRiprovare più tardi. Se questa situazione persiste, contattare l'amministratore di sistema.";
+
+/* Cannot Contact Server detail */
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "In questo momento il Centro Gestione Applicazioni non riesce a contattare il server.\nRiprovare più tardi. Se questa situazione persiste, contattare l'amministratore di sistema.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Centro Gestione Applicazioni vuole sbloccare il disco di avvio dopo il riavvio per completare gli aggiornamenti in sospeso.";
+
+/* Managed Update type */
+"Managed Update" = "Aggiornamento Gestito";
+
+/* Mandatory Updates Pending text */
+"Mandatory Updates Pending" = "Aggiornamenti obbligatori in Sospeso";
+
+/* More link text */
+"More" = "Altri";
+
+/* Sidebar More By Developer label */
+"More by %s" = "Altri da %s";
+
+/* Sidebar More In Category label */
+"More in %s" = "Altri in %s";
+
+/* My Items label */
+"My Items" = "I Miei Elementi";
+
+/* No Licenses Available display text */
+"No licenses available" = "Nessuna licenza disponibile";
+
+/* No Updates message */
+"No pending updates" = "Nessun aggiornamento in sospeso";
+
+/* Item Not Found title */
+"Not Found" = "Non Trovato";
+
+/* Not Currently Available display text */
+"Not currently available" = "Attualmente non disponibile";
+
+/* Not Enough Disk Space display text */
+"Not enough disk space" = "Non c'è abbastanza spazio su disco";
+
+/* Not Installed status text */
+"Not installed" = "Non Installato";
+
+/* managedsoftwareupdate message */
+"Nothing to remove." = "Niente da Rimuovere.";
+
+/* OK button title */
+"OK" = "OK";
+
+/* Forced Install Date summary */
+"One or more items must be installed by %s" = "Uno o più elementi devono essere installati da %s";
+
+/* Mandatory Updates Imminent detail */
+"One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Uno o più aggiornamenti obbligatori sono in ritardo per l'installazione. Un logout verrà forzato a breve.";
+
+/* Mandatory Updates Pending detail */
+"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Uno o più elementi devono essere installati da %s. Un logout potrebbe essere forzato in caso si aspetti troppo per l'aggiornamento.";
+
+/* Other Available Updates label */
+"Other available updates" = "Altri aggiornamenti disponibili";
+
+/* Other Users Blocking Apps Running detail */
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Altri utenti collegati stanno usando le seguenti applicazioni. Provare l'aggiornamento quando non saranno in uso:\n\n%s";
+
+/* Other Users Logged In title */
+"Other users logged in" = "Altri utenti collegati";
+
+/* managedsoftwareupdate message */
+"Package removal complete." = "Rimozione pacchetto riuscita.";
+
+/* Password label */
+"Password:" = "Password:";
+
+/* Pending Updates alert title */
+"Pending updates" = "Aggiornamenti in sospeso";
+
+/* managedsoftwareupdate message */
+"Performing postflight tasks..." = "Controllo post-installazione in corso...";
+
+/* managedsoftwareupdate message */
+"Performing preflight tasks..." = "Controllo pre-installazione in corso...";
+
+/* Preparing Removal status text */
+"Preparing removal" = "Rimozione in preparazione";
+
+/* Problem Updates label */
+"Problem updates" = "Aggiornamenti che richiedono attenzione";
+
+/* Quit button title */
+"Quit" = "Chiudi";
+
+/* Removal Error status text */
+"Removal Error" = "Errore di rimozione";
+
+/* Removal Requested status text */
+"Removal requested" = "Rimozione richiesta";
+
+/* Remove action text */
+"Remove" = "Rimuovi";
+
+/* Removing status text */
+"Removing" = "Rimozione in corso";
+
+/* managedsoftwareupdate message */
+"Removing receipt info" = "Rimozione info in corso";
+
+/* Install Required action text */
+"Required" = "Necessario";
+
+/* Restart button title */
+"Restart" = "Riavvio";
+
+/* Restart Required title */
+"Restart Required" = "Riavvio Necessario";
+
+/* managedsoftwareupdate message */
+"Retrieving list of software for this machine..." = "Recupero la lista delle applicazioni per questo mac...";
+
+/* managedsoftwareupdate message */
+"Running Adobe Patch Installer" = "Adobe Patch Installer in esecuzione";
+
+/* managedsoftwareupdate message */
+"Running Adobe Setup" = "Adobe Setup in esecuzione";
+
+/* managedsoftwareupdate message */
+"Running Adobe Uninstall" = "Adobe Uninstall in esecuzione";
+
+/* No Installed Software secondary text */
+"Select software to install." = "Seleziona applicazioni da installare.";
+
+/* Sidebar Size label */
+"Size:" = "Dimensione:";
+
+/* Software label */
+"Software" = "Applicazione";
+
+/* managedsoftwareupdate message */
+"Software installed or removed requires a restart." = "L'applicazione installata o rimossa richiede il riavvio.";
+
+/* Restart Required alert detail */
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "L'applicazione installata o rimossa richiede il riavvio. Avrai la possibilità di salvare i documenti aperti.";
+
+/* managedsoftwareupdate message */
+"Starting Adobe installer..." = "Avvio Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting..." = "Avvio...";
+
+/* Sidebar Status label */
+"Status:" = "Status:";
+
+/* System configuration problem alert title */
+"System configuration problem" = "Problema di configurazione di sistema";
+
+/* managedsoftwareupdate message */
+"The software was successfully installed." = "L'applicazione è stata installata con successo.";
+
+/* Additional Pending Updates detail */
+"There are additional pending updates to install or remove." = "Ci sono ulteriori aggiornamenti in sospeso da installare o rimuovere.";
+
+/* No Items primary text */
+"There are no available software items." = "Non ci sono elementi disponibili.";
+
+/* No Developer Results primary text */
+"There are no items from this developer." = "Non ci sono elementi di questo developer.";
+
+/* No Category Results primary text */
+"There are no items in this category." = "Non ci sono elementi in questa categoria.";
+
+/* Other Users Logged In detail */
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Ci sono altri utenti collegati a questo computer.\nAggiornare ora può causare la perdita dei loro dati.\n\nRiprovare quando tutti gli utenti saranno scollegati.";
+
+/* Pending Updates alert detail text */
+"There are pending updates for this computer." = "Ci sono aggiornamenti in sospeso per questo computer.";
+
+/* Could Not Start Session message */
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "C'è un problema di configurazione con l'installer del Centro Gestione Aggiornamenti. Impossibile avviare il processo. Contattare l'amministratore di sistema.";
+
+/* Unexpected Session End message */
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "C'è un problema di configurazione con l'installer del Centro Gestione Aggiornamenti. Il processo si è chiuso inaspettatamente. Contattare l'amministratore di sistema.";
+
+/* No Pending Updates secondary text */
+"There is no new software for your computer at this time." = "Al momento non ci sono nuove applicazioni per questo computer.";
+
+/* Long Not Enough Disk Space display text */
+"There is not enough disk space to download and install this item." = "Non c'è abbastanza spazio su disco per scaricare e installare questo elemento.";
+
+/* Dependency List prologue text */
+"This item is required by:" = "Questo elemento è richiesto da:";
+
+/* Forced Date warning */
+"This item must be installed by %s" = "Questo elemento deve essere installato da %s";
+
+/* Password explanation */
+"To allow this, enter your login password." = "Per permettere questo, inserire la password di login.";
+
+/* No Items secondary text */
+"Try again later." = "Prova ancora più tardi.";
+
+/* No Search Results secondary text */
+"Try searching again." = "Prova a cercare ancora.";
+
+/* No Category Results secondary text */
+"Try selecting another category." = "Prova selezionando un'altra categoria.";
+
+/* No Developer Results secondary text */
+"Try selecting another developer." = "Prova selezionando un altro developer.";
+
+/* Sidebar Type label */
+"Type:" = "Tipo:";
+
+/* Unavailable status text */
+"Unavailable" = "Non disponibile";
+
+/* No Category name */
+"Uncategorized" = "Senza Categoria";
+
+/* Update button title/action text */
+"Update" = "Aggiorna";
+
+/* Update All button title */
+"Update All" = "Aggiorna Tutto";
+
+/* Update Required long action text */
+"Update Required" = "Aggiornamento richiesto";
+
+/* No comment provided by engineer. */
+"Update available" = "Aggiornamento disponibile";
+
+/* Update Check Failed title */
+"Update check failed" = "Controllo aggiornamento fallito";
+
+/* Update In Progress primary text */
+"Update in progress." = "Aggiornamento in corso.";
+
+/* Update Now button title */
+"Update now" = "Aggiorna adesso";
+
+/* Update Will Be Installed status text */
+"Update will be installed" = "L'aggiornamento verrà installato";
+
+/* Updates label */
+"Updates" = "Aggiornamenti";
+
+/* Updating message */
+"Updating..." = "Aggiornamento in corso...";
+
+/* managedsoftwareupdate message */
+"Verifying package integrity..." = "Controllo l'integrità del pacchetto...";
+
+/* Sidebar Version label */
+"Version" = "Versione";
+
+/* Sidebar Version label */
+"Version:" = "Versione:";
+
+/* managedsoftwareupdate message */
+"Waiting for network..." = "In attesa del network...";
+
+/* Will Be Installed status text */
+"Will be installed" = "Verrà installato";
+
+/* Will Be Removed status text */
+"Will be removed" = "Verrà rimosso";
+
+/* No Installed Software primary text */
+"You have no selected software." = "Non ci sono applicazioni selezionate.";
+
+/* Blocking Apps Running detail */
+"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:\n\n%s";
+
+/* Long item requires a higher OS version text */
+"You must upgrade to macOS version %s to be able to install this item." = "Per installare questo elemento bisogna aggiornare il sistema a Mac OS %s";
+
+/* No Power Source Warning text */
+"Your computer is not connected to a power source." = "Il computer non è collegato ad una presa di corrente.";
+
+/* No Search Results primary text */
+"Your search had no results." = "La ricerca non ha prodotto risultati.";
+
+/* No Pending Updates primary text */
+"Your software is up to date." = "Le applicazioni sono aggiornate.";
+
+/* macOS update required text */
+"macOS update required" = "È richiesto un aggiornamento di Mac OS";

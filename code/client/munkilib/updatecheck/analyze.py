@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2019 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -243,6 +243,19 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     iteminfo['uninstallable'] = (
         item_pl.get('uninstallable', False)
         and (item_pl.get('uninstall_method', '') != ''))
+    # If the item is a precache item, record the precache flag
+    # and also the installer item location (as long as item doesn't have a note
+    # explaining why it's not available and as long as available seats is not 0)
+    if (item_pl.get('installer_item_location') and
+            item_pl.get('precache') and
+            not 'note' in item_pl and
+            (not 'licensed_seats_available' in item_pl or
+             item_pl['licensed_seats_available'])):
+        iteminfo['precache'] = True
+        iteminfo['installer_item_location'] = item_pl['installer_item_location']
+        for key in ['installer_item_hash', 'PackageCompleteURL', 'PackageURL']:
+            if key in item_pl:
+                iteminfo[key] = item_pl[key]
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
@@ -334,7 +347,7 @@ def process_install(manifestitem, cataloglist, installinfo,
 
     # there are two kinds of dependencies/relationships.
     #
-    # 'requires' are prerequistes:
+    # 'requires' are prerequisites:
     #  package A requires package B be installed first.
     #  if package A is removed, package B is unaffected.
     #  requires can be a one to many relationship.
@@ -475,7 +488,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                              'icon_name',
                              'PayloadIdentifier',
                              'icon_hash',
-                             'OnDemand']
+                             'OnDemand',
+                             'precache']
 
             if (is_optional_install and
                     not installationstate.some_version_installed(item_pl)):

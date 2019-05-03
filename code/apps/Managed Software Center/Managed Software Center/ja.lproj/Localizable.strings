@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "アップデートを%s個保留しています";
+"%@ pending updates" = "アップデートを%@個保留しています";
 
 /* One Update message */
 "1 pending update" = "アップデートを1つ保留しています";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデートの前にログアウトする必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "％sに、強制的にログアウトさせられます";
+"A logout will be forced at approximately %@." = "％sに、強制的にログアウトさせられます";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "％s分以内に、強制的にログアウトさせられます";
+"A logout will be forced in less than %@ minutes." = "％s分以内に、強制的にログアウトさせられます";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "１分以内に強制的にログアウトさせられます。\n保留中のアップデートはすべてインストールされます。保存されていない作業内容は消失します。";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "旧バージョンがインストールされています。このアップデートをダウンロードしてインストールするには空き領域が不足しています。";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %s 以降にアップグレードする必要があります。";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
@@ -206,10 +206,10 @@
 "More" = "さらに見る";
 
 /* Sidebar More By Developer label */
-"More by %s" = "％sをもっと見る";
+"More by %@" = "％sをもっと見る";
 
 /* Sidebar More In Category label */
-"More in %s" = "%sでもっと見る";
+"More in %@" = "%@でもっと見る";
 
 /* My Items label */
 "My Items" = "マイアイテム";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "%sまでに、1つまたそれ以上のアイテムのインストールが必要です";
+"One or more items must be installed by %@" = "%@までに、1つまたそれ以上のアイテムのインストールが必要です";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "一つまたそれ以上の必須アップデートが期日までに行われていないため、強制的にログアウトをします";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "%sまでに、一つまたそれ以上のアイテムをインストールしなければいけません。アップーデートを実行しなければ、強制的にログアウトさせられます。";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "%@までに、一つまたそれ以上のアイテムをインストールしなければいけません。アップーデートを実行しなければ、強制的にログアウトさせられます。";
 
 /* Other Available Updates label */
 "Other available updates" = "その他入手可能なアップデート";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "別のユーザーが、下記のアプリケーションを使用しています。別のユーザーが\n%s\nの使用を終えてから、アップーデートをもう一度実行してください。";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "別のユーザーが、下記のアプリケーションを使用しています。別のユーザーが\n%@\nの使用を終えてから、アップーデートをもう一度実行してください。";
 
 /* Other Users Logged In title */
 "Other users logged in" = "別のユーザーがログイン中です";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "削除準備中です";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "問題のアップデート";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "関連アイテム:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "このアイテムは%sまでにインストールしなければいけません";
+"This item must be installed by %@" = "このアイテムは%@までにインストールしなければいけません";
 
 /* Password explanation */
 "To allow this, enter your login password." = "これを許可する為、ログインパスワードを入力して下さい。";
@@ -458,10 +458,10 @@
 "You have no selected software." = "ソフトウェアが選択されていません";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "このアイテムをインストールするにはmacOS %s 以降にアップグレードする必要があります。";
+"You must upgrade to macOS version %@ to be able to install this item." = "このアイテムをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "このコンピューターは電源に接続されていません";
