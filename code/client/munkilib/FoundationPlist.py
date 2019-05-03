@@ -90,7 +90,7 @@ def readPlistFromString(data):
     '''Read a plist data from a string. Return the root object.'''
     try:
         plistData = buffer(data)
-    except TypeError, err:
+    except TypeError as err:
         raise NSPropertyListSerializationException(err)
     dataObject, dummy_plistFormat, error = (
         NSPropertyListSerialization.

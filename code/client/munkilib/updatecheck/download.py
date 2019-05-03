@@ -248,7 +248,7 @@ def download_icons(item_list):
         if not os.path.isdir(icon_subdir):
             try:
                 os.makedirs(icon_subdir, 0755)
-            except OSError, err:
+            except OSError as err:
                 display.display_error('Could not create %s' % icon_subdir)
                 return
         if server_icon_hash != local_hash:
@@ -265,7 +265,7 @@ def download_icons(item_list):
                 fetch.munki_resource(
                     icon_url, icon_path, message=message)
                 fetch.writeCachedChecksum(icon_path)
-            except fetch.Error, err:
+            except fetch.Error as err:
                 display.display_debug1(
                     'Error when retrieving icon %s from the server: %s',
                     icon_name, err)
@@ -302,7 +302,7 @@ def download_client_resources():
     if not os.path.isdir(resource_dir):
         try:
             os.makedirs(resource_dir, 0755)
-        except OSError, err:
+        except OSError as err:
             display.display_error(
                 'Could not create %s' % resource_dir)
             return
@@ -317,7 +317,7 @@ def download_client_resources():
                 resource_url, resource_archive_path, message=message)
             downloaded_resource_path = resource_archive_path
             break
-        except fetch.Error, err:
+        except fetch.Error as err:
             display.display_debug1(
                 'Could not retrieve client resources with name %s: %s',
                 filename, err)
@@ -326,7 +326,7 @@ def download_client_resources():
         if os.path.exists(resource_archive_path):
             try:
                 os.unlink(resource_archive_path)
-            except (OSError, IOError), err:
+            except (OSError, IOError) as err:
                 display.display_error(
                     'Could not remove stale %s: %s', resource_archive_path, err)
 
@@ -347,7 +347,7 @@ def download_catalog(catalogname):
     try:
         fetch.munki_resource(catalogurl, catalogpath, message=message)
         return catalogpath
-    except fetch.Error, err:
+    except fetch.Error as err:
         display.display_error(
             'Could not retrieve catalog %s from server: %s',
             catalogname, err)
@@ -384,7 +384,7 @@ def cache():
     for item in _items_to_precache(install_info):
         try:
             download_installeritem(item, install_info, precaching=True)
-        except fetch.Error, err:
+        except fetch.Error as err:
             display.display_warning(
                 'Failed to precache the installer for %s because %s',
                 item['name'], unicode(err))
@@ -416,7 +416,7 @@ def uncache(space_needed_in_kb):
         item_path = os.path.join(cachedir, item[0])
         try:
             itemsize = int(os.path.getsize(item_path)/1024)
-        except OSError, err:
+        except OSError as err:
             display.display_warning("Could not get size of %s: %s"
                                     % (item_path, err))
             itemsize = 0
@@ -447,7 +447,7 @@ def uncache(space_needed_in_kb):
         try:
             os.remove(item_path)
             deleted_kb += item_size
-        except OSError, err:
+        except OSError as err:
             display.display_error(
                 "Could not remove precached item %s: %s" % (item_path, err))
 
@@ -495,7 +495,7 @@ def stop_precaching_agent():
             display.display_info("Stopping precaching agent")
         try:
             launchd.remove_job(PRECACHING_AGENT_LABEL)
-        except launchd.LaunchdJobException, err:
+        except launchd.LaunchdJobException as err:
             display.display_error('Error stopping precaching agent: %s', err)
 
 

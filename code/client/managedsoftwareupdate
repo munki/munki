@@ -51,7 +51,7 @@ except ImportError:
         print >> sys.stderr, _result, _stdout, _stderr
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, err:
+    except utils.RunExternalScriptError as err:
         print >> sys.stderr, str(err)
     sys.exit(200)
 else:
@@ -183,12 +183,12 @@ def runScript(script, display_name, runtype):
 
     try:
         utils.verifyFileOnlyWritableByMunkiAndRoot(script)
-    except utils.VerifyFilePermissionsError, err:
+    except utils.VerifyFilePermissionsError as err:
         # preflight/postflight is insecure, but if the currently executing
         # file is insecure too we are no worse off.
         try:
             utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
-        except utils.VerifyFilePermissionsError, err:
+        except utils.VerifyFilePermissionsError as err:
             # OK, managedsoftwareupdate is insecure anyway - warn & execute.
             display.display_warning(
                 'Multiple munki executable scripts have insecure file '
@@ -213,7 +213,7 @@ def runScript(script, display_name, runtype):
             display.display_info('%s stderr: %s' % (display_name, stderr))
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, err:
+    except utils.RunExternalScriptError as err:
         display.display_warning(unicode(err))
     return result
 
@@ -658,7 +658,7 @@ def main():
             bootstrapping.set_bootstrap_mode()
             print 'Bootstrap mode is set.'
             exit(0)
-        except bootstrapping.SetupError, err:
+        except bootstrapping.SetupError as err:
             print >> sys.stderr, err
             exit(-1)
 
@@ -667,7 +667,7 @@ def main():
             bootstrapping.clear_bootstrap_mode()
             print 'Bootstrap mode cleared.'
             exit(0)
-        except bootstrapping.SetupError, err:
+        except bootstrapping.SetupError as err:
             print >> sys.stderr, err
             exit(-1)
 
@@ -1066,7 +1066,7 @@ def main():
             # so we'll stop running at startup/logout
             try:
                 bootstrapping.clear_bootstrap_mode()
-            except bootstrapping.SetupError, err:
+            except bootstrapping.SetupError as err:
                 display.display_error(err)
 
     display.display_status_major('Finishing...')
@@ -1132,7 +1132,7 @@ def main():
                         'clearing bootstrap mode to prevent relaunch')
                     try:
                         bootstrapping.clear_bootstrap_mode()
-                    except bootstrapping.SetupError, err:
+                    except bootstrapping.SetupError as err:
                         display.display_error(err)
 
 

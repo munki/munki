@@ -87,7 +87,7 @@ def PtyExec(argv):
     if pid == 0:         # child
         try:
             os.execv(argv[0], argv)
-        except OSError, e:
+        except OSError as e:
             print >>sys.stderr, str(e)
             sys.exit(1)
     elif pid > 0:        # parent
@@ -96,7 +96,7 @@ def PtyExec(argv):
         while 1:
             try:
                 (rl, wl, xl) = select.select([f], [], [], 5.0)
-            except select.error, e:
+            except select.error as e:
                 rl = []
 
             if f in rl:

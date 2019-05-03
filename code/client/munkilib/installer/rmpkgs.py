@@ -732,7 +732,7 @@ def remove_filesystem_items(removalpaths, forcedeletebundles):
                     # directory is empty
                     try:
                         os.rmdir(pathtoremove)
-                    except (OSError, IOError), err:
+                    except (OSError, IOError) as err:
                         msg = "Couldn't remove directory %s - %s" % (
                             pathtoremove, err)
                         display.display_error(msg)
@@ -770,7 +770,7 @@ def remove_filesystem_items(removalpaths, forcedeletebundles):
                 # not a directory, just unlink it
                 try:
                     os.remove(pathtoremove)
-                except (OSError, IOError), err:
+                except (OSError, IOError) as err:
                     msg = "Couldn't remove item %s: %s" % (pathtoremove, err)
                     display.display_error(msg)
                     removalerrors = removalerrors + "\n" + msg

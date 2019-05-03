@@ -89,7 +89,7 @@ def edit_pkginfo_in_editor(pkginfo):
             os.close(filedesc)
             try:
                 FoundationPlist.writePlist(pkginfo, filepath)
-            except FoundationPlist.FoundationPlistException, err:
+            except FoundationPlist.FoundationPlistException as err:
                 print >> sys.stderr, (
                     u'Could not save pkginfo to temp file: %s'
                     % unicode(err))
@@ -101,7 +101,7 @@ def edit_pkginfo_in_editor(pkginfo):
                 cmd = [editor, filepath]
             try:
                 dummy_returncode = subprocess.check_call(cmd)
-            except (OSError, subprocess.CalledProcessError), err:
+            except (OSError, subprocess.CalledProcessError) as err:
                 print >> sys.stderr, (
                     'Problem running editor %s: %s.' % (editor, err))
                 os.remove(filepath)
@@ -114,7 +114,7 @@ def edit_pkginfo_in_editor(pkginfo):
                         answer = raw_input('Pkginfo editing complete? [y/n]: ')
                 try:
                     edited_pkginfo = FoundationPlist.readPlist(filepath)
-                except FoundationPlist.FoundationPlistException, err:
+                except FoundationPlist.FoundationPlistException as err:
                     print >> sys.stderr, (
                         u'Problem reading edited pkginfo: %s' % unicode(err))
                     os.remove(filepath)
@@ -128,7 +128,7 @@ def prompt_for_subdirectory(repo, subdirectory):
     """Prompts the user for a subdirectory for the pkg and pkginfo"""
     try:
         pkgsinfo_list = munkiimportlib.list_items_of_kind(repo, 'pkgsinfo')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise munkiimportlib.RepoCopyError(
             u'Unable to get list of current pkgsinfo: %s' % unicode(err))
     # filter the list of pkgsinfo to a list of subdirectories
@@ -329,7 +329,7 @@ def main():
 
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         print >> sys.stderr, (u'Could not connect to munki repo: %s'
                               % unicode(err))
         exit(-1)
@@ -382,7 +382,7 @@ def main():
     # make a pkginfo!
     try:
         pkginfo = pkginfolib.makepkginfo(installer_item, options)
-    except pkginfolib.PkgInfoGenerationError, err:
+    except pkginfolib.PkgInfoGenerationError as err:
         # makepkginfo returned an error
         print >> sys.stderr, 'Getting package info failed.'
         print >> sys.stderr, err
@@ -521,7 +521,7 @@ def main():
         try:
             munkiimportlib.convert_and_install_icon(repo, pkginfo,
                                                     options.icon_path)
-        except munkiimportlib.RepoCopyError, err:
+        except munkiimportlib.RepoCopyError as err:
             print >> sys.stderr, err
     elif options.extract_icon:
         pass
@@ -543,7 +543,7 @@ def main():
                 print 'Imported %s.' % imported_paths
             else:
                 print 'No icons found for import.'
-        except munkiimportlib.RepoCopyError, err:
+        except munkiimportlib.RepoCopyError as err:
             print >> sys.stderr, err
 
     # fix in case user accidentally starts subdirectory with a slash
@@ -558,7 +558,7 @@ def main():
                 options.subdirectory)
             print 'Copied %s to %s.' % (os.path.basename(installer_item),
                                           uploaded_pkgpath)
-        except munkiimportlib.RepoCopyError, errmsg:
+        except munkiimportlib.RepoCopyError as errmsg:
             print >> sys.stderr, errmsg
             cleanup_and_exit(-1)
 
@@ -575,7 +575,7 @@ def main():
                     options.subdirectory)
                 print 'Copied %s to %s.' % (
                     os.path.basename(uninstaller_item), uploaded_pkgpath)
-            except munkiimportlib.RepoCopyError, errmsg:
+            except munkiimportlib.RepoCopyError as errmsg:
                 print >> sys.stderr, errmsg
                 cleanup_and_exit(-1)
 
@@ -598,7 +598,7 @@ def main():
     try:
         pkginfo_path = munkiimportlib.copy_pkginfo_to_repo(repo, pkginfo, options.subdirectory)
         print 'Saved pkginfo to %s.' % pkginfo_path
-    except munkiimportlib.RepoCopyError, errmsg:
+    except munkiimportlib.RepoCopyError as errmsg:
         print >> sys.stderr, errmsg
         cleanup_and_exit(-1)
 

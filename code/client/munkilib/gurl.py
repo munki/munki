@@ -316,7 +316,7 @@ class Gurl(NSObject):
             string = str(plistData)
         try:
             xattr.setxattr(self.destination_path, self.GURL_XATTR, string)
-        except IOError, err:
+        except IOError as err:
             self.log('Could not store metadata to %s: %s'
                      % (self.destination_path, err))
 

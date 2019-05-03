@@ -111,7 +111,7 @@ def installed_state(item_pl):
                 elif comparison == 2:
                     # this item is newer
                     foundnewer = True
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the installs data
                 display.display_error(unicode(errmsg))
                 # return 1 so we're marked as not needing to be installed
@@ -129,7 +129,7 @@ def installed_state(item_pl):
                     return 0
                 elif comparison == 2:
                     foundnewer = True
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the receipts data
                 display.display_error(unicode(errmsg))
                 # return 1 so we're marked as not needing to be installed
@@ -186,7 +186,7 @@ def some_version_installed(item_pl):
                 if compare.compare_item_version(item) == 0:
                     # not there
                     return False
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the installs data
                 display.display_error(unicode(errmsg))
                 return False
@@ -200,7 +200,7 @@ def some_version_installed(item_pl):
                 if compare.compare_receipt_version(item) == 0:
                     # not there
                     return False
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the installs data
                 display.display_error(unicode(errmsg))
                 return False
