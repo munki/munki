@@ -8,7 +8,7 @@ import pwd
 import subprocess
 import sys
 
-from FileRepo import FileRepo
+from .FileRepo import FileRepo
 
 # TODO: make this more easily customized
 GITCMD = '/usr/bin/git'
