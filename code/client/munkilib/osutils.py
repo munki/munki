@@ -96,9 +96,9 @@ def listdir(path):
     # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
-    if type(path) is str:
+    if isinstance(path, str):
         path = unicode(path, 'utf-8')
-    elif type(path) is not unicode:
+    elif not isinstance(path, unicode):
         path = unicode(path)
     return os.listdir(path)
 
