@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-02-18.
 
 Functions for removing unused optional install items
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # Apple frameworks via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus

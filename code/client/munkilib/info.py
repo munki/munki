@@ -20,7 +20,8 @@ Created by Greg Neagle on 2016-12-14.
 
 Utilities that retrieve information from the current machine.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
+
 # standard libs
 import ctypes
 import ctypes.util

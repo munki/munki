@@ -19,7 +19,7 @@ makecatalogslib
 Created by Greg Neagle on 2017-11-19.
 Routines used by makecatalogs
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # std libs
 import hashlib

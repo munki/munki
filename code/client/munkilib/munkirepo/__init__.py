@@ -1,4 +1,5 @@
-from __future__ import print_function
+'''Base bits for repo plugins'''
+from __future__ import absolute_import, print_function
 
 import imp
 import os

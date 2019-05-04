@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for copying items from disk images
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import shutil

@@ -21,7 +21,7 @@ Modified in Feb 2016 to add support for NSURLSession.
 
 curl replacement using NSURLConnection and friends
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 from urlparse import urlparse

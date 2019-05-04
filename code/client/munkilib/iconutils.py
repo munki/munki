@@ -21,7 +21,7 @@ Created by Greg Neagle on 2014-05-15.
 
 Functions to work with product images ('icons') for Managed Software Center
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import glob
 import os

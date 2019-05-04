@@ -24,7 +24,7 @@ Much code based on and adapted from autopkgserver by Per Olofsson
 A privileged daemon that records app usage events and install requests to our
 app usage database.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import sys

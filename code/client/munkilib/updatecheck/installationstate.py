@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Utilities for determining installation status for Munki items.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 

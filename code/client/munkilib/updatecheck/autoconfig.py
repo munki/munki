@@ -20,7 +20,8 @@ Created by Greg Neagle on 2018-04-17.
 
 Functions for automatically discovering and configuring some Munki settings.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
+
 # Apple frameworks via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.

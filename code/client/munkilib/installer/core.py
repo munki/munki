@@ -19,7 +19,7 @@ installer.core
 munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import datetime
 import os

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-08-31.
 
 Functions supporting bootstrapping mode
 """
+from __future__ import absolute_import
 
 import os
 

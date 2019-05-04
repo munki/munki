@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-01-04.
 
 Utilities for working with Apple software update dist files
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 from xml.dom import minidom

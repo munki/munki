@@ -19,7 +19,7 @@ Utilities to enable Munki to install/uninstall Adobe CS3/CS4/CS5 products
 using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 
 import os

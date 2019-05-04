@@ -18,7 +18,7 @@ appleupdates.py
 Utilities for dealing with Apple Software Update.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 from . import au
 from . import su_prefs

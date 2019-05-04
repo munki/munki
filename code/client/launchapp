@@ -25,7 +25,7 @@ Prevents multiple copies of the app from being launched
 when Fast User Switching is in use
 Intended for use by a launchd LaunchAgent.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import sys
 import os

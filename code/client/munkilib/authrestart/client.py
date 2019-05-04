@@ -21,7 +21,7 @@ Created by Greg Neagle on 2017-04-15.
 Routines for communicating with authrestartd.
 Socket communications code adapted from autopkg's PkgCreator by Per Olofsson
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import plistlib

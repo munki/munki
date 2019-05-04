@@ -20,7 +20,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Commonly used constants
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # NOTE: it's very important that defined exit codes are never changed!
 # Preflight exit codes.
