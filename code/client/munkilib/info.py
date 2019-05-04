@@ -97,7 +97,7 @@ class Popen(subprocess.Popen):
 
         output = []
         inactive = 0
-        while 1:
+        while True:
             (rlist, dummy_wlist, dummy_xlist) = select.select(
                 [fileobj], [], [], 1.0)
 

@@ -42,7 +42,7 @@ def gethash(filename, hash_function):
         return 'NOT A FILE'
 
     fileref = open(filename, 'rb')
-    while 1:
+    while True:
         chunk = fileref.read(2**16)
         if not chunk:
             break
