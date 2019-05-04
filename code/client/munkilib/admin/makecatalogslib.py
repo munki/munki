@@ -274,7 +274,7 @@ def makecatalogs(repo, options, output_fn=None):
     # write the new catalogs
     for key in catalogs:
         catalogpath = os.path.join("catalogs", key)
-        if len(catalogs[key]):
+        if catalogs[key] != "":
             catalog_data = plistlib.writePlistToString(catalogs[key])
             try:
                 repo.put(catalogpath, catalog_data)

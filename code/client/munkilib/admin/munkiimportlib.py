@@ -243,7 +243,7 @@ def find_matching_pkginfo(repo, pkginfo):
         # could not retrieve catalogs/all
         # do we have any existing pkgsinfo items?
         pkgsinfo_items = repo.itemlist('pkgsinfo')
-        if len(pkgsinfo_items):
+        if pkgsinfo_items:
             # there _are_ existing pkgsinfo items.
             # warn about the problem since we can't seem to read catalogs/all
             print(u'Could not get a list of existing items from the repo: %s'
@@ -364,7 +364,7 @@ def generate_png_from_startosinstall_item(repo, dmg_path, pkginfo):
                 dmgutils.unmountdmg(mountpoint)
                 raise
         dmgutils.unmountdmg(mountpoint)
-        return None
+    return None
 
 
 def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
@@ -375,7 +375,7 @@ def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
         mountpoint = mountpoints[0]
         apps = [item for item in pkginfo.get('items_to_copy', [])
                 if item.get('source_item', '').endswith('.app')]
-        if len(apps):
+        if apps:
             app_path = os.path.join(mountpoint, apps[0]['source_item'])
             icon_path = iconutils.findIconForApp(app_path)
             if icon_path:
@@ -433,8 +433,7 @@ def generate_pngs_from_pkg(repo, item_path, pkginfo, import_multiple=True):
                 imported_paths.append(imported_path)
             index += 1
         return "\n\t".join(imported_paths)
-    else:
-        return None
+    return None
 
 
 def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
