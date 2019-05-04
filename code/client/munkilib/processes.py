@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Functions for finding, listing, etc processes
 """
+from __future__ import print_function
 
 import os
 import signal
@@ -219,4 +220,4 @@ def stop_requested():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

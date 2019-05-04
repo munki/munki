@@ -19,6 +19,7 @@ updatecheck.analyze
 Created by Greg Neagle on 2017-01-10.
 
 """
+from __future__ import print_function
 
 import datetime
 import os
@@ -1018,4 +1019,4 @@ def process_removal(manifestitem, cataloglist, installinfo):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-06.
 
 Utilities for replicating and retrieving Apple software update metadata
 """
+from __future__ import print_function
 
 import gzip
 import os
@@ -531,4 +532,4 @@ class AppleUpdateSync(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

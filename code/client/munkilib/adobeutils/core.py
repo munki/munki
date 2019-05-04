@@ -19,6 +19,7 @@ Utilities to enable Munki to install/uninstall Adobe CS3/CS4/CS5 products
 using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
+from __future__ import print_function
 
 
 import os
@@ -386,7 +387,7 @@ def writefile(stringdata, path):
     Returns the path on success, empty string on failure.'''
     try:
         fileobject = open(path, mode='w', buffering=1)
-        print >> fileobject, stringdata.encode('UTF-8')
+        print(stringdata.encode('UTF-8'), file=fileobject)
         fileobject.close()
         return path
     except (OSError, IOError):
@@ -924,4 +925,4 @@ def do_adobe_install(item):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

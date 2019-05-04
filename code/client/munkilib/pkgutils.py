@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Common pkg/receipt functions and classes used by the munki tools.
 """
+from __future__ import print_function
 
 import os
 import re
@@ -871,4 +872,4 @@ def isApplication(pathname):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

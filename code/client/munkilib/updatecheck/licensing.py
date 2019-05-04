@@ -19,6 +19,7 @@ updatecheck.licensing
 Created by Greg Neagle on 2017-01-01.
 
 """
+from __future__ import print_function
 
 from urllib import quote_plus
 
@@ -102,4 +103,4 @@ def update_available_license_seats(installinfo):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -1,5 +1,6 @@
 # encoding: utf-8
 '''Defines MWA2APIRepo plugin. See docstring for MWA2APIRepo class'''
+from __future__ import print_function
 
 import base64
 import getpass
@@ -38,7 +39,7 @@ class MWA2APIRepo(Repo):
             if 'MUNKIREPO_AUTHTOKEN' in os.environ:
                 self.authtoken = os.environ['MUNKIREPO_AUTHTOKEN']
             else:
-                print 'Please provide credentials for %s:' % self.baseurl
+                print('Please provide credentials for %s:' % self.baseurl)
                 username = raw_input('Username: ')
                 password = getpass.getpass()
                 user_and_pass = '%s:%s' % (username, password)
@@ -52,23 +53,23 @@ class MWA2APIRepo(Repo):
         contentpath = None
         fileref, directivepath = tempfile.mkstemp()
         fileobj = os.fdopen(fileref, 'w')
-        print >> fileobj, 'silent'         # no progress meter
-        print >> fileobj, 'show-error'     # print error msg to stderr
-        print >> fileobj, 'fail'           # throw error if download fails
-        print >> fileobj, 'location'       # follow redirects
-        print >> fileobj, 'request = %s' % method
+        print('silent', file=fileobj)         # no progress meter
+        print('show-error', file=fileobj)     # print error msg to stderr
+        print('fail', file=fileobj)           # throw error if download fails
+        print('location', file=fileobj)       # follow redirects
+        print('request = %s' % method, file=fileobj)
         if headers:
             for key in headers:
-                print >> fileobj, 'header = "%s: %s"' % (key, headers[key])
-        print >> fileobj, 'header = "Authorization: %s"' % self.authtoken
+                print('header = "%s: %s"' % (key, headers[key]), file=fileobj)
+        print('header = "Authorization: %s"' % self.authtoken, file=fileobj)
 
         if formdata:
             for line in formdata:
-                print >> fileobj, 'form = "%s"' % line
+                print('form = "%s"' % line, file=fileobj)
 
         url = os.path.join(self.baseurl, relative_url)
 
-        print >> fileobj, 'url = "%s"' % url
+        print('url = "%s"' % url, file=fileobj)
         fileobj.close()
 
         cmd = [CURL_CMD, '-q', '--config', directivepath]

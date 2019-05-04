@@ -22,6 +22,7 @@ Common utility functions used throughout Munki.
 
 Note: this module should be 100% free of ObjC-dependent Python imports.
 """
+from __future__ import print_function
 
 
 import grp
@@ -204,4 +205,4 @@ def getFirstPlist(textString):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Munki's hash functions
 """
+from __future__ import print_function
 
 import hashlib
 import os
@@ -67,4 +68,4 @@ def getsha256hash(filename):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

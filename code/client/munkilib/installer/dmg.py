@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for copying items from disk images
 """
+from __future__ import print_function
 
 import os
 import shutil
@@ -289,4 +290,4 @@ def copy_from_dmg(dmgpath, itemlist):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

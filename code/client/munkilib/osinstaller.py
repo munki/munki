@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-03-29.
 
 Support for using startosinstall to install macOS.
 """
+from __future__ import print_function
 
 # stdlib imports
 import os
@@ -519,4 +520,4 @@ def run(finishing_tasks=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

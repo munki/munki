@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-16.
 
 Functions for working with manifest files
 """
+from __future__ import print_function
 
 import os
 import urllib2
@@ -319,4 +320,4 @@ def remove_from_selfserve_uninstalls(itemname):
 _MANIFESTS = {}
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

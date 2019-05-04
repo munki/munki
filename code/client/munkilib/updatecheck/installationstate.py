@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Utilities for determining installation status for Munki items.
 """
+from __future__ import print_function
 
 import os
 
@@ -293,4 +294,4 @@ def evidence_this_is_installed(item_pl):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

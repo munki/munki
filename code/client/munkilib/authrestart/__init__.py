@@ -21,6 +21,7 @@ Initial work by Wes Whetstone, Summer/Fall 2016
 
 Functions supporting FileVault authrestart.
 """
+from __future__ import print_function
 
 import subprocess
 
@@ -214,4 +215,4 @@ def do_authorized_or_normal_restart(username=None,
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

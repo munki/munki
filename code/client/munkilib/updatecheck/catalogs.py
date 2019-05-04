@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for working with Munki catalogs
 """
+from __future__ import print_function
 
 import os
 
@@ -561,7 +562,7 @@ def get_item_detail(name, cataloglist, vers='',
     if skip_min_os_check:
         display.display_debug1(
             'Looking for detail for: %s, version %s, '
-            'ignoring minimum_os_version...', name, vers),
+            'ignoring minimum_os_version...', name, vers)
     else:
         display.display_debug1(
             'Looking for detail for: %s, version %s...', name, vers)
@@ -649,4 +650,4 @@ def catalogs():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

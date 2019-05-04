@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-31.
 
 Functions for downloading resources from the Munki server
 """
+from __future__ import print_function
 
 import os
 import urllib2
@@ -500,4 +501,4 @@ def stop_precaching_agent():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

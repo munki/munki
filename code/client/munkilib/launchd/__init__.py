@@ -25,6 +25,7 @@ Returns a file descriptor for a socket defined in a launchd plist.
 A wrapper for using launchd to run a process as root outside of Munki's
 process space. Needed to properly run /usr/sbin/softwareupdate, for example.
 """
+from __future__ import print_function
 
 import os
 import subprocess
@@ -231,4 +232,4 @@ class Job(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

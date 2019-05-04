@@ -22,6 +22,7 @@ Created by Greg Neagle on 2016-06-22.
 A tool to remove older, unused software items from a Munki repo.
 
 """
+from __future__ import print_function
 
 import plistlib
 import subprocess
@@ -261,10 +262,10 @@ class RepoCleaner(object):
             item_name = self.pkginfodb[key][
                 self.pkginfodb[key].keys()[0]][0]['name']
             if print_this:
-                print key
+                print(key)
                 if item_name not in self.manifest_items:
-                    print "[not in any manifests]"
-                print "versions:"
+                    print("[not in any manifests]")
+                print("versions:")
             index = 0
             for version in sorted(self.pkginfodb[key].keys(), compare_versions):
                 line_info = ''
@@ -303,13 +304,13 @@ class RepoCleaner(object):
                     line_info = "(%s) %s" % (item['resource_identifier'],
                                              line_info)
                 if print_this:
-                    print "    ", version, line_info
+                    print("    ", version, line_info)
                     if len(item_list) > 1:
                         for item in item_list:
-                            print "    ", " " * len(version),
-                            print "(%s)" % item['resource_identifier']
+                            print("    ", " " * len(version), end=' ')
+                            print("(%s)" % item['resource_identifier'])
             if print_this:
-                print
+                print()
 
         print_utf8("Total pkginfo items:     %s" % self.pkginfo_count)
         print_utf8("Item variants:           %s" % len(self.pkginfodb.keys()))
@@ -364,7 +365,7 @@ class RepoCleaner(object):
         if not os.path.exists(makecatalogs_path):
             # didn't find it; assume the default install path
             makecatalogs_path = '/usr/local/munki/makecatalogs'
-        print 'Rebuilding catalogs at %s...' % self.options.repo_url
+        print('Rebuilding catalogs at %s...' % self.options.repo_url)
         cmd = [makecatalogs_path]
         cmd.append('--repo-url')
         cmd.append(self.options.repo_url)
@@ -381,8 +382,8 @@ class RepoCleaner(object):
 
         errors = proc.stderr.read()
         if errors:
-            print '\nThe following issues occurred while building catalogs:\n'
-            print errors
+            print('\nThe following issues occurred while building catalogs:\n')
+            print(errors)
 
 
     def clean(self):
@@ -391,7 +392,7 @@ class RepoCleaner(object):
         self.analyze_pkgsinfo()
         self.find_cleanup_items()
         if len(self.items_to_delete):
-            print
+            print()
             answer = raw_input(
                 'Delete pkginfo and pkg items marked as [to be DELETED]? '
                 'WARNING: This action cannot be undone. [y/n] ')
@@ -427,7 +428,7 @@ def main():
     options, arguments = parser.parse_args()
 
     if options.version:
-        print get_version()
+        print(get_version())
         exit(0)
 
     if not options.repo_url:
@@ -458,8 +459,8 @@ def main():
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
     except munkirepo.RepoError as err:
-        print >> sys.stderr, (u'Could not connect to munki repo: %s'
-                              % unicode(err))
+        print(u'Could not connect to munki repo: %s'
+              % unicode(err), file=sys.stderr)
         exit(-1)
 
     # clean up the repo

@@ -17,6 +17,7 @@
 profiles.py
 Munki module for working with configuration profiles.
 """
+from __future__ import print_function
 
 import os
 import subprocess
@@ -288,4 +289,4 @@ def profile_is_installed(identifier):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

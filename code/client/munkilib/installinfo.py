@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for getting data from the InstallInfo.plist, etc
 """
+from __future__ import print_function
 
 # standard libs
 import os
@@ -288,4 +289,4 @@ def force_install_package_check():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')
