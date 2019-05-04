@@ -283,7 +283,7 @@ class ApplicationUsageRecorder(object):
             for table in tables:
                 query = conn.execute(table['select_sql'])
                 try:
-                    while 1:
+                    while True:
                         row = query.fetchone()
                         if not row:
                             break
