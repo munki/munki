@@ -58,9 +58,9 @@ class ShareAuthenticationNeededException(ShareMountException):
 
 def unicodeize(path):
     '''Convert a path to unicode'''
-    if type(path) is str:
+    if isinstance(path, str):
         return unicode(path, 'utf-8')
-    elif type(path) is not unicode:
+    elif not isinstance(path, unicode):
         return unicode(path)
     return path
 

@@ -52,16 +52,16 @@ def format_time(timestamp=None):
 def printreportitem(label, value, indent=0):
     """Prints a report item in an 'attractive' way"""
     indentspace = '    '
-    if type(value) == type(None):
+    if isinstance(value, type(None)):
         print(indentspace*indent, '%s: !NONE!' % label)
-    elif type(value) == list or type(value).__name__ == 'NSCFArray':
+    elif isinstance(value, list) or type(value).__name__ == 'NSCFArray':
         if label:
             print(indentspace*indent, '%s:' % label)
         index = 0
         for item in value:
             index += 1
             printreportitem(index, item, indent+1)
-    elif type(value) == dict or type(value).__name__ == 'NSCFDictionary':
+    elif isinstance(value, dict) or type(value).__name__ == 'NSCFDictionary':
         if label:
             print(indentspace*indent, '%s:' % label)
         for subkey in value.keys():
