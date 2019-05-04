@@ -248,7 +248,7 @@ def download_icons(item_list):
         icon_subdir = os.path.dirname(icon_path)
         if not os.path.isdir(icon_subdir):
             try:
-                os.makedirs(icon_subdir, 0755)
+                os.makedirs(icon_subdir, 0o755)
             except OSError as err:
                 display.display_error('Could not create %s' % icon_subdir)
                 return
@@ -302,7 +302,7 @@ def download_client_resources():
     # make sure local resource directory exists
     if not os.path.isdir(resource_dir):
         try:
-            os.makedirs(resource_dir, 0755)
+            os.makedirs(resource_dir, 0o755)
         except OSError as err:
             display.display_error(
                 'Could not create %s' % resource_dir)
