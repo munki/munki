@@ -19,7 +19,7 @@ updatecheck.analyze
 Created by Greg Neagle on 2017-01-10.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import datetime
 import os

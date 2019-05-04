@@ -20,7 +20,7 @@ Created by Greg Neagle on 2008-11-18.
 
 Common functions used by the munki tools.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # this module currently exists purely for backwards compatibility so that
 # anything calling munkicommon functions will still work (for now)

@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for getting data from the InstallInfo.plist, etc
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # standard libs
 import os

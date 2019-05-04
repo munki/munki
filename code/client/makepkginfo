@@ -31,7 +31,7 @@ The generated plist is printed to STDOUT.
 
 Usage: makepkginfo /path/to/package_or_dmg [-f /path/to/item/it/installs ...]
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # standard libs
 import optparse

@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-03-29.
 
 Support for using startosinstall to install macOS.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # stdlib imports
 import os

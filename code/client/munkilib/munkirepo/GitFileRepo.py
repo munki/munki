@@ -1,6 +1,6 @@
 # encoding: utf-8
 '''Subclasses FileRepo to do git commits of file changes'''
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import inspect
 import os

@@ -1,6 +1,6 @@
 # encoding: utf-8
 '''Defines FileRepo plugin. See docstring for FileRepo class'''
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import errno
 import getpass

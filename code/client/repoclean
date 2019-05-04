@@ -22,7 +22,7 @@ Created by Greg Neagle on 2016-06-22.
 A tool to remove older, unused software items from a Munki repo.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import plistlib
 import subprocess

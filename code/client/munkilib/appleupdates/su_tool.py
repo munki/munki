@@ -20,6 +20,7 @@ Created by Greg Neagle on 2019-03-20.
 
 wrapper for running /usr/sbin/softwareupdate
 """
+from __future__ import absolute_import
 
 import os
 import time

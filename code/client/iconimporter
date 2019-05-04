@@ -22,6 +22,8 @@ Created by Greg Neagle on 2014-03-03.
 
 Converts and imports icons as png files for Munki repo
 """
+from __future__ import absolute_import
+
 # standard libs
 import os
 from optparse import OptionParser

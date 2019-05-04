@@ -20,7 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Utilities for working with disk images.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess

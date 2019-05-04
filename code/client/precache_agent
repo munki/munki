@@ -21,6 +21,8 @@ Created by Greg Neagle on 2018-07-18.
 
 A privileged agent that downloads optional installs items marked for precaching.
 """
+from __future__ import absolute_import
+
 import signal
 import sys
 import time

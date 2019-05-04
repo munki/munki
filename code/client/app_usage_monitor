@@ -26,6 +26,7 @@ Borrowing lots of code and ideas from the crankd project, part of pymacadmin:
 and the application_usage scripts created by Google MacOps:
     https://github.com/google/macops/tree/master/crankd
 """
+from __future__ import absolute_import
 
 # standard Python libs
 import logging

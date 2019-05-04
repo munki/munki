@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-03-12.
 
 Functions supporting the admin command-line tools
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import ctypes
 from ctypes.util import find_library

@@ -19,7 +19,7 @@ munkiimportlib
 Created by Greg Neagle on 2017-11-18.
 Routines used by munkimport to import items into Munki repo
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # std lib imports
 import os

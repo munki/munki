@@ -19,7 +19,7 @@ manifestutil
 
 Created by Greg Neagle on 2011-03-04.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # TODO: add support for delete-manifest
 

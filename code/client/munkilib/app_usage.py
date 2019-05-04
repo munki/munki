@@ -23,7 +23,7 @@ Much code lifted from the application_usage scripts created by Google MacOps:
     https://github.com/google/macops/tree/master/crankd
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # standard Python libs
 import logging

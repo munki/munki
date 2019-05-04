@@ -21,7 +21,7 @@ Created by Greg Neagle on 2009-09-24.
 Utility functions for using MunkiStatus.app
 to display status and progress.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import time

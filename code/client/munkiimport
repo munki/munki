@@ -22,7 +22,7 @@ Created by Greg Neagle on 2010-09-29.
 
 Assists with importing installer items into the munki repo
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # std lib imports
 import optparse

@@ -19,7 +19,7 @@ fetch.py
 Created by Greg Neagle on 2011-09-29.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 # standard libs
 import calendar

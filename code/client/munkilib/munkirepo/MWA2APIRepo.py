@@ -1,6 +1,6 @@
 # encoding: utf-8
 '''Defines MWA2APIRepo plugin. See docstring for MWA2APIRepo class'''
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import base64
 import getpass

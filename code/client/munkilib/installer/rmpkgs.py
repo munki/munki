@@ -23,7 +23,7 @@ is made to revert to older versions of a file when uninstalling;
 only file removals are done.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess

@@ -20,7 +20,8 @@ Created by Greg Neagle on 2016-12-13.
 
 Preferences functions and classes used by the munki tools.
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
+
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611

@@ -20,7 +20,7 @@ Created by Greg Neagle on 2017-01-06.
 
 Utilities for replicating and retrieving Apple software update metadata
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import gzip
 import os

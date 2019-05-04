@@ -23,6 +23,7 @@ A helper tool for forced logouts to allow munki to force install items by
 a certain deadline.
 
 """
+from __future__ import absolute_import
 
 # standard libs
 import os

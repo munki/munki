@@ -26,7 +26,7 @@ Assumes a pkgsinfo directory under repopath.
 User calling this needs to be able to write to repo/catalogs.
 
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import optparse
 import sys

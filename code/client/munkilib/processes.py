@@ -21,7 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Functions for finding, listing, etc processes
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import os
 import signal
