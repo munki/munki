@@ -264,7 +264,7 @@ class FileRepo(Repo):
         repo_filepath = os.path.join(self.root, resource_identifier)
         dir_path = os.path.dirname(repo_filepath)
         if not os.path.exists(dir_path):
-            os.makedirs(dir_path, 0755)
+            os.makedirs(dir_path, 0o755)
         try:
             fileref = open(repo_filepath, 'w')
             fileref.write(content)
@@ -285,7 +285,7 @@ class FileRepo(Repo):
             return
         dir_path = os.path.dirname(repo_filepath)
         if not os.path.exists(dir_path):
-            os.makedirs(dir_path, 0755)
+            os.makedirs(dir_path, 0o755)
         try:
             shutil.copyfile(local_file_path, repo_filepath)
         except (OSError, IOError) as err:
