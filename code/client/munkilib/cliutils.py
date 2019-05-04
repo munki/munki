@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-03-12.
 
 Functions supporting the admin command-line tools
 """
+from __future__ import print_function
 
 import ctypes
 from ctypes.util import find_library
@@ -115,12 +116,12 @@ def path2url(path):
 
 def print_utf8(text):
     '''Print Unicode text as UTF-8'''
-    print text.encode('UTF-8')
+    print(text.encode('UTF-8'))
 
 
 def print_err_utf8(text):
     '''Print Unicode text to stderr as UTF-8'''
-    print >> sys.stderr, text.encode('UTF-8')
+    print(text.encode('UTF-8'), file=sys.stderr)
 
 
 class TempFile(object):
@@ -212,7 +213,7 @@ def configure(prompt_list):
             try:
                 CFPreferencesSetAppValue(key, value, BUNDLE_ID)
             except BaseException:
-                print >> sys.stderr, 'Could not save configuration!'
+                print('Could not save configuration!', file=sys.stderr)
                 raise ConfigurationSaveError
             # remove repo_path if it exists since we don't use that
             # any longer (except for backwards compatibility) and we don't
@@ -231,10 +232,10 @@ def configure(prompt_list):
                 del existing_prefs['repo_path']
             plistlib.writePlist(existing_prefs, PREFSPATH)
         except (IOError, OSError, ExpatError):
-            print >> sys.stderr, (
-                'Could not save configuration to %s' % PREFSPATH)
+            print('Could not save configuration to %s' % PREFSPATH,
+                  file=sys.stderr)
             raise ConfigurationSaveError
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Utilities that retrieve information from the current machine.
 """
+from __future__ import print_function
 # standard libs
 import ctypes
 import ctypes.util
@@ -690,7 +691,7 @@ def get_conditions():
             except utils.ScriptNotFoundError:
                 pass  # script is not required, so pass
             except utils.RunExternalScriptError as err:
-                print >> sys.stderr, unicode(err)
+                print(unicode(err), file=sys.stderr)
     else:
         # /usr/local/munki/conditions does not exist
         pass
@@ -821,4 +822,4 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

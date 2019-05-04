@@ -19,6 +19,7 @@ fetch.py
 Created by Greg Neagle on 2011-09-29.
 
 """
+from __future__ import print_function
 
 # standard libs
 import calendar
@@ -681,4 +682,4 @@ def check_server(url):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

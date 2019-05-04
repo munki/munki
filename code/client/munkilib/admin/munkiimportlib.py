@@ -19,6 +19,7 @@ munkiimportlib
 Created by Greg Neagle on 2017-11-18.
 Routines used by munkimport to import items into Munki repo
 """
+from __future__ import print_function
 
 # std lib imports
 import os
@@ -157,7 +158,7 @@ def make_catalog_db(repo):
         vers = item.get('version', 'NO VERSION')
 
         if name == 'NO NAME' or vers == 'NO VERSION':
-            print >> sys.stderr, 'WARNING: Bad pkginfo: %s' % item
+            print('WARNING: Bad pkginfo: %s' % item, file=sys.stderr)
 
         # add to hash table
         if 'installer_item_hash' in item:
@@ -191,8 +192,8 @@ def make_catalog_db(repo):
                         pkgid_table[pkgid][pkgvers] = []
                     pkgid_table[pkgid][pkgvers].append(itemindex)
             except TypeError:
-                print >> sys.stderr, (
-                    'Bad receipt data for %s-%s: %s' % (name, vers, receipt))
+                print('Bad receipt data for %s-%s: %s' % (name, vers, receipt),
+                      file=sys.stderr)
 
         # add to table of installed applications
         for install in item.get('installs', []):
@@ -205,8 +206,8 @@ def make_catalog_db(repo):
                             app_table[install['path']][vers] = []
                         app_table[install['path']][vers].append(itemindex)
             except TypeError:
-                print >> sys.stderr, (
-                    'Bad install data for %s-%s: %s' % (name, vers, install))
+                print('Bad install data for %s-%s: %s' % (name, vers, install),
+                      file=sys.stderr)
 
         # add to table of PayloadIdentifiers
         if 'PayloadIdentifier' in item:
@@ -245,8 +246,8 @@ def find_matching_pkginfo(repo, pkginfo):
         if len(pkgsinfo_items):
             # there _are_ existing pkgsinfo items.
             # warn about the problem since we can't seem to read catalogs/all
-            print (u'Could not get a list of existing items from the repo: %s'
-                   % unicode(err))
+            print(u'Could not get a list of existing items from the repo: %s'
+                  % unicode(err))
         return {}
     except CatalogDBException as err:
         # other error while processing catalogs/all
@@ -478,7 +479,7 @@ def copy_icon_to_repo(repo, iconpath):
         except munkirepo.RepoError as err:
             raise RepoCopyError('Could not remove existing %s: %s'
                                 % (destination_path_name, unicode(err)))
-    print 'Copying %s to %s...' % (icon_name, destination_path_name)
+    print('Copying %s to %s...' % (icon_name, destination_path_name))
     try:
         repo.put_from_local_file(destination_path_name, iconpath)
         return destination_path_name

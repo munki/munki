@@ -44,7 +44,7 @@ class SetupError(Exception):
 def disable_fde_autologin():
     '''Disables autologin to the unlocking user's account on a FileVault-
     encrypted machines.'''
-    
+
     # See https://support.apple.com/en-us/HT202842
     # We attempt to store the original value of com.apple.loginwindow
     # DisableFDEAutoLogin so if the local admin has set it to True for #reasons
@@ -107,7 +107,7 @@ def set_bootstrap_mode():
     except (OSError, IOError) as err:
         reset_fde_autologin()
         raise SetupError(
-            'Could not create bootstrapping flag file: %s', err)
+            'Could not create bootstrapping flag file: %s' % err)
 
 
 def clear_bootstrap_mode():
@@ -118,4 +118,4 @@ def clear_bootstrap_mode():
             os.unlink(constants.CHECKANDINSTALLATSTARTUPFLAG)
         except OSError as err:
             raise SetupError(
-                'Could not remove bootstrapping flag file: %s', err)
+                'Could not remove bootstrapping flag file: %s' % err)

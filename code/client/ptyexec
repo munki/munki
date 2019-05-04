@@ -25,6 +25,7 @@ This will have the effect of unbuffering output I/O from the subprocess.
 stdin of the subprocess is not connected to the stdin of this parent
 process.
 """
+from __future__ import print_function
 
 import fcntl
 import os
@@ -67,7 +68,7 @@ def SigHandler(signum, frame):
 
 def Usage(arg0):
     """Print usage."""
-    print >>sys.stderr, 'Usage: %s [command to run] [arguments...]' % arg0
+    print('Usage: %s [command to run] [arguments...]' % arg0, file=sys.stderr)
     return 0
 
 
@@ -88,7 +89,7 @@ def PtyExec(argv):
         try:
             os.execv(argv[0], argv)
         except OSError as e:
-            print >>sys.stderr, str(e)
+            print(str(e), file=sys.stderr)
             sys.exit(1)
     elif pid > 0:        # parent
         f = os.fdopen(fd, 'r+', 0)
@@ -109,7 +110,7 @@ def PtyExec(argv):
 
         f.close()
     elif pid == -1:    # error, never forked.
-        print >>sys.stderr, 'fork() error'
+        print('fork() error', file=sys.stderr)
         return 1
 
     return child_exited.get(pid, 1)

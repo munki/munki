@@ -19,6 +19,7 @@ makecatalogslib
 Created by Greg Neagle on 2017-11-19.
 Routines used by makecatalogs
 """
+from __future__ import print_function
 
 # std libs
 import hashlib
@@ -291,7 +292,7 @@ def makecatalogs(repo, options, output_fn=None):
         icon_hashes = plistlib.writePlistToString(icons)
         try:
             repo.put(icon_hashes_plist, icon_hashes)
-            print "Created %s..." % (icon_hashes_plist)
+            print("Created %s..." % (icon_hashes_plist))
         except munkirepo.RepoError as err:
             errors.append(
                 u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))

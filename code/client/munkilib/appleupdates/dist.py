@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-04.
 
 Utilities for working with Apple software update dist files
 """
+from __future__ import print_function
 
 import os
 from xml.dom import minidom
@@ -259,4 +260,4 @@ def parse_su_dist(filename):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

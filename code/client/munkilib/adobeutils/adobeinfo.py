@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-06.
 Utilities to get info about Adobe installers/uninstallers
 
 """
+from __future__ import print_function
 
 import os
 import json
@@ -784,4 +785,4 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

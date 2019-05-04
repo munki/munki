@@ -6,6 +6,7 @@ test_isapprunning.py
 Unit tests for processes.isAppRunning.
 
 """
+from __future__ import print_function
 # Copyright 2016-present Nate Walck.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +31,7 @@ try:
     from mock import patch
 except ImportError:
     import sys
-    print >>sys.stderr, "mock module is required. run: easy_install mock"
+    print("mock module is required. run: easy_install mock", file=sys.stderr)
     raise
 
 

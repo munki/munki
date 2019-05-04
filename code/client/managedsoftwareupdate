@@ -17,6 +17,7 @@
 """
 managedsoftwareupdate
 """
+from __future__ import print_function
 
 import optparse
 import os
@@ -43,16 +44,16 @@ try:
 except ImportError:
     # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
-    print >> sys.stderr, 'Python is missing ObjC bindings.'
+    print('Python is missing ObjC bindings.', file=sys.stderr)
     _scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     _script = os.path.join(_scriptdir, 'report_broken_client')
     try:
         _result, _stdout, _stderr = utils.runExternalScript(_script)
-        print >> sys.stderr, _result, _stdout, _stderr
+        print(_result, _stdout, _stderr, file=sys.stderr)
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError as err:
-        print >> sys.stderr, str(err)
+        print(str(err), file=sys.stderr)
     sys.exit(200)
 else:
     from munkilib import appleupdates
@@ -144,7 +145,7 @@ def createDirsIfNeeded(dirlist):
             try:
                 os.mkdir(directory)
             except (OSError, IOError):
-                print >> sys.stderr, 'ERROR: Could not create %s' % directory
+                print('ERROR: Could not create %s' % directory, file=sys.stderr)
                 return False
 
     return True
@@ -369,7 +370,7 @@ def doRestart(shutdown=False):
             # this restart (perhaps by force-quitting the app),
             # that's their problem...
         else:
-            print 'Please restart immediately.'
+            print('Please restart immediately.')
 
 
 def munkiUpdatesAvailable():
@@ -641,12 +642,12 @@ def main():
     options, dummy_arguments = parser.parse_args()
 
     if options.version:
-        print info.get_version()
+        print(info.get_version())
         exit(0)
 
     # check to see if we're root
     if os.geteuid() != 0:
-        print >> sys.stderr, 'You must run this as root!'
+        print('You must run this as root!', file=sys.stderr)
         exit(constants.EXIT_STATUS_ROOT_REQUIRED)
 
     if options.show_config:
@@ -656,19 +657,19 @@ def main():
     if options.set_bootstrap_mode:
         try:
             bootstrapping.set_bootstrap_mode()
-            print 'Bootstrap mode is set.'
+            print('Bootstrap mode is set.')
             exit(0)
         except bootstrapping.SetupError as err:
-            print >> sys.stderr, err
+            print(err, file=sys.stderr)
             exit(-1)
 
     if options.clear_bootstrap_mode:
         try:
             bootstrapping.clear_bootstrap_mode()
-            print 'Bootstrap mode cleared.'
+            print('Bootstrap mode cleared.')
             exit(0)
         except bootstrapping.SetupError as err:
-            print >> sys.stderr, err
+            print(err, file=sys.stderr)
             exit(-1)
 
     # check to see if another instance of this script is running
@@ -682,8 +683,8 @@ def main():
                      % (myname, other_managedsoftwareupdate_pid))
         munkilog.log('pid %s exiting.' % os.getpid())
         munkilog.log('*' * 60)
-        print >> sys.stderr, (
-            'Another instance of %s is running. Exiting.' % myname)
+        print('Another instance of %s is running. Exiting.' % myname,
+              file=sys.stderr)
         osutils.cleanUpTmpDir()
         exit(0)
 
@@ -773,8 +774,8 @@ def main():
         options.verbose = 0
 
     if options.checkonly and options.installonly:
-        print >> sys.stderr, \
-              '--checkonly and --installonly options are mutually exclusive!'
+        print('--checkonly and --installonly options are mutually exclusive!',
+              file=sys.stderr)
         exit(constants.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
@@ -801,9 +802,9 @@ def main():
 
     munkilog.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
-        print 'Managed Software Update Tool'
-        print 'Copyright 2010-2019 The Munki Project'
-        print 'https://github.com/munki/munki\n'
+        print('Managed Software Update Tool')
+        print('Copyright 2010-2019 The Munki Project')
+        print('https://github.com/munki/munki\n')
 
     display.display_status_major('Starting...')
     sendStartNotification()
@@ -1060,7 +1061,7 @@ def main():
     else:
         # no updates available
         if options.installonly and not options.quiet:
-            print 'Nothing to install or remove.'
+            print('Nothing to install or remove.')
         if runtype == 'checkandinstallatstartup':
             # we have nothing to do, clear the bootstrapping mode
             # so we'll stop running at startup/logout
@@ -1076,7 +1077,7 @@ def main():
 
     munkilog.log("### Ending managedsoftwareupdate run ###")
     if options.verbose:
-        print 'Done.'
+        print('Done.')
 
     if notify_user:
         # it may have been more than a minute since we ran our original

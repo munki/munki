@@ -16,6 +16,7 @@
 # limitations under the License.
 
 """Tool to supervise launch other binaries."""
+from __future__ import print_function
 
 
 import errno
@@ -100,17 +101,16 @@ class Supervisor(object):
             self.continue_sleeping = True
 
         if 'delayrandom' in self.options and self.options['delayrandom']:
-          max_secs = self.options['delayrandom']
-          random_secs = random.randrange(0, max_secs)
-          logging.debug(
-              'Applying random delay up to %s seconds: %s',
-              max_secs, random_secs)
-          time.sleep(random_secs)
+            max_secs = self.options['delayrandom']
+            random_secs = random.randrange(0, max_secs)
+            logging.debug('Applying random delay up to %s seconds: %s',
+                          max_secs, random_secs)
+            time.sleep(random_secs)
 
         if self.delayrandom_abort:
-          if not self.continue_sleeping:
-            logging.debug('Awoken from random delay by signal')
-          signal.signal(signal.SIGUSR1, signal.SIG_DFL)
+            if not self.continue_sleeping:
+                logging.debug('Awoken from random delay by signal')
+            signal.signal(signal.SIGUSR1, signal.SIG_DFL)
 
         if self.options['error-exec']:
             self.stdout = tempfile.NamedTemporaryFile()
@@ -259,7 +259,7 @@ def parseOpts(argv):
 
 def Usage():
     """Print usage."""
-    print """supervisor [options] [--] [path to executable] [arguments]
+    print("""supervisor [options] [--] [path to executable] [arguments]
 
     options:
         --timeout n
@@ -297,7 +297,7 @@ def Usage():
         --
             use the -- to separate supervisor options from arguments to the
             executable which will appear as options.
-    """
+    """)
 
 
 def processOpts(options, args):

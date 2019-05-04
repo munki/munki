@@ -26,6 +26,7 @@ Assumes a pkgsinfo directory under repopath.
 User calling this needs to be able to write to repo/catalogs.
 
 """
+from __future__ import print_function
 
 import optparse
 import sys
@@ -58,7 +59,7 @@ def main():
     options, arguments = parser.parse_args()
 
     if options.version:
-        print get_version()
+        print(get_version())
         exit(0)
 
     # backwards compatibility
@@ -79,8 +80,8 @@ def main():
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
     except munkirepo.RepoError as err:
-        print >> sys.stderr, (u'Could not connect to munki repo: %s'
-                              % unicode(err))
+        print(u'Could not connect to munki repo: %s' % unicode(err),
+              file=sys.stderr)
         exit(-1)
 
     # Make the catalogs
@@ -88,7 +89,7 @@ def main():
 
     if errors:
         # group all errors at the end for better visibility
-        print
+        print()
         for error in errors:
             print_err_utf8(error)
         exit(-1)

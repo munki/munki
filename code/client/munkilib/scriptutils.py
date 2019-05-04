@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Functions to run scripts inside Munki
 """
+from __future__ import print_function
 
 import os
 import subprocess
@@ -38,7 +39,7 @@ def _writefile(stringdata, path):
         fileobject = open(path, mode='w', buffering=1)
         # write line-by-line to ensure proper UNIX line-endings
         for line in stringdata.splitlines():
-            print >> fileobject, line.encode('UTF-8')
+            print(line.encode('UTF-8'), file=fileobject)
         fileobject.close()
         return path
     except (OSError, IOError):
@@ -131,4 +132,4 @@ def run_script(itemname, path, scriptname, suppress_error=False):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

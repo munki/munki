@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Common functions and classes used by the munki tools.
 """
+from __future__ import print_function
 
 import platform
 import os
@@ -172,10 +173,11 @@ def osascript(osastring):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode != 0:
-        print >> sys.stderr, 'Error: ', err
+        print('Error: ', err, file=sys.stderr)
     if out:
         return str(out).decode('UTF-8').rstrip('\n')
+    return u''
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

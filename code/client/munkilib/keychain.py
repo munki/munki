@@ -22,6 +22,7 @@ Incorporating work and ideas from Michael Lynn here:
 and here:
     https://gist.github.com/pudquick/836a19b5ff17c5b7640d#file-cert_tricks-py
 """
+from __future__ import print_function
 
 import base64
 import hashlib
@@ -584,4 +585,4 @@ class MunkiKeychain(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

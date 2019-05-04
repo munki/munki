@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Common output functions
 """
+from __future__ import print_function
 
 import sys
 import warnings
@@ -124,9 +125,9 @@ def display_status_major(msg, *args):
         munkistatus.percent(-1)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print '%s' % msg.encode('UTF-8')
+            print('%s' % msg.encode('UTF-8'))
         else:
-            print '%s...' % msg.encode('UTF-8')
+            print('%s...' % msg.encode('UTF-8'))
         sys.stdout.flush()
 
 
@@ -141,9 +142,9 @@ def display_status_minor(msg, *args):
         munkistatus.detail(msg)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print '    %s' % msg.encode('UTF-8')
+            print('    %s' % msg.encode('UTF-8'))
         else:
-            print '    %s...' % msg.encode('UTF-8')
+            print('    %s...' % msg.encode('UTF-8'))
         sys.stdout.flush()
 
 
@@ -155,7 +156,7 @@ def display_info(msg, *args):
     msg = _concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
     if verbose > 0:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg.encode('UTF-8'))
         sys.stdout.flush()
 
 
@@ -168,7 +169,7 @@ def display_detail(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 1:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg.encode('UTF-8'))
         sys.stdout.flush()
     if prefs.pref('LoggingLevel') > 0:
         munkilog.log(u'    ' + msg)
@@ -180,7 +181,7 @@ def display_debug1(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 2:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg.encode('UTF-8'))
         sys.stdout.flush()
     if prefs.pref('LoggingLevel') > 1:
         munkilog.log('DEBUG1: %s' % msg)
@@ -192,7 +193,7 @@ def display_debug2(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 3:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg.encode('UTF-8'))
     if prefs.pref('LoggingLevel') > 2:
         munkilog.log('DEBUG2: %s' % msg)
 
@@ -204,7 +205,7 @@ def display_warning(msg, *args):
     msg = _concat_message(msg, *args)
     warning = 'WARNING: %s' % msg
     if verbose > 0:
-        print >> sys.stderr, warning.encode('UTF-8')
+        print(warning.encode('UTF-8'), file=sys.stderr)
     munkilog.log(warning)
     # append this warning to our warnings log
     munkilog.log(warning, 'warnings.log')
@@ -221,7 +222,7 @@ def display_error(msg, *args):
     msg = _concat_message(msg, *args)
     errmsg = 'ERROR: %s' % msg
     if verbose > 0:
-        print >> sys.stderr, errmsg.encode('UTF-8')
+        print(errmsg.encode('UTF-8'), file=sys.stderr)
     munkilog.log(errmsg)
     # append this error to our errors log
     munkilog.log(errmsg, 'errors.log')
@@ -239,4 +240,4 @@ munkistatusoutput = True
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import imp
 import os
 import sys
@@ -21,8 +23,8 @@ def plugin_named(name):
         module = globals()[name]
         return getattr(module, name)
     except (KeyError, AttributeError):
-        print >> sys.stderr, (
-            "ERROR: %s repo plugin not found." % name)
+        print((
+            "ERROR: %s repo plugin not found." % name), file=sys.stderr)
         return None
 
 

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Comparison/checking functions used by updatecheck
 """
+from __future__ import print_function
 
 import os
 from operator import itemgetter
@@ -305,7 +306,7 @@ def compare_item_version(item):
         return compare_plist_version(item)
     if itemtype == 'file':
         return filesystem_item_exists(item)
-    raise utils.Error('Unknown installs item type: %s', itemtype)
+    raise utils.Error('Unknown installs item type: %s' % itemtype)
 
 
 def compare_receipt_version(item):
@@ -431,4 +432,4 @@ def get_installed_version(item_plist):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

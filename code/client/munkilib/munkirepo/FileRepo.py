@@ -1,5 +1,6 @@
 # encoding: utf-8
 '''Defines FileRepo plugin. See docstring for FileRepo class'''
+from __future__ import print_function
 
 import errno
 import getpass
@@ -166,7 +167,7 @@ class FileRepo(Repo):
         '''If self.root is present, return. Otherwise, if the url scheme is not
         "file:" then try to mount the share url.'''
         if not os.path.exists(self.root) and self.url_scheme != 'file':
-            print u'Attempting to mount fileshare %s:' % self.baseurl
+            print(u'Attempting to mount fileshare %s:' % self.baseurl)
             if NETFSMOUNTURLSYNC_AVAILABLE:
                 try:
                     self.root = mount_share_url(self.baseurl)
@@ -187,7 +188,7 @@ class FileRepo(Repo):
                 elif self.baseurl.startswith('nfs://'):
                     cmd = ['/sbin/mount_nfs', self.baseurl[6:], self.root]
                 else:
-                    print >> sys.stderr, 'Unsupported filesystem URL!'
+                    print('Unsupported filesystem URL!', file=sys.stderr)
                     return
                 retcode = subprocess.call(cmd)
                 if retcode:

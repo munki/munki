@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for installing Apple pkgs
 """
+from __future__ import print_function
 
 import os
 import pwd
@@ -310,4 +311,4 @@ def installall(dirpath, options=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

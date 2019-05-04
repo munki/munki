@@ -21,6 +21,7 @@ Modified in Feb 2016 to add support for NSURLSession.
 
 curl replacement using NSURLConnection and friends
 """
+from __future__ import print_function
 
 import os
 from urlparse import urlparse
@@ -697,4 +698,4 @@ class Gurl(NSObject):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')
