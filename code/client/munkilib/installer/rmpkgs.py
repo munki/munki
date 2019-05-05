@@ -676,10 +676,7 @@ def is_bundle(pathname):
         extension = os.path.splitext(basename)[1]
         if extension in bundle_extensions:
             return True
-        else:
-            return False
-    else:
-        return False
+    return False
 
 
 def inside_bundle(pathname):
@@ -805,7 +802,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         return -3
 
     pkgkeyslist = getpkgkeys(pkgnames)
-    if len(pkgkeyslist) == 0:
+    if not pkgkeyslist:
         return -4
 
     if processes.stop_requested():
