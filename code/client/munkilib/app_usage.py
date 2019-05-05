@@ -472,8 +472,8 @@ class ApplicationUsageQuery(object):
             if row:
                 time_diff = int(time.time()) - int(row[0])
                 return int(time_diff/self.day_in_seconds)
-            else:
-                return -1
+            # no row
+            return -1
         except sqlite3.Error as err:
             logging.error(
                 'Error querying %s: %s', self.database, str(err))
@@ -500,8 +500,8 @@ class ApplicationUsageQuery(object):
             if row:
                 time_diff = int(time.time()) - int(row[0])
                 return int(time_diff/self.day_in_seconds)
-            else:
-                return -1
+            # no row
+            return -1
         except sqlite3.Error as err:
             logging.error(
                 'Error querying %s: %s', self.database, str(err))

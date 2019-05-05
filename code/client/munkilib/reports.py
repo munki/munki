@@ -45,8 +45,7 @@ def format_time(timestamp=None):
     If timestamp isn't given the current time is used."""
     if timestamp is None:
         return str(NSDate.new())
-    else:
-        return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
+    return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
 def printreportitem(label, value, indent=0):

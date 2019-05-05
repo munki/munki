@@ -53,8 +53,8 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
         os_version_tuple = os_version_tuple[0:2]
     if as_tuple:
         return tuple(map(int, os_version_tuple))
-    else:
-        return '.'.join(os_version_tuple)
+    # default
+    return '.'.join(os_version_tuple)
 
 
 def tmpdir():

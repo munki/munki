@@ -332,10 +332,10 @@ def is_excluded_filesystem(path, _retry=False):
             display.display_debug1(
                 'Trying isExcludedFilesystem again for %s' % path)
             return is_excluded_filesystem(path, True)
-        else:
-            display.display_debug1(
-                'Could not match path %s to a filesystem' % path)
-            return None
+        # _retry defined
+        display.display_debug1(
+            'Could not match path %s to a filesystem' % path)
+        return None
 
     exc_flags = ('read-only' in FILESYSTEMS[stat_val.st_dev]['f_flags_set'] or
                  'local' not in FILESYSTEMS[stat_val.st_dev]['f_flags_set'])

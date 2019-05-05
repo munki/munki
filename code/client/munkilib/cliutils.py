@@ -79,8 +79,8 @@ else:
                 pref.cache = {}
         if prefname in pref.cache:
             return pref.cache[prefname]
-        else:
-            return None
+        # no pref found
+        return None
 
 
 def get_version():
@@ -160,12 +160,11 @@ def raw_input_with_default(prompt, default_text):
             prompt = '%s [%s]: ' % (prompt.rstrip(': '), default_text)
             return (unicode(raw_input(prompt), encoding=sys.stdin.encoding) or
                     unicode(default_text))
-        else:
-            # no default value, just call raw_input
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+        # no default value, just call raw_input
+        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
 
     # A nasty, nasty hack to get around Python readline limitations under
-    # OS X. Gives us editable default text for configuration and munkiimport
+    # macOS. Gives us editable default text for configuration and munkiimport
     # choices'''
     def insert_default_text(prompt, text):
         '''Helper function'''

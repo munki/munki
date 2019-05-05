@@ -19,8 +19,6 @@ Munki module to handle Power Manager tasks
 """
 from __future__ import absolute_import, print_function
 
-from . import display
-
 import objc
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -28,6 +26,8 @@ import objc
 # pylint: disable=no-name-in-module
 from Foundation import NSBundle
 # pylint:enable=no-name-in-module
+
+from . import display
 
 # lots of camelCase names
 # pylint: disable=invalid-name
