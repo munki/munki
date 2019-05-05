@@ -667,7 +667,7 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             if not nestedmanifestpath:
                 raise manifestutils.ManifestException
             if processes.stop_requested():
-                return {}
+                return
             process_manifest_for_key(nestedmanifestpath, manifest_key,
                                      installinfo, cataloglist)
 
@@ -697,7 +697,7 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
 
     for item in manifestdata.get(manifest_key, []):
         if processes.stop_requested():
-            return {}
+            return
         if manifest_key == 'managed_installs':
             dummy_result = process_install(item, cataloglist, installinfo)
         elif manifest_key == 'managed_updates':
@@ -943,14 +943,14 @@ def process_removal(manifestitem, cataloglist, installinfo):
                                        pkgdata['pkg_references'][pkg])
                 if iteminfo['name'] in pkgdata['pkg_references'][pkg]:
                     pkgdata['pkg_references'][pkg].remove(iteminfo['name'])
-                    if len(pkgdata['pkg_references'][pkg]) == 0:
+                    if not pkgdata['pkg_references'][pkg]:
+                        # no other items reference this pkg
                         display.display_debug1(
                             'Adding %s to removal list.', pkg)
                         packages_to_really_remove.append(pkg)
             else:
                 # This shouldn't happen
-                display.display_warning(
-                    'pkg id %s missing from pkgdata', pkg)
+                display.display_warning('pkg id %s missing from pkgdata', pkg)
         if packages_to_really_remove:
             iteminfo['packages'] = packages_to_really_remove
         else:

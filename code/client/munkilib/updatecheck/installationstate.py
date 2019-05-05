@@ -98,8 +98,8 @@ def installed_state(item_pl):
         hash_value = item_pl.get('installer_item_hash')
         if profiles.profile_needs_to_be_installed(identifier, hash_value):
             return 0
-        else:
-            return 1
+        # does not need to be installed
+        return 1
 
      # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
@@ -140,8 +140,8 @@ def installed_state(item_pl):
     # must be installed (or we don't have enough info...)
     if foundnewer:
         return 2
-    else:
-        return 1
+    # not newer
+    return 1
 
 
 def some_version_installed(item_pl):
