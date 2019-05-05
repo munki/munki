@@ -68,16 +68,15 @@ def make_dmg(pkgpath):
         if not output and (proc.poll() != None):
             break
         line = output.rstrip('\n').decode('UTF-8')
-        if len(line) > 0:
+        if line:
             print(line)
         sys.stdout.flush()
     retcode = proc.poll()
     if retcode:
         print('Disk image creation failed.', file=sys.stderr)
         return ''
-    else:
-        print('Disk image created at: %s' % diskimagepath)
-        return diskimagepath
+    print('Disk image created at: %s' % diskimagepath)
+    return diskimagepath
 
 
 def edit_pkginfo_in_editor(pkginfo):
@@ -294,12 +293,12 @@ def main():
         print('The specified icon file does not exist.', file=sys.stderr)
         exit(-1)
 
-    if (options.apple_update and len(arguments) > 0) or len(arguments) > 1:
+    if (options.apple_update and arguments) or len(arguments) > 1:
         parser.print_usage()
         exit(0)
 
     installer_item = None
-    if len(arguments):
+    if arguments:
         installer_item = arguments[0]
     uninstaller_item = options.uninstalleritem
     is_applemetadata = options.apple_update

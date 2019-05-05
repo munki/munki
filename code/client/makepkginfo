@@ -77,7 +77,7 @@ def main():
         print(info.get_version())
         exit(0)
 
-    if (len(arguments) == 0 and
+    if (not arguments and
             not options.file and
             not options.nopkg and
             not options.installer_environment and

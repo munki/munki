@@ -391,7 +391,7 @@ class RepoCleaner(object):
         self.analyze_manifests()
         self.analyze_pkgsinfo()
         self.find_cleanup_items()
-        if len(self.items_to_delete):
+        if self.items_to_delete:
             print()
             answer = raw_input(
                 'Delete pkginfo and pkg items marked as [to be DELETED]? '
