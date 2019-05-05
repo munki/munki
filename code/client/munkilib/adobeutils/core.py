@@ -760,7 +760,8 @@ def update_acrobatpro(dmgpath):
                           if item['path'].endswith('/' + appname)]
 
         # hope there's only one!
-        if len(candidates) == 0:
+        if not candidates:
+            # there are no candidates!
             if status == "optional":
                 continue
             else:

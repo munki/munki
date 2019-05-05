@@ -70,7 +70,7 @@ def get_firmware_alert_text(dom):
     if type_is_firmware:
         firmware_alert_text = '_DEFAULT_FIRMWARE_ALERT_TEXT_'
         readmes = dom.getElementsByTagName('readme')
-        if len(readmes):
+        if readmes:
             html = readmes[0].firstChild.data
             html_data = buffer(html.encode('utf-8'))
             attributed_string, _ = NSAttributedString.alloc(
