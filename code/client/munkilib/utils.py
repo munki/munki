@@ -35,6 +35,7 @@ class Memoize(dict):
     '''Class to cache the return values of an expensive function.
     This version supports only functions with non-keyword arguments'''
     def __init__(self, func):
+        super(Memoize, self).__init__()
         self.func = func
 
     def __call__(self, *args):
@@ -133,25 +134,25 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
                    'verification: %s\n%s' % (script, str(err)))
             raise RunExternalScriptError(msg)
 
-    if os.access(script, os.X_OK):
-        cmd = [script]
-        if script_args:
-            cmd.extend(script_args)
-        proc = None
-        try:
-            proc = subprocess.Popen(cmd, shell=False,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-        except (OSError, IOError) as err:
-            raise RunExternalScriptError(
-                'Error %s when attempting to run %s' % (unicode(err), script))
-        if proc:
-            (stdout, stderr) = proc.communicate()
-            return proc.returncode, stdout.decode('UTF-8', 'replace'), \
-                                    stderr.decode('UTF-8', 'replace')
-    else:
+    if not os.access(script, os.X_OK):
         raise RunExternalScriptError('%s not executable' % script)
+
+    cmd = [script]
+    if script_args:
+        cmd.extend(script_args)
+    proc = None
+    try:
+        proc = subprocess.Popen(cmd, shell=False,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    except (OSError, IOError) as err:
+        raise RunExternalScriptError(
+            'Error %s when attempting to run %s' % (unicode(err), script))
+    (stdout, stderr) = proc.communicate()
+    return (proc.returncode, stdout.decode('UTF-8', 'replace'),
+            stderr.decode('UTF-8', 'replace'))
+
 
 
 def getPIDforProcessName(processname):

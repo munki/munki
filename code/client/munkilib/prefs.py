@@ -142,8 +142,7 @@ class Preferences(object):
         """Return a preference or the default value"""
         if not pref_name in self:
             return default
-        else:
-            return self.__getitem__(pref_name)
+        return self.__getitem__(pref_name)
 
 
 class ManagedInstallsPreferences(Preferences):
@@ -155,6 +154,7 @@ class ManagedInstallsPreferences(Preferences):
     Preferences are written to
         /Library/Preferences/ManagedInstalls.plist
     Since this code is usually run as root, ~ is root's home dir"""
+    # pylint: disable=too-few-public-methods
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
 
@@ -168,6 +168,7 @@ class SecureManagedInstallsPreferences(Preferences):
     Preferences are written to
         ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
     Since this code is usually run as root, ~ is root's home dir"""
+    # pylint: disable=too-few-public-methods
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
 
@@ -272,9 +273,8 @@ def get_config_level(domain, pref_name, value):
 def print_config():
     '''Prints the current Munki configuration'''
     print('Current Munki configuration:')
-    max_pref_name_len = max(
-        [len(pref_name) for pref_name in DEFAULT_PREFS.keys()])
-    for pref_name in sorted(DEFAULT_PREFS.keys()):
+    max_pref_name_len = max([len(pref_name) for pref_name in DEFAULT_PREFS])
+    for pref_name in sorted(DEFAULT_PREFS):
         if pref_name == 'LastNotifiedDate':
             # skip it
             continue

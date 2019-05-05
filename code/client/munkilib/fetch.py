@@ -154,8 +154,7 @@ def getxattr(pathname, attr):
     """Get a named xattr from a file. Return None if not present"""
     if attr in xattr.listxattr(pathname):
         return xattr.getxattr(pathname, attr)
-    else:
-        return None
+    return None
 
 
 def writeCachedChecksum(file_path, fhash=None):
@@ -601,22 +600,22 @@ def verifySoftwarePackageIntegrity(file_path, item_hash, always_hash=False):
                 chash = munkihash.getsha256hash(file_path)
             if item_hash == chash:
                 return (True, chash)
-            else:
-                display.display_error(
-                    'Hash value integrity check for %s failed.' %
-                    item_name)
-                return (False, chash)
+            # item_hash != chash
+            display.display_error(
+                'Hash value integrity check for %s failed.' %
+                item_name)
+            return (False, chash)
         else:
             if mode.lower() == 'hash_strict':
                 display.display_error(
                     'Reference hash value for %s is missing in catalog.'
                     % item_name)
                 return (False, chash)
-            else:
-                display.display_warning(
-                    'Reference hash value missing for %s -- package '
-                    'integrity verification skipped.' % item_name)
-                return (True, chash)
+            # mode.lower() != 'hash_strict'
+            display.display_warning(
+                'Reference hash value missing for %s -- package '
+                'integrity verification skipped.' % item_name)
+            return (True, chash)
     else:
         display.display_error(
             'The PackageVerificationMode in the ManagedInstalls.plist has an '
@@ -663,8 +662,7 @@ def check_server(url):
             return (-1, 'Non-local hostnames not supported for file:// URLs')
         if os.path.exists(url_parts.path):
             return (0, 'OK')
-        else:
-            return (-1, 'Path %s does not exist' % url_parts.path)
+        return (-1, 'Path %s does not exist' % url_parts.path)
     else:
         return (-1, 'Unsupported URL scheme')
 

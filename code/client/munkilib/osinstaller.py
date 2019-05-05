@@ -125,7 +125,7 @@ class StartOSInstallRunner(object):
         self.dmg_mountpoint = None
         self.got_sigusr1 = False
 
-    def sigusr1_handler(self, dummy_signum, dummy_frame):
+    def sigusr1_handler(self, _signum, _frame):
         '''Signal handler for SIGUSR1 from startosinstall, which tells us it's
         done setting up the macOS install and is ready and waiting to reboot'''
         display.display_debug1('Got SIGUSR1 from startosinstall')

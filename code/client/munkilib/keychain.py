@@ -156,7 +156,7 @@ def get_client_cert_common_name():
         proc = subprocess.Popen(cmd,
                                 bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        (out, err) = proc.communicate()
+        (out, _err) = proc.communicate()
         if out:
             for i in out.split('/'):
                 if i.startswith('CN='):
@@ -467,6 +467,7 @@ def client_certs_exist():
 def client_certs_newer_than_keychain():
     '''Returns True if we have client certs that are newer than our
     client keychain, False otherwise'''
+    # pylint: disable=invalid-name
     cert_info = get_munki_client_cert_info()
     client_cert_path = cert_info['client_cert_path']
     client_key_path = cert_info['client_key_path']
@@ -544,6 +545,7 @@ def get_keychain_path():
 
 class MunkiKeychain(object):
     '''Wrapper class for handling the client keychain'''
+    # pylint: disable=too-few-public-methods
 
     keychain_path = None
     added_keychain = False
