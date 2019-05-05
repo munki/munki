@@ -233,7 +233,7 @@ def clean_up_manifests():
 
         # If the directory isn't the main manifest dir and is empty, try to
         # remove it
-        if dirpath != manifest_dir and not len(os.listdir(dirpath)):
+        if dirpath != manifest_dir and not os.listdir(dirpath):
             try:
                 os.rmdir(dirpath)
             except OSError:

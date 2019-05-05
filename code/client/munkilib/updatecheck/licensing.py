@@ -58,8 +58,7 @@ def update_available_license_seats(installinfo):
         while True:
             query_items = ['name=' + quote_plus(item)
                            for item in items_to_check[start_index:end_index]]
-            querystring = q_char + '&'.join(query_items)
-            url = license_info_url + querystring
+            url = license_info_url + q_char + '&'.join(query_items)
             if len(url) < 256:
                 break
             # drop an item and see if we're under 256 characters

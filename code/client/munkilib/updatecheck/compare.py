@@ -53,8 +53,7 @@ def compare_versions(thisvers, thatvers):
     elif (pkgutils.MunkiLooseVersion(thisvers) ==
           pkgutils.MunkiLooseVersion(thatvers)):
         return VERSION_IS_THE_SAME
-    else:
-        return VERSION_IS_HIGHER
+    return VERSION_IS_HIGHER
 
 
 def compare_application_version(app):
@@ -262,18 +261,18 @@ def filesystem_item_exists(item):
                 if storedchecksum == ondiskchecksum:
                     display.display_debug2('Checksums match.')
                     return ITEM_MATCHES
-                else:
-                    display.display_debug2(
-                        'Checksums differ: expected %s, got %s',
-                        storedchecksum, ondiskchecksum)
-                    return ITEM_DOES_NOT_MATCH
-            else:
-                return ITEM_MATCHES
-        else:
-            display.display_debug2('\tDoes not exist.')
-            return ITEM_NOT_PRESENT
-    else:
-        raise utils.Error('No path specified for filesystem item.')
+                # storedchecksum != ondiskchecksum
+                display.display_debug2(
+                    'Checksums differ: expected %s, got %s',
+                    storedchecksum, ondiskchecksum)
+                return ITEM_DOES_NOT_MATCH
+            # 'md5checksum' not in item
+            return ITEM_MATCHES
+        # not os.path.lexists(filepath)
+        display.display_debug2('\tDoes not exist.')
+        return ITEM_NOT_PRESENT
+    # not 'path' in item
+    raise utils.Error('No path specified for filesystem item.')
 
 
 def compare_item_version(item):
@@ -341,10 +340,9 @@ def compare_receipt_version(item):
     installedvers = installedpkgs.get(pkgid)
     if installedvers:
         return compare_versions(installedvers, vers)
-    else:
-        display.display_debug1(
-            '\tThis package is not currently installed.')
-        return ITEM_NOT_PRESENT
+    # not installedvers
+    display.display_debug1('\tThis package is not currently installed.')
+    return ITEM_NOT_PRESENT
 
 
 def get_installed_version(item_plist):

@@ -260,11 +260,13 @@ def download_icons(item_list):
                 # download this icon
                 continue
             item_name = item.get('display_name') or item['name']
-            message = 'Getting icon %s for %s...' % (icon_name, item_name)
             icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))
             try:
                 fetch.munki_resource(
-                    icon_url, icon_path, message=message)
+                    icon_url,
+                    icon_path,
+                    message='Getting icon %s for %s...' % (icon_name, item_name)
+                )
                 fetch.writeCachedChecksum(icon_path)
             except fetch.Error as err:
                 display.display_debug1(

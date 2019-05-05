@@ -365,8 +365,7 @@ def analyze_installed_pkgs():
 
     # look through all our installedpkgs, looking for ones that have not been
     # attached to any Munki names yet
-    orphans = [pkgid for pkgid in installedpkgs.keys()
-               if pkgid not in references]
+    orphans = [pkgid for pkgid in installedpkgs if pkgid not in references]
 
     # attempt to match orphans to Munki item names
     matched_orphans = []

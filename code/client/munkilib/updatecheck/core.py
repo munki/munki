@@ -92,9 +92,9 @@ def check(client_id='', localmanifestpath=None):
         download.stop_precaching_agent()
 
         # prevent idle sleep only if we are on AC power
-        caffeinator = None
+        _caffeinator = None
         if powermgr.onACPower():
-            caffeinator = powermgr.Caffeinator(
+            _caffeinator = powermgr.Caffeinator(
                 'Munki is checking for new software')
 
         # initialize our installinfo record
@@ -488,8 +488,8 @@ def check(client_id='', localmanifestpath=None):
 
     if installcount or removalcount:
         return 1
-    else:
-        return 0
+    # installcount and removalcount are 0
+    return 0
 
 
 def get_primary_manifest_catalogs(client_id='', force_refresh=False):
