@@ -108,7 +108,7 @@ def generate_png_from_dmg_item(repo, install_item):
         mountpoint = mountpoints[0]
         apps = [item for item in install_item.get('items_to_copy', [])
                 if item.get('source_item', '').endswith('.app')]
-        if len(apps):
+        if apps:
             app_path = os.path.join(mountpoint, apps[0]['source_item'])
             icon_path = iconutils.findIconForApp(app_path)
             if icon_path:
@@ -256,7 +256,7 @@ def main():
     options, arguments = parser.parse_args()
 
     # Make sure we have a path to work with
-    if len(arguments):
+    if arguments:
         repo_path = arguments[0].rstrip("/")
     else:
         repo_path = pref('repo_path')

@@ -78,7 +78,7 @@ else:
     import munkilib.authrestart.client as authrestartd
 
 
-def signal_handler(signum, dummy_frame):
+def signal_handler(signum, _frame):
     """Handle any signals we've been told to.
     Right now just handle SIGTERM so clean up can happen, like
     garbage collection, which will trigger object destructors and
@@ -169,8 +169,7 @@ def initMunkiDirs():
         display.display_error('Could not create needed directories '
                               'in %s' % ManagedInstallDir)
         return False
-    else:
-        return True
+    return True
 
 
 def runScript(script, display_name, runtype):
