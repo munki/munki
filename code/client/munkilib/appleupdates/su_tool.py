@@ -106,21 +106,23 @@ def run(options_list, catalog_url=None, stop_allowed=False):
 
     display.display_debug1('softwareupdate cmd: %s', cmd)
 
-    try:
-        job = launchd.Job(cmd)
-        job.start()
-    except launchd.LaunchdJobException as err:
-        display.display_warning(
-            'Error with launchd job (%s): %s', cmd, err)
-        display.display_warning('Skipping softwareupdate run.')
-        return -3
-
     results['installed'] = []
     results['download'] = []
     results['failures'] = []
     results['updates'] = []
     results['exit_code'] = 0
     results['post_action'] = POSTACTION_NONE
+
+    try:
+        job = launchd.Job(cmd)
+        job.start()
+    except launchd.LaunchdJobException as err:
+        message = 'Error with launchd job (%s): %s' % (cmd, err)
+        display.display_warning(message)
+        display.display_warning('Skipping softwareupdate run.')
+        results['exit_code'] = -3
+        results['failures'].append(message)
+        return results
 
     last_output = None
     while True:
