@@ -297,5 +297,5 @@ def makecatalogs(repo, options, output_fn=None):
             errors.append(
                 u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
 
-    # Return and errors
+    # Return any errors
     return errors
