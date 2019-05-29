@@ -19,16 +19,20 @@ DEBUG = False
 CURL_CMD = '/usr/bin/curl'
 
 class CurlError(Exception):
+    '''Error for curl operations'''
     pass
 
 
 class MWA2APIRepo(Repo):
+    '''Class for working with a repo accessible via the MWA2 API'''
 
+    # pylint: disable=super-init-not-called
     def __init__(self, baseurl):
         '''Constructor'''
         self.baseurl = baseurl
         self.authtoken = None
         self._connect()
+    # pylint: enable=super-init-not-called
 
     def _connect(self):
         '''For a fileshare repo, we'd mount the share, prompting for
@@ -129,9 +133,9 @@ class MWA2APIRepo(Repo):
         if kind in ['catalogs', 'manifests', 'pkgsinfo']:
             # it's a list of dicts containing 'filename' key/values
             return [item['filename'] for item in plist]
-        else:
-            # it's a list of filenames
-            return plist
+
+        # it's a list of filenames (pkgs, icons)
+        return plist
 
     def get(self, resource_identifier):
         '''Returns the content of item with given resource_identifier.
