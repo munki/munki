@@ -26,6 +26,7 @@ try:
         __getattr__ = dict.__getitem__
         __setattr__ = dict.__setitem__
 
+    # pylint: disable=invalid-name
     NetFS = Attrdict()
     # Can cheat and provide 'None' for the identifier, it'll just use
     # frameworkPath instead
@@ -34,13 +35,16 @@ try:
         'NetFS', frameworkIdentifier=None,
         frameworkPath=objc.pathForFramework('NetFS.framework'),
         globals=NetFS, scan_classes=False)
+    # pylint: enable=invalid-name
 
     # https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/
     # ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
     # Fix NetFSMountURLSync signature
     del NetFS['NetFSMountURLSync']
+    # pylint: disable=no-member
     objc.loadBundleFunctions(
         NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
+    # pylint: enable=no-member
     NETFSMOUNTURLSYNC_AVAILABLE = True
 except (ImportError, KeyError):
     NETFSMOUNTURLSYNC_AVAILABLE = False
@@ -141,6 +145,7 @@ def mount_share_url(share_url):
 class FileRepo(Repo):
     '''Handles local filesystem repo and repos mounted via filesharing'''
 
+    # pylint: disable=super-init-not-called
     def __init__(self, baseurl):
         '''Constructor'''
         self.baseurl = baseurl
@@ -156,6 +161,7 @@ class FileRepo(Repo):
                 unicodeize(urllib.unquote(url_parts.path).lstrip('/')))
         self.we_mounted_repo = False
         self._connect()
+    # pylint: enable=super-init-not-called
 
     def __del__(self):
         '''Destructor -- unmount the fileshare if we mounted it'''
