@@ -24,7 +24,6 @@ from __future__ import absolute_import, print_function
 # std libs
 import hashlib
 import os
-import plistlib
 
 # our libs
 from .common import list_items_of_kind, AttributeDict
