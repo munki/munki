@@ -26,7 +26,6 @@ from __future__ import absolute_import, print_function
 import fnmatch
 import optparse
 import os
-import plistlib
 import readline
 import shlex
 import sys
@@ -38,6 +37,8 @@ from munkilib.cliutils import ConfigurationSaveError
 from munkilib.cliutils import configure as _configure
 from munkilib.cliutils import libedit
 from munkilib.cliutils import get_version, pref, path2url
+from munkilib.wrappers import (get_input,
+                               readPlistFromString, writePlistToString)
 
 from munkilib import munkirepo
 
@@ -56,7 +57,7 @@ def get_installer_item_names(repo, catalog_limit_list):
         if catalog_name in catalog_limit_list:
             try:
                 data = repo.get(os.path.join('catalogs', catalog_name))
-                catalog = plistlib.readPlistFromString(data)
+                catalog = readPlistFromString(data)
             except munkirepo.RepoError as err:
                 print((
                     'Could not retrieve catalog %s: %s'
@@ -143,7 +144,7 @@ def get_manifest(repo, manifest_name):
     manifest_ref = os.path.join('manifests', manifest_name)
     try:
         data = repo.get(manifest_ref)
-        return plistlib.readPlistFromString(data)
+        return readPlistFromString(data)
     except munkirepo.RepoError as err:
         print(u'Could not retrieve manifest %s: %s'
               % (manifest_name, unicode(err)), file=sys.stderr)
@@ -163,7 +164,7 @@ def save_manifest(repo, manifest_dict, manifest_name, overwrite_existing=False):
             return False
     manifest_ref = os.path.join('manifests', manifest_name)
     try:
-        data = plistlib.writePlistToString(manifest_dict)
+        data = writePlistToString(manifest_dict)
         repo.put(manifest_ref, data)
         return True
     except (IOError, OSError, ExpatError, munkirepo.RepoError) as err:
@@ -378,7 +379,7 @@ def find(repo, args):
         manifest_ref = os.path.join('manifests', name)
         try:
             data = repo.get(manifest_ref)
-            manifest = plistlib.readPlistFromString(data)
+            manifest = readPlistFromString(data)
         except (IOError, OSError, ExpatError, munkirepo.RepoError) as err:
             print(u'Error reading %s: %s' % (manifest_ref, unicode(err)),
                   file=sys.stderr)
@@ -977,7 +978,7 @@ def refresh_cache(repo, args):
 def show_help():
     '''Prints available subcommands'''
     print("Available sub-commands:")
-    subcommands = CMD_ARG_DICT['cmds'].keys()
+    subcommands = list(CMD_ARG_DICT['cmds'].keys())
     subcommands.sort()
     for item in subcommands:
         print('\t%s' % item)
@@ -991,7 +992,7 @@ def tab_completer(text, state):
         # since we are at the start of the line
         # we are matching commands
         array_to_match = 'cmds'
-        match_list = CMD_ARG_DICT.get('cmds', {}).keys()
+        match_list = list(CMD_ARG_DICT.get('cmds', {}).keys())
     else:
         # we are matching args
         cmd_line = readline.get_line_buffer()[0:readline.get_begidx()]
@@ -1005,7 +1006,7 @@ def tab_completer(text, state):
                 match_list = CMD_ARG_DICT[array_to_match]
             else:
                 array_to_match = 'options'
-                match_list = CMD_ARG_DICT.get('options', {}).keys()
+                match_list = list(CMD_ARG_DICT.get('options', {}).keys())
 
     matches = [item for item in match_list
                if item.upper().startswith(text.upper())]
@@ -1137,7 +1138,7 @@ def main():
         print('Entering interactive mode... (type "help" for commands)')
         while 1:
             try:
-                cmd = raw_input('> ')
+                cmd = get_input('> ')
             except (KeyboardInterrupt, EOFError):
                 # React to Control-C and Control-D
                 print() # so we finish off the raw_input line
