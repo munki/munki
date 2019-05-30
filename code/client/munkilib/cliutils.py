@@ -29,10 +29,25 @@ import plistlib
 import readline
 import sys
 import tempfile
-import thread
+try:
+    # Python 2
+    import thread
+except ImportError:
+    # Python 3
+    import _thread as thread
 import time
-import urllib
-import urlparse
+try:
+    # Python 2
+    from urllib import pathname2url
+except ImportError:
+    # Python 3
+    from urllib.request import pathname2url
+try:
+    # Python 2
+    from urlparse import urlparse, urljoin
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
 
@@ -110,8 +125,10 @@ def get_version():
 
 def path2url(path):
     '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(
-        os.path.abspath(os.path.expanduser(path))))
+    return urljoin(
+        'file:', 
+        pathname2url(os.path.abspath(os.path.expanduser(path)))
+    )
 
 
 def print_utf8(text):

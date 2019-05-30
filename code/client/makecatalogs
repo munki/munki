@@ -32,9 +32,17 @@ import optparse
 import sys
 
 from munkilib.admin import makecatalogslib
-from munkilib.cliutils import pref, path2url, print_utf8, print_err_utf8
+from munkilib.cliutils import pref, path2url
 from munkilib.cliutils import get_version
 from munkilib import munkirepo
+
+# define a unicode function for Python 3
+try:
+    # Python 2
+    _ = unicode
+except NameError:
+    # Python 3
+    unicode = str
 
 
 def main():
@@ -45,7 +53,8 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
+    parser.add_option('--skip-pkg-check', '-s', action='store_true',
+                      dest='skip_payload_check',
                       help='Skip checking of pkg existence. Useful '
                            'when pkgs aren\'t on the same server '
                            'as pkginfo, catalogs and manifests.')
@@ -85,13 +94,13 @@ def main():
         exit(-1)
 
     # Make the catalogs
-    errors = makecatalogslib.makecatalogs(repo, options, output_fn=print_utf8)
+    errors = makecatalogslib.makecatalogs(repo, options, output_fn=print)
 
     if errors:
         # group all errors at the end for better visibility
         print()
         for error in errors:
-            print_err_utf8(error)
+            print(error, file=sys.stderr)
         exit(-1)
 
 

@@ -8,9 +8,20 @@ import os
 import shutil
 import subprocess
 import sys
-import urllib
 
-from urlparse import urlparse
+try:
+    # Python 2
+    from urllib import unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import unquote
+
+try:
+    # Python 2
+    from urlparse import urlparse
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse
 
 from munkilib.munkirepo import Repo, RepoError
 
@@ -43,7 +54,7 @@ try:
     del NetFS['NetFSMountURLSync']
     # pylint: disable=no-member
     objc.loadBundleFunctions(
-        NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
+        NetFS_bundle, NetFS, [('NetFSMountURLSync', b'i@@@@@@o^@')])
     # pylint: enable=no-member
     NETFSMOUNTURLSYNC_AVAILABLE = True
 except (ImportError, KeyError):
@@ -62,6 +73,9 @@ class ShareAuthenticationNeededException(ShareMountException):
 
 def unicodeize(path):
     '''Convert a path to unicode'''
+    # Python 3 all paths are unicode!
+    if sys.version_info.major > 2:
+        return path
     if isinstance(path, str):
         return unicode(path, 'utf-8')
     elif not isinstance(path, unicode):
@@ -153,12 +167,12 @@ class FileRepo(Repo):
         self.url_scheme = url_parts.scheme
         if self.url_scheme == 'file':
             # local file repo
-            self.root = unicodeize(urllib.unquote(url_parts.path))
+            self.root = unicodeize(unquote(url_parts.path))
         else:
             # repo is on a fileshare that will be mounted under /Volumes
             self.root = os.path.join(
                 u'/Volumes',
-                unicodeize(urllib.unquote(url_parts.path).lstrip('/')))
+                unicodeize(unquote(url_parts.path).lstrip('/')))
         self.we_mounted_repo = False
         self._connect()
     # pylint: enable=super-init-not-called
@@ -239,7 +253,7 @@ class FileRepo(Repo):
         resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
-            fileref = open(repo_filepath)
+            fileref = open(repo_filepath, 'rb')
             data = fileref.read()
             fileref.close()
             return data
@@ -272,7 +286,7 @@ class FileRepo(Repo):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path, 0o755)
         try:
-            fileref = open(repo_filepath, 'w')
+            fileref = open(repo_filepath, 'wb')
             fileref.write(content)
             fileref.close()
         except (OSError, IOError) as err:

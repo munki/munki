@@ -31,6 +31,8 @@ from .common import list_items_of_kind, AttributeDict
 
 from .. import munkirepo
 
+from ..wrappers import readPlistFromString, writePlistToString
+
 
 class MakeCatalogsError(Exception):
     '''Error to raise when there is problem making catalogs'''
@@ -188,7 +190,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         # Try to read the pkginfo file
         try:
             data = repo.get(pkginfo_ref)
-            pkginfo = plistlib.readPlistFromString(data)
+            pkginfo = readPlistFromString(data)
         except IOError as err:
             errors.append("IO error for %s: %s" % (pkginfo_ref, err))
             continue
@@ -205,7 +207,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
             del pkginfo['notes']
         # strip out any keys that start with "_"
         # (example: pkginfo _metadata)
-        for key in pkginfo.keys():
+        for key in list(pkginfo.keys()):
             if key.startswith('_'):
                 del pkginfo[key]
 
@@ -275,7 +277,7 @@ def makecatalogs(repo, options, output_fn=None):
     for key in catalogs:
         catalogpath = os.path.join("catalogs", key)
         if catalogs[key] != "":
-            catalog_data = plistlib.writePlistToString(catalogs[key])
+            catalog_data = writePlistToString(catalogs[key])
             try:
                 repo.put(catalogpath, catalog_data)
                 if output_fn:
@@ -289,7 +291,7 @@ def makecatalogs(repo, options, output_fn=None):
 
     if icons:
         icon_hashes_plist = os.path.join("icons", "_icon_hashes.plist")
-        icon_hashes = plistlib.writePlistToString(icons)
+        icon_hashes = writePlistToString(icons)
         try:
             repo.put(icon_hashes_plist, icon_hashes)
             print("Created %s..." % (icon_hashes_plist))
