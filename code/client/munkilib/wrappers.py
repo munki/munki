@@ -71,3 +71,23 @@ def get_input(prompt=None):
     except NameError:
         # raw_input doesn't exist in Python 3
         return input(prompt)
+
+
+def is_a_string(something):
+    '''Wrapper for basestring vs str'''
+    try:
+        # Python 2
+        return isinstance(something, basestring)
+    except NameError:
+        # Python 3
+        return isinstance(something, str)
+
+
+def unicode_or_str(something):
+    '''Wrapper for unicode vs str'''
+    try:
+        # Python 2
+        return unicode(something)
+    except NameError:
+        # Python 3
+        return str(something)
