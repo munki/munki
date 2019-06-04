@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-03-12.
 
 Functions supporting the admin command-line tools
 """
+from __future__ import absolute_import, print_function
 
 import ctypes
 from ctypes.util import find_library
@@ -28,10 +29,25 @@ import plistlib
 import readline
 import sys
 import tempfile
-import thread
+try:
+    # Python 2
+    import thread
+except ImportError:
+    # Python 3
+    import _thread as thread
 import time
-import urllib
-import urlparse
+try:
+    # Python 2
+    from urllib import pathname2url
+except ImportError:
+    # Python 3
+    from urllib.request import pathname2url
+try:
+    # Python 2
+    from urlparse import urlparse, urljoin
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
 
@@ -78,8 +94,8 @@ else:
                 pref.cache = {}
         if prefname in pref.cache:
             return pref.cache[prefname]
-        else:
-            return None
+        # no pref found
+        return None
 
 
 def get_version():
@@ -109,18 +125,20 @@ def get_version():
 
 def path2url(path):
     '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(
-        os.path.abspath(os.path.expanduser(path))))
+    return urljoin(
+        'file:', 
+        pathname2url(os.path.abspath(os.path.expanduser(path)))
+    )
 
 
 def print_utf8(text):
     '''Print Unicode text as UTF-8'''
-    print text.encode('UTF-8')
+    print(text.encode('UTF-8'))
 
 
 def print_err_utf8(text):
     '''Print Unicode text to stderr as UTF-8'''
-    print >> sys.stderr, text.encode('UTF-8')
+    print(text.encode('UTF-8'), file=sys.stderr)
 
 
 class TempFile(object):
@@ -159,12 +177,11 @@ def raw_input_with_default(prompt, default_text):
             prompt = '%s [%s]: ' % (prompt.rstrip(': '), default_text)
             return (unicode(raw_input(prompt), encoding=sys.stdin.encoding) or
                     unicode(default_text))
-        else:
-            # no default value, just call raw_input
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+        # no default value, just call raw_input
+        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
 
     # A nasty, nasty hack to get around Python readline limitations under
-    # OS X. Gives us editable default text for configuration and munkiimport
+    # macOS. Gives us editable default text for configuration and munkiimport
     # choices'''
     def insert_default_text(prompt, text):
         '''Helper function'''
@@ -212,7 +229,7 @@ def configure(prompt_list):
             try:
                 CFPreferencesSetAppValue(key, value, BUNDLE_ID)
             except BaseException:
-                print >> sys.stderr, 'Could not save configuration!'
+                print('Could not save configuration!', file=sys.stderr)
                 raise ConfigurationSaveError
             # remove repo_path if it exists since we don't use that
             # any longer (except for backwards compatibility) and we don't
@@ -231,10 +248,10 @@ def configure(prompt_list):
                 del existing_prefs['repo_path']
             plistlib.writePlist(existing_prefs, PREFSPATH)
         except (IOError, OSError, ExpatError):
-            print >> sys.stderr, (
-                'Could not save configuration to %s' % PREFSPATH)
+            print('Could not save configuration to %s' % PREFSPATH,
+                  file=sys.stderr)
             raise ConfigurationSaveError
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

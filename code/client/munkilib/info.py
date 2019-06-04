@@ -20,6 +20,8 @@ Created by Greg Neagle on 2016-12-14.
 
 Utilities that retrieve information from the current machine.
 """
+from __future__ import absolute_import, print_function
+
 # standard libs
 import ctypes
 import ctypes.util
@@ -95,7 +97,7 @@ class Popen(subprocess.Popen):
 
         output = []
         inactive = 0
-        while 1:
+        while True:
             (rlist, dummy_wlist, dummy_xlist) = select.select(
                 [fileobj], [], [], 1.0)
 
@@ -330,10 +332,10 @@ def is_excluded_filesystem(path, _retry=False):
             display.display_debug1(
                 'Trying isExcludedFilesystem again for %s' % path)
             return is_excluded_filesystem(path, True)
-        else:
-            display.display_debug1(
-                'Could not match path %s to a filesystem' % path)
-            return None
+        # _retry defined
+        display.display_debug1(
+            'Could not match path %s to a filesystem' % path)
+        return None
 
     exc_flags = ('read-only' in FILESYSTEMS[stat_val.st_dev]['f_flags_set'] or
                  'local' not in FILESYSTEMS[stat_val.st_dev]['f_flags_set'])
@@ -608,7 +610,7 @@ def available_disk_space(volumepath='/'):
         volumepath = '/'
     try:
         stat_val = os.statvfs(volumepath)
-    except OSError, err:
+    except OSError as err:
         display.display_error(
             'Error getting disk space in %s: %s', volumepath, str(err))
         return 0
@@ -689,8 +691,8 @@ def get_conditions():
                     utils.runExternalScript(conditionalscriptpath))
             except utils.ScriptNotFoundError:
                 pass  # script is not required, so pass
-            except utils.RunExternalScriptError, err:
-                print >> sys.stderr, unicode(err)
+            except utils.RunExternalScriptError as err:
+                print(unicode(err), file=sys.stderr)
     else:
         # /usr/local/munki/conditions does not exist
         pass
@@ -727,7 +729,7 @@ def saveappdata():
             app_inventory,
             os.path.join(
                 prefs.pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
-    except FoundationPlist.NSPropertyListSerializationException, err:
+    except FoundationPlist.NSPropertyListSerializationException as err:
         display.display_warning(
             'Unable to save inventory report: %s' % err)
 
@@ -810,7 +812,7 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
         info_object.update(additional_info)
     try:
         predicate = NSPredicate.predicateWithFormat_(predicate_string)
-    except BaseException, err:
+    except BaseException as err:
         display.display_warning('%s', err)
         # can't parse predicate, so return False
         return False
@@ -821,4 +823,4 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

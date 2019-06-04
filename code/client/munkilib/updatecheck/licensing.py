@@ -19,6 +19,7 @@ updatecheck.licensing
 Created by Greg Neagle on 2017-01-01.
 
 """
+from __future__ import absolute_import, print_function
 
 from urllib import quote_plus
 
@@ -57,8 +58,7 @@ def update_available_license_seats(installinfo):
         while True:
             query_items = ['name=' + quote_plus(item)
                            for item in items_to_check[start_index:end_index]]
-            querystring = q_char + '&'.join(query_items)
-            url = license_info_url + querystring
+            url = license_info_url + q_char + '&'.join(query_items)
             if len(url) < 256:
                 break
             # drop an item and see if we're under 256 characters
@@ -69,7 +69,7 @@ def update_available_license_seats(installinfo):
             license_data = fetch.getDataFromURL(url)
             display.display_debug1('Got: %s', license_data)
             license_dict = FoundationPlist.readPlistFromString(license_data)
-        except fetch.Error, err:
+        except fetch.Error as err:
             # problem fetching from URL
             display.display_error('Error from %s: %s', url, err)
         except FoundationPlist.FoundationPlistException:
@@ -102,4 +102,4 @@ def update_available_license_seats(installinfo):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

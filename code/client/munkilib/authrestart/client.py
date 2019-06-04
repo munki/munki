@@ -21,12 +21,12 @@ Created by Greg Neagle on 2017-04-15.
 Routines for communicating with authrestartd.
 Socket communications code adapted from autopkg's PkgCreator by Per Olofsson
 """
+from __future__ import absolute_import, print_function
 
 import os
 import plistlib
 import select
 import socket
-import sys
 
 
 AUTHRESTARTD_SOCKET = "/var/run/authrestartd"
@@ -63,8 +63,7 @@ class AuthRestartClient(object):
 
         if reply:
             return reply.rstrip()
-        else:
-            return "ERROR:No reply"
+        return "ERROR:No reply"
 
     def disconnect(self):
         '''Disconnect from authrestartd'''
@@ -175,26 +174,27 @@ def restart():
 
 
 def test():
+    '''A function for doing some basic testing'''
     import getpass
     import pwd
-    
-    print 'FileVault is active: %s' % fv_is_active()
-    print 'Recovery key is present: %s' % verify_recovery_key_present()
+
+    print('FileVault is active: %s' % fv_is_active())
+    print('Recovery key is present: %s' % verify_recovery_key_present())
     username = pwd.getpwuid(os.getuid()).pw_name
-    print '%s is FV user: %s' % (username, verify_user(username))
+    print('%s is FV user: %s' % (username, verify_user(username)))
     password = getpass.getpass('Enter password: ')
     if password:
         if username == 'root':
             username = None
         if store_password(password, username=username):
-            print 'store_password was successful'
+            print('store_password was successful')
         else:
-            print 'store_password failed'
-    print 'Can attempt auth restart: %s' % verify_can_attempt_auth_restart()
+            print('store_password failed')
+    print('Can attempt auth restart: %s' % verify_can_attempt_auth_restart())
     answer = raw_input('Test auth restart (y/n)? ')
     if answer.lower().startswith('y'):
-        print 'Attempting auth restart...'
+        print('Attempting auth restart...')
         if restart():
-            print 'restart was successfully triggered'
+            print('restart was successfully triggered')
         else:
-            print 'restart failed'
+            print('restart failed')

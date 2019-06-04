@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Common pkg/receipt functions and classes used by the munki tools.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import re
@@ -307,7 +308,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                                 pkgref_dict[pkgid]['file'] = os.path.join(
                                     thisdir, relativepath)
 
-            for key in pkgref_dict.keys():
+            for key in pkgref_dict:
                 pkgref = pkgref_dict[key]
                 if 'file' in pkgref:
                     if os.path.exists(pkgref['file']):
@@ -346,7 +347,7 @@ def getFlatPackageInfo(pkgpath):
         # Walk trough the TOC entries
         for toc_entry in toc:
             # If the TOC entry is a top-level PackageInfo, extract it
-            if toc_entry.startswith('PackageInfo') and len(infoarray) == 0:
+            if toc_entry.startswith('PackageInfo') and not infoarray:
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
                 result = subprocess.call(cmd_extract)
                 if result == 0:
@@ -370,7 +371,7 @@ def getFlatPackageInfo(pkgpath):
                     display.display_warning(
                         "An error occurred while extracting %s: %s",
                         toc_entry, err)
-        if len(infoarray) == 0:
+        if not infoarray:
             for toc_entry in [item for item in toc
                               if item.startswith('Distribution')]:
                 # Extract the Distribution file
@@ -387,7 +388,7 @@ def getFlatPackageInfo(pkgpath):
                         "An error occurred while extracting %s: %s",
                         toc_entry, err)
 
-        if len(infoarray) == 0:
+        if not infoarray:
             display.display_warning(
                 'No valid Distribution or PackageInfo found.')
     else:
@@ -587,7 +588,7 @@ def getInstalledPackageVersion(pkgid):
         for item in installitems:
             if item.endswith('.pkg'):
                 info = getBundlePackageInfo(os.path.join(receiptsdir, item))
-                if len(info):
+                if info:
                     infoitem = info[0]
                     foundbundleid = infoitem['packageid']
                     foundvers = infoitem['version']
@@ -666,10 +667,9 @@ def nameAndVersion(aString):
                 break
         vers = aString[index:]
         return (aString[0:index].rstrip(' .-_v'), vers)
-    else:
-        # no version number found,
-        # just return original string and empty string
-        return (aString, '')
+    # no version number found,
+    # just return original string and empty string
+    return (aString, '')
 
 
 def hasValidConfigProfileExt(path):
@@ -871,4 +871,4 @@ def isApplication(pathname):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2019-03-20.
 
 wrapper for running /usr/sbin/softwareupdate
 """
+from __future__ import absolute_import
 
 import os
 import time
@@ -81,6 +82,9 @@ def run(options_list, catalog_url=None, stop_allowed=False):
       Dictionary of results
     """
     results = {}
+    # some things to track to work around a softwareupdate bug
+    seems_to_be_finished = False
+    countdown_timer = 60
 
     cmd = find_ptty_tool()
     cmd.extend(['/usr/sbin/softwareupdate', '--verbose'])
@@ -102,21 +106,23 @@ def run(options_list, catalog_url=None, stop_allowed=False):
 
     display.display_debug1('softwareupdate cmd: %s', cmd)
 
-    try:
-        job = launchd.Job(cmd)
-        job.start()
-    except launchd.LaunchdJobException as err:
-        display.display_warning(
-            'Error with launchd job (%s): %s', cmd, err)
-        display.display_warning('Skipping softwareupdate run.')
-        return -3
-
     results['installed'] = []
     results['download'] = []
     results['failures'] = []
     results['updates'] = []
     results['exit_code'] = 0
     results['post_action'] = POSTACTION_NONE
+
+    try:
+        job = launchd.Job(cmd)
+        job.start()
+    except launchd.LaunchdJobException as err:
+        message = 'Error with launchd job (%s): %s' % (cmd, err)
+        display.display_warning(message)
+        display.display_warning('Skipping softwareupdate run.')
+        results['exit_code'] = -3
+        results['failures'].append(message)
+        return results
 
     last_output = None
     while True:
@@ -130,10 +136,23 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 break
             else:
                 # no data, but we're still running
+                if seems_to_be_finished:
+                    # softwareupdate provided output that it was finished
+                    countdown_timer -= 1
+                    if countdown_timer == 0:
+                        # yet it's been at least a minute and it hasn't exited
+                        # just stop the job and move on.
+                        # Works around yet another softwareupdate bug.
+                        display.display_warning(
+                            'softwareupdate failed to exit: killing it')
+                        job.stop()
+                        break
                 # sleep a bit before checking for more output
                 time.sleep(1)
                 continue
 
+        # got output; reset countdown_timer
+        countdown_timer = 60
         # Don't bother parsing the stdout output if it hasn't changed since
         # the last loop iteration.
         if last_output == output:
@@ -146,6 +165,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
 
         # parse and record info, or send the output to STDOUT or MunkiStatus
         # as applicable
+
         # --list-specific output
         if mode == 'list':
             if output.startswith('   * '):
@@ -220,12 +240,18 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 display.display_status_minor(output)
                 display.display_info('### This update requires a shutdown. ###')
                 results['post_action'] = POSTACTION_SHUTDOWN
+                seems_to_be_finished = True
                 continue
             if ('requires that you restart your computer' in output
                     and results['post_action'] == POSTACTION_NONE):
                 # a restart is required
                 display.display_status_minor(output)
                 results['post_action'] = POSTACTION_RESTART
+                seems_to_be_finished = True
+                continue
+            if output == "Done.":
+                # done installing items
+                seems_to_be_finished = True
                 continue
 
         # other output

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Utilities for determining installation status for Munki items.
 """
+from __future__ import absolute_import, print_function
 
 import os
 
@@ -97,8 +98,8 @@ def installed_state(item_pl):
         hash_value = item_pl.get('installer_item_hash')
         if profiles.profile_needs_to_be_installed(identifier, hash_value):
             return 0
-        else:
-            return 1
+        # does not need to be installed
+        return 1
 
      # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
@@ -111,7 +112,7 @@ def installed_state(item_pl):
                 elif comparison == 2:
                     # this item is newer
                     foundnewer = True
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the installs data
                 display.display_error(unicode(errmsg))
                 # return 1 so we're marked as not needing to be installed
@@ -129,7 +130,7 @@ def installed_state(item_pl):
                     return 0
                 elif comparison == 2:
                     foundnewer = True
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the receipts data
                 display.display_error(unicode(errmsg))
                 # return 1 so we're marked as not needing to be installed
@@ -139,8 +140,8 @@ def installed_state(item_pl):
     # must be installed (or we don't have enough info...)
     if foundnewer:
         return 2
-    else:
-        return 1
+    # not newer
+    return 1
 
 
 def some_version_installed(item_pl):
@@ -186,7 +187,7 @@ def some_version_installed(item_pl):
                 if compare.compare_item_version(item) == 0:
                     # not there
                     return False
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the installs data
                 display.display_error(unicode(errmsg))
                 return False
@@ -200,7 +201,7 @@ def some_version_installed(item_pl):
                 if compare.compare_receipt_version(item) == 0:
                     # not there
                     return False
-            except utils.Error, errmsg:
+            except utils.Error as errmsg:
                 # some problem with the installs data
                 display.display_error(unicode(errmsg))
                 return False
@@ -293,4 +294,4 @@ def evidence_this_is_installed(item_pl):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

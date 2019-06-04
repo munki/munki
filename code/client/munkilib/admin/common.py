@@ -19,6 +19,7 @@ admin/common.py
 Created by Greg Neagle on 2017-11-19.
 Common code used by the admin libs
 """
+from __future__ import absolute_import
 
 import os
 

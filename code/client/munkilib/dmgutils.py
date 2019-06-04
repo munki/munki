@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Utilities for working with disk images.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -246,4 +247,4 @@ def unmountdmg(mountpoint):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

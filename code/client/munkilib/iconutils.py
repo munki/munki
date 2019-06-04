@@ -21,6 +21,7 @@ Created by Greg Neagle on 2014-05-15.
 
 Functions to work with product images ('icons') for Managed Software Center
 """
+from __future__ import absolute_import, print_function
 
 import glob
 import os
@@ -267,4 +268,4 @@ def getAppInfoPathsFromBOM(bomfile):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

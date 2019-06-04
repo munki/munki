@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for copying items from disk images
 """
+from __future__ import absolute_import, print_function
 
 import os
 import shutil
@@ -107,7 +108,7 @@ def remove_quarantine_from_item(some_path):
     try:
         if "com.apple.quarantine" in xattr.xattr(some_path).list():
             xattr.xattr(some_path).remove("com.apple.quarantine")
-    except BaseException, err:
+    except BaseException as err:
         display.display_warning(
             "Error removing com.apple.quarantine from %s: %s", some_path, err)
 
@@ -210,7 +211,7 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
             if os.path.isdir(destination_path):
                 shutil.rmtree(destination_path)
             os.rename(temp_destination_path, destination_path)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             display.display_error("Error moving item to destination: %s" % err)
             return -1
 
@@ -289,4 +290,4 @@ def copy_from_dmg(dmgpath, itemlist):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

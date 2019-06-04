@@ -1,5 +1,6 @@
 # encoding: utf-8
 '''Subclasses FileRepo to do git commits of file changes'''
+from __future__ import absolute_import, print_function
 
 import inspect
 import os
@@ -7,7 +8,7 @@ import pwd
 import subprocess
 import sys
 
-from FileRepo import FileRepo
+from munkilib.munkirepo.FileRepo import FileRepo
 
 # TODO: make this more easily customized
 GITCMD = '/usr/bin/git'
@@ -88,11 +89,11 @@ class MunkiGit(object):
         # generate the log message
         log_msg = (
             '%s %s \'%s\' via %s' % (username, action, itempath, toolname))
-        print "Doing git commit: %s" % log_msg
+        print("Doing git commit: %s" % log_msg)
         self.run_git(['commit', '-m', log_msg])
         if self.results['returncode'] != 0:
-            print >> sys.stderr, "Failed to commit changes to %s" % a_path
-            print >> sys.stderr, self.results['error']
+            print("Failed to commit changes to %s" % a_path, file=sys.stderr)
+            print(self.results['error'], file=sys.stderr)
             return -1
         return 0
 
@@ -106,9 +107,10 @@ class MunkiGit(object):
                 if self.results['returncode'] == 0:
                     self.commit_file_at_path(a_path)
                 else:
-                    print >> sys.stderr, "Git error: %s" % self.results['error']
+                    print("Git error: %s" % self.results['error'],
+                          file=sys.stderr)
         else:
-            print >> sys.stderr, "%s is not in a git repo." % a_path
+            print("%s is not in a git repo." % a_path, file=sys.stderr)
 
     def add_file_at_path(self, a_path):
         """Commits a file to the Git repo."""

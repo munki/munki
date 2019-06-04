@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-16.
 
 Functions for working with manifest files
 """
+from __future__ import absolute_import, print_function
 
 import os
 import urllib2
@@ -98,7 +99,7 @@ def get_manifest(manifest_name, suppress_errors=False):
     destinationdir = os.path.dirname(manifestpath)
     try:
         os.makedirs(destinationdir)
-    except OSError, err:
+    except OSError as err:
         # OSError will be raised if destinationdir exists, ignore this case
         if not os.path.isdir(destinationdir):
             if not suppress_errors:
@@ -112,9 +113,9 @@ def get_manifest(manifest_name, suppress_errors=False):
     try:
         dummy_value = fetch.munki_resource(
             manifesturl, manifestpath, message=message)
-    except fetch.ConnectionError, err:
+    except fetch.ConnectionError as err:
         raise ManifestServerConnectionException(err)
-    except fetch.Error, err:
+    except fetch.Error as err:
         if not suppress_errors:
             display.display_error(
                 'Could not retrieve manifest %s from the server: %s',
@@ -232,7 +233,7 @@ def clean_up_manifests():
 
         # If the directory isn't the main manifest dir and is empty, try to
         # remove it
-        if dirpath != manifest_dir and not len(os.listdir(dirpath)):
+        if dirpath != manifest_dir and not os.listdir(dirpath):
             try:
                 os.rmdir(dirpath)
             except OSError:
@@ -249,7 +250,7 @@ def get_manifest_data(manifestpath):
         if os.path.exists(manifestpath):
             try:
                 os.unlink(manifestpath)
-            except OSError, err:
+            except OSError as err:
                 display.display_error(
                     'Failed to delete plist: %s', unicode(err))
         else:
@@ -262,7 +263,7 @@ def get_manifest_value_for_key(manifestpath, keyname):
     plist = get_manifest_data(manifestpath)
     try:
         return plist.get(keyname, None)
-    except AttributeError, err:
+    except AttributeError as err:
         display.display_error(
             'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
@@ -284,7 +285,7 @@ def remove_from_selfserve_section(itemname, section):
         return
     try:
         plist = FoundationPlist.readPlist(selfservemanifest)
-    except FoundationPlist.FoundationPlistException, err:
+    except FoundationPlist.FoundationPlistException as err:
         # SelfServeManifest is broken, bail
         display.display_debug1(
             "Error reading %s: %s", selfservemanifest, err)
@@ -297,7 +298,7 @@ def remove_from_selfserve_section(itemname, section):
         ]
         try:
             FoundationPlist.writePlist(plist, selfservemanifest)
-        except FoundationPlist.FoundationPlistException, err:
+        except FoundationPlist.FoundationPlistException as err:
             display.display_debug1(
                 "Error writing %s: %s", selfservemanifest, err)
 
@@ -319,4 +320,4 @@ def remove_from_selfserve_uninstalls(itemname):
 _MANIFESTS = {}
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

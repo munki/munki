@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Logging functions for Munki
 """
+from __future__ import absolute_import, print_function
 
 import logging
 import logging.handlers
@@ -52,7 +53,7 @@ def log(msg, logname=''):
     try:
         fileobj = open(logpath, mode='a', buffering=1)
         try:
-            print >> fileobj, time.strftime(formatstr), msg.encode('UTF-8')
+            print(time.strftime(formatstr), msg.encode('UTF-8'), file=fileobj)
         except (OSError, IOError):
             pass
         fileobj.close()
@@ -130,4 +131,4 @@ def reset_errors():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

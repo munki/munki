@@ -18,6 +18,7 @@ appleupdates.py
 Utilities for dealing with Apple Software Update.
 
 """
+from __future__ import absolute_import, print_function
 
 from . import au
 from . import su_prefs
@@ -79,4 +80,4 @@ def displayAppleUpdateInfo():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -23,6 +23,7 @@ Much code lifted from the application_usage scripts created by Google MacOps:
     https://github.com/google/macops/tree/master/crankd
 
 """
+from __future__ import absolute_import, print_function
 
 # standard Python libs
 import logging
@@ -158,7 +159,7 @@ class ApplicationUsageRecorder(object):
         try:
             conn.execute(table_detection_sql)
             exists = True
-        except sqlite3.OperationalError, err:
+        except sqlite3.OperationalError as err:
             if err.args[0].startswith('no such table'):
                 exists = False
             else:
@@ -282,7 +283,7 @@ class ApplicationUsageRecorder(object):
             for table in tables:
                 query = conn.execute(table['select_sql'])
                 try:
-                    while 1:
+                    while True:
                         row = query.fetchone()
                         if not row:
                             break
@@ -291,7 +292,7 @@ class ApplicationUsageRecorder(object):
                     pass
                     # ok, done, hit an error
             conn.close()
-        except sqlite3.Error, err:
+        except sqlite3.Error as err:
             logging.error('Unhandled error reading existing db: %s', str(err))
             return recovered
 
@@ -310,13 +311,13 @@ class ApplicationUsageRecorder(object):
                         conn.execute(table['insert_sql'], row)
                         conn.commit()
                         recovered += 1
-                    except sqlite3.IntegrityError, err:
+                    except sqlite3.IntegrityError as err:
                         logging.error(
                             'Ignored error: %s: %s', str(err), str(row))
             self._close(conn)
             os.unlink(APPLICATION_USAGE_DB)
             os.rename(usage_db_tmp, APPLICATION_USAGE_DB)
-        except sqlite3.Error, err:
+        except sqlite3.Error as err:
             logging.error('Unhandled error: %s', str(err))
             recovered = 0
 
@@ -365,9 +366,9 @@ class ApplicationUsageRecorder(object):
                 self._create_application_usage_table(conn)
             self._insert_application_usage(conn, event, app_dict)
             conn.commit()
-        except sqlite3.OperationalError, err:
+        except sqlite3.OperationalError as err:
             logging.error('Error writing %s event to database: %s', event, err)
-        except sqlite3.DatabaseError, err:
+        except sqlite3.DatabaseError as err:
             if err.args[0] == 'database disk image is malformed':
                 self._recreate_database()
             logging.error('Database error: %s', err)
@@ -398,9 +399,9 @@ class ApplicationUsageRecorder(object):
                 self._create_install_request_table(conn)
             self._insert_install_request(conn, request_dict)
             conn.commit()
-        except sqlite3.OperationalError, err:
+        except sqlite3.OperationalError as err:
             logging.error('Error writing install request to database: %s', err)
-        except sqlite3.DatabaseError, err:
+        except sqlite3.DatabaseError as err:
             if err.args[0] == 'database is malformed':
                 self._recreate_database()
             logging.error('Database error: %s', err)
@@ -417,7 +418,7 @@ class ApplicationUsageQuery(object):
         self.day_in_seconds = 24 * 60 * 60
         try:
             self.conn = sqlite3.connect(self.database)
-        except sqlite3.Error, err:
+        except sqlite3.Error as err:
             logging.error(
                 'Error connecting to %s: %s', self.database, str(err))
             self.conn = None
@@ -445,7 +446,7 @@ class ApplicationUsageQuery(object):
             row = query.fetchone()
             time_diff = int(time.time()) - int(row[0])
             return int(time_diff/self.day_in_seconds)
-        except sqlite3.Error, err:
+        except sqlite3.Error as err:
             logging.error(
                 'Error querying %s: %s', self.database, str(err))
             return 0
@@ -471,9 +472,9 @@ class ApplicationUsageQuery(object):
             if row:
                 time_diff = int(time.time()) - int(row[0])
                 return int(time_diff/self.day_in_seconds)
-            else:
-                return -1
-        except sqlite3.Error, err:
+            # no row
+            return -1
+        except sqlite3.Error as err:
             logging.error(
                 'Error querying %s: %s', self.database, str(err))
             return None
@@ -499,13 +500,13 @@ class ApplicationUsageQuery(object):
             if row:
                 time_diff = int(time.time()) - int(row[0])
                 return int(time_diff/self.day_in_seconds)
-            else:
-                return -1
-        except sqlite3.Error, err:
+            # no row
+            return -1
+        except sqlite3.Error as err:
             logging.error(
                 'Error querying %s: %s', self.database, str(err))
             return None
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

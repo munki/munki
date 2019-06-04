@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-04.
 
 Utilities for working with Apple software update dist files
 """
+from __future__ import absolute_import, print_function
 
 import os
 from xml.dom import minidom
@@ -69,7 +70,7 @@ def get_firmware_alert_text(dom):
     if type_is_firmware:
         firmware_alert_text = '_DEFAULT_FIRMWARE_ALERT_TEXT_'
         readmes = dom.getElementsByTagName('readme')
-        if len(readmes):
+        if readmes:
             html = readmes[0].firstChild.data
             html_data = buffer(html.encode('utf-8'))
             attributed_string, _ = NSAttributedString.alloc(
@@ -216,7 +217,7 @@ def parse_su_dist(filename):
         display.display_error(
             'Invalid XML in %s', filename)
         return None
-    except IOError, err:
+    except IOError as err:
         display.display_error(
             'Error reading %s: %s', filename, err)
         return None
@@ -259,4 +260,4 @@ def parse_su_dist(filename):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

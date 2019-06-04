@@ -19,6 +19,7 @@ Utilities to enable Munki to install/uninstall Adobe CS3/CS4/CS5 products
 using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
+from __future__ import absolute_import, print_function
 
 
 import os
@@ -67,7 +68,7 @@ def rotate_pdapp_log():
             newlogname = os.path.join(logdir, 'PDApp %s.log' % alternate_string)
         try:
             os.rename(pdapplog_path, newlogname)
-        except OSError, err:
+        except OSError as err:
             munkilog.log('Could not rotate PDApp.log: %s', unicode(err))
 
 
@@ -386,7 +387,7 @@ def writefile(stringdata, path):
     Returns the path on success, empty string on failure.'''
     try:
         fileobject = open(path, mode='w', buffering=1)
-        print >> fileobject, stringdata.encode('UTF-8')
+        print(stringdata.encode('UTF-8'), file=fileobject)
         fileobject.close()
         return path
     except (OSError, IOError):
@@ -759,7 +760,8 @@ def update_acrobatpro(dmgpath):
                           if item['path'].endswith('/' + appname)]
 
         # hope there's only one!
-        if len(candidates) == 0:
+        if not candidates:
+            # there are no candidates!
             if status == "optional":
                 continue
             else:
@@ -924,4 +926,4 @@ def do_adobe_install(item):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

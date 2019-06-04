@@ -39,6 +39,7 @@ dictionary).
 To work with plist data in strings, you can use readPlistFromString()
 and writePlistToString().
 """
+from __future__ import absolute_import, print_function
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -90,7 +91,7 @@ def readPlistFromString(data):
     '''Read a plist data from a string. Return the root object.'''
     try:
         plistData = buffer(data)
-    except TypeError, err:
+    except TypeError as err:
         raise NSPropertyListSerializationException(err)
     dataObject, dummy_plistFormat, error = (
         NSPropertyListSerialization.
@@ -145,4 +146,4 @@ def writePlistToString(rootObject):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for installing Apple pkgs
 """
+from __future__ import absolute_import, print_function
 
 import os
 import pwd
@@ -149,7 +150,7 @@ def _run_installer(cmd, env_vars, packagename):
     try:
         job = launchd.Job(cmd, environment_vars=env_vars)
         job.start()
-    except launchd.LaunchdJobException, err:
+    except launchd.LaunchdJobException as err:
         display.display_error(
             'Error with launchd job (%s): %s', cmd, str(err))
         display.display_error('Can\'t run installer.')
@@ -310,4 +311,4 @@ def installall(dirpath, options=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

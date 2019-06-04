@@ -1,5 +1,6 @@
 # encoding: utf-8
 '''Defines FileRepo plugin. See docstring for FileRepo class'''
+from __future__ import absolute_import, print_function
 
 import errno
 import getpass
@@ -7,9 +8,20 @@ import os
 import shutil
 import subprocess
 import sys
-import urllib
 
-from urlparse import urlparse
+try:
+    # Python 2
+    from urllib import unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import unquote
+
+try:
+    # Python 2
+    from urlparse import urlparse
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse
 
 from munkilib.munkirepo import Repo, RepoError
 
@@ -25,6 +37,7 @@ try:
         __getattr__ = dict.__getitem__
         __setattr__ = dict.__setitem__
 
+    # pylint: disable=invalid-name
     NetFS = Attrdict()
     # Can cheat and provide 'None' for the identifier, it'll just use
     # frameworkPath instead
@@ -33,13 +46,16 @@ try:
         'NetFS', frameworkIdentifier=None,
         frameworkPath=objc.pathForFramework('NetFS.framework'),
         globals=NetFS, scan_classes=False)
+    # pylint: enable=invalid-name
 
     # https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/
     # ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
     # Fix NetFSMountURLSync signature
     del NetFS['NetFSMountURLSync']
+    # pylint: disable=no-member
     objc.loadBundleFunctions(
-        NetFS_bundle, NetFS, [('NetFSMountURLSync', 'i@@@@@@o^@')])
+        NetFS_bundle, NetFS, [('NetFSMountURLSync', b'i@@@@@@o^@')])
+    # pylint: enable=no-member
     NETFSMOUNTURLSYNC_AVAILABLE = True
 except (ImportError, KeyError):
     NETFSMOUNTURLSYNC_AVAILABLE = False
@@ -57,9 +73,12 @@ class ShareAuthenticationNeededException(ShareMountException):
 
 def unicodeize(path):
     '''Convert a path to unicode'''
-    if type(path) is str:
+    # Python 3 all paths are unicode!
+    if sys.version_info.major > 2:
+        return path
+    if isinstance(path, str):
         return unicode(path, 'utf-8')
-    elif type(path) is not unicode:
+    elif not isinstance(path, unicode):
         return unicode(path)
     return path
 
@@ -140,6 +159,7 @@ def mount_share_url(share_url):
 class FileRepo(Repo):
     '''Handles local filesystem repo and repos mounted via filesharing'''
 
+    # pylint: disable=super-init-not-called
     def __init__(self, baseurl):
         '''Constructor'''
         self.baseurl = baseurl
@@ -147,14 +167,15 @@ class FileRepo(Repo):
         self.url_scheme = url_parts.scheme
         if self.url_scheme == 'file':
             # local file repo
-            self.root = unicodeize(urllib.unquote(url_parts.path))
+            self.root = unicodeize(unquote(url_parts.path))
         else:
             # repo is on a fileshare that will be mounted under /Volumes
             self.root = os.path.join(
                 u'/Volumes',
-                unicodeize(urllib.unquote(url_parts.path).lstrip('/')))
+                unicodeize(unquote(url_parts.path).lstrip('/')))
         self.we_mounted_repo = False
         self._connect()
+    # pylint: enable=super-init-not-called
 
     def __del__(self):
         '''Destructor -- unmount the fileshare if we mounted it'''
@@ -166,18 +187,18 @@ class FileRepo(Repo):
         '''If self.root is present, return. Otherwise, if the url scheme is not
         "file:" then try to mount the share url.'''
         if not os.path.exists(self.root) and self.url_scheme != 'file':
-            print u'Attempting to mount fileshare %s:' % self.baseurl
+            print(u'Attempting to mount fileshare %s:' % self.baseurl)
             if NETFSMOUNTURLSYNC_AVAILABLE:
                 try:
                     self.root = mount_share_url(self.baseurl)
-                except ShareMountException, err:
+                except ShareMountException as err:
                     raise RepoError(err)
                 else:
                     self.we_mounted_repo = True
             else:
                 try:
                     os.mkdir(self.root)
-                except (OSError, IOError), err:
+                except (OSError, IOError) as err:
                     raise RepoError(
                         u'Could not make repo mountpoint: %s' % unicode(err))
                 if self.baseurl.startswith('afp:'):
@@ -187,7 +208,7 @@ class FileRepo(Repo):
                 elif self.baseurl.startswith('nfs://'):
                     cmd = ['/sbin/mount_nfs', self.baseurl[6:], self.root]
                 else:
-                    print >> sys.stderr, 'Unsupported filesystem URL!'
+                    print('Unsupported filesystem URL!', file=sys.stderr)
                     return
                 retcode = subprocess.call(cmd)
                 if retcode:
@@ -219,7 +240,7 @@ class FileRepo(Repo):
                     rel_path = abs_path[len(search_dir):].lstrip("/")
                     file_list.append(rel_path)
             return file_list
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def get(self, resource_identifier):
@@ -232,11 +253,11 @@ class FileRepo(Repo):
         resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
-            fileref = open(repo_filepath)
+            fileref = open(repo_filepath, 'rb')
             data = fileref.read()
             fileref.close()
             return data
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def get_to_local_file(self, resource_identifier, local_file_path):
@@ -251,7 +272,7 @@ class FileRepo(Repo):
         local_file_path = unicodeize(local_file_path)
         try:
             shutil.copyfile(repo_filepath, local_file_path)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def put(self, resource_identifier, content):
@@ -263,12 +284,12 @@ class FileRepo(Repo):
         repo_filepath = os.path.join(self.root, resource_identifier)
         dir_path = os.path.dirname(repo_filepath)
         if not os.path.exists(dir_path):
-            os.makedirs(dir_path, 0755)
+            os.makedirs(dir_path, 0o755)
         try:
-            fileref = open(repo_filepath, 'w')
+            fileref = open(repo_filepath, 'wb')
             fileref.write(content)
             fileref.close()
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def put_from_local_file(self, resource_identifier, local_file_path):
@@ -284,10 +305,10 @@ class FileRepo(Repo):
             return
         dir_path = os.path.dirname(repo_filepath)
         if not os.path.exists(dir_path):
-            os.makedirs(dir_path, 0755)
+            os.makedirs(dir_path, 0o755)
         try:
             shutil.copyfile(local_file_path, repo_filepath)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)
 
     def delete(self, resource_identifier):
@@ -299,5 +320,5 @@ class FileRepo(Repo):
         repo_filepath = os.path.join(self.root, resource_identifier)
         try:
             os.remove(repo_filepath)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             raise RepoError(err)

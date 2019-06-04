@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Common functions and classes used by the munki tools.
 """
+from __future__ import absolute_import, print_function
 
 import platform
 import os
@@ -52,8 +53,8 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
         os_version_tuple = os_version_tuple[0:2]
     if as_tuple:
         return tuple(map(int, os_version_tuple))
-    else:
-        return '.'.join(os_version_tuple)
+    # default
+    return '.'.join(os_version_tuple)
 
 
 def tmpdir():
@@ -68,7 +69,7 @@ def cleanUpTmpDir():
     if hasattr(tmpdir, 'cache'):
         try:
             shutil.rmtree(tmpdir.cache)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             display.display_warning(
                 'Unable to clean up temporary dir %s: %s',
                 tmpdir.cache, str(err))
@@ -95,9 +96,9 @@ def listdir(path):
     # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
-    if type(path) is str:
+    if isinstance(path, str):
         path = unicode(path, 'utf-8')
-    elif type(path) is not unicode:
+    elif not isinstance(path, unicode):
         path = unicode(path)
     return os.listdir(path)
 
@@ -172,10 +173,11 @@ def osascript(osastring):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode != 0:
-        print >> sys.stderr, 'Error: ', err
+        print('Error: ', err, file=sys.stderr)
     if out:
         return str(out).decode('UTF-8').rstrip('\n')
+    return u''
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

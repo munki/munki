@@ -23,6 +23,7 @@ is made to revert to older versions of a file when uninstalling;
 only file removals are done.
 
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -675,10 +676,7 @@ def is_bundle(pathname):
         extension = os.path.splitext(basename)[1]
         if extension in bundle_extensions:
             return True
-        else:
-            return False
-    else:
-        return False
+    return False
 
 
 def inside_bundle(pathname):
@@ -732,7 +730,7 @@ def remove_filesystem_items(removalpaths, forcedeletebundles):
                     # directory is empty
                     try:
                         os.rmdir(pathtoremove)
-                    except (OSError, IOError), err:
+                    except (OSError, IOError) as err:
                         msg = "Couldn't remove directory %s - %s" % (
                             pathtoremove, err)
                         display.display_error(msg)
@@ -770,7 +768,7 @@ def remove_filesystem_items(removalpaths, forcedeletebundles):
                 # not a directory, just unlink it
                 try:
                     os.remove(pathtoremove)
-                except (OSError, IOError), err:
+                except (OSError, IOError) as err:
                     msg = "Couldn't remove item %s: %s" % (pathtoremove, err)
                     display.display_error(msg)
                     removalerrors = removalerrors + "\n" + msg
@@ -804,7 +802,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         return -3
 
     pkgkeyslist = getpkgkeys(pkgnames)
-    if len(pkgkeyslist) == 0:
+    if not pkgkeyslist:
         return -4
 
     if processes.stop_requested():
@@ -817,7 +815,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         if listfiles:
             removalpaths.sort()
             for item in removalpaths:
-                print "/" + item.encode('UTF-8')
+                print("/" + item.encode('UTF-8'))
         else:
             munkistatus.disableStopButton()
             remove_filesystem_items(removalpaths, forcedeletebundles)
@@ -838,4 +836,4 @@ PACKAGEDB = os.path.join(prefs.pref('ManagedInstallDir'), "b.receiptdb")
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -19,16 +19,18 @@ makecatalogslib
 Created by Greg Neagle on 2017-11-19.
 Routines used by makecatalogs
 """
+from __future__ import absolute_import, print_function
 
 # std libs
 import hashlib
 import os
-import plistlib
 
 # our libs
 from .common import list_items_of_kind, AttributeDict
 from ..colors import colorize
 from .. import munkirepo
+from ..wrappers import readPlistFromString, writePlistToString
+
 
 class MakeCatalogsError(Exception):
     '''Error to raise when there is problem making catalogs'''
@@ -54,11 +56,11 @@ def hash_icons(repo, output_fn=None):
         try:
             icondata = repo.get('icons/' + icon_ref)
             icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             errors.append(u'RepoError for %s: %s' % (icon_ref, unicode(err)))
-        except IOError, err:
+        except IOError as err:
             errors.append(u'IO error for %s: %s' % (icon_ref, err))
-        except BaseException, err:
+        except BaseException as err:
             errors.append(u'Unexpected error for %s: %s' % (icon_ref, err))
     return icons, errors
 
@@ -176,7 +178,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         output_fn("Getting list of pkgsinfo...")
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise MakeCatalogsError(
             colorize.ERROR + "Error getting list of pkgsinfo items: " + colorize.ENDC + 
             "%s" % unicode(err))
@@ -186,7 +188,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         output_fn("Getting list of pkgs...")
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise MakeCatalogsError(
             colorize.ERROR + "Error getting list of pkgs items: " + colorize.ENDC +
             "%s" % unicode(err))
@@ -200,11 +202,11 @@ def process_pkgsinfo(repo, options, output_fn=None):
         # Try to read the pkginfo file
         try:
             data = repo.get(pkginfo_ref)
-            pkginfo = plistlib.readPlistFromString(data)
-        except IOError, err:
+            pkginfo = readPlistFromString(data)
+        except IOError as err:
             errors.append("IO error for %s: %s" % (pkginfo_ref, err))
             continue
-        except BaseException, err:
+        except BaseException as err:
             errors.append("Unexpected error for %s: %s" % (pkginfo_ref, err))
             continue
 
@@ -219,7 +221,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
             del pkginfo['notes']
         # strip out any keys that start with "_"
         # (example: pkginfo _metadata)
-        for key in pkginfo.keys():
+        for key in list(pkginfo.keys()):
             if key.startswith('_'):
                 del pkginfo[key]
 
@@ -290,17 +292,21 @@ def makecatalogs(repo, options, output_fn=None):
             try:
                 repo.delete(catalog_ref)
             except munkirepo.RepoError:
-                errors.append(colorize.FAIL + 'Could not delete catalog' + colorize.ENDC + '%s' % catalog_name)
+                errors.append(
+                    colorize.FAIL + 'Could not delete catalog' + colorize.ENDC + '%s' 
+                    % catalog_name)
 
     # write the new catalogs
     for key in catalogs:
         catalogpath = os.path.join("catalogs", key)
-        if len(catalogs[key]):
-            catalog_data = plistlib.writePlistToString(catalogs[key])
+        if catalogs[key] != "":
+            catalog_data = writePlistToString(catalogs[key])
             try:
                 repo.put(catalogpath, catalog_data)
                 if output_fn:
-                    output_fn(colorize.OKBLUE + "Created " + colorize.ENDC + "%s..." % catalogpath)
+                    output_fn(
+                        colorize.OKBLUE + "Created " + colorize.ENDC + "%s..." 
+                        % catalogpath)
             except munkirepo.RepoError, err:
                 errors.append(
                     colorize.FAIL + u'Failed to create catalog' + colorize.ENDC + 
@@ -313,15 +319,17 @@ def makecatalogs(repo, options, output_fn=None):
 
     if icons:
         icon_hashes_plist = os.path.join("icons", "_icon_hashes.plist")
-        icon_hashes = plistlib.writePlistToString(icons)
+        icon_hashes = writePlistToString(icons)
         try:
             repo.put(icon_hashes_plist, icon_hashes)
-            print colorize.OKBLUE + "Created " + colorize.ENDC + "%s..." % (icon_hashes_plist)
+            print(
+                colorize.OKBLUE + "Created " + colorize.ENDC + "%s..." 
+                % (icon_hashes_plist))
         except munkirepo.RepoError, err:
             errors.append(
                 colorize.FAIL + u'Failed to create ' + colorize.ENDC +
                 '%s: %s' 
                 % (icon_hashes_plist, unicode(err)))
 
-    # Return and errors
+    # Return any errors
     return errors

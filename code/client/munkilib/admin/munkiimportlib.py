@@ -19,6 +19,7 @@ munkiimportlib
 Created by Greg Neagle on 2017-11-18.
 Routines used by munkimport to import items into Munki repo
 """
+from __future__ import absolute_import, print_function
 
 # std lib imports
 import os
@@ -62,7 +63,7 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     index = 0
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to get list of current pkgs: %s'
                             % unicode(err))
     while destination_path_name in pkgs_list:
@@ -74,7 +75,7 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
 
     try:
         repo.put_from_local_file(destination_path_name, itempath)
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to copy %s to %s: %s'
                             % (itempath, destination_path_name, unicode(err)))
     else:
@@ -95,7 +96,7 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
     index = 0
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s'
                             % unicode(err))
     while pkginfo_path in pkgsinfo_list:
@@ -106,12 +107,12 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
 
     try:
         pkginfo_str = FoundationPlist.writePlistToString(pkginfo)
-    except FoundationPlist.NSPropertyListWriteException, errmsg:
+    except FoundationPlist.NSPropertyListWriteException as errmsg:
         raise RepoCopyError(errmsg)
     try:
         repo.put(pkginfo_path, pkginfo_str)
         return pkginfo_path
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError('Unable to save pkginfo to %s: %s'
                             % (pkginfo_path, unicode(err)))
 
@@ -136,12 +137,12 @@ def make_catalog_db(repo):
 
     try:
         plist = repo.get('catalogs/all')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise CatalogReadException(err)
 
     try:
         catalogitems = FoundationPlist.readPlistFromString(plist)
-    except FoundationPlist.NSPropertyListSerializationException, err:
+    except FoundationPlist.NSPropertyListSerializationException as err:
         raise CatalogDecodeException(err)
 
     pkgid_table = {}
@@ -157,7 +158,7 @@ def make_catalog_db(repo):
         vers = item.get('version', 'NO VERSION')
 
         if name == 'NO NAME' or vers == 'NO VERSION':
-            print >> sys.stderr, 'WARNING: Bad pkginfo: %s' % item
+            print('WARNING: Bad pkginfo: %s' % item, file=sys.stderr)
 
         # add to hash table
         if 'installer_item_hash' in item:
@@ -191,8 +192,8 @@ def make_catalog_db(repo):
                         pkgid_table[pkgid][pkgvers] = []
                     pkgid_table[pkgid][pkgvers].append(itemindex)
             except TypeError:
-                print >> sys.stderr, (
-                    'Bad receipt data for %s-%s: %s' % (name, vers, receipt))
+                print('Bad receipt data for %s-%s: %s' % (name, vers, receipt),
+                      file=sys.stderr)
 
         # add to table of installed applications
         for install in item.get('installs', []):
@@ -205,8 +206,8 @@ def make_catalog_db(repo):
                             app_table[install['path']][vers] = []
                         app_table[install['path']][vers].append(itemindex)
             except TypeError:
-                print >> sys.stderr, (
-                    'Bad install data for %s-%s: %s' % (name, vers, install))
+                print('Bad install data for %s-%s: %s' % (name, vers, install),
+                      file=sys.stderr)
 
         # add to table of PayloadIdentifiers
         if 'PayloadIdentifier' in item:
@@ -238,17 +239,17 @@ def find_matching_pkginfo(repo, pkginfo):
 
     try:
         catdb = make_catalog_db(repo)
-    except CatalogReadException, err:
+    except CatalogReadException as err:
         # could not retrieve catalogs/all
         # do we have any existing pkgsinfo items?
         pkgsinfo_items = repo.itemlist('pkgsinfo')
-        if len(pkgsinfo_items):
+        if pkgsinfo_items:
             # there _are_ existing pkgsinfo items.
             # warn about the problem since we can't seem to read catalogs/all
-            print (u'Could not get a list of existing items from the repo: %s'
-                   % unicode(err))
+            print(u'Could not get a list of existing items from the repo: %s'
+                  % unicode(err))
         return {}
-    except CatalogDBException, err:
+    except CatalogDBException as err:
         # other error while processing catalogs/all
         print (u'Could not get a list of existing items from the repo: %s'
                % unicode(err))
@@ -330,7 +331,7 @@ def icon_exists_in_repo(repo, pkginfo):
     icon_path = get_icon_path(pkginfo)
     try:
         icon_list = list_items_of_kind(repo, 'icons')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to get list of current icons: %s'
                             % unicode(err))
     if icon_path in icon_list:
@@ -363,7 +364,7 @@ def generate_png_from_startosinstall_item(repo, dmg_path, pkginfo):
                 dmgutils.unmountdmg(mountpoint)
                 raise
         dmgutils.unmountdmg(mountpoint)
-        return None
+    return None
 
 
 def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
@@ -374,7 +375,7 @@ def generate_png_from_dmg_item(repo, dmg_path, pkginfo):
         mountpoint = mountpoints[0]
         apps = [item for item in pkginfo.get('items_to_copy', [])
                 if item.get('source_item', '').endswith('.app')]
-        if len(apps):
+        if apps:
             app_path = os.path.join(mountpoint, apps[0]['source_item'])
             icon_path = iconutils.findIconForApp(app_path)
             if icon_path:
@@ -432,8 +433,7 @@ def generate_pngs_from_pkg(repo, item_path, pkginfo, import_multiple=True):
                 imported_paths.append(imported_path)
             index += 1
         return "\n\t".join(imported_paths)
-    else:
-        return None
+    return None
 
 
 def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
@@ -453,7 +453,7 @@ def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
         try:
             repo.put_from_local_file(repo_png_path, local_png_tmp)
             return repo_png_path
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             raise RepoCopyError(u'Error uploading icon to %s: %s'
                                 % (repo_png_path, unicode(err)))
     else:
@@ -468,21 +468,21 @@ def copy_icon_to_repo(repo, iconpath):
 
     try:
         icon_list = list_items_of_kind(repo, 'icons')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to get list of current icons: %s'
                             % unicode(err))
     if destination_path_name in icon_list:
         # remove any existing icon in the repo
         try:
             repo.delete(destination_path_name)
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             raise RepoCopyError('Could not remove existing %s: %s'
                                 % (destination_path_name, unicode(err)))
-    print 'Copying %s to %s...' % (icon_name, destination_path_name)
+    print('Copying %s to %s...' % (icon_name, destination_path_name))
     try:
         repo.put_from_local_file(destination_path_name, iconpath)
         return destination_path_name
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise RepoCopyError('Unable to copy %s to %s: %s'
                             % (iconpath, destination_path_name, unicode(err)))
 

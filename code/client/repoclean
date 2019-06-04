@@ -22,8 +22,8 @@ Created by Greg Neagle on 2016-06-22.
 A tool to remove older, unused software items from a Munki repo.
 
 """
+from __future__ import absolute_import, print_function
 
-import plistlib
 import subprocess
 import sys
 import os
@@ -33,8 +33,9 @@ from distutils.version import LooseVersion
 from xml.parsers.expat import ExpatError
 
 from munkilib.cliutils import get_version, pref, path2url
-from munkilib.cliutils import print_utf8, print_err_utf8
 from munkilib import munkirepo
+from munkilib.wrappers import (is_a_string, get_input, readPlistFromString,
+                               unicode_or_str)
 
 
 def name_and_version(a_string):
@@ -112,23 +113,23 @@ class RepoCleaner(object):
     def analyze_manifests(self):
         '''Examine all manifests and populate our sets of manifest_items and
         manifest_items_with_versions'''
-        print_utf8('Analyzing manifest files...')
+        print('Analyzing manifest files...')
         # look through all manifests for "Foo-1.0" style items
         # we need to note these so the specific referenced version is not
         # deleted
         try:
             manifests_list = self.repo.itemlist('manifests')
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             self.errors.append(
-                "Repo error getting list of manifests: %s" % unicode(err))
+                "Repo error getting list of manifests: %s" % unicode_or_str(err))
             manifests_list = []
         for manifest_name in manifests_list:
             try:
                 data = self.repo.get(os.path.join('manifests', manifest_name))
-                manifest = plistlib.readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, ExpatError), err:
+                manifest = readPlistFromString(data)
+            except (munkirepo.RepoError, IOError, OSError, ExpatError) as err:
                 self.errors.append("Unexpected error for %s: %s"
-                                   % (manifest_name, unicode(err)))
+                                   % (manifest_name, unicode_or_str(err)))
                 continue
             for key in ['managed_installs', 'managed_uninstalls',
                         'managed_updates', 'optional_installs']:
@@ -152,22 +153,22 @@ class RepoCleaner(object):
     def analyze_pkgsinfo(self):
         '''Examines all pkginfo files and populates self.pkginfodb,
         self.required_items and self.pkginfo_count'''
-        print_utf8('Analyzing pkginfo files...')
+        print('Analyzing pkginfo files...')
         try:
             pkgsinfo_list = self.repo.itemlist('pkgsinfo')
-        except munkirepo.RepoError, err:
+        except munkirepo.RepoError as err:
             self.errors.append(
-                "Repo error getting list of pkgsinfo: %s" % unicode(err))
+                "Repo error getting list of pkgsinfo: %s" % unicode_or_str(err))
             pkgsinfo_list = []
 
         for pkginfo_name in pkgsinfo_list:
             pkginfo_identifier = os.path.join('pkgsinfo', pkginfo_name)
             try:
                 data = self.repo.get(pkginfo_identifier)
-                pkginfo = plistlib.readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, ExpatError), err:
+                pkginfo = readPlistFromString(data)
+            except (munkirepo.RepoError, IOError, OSError, ExpatError) as err:
                 self.errors.append("Unexpected error for %s: %s"
-                                   % (pkginfo_name, unicode(err)))
+                                   % (pkginfo_name, unicode_or_str(err)))
                 continue
             try:
                 name = pkginfo['name']
@@ -187,7 +188,7 @@ class RepoCleaner(object):
                 dependencies = pkginfo['requires']
                 # fix things if 'requires' was specified as a string
                 # instead of an array of strings
-                if isinstance(dependencies, basestring):
+                if is_a_string(dependencies):
                     dependencies = [dependencies]
                 for dependency in dependencies:
                     required_name, required_vers = name_and_version(dependency)
@@ -205,7 +206,7 @@ class RepoCleaner(object):
                 update_items = pkginfo['update_for']
                 # fix things if 'update_for' was specified as a string
                 # instead of an array of strings
-                if isinstance(update_items, basestring):
+                if is_a_string(update_items):
                     update_items = [update_items]
                 for update_item in update_items:
                     update_item_name, dummy_vers = name_and_version(update_item)
@@ -251,22 +252,20 @@ class RepoCleaner(object):
         and self.pkgs_to_keep: pkgs (install and uninstall items) that we need
         to keep.'''
 
-        def compare_versions(thing_a, thing_b):
-            """sort highest version to top"""
-            return cmp(LooseVersion(thing_b), LooseVersion(thing_a))
-
-        for key in sorted(self.pkginfodb.keys()):
-            print_this = (self.options.show_all or
-                          len(self.pkginfodb[key].keys()) > self.options.keep)
+        for key in sorted(list(self.pkginfodb.keys())):
+            print_this = (
+                self.options.show_all or
+                len(list(self.pkginfodb[key].keys())) > self.options.keep
+            )
             item_name = self.pkginfodb[key][
-                self.pkginfodb[key].keys()[0]][0]['name']
+                list(self.pkginfodb[key].keys())[0]][0]['name']
             if print_this:
-                print key
+                print(key)
                 if item_name not in self.manifest_items:
-                    print "[not in any manifests]"
-                print "versions:"
+                    print("[not in any manifests]")
+                print("versions:")
             index = 0
-            for version in sorted(self.pkginfodb[key].keys(), compare_versions):
+            for version in sorted(list(self.pkginfodb[key].keys()), key=LooseVersion):
                 line_info = ''
                 index += 1
                 item_list = self.pkginfodb[key][version]
@@ -303,52 +302,52 @@ class RepoCleaner(object):
                     line_info = "(%s) %s" % (item['resource_identifier'],
                                              line_info)
                 if print_this:
-                    print "    ", version, line_info
+                    print("    ", version, line_info)
                     if len(item_list) > 1:
                         for item in item_list:
-                            print "    ", " " * len(version),
-                            print "(%s)" % item['resource_identifier']
+                            print("    ", " " * len(version), end=' ')
+                            print("(%s)" % item['resource_identifier'])
             if print_this:
-                print
+                print()
 
-        print_utf8("Total pkginfo items:     %s" % self.pkginfo_count)
-        print_utf8("Item variants:           %s" % len(self.pkginfodb.keys()))
-        print_utf8("pkginfo items to delete: %s" % len(self.items_to_delete))
+        print("Total pkginfo items:     %s" % self.pkginfo_count)
+        print("Item variants:           %s" % len(list(self.pkginfodb.keys())))
+        print("pkginfo items to delete: %s" % len(self.items_to_delete))
         pkg_count, pkginfo_size, pkg_size = self.get_items_to_delete_stats()
-        print_utf8("pkgs to delete:          %s" % pkg_count)
-        print_utf8("pkginfo space savings:   %s" % pkginfo_size)
-        print_utf8("pkg space savings:       %s" % pkg_size)
+        print("pkgs to delete:          %s" % pkg_count)
+        print("pkginfo space savings:   %s" % pkginfo_size)
+        print("pkg space savings:       %s" % pkg_size)
 
         if self.errors:
-            print_err_utf8("\nErrors encountered when processing repo:\n")
+            print("\nErrors encountered when processing repo:\n", file=sys.stderr)
             for error in self.errors:
-                print_err_utf8(error)
+                print(error, file=sys.stderr)
 
     def delete_items(self):
         '''Deletes items from the repo'''
         for item in self.items_to_delete:
             if 'resource_identifier' in item:
-                print_utf8('Removing %s' % item['resource_identifier'])
+                print('Removing %s' % item['resource_identifier'], file=sys.stderr)
                 try:
                     self.repo.delete(item['resource_identifier'])
-                except munkirepo.RepoError, err:
-                    print_err_utf8(unicode(err))
+                except munkirepo.RepoError as err:
+                    print(unicode_or_str(err), file=sys.stderr)
             if (item.get('pkg_path') and
                     not item['pkg_path'] in self.pkgs_to_keep):
                 pkg_to_remove = os.path.join('pkgs', item['pkg_path'])
-                print_utf8('Removing %s' % pkg_to_remove)
+                print('Removing %s' % pkg_to_remove)
                 try:
                     self.repo.delete(pkg_to_remove)
-                except munkirepo.RepoError, err:
-                    print_err_utf8(unicode(err))
+                except munkirepo.RepoError as err:
+                    print(unicode_or_str(err), file=sys.stderr)
             if (item.get('uninstallpkg_path') and
                     not item['uninstallpkg_path'] in self.pkgs_to_keep):
                 pkg_to_remove = os.path.join('pkgs', item['uninstallpkg_path'])
-                print_utf8('Removing %s' % pkg_to_remove)
+                print('Removing %s' % pkg_to_remove, file=sys.stderr)
                 try:
                     self.repo.delete(pkg_to_remove)
-                except munkirepo.RepoError, err:
-                    print_err_utf8(unicode(err))
+                except munkirepo.RepoError as err:
+                    print(unicode_or_str(err), file=sys.stderr)
 
     def make_catalogs(self):
         """Calls makecatalogs to rebuild our catalogs"""
@@ -364,7 +363,7 @@ class RepoCleaner(object):
         if not os.path.exists(makecatalogs_path):
             # didn't find it; assume the default install path
             makecatalogs_path = '/usr/local/munki/makecatalogs'
-        print 'Rebuilding catalogs at %s...' % self.options.repo_url
+        print('Rebuilding catalogs at %s...' % self.options.repo_url)
         cmd = [makecatalogs_path]
         cmd.append('--repo-url')
         cmd.append(self.options.repo_url)
@@ -381,8 +380,8 @@ class RepoCleaner(object):
 
         errors = proc.stderr.read()
         if errors:
-            print '\nThe following issues occurred while building catalogs:\n'
-            print errors
+            print('\nThe following issues occurred while building catalogs:\n')
+            print(errors)
 
 
     def clean(self):
@@ -390,13 +389,13 @@ class RepoCleaner(object):
         self.analyze_manifests()
         self.analyze_pkgsinfo()
         self.find_cleanup_items()
-        if len(self.items_to_delete):
-            print
-            answer = raw_input(
+        if self.items_to_delete:
+            print()
+            answer = get_input(
                 'Delete pkginfo and pkg items marked as [to be DELETED]? '
                 'WARNING: This action cannot be undone. [y/n] ')
             if answer.lower().startswith('y'):
-                answer = raw_input(
+                answer = get_input(
                     'Are you sure? This action cannot be undone. [y/n] ')
                 if answer.lower().startswith('y'):
                     self.delete_items()
@@ -427,7 +426,7 @@ def main():
     options, arguments = parser.parse_args()
 
     if options.version:
-        print get_version()
+        print(get_version())
         exit(0)
 
     if not options.repo_url:
@@ -442,24 +441,24 @@ def main():
     try:
         options.keep = int(options.keep)
     except ValueError:
-        print_err_utf8('--keep value must be a positive integer!')
+        print('--keep value must be a positive integer!', file=sys.stderr)
         exit(-1)
     if options.keep < 1:
-        print_err_utf8('--keep value must be a positive integer!')
+        print('--keep value must be a positive integer!', file=sys.stderr)
         exit(-1)
 
     # Make sure we have a repo_url to work with
     if not options.repo_url:
-        print_err_utf8("Need to specify a path to the repo root!")
+        print("Need to specify a path to the repo root!", file=sys.stderr)
         exit(-1)
     else:
-        print_utf8("Using repo url: %s" % options.repo_url)
+        print("Using repo url: %s" % options.repo_url, file=sys.stderr)
 
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
-    except munkirepo.RepoError, err:
-        print >> sys.stderr, (u'Could not connect to munki repo: %s'
-                              % unicode(err))
+    except munkirepo.RepoError as err:
+        print(u'Could not connect to munki repo: %s'
+              % unicode_or_str(err), file=sys.stderr)
         exit(-1)
 
     # clean up the repo

@@ -24,6 +24,7 @@ Much code based on and adapted from autopkgserver by Per Olofsson
 A privileged daemon that records app usage events and install requests to our
 app usage database.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -262,7 +263,7 @@ def main():
     '''Start our daemon, connect to socket and process events'''
     # Make sure we're launched as root
     if os.geteuid() != 0:
-        print >> sys.stderr, '%s must be run as root.' % APPNAME
+        print('%s must be run as root.' % APPNAME, file=sys.stderr)
         # Sleep to avoid respawn.
         time.sleep(10)
         return 1
@@ -278,13 +279,14 @@ def main():
     while True:
         info = os.stat(exepath)
         if info.st_uid != root_uid:
-            print >> sys.stderr, '%s must be owned by root.' % exepath
+            print('%s must be owned by root.' % exepath, file=sys.stderr)
             path_ok = False
         if info.st_gid not in (wheel_gid, admin_gid):
-            print >> sys.stderr, '%s must have group wheel or admin.' % exepath
+            print('%s must have group wheel or admin.' % exepath,
+                  file=sys.stderr)
             path_ok = False
         if info.st_mode & stat.S_IWOTH:
-            print >> sys.stderr, '%s mustn\'t be world writeable.' % exepath
+            print('%s mustn\'t be world writeable.' % exepath, file=sys.stderr)
             path_ok = False
         exepath = os.path.dirname(exepath)
         if exepath == '/':
@@ -301,7 +303,7 @@ def main():
     # Get socket file descriptors from launchd.
     socket_fd = launchd.get_socket_fd(APPNAME)
     if not socket_fd:
-        print >> sys.stderr, 'No socket provided to us by launchd'
+        print('No socket provided to us by launchd', file=sys.stderr)
         time.sleep(10)
         return 1
 

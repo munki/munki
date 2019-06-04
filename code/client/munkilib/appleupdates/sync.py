@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-06.
 
 Utilities for replicating and retrieving Apple software update metadata
 """
+from __future__ import absolute_import, print_function
 
 import gzip
 import os
@@ -71,6 +72,9 @@ DEFAULT_CATALOG_URLS = {
               '-leopard.merged-1.sucatalog'),
     '10.14': ('https://swscan.apple.com/content/catalogs/others/'
               'index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-'
+              'snowleopard-leopard.merged-1.sucatalog'),
+    '10.15': ('https://swscan.apple.com/content/catalogs/others/'
+              'index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-'
               'snowleopard-leopard.merged-1.sucatalog')
 }
 
@@ -518,7 +522,7 @@ class AppleUpdateSync(object):
                 try:
                     return self.retrieve_url_to_cache_dir(
                         url, copy_only_if_missing=True)
-                except ReplicationError, err:
+                except ReplicationError as err:
                     display.display_error(
                         'Could not retrieve %s: %s', url, err)
         return None
@@ -531,4 +535,4 @@ class AppleUpdateSync(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

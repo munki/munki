@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Functions for finding, listing, etc processes
 """
+from __future__ import absolute_import, print_function
 
 import os
 import signal
@@ -189,7 +190,7 @@ def force_logout_now():
             except OSError:
                 pass
 
-    except BaseException, err:
+    except BaseException as err:
         display.display_error('Exception in force_logout_now(): %s' % str(err))
 
 
@@ -211,7 +212,7 @@ def stop_requested():
         display.display_info('### User stopped session ###')
         try:
             os.unlink(stop_request_flag)
-        except OSError, err:
+        except OSError as err:
             display.display_error(
                 'Could not remove %s: %s', stop_request_flag, err)
         return True
@@ -219,4 +220,4 @@ def stop_requested():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

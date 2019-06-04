@@ -21,6 +21,7 @@ Initial work by Wes Whetstone, Summer/Fall 2016
 
 Functions supporting FileVault authrestart.
 """
+from __future__ import absolute_import, print_function
 
 import subprocess
 
@@ -72,9 +73,9 @@ def supports_auth_restart():
     if 'true' in is_supported:
         display.display_debug1('FileVault supports AuthRestart...')
         return True
-    else:
-        display.display_warning('FileVault AuthRestart is not supported...')
-        return False
+
+    display.display_warning('FileVault AuthRestart is not supported...')
+    return False
 
 
 def is_fv_user(username):
@@ -177,8 +178,8 @@ def perform_auth_restart(username=None, password=None):
     if err:
         display.display_error(err)
         return False
-    else:
-        return True
+    # no error, so I guess we're successful
+    return True
 
 
 def do_authorized_or_normal_restart(username=None,
@@ -214,4 +215,4 @@ def do_authorized_or_normal_restart(username=None,
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

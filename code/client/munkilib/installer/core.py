@@ -19,6 +19,7 @@ installer.core
 munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
+from __future__ import absolute_import, print_function
 
 import datetime
 import os
@@ -758,4 +759,4 @@ def run(only_unattended=False):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

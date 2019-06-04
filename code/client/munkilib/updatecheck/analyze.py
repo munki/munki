@@ -19,6 +19,7 @@ updatecheck.analyze
 Created by Greg Neagle on 2017-01-10.
 
 """
+from __future__ import absolute_import, print_function
 
 import datetime
 import os
@@ -555,7 +556,7 @@ def process_install(manifestitem, cataloglist, installinfo,
             #if manifestitemname in installinfo['processed_installs']:
             #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-        except (fetch.GurlError, fetch.GurlDownloadError), errmsg:
+        except (fetch.GurlError, fetch.GurlDownloadError) as errmsg:
             display.display_warning(
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
@@ -568,7 +569,7 @@ def process_install(manifestitem, cataloglist, installinfo,
             #if manifestitemname in installinfo['processed_installs']:
             #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-        except fetch.Error, errmsg:
+        except fetch.Error as errmsg:
             display.display_warning(
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
@@ -666,7 +667,7 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             if not nestedmanifestpath:
                 raise manifestutils.ManifestException
             if processes.stop_requested():
-                return {}
+                return
             process_manifest_for_key(nestedmanifestpath, manifest_key,
                                      installinfo, cataloglist)
 
@@ -696,7 +697,7 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
 
     for item in manifestdata.get(manifest_key, []):
         if processes.stop_requested():
-            return {}
+            return
         if manifest_key == 'managed_installs':
             dummy_result = process_install(item, cataloglist, installinfo)
         elif manifest_key == 'managed_updates':
@@ -942,14 +943,14 @@ def process_removal(manifestitem, cataloglist, installinfo):
                                        pkgdata['pkg_references'][pkg])
                 if iteminfo['name'] in pkgdata['pkg_references'][pkg]:
                     pkgdata['pkg_references'][pkg].remove(iteminfo['name'])
-                    if len(pkgdata['pkg_references'][pkg]) == 0:
+                    if not pkgdata['pkg_references'][pkg]:
+                        # no other items reference this pkg
                         display.display_debug1(
                             'Adding %s to removal list.', pkg)
                         packages_to_really_remove.append(pkg)
             else:
                 # This shouldn't happen
-                display.display_warning(
-                    'pkg id %s missing from pkgdata', pkg)
+                display.display_warning('pkg id %s missing from pkgdata', pkg)
         if packages_to_really_remove:
             iteminfo['packages'] = packages_to_really_remove
         else:
@@ -980,7 +981,7 @@ def process_removal(manifestitem, cataloglist, installinfo):
                     'Can\'t uninstall %s because the integrity check '
                     'failed.', iteminfo['name'])
                 return False
-            except fetch.Error, errmsg:
+            except fetch.Error as errmsg:
                 display.display_warning(
                     'Failed to download the uninstaller for %s because %s',
                     iteminfo['name'], errmsg)
@@ -1018,4 +1019,4 @@ def process_removal(manifestitem, cataloglist, installinfo):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')
