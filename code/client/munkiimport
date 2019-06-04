@@ -153,18 +153,13 @@ def prompt_for_subdirectory(repo, subdirectory):
     return newdir
 
 
-def print_fn(text):
-    '''Wraps print in a function for make_catalogs'''
-    print(text)
-
-
 def make_catalogs(repo, options):
     """Rebuild our catalogs"""
     if not options.verbose:
         print('Rebuilding catalogs at %s...' % options.repo_url)
         output_fn = None
     else:
-        output_fn = print_fn
+        output_fn = print
 
     errors = makecatalogslib.makecatalogs(repo, {}, output_fn=output_fn)
     if errors:
