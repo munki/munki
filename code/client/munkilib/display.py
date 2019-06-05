@@ -89,9 +89,14 @@ def str_to_ascii(a_string):
 
 def _to_unicode(obj, encoding='UTF-8'):
     """Coerces basestring obj to unicode"""
-    if isinstance(obj, basestring):
-        if not isinstance(obj, unicode):
-            obj = unicode(obj, encoding)
+    try:
+        if isinstance(obj, basestring):
+            if not isinstance(obj, unicode):
+                obj = unicode(obj, encoding)
+    except NameError:
+        # Python 3
+        if isinstance(obj, bytes):
+            obj = obj.decode(encoding)
     return obj
 
 
@@ -125,9 +130,9 @@ def display_status_major(msg, *args):
         munkistatus.percent(-1)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print('%s' % msg.encode('UTF-8'))
+            print('%s' % msg)
         else:
-            print('%s...' % msg.encode('UTF-8'))
+            print('%s...' % msg)
         sys.stdout.flush()
 
 
@@ -142,9 +147,9 @@ def display_status_minor(msg, *args):
         munkistatus.detail(msg)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print('    %s' % msg.encode('UTF-8'))
+            print('    %s' % msg)
         else:
-            print('    %s...' % msg.encode('UTF-8'))
+            print('    %s...' % msg)
         sys.stdout.flush()
 
 
@@ -156,7 +161,7 @@ def display_info(msg, *args):
     msg = _concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
     if verbose > 0:
-        print('    %s' % msg.encode('UTF-8'))
+        print('    %s' % msg)
         sys.stdout.flush()
 
 
@@ -169,7 +174,7 @@ def display_detail(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 1:
-        print('    %s' % msg.encode('UTF-8'))
+        print('    %s' % msg)
         sys.stdout.flush()
     if prefs.pref('LoggingLevel') > 0:
         munkilog.log(u'    ' + msg)
@@ -181,7 +186,7 @@ def display_debug1(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 2:
-        print('    %s' % msg.encode('UTF-8'))
+        print('    %s' % msg)
         sys.stdout.flush()
     if prefs.pref('LoggingLevel') > 1:
         munkilog.log('DEBUG1: %s' % msg)
@@ -193,7 +198,7 @@ def display_debug2(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 3:
-        print('    %s' % msg.encode('UTF-8'))
+        print('    %s' % msg)
     if prefs.pref('LoggingLevel') > 2:
         munkilog.log('DEBUG2: %s' % msg)
 
@@ -205,7 +210,7 @@ def display_warning(msg, *args):
     msg = _concat_message(msg, *args)
     warning = 'WARNING: %s' % msg
     if verbose > 0:
-        print(warning.encode('UTF-8'), file=sys.stderr)
+        print(warning, file=sys.stderr)
     munkilog.log(warning)
     # append this warning to our warnings log
     munkilog.log(warning, 'warnings.log')
@@ -222,7 +227,7 @@ def display_error(msg, *args):
     msg = _concat_message(msg, *args)
     errmsg = 'ERROR: %s' % msg
     if verbose > 0:
-        print(errmsg.encode('UTF-8'), file=sys.stderr)
+        print(errmsg, file=sys.stderr)
     munkilog.log(errmsg)
     # append this error to our errors log
     munkilog.log(errmsg, 'errors.log')

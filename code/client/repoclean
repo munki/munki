@@ -30,12 +30,11 @@ import os
 import optparse
 
 from distutils.version import LooseVersion
-from xml.parsers.expat import ExpatError
 
 from munkilib.cliutils import get_version, pref, path2url
 from munkilib import munkirepo
 from munkilib.wrappers import (is_a_string, get_input, readPlistFromString,
-                               unicode_or_str)
+                               unicode_or_str, PlistReadError)
 
 
 def name_and_version(a_string):
@@ -127,7 +126,7 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(os.path.join('manifests', manifest_name))
                 manifest = readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, ExpatError) as err:
+            except (munkirepo.RepoError, IOError, OSError, PlistReadError) as err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (manifest_name, unicode_or_str(err)))
                 continue
@@ -166,7 +165,7 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(pkginfo_identifier)
                 pkginfo = readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, ExpatError) as err:
+            except (munkirepo.RepoError, IOError, OSError, PlistReadError) as err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (pkginfo_name, unicode_or_str(err)))
                 continue

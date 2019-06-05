@@ -183,26 +183,26 @@ def getPIDforProcessName(processname):
     return 0
 
 
-def getFirstPlist(textString):
-    """Gets the next plist from a text string that may contain one or
+def getFirstPlist(byteString):
+    """Gets the next plist from a byte string that may contain one or
     more text-style plists.
     Returns a tuple - the first plist (if any) and the remaining
     string after the plist"""
-    plist_header = '<?xml version'
-    plist_footer = '</plist>'
-    plist_start_index = textString.find(plist_header)
+    plist_header = b'<?xml version'
+    plist_footer = b'</plist>'
+    plist_start_index = byteString.find(plist_header)
     if plist_start_index == -1:
         # not found
-        return ("", textString)
-    plist_end_index = textString.find(
+        return (b"", byteString)
+    plist_end_index = byteString.find(
         plist_footer, plist_start_index + len(plist_header))
     if plist_end_index == -1:
         # not found
-        return ("", textString)
+        return (b"", byteString)
     # adjust end value
     plist_end_index = plist_end_index + len(plist_footer)
-    return (textString[plist_start_index:plist_end_index],
-            textString[plist_end_index:])
+    return (byteString[plist_start_index:plist_end_index],
+            byteString[plist_end_index:])
 
 
 if __name__ == '__main__':

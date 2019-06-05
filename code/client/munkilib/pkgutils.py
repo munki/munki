@@ -27,16 +27,25 @@ import re
 import shutil
 import subprocess
 import tempfile
-import urllib2
+
+try:
+    # Python 2
+    from urllib import unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import unquote
+
 
 from distutils import version
-from types import StringType
 from xml.dom import minidom
 
 from . import display
 from . import osutils
 from . import utils
 from . import FoundationPlist
+
+from .wrappers import is_a_string
+
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -78,10 +87,13 @@ class MunkiLooseVersion(version.LooseVersion):
             # treat None like an empty string
             self.parse('')
         if vstring is not None:
-            if isinstance(vstring, unicode):
-                # unicode string! Why? Oh well...
-                # convert to string so version.LooseVersion doesn't choke
-                vstring = vstring.encode('UTF-8')
+            try:
+                if isinstance(vstring, unicode):
+                    # unicode string! Why? Oh well...
+                    # convert to string so version.LooseVersion doesn't choke
+                    vstring = vstring.encode('UTF-8')
+            except NameError:
+                pass
             self.parse(str(vstring))
 
     def _pad(self, version_list, max_length):
@@ -94,7 +106,7 @@ class MunkiLooseVersion(version.LooseVersion):
         return cmp_list
 
     def __cmp__(self, other):
-        if isinstance(other, StringType):
+        if is_a_string(other):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
@@ -293,8 +305,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                         text = ref.firstChild.wholeText
                         if text.endswith('.pkg'):
                             if text.startswith('file:'):
-                                relativepath = urllib2.unquote(
-                                    text[5:].encode('UTF-8'))
+                                relativepath = unquote(text[5:].encode('UTF-8'))
                                 pkgdir = os.path.dirname(
                                     path_to_pkg or filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
@@ -302,8 +313,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                             else:
                                 if text.startswith('#'):
                                     text = text[1:]
-                                relativepath = urllib2.unquote(
-                                    text.encode('UTF-8'))
+                                relativepath = unquote(text.encode('UTF-8'))
                                 thisdir = os.path.dirname(filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
                                     thisdir, relativepath)
