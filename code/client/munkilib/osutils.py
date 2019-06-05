@@ -97,7 +97,11 @@ def listdir(path):
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
     if isinstance(path, str):
-        path = unicode(path, 'utf-8')
+        try:
+            path = unicode(path, 'utf-8')
+        except NameError:
+            # Python 3
+            pass
     elif not isinstance(path, unicode):
         path = unicode(path)
     return os.listdir(path)

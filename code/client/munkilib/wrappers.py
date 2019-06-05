@@ -23,7 +23,32 @@ Some wrappers to paper over the differences between Python 2 and Python 3
 
 import plistlib
 
+try:
+    from . import FoundationPlist as plistlib2
+except ImportError:
+    # FoundationPlist is not available
+    plistlib2 = plistlib
+
 # plistlib wrappers
+
+class PlistError(Exception):
+    """Base error for plists"""
+    pass
+
+
+class PlistReadError(PlistError):
+    """Error when reading plists"""
+    pass
+
+
+class PlistWriteError(PlistError):
+    """Error when writing plists"""
+    pass
+
+
+# Disable PyLint complaining about 'invalid' camelCase names
+# pylint: disable=C0103
+
 
 def readPlist(filepath):
     '''Wrapper for the differences between Python 2 and Python 3's plistlib'''
@@ -32,16 +57,26 @@ def readPlist(filepath):
             return plistlib.load(fileobj)
     except AttributeError:
         # plistlib module doesn't have a load function (as in Python 2)
-        return plistlib.readPlist(filepath)
+        try:
+            return plistlib2.readPlist(filepath)
+        except BaseException as err:
+            raise PlistReadError(err)
+    except BaseException as err:
+        raise PlistReadError(err)
 
 
 def readPlistFromString(bytestring):
     '''Wrapper for the differences between Python 2 and Python 3's plistlib'''
     try:
-       return plistlib.loads(bytestring)
+        return plistlib.loads(bytestring)
     except AttributeError:
         # plistlib module doesn't have a loads function (as in Python 2)
-        return plistlib.readPlistFromString(bytestring)
+        try:
+            return plistlib2.readPlistFromString(bytestring)
+        except BaseException as err:
+            raise PlistReadError(err)
+    except BaseException as err:
+        raise PlistReadError(err)
 
 
 def writePlist(data, filepath):
@@ -51,16 +86,29 @@ def writePlist(data, filepath):
             plistlib.dump(data, fileobj)
     except AttributeError:
         # plistlib module doesn't have a dump function (as in Python 2)
-        plistlib.writePlist(data, filepath)
+        try:
+            plistlib2.writePlist(data, filepath)
+        except BaseException as err:
+            raise PlistWriteError(err)
+    except BaseException as err:
+        raise PlistWriteError(err)
 
 
 def writePlistToString(data):
     '''Wrapper for the differences between Python 2 and Python 3's plistlib'''
     try:
-       return plistlib.dumps(data)
+        return plistlib.dumps(data)
     except AttributeError:
         # plistlib module doesn't have a dumps function (as in Python 2)
-        return plistlib.writePlistToString(data)
+        try:
+            return plistlib2.writePlistToString(data)
+        except BaseException as err:
+            raise PlistWriteError(err)
+    except BaseException as err:
+        raise PlistWriteError(err)
+
+
+# pylint: enable=C0103
 
 
 # raw_input/input wrapper

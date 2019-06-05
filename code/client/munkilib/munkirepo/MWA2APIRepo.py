@@ -18,7 +18,7 @@ from xml.parsers.expat import ExpatError
 
 from munkilib.munkirepo import Repo, RepoError
 
-from munkilib.wrappers import get_input, readPlistFromString
+from munkilib.wrappers import get_input, readPlistFromString, PlistReadError
 
 DEBUG = False
 
@@ -147,7 +147,7 @@ class MWA2APIRepo(Repo):
             raise RepoError(err)
         try:
             plist = readPlistFromString(data)
-        except ExpatError as err:
+        except PlistReadError as err:
             raise RepoError(err)
         if kind in ['catalogs', 'manifests', 'pkgsinfo']:
             # it's a list of dicts containing 'filename' key/values

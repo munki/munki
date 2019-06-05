@@ -27,7 +27,7 @@ import subprocess
 
 from . import display
 from . import utils
-from . import FoundationPlist
+from .wrappers import readPlistFromString, PlistReadError
 
 
 # we use lots of camelCase-style names. Deal with it.
@@ -48,11 +48,11 @@ def DMGisWritable(dmgpath):
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             dmg_format = plist.get('Format')
             if dmg_format in ['UDSB', 'UDSP', 'UDRW', 'RdWr']:
                 return True
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError:
             pass
     return False
 
@@ -71,11 +71,11 @@ def dmg_has_sla(dmgpath):
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             properties = plist.get('Properties')
             if properties:
                 has_sla = properties.get('Software License Agreement', False)
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError:
             pass
 
     return has_sla
@@ -96,9 +96,9 @@ def hdiutil_info():
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             return plist
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError:
             pass
     return None
 
@@ -206,20 +206,22 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
     if use_shadow:
         cmd.append('-shadow')
     proc = subprocess.Popen(cmd,
-                            bufsize=1, stdout=subprocess.PIPE,
+                            bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     (out, err) = proc.communicate(stdin)
     if proc.returncode:
         display.display_error(
-            'Error: "%s" while mounting %s.' % (err.rstrip(), dmgname))
+            u'Error: "%s" while mounting %s.'
+            % (err.decode('UTF-8').rstrip(), dmgname))
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             for entity in plist.get('system-entities', []):
                 if 'mount-point' in entity:
                     mountpoints.append(entity['mount-point'])
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError as err:
+            display.display_error("%s" % err)
             display.display_error(
                 'Bad plist string returned when mounting diskimage %s:\n%s'
                 % (dmgname, pliststr))

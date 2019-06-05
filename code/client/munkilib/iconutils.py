@@ -41,7 +41,7 @@ from Quartz import (CGImageSourceCreateWithURL, CGImageSourceCreateImageAtIndex,
 # pylint: enable=E0611
 
 from . import display
-from . import FoundationPlist
+from .wrappers import readPlist, PlistReadError
 
 
 # we use lots of camelCase-style names. Deal with it.
@@ -94,9 +94,9 @@ def findIconForApp(app_path):
     if not os.path.exists(app_path):
         return None
     try:
-        info = FoundationPlist.readPlist(
+        info = readPlist(
             os.path.join(app_path, u'Contents/Info.plist'))
-    except FoundationPlist.FoundationPlistException:
+    except PlistReadError:
         return None
     app_name = os.path.basename(app_path)
     icon_filename = info.get('CFBundleIconFile', app_name)
@@ -132,7 +132,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
-    output = proc.communicate()[0]
+    output = proc.communicate()[0].decode('UTF-8')
     if proc.returncode:
         display.display_error(u'Could not get bom files from %s', pkg_path)
         return []
@@ -261,7 +261,7 @@ def getAppInfoPathsFromBOM(bomfile):
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        output = proc.communicate()[0]
+        output = proc.communicate()[0].decode('UTF-8')
         return [line for line in output.splitlines()
                 if line.endswith('.app/Contents/Info.plist')]
     return []

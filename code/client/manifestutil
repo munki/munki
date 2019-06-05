@@ -30,15 +30,14 @@ import readline
 import shlex
 import sys
 
-from xml.parsers.expat import ExpatError
-
 # our libs
 from munkilib.cliutils import ConfigurationSaveError
 from munkilib.cliutils import configure as _configure
 from munkilib.cliutils import libedit
 from munkilib.cliutils import get_version, pref, path2url
 from munkilib.wrappers import (get_input,
-                               readPlistFromString, writePlistToString)
+                               readPlistFromString, writePlistToString,
+                               PlistReadError, PlistWriteError)
 
 from munkilib import munkirepo
 
@@ -62,7 +61,7 @@ def get_installer_item_names(repo, catalog_limit_list):
                 print((
                     'Could not retrieve catalog %s: %s'
                     % (catalog_name, unicode(err))), file=sys.stderr)
-            except (IOError, OSError, ExpatError):
+            except (IOError, OSError, PlistReadError):
                 # skip items that aren't valid plists
                 # or that we can't read
                 pass
@@ -149,7 +148,7 @@ def get_manifest(repo, manifest_name):
         print(u'Could not retrieve manifest %s: %s'
               % (manifest_name, unicode(err)), file=sys.stderr)
         return None
-    except (IOError, OSError, ExpatError) as err:
+    except (IOError, OSError, PlistReadError) as err:
         print(u'Could not read manifest %s: %s' % (manifest_name, unicode(err)),
               file=sys.stderr)
         return None
@@ -167,7 +166,7 @@ def save_manifest(repo, manifest_dict, manifest_name, overwrite_existing=False):
         data = writePlistToString(manifest_dict)
         repo.put(manifest_ref, data)
         return True
-    except (IOError, OSError, ExpatError, munkirepo.RepoError) as err:
+    except (IOError, OSError, PlistWriteError, munkirepo.RepoError) as err:
         print(u'Saving %s failed: %s' % (manifest_name, unicode(err)),
               file=sys.stderr)
         return False
@@ -380,7 +379,7 @@ def find(repo, args):
         try:
             data = repo.get(manifest_ref)
             manifest = readPlistFromString(data)
-        except (IOError, OSError, ExpatError, munkirepo.RepoError) as err:
+        except (IOError, OSError, PlistReadError, munkirepo.RepoError) as err:
             print(u'Error reading %s: %s' % (manifest_ref, unicode(err)),
                   file=sys.stderr)
             continue
