@@ -35,9 +35,6 @@ from .. import fetch
 from .. import prefs
 
 
-DEFAULT_INSECURE_REPO_URL = 'http://munki/repo'
-
-
 def get_domain_name():
     '''Return current domain name'''
     dns_config = SCDynamicStoreCopyValue(None, 'State:/Network/Global/DNS')
@@ -52,7 +49,7 @@ def guess_repo_url():
     utterly'''
 
     # default to the default repo for Munki up until version 3.2.x
-    autodetected_url = DEFAULT_INSECURE_REPO_URL
+    autodetected_url = prefs.DEFAULT_INSECURE_REPO_URL
 
     domain_name = get_domain_name()
     if domain_name is None:
@@ -106,7 +103,7 @@ def autodetect_repo_url_if_needed():
         if detected_url:
             display.display_info(
                 'Auto-detected Munki repo at %s', detected_url)
-            if detected_url != DEFAULT_INSECURE_REPO_URL:
+            if detected_url != prefs.DEFAULT_INSECURE_REPO_URL:
                 # save it to Munki's prefs
                 prefs.set_pref('SoftwareRepoURL', detected_url)
 
