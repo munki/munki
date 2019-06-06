@@ -42,6 +42,8 @@ from .constants import BUNDLE_ID
 # managed installs preferences/metadata
 #####################################################
 
+DEFAULT_INSECURE_REPO_URL = 'http://munki/repo'
+
 DEFAULT_PREFS = {
     'AdditionalHttpHeaders': None,
     'AppleSoftwareUpdatesOnly': False,
@@ -72,7 +74,7 @@ DEFAULT_PREFS = {
     'ShowOptionalInstallsForHigherOSVersions': False,
     'SoftwareRepoCACertificate': None,
     'SoftwareRepoCAPath': None,
-    'SoftwareRepoURL': None,
+    'SoftwareRepoURL': DEFAULT_INSECURE_REPO_URL,
     'SoftwareUpdateServerURL': None,
     'SuppressAutoInstall': False,
     'SuppressLoginwindowInstall': False,
