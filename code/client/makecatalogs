@@ -64,6 +64,8 @@ def main():
                            '--configure.')
     parser.add_option('--plugin',
                       help='Specify a custom plugin to connect to repo.')
+    parser.add_option('--color', '-c', action='store_true', default=False,
+                      help='Add color to info and warnings of output')
     parser.set_defaults(force=False, skip_payload_check=False)
     options, arguments = parser.parse_args()
 

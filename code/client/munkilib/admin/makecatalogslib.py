@@ -30,6 +30,7 @@ from .common import list_items_of_kind, AttributeDict
 from ..colors import colorize
 from .. import munkirepo
 from ..wrappers import readPlistFromString, writePlistToString
+from ..colorize import colorize
 
 
 class MakeCatalogsError(Exception):
@@ -37,10 +38,12 @@ class MakeCatalogsError(Exception):
     pass
 
 
-def hash_icons(repo, output_fn=None):
+def hash_icons(repo, options, output_fn=None):
     '''Builds a dictionary containing hashes for all our repo icons'''
     errors = []
     icons = {}
+    color = options.color
+    ENDC = color['end']
     if output_fn:
         output_fn("Getting list of icons...")
     icon_list = repo.itemlist('icons')
@@ -50,7 +53,7 @@ def hash_icons(repo, output_fn=None):
     for icon_ref in icon_list:
         if output_fn:
             output_fn(
-                colorize.OKGREEN + "Hashing " + colorize.ENDC +
+                color['ok_green'] + "Hashing " + ENDC +
                 "%s..." % (icon_ref))
         # Try to read the icon file
         try:
@@ -65,9 +68,11 @@ def hash_icons(repo, output_fn=None):
     return icons, errors
 
 
-def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
+def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors, options):
     '''Returns True if referenced installer items are present,
     False otherwise. Adds errors/warnings to the errors list'''
+    WARNC = options.color['warning']
+    ENDC = options.color['end']
     installer_type = pkginfo.get('installer_type')
     if installer_type in ['nopkg', 'apple_update_metadata']:
         # no associated installer item (pkg) for these types
@@ -78,7 +83,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
 
     if not 'installer_item_location' in pkginfo:
         errors.append(
-            colorize.WARNING + "WARNING: " + colorize.ENDC + " %s is missing installer_item_location" 
+            WARNC + "WARNING: " + ENDC + "%s is missing installer_item_location" 
             % pkginfo_ref)
         return False
 
@@ -89,8 +94,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
             "pkgs", pkginfo['installer_item_location'])
     except TypeError:
         errors.append(
-            colorize.WARNING + "WARNING: " + colorize.ENDC + 
-            "invalid installer_item_location in %s"
+            WARNC + "WARNING: " + ENDC + "invalid installer_item_location in %s"
             % pkginfo_ref)
         return False
 
@@ -101,7 +105,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
         for repo_pkg in pkgs_list:
             if installeritempath.lower() == repo_pkg.lower():
                 errors.append(
-                    colorize.WARNING + "WARNING: " + colorize.ENDC +
+                    WARNC + "WARNING: " + ENDC +
                     "%s refers to installer item: %s. "
                     "The pathname of the item in the repo has "
                     "different case: %s. This may cause issues "
@@ -113,7 +117,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
                 break
         if not found_caseinsensitive_match:
             errors.append(
-                colorize.WARNING + "WARNING: " + colorize.ENDC + 
+                WARNC + "WARNING: " + ENDC +
                 "%s refers to missing installer item: %s"
                 % (pkginfo_ref, pkginfo['installer_item_location']))
             return False
@@ -124,7 +128,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
         # uninstaller_item_location is required
         if not 'uninstaller_item_location' in pkginfo:
             errors.append(
-                colorize.WARNING + "WARNING: " + colorize.ENDC + 
+                WARNC + "WARNING: " + ENDC +
                 "%s is missing uninstaller_item_location"
                 % pkginfo_ref)
             return False
@@ -136,7 +140,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
                 "pkgs", pkginfo['uninstaller_item_location'])
         except TypeError:
             errors.append(
-                colorize.WARNING + "WARNING: " + colorize.ENDC + 
+                WARNC + "WARNING: " + ENDC +
                 "invalid uninstaller_item_location "
                 "in %s" % pkginfo_ref)
             return False
@@ -148,7 +152,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
             for repo_pkg in pkgs_list:
                 if uninstalleritempath.lower() == repo_pkg.lower():
                     errors.append(
-                        colorize.WARNING + "WARNING: " + colorize.ENDC +
+                        WARNC + "WARNING: " + ENDC +
                         "%s refers to uninstaller item: %s. "
                         "The pathname of the item in the repo has "
                         "different case: %s. This may cause issues "
@@ -160,7 +164,7 @@ def verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors):
                     break
             if not found_caseinsensitive_match:
                 errors.append(
-                    colorize.WARNING + "WARNING: " + colorize.ENDC +
+                    WARNC + "WARNING: " + ENDC +
                     "%s refers to missing uninstaller item: %s"
                     % (pkginfo_ref, pkginfo['uninstaller_item_location']))
                 return False
@@ -173,6 +177,8 @@ def process_pkgsinfo(repo, options, output_fn=None):
     '''Processes pkginfo files and returns a dictionary of catalogs'''
     errors = []
     catalogs = {}
+    color =  options.color
+    ENDC = color['end']
     # get a list of pkgsinfo items
     if output_fn:
         output_fn("Getting list of pkgsinfo...")
@@ -180,7 +186,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
     except munkirepo.RepoError as err:
         raise MakeCatalogsError(
-            colorize.ERROR + "Error getting list of pkgsinfo items: " + colorize.ENDC + 
+            color['fail'] + "Error getting list of pkgsinfo items: " + ENDC + 
             "%s" % unicode(err))
 
     # get a list of pkgs items
@@ -190,7 +196,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         pkgs_list = list_items_of_kind(repo, 'pkgs')
     except munkirepo.RepoError as err:
         raise MakeCatalogsError(
-            colorize.ERROR + "Error getting list of pkgs items: " + colorize.ENDC +
+            color['fail'] + "Error getting list of pkgs items: " + ENDC +
             "%s" % unicode(err))
 
     # start with empty catalogs dict
@@ -212,7 +218,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
 
         if not 'name' in pkginfo:
             errors.append(
-                colorize.WARNING + "WARNING: " + colorize.ENDC + 
+                color['warning'] + "WARNING: " + ENDC + 
                 "%s is missing name" % pkginfo_ref)
             continue
 
@@ -227,7 +233,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
 
         # sanity checking
         if not options.skip_payload_check:
-            verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors)
+            verified = verify_pkginfo(pkginfo_ref, pkginfo, pkgs_list, errors, options)
             if not verified and not options.force:
                 # Skip this pkginfo unless we're running with force flag
                 continue
@@ -237,7 +243,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         for catalogname in pkginfo.get("catalogs", []):
             if not catalogname:
                 errors.append(
-                    colorize.WARNING + "WARNING: " + colorize.ENDC +
+                    color['warning'] + "WARNING: " + ENDC +
                     "%s has an empty catalogs array!"
                     % pkginfo_ref)
                 continue
@@ -246,7 +252,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
             catalogs[catalogname].append(pkginfo)
             if output_fn:
                 output_fn(
-                    colorize.OKGREEN + "Adding " + colorize.ENDC + 
+                    color['ok_green'] + "Adding " + ENDC + 
                     "%s to %s..." 
                     % (pkginfo_ref, catalogname))
 
@@ -257,7 +263,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
             duplicate_catalogs.append(key)
     if duplicate_catalogs:
         errors.append(
-            colorize.WARNING + "WARNING: " + colorize.ENDC +
+            color['warning'] + "WARNING: " + ENDC +
             "There are catalogs with names that differ only "
             "by case. This may cause issues depending on the case-"
             "sensitivity of the underlying filesystem: %s"
@@ -273,8 +279,17 @@ def makecatalogs(repo, options, output_fn=None):
 
     if isinstance(options, dict):
         options = AttributeDict(options)
+    color_pref = options.color
 
-    icons, errors = hash_icons(repo, output_fn=output_fn)
+    if os.path.exists(repo.root + "/.colorize"):
+        output_fn("Color preferences set in %s./colorize" % repo.root)
+        options.color = True
+
+    options.color = colorize(options.color)
+    color = options.color
+    ENDC = color['end']
+
+    icons, errors = hash_icons(repo, options, output_fn=output_fn)
 
     catalogs, catalog_errors = process_pkgsinfo(
         repo, options, output_fn=output_fn)
@@ -293,7 +308,7 @@ def makecatalogs(repo, options, output_fn=None):
                 repo.delete(catalog_ref)
             except munkirepo.RepoError:
                 errors.append(
-                    colorize.FAIL + 'Could not delete catalog' + colorize.ENDC + '%s' 
+                    color['fail'] + 'Could not delete catalog' + ENDC + '%s' 
                     % catalog_name)
 
     # write the new catalogs
@@ -305,15 +320,15 @@ def makecatalogs(repo, options, output_fn=None):
                 repo.put(catalogpath, catalog_data)
                 if output_fn:
                     output_fn(
-                        colorize.OKBLUE + "Created " + colorize.ENDC + "%s..." 
+                        color['ok_blue'] + "Created " + ENDC + "%s..." 
                         % catalogpath)
             except munkirepo.RepoError, err:
                 errors.append(
-                    colorize.FAIL + u'Failed to create catalog' + colorize.ENDC + 
+                    color['fail'] + u'Failed to create catalog' + ENDC + 
                     ' %s: %s' % (key, unicode(err)))
         else:
             errors.append(
-                colorize.WARNING + "WARNING: " + colorize.ENDC + 
+                color['warning'] + "WARNING: " + ENDC + 
                 "Did not create catalog %s because it is empty" 
                 % key)
 
@@ -323,11 +338,11 @@ def makecatalogs(repo, options, output_fn=None):
         try:
             repo.put(icon_hashes_plist, icon_hashes)
             print(
-                colorize.OKBLUE + "Created " + colorize.ENDC + "%s..." 
+                color['ok_blue'] + "Created " + ENDC + "%s..." 
                 % (icon_hashes_plist))
         except munkirepo.RepoError, err:
             errors.append(
-                colorize.FAIL + u'Failed to create ' + colorize.ENDC +
+                color['fail'] + u'Failed to create ' + ENDC +
                 '%s: %s' 
                 % (icon_hashes_plist, unicode(err)))
 

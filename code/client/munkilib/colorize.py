@@ -13,18 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from collections import defaultdict
+
 """
-colors
+colorize
 
 Created by Andy Duss on 2019-06-03.
 
 Color definitions for terminal output
 """
 
-class colorize:
-    OKGREEN = '\033[92m'
-    OKBLUE = '\033[94m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-
+def colorize(boolean):
+    if boolean:
+        return {
+            "ok_green": '\033[92m',
+            "ok_blue": '\033[94m',
+            "warning": '\033[93m',
+            "fail": '\033[91m',
+            "end": '\033[0m'
+        }
+    else:
+        return defaultdict(lambda: '')
