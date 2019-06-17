@@ -32,14 +32,17 @@ import time
 import stat
 import logging
 import logging.handlers
-import SocketServer
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
 import socket
-import plistlib
 import struct
 
 from munkilib import app_usage
 from munkilib import launchd
 from munkilib import prefs
+from munkilib.wrappers import readPlistFromString, unicode_or_str
 
 
 APPNAME = 'appusaged'
@@ -90,6 +93,7 @@ class AppUsageHandler(object):
             self.log.info('%s', self.request)
             self.server.usage.log_application_usage(
                 self.request['event'], self.request['app_dict'])
+        return u""
 
 
 class RunHandler(SocketServer.StreamRequestHandler):
@@ -136,7 +140,7 @@ class RunHandler(SocketServer.StreamRequestHandler):
         cr_ngroups = 2
         cr_groups = 3
 
-        xucred_fmt = 'IIh%dI' % NGROUPS
+        xucred_fmt = b'IIh%dI' % NGROUPS
         res = struct.unpack(
             xucred_fmt,
             self.request.getsockopt(
@@ -166,10 +170,10 @@ class RunHandler(SocketServer.StreamRequestHandler):
 
             # Try to parse it.
             try:
-                plist = plistlib.readPlistFromString(plist_string)
+                plist = readPlistFromString(plist_string)
             except BaseException as err:
                 self.log.error('Malformed request')
-                self.request.send('ERROR:Malformed request\n')
+                self.request.send(u'ERROR:Malformed request\n'.encode('UTF-8'))
                 return
             self.log.debug('Parsed request plist')
 
@@ -177,7 +181,9 @@ class RunHandler(SocketServer.StreamRequestHandler):
             syntax_ok, errors = self.verify_request_syntax(plist)
             if not syntax_ok:
                 self.log.error('Plist syntax error')
-                self.request.send(''.join(['ERROR:%s\n' % e for e in errors]))
+                msg = (u''.join(
+                    [u'ERROR:%s\n' % e for e in errors])).encode('UTF-8')
+                self.request.send(msg)
                 return
 
             self.log.debug(
@@ -185,16 +191,20 @@ class RunHandler(SocketServer.StreamRequestHandler):
             try:
                 appusagehandler = AppUsageHandler(self.server, plist, uid)
                 result = appusagehandler.handle()
-                self.request.send(u'OK:%s\n' % result)
+                self.request.send(
+                    (u'OK:%s\n' % unicode_or_str(result)).encode('UTF-8'))
             except AppUsageHandlerError as err:
-                self.request.send(u'ERROR:%s\n' % unicode(err))
+                self.request.send(
+                    (u'ERROR:%s\n' % unicode_or_str(err)).encode('UTF-8'))
             except BaseException as err:
-                self.log.error('Run failed: %s' % unicode(err))
-                self.request.send(u'ERROR:%s\n' % unicode(err))
+                self.log.error(u'Run failed: %s' % unicode_or_str(err))
+                self.request.send(
+                    (u'ERROR:%s\n' % unicode_or_str(err)).encode('UTF-8'))
 
         except BaseException as err:
-            self.log.error('Caught exception: %s' % repr(err))
-            self.request.send('ERROR:Caught exception: %s' % repr(err))
+            self.log.error(u'Caught exception: %s' % repr(err))
+            self.request.send(
+                (u'ERROR:Caught exception: %s' % repr(err)).encode('UTF-8'))
             return
 
 class AppUsageDaemonError(Exception):
@@ -301,7 +311,7 @@ def main():
     start_time = time.time()
 
     # Get socket file descriptors from launchd.
-    socket_fd = launchd.get_socket_fd(APPNAME)
+    socket_fd = launchd.get_socket_fd(APPNAME.encode('UTF-8'))
     if not socket_fd:
         print('No socket provided to us by launchd', file=sys.stderr)
         time.sleep(10)

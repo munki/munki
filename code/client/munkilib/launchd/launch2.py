@@ -49,7 +49,11 @@ def launch_activate_socket(name):
                                % os.strerror(err))
 
         # Return a list of file descriptors.
-        return list(fds[x] for x in xrange(cnt.value))
+        try:
+            return list(fds[x] for x in xrange(cnt.value))
+        except NameError:
+            # "xrange" in Python 2 is just "range" in Python 3:
+            return list(fds[x] for x in range(cnt.value))
 
     finally:
         if fds:
