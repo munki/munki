@@ -41,8 +41,9 @@ from munkilib import osinstaller
 from munkilib import osutils
 from munkilib import pkgutils
 
-from munkilib.wrappers import (unicode_or_str,
-                               readPlistFromString, PlistReadError)
+from munkilib.FoundationPlist import (readPlistFromString,
+                                      FoundationPlistException)
+from munkilib.wrappers import unicode_or_str
 
 
 def copy_icon_to_repo(repo, name, path):
@@ -199,7 +200,7 @@ def find_items_to_check(repo, itemlist=None):
     try:
         all_catalog_data = repo.get('catalogs/all')
         catalogitems = readPlistFromString(all_catalog_data)
-    except (munkirepo.RepoError, PlistReadError) as err:
+    except (munkirepo.RepoError, FoundationPlistException) as err:
         print('Error getting catalog data from repo: %s' % unicode_or_str(err),
               file=sys.stderr)
         return []
