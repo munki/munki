@@ -31,7 +31,6 @@ from __future__ import absolute_import
 # standard Python libs
 import logging
 import os
-import plistlib
 import select
 import socket
 import sys
@@ -48,6 +47,9 @@ except ImportError:
     logging.critical("PyObjC wrappers for Apple frameworks are missing.")
     sys.exit(-1)
 
+# our libs
+from munkilib.wrappers import writePlistToString
+
 
 APPUSAGED_SOCKET = "/var/run/appusaged"
 
@@ -60,7 +62,7 @@ class AppUsageClientError(Exception):
 class AppUsageClient(object):
     '''Handles communication with auppusaged daemon'''
     def connect(self):
-        '''Connect to authrestartd'''
+        '''Connect to appusaged'''
         try:
             #pylint: disable=attribute-defined-outside-init
             self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -72,14 +74,13 @@ class AppUsageClient(object):
 
     def send_request(self, request):
         '''Send a request to appusaged'''
-        self.socket.send(plistlib.writePlistToString(request))
-        with os.fdopen(self.socket.fileno()) as fileref:
-            # use select so we don't hang indefinitely if appusaged dies
-            ready = select.select([fileref], [], [], 2)
-            if ready[0]:
-                reply = fileref.read()
-            else:
-                reply = ''
+        self.socket.send(writePlistToString(request))
+        # use select so we don't hang indefinitely if appusaged dies
+        ready = select.select([self.socket.fileno()], [], [], 2)
+        if ready[0]:
+            reply = self.socket.recv(8192).decode("UTF-8")
+        else:
+            reply = ''
 
         if reply:
             return reply.rstrip()
@@ -138,7 +139,7 @@ class NotificationHandler(NSObject):
         self.ws_nc.removeObserver_(self)
         self.dnc.removeObserver_(self)
 
-    def get_app_dict(self, app_object):
+    def getInfoDictForApp_(self, app_object):
         """Returns a dict with info about an application.
         Args:
             app_object: NSRunningApplication object
@@ -176,19 +177,19 @@ class NotificationHandler(NSObject):
     def didLaunchApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidLaunchApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
-        app_dict = self.get_app_dict(app_object)
+        app_dict = self.getInfoDictForApp_(app_object)
         self.usage.process({'event': 'launch', 'app_dict': app_dict})
 
     def didActivateApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidActivateApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
-        app_dict = self.get_app_dict(app_object)
+        app_dict = self.getInfoDictForApp_(app_object)
         self.usage.process({'event': 'activate', 'app_dict': app_dict})
 
     def didTerminateApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidTerminateApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
-        app_dict = self.get_app_dict(app_object)
+        app_dict = self.getInfoDictForApp_(app_object)
         self.usage.process({'event': 'quit', 'app_dict': app_dict})
 
     def requestedItemForInstall_(self, notification):
