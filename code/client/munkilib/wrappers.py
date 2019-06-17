@@ -23,11 +23,6 @@ Some wrappers to paper over the differences between Python 2 and Python 3
 
 import plistlib
 
-try:
-    from . import FoundationPlist as plistlib2
-except ImportError:
-    # FoundationPlist is not available
-    plistlib2 = plistlib
 
 # plistlib wrappers
 
@@ -49,7 +44,6 @@ class PlistWriteError(PlistError):
 # Disable PyLint complaining about 'invalid' camelCase names
 # pylint: disable=C0103
 
-
 def readPlist(filepath):
     '''Wrapper for the differences between Python 2 and Python 3's plistlib'''
     try:
@@ -58,7 +52,7 @@ def readPlist(filepath):
     except AttributeError:
         # plistlib module doesn't have a load function (as in Python 2)
         try:
-            return plistlib2.readPlist(filepath)
+            return plistlib.readPlist(filepath)
         except BaseException as err:
             raise PlistReadError(err)
     except BaseException as err:
@@ -72,7 +66,7 @@ def readPlistFromString(bytestring):
     except AttributeError:
         # plistlib module doesn't have a loads function (as in Python 2)
         try:
-            return plistlib2.readPlistFromString(bytestring)
+            return plistlib.readPlistFromString(bytestring)
         except BaseException as err:
             raise PlistReadError(err)
     except BaseException as err:
@@ -87,7 +81,7 @@ def writePlist(data, filepath):
     except AttributeError:
         # plistlib module doesn't have a dump function (as in Python 2)
         try:
-            plistlib2.writePlist(data, filepath)
+            plistlib.writePlist(data, filepath)
         except BaseException as err:
             raise PlistWriteError(err)
     except BaseException as err:
@@ -101,7 +95,7 @@ def writePlistToString(data):
     except AttributeError:
         # plistlib module doesn't have a dumps function (as in Python 2)
         try:
-            return plistlib2.writePlistToString(data)
+            return plistlib.writePlistToString(data)
         except BaseException as err:
             raise PlistWriteError(err)
     except BaseException as err:

@@ -93,6 +93,12 @@ def readPlistFromString(data):
         plistData = buffer(data)
     except TypeError as err:
         raise NSPropertyListSerializationException(err)
+    except NameError:
+        # buffer replaced with memoryview in Python 3
+        try:
+            plistData = memoryview(data)
+        except TypeError as err:
+            raise NSPropertyListSerializationException(err)
     dataObject, dummy_plistFormat, error = (
         NSPropertyListSerialization.
         propertyListFromData_mutabilityOption_format_errorDescription_(
