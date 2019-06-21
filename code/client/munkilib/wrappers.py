@@ -55,7 +55,7 @@ def readPlist(filepath):
             return plistlib.readPlist(filepath)
         except BaseException as err:
             raise PlistReadError(err)
-    except BaseException as err:
+    except Exception as err:
         raise PlistReadError(err)
 
 
@@ -69,7 +69,7 @@ def readPlistFromString(bytestring):
             return plistlib.readPlistFromString(bytestring)
         except BaseException as err:
             raise PlistReadError(err)
-    except BaseException as err:
+    except Exception as err:
         raise PlistReadError(err)
 
 
@@ -84,7 +84,7 @@ def writePlist(data, filepath):
             plistlib.writePlist(data, filepath)
         except BaseException as err:
             raise PlistWriteError(err)
-    except BaseException as err:
+    except Exception as err:
         raise PlistWriteError(err)
 
 
@@ -98,7 +98,7 @@ def writePlistToString(data):
             return plistlib.writePlistToString(data)
         except BaseException as err:
             raise PlistWriteError(err)
-    except BaseException as err:
+    except Exception as err:
         raise PlistWriteError(err)
 
 
