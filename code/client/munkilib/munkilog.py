@@ -53,7 +53,7 @@ def log(msg, logname=''):
     try:
         fileobj = open(logpath, mode='a', buffering=1)
         try:
-            print(time.strftime(formatstr), msg.encode('UTF-8'), file=fileobj)
+            print(time.strftime(formatstr), msg, file=fileobj)
         except (OSError, IOError):
             pass
         fileobj.close()
