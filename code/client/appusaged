@@ -42,7 +42,7 @@ import struct
 from munkilib import app_usage
 from munkilib import launchd
 from munkilib import prefs
-from munkilib.wrappers import readPlistFromString, unicode_or_str
+from munkilib.wrappers import readPlistFromString, PlistError, unicode_or_str
 
 
 APPNAME = 'appusaged'
@@ -171,7 +171,7 @@ class RunHandler(SocketServer.StreamRequestHandler):
             # Try to parse it.
             try:
                 plist = readPlistFromString(plist_string)
-            except BaseException as err:
+            except PlistError as err:
                 self.log.error('Malformed request')
                 self.request.send(u'ERROR:Malformed request\n'.encode('UTF-8'))
                 return
