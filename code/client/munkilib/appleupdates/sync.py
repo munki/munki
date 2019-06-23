@@ -26,9 +26,21 @@ import gzip
 import os
 import subprocess
 import time
-import urllib2
-import urlparse
 import xattr
+
+try:
+    # Python 2
+    from urllib2 import quote, unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import quote, unquote
+try:
+    # Python 2
+    from urlparse import urlsplit
+except ImportError:
+    # Python 3
+    from urllib.parse import urlsplit
+
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -276,7 +288,7 @@ class AppleUpdateSync(object):
           The str path of the URL.
         """
         # pylint: disable=no-self-use
-        return urlparse.urlsplit(full_url)[2]  # (schema, netloc, path, ...)
+        return urlsplit(full_url)[2]  # (schema, netloc, path, ...)
 
     def rewrite_url(self, full_url):
         """Rewrites a single URL to point to our local replica.
@@ -286,8 +298,7 @@ class AppleUpdateSync(object):
         Returns:
           A str URL, rewritten if needed to point to the local cache.
         """
-        local_base_url = 'file://localhost' + urllib2.quote(
-            self.cache_dir)
+        local_base_url = 'file://localhost' + quote(self.cache_dir)
         if full_url.startswith(local_base_url):
             return full_url  # url is already local, so just return it.
         return local_base_url + self._get_url_path(full_url)
@@ -515,7 +526,7 @@ class AppleUpdateSync(object):
                 # look for it in the cache
                 if url.startswith('file://localhost'):
                     fileurl = url[len('file://localhost'):]
-                    dist_path = urllib2.unquote(fileurl)
+                    dist_path = unquote(fileurl)
                     if os.path.exists(dist_path):
                         return dist_path
                 # we haven't downloaded this yet
