@@ -96,7 +96,7 @@ def ptyexec(argv):
             print(str(err), file=sys.stderr)
             sys.exit(1)
     elif pid > 0:        # parent
-        f = os.fdopen(fd, 'r+', 0)
+        f = os.fdopen(fd, 'rb+', 0)
         set_file_nonblocking(f)
         while True:
             try:
@@ -106,7 +106,11 @@ def ptyexec(argv):
 
             if f in rl:
                 l = f.read()
-                sys.stdout.write(l)
+                try:
+                    sys.stdout.buffer.write(l)
+                except AttributeError:
+                    # Python 2
+                    sys.stdout.write(l)
                 sys.stdout.flush()
 
             if pid in child_exited:
