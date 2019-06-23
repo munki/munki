@@ -28,9 +28,20 @@ import imp
 import os
 import shutil
 import time
-import urllib2
-import urlparse
 import xattr
+
+try:
+    # Python 2
+    from urllib2 import unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import unquote
+try:
+    # Python 2
+    from urlparse import urlparse, urlsplit
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse, urlsplit
 
 # Cocoa libs via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -276,7 +287,7 @@ def get_url(url, destinationpath,
         raise GurlError(-1, str(err))
 
     if connection.error is not None:
-        # Gurl returned an error
+        # gurl returned an error
         display.display_detail(
             'Download error %s: %s', connection.error.code(),
             connection.error.localizedDescription())
@@ -373,7 +384,7 @@ def getResourceIfChangedAtomically(url,
         # the preference decides
         follow_redirects = prefs.pref('FollowHTTPRedirects')
 
-    url_parse = urlparse.urlparse(url)
+    url_parse = urlparse(url)
     if url_parse.scheme in ['http', 'https']:
         changed = getHTTPfileIfChangedAtomically(
             url, destinationpath,
@@ -436,7 +447,7 @@ def getFileIfChangedAtomically(path, destinationpath):
        item is already in the local cache.
 
        Raises FileCopyError if there is an error."""
-    path = urllib2.unquote(path)
+    path = unquote(path)
     try:
         st_src = os.stat(path)
     except OSError:
@@ -554,7 +565,7 @@ def getURLitemBasename(url):
          "/path/foo.dmg" => "foo.dmg"
     """
 
-    url_parse = urlparse.urlparse(url)
+    url_parse = urlparse(url)
     return os.path.basename(url_parse.path)
 
 
@@ -654,7 +665,7 @@ def check_server(url):
     # rewritten 12 Dec 2016 to use gurl so we use system proxies, if any
 
     # deconstruct URL to get scheme
-    url_parts = urlparse.urlsplit(url)
+    url_parts = urlsplit(url)
     if url_parts.scheme in ('http', 'https'):
         pass
     elif url_parts.scheme == 'file':
@@ -671,8 +682,8 @@ def check_server(url):
         # attempt to get something at the url
         dummy_data = getDataFromURL(url)
     except ConnectionError as err:
-        # err should contain a tuple with code and description
-        return (err[0], err[1])
+        # err.args should contain a tuple with code and description
+        return (err.args[0], err.args[1])
     except (GurlError, DownloadError):
         # HTTP errors, etc are OK -- we just need to be able to connect
         pass
